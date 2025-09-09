@@ -1,0 +1,3 @@
+class BaseOutput {
+  const BaseOutput();
+}
