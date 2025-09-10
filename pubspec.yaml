@@ -52,6 +52,7 @@ dependencies:
   # Network & API
   socket_io_client: ^3.0.1
   protobuf: ^3.1.0
+  fixnum: ^1.1.1
   
   # Utils
   meta: ^1.15.0

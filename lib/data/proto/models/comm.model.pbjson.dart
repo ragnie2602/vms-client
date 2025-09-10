@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from comm.model.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: comm.model.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -127,8 +126,8 @@ const Language$json = {
 };
 
 /// Descriptor for `Language`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List languageDescriptor = $convert
-    .base64Decode('CghMYW5ndWFnZRILCgdERUZBVUxUEAASBgoCVkkQARIGCgJFThAC');
+final $typed_data.Uint8List languageDescriptor = $convert.base64Decode(
+    'CghMYW5ndWFnZRILCgdERUZBVUxUEAASBgoCVkkQARIGCgJFThAC');
 
 @$core.Deprecated('Use cameraTypeDescriptor instead')
 const CameraType$json = {
@@ -174,8 +173,8 @@ const API$json = {
 };
 
 /// Descriptor for `API`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List aPIDescriptor = $convert
-    .base64Decode('CgNBUEkSDQoJVU5ERUZJTkVEEAASDwoLQVBJX1ZFUlNJT04Qbw==');
+final $typed_data.Uint8List aPIDescriptor = $convert.base64Decode(
+    'CgNBUEkSDQoJVU5ERUZJTkVEEAASDwoLQVBJX1ZFUlNJT04Qbw==');
 
 @$core.Deprecated('Use networkTypeDescriptor instead')
 const NetworkType$json = {
@@ -187,8 +186,8 @@ const NetworkType$json = {
 };
 
 /// Descriptor for `NetworkType`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List networkTypeDescriptor =
-    $convert.base64Decode('CgtOZXR3b3JrVHlwZRIICgRESENQEAASCgoGU1RBVElDEAE=');
+final $typed_data.Uint8List networkTypeDescriptor = $convert.base64Decode(
+    'CgtOZXR3b3JrVHlwZRIICgRESENQEAASCgoGU1RBVElDEAE=');
 
 @$core.Deprecated('Use vehicle_TypeDescriptor instead')
 const Vehicle_Type$json = {
@@ -227,23 +226,9 @@ const Reply$json = {
   '1': 'Reply',
   '2': [
     {'1': 'type', '3': 1, '4': 1, '5': 13, '10': 'type'},
-    {
-      '1': 'presences',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.comm.Presence',
-      '10': 'presences'
-    },
+    {'1': 'presences', '3': 2, '4': 3, '5': 11, '6': '.comm.Presence', '10': 'presences'},
     {'1': 'time', '3': 3, '4': 1, '5': 4, '10': 'time'},
-    {
-      '1': 'reply',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'reply'
-    },
+    {'1': 'reply', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'reply'},
     {'1': 'id', '3': 5, '4': 1, '5': 4, '10': 'id'},
     {'1': 'message_Error', '3': 6, '4': 1, '5': 9, '10': 'messageError'},
   ],
@@ -262,14 +247,7 @@ const HttpReply$json = {
   '2': [
     {'1': 'type', '3': 1, '4': 1, '5': 13, '10': 'type'},
     {'1': 'time', '3': 2, '4': 1, '5': 4, '10': 'time'},
-    {
-      '1': 'reply',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'reply'
-    },
+    {'1': 'reply', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'reply'},
     {'1': 'message_Error', '3': 4, '4': 1, '5': 9, '10': 'messageError'},
   ],
 };
@@ -288,14 +266,7 @@ const Request$json = {
     {'1': 'toppic_from', '3': 2, '4': 1, '5': 9, '10': 'toppicFrom'},
     {'1': 'toppic_to', '3': 3, '4': 1, '5': 9, '10': 'toppicTo'},
     {'1': 'node_uuid', '3': 4, '4': 1, '5': 9, '10': 'nodeUuid'},
-    {
-      '1': 'request',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'request'
-    },
+    {'1': 'request', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'request'},
   ],
 };
 
@@ -313,14 +284,7 @@ const HttpRequest$json = {
     {'1': 'type', '3': 1, '4': 1, '5': 13, '10': 'type'},
     {'1': 'sid', '3': 2, '4': 1, '5': 12, '10': 'sid'},
     {'1': 'uid', '3': 3, '4': 1, '5': 12, '10': 'uid'},
-    {
-      '1': 'request',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'request'
-    },
+    {'1': 'request', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'request'},
   ],
 };
 
@@ -336,14 +300,7 @@ const Receive$json = {
   '2': [
     {'1': 'time', '3': 1, '4': 1, '5': 4, '10': 'time'},
     {'1': 'device_token', '3': 2, '4': 1, '5': 9, '10': 'deviceToken'},
-    {
-      '1': 'receive',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'receive'
-    },
+    {'1': 'receive', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'receive'},
   ],
 };
 
@@ -424,13 +381,7 @@ const CameraEmapInfo$json = {
     {'1': 'type_icon', '3': 2, '4': 1, '5': 13, '10': 'typeIcon'},
     {'1': 'x_coordinate', '3': 3, '4': 1, '5': 5, '10': 'xCoordinate'},
     {'1': 'y_coordinate', '3': 4, '4': 1, '5': 5, '10': 'yCoordinate'},
-    {
-      '1': 'camera_emap_info_id',
-      '3': 5,
-      '4': 1,
-      '5': 12,
-      '10': 'cameraEmapInfoId'
-    },
+    {'1': 'camera_emap_info_id', '3': 5, '4': 1, '5': 12, '10': 'cameraEmapInfoId'},
   ],
 };
 
@@ -462,54 +413,23 @@ const Profile$json = {
   '2': [
     {'1': 'account', '3': 1, '4': 1, '5': 9, '10': 'account'},
     {'1': 'address', '3': 2, '4': 1, '5': 9, '10': 'address'},
-    {
-      '1': 'is_send_email_event',
-      '3': 3,
-      '4': 1,
-      '5': 8,
-      '10': 'isSendEmailEvent'
-    },
+    {'1': 'is_send_email_event', '3': 3, '4': 1, '5': 8, '10': 'isSendEmailEvent'},
     {'1': 'email_receive', '3': 4, '4': 3, '5': 9, '10': 'emailReceive'},
     {'1': 'display_name', '3': 5, '4': 1, '5': 9, '10': 'displayName'},
     {'1': 'camera_record_on', '3': 6, '4': 1, '5': 8, '10': 'cameraRecordOn'},
-    {
-      '1': 'camera_sd_card_fully_override',
-      '3': 7,
-      '4': 1,
-      '5': 8,
-      '10': 'cameraSdCardFullyOverride'
-    },
+    {'1': 'camera_sd_card_fully_override', '3': 7, '4': 1, '5': 8, '10': 'cameraSdCardFullyOverride'},
     {'1': 'cloud_record_on', '3': 8, '4': 1, '5': 8, '10': 'cloudRecordOn'},
-    {
-      '1': 'number_day_storage',
-      '3': 9,
-      '4': 1,
-      '5': 13,
-      '10': 'numberDayStorage'
-    },
+    {'1': 'number_day_storage', '3': 9, '4': 1, '5': 13, '10': 'numberDayStorage'},
     {'1': 'tel', '3': 10, '4': 1, '5': 9, '10': 'tel'},
     {'1': 'email', '3': 11, '4': 1, '5': 9, '10': 'email'},
-    {
-      '1': 'changePassDenied',
-      '3': 12,
-      '4': 1,
-      '5': 8,
-      '10': 'changePassDenied'
-    },
+    {'1': 'changePassDenied', '3': 12, '4': 1, '5': 8, '10': 'changePassDenied'},
     {'1': 'addCamDenied', '3': 13, '4': 1, '5': 8, '10': 'addCamDenied'},
     {'1': 'sme_name', '3': 14, '4': 1, '5': 9, '10': 'smeName'},
     {'1': 'msg_unread_count', '3': 15, '4': 1, '5': 13, '10': 'msgUnreadCount'},
     {'1': 'on_off_barrier', '3': 16, '4': 1, '5': 8, '10': 'onOffBarrier'},
     {'1': 'start_time', '3': 17, '4': 1, '5': 9, '10': 'startTime'},
     {'1': 'end_time', '3': 18, '4': 1, '5': 9, '10': 'endTime'},
-    {
-      '1': 'user_type',
-      '3': 19,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Profile.Type',
-      '10': 'userType'
-    },
+    {'1': 'user_type', '3': 19, '4': 1, '5': 14, '6': '.comm.Profile.Type', '10': 'userType'},
   ],
   '4': [Profile_Type$json],
 };
@@ -551,23 +471,9 @@ const BoxInfo$json = {
   '2': [
     {'1': 'box_name', '3': 1, '4': 1, '5': 9, '10': 'boxName'},
     {'1': 'box_serial_number', '3': 2, '4': 1, '5': 9, '10': 'boxSerialNumber'},
-    {
-      '1': 'box_type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.BoxInfo.Box_Type',
-      '10': 'boxType'
-    },
+    {'1': 'box_type', '3': 3, '4': 1, '5': 14, '6': '.comm.BoxInfo.Box_Type', '10': 'boxType'},
     {'1': 'owner_user_id', '3': 4, '4': 1, '5': 12, '10': 'ownerUserId'},
-    {
-      '1': 'box_State',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Box_State',
-      '10': 'boxState'
-    },
+    {'1': 'box_State', '3': 5, '4': 1, '5': 14, '6': '.comm.Box_State', '10': 'boxState'},
   ],
   '4': [BoxInfo_Box_Type$json],
 };
@@ -596,21 +502,8 @@ const ScheduleTime$json = {
   '2': [
     {'1': 'start_time', '3': 1, '4': 1, '5': 13, '10': 'startTime'},
     {'1': 'end_time', '3': 2, '4': 1, '5': 13, '10': 'endTime'},
-    {
-      '1': 'day_record',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.ScheduleTime.Day',
-      '10': 'dayRecord'
-    },
-    {
-      '1': 'schedule_Time_Enable',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'scheduleTimeEnable'
-    },
+    {'1': 'day_record', '3': 3, '4': 1, '5': 14, '6': '.comm.ScheduleTime.Day', '10': 'dayRecord'},
+    {'1': 'schedule_Time_Enable', '3': 4, '4': 1, '5': 8, '10': 'scheduleTimeEnable'},
   ],
   '4': [ScheduleTime_Day$json],
 };
@@ -642,39 +535,12 @@ const Recording$json = {
   '1': 'Recording',
   '2': [
     {'1': 'turn_on_recording', '3': 1, '4': 1, '5': 8, '10': 'turnOnRecording'},
-    {
-      '1': 'type_schedule_recording',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Recording.TypeSchedule',
-      '10': 'typeScheduleRecording'
-    },
-    {
-      '1': 'schedules',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.comm.ScheduleTime',
-      '10': 'schedules'
-    },
-    {
-      '1': 'recordingForm',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Recording.RecordingForm',
-      '10': 'recordingForm'
-    },
+    {'1': 'type_schedule_recording', '3': 2, '4': 1, '5': 14, '6': '.comm.Recording.TypeSchedule', '10': 'typeScheduleRecording'},
+    {'1': 'schedules', '3': 3, '4': 3, '5': 11, '6': '.comm.ScheduleTime', '10': 'schedules'},
+    {'1': 'recordingForm', '3': 4, '4': 1, '5': 14, '6': '.comm.Recording.RecordingForm', '10': 'recordingForm'},
     {'1': 'prefix_path', '3': 5, '4': 1, '5': 9, '10': 'prefixPath'},
     {'1': 'rtsp_server_local', '3': 6, '4': 1, '5': 9, '10': 'rtspServerLocal'},
-    {
-      '1': 'rtsp_server_public',
-      '3': 7,
-      '4': 1,
-      '5': 9,
-      '10': 'rtspServerPublic'
-    },
+    {'1': 'rtsp_server_public', '3': 7, '4': 1, '5': 9, '10': 'rtspServerPublic'},
     {'1': 'rtsp_push_user', '3': 8, '4': 1, '5': 9, '10': 'rtspPushUser'},
     {'1': 'rtsp_puss_pass', '3': 9, '4': 1, '5': 9, '10': 'rtspPussPass'},
     {'1': 'upload_url_path', '3': 10, '4': 1, '5': 9, '10': 'uploadUrlPath'},
@@ -726,21 +592,14 @@ const Roi$json = {
 };
 
 /// Descriptor for `Roi`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List roiDescriptor =
-    $convert.base64Decode('CgNSb2kSDAoBeBgBIAEoDVIBeBIMCgF5GAIgASgNUgF5');
+final $typed_data.Uint8List roiDescriptor = $convert.base64Decode(
+    'CgNSb2kSDAoBeBgBIAEoDVIBeBIMCgF5GAIgASgNUgF5');
 
 @$core.Deprecated('Use camNetworkDescriptor instead')
 const CamNetwork$json = {
   '1': 'CamNetwork',
   '2': [
-    {
-      '1': 'type',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.NetworkType',
-      '10': 'type'
-    },
+    {'1': 'type', '3': 2, '4': 1, '5': 14, '6': '.comm.NetworkType', '10': 'type'},
     {'1': 'ip_address', '3': 3, '4': 1, '5': 9, '10': 'ipAddress'},
     {'1': 'subness', '3': 4, '4': 1, '5': 9, '10': 'subness'},
     {'1': 'gateway', '3': 5, '4': 1, '5': 9, '10': 'gateway'},
@@ -758,13 +617,7 @@ final $typed_data.Uint8List camNetworkDescriptor = $convert.base64Decode(
 const KC01_LineCrossing$json = {
   '1': 'KC01_LineCrossing',
   '2': [
-    {
-      '1': 'line_crossing_enable',
-      '3': 1,
-      '4': 1,
-      '5': 8,
-      '10': 'lineCrossingEnable'
-    },
+    {'1': 'line_crossing_enable', '3': 1, '4': 1, '5': 8, '10': 'lineCrossingEnable'},
     {'1': 'direction', '3': 2, '4': 1, '5': 13, '10': 'direction'},
     {'1': 'width', '3': 3, '4': 1, '5': 13, '10': 'width'},
     {'1': 'height', '3': 4, '4': 1, '5': 13, '10': 'height'},
@@ -790,13 +643,7 @@ final $typed_data.Uint8List kC01_LineCrossingDescriptor = $convert.base64Decode(
 const KC01_IntrusionDetection$json = {
   '1': 'KC01_IntrusionDetection',
   '2': [
-    {
-      '1': 'intrusion_detection_enable',
-      '3': 1,
-      '4': 1,
-      '5': 8,
-      '10': 'intrusionDetectionEnable'
-    },
+    {'1': 'intrusion_detection_enable', '3': 1, '4': 1, '5': 8, '10': 'intrusionDetectionEnable'},
     {'1': 'width', '3': 2, '4': 1, '5': 13, '10': 'width'},
     {'1': 'height', '3': 3, '4': 1, '5': 13, '10': 'height'},
     {'1': 'p_x1', '3': 4, '4': 1, '5': 2, '10': 'pX1'},
@@ -845,13 +692,7 @@ final $typed_data.Uint8List kC01_TimeSettingDescriptor = $convert.base64Decode(
 const PrivacyMask$json = {
   '1': 'PrivacyMask',
   '2': [
-    {
-      '1': 'privacyMaskEnable',
-      '3': 1,
-      '4': 1,
-      '5': 8,
-      '10': 'privacyMaskEnable'
-    },
+    {'1': 'privacyMaskEnable', '3': 1, '4': 1, '5': 8, '10': 'privacyMaskEnable'},
     {'1': 'StartPointX', '3': 2, '4': 1, '5': 2, '10': 'StartPointX'},
     {'1': 'EndPointX', '3': 3, '4': 1, '5': 2, '10': 'EndPointX'},
     {'1': 'StartPointY', '3': 4, '4': 1, '5': 2, '10': 'StartPointY'},
@@ -870,41 +711,11 @@ final $typed_data.Uint8List privacyMaskDescriptor = $convert.base64Decode(
 const ActivityRegion$json = {
   '1': 'ActivityRegion',
   '2': [
-    {
-      '1': 'activityRegionEnable',
-      '3': 1,
-      '4': 1,
-      '5': 8,
-      '10': 'activityRegionEnable'
-    },
-    {
-      '1': 'activity_region_width_major',
-      '3': 2,
-      '4': 1,
-      '5': 2,
-      '10': 'activityRegionWidthMajor'
-    },
-    {
-      '1': 'activity_region_width_minor',
-      '3': 3,
-      '4': 1,
-      '5': 2,
-      '10': 'activityRegionWidthMinor'
-    },
-    {
-      '1': 'activity_region_height_major',
-      '3': 4,
-      '4': 1,
-      '5': 2,
-      '10': 'activityRegionHeightMajor'
-    },
-    {
-      '1': 'activity_region_height_minor',
-      '3': 5,
-      '4': 1,
-      '5': 2,
-      '10': 'activityRegionHeightMinor'
-    },
+    {'1': 'activityRegionEnable', '3': 1, '4': 1, '5': 8, '10': 'activityRegionEnable'},
+    {'1': 'activity_region_width_major', '3': 2, '4': 1, '5': 2, '10': 'activityRegionWidthMajor'},
+    {'1': 'activity_region_width_minor', '3': 3, '4': 1, '5': 2, '10': 'activityRegionWidthMinor'},
+    {'1': 'activity_region_height_major', '3': 4, '4': 1, '5': 2, '10': 'activityRegionHeightMajor'},
+    {'1': 'activity_region_height_minor', '3': 5, '4': 1, '5': 2, '10': 'activityRegionHeightMinor'},
   ],
 };
 
@@ -923,38 +734,12 @@ const IVAJobRegionMotionDetect$json = {
   '2': [
     {'1': 'job_id', '3': 1, '4': 1, '5': 9, '10': 'jobId'},
     {'1': 'isRuning', '3': 3, '4': 1, '5': 8, '10': 'isRuning'},
-    {
-      '1': 'level',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.IVAJobRegionMotionDetect.Level',
-      '10': 'level'
-    },
-    {
-      '1': 'is_region_detect_enable',
-      '3': 5,
-      '4': 1,
-      '5': 8,
-      '10': 'isRegionDetectEnable'
-    },
+    {'1': 'level', '3': 4, '4': 1, '5': 14, '6': '.comm.IVAJobRegionMotionDetect.Level', '10': 'level'},
+    {'1': 'is_region_detect_enable', '3': 5, '4': 1, '5': 8, '10': 'isRegionDetectEnable'},
     {'1': 'rois', '3': 6, '4': 3, '5': 11, '6': '.comm.Roi', '10': 'rois'},
-    {
-      '1': 'stream',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream',
-      '10': 'stream'
-    },
+    {'1': 'stream', '3': 7, '4': 1, '5': 11, '6': '.comm.CameraStream', '10': 'stream'},
     {'1': 'isSendEmail', '3': 8, '4': 1, '5': 8, '10': 'isSendEmail'},
-    {
-      '1': 'isPushNotification',
-      '3': 9,
-      '4': 1,
-      '5': 8,
-      '10': 'isPushNotification'
-    },
+    {'1': 'isPushNotification', '3': 9, '4': 1, '5': 8, '10': 'isPushNotification'},
     {'1': 'is_record_event', '3': 10, '4': 1, '5': 8, '10': 'isRecordEvent'},
     {'1': 'isActivePackage', '3': 11, '4': 1, '5': 8, '10': 'isActivePackage'},
     {'1': 'msg', '3': 12, '4': 1, '5': 9, '10': 'msg'},
@@ -993,61 +778,17 @@ const IVA_JobLineCrossing_Detect$json = {
     {'1': 'job_id', '3': 1, '4': 1, '5': 9, '10': 'jobId'},
     {'1': 'isRuning', '3': 2, '4': 1, '5': 8, '10': 'isRuning'},
     {'1': 'isSendEmail', '3': 3, '4': 1, '5': 8, '10': 'isSendEmail'},
-    {
-      '1': 'isPushNotification',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'isPushNotification'
-    },
+    {'1': 'isPushNotification', '3': 4, '4': 1, '5': 8, '10': 'isPushNotification'},
     {'1': 'is_record_event', '3': 5, '4': 1, '5': 8, '10': 'isRecordEvent'},
-    {
-      '1': 'level',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.IVA_JobLineCrossing_Detect.Level',
-      '10': 'level'
-    },
-    {
-      '1': 'direction',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.IVA_JobLineCrossing_Detect.DirectionType',
-      '10': 'direction'
-    },
-    {
-      '1': 'stream',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream',
-      '10': 'stream'
-    },
-    {
-      '1': 'roi_start',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Roi',
-      '10': 'roiStart'
-    },
-    {
-      '1': 'roi_end',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Roi',
-      '10': 'roiEnd'
-    },
+    {'1': 'level', '3': 6, '4': 1, '5': 14, '6': '.comm.IVA_JobLineCrossing_Detect.Level', '10': 'level'},
+    {'1': 'direction', '3': 7, '4': 1, '5': 14, '6': '.comm.IVA_JobLineCrossing_Detect.DirectionType', '10': 'direction'},
+    {'1': 'stream', '3': 8, '4': 1, '5': 11, '6': '.comm.CameraStream', '10': 'stream'},
+    {'1': 'roi_start', '3': 9, '4': 1, '5': 11, '6': '.comm.Roi', '10': 'roiStart'},
+    {'1': 'roi_end', '3': 10, '4': 1, '5': 11, '6': '.comm.Roi', '10': 'roiEnd'},
     {'1': 'isActivePackage', '3': 11, '4': 1, '5': 8, '10': 'isActivePackage'},
     {'1': 'msg', '3': 12, '4': 1, '5': 9, '10': 'msg'},
   ],
-  '4': [
-    IVA_JobLineCrossing_Detect_DirectionType$json,
-    IVA_JobLineCrossing_Detect_Level$json
-  ],
+  '4': [IVA_JobLineCrossing_Detect_DirectionType$json, IVA_JobLineCrossing_Detect_Level$json],
 };
 
 @$core.Deprecated('Use iVA_JobLineCrossing_DetectDescriptor instead')
@@ -1091,31 +832,11 @@ const IVA_IntrusionDetection_Detect$json = {
     {'1': 'job_id', '3': 1, '4': 1, '5': 9, '10': 'jobId'},
     {'1': 'isRuning', '3': 2, '4': 1, '5': 8, '10': 'isRuning'},
     {'1': 'isSendEmail', '3': 3, '4': 1, '5': 8, '10': 'isSendEmail'},
-    {
-      '1': 'isPushNotification',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'isPushNotification'
-    },
+    {'1': 'isPushNotification', '3': 4, '4': 1, '5': 8, '10': 'isPushNotification'},
     {'1': 'is_record_event', '3': 5, '4': 1, '5': 8, '10': 'isRecordEvent'},
-    {
-      '1': 'level',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.IVA_IntrusionDetection_Detect.Level',
-      '10': 'level'
-    },
+    {'1': 'level', '3': 6, '4': 1, '5': 14, '6': '.comm.IVA_IntrusionDetection_Detect.Level', '10': 'level'},
     {'1': 'rois', '3': 7, '4': 3, '5': 11, '6': '.comm.Roi', '10': 'rois'},
-    {
-      '1': 'stream',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream',
-      '10': 'stream'
-    },
+    {'1': 'stream', '3': 8, '4': 1, '5': 11, '6': '.comm.CameraStream', '10': 'stream'},
     {'1': 'isActivePackage', '3': 9, '4': 1, '5': 8, '10': 'isActivePackage'},
     {'1': 'msg', '3': 10, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -1150,31 +871,11 @@ const IVA_Smoke_Detect$json = {
     {'1': 'job_id', '3': 1, '4': 1, '5': 9, '10': 'jobId'},
     {'1': 'isRuning', '3': 2, '4': 1, '5': 8, '10': 'isRuning'},
     {'1': 'isSendEmail', '3': 3, '4': 1, '5': 8, '10': 'isSendEmail'},
-    {
-      '1': 'isPushNotification',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'isPushNotification'
-    },
+    {'1': 'isPushNotification', '3': 4, '4': 1, '5': 8, '10': 'isPushNotification'},
     {'1': 'is_record_event', '3': 5, '4': 1, '5': 8, '10': 'isRecordEvent'},
-    {
-      '1': 'level',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.IVA_Smoke_Detect.Level',
-      '10': 'level'
-    },
+    {'1': 'level', '3': 6, '4': 1, '5': 14, '6': '.comm.IVA_Smoke_Detect.Level', '10': 'level'},
     {'1': 'rois', '3': 7, '4': 3, '5': 11, '6': '.comm.Roi', '10': 'rois'},
-    {
-      '1': 'stream',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream',
-      '10': 'stream'
-    },
+    {'1': 'stream', '3': 8, '4': 1, '5': 11, '6': '.comm.CameraStream', '10': 'stream'},
     {'1': 'isActivePackage', '3': 9, '4': 1, '5': 8, '10': 'isActivePackage'},
     {'1': 'msg', '3': 10, '4': 1, '5': 9, '10': 'msg'},
   ],
@@ -1208,20 +909,8 @@ const IVA_Face_Detect$json = {
   '2': [
     {'1': 'job_id', '3': 1, '4': 1, '5': 9, '10': 'jobId'},
     {'1': 'isRuning', '3': 2, '4': 1, '5': 8, '10': 'isRuning'},
-    {
-      '1': 'isStrangerDetectNoti',
-      '3': 3,
-      '4': 1,
-      '5': 8,
-      '10': 'isStrangerDetectNoti'
-    },
-    {
-      '1': 'isRelativeDetectNoti',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'isRelativeDetectNoti'
-    },
+    {'1': 'isStrangerDetectNoti', '3': 3, '4': 1, '5': 8, '10': 'isStrangerDetectNoti'},
+    {'1': 'isRelativeDetectNoti', '3': 4, '4': 1, '5': 8, '10': 'isRelativeDetectNoti'},
     {'1': 'is_record_event', '3': 5, '4': 1, '5': 8, '10': 'isRecordEvent'},
     {'1': 'rois', '3': 6, '4': 3, '5': 11, '6': '.comm.Roi', '10': 'rois'},
     {'1': 'isActivePackage', '3': 7, '4': 1, '5': 8, '10': 'isActivePackage'},
@@ -1245,23 +934,10 @@ const IVAALPR$json = {
     {'1': 'job_id', '3': 1, '4': 1, '5': 9, '10': 'jobId'},
     {'1': 'isRuning', '3': 2, '4': 1, '5': 8, '10': 'isRuning'},
     {'1': 'isSendEmail', '3': 3, '4': 1, '5': 8, '10': 'isSendEmail'},
-    {
-      '1': 'isPushNotification',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'isPushNotification'
-    },
+    {'1': 'isPushNotification', '3': 4, '4': 1, '5': 8, '10': 'isPushNotification'},
     {'1': 'is_record_event', '3': 5, '4': 1, '5': 8, '10': 'isRecordEvent'},
     {'1': 'rois', '3': 6, '4': 3, '5': 11, '6': '.comm.Roi', '10': 'rois'},
-    {
-      '1': 'stream',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream',
-      '10': 'stream'
-    },
+    {'1': 'stream', '3': 8, '4': 1, '5': 11, '6': '.comm.CameraStream', '10': 'stream'},
     {'1': 'isActivePackage', '3': 9, '4': 1, '5': 8, '10': 'isActivePackage'},
     {'1': 'msg', '3': 10, '4': 1, '5': 9, '10': 'msg'},
     {'1': 'in', '3': 11, '4': 1, '5': 8, '10': 'in'},
@@ -1330,244 +1006,45 @@ const CameraConfig$json = {
     {'1': 'brightness', '3': 2, '4': 1, '5': 13, '10': 'brightness'},
     {'1': 'flip', '3': 3, '4': 1, '5': 8, '10': 'flip'},
     {'1': 'mirror', '3': 4, '4': 1, '5': 8, '10': 'mirror'},
-    {
-      '1': 'rotate',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.CameraConfig.Rotate',
-      '10': 'rotate'
-    },
-    {
-      '1': 'current_major_version',
-      '3': 6,
-      '4': 1,
-      '5': 13,
-      '10': 'currentMajorVersion'
-    },
-    {
-      '1': 'current_minor_version',
-      '3': 7,
-      '4': 1,
-      '5': 13,
-      '10': 'currentMinorVersion'
-    },
-    {
-      '1': 'power_cloud_storage',
-      '3': 8,
-      '4': 1,
-      '5': 8,
-      '10': 'powerCloudStorage'
-    },
-    {
-      '1': 'storage_mode',
-      '3': 9,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.CameraConfig.StorageMode',
-      '10': 'storageMode'
-    },
-    {
-      '1': 'number_days_storage',
-      '3': 10,
-      '4': 1,
-      '5': 13,
-      '10': 'numberDaysStorage'
-    },
-    {
-      '1': 'use_default_account_setting',
-      '3': 32,
-      '4': 1,
-      '5': 8,
-      '10': 'useDefaultAccountSetting'
-    },
+    {'1': 'rotate', '3': 5, '4': 1, '5': 14, '6': '.comm.CameraConfig.Rotate', '10': 'rotate'},
+    {'1': 'current_major_version', '3': 6, '4': 1, '5': 13, '10': 'currentMajorVersion'},
+    {'1': 'current_minor_version', '3': 7, '4': 1, '5': 13, '10': 'currentMinorVersion'},
+    {'1': 'power_cloud_storage', '3': 8, '4': 1, '5': 8, '10': 'powerCloudStorage'},
+    {'1': 'storage_mode', '3': 9, '4': 1, '5': 14, '6': '.comm.CameraConfig.StorageMode', '10': 'storageMode'},
+    {'1': 'number_days_storage', '3': 10, '4': 1, '5': 13, '10': 'numberDaysStorage'},
+    {'1': 'use_default_account_setting', '3': 32, '4': 1, '5': 8, '10': 'useDefaultAccountSetting'},
     {'1': 'wifi_name', '3': 11, '4': 1, '5': 9, '10': 'wifiName'},
     {'1': 'wifi_password', '3': 12, '4': 1, '5': 9, '10': 'wifiPassword'},
     {'1': 'motion_detection', '3': 13, '4': 1, '5': 8, '10': 'motionDetection'},
     {'1': 'audio_detection', '3': 14, '4': 1, '5': 8, '10': 'audioDetection'},
     {'1': 'fully_override', '3': 15, '4': 1, '5': 8, '10': 'fullyOverride'},
-    {
-      '1': 'recording',
-      '3': 16,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Recording',
-      '10': 'recording'
-    },
-    {
-      '1': 'is_send_email_event',
-      '3': 17,
-      '4': 1,
-      '5': 8,
-      '10': 'isSendEmailEvent'
-    },
+    {'1': 'recording', '3': 16, '4': 1, '5': 11, '6': '.comm.Recording', '10': 'recording'},
+    {'1': 'is_send_email_event', '3': 17, '4': 1, '5': 8, '10': 'isSendEmailEvent'},
     {'1': 'is_record', '3': 18, '4': 1, '5': 8, '10': 'isRecord'},
-    {
-      '1': 'is_region_detect_enable',
-      '3': 19,
-      '4': 1,
-      '5': 8,
-      '10': 'isRegionDetectEnable'
-    },
+    {'1': 'is_region_detect_enable', '3': 19, '4': 1, '5': 8, '10': 'isRegionDetectEnable'},
     {'1': 'rois', '3': 20, '4': 3, '5': 11, '6': '.comm.Roi', '10': 'rois'},
-    {
-      '1': 'md_level',
-      '3': 21,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.CameraConfig.Level',
-      '10': 'mdLevel'
-    },
-    {
-      '1': 'network',
-      '3': 22,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CamNetwork',
-      '10': 'network'
-    },
-    {
-      '1': 'lineCrossing',
-      '3': 23,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.KC01_LineCrossing',
-      '10': 'lineCrossing'
-    },
-    {
-      '1': 'intrusionDetection',
-      '3': 24,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.KC01_IntrusionDetection',
-      '10': 'intrusionDetection'
-    },
-    {
-      '1': 'timeSetting',
-      '3': 25,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.KC01_TimeSetting',
-      '10': 'timeSetting'
-    },
-    {
-      '1': 'rtsp_current_quatity',
-      '3': 26,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Quality',
-      '10': 'rtspCurrentQuatity'
-    },
-    {
-      '1': 'privacyMask1',
-      '3': 27,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.PrivacyMask',
-      '10': 'privacyMask1'
-    },
-    {
-      '1': 'privacyMask2',
-      '3': 28,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.PrivacyMask',
-      '10': 'privacyMask2'
-    },
-    {
-      '1': 'privacyMask3',
-      '3': 29,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.PrivacyMask',
-      '10': 'privacyMask3'
-    },
+    {'1': 'md_level', '3': 21, '4': 1, '5': 14, '6': '.comm.CameraConfig.Level', '10': 'mdLevel'},
+    {'1': 'network', '3': 22, '4': 1, '5': 11, '6': '.comm.CamNetwork', '10': 'network'},
+    {'1': 'lineCrossing', '3': 23, '4': 1, '5': 11, '6': '.comm.KC01_LineCrossing', '10': 'lineCrossing'},
+    {'1': 'intrusionDetection', '3': 24, '4': 1, '5': 11, '6': '.comm.KC01_IntrusionDetection', '10': 'intrusionDetection'},
+    {'1': 'timeSetting', '3': 25, '4': 1, '5': 11, '6': '.comm.KC01_TimeSetting', '10': 'timeSetting'},
+    {'1': 'rtsp_current_quatity', '3': 26, '4': 1, '5': 14, '6': '.comm.Quality', '10': 'rtspCurrentQuatity'},
+    {'1': 'privacyMask1', '3': 27, '4': 1, '5': 11, '6': '.comm.PrivacyMask', '10': 'privacyMask1'},
+    {'1': 'privacyMask2', '3': 28, '4': 1, '5': 11, '6': '.comm.PrivacyMask', '10': 'privacyMask2'},
+    {'1': 'privacyMask3', '3': 29, '4': 1, '5': 11, '6': '.comm.PrivacyMask', '10': 'privacyMask3'},
     {'1': 'KC01_MD_isSendMD', '3': 30, '4': 1, '5': 8, '10': 'KC01MDIsSendMD'},
-    {
-      '1': 'activityRegion',
-      '3': 31,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.ActivityRegion',
-      '10': 'activityRegion'
-    },
-    {
-      '1': 'iva_md',
-      '3': 33,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.IVAJobRegionMotionDetect',
-      '10': 'ivaMd'
-    },
-    {
-      '1': 'iva_line_crossing',
-      '3': 34,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.IVA_JobLineCrossing_Detect',
-      '10': 'ivaLineCrossing'
-    },
-    {
-      '1': 'iva_ins_detection',
-      '3': 35,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.IVA_IntrusionDetection_Detect',
-      '10': 'ivaInsDetection'
-    },
-    {
-      '1': 'location',
-      '3': 36,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.MapLocation',
-      '10': 'location'
-    },
-    {
-      '1': 'iva_smoke_detection',
-      '3': 37,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.IVA_Smoke_Detect',
-      '10': 'ivaSmokeDetection'
-    },
-    {
-      '1': 'iva_face_detection',
-      '3': 38,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.IVA_Face_Detect',
-      '10': 'ivaFaceDetection'
-    },
-    {
-      '1': 'home_vision_camera_config',
-      '3': 39,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.HomeVision_Camera_Config',
-      '10': 'homeVisionCameraConfig'
-    },
-    {
-      '1': 'current_micro_version',
-      '3': 40,
-      '4': 1,
-      '5': 13,
-      '10': 'currentMicroVersion'
-    },
-    {
-      '1': 'iva_ALPR',
-      '3': 41,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.IVAALPR',
-      '10': 'ivaALPR'
-    },
+    {'1': 'activityRegion', '3': 31, '4': 1, '5': 11, '6': '.comm.ActivityRegion', '10': 'activityRegion'},
+    {'1': 'iva_md', '3': 33, '4': 1, '5': 11, '6': '.comm.IVAJobRegionMotionDetect', '10': 'ivaMd'},
+    {'1': 'iva_line_crossing', '3': 34, '4': 1, '5': 11, '6': '.comm.IVA_JobLineCrossing_Detect', '10': 'ivaLineCrossing'},
+    {'1': 'iva_ins_detection', '3': 35, '4': 1, '5': 11, '6': '.comm.IVA_IntrusionDetection_Detect', '10': 'ivaInsDetection'},
+    {'1': 'location', '3': 36, '4': 1, '5': 11, '6': '.comm.MapLocation', '10': 'location'},
+    {'1': 'iva_smoke_detection', '3': 37, '4': 1, '5': 11, '6': '.comm.IVA_Smoke_Detect', '10': 'ivaSmokeDetection'},
+    {'1': 'iva_face_detection', '3': 38, '4': 1, '5': 11, '6': '.comm.IVA_Face_Detect', '10': 'ivaFaceDetection'},
+    {'1': 'home_vision_camera_config', '3': 39, '4': 1, '5': 11, '6': '.comm.HomeVision_Camera_Config', '10': 'homeVisionCameraConfig'},
+    {'1': 'current_micro_version', '3': 40, '4': 1, '5': 13, '10': 'currentMicroVersion'},
+    {'1': 'iva_ALPR', '3': 41, '4': 1, '5': 11, '6': '.comm.IVAALPR', '10': 'ivaALPR'},
   ],
-  '4': [
-    CameraConfig_Rotate$json,
-    CameraConfig_StorageMode$json,
-    CameraConfig_Level$json
-  ],
+  '4': [CameraConfig_Rotate$json, CameraConfig_StorageMode$json, CameraConfig_Level$json],
 };
 
 @$core.Deprecated('Use cameraConfigDescriptor instead')
@@ -1650,61 +1127,15 @@ const CameraStream$json = {
     {'1': 'stream_origin_url', '3': 1, '4': 1, '5': 9, '10': 'streamOriginUrl'},
     {'1': 'stream_iva_url', '3': 2, '4': 1, '5': 9, '10': 'streamIvaUrl'},
     {'1': 'stream_name', '3': 3, '4': 1, '5': 9, '10': 'streamName'},
-    {
-      '1': 'res',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream.Resolution',
-      '10': 'res'
-    },
-    {
-      '1': 'encoder',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream.Encoder',
-      '10': 'encoder'
-    },
-    {
-      '1': 'ptz_range',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream.PtzRange',
-      '10': 'ptzRange'
-    },
-    {
-      '1': 'user_origin_added_url',
-      '3': 7,
-      '4': 1,
-      '5': 9,
-      '10': 'userOriginAddedUrl'
-    },
+    {'1': 'res', '3': 4, '4': 1, '5': 11, '6': '.comm.CameraStream.Resolution', '10': 'res'},
+    {'1': 'encoder', '3': 5, '4': 1, '5': 11, '6': '.comm.CameraStream.Encoder', '10': 'encoder'},
+    {'1': 'ptz_range', '3': 6, '4': 1, '5': 11, '6': '.comm.CameraStream.PtzRange', '10': 'ptzRange'},
+    {'1': 'user_origin_added_url', '3': 7, '4': 1, '5': 9, '10': 'userOriginAddedUrl'},
     {'1': 'stream_hls_url', '3': 8, '4': 1, '5': 9, '10': 'streamHlsUrl'},
-    {
-      '1': 'default_url',
-      '3': 9,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.CameraStream.DefaultURL',
-      '10': 'defaultUrl'
-    },
-    {
-      '1': 'streamLinks',
-      '3': 10,
-      '4': 3,
-      '5': 11,
-      '6': '.comm.CameraStream.UrlStream',
-      '10': 'streamLinks'
-    },
+    {'1': 'default_url', '3': 9, '4': 1, '5': 14, '6': '.comm.CameraStream.DefaultURL', '10': 'defaultUrl'},
+    {'1': 'streamLinks', '3': 10, '4': 3, '5': 11, '6': '.comm.CameraStream.UrlStream', '10': 'streamLinks'},
   ],
-  '3': [
-    CameraStream_Resolution$json,
-    CameraStream_Encoder$json,
-    CameraStream_PtzRange$json,
-    CameraStream_UrlStream$json
-  ],
+  '3': [CameraStream_Resolution$json, CameraStream_Encoder$json, CameraStream_PtzRange$json, CameraStream_UrlStream$json],
   '4': [CameraStream_DefaultURL$json],
 };
 
@@ -1732,30 +1163,9 @@ const CameraStream_Encoder$json = {
 const CameraStream_PtzRange$json = {
   '1': 'PtzRange',
   '2': [
-    {
-      '1': 'x',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream.PtzRange.range',
-      '10': 'x'
-    },
-    {
-      '1': 'y',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream.PtzRange.range',
-      '10': 'y'
-    },
-    {
-      '1': 'z',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream.PtzRange.range',
-      '10': 'z'
-    },
+    {'1': 'x', '3': 1, '4': 1, '5': 11, '6': '.comm.CameraStream.PtzRange.range', '10': 'x'},
+    {'1': 'y', '3': 2, '4': 1, '5': 11, '6': '.comm.CameraStream.PtzRange.range', '10': 'y'},
+    {'1': 'z', '3': 3, '4': 1, '5': 11, '6': '.comm.CameraStream.PtzRange.range', '10': 'z'},
   ],
   '3': [CameraStream_PtzRange_range$json],
 };
@@ -1776,14 +1186,7 @@ const CameraStream_UrlStream$json = {
     {'1': 'isDefault', '3': 1, '4': 1, '5': 8, '10': 'isDefault'},
     {'1': 'name_of_stream', '3': 2, '4': 1, '5': 9, '10': 'nameOfStream'},
     {'1': 'url_of_stream', '3': 3, '4': 1, '5': 9, '10': 'urlOfStream'},
-    {
-      '1': 'stype',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.CameraStream.UrlStream.StreamType',
-      '10': 'stype'
-    },
+    {'1': 'stype', '3': 4, '4': 1, '5': 14, '6': '.comm.CameraStream.UrlStream.StreamType', '10': 'stype'},
     {'1': 'isMainStream', '3': 5, '4': 1, '5': 8, '10': 'isMainStream'},
     {'1': 'origin_stream', '3': 6, '4': 1, '5': 9, '10': 'originStream'},
   ],
@@ -1868,55 +1271,15 @@ const Camera$json = {
     {'1': 'serial_number', '3': 3, '4': 1, '5': 9, '10': 'serialNumber'},
     {'1': 'password', '3': 4, '4': 1, '5': 9, '10': 'password'},
     {'1': 'username', '3': 5, '4': 1, '5': 9, '10': 'username'},
-    {
-      '1': 'type',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Camera.Type',
-      '10': 'type'
-    },
-    {
-      '1': 'role',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Camera.Role',
-      '10': 'role'
-    },
+    {'1': 'type', '3': 6, '4': 1, '5': 14, '6': '.comm.Camera.Type', '10': 'type'},
+    {'1': 'role', '3': 7, '4': 1, '5': 14, '6': '.comm.Camera.Role', '10': 'role'},
     {'1': 'on', '3': 8, '4': 1, '5': 8, '10': 'on'},
-    {
-      '1': 'config',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraConfig',
-      '10': 'config'
-    },
+    {'1': 'config', '3': 9, '4': 1, '5': 11, '6': '.comm.CameraConfig', '10': 'config'},
     {'1': 'position', '3': 10, '4': 1, '5': 13, '10': 'position'},
     {'1': 'time_added', '3': 11, '4': 1, '5': 4, '10': 'timeAdded'},
-    {
-      '1': 'current_major_version',
-      '3': 12,
-      '4': 1,
-      '5': 13,
-      '10': 'currentMajorVersion'
-    },
-    {
-      '1': 'current_minor_version',
-      '3': 13,
-      '4': 1,
-      '5': 13,
-      '10': 'currentMinorVersion'
-    },
-    {
-      '1': 'stream_url',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.CameraStream',
-      '10': 'streamUrl'
-    },
+    {'1': 'current_major_version', '3': 12, '4': 1, '5': 13, '10': 'currentMajorVersion'},
+    {'1': 'current_minor_version', '3': 13, '4': 1, '5': 13, '10': 'currentMinorVersion'},
+    {'1': 'stream_url', '3': 14, '4': 1, '5': 11, '6': '.comm.CameraStream', '10': 'streamUrl'},
     {'1': 'onvif', '3': 15, '4': 1, '5': 11, '6': '.comm.Onvif', '10': 'onvif'},
     {'1': 'isOnvif', '3': 16, '4': 1, '5': 8, '10': 'isOnvif'},
     {'1': 'isRTSP', '3': 17, '4': 1, '5': 8, '10': 'isRTSP'},
@@ -1926,22 +1289,8 @@ const Camera$json = {
     {'1': 'group_owner_name', '3': 21, '4': 1, '5': 9, '10': 'groupOwnerName'},
     {'1': 'box_owner_id', '3': 22, '4': 1, '5': 12, '10': 'boxOwnerId'},
     {'1': 'cam_id', '3': 23, '4': 1, '5': 9, '10': 'camId'},
-    {
-      '1': 'cameraType',
-      '3': 24,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.CameraType',
-      '10': 'cameraType'
-    },
-    {
-      '1': 'status',
-      '3': 25,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Camera.Status',
-      '10': 'status'
-    },
+    {'1': 'cameraType', '3': 24, '4': 1, '5': 14, '6': '.comm.CameraType', '10': 'cameraType'},
+    {'1': 'status', '3': 25, '4': 1, '5': 14, '6': '.comm.Camera.Status', '10': 'status'},
     {'1': 'subscribed', '3': 26, '4': 1, '5': 8, '10': 'subscribed'},
   ],
   '4': [Camera_Type$json, Camera_Role$json, Camera_Status$json],
@@ -2004,25 +1353,11 @@ const Alarm$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 12, '10': 'id'},
     {'1': 'camera_id', '3': 2, '4': 1, '5': 12, '10': 'cameraId'},
     {'1': 'camera_name', '3': 3, '4': 1, '5': 9, '10': 'cameraName'},
-    {
-      '1': 'type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Alarm.Type',
-      '10': 'type'
-    },
+    {'1': 'type', '3': 4, '4': 1, '5': 14, '6': '.comm.Alarm.Type', '10': 'type'},
     {'1': 'time', '3': 5, '4': 1, '5': 4, '10': 'time'},
     {'1': 'url_video', '3': 6, '4': 1, '5': 9, '10': 'urlVideo'},
     {'1': 'url_thumbnail', '3': 7, '4': 1, '5': 9, '10': 'urlThumbnail'},
-    {
-      '1': 'storage',
-      '3': 8,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Alarm.Storage',
-      '10': 'storage'
-    },
+    {'1': 'storage', '3': 8, '4': 1, '5': 14, '6': '.comm.Alarm.Storage', '10': 'storage'},
   ],
   '4': [Alarm_Type$json, Alarm_Storage$json],
 };
@@ -2061,13 +1396,7 @@ const IvaMotionDetection$json = {
   '2': [
     {'1': 'capture_image', '3': 1, '4': 1, '5': 9, '10': 'captureImage'},
     {'1': 'video_record_url', '3': 2, '4': 1, '5': 9, '10': 'videoRecordUrl'},
-    {
-      '1': 'capture_image_thumb',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'captureImageThumb'
-    },
+    {'1': 'capture_image_thumb', '3': 3, '4': 1, '5': 9, '10': 'captureImageThumb'},
   ],
 };
 
@@ -2083,13 +1412,7 @@ const IvaIntrusionDetection$json = {
   '2': [
     {'1': 'capture_image', '3': 1, '4': 1, '5': 9, '10': 'captureImage'},
     {'1': 'video_record_url', '3': 2, '4': 1, '5': 9, '10': 'videoRecordUrl'},
-    {
-      '1': 'capture_image_thumb',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'captureImageThumb'
-    },
+    {'1': 'capture_image_thumb', '3': 3, '4': 1, '5': 9, '10': 'captureImageThumb'},
   ],
 };
 
@@ -2105,13 +1428,7 @@ const IvaLineCrossingDetection$json = {
   '2': [
     {'1': 'capture_image', '3': 1, '4': 1, '5': 9, '10': 'captureImage'},
     {'1': 'video_record_url', '3': 2, '4': 1, '5': 9, '10': 'videoRecordUrl'},
-    {
-      '1': 'capture_image_thumb',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'captureImageThumb'
-    },
+    {'1': 'capture_image_thumb', '3': 3, '4': 1, '5': 9, '10': 'captureImageThumb'},
   ],
 };
 
@@ -2127,13 +1444,7 @@ const IvaSmokeDetection$json = {
   '2': [
     {'1': 'capture_image', '3': 1, '4': 1, '5': 9, '10': 'captureImage'},
     {'1': 'video_record_url', '3': 2, '4': 1, '5': 9, '10': 'videoRecordUrl'},
-    {
-      '1': 'capture_image_thumb',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'captureImageThumb'
-    },
+    {'1': 'capture_image_thumb', '3': 3, '4': 1, '5': 9, '10': 'captureImageThumb'},
   ],
 };
 
@@ -2153,14 +1464,7 @@ const FaceDetection$json = {
     {'1': 'origin_image', '3': 4, '4': 1, '5': 9, '10': 'originImage'},
     {'1': 'capture_image', '3': 5, '4': 1, '5': 9, '10': 'captureImage'},
     {'1': 'face_id', '3': 6, '4': 1, '5': 9, '10': 'faceId'},
-    {
-      '1': 'detectionType',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.FaceDetection.DetectionType',
-      '10': 'detectionType'
-    },
+    {'1': 'detectionType', '3': 7, '4': 1, '5': 14, '6': '.comm.FaceDetection.DetectionType', '10': 'detectionType'},
     {'1': 'video_record_url', '3': 8, '4': 1, '5': 9, '10': 'videoRecordUrl'},
   ],
   '4': [FaceDetection_DetectionType$json],
@@ -2190,13 +1494,7 @@ final $typed_data.Uint8List faceDetectionDescriptor = $convert.base64Decode(
 const IVAALPRDetection$json = {
   '1': 'IVAALPRDetection',
   '2': [
-    {
-      '1': 'vehicle_plate_capture',
-      '3': 1,
-      '4': 1,
-      '5': 9,
-      '10': 'vehiclePlateCapture'
-    },
+    {'1': 'vehicle_plate_capture', '3': 1, '4': 1, '5': 9, '10': 'vehiclePlateCapture'},
     {'1': 'img_capture', '3': 2, '4': 1, '5': 9, '10': 'imgCapture'},
     {'1': 'vehicle_plate', '3': 3, '4': 1, '5': 9, '10': 'vehiclePlate'},
     {'1': 'vehicle_type', '3': 4, '4': 1, '5': 9, '10': 'vehicleType'},
@@ -2219,14 +1517,7 @@ const Vehicle$json = {
   '2': [
     {'1': 'vehicle_id', '3': 1, '4': 1, '5': 12, '10': 'vehicleId'},
     {'1': 'vehicle_plate', '3': 2, '4': 1, '5': 9, '10': 'vehiclePlate'},
-    {
-      '1': 'vehicle_type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Vehicle_Type',
-      '10': 'vehicleType'
-    },
+    {'1': 'vehicle_type', '3': 3, '4': 1, '5': 14, '6': '.comm.Vehicle_Type', '10': 'vehicleType'},
     {'1': 'owner', '3': 4, '4': 1, '5': 9, '10': 'owner'},
   ],
 };
@@ -2244,40 +1535,14 @@ const Event$json = {
     {'1': 'camera_id', '3': 1, '4': 1, '5': 12, '10': 'cameraId'},
     {'1': 'time', '3': 2, '4': 1, '5': 4, '10': 'time'},
     {'1': 'camera_name', '3': 3, '4': 1, '5': 9, '10': 'cameraName'},
-    {
-      '1': 'type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.EventType',
-      '10': 'type'
-    },
-    {
-      '1': 'event_metadata',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'eventMetadata'
-    },
+    {'1': 'type', '3': 4, '4': 1, '5': 14, '6': '.comm.EventType', '10': 'type'},
+    {'1': 'event_metadata', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'eventMetadata'},
     {'1': 'event_id', '3': 6, '4': 1, '5': 12, '10': 'eventId'},
     {'1': 'capture_image', '3': 7, '4': 1, '5': 9, '10': 'captureImage'},
     {'1': 'video_record_url', '3': 8, '4': 1, '5': 9, '10': 'videoRecordUrl'},
-    {
-      '1': 'capture_image_thumb',
-      '3': 9,
-      '4': 1,
-      '5': 9,
-      '10': 'captureImageThumb'
-    },
+    {'1': 'capture_image_thumb', '3': 9, '4': 1, '5': 9, '10': 'captureImageThumb'},
     {'1': 'description', '3': 10, '4': 1, '5': 9, '10': 'description'},
-    {
-      '1': 'has_video_record_url',
-      '3': 11,
-      '4': 1,
-      '5': 8,
-      '10': 'hasVideoRecordUrl'
-    },
+    {'1': 'has_video_record_url', '3': 11, '4': 1, '5': 8, '10': 'hasVideoRecordUrl'},
   ],
 };
 
@@ -2298,43 +1563,15 @@ const DeviceGroup$json = {
   '2': [
     {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
     {'1': 'parent_group_id', '3': 2, '4': 1, '5': 12, '10': 'parentGroupId'},
-    {
-      '1': 'status',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.DeviceGroup.Status',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 3, '4': 1, '5': 14, '6': '.comm.DeviceGroup.Status', '10': 'status'},
     {'1': 'level', '3': 4, '4': 1, '5': 13, '10': 'level'},
     {'1': 'created_date', '3': 5, '4': 1, '5': 4, '10': 'createdDate'},
     {'1': 'last_update', '3': 6, '4': 1, '5': 4, '10': 'lastUpdate'},
     {'1': 'user_created', '3': 7, '4': 1, '5': 12, '10': 'userCreated'},
-    {
-      '1': 'groups',
-      '3': 8,
-      '4': 3,
-      '5': 11,
-      '6': '.comm.DeviceGroup',
-      '10': 'groups'
-    },
+    {'1': 'groups', '3': 8, '4': 3, '5': 11, '6': '.comm.DeviceGroup', '10': 'groups'},
     {'1': 'group_id', '3': 10, '4': 1, '5': 12, '10': 'groupId'},
-    {
-      '1': 'group_type',
-      '3': 11,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.DeviceGroup.Type',
-      '10': 'groupType'
-    },
-    {
-      '1': 'group_role',
-      '3': 12,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.DeviceGroup.Role',
-      '10': 'groupRole'
-    },
+    {'1': 'group_type', '3': 11, '4': 1, '5': 14, '6': '.comm.DeviceGroup.Type', '10': 'groupType'},
+    {'1': 'group_role', '3': 12, '4': 1, '5': 14, '6': '.comm.DeviceGroup.Role', '10': 'groupRole'},
   ],
   '4': [DeviceGroup_Status$json, DeviceGroup_Type$json, DeviceGroup_Role$json],
 };
@@ -2387,14 +1624,7 @@ const LiveViewPosition$json = {
   '2': [
     {'1': 'index', '3': 1, '4': 1, '5': 13, '10': 'index'},
     {'1': 'camera_id', '3': 2, '4': 1, '5': 12, '10': 'cameraId'},
-    {
-      '1': 'camera',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Camera',
-      '10': 'camera'
-    },
+    {'1': 'camera', '3': 3, '4': 1, '5': 11, '6': '.comm.Camera', '10': 'camera'},
   ],
 };
 
@@ -2408,22 +1638,8 @@ const CustomLiveView$json = {
   '1': 'CustomLiveView',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 12, '10': 'id'},
-    {
-      '1': 'base',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Base_View',
-      '10': 'base'
-    },
-    {
-      '1': 'postision',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.comm.LiveViewPosition',
-      '10': 'postision'
-    },
+    {'1': 'base', '3': 2, '4': 1, '5': 14, '6': '.comm.Base_View', '10': 'base'},
+    {'1': 'postision', '3': 3, '4': 3, '5': 11, '6': '.comm.LiveViewPosition', '10': 'postision'},
     {'1': 'name', '3': 4, '4': 1, '5': 9, '10': 'name'},
   ],
 };
@@ -2439,73 +1655,20 @@ const InviteMessage$json = {
   '1': 'InviteMessage',
   '2': [
     {'1': 'camera_id', '3': 1, '4': 1, '5': 12, '10': 'cameraId'},
-    {
-      '1': 'role',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.InviteMessage.Role',
-      '10': 'role'
-    },
-    {
-      '1': 'status',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.InviteMessage.Status',
-      '10': 'status'
-    },
-    {
-      '1': 'account_share',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Profile',
-      '10': 'accountShare'
-    },
-    {
-      '1': 'account_shared',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Profile',
-      '10': 'accountShared'
-    },
+    {'1': 'role', '3': 2, '4': 1, '5': 14, '6': '.comm.InviteMessage.Role', '10': 'role'},
+    {'1': 'status', '3': 3, '4': 1, '5': 14, '6': '.comm.InviteMessage.Status', '10': 'status'},
+    {'1': 'account_share', '3': 4, '4': 1, '5': 11, '6': '.comm.Profile', '10': 'accountShare'},
+    {'1': 'account_shared', '3': 5, '4': 1, '5': 11, '6': '.comm.Profile', '10': 'accountShared'},
     {'1': 'last_update', '3': 6, '4': 1, '5': 4, '10': 'lastUpdate'},
     {'1': 'account_share_id', '3': 7, '4': 1, '5': 12, '10': 'accountShareId'},
-    {
-      '1': 'account_shared_id',
-      '3': 8,
-      '4': 1,
-      '5': 12,
-      '10': 'accountSharedId'
-    },
+    {'1': 'account_shared_id', '3': 8, '4': 1, '5': 12, '10': 'accountSharedId'},
     {'1': 'time_share', '3': 9, '4': 1, '5': 4, '10': 'timeShare'},
-    {
-      '1': 'shareType',
-      '3': 10,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.InviteMessage.ShareType',
-      '10': 'shareType'
-    },
+    {'1': 'shareType', '3': 10, '4': 1, '5': 14, '6': '.comm.InviteMessage.ShareType', '10': 'shareType'},
     {'1': 'group_id', '3': 11, '4': 1, '5': 12, '10': 'groupId'},
-    {
-      '1': 'groupShareRole',
-      '3': 12,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.InviteMessage.GroupShareRole',
-      '10': 'groupShareRole'
-    },
+    {'1': 'groupShareRole', '3': 12, '4': 1, '5': 14, '6': '.comm.InviteMessage.GroupShareRole', '10': 'groupShareRole'},
     {'1': 'invite_msg_id', '3': 13, '4': 1, '5': 12, '10': 'inviteMsgId'},
   ],
-  '4': [
-    InviteMessage_Role$json,
-    InviteMessage_GroupShareRole$json,
-    InviteMessage_Status$json,
-    InviteMessage_ShareType$json
-  ],
+  '4': [InviteMessage_Role$json, InviteMessage_GroupShareRole$json, InviteMessage_Status$json, InviteMessage_ShareType$json],
 };
 
 @$core.Deprecated('Use inviteMessageDescriptor instead')
@@ -2570,22 +1733,8 @@ const Vbox$json = {
     {'1': 'box_id', '3': 1, '4': 1, '5': 12, '10': 'boxId'},
     {'1': 'box_name', '3': 2, '4': 1, '5': 9, '10': 'boxName'},
     {'1': 'box_serial_number', '3': 3, '4': 1, '5': 9, '10': 'boxSerialNumber'},
-    {
-      '1': 'box_type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Box_Type',
-      '10': 'boxType'
-    },
-    {
-      '1': 'box_State',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.Box_State',
-      '10': 'boxState'
-    },
+    {'1': 'box_type', '3': 4, '4': 1, '5': 14, '6': '.comm.Box_Type', '10': 'boxType'},
+    {'1': 'box_State', '3': 5, '4': 1, '5': 14, '6': '.comm.Box_State', '10': 'boxState'},
     {'1': 'owner_user_id', '3': 6, '4': 1, '5': 12, '10': 'ownerUserId'},
     {'1': 'time_added', '3': 7, '4': 1, '5': 4, '10': 'timeAdded'},
     {'1': 'last_update', '3': 8, '4': 1, '5': 4, '10': 'lastUpdate'},
@@ -2619,14 +1768,7 @@ const Ack_for$json = {
     {'1': 'message_id', '3': 4, '4': 1, '5': 4, '10': 'messageId'},
     {'1': 'request_ID', '3': 5, '4': 1, '5': 13, '10': 'requestID'},
     {'1': 'time_request', '3': 6, '4': 1, '5': 4, '10': 'timeRequest'},
-    {
-      '1': 'metadata',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'metadata'
-    },
+    {'1': 'metadata', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'metadata'},
   ],
 };
 
@@ -2642,190 +1784,29 @@ final $typed_data.Uint8List ack_forDescriptor = $convert.base64Decode(
 const License_profile$json = {
   '1': 'License_profile',
   '2': [
-    {
-      '1': 'iva',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'iva'
-    },
-    {
-      '1': 'motion_detection',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'motionDetection'
-    },
-    {
-      '1': 'instrument_detection',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'instrumentDetection'
-    },
-    {
-      '1': 'line_crossing_detection',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'lineCrossingDetection'
-    },
-    {
-      '1': 'smoke_detection',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'smokeDetection'
-    },
-    {
-      '1': 'face_detection',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'faceDetection'
-    },
-    {
-      '1': 'admin_management',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'adminManagement'
-    },
-    {
-      '1': 'opt_verify',
-      '3': 8,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'optVerify'
-    },
-    {
-      '1': 'service_management',
-      '3': 9,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'serviceManagement'
-    },
-    {
-      '1': 'forgot_password',
-      '3': 10,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'forgotPassword'
-    },
-    {
-      '1': 'register_form',
-      '3': 11,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'registerForm'
-    },
-    {
-      '1': 'playback',
-      '3': 12,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'playback'
-    },
-    {
-      '1': 'notification',
-      '3': 13,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'notification'
-    },
-    {
-      '1': 'emap',
-      '3': 14,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'emap'
-    },
-    {
-      '1': 'user_edit_md_log',
-      '3': 15,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'userEditMdLog'
-    },
-    {
-      '1': 'setting_default_storage',
-      '3': 16,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'settingDefaultStorage'
-    },
-    {
-      '1': 'use_cam_box',
-      '3': 17,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'useCamBox'
-    },
-    {
-      '1': 'add_rtsp_cam',
-      '3': 18,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'addRtspCam'
-    },
-    {
-      '1': 'add_onvif_cam',
-      '3': 19,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'addOnvifCam'
-    },
-    {
-      '1': 'alpr_detection',
-      '3': 20,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'alprDetection'
-    },
-    {
-      '1': 'mail_config',
-      '3': 21,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'mailConfig'
-    },
-    {
-      '1': 'scan_onvif',
-      '3': 22,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'scanOnvif'
-    },
-    {
-      '1': 'vehicle_management',
-      '3': 23,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.License_profile.ISON',
-      '10': 'vehicleManagement'
-    },
+    {'1': 'iva', '3': 1, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'iva'},
+    {'1': 'motion_detection', '3': 2, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'motionDetection'},
+    {'1': 'instrument_detection', '3': 3, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'instrumentDetection'},
+    {'1': 'line_crossing_detection', '3': 4, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'lineCrossingDetection'},
+    {'1': 'smoke_detection', '3': 5, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'smokeDetection'},
+    {'1': 'face_detection', '3': 6, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'faceDetection'},
+    {'1': 'admin_management', '3': 7, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'adminManagement'},
+    {'1': 'opt_verify', '3': 8, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'optVerify'},
+    {'1': 'service_management', '3': 9, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'serviceManagement'},
+    {'1': 'forgot_password', '3': 10, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'forgotPassword'},
+    {'1': 'register_form', '3': 11, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'registerForm'},
+    {'1': 'playback', '3': 12, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'playback'},
+    {'1': 'notification', '3': 13, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'notification'},
+    {'1': 'emap', '3': 14, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'emap'},
+    {'1': 'user_edit_md_log', '3': 15, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'userEditMdLog'},
+    {'1': 'setting_default_storage', '3': 16, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'settingDefaultStorage'},
+    {'1': 'use_cam_box', '3': 17, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'useCamBox'},
+    {'1': 'add_rtsp_cam', '3': 18, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'addRtspCam'},
+    {'1': 'add_onvif_cam', '3': 19, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'addOnvifCam'},
+    {'1': 'alpr_detection', '3': 20, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'alprDetection'},
+    {'1': 'mail_config', '3': 21, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'mailConfig'},
+    {'1': 'scan_onvif', '3': 22, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'scanOnvif'},
+    {'1': 'vehicle_management', '3': 23, '4': 1, '5': 14, '6': '.comm.License_profile.ISON', '10': 'vehicleManagement'},
   ],
   '4': [License_profile_ISON$json],
 };
@@ -2879,34 +1860,14 @@ const User$json = {
     {'1': 'email_address', '3': 2, '4': 1, '5': 9, '10': 'emailAddress'},
     {'1': 'tel_number', '3': 3, '4': 1, '5': 9, '10': 'telNumber'},
     {'1': 'password', '3': 4, '4': 1, '5': 9, '10': 'password'},
-    {
-      '1': 'status',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.User.Status',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.comm.User.Status', '10': 'status'},
     {'1': 'last_update', '3': 6, '4': 1, '5': 4, '10': 'lastUpdate'},
-    {
-      '1': 'type',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.User.Type',
-      '10': 'type'
-    },
+    {'1': 'type', '3': 7, '4': 1, '5': 14, '6': '.comm.User.Type', '10': 'type'},
     {'1': 'create_at', '3': 9, '4': 1, '5': 4, '10': 'createAt'},
     {'1': 'desc', '3': 12, '4': 1, '5': 9, '10': 'desc'},
     {'1': 'full_name', '3': 13, '4': 1, '5': 9, '10': 'fullName'},
     {'1': 'id', '3': 14, '4': 1, '5': 12, '10': 'id'},
-    {
-      '1': 'changePassDenied',
-      '3': 15,
-      '4': 1,
-      '5': 8,
-      '10': 'changePassDenied'
-    },
+    {'1': 'changePassDenied', '3': 15, '4': 1, '5': 8, '10': 'changePassDenied'},
     {'1': 'addCamDenied', '3': 16, '4': 1, '5': 8, '10': 'addCamDenied'},
     {'1': 'msg_unread_count', '3': 17, '4': 1, '5': 13, '10': 'msgUnreadCount'},
   ],
@@ -2987,22 +1948,8 @@ const NotificationMsg$json = {
     {'1': 'des', '3': 4, '4': 1, '5': 9, '10': 'des'},
     {'1': 'isRead', '3': 5, '4': 1, '5': 8, '10': 'isRead'},
     {'1': 'time', '3': 6, '4': 1, '5': 4, '10': 'time'},
-    {
-      '1': 'msgType',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.NotificationMsg.MsgType',
-      '10': 'msgType'
-    },
-    {
-      '1': 'data',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'data'
-    },
+    {'1': 'msgType', '3': 7, '4': 1, '5': 14, '6': '.comm.NotificationMsg.MsgType', '10': 'msgType'},
+    {'1': 'data', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'data'},
   ],
   '4': [NotificationMsg_MsgType$json],
 };
@@ -3030,14 +1977,7 @@ const SDCardFiles$json = {
   '1': 'SDCardFiles',
   '2': [
     {'1': 'isEnd', '3': 1, '4': 1, '5': 8, '10': 'isEnd'},
-    {
-      '1': 'files',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.comm.SDCardFiles.File',
-      '10': 'files'
-    },
+    {'1': 'files', '3': 2, '4': 3, '5': 11, '6': '.comm.SDCardFiles.File', '10': 'files'},
   ],
   '3': [SDCardFiles_File$json],
 };
@@ -3083,14 +2023,7 @@ const InOutCam$json = {
   '2': [
     {'1': 'in', '3': 1, '4': 1, '5': 12, '10': 'in'},
     {'1': 'out', '3': 2, '4': 1, '5': 12, '10': 'out'},
-    {
-      '1': 'type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.InOutCam.VehicleType',
-      '10': 'type'
-    },
+    {'1': 'type', '3': 3, '4': 1, '5': 14, '6': '.comm.InOutCam.VehicleType', '10': 'type'},
   ],
   '4': [InOutCam_VehicleType$json],
 };
@@ -3109,3 +2042,4 @@ final $typed_data.Uint8List inOutCamDescriptor = $convert.base64Decode(
     'CghJbk91dENhbRIOCgJpbhgBIAEoDFICaW4SEAoDb3V0GAIgASgMUgNvdXQSLgoEdHlwZRgDIA'
     'EoDjIaLmNvbW0uSW5PdXRDYW0uVmVoaWNsZVR5cGVSBHR5cGUiIAoLVmVoaWNsZVR5cGUSBwoD'
     'Q0FSEAASCAoEQklLRRAB');
+

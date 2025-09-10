@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from comm.profile.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: comm.profile.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -19,14 +18,7 @@ const ReceiveProfile$json = {
   '1': 'ReceiveProfile',
   '2': [
     {'1': 'type', '3': 1, '4': 1, '5': 13, '10': 'type'},
-    {
-      '1': 'profile',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Profile',
-      '10': 'profile'
-    },
+    {'1': 'profile', '3': 2, '4': 1, '5': 11, '6': '.comm.Profile', '10': 'profile'},
     {'1': 'RECEIVE_PROFILE', '3': 4, '4': 1, '5': 13, '10': 'RECEIVEPROFILE'},
   ],
   '4': [ReceiveProfile_Type$json],
@@ -107,21 +99,8 @@ const Authenticate_Reply$json = {
     {'1': 'webSock_host', '3': 5, '4': 1, '5': 9, '10': 'webSockHost'},
     {'1': 'webSock_port', '3': 6, '4': 1, '5': 13, '10': 'webSockPort'},
     {'1': 'ssid', '3': 7, '4': 1, '5': 9, '10': 'ssid'},
-    {
-      '1': 'license_profile',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.License_profile',
-      '10': 'licenseProfile'
-    },
-    {
-      '1': 'web_socket_tls_enable',
-      '3': 9,
-      '4': 1,
-      '5': 8,
-      '10': 'webSocketTlsEnable'
-    },
+    {'1': 'license_profile', '3': 8, '4': 1, '5': 11, '6': '.comm.License_profile', '10': 'licenseProfile'},
+    {'1': 'web_socket_tls_enable', '3': 9, '4': 1, '5': 8, '10': 'webSocketTlsEnable'},
   ],
 };
 
@@ -170,14 +149,7 @@ const Login_Request$json = {
   '2': [
     {'1': 'uid', '3': 1, '4': 1, '5': 12, '10': 'uid'},
     {'1': 'session_id', '3': 2, '4': 1, '5': 12, '10': 'sessionId'},
-    {
-      '1': 'target',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.ProjectTarget',
-      '10': 'target'
-    },
+    {'1': 'target', '3': 3, '4': 1, '5': 14, '6': '.comm.ProjectTarget', '10': 'target'},
     {'1': 'apiVersion', '3': 4, '4': 1, '5': 5, '10': 'apiVersion'},
     {'1': 'platform', '3': 5, '4': 1, '5': 13, '10': 'platform'},
   ],
@@ -187,58 +159,17 @@ const Login_Request$json = {
 const Login_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'turn_account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.TurnAccount',
-      '10': 'turnAccount'
-    },
+    {'1': 'turn_account', '3': 1, '4': 1, '5': 11, '6': '.comm.TurnAccount', '10': 'turnAccount'},
     {'1': 'server_time', '3': 2, '4': 1, '5': 4, '10': 'serverTime'},
-    {
-      '1': 'profile',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Profile',
-      '10': 'profile'
-    },
-    {
-      '1': 'server_version_build',
-      '3': 4,
-      '4': 1,
-      '5': 13,
-      '10': 'serverVersionBuild'
-    },
+    {'1': 'profile', '3': 3, '4': 1, '5': 11, '6': '.comm.Profile', '10': 'profile'},
+    {'1': 'server_version_build', '3': 4, '4': 1, '5': 13, '10': 'serverVersionBuild'},
     {'1': 'base_image_url', '3': 5, '4': 1, '5': 9, '10': 'baseImageUrl'},
     {'1': 'list_ntp_server', '3': 6, '4': 3, '5': 9, '10': 'listNtpServer'},
     {'1': 'build_number', '3': 7, '4': 1, '5': 13, '10': 'buildNumber'},
     {'1': 'link_download', '3': 8, '4': 1, '5': 9, '10': 'linkDownload'},
-    {
-      '1': 'target',
-      '3': 9,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.ProjectTarget',
-      '10': 'target'
-    },
-    {
-      '1': 'base_url',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Login.BaseURL',
-      '10': 'baseUrl'
-    },
-    {
-      '1': 'license_profile',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.License_profile',
-      '10': 'licenseProfile'
-    },
+    {'1': 'target', '3': 9, '4': 1, '5': 14, '6': '.comm.ProjectTarget', '10': 'target'},
+    {'1': 'base_url', '3': 10, '4': 1, '5': 11, '6': '.comm.Login.BaseURL', '10': 'baseUrl'},
+    {'1': 'license_profile', '3': 11, '4': 1, '5': 11, '6': '.comm.License_profile', '10': 'licenseProfile'},
   ],
 };
 
@@ -556,14 +487,7 @@ const CheckAccount_Request$json = {
 const CheckAccount_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'state',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.CheckAccount.State',
-      '10': 'state'
-    },
+    {'1': 'state', '3': 1, '4': 1, '5': 14, '6': '.comm.CheckAccount.State', '10': 'state'},
   ],
 };
 
@@ -698,10 +622,7 @@ const RequestUpdateTelProfile$json = {
   '2': [
     {'1': 'ID', '3': 112, '4': 1, '5': 5, '10': 'ID'},
   ],
-  '3': [
-    RequestUpdateTelProfile_Request$json,
-    RequestUpdateTelProfile_Reply$json
-  ],
+  '3': [RequestUpdateTelProfile_Request$json, RequestUpdateTelProfile_Reply$json],
   '4': [RequestUpdateTelProfile_Error$json],
 };
 
@@ -764,14 +685,7 @@ const UpdateTelProfile_Request$json = {
 const UpdateTelProfile_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'newProfile',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Profile',
-      '10': 'newProfile'
-    },
+    {'1': 'newProfile', '3': 1, '4': 1, '5': 11, '6': '.comm.Profile', '10': 'newProfile'},
   ],
 };
 
@@ -803,10 +717,7 @@ const RequestUpdateEmailProfile$json = {
   '2': [
     {'1': 'ID', '3': 114, '4': 1, '5': 5, '10': 'ID'},
   ],
-  '3': [
-    RequestUpdateEmailProfile_Request$json,
-    RequestUpdateEmailProfile_Reply$json
-  ],
+  '3': [RequestUpdateEmailProfile_Request$json, RequestUpdateEmailProfile_Reply$json],
   '4': [RequestUpdateEmailProfile_Error$json],
 };
 
@@ -869,14 +780,7 @@ const UpdateEmailProfile_Request$json = {
 const UpdateEmailProfile_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'newProfile',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Profile',
-      '10': 'newProfile'
-    },
+    {'1': 'newProfile', '3': 1, '4': 1, '5': 11, '6': '.comm.Profile', '10': 'newProfile'},
   ],
 };
 
@@ -916,20 +820,8 @@ const CloudDefaultSetting$json = {
 const CloudDefaultSetting_Request$json = {
   '1': 'Request',
   '2': [
-    {
-      '1': 'power_cloud_storage',
-      '3': 1,
-      '4': 1,
-      '5': 8,
-      '10': 'powerCloudStorage'
-    },
-    {
-      '1': 'number_days_storage',
-      '3': 2,
-      '4': 1,
-      '5': 13,
-      '10': 'numberDaysStorage'
-    },
+    {'1': 'power_cloud_storage', '3': 1, '4': 1, '5': 8, '10': 'powerCloudStorage'},
+    {'1': 'number_days_storage', '3': 2, '4': 1, '5': 13, '10': 'numberDaysStorage'},
   ],
 };
 
@@ -937,14 +829,7 @@ const CloudDefaultSetting_Request$json = {
 const CloudDefaultSetting_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'newProfile',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Profile',
-      '10': 'newProfile'
-    },
+    {'1': 'newProfile', '3': 1, '4': 1, '5': 11, '6': '.comm.Profile', '10': 'newProfile'},
   ],
 };
 
@@ -986,14 +871,7 @@ const VerifyURL_Request$json = {
 const VerifyURL_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'license_profile',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.License_profile',
-      '10': 'licenseProfile'
-    },
+    {'1': 'license_profile', '3': 1, '4': 1, '5': 11, '6': '.comm.License_profile', '10': 'licenseProfile'},
   ],
 };
 
@@ -1019,11 +897,7 @@ const VconnexLogin$json = {
   '2': [
     {'1': 'ID', '3': 118, '4': 1, '5': 13, '10': 'ID'},
   ],
-  '3': [
-    VconnexLogin_Request$json,
-    VconnexLogin_Reply$json,
-    VconnexLogin_BaseURL$json
-  ],
+  '3': [VconnexLogin_Request$json, VconnexLogin_Reply$json, VconnexLogin_BaseURL$json],
   '4': [VconnexLogin_Error$json],
 };
 
@@ -1032,14 +906,7 @@ const VconnexLogin_Request$json = {
   '1': 'Request',
   '2': [
     {'1': 'token', '3': 2, '4': 1, '5': 9, '10': 'token'},
-    {
-      '1': 'target',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.ProjectTarget',
-      '10': 'target'
-    },
+    {'1': 'target', '3': 3, '4': 1, '5': 14, '6': '.comm.ProjectTarget', '10': 'target'},
     {'1': 'apiVersion', '3': 4, '4': 1, '5': 5, '10': 'apiVersion'},
     {'1': 'platform', '3': 5, '4': 1, '5': 13, '10': 'platform'},
   ],
@@ -1049,58 +916,17 @@ const VconnexLogin_Request$json = {
 const VconnexLogin_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'turn_account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.TurnAccount',
-      '10': 'turnAccount'
-    },
+    {'1': 'turn_account', '3': 1, '4': 1, '5': 11, '6': '.comm.TurnAccount', '10': 'turnAccount'},
     {'1': 'server_time', '3': 2, '4': 1, '5': 4, '10': 'serverTime'},
-    {
-      '1': 'profile',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.Profile',
-      '10': 'profile'
-    },
-    {
-      '1': 'server_version_build',
-      '3': 4,
-      '4': 1,
-      '5': 13,
-      '10': 'serverVersionBuild'
-    },
+    {'1': 'profile', '3': 3, '4': 1, '5': 11, '6': '.comm.Profile', '10': 'profile'},
+    {'1': 'server_version_build', '3': 4, '4': 1, '5': 13, '10': 'serverVersionBuild'},
     {'1': 'base_image_url', '3': 5, '4': 1, '5': 9, '10': 'baseImageUrl'},
     {'1': 'list_ntp_server', '3': 6, '4': 3, '5': 9, '10': 'listNtpServer'},
     {'1': 'build_number', '3': 7, '4': 1, '5': 13, '10': 'buildNumber'},
     {'1': 'link_download', '3': 8, '4': 1, '5': 9, '10': 'linkDownload'},
-    {
-      '1': 'target',
-      '3': 9,
-      '4': 1,
-      '5': 14,
-      '6': '.comm.ProjectTarget',
-      '10': 'target'
-    },
-    {
-      '1': 'base_url',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.VconnexLogin.BaseURL',
-      '10': 'baseUrl'
-    },
-    {
-      '1': 'license_profile',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.comm.License_profile',
-      '10': 'licenseProfile'
-    },
+    {'1': 'target', '3': 9, '4': 1, '5': 14, '6': '.comm.ProjectTarget', '10': 'target'},
+    {'1': 'base_url', '3': 10, '4': 1, '5': 11, '6': '.comm.VconnexLogin.BaseURL', '10': 'baseUrl'},
+    {'1': 'license_profile', '3': 11, '4': 1, '5': 11, '6': '.comm.License_profile', '10': 'licenseProfile'},
   ],
 };
 
@@ -1143,3 +969,4 @@ final $typed_data.Uint8List vconnexLoginDescriptor = $convert.base64Decode(
     'oFRXJyb3ISEQoNRVJST1JfREVGQVVMVBAAEhMKD1NFU1NJT05fRVhQSVJFRBABEhAKDFVTRVJf'
     'SU5WQUxJRBACEh0KGVZFUlNUX0lJT05fQVBJX0RFUFJFQ0FURUQQAxIXChNQUk9KRUNUX1RBUk'
     'dFTlZBTElEEAQSEwoPTElDRU5TRV9FWFBJUkVEEAY=');
+

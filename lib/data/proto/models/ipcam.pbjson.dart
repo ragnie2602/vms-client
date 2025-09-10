@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from ipcam.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: ipcam.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -47,14 +46,7 @@ const Request$json = {
     {'1': 'id', '3': 2, '4': 1, '5': 4, '10': 'id'},
     {'1': 'sid', '3': 3, '4': 1, '5': 12, '10': 'sid'},
     {'1': 'uid', '3': 4, '4': 1, '5': 12, '10': 'uid'},
-    {
-      '1': 'request',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'request'
-    },
+    {'1': 'request', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'request'},
   ],
 };
 
@@ -71,14 +63,7 @@ const Reply$json = {
     {'1': 'type', '3': 1, '4': 1, '5': 13, '10': 'type'},
     {'1': 'id', '3': 2, '4': 1, '5': 4, '10': 'id'},
     {'1': 'server_time', '3': 3, '4': 1, '5': 4, '10': 'serverTime'},
-    {
-      '1': 'reply',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Any',
-      '10': 'reply'
-    },
+    {'1': 'reply', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Any', '10': 'reply'},
   ],
 };
 
@@ -103,23 +88,10 @@ const KeepAlive_Request$json = {
   '1': 'Request',
   '2': [
     {'1': 'node_uuid', '3': 1, '4': 1, '5': 9, '10': 'nodeUuid'},
-    {
-      '1': 'current_task_running',
-      '3': 2,
-      '4': 1,
-      '5': 13,
-      '10': 'currentTaskRunning'
-    },
+    {'1': 'current_task_running', '3': 2, '4': 1, '5': 13, '10': 'currentTaskRunning'},
     {'1': 'grpc_host', '3': 3, '4': 1, '5': 9, '10': 'grpcHost'},
     {'1': 'grpc_port', '3': 4, '4': 1, '5': 13, '10': 'grpcPort'},
-    {
-      '1': 'apptype',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.VIVAS.KeepAlive.AppType',
-      '10': 'apptype'
-    },
+    {'1': 'apptype', '3': 5, '4': 1, '5': 14, '6': '.VIVAS.KeepAlive.AppType', '10': 'apptype'},
   ],
 };
 
@@ -208,11 +180,7 @@ const MakeMp4File$json = {
   '2': [
     {'1': 'ID', '3': 613, '4': 1, '5': 13, '10': 'ID'},
   ],
-  '3': [
-    MakeMp4File_m3u82mp4$json,
-    MakeMp4File_Request$json,
-    MakeMp4File_Reply$json
-  ],
+  '3': [MakeMp4File_m3u82mp4$json, MakeMp4File_Request$json, MakeMp4File_Reply$json],
 };
 
 @$core.Deprecated('Use makeMp4FileDescriptor instead')
@@ -229,14 +197,7 @@ const MakeMp4File_m3u82mp4$json = {
 const MakeMp4File_Request$json = {
   '1': 'Request',
   '2': [
-    {
-      '1': 'files',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.VIVAS.MakeMp4File.m3u82mp4',
-      '10': 'files'
-    },
+    {'1': 'files', '3': 1, '4': 3, '5': 11, '6': '.VIVAS.MakeMp4File.m3u82mp4', '10': 'files'},
   ],
 };
 
@@ -244,14 +205,7 @@ const MakeMp4File_Request$json = {
 const MakeMp4File_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'files',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.VIVAS.MakeMp4File.m3u82mp4',
-      '10': 'files'
-    },
+    {'1': 'files', '3': 1, '4': 3, '5': 11, '6': '.VIVAS.MakeMp4File.m3u82mp4', '10': 'files'},
   ],
 };
 
@@ -335,13 +289,7 @@ const sendReceiveToSession_Request$json = {
     {'1': 'msg_data', '3': 1, '4': 1, '5': 12, '10': 'msgData'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 12, '10': 'userId'},
     {'1': 'session_id', '3': 3, '4': 1, '5': 12, '10': 'sessionId'},
-    {
-      '1': 'send_push_when_session_offline',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'sendPushWhenSessionOffline'
-    },
+    {'1': 'send_push_when_session_offline', '3': 4, '4': 1, '5': 8, '10': 'sendPushWhenSessionOffline'},
     {'1': 'box_id', '3': 5, '4': 1, '5': 12, '10': 'boxId'},
     {'1': 'connection_id', '3': 6, '4': 1, '5': 12, '10': 'connectionId'},
     {'1': 'msg_type', '3': 7, '4': 1, '5': 13, '10': 'msgType'},
@@ -526,11 +474,7 @@ const GetAllNodeAvaliable$json = {
   '2': [
     {'1': 'ID', '3': 618, '4': 1, '5': 13, '10': 'ID'},
   ],
-  '3': [
-    GetAllNodeAvaliable_Node$json,
-    GetAllNodeAvaliable_Request$json,
-    GetAllNodeAvaliable_Reply$json
-  ],
+  '3': [GetAllNodeAvaliable_Node$json, GetAllNodeAvaliable_Request$json, GetAllNodeAvaliable_Reply$json],
 };
 
 @$core.Deprecated('Use getAllNodeAvaliableDescriptor instead')
@@ -555,14 +499,7 @@ const GetAllNodeAvaliable_Request$json = {
 const GetAllNodeAvaliable_Reply$json = {
   '1': 'Reply',
   '2': [
-    {
-      '1': 'nodes',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.VIVAS.GetAllNodeAvaliable.Node',
-      '10': 'nodes'
-    },
+    {'1': 'nodes', '3': 1, '4': 3, '5': 11, '6': '.VIVAS.GetAllNodeAvaliable.Node', '10': 'nodes'},
   ],
 };
 
@@ -712,8 +649,7 @@ const $core.Map<$core.String, $core.dynamic> IPCAMServiceBase$json = {
 };
 
 @$core.Deprecated('Use iPCAMServiceDescriptor instead')
-const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
-    IPCAMServiceBase$messageJson = {
+const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> IPCAMServiceBase$messageJson = {
   '.VIVAS.Request': Request$json,
   '.google.protobuf.Any': $0.Any$json,
   '.VIVAS.Reply': Reply$json,
@@ -722,3 +658,4 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
 /// Descriptor for `IPCAM`. Decode as a `google.protobuf.ServiceDescriptorProto`.
 final $typed_data.Uint8List iPCAMServiceDescriptor = $convert.base64Decode(
     'CgVJUENBTRItCgtTZW5kUmVxdWVzdBIOLlZJVkFTLlJlcXVlc3QaDC5WSVZBUy5SZXBseSIA');
+
