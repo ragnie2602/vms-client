@@ -47,7 +47,7 @@ class LoginView extends BaseView<LoginBloc> {
           if (state.isSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Welcome ${state.user?.name ?? 'User'}!'),
+                content: Text('Welcome ${state.account ?? 'User'}!'),
                 backgroundColor: Colors.green,
               ),
             );

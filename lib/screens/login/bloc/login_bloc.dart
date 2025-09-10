@@ -27,7 +27,7 @@ class LoginBloc extends BaseBloc<LoginEvent, LoginState> {
       if (loginOutput.isSuccess) {
         emit(state.copyWith(
           isLoading: false,
-          user: loginOutput.user,
+          account: loginOutput.account,
           isSuccess: true,
         ));
       } else {
