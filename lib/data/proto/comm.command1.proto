@@ -1,0 +1,1936 @@
+syntax = "proto3";
+import "comm.model.proto";
+import "google/protobuf/any.proto";
+package comm;
+//option optimize_for = LITE_RUNTIME;
+//ID: [140-169]
+//receive: [20-40]
+option java_package = "com.vivas.ipcamera.core.protobuf";
+message ReceiveAddCamera
+{
+  enum Status {SUCCESS = 0; FAILED = 1;}
+  Camera camera = 1;
+  Status status = 2;
+  uint32 RECEIVE_ADD_CAMERA = 23;
+}
+
+message ReceiveNotificationCamera
+{
+  enum Status {SUCCESS = 0; FAILED = 1;}
+  enum Type {MOTION_DETECTION = 0; CAMERA_OFFLINE = 1; STATUS_STORAGE_SDCARD = 2; UPDATE_FIRMWARE = 3; SOUND_DETECTION = 4; LINE_CROSSING = 5; INTRUSION_DETECTION = 6;CAMERA_ONLINE = 7;}
+  enum Form {SD_CARD = 0; CLOUD = 1;}
+  bytes camera_id = 1;
+  string camera_name = 2;
+  Type type = 3;
+  Alarm alarm = 4;
+  Status status = 5;
+  Form form = 6;
+  uint32 RECEIVE_NOTIFICATION_CAMERA = 25;
+}
+
+message ReceiveScheduleCamera
+{
+  enum Status {SUCCESS = 0; FAILED = 1;}
+  bytes camera_id = 1;
+  Status status = 2;
+  Recording recording = 3;
+  uint32 RECEIVE_RESULT_SHEDULE_CAMERA = 39;
+}
+
+message ReceiveTimeShiftCamera
+{
+  enum Status {SUCCESS = 0; FAILED = 1; SD_CARD_NOT_FOUND = 2;}
+  message Video
+  {
+    string name = 1;
+    EventType event_type = 2;
+    uint32 duration = 3;
+    uint64 time = 4;
+  }
+  bytes camera_id = 1;
+  repeated Video videos = 2;
+  bool end = 3;
+  bool has_Sdcard = 4;
+  Status status = 5;
+  uint32 RECEIVE_TIMESHIFT_CAMERA = 40;
+}
+
+message ReceiveShareCamera
+{
+  enum Role {VIEW = 0; FULL = 1;}
+  bytes camera_id = 1 [deprecated = true];
+  string account_a = 2 [deprecated = true];
+  string account_b = 3 [deprecated = true];
+  string camera_name = 4 [deprecated = true];
+  Role role = 5 [deprecated = true];
+  uint64 time = 6 [deprecated = true];
+  bool isOwner = 7 [deprecated = true]; // == true , là người share , == false là người nhận share
+  bytes invite_msg_id = 8 [deprecated = true]; // id của invite msg
+  uint32 RECEIVE_SHARE_CAMERA = 45 [deprecated = true];
+}
+
+message ReceiveResponseShareCamera
+{
+  enum Action {ACCEPT = 0; DECLINE = 1;}
+  bytes camera_id = 1;
+  string account_a = 2;
+  string account_b = 3;
+  Action action = 4;
+  uint32 RECEIVE_RESPONSE_SHARE_CAMERA = 46;
+}
+
+message ReceiveDeleteShareCamera
+{
+  bytes camera_id = 1;
+  string account_a = 2;
+  string account_b = 3;
+  uint32 RECEIVE_DELETE_SHARE_CAMERA = 47;
+}
+
+message ReceiveDeleteCamera
+{
+  bytes camera_id = 1;
+  string account_a = 2;
+  string account_b = 3;
+  uint32 RECEIVE_DELETE_CAMERA = 48;
+}
+
+message ReceiveOnOffCamera
+{
+  enum Status {OFF = 0; ON = 1;}
+  bytes camera_id = 1;
+  string camera_name = 2;
+  Status status = 3;
+  Camera camera = 4;
+  uint32 RECEIVE_ONOFF_CAMERA = 49;
+}
+
+message ReceiveSettingCloud
+{
+  Camera camera = 1;
+  uint32 RECEIVE_SETTING_CLOUD_CAMERA = 51;
+}
+
+message ReceiveTimeShiftCloud
+{
+  bytes camera_id = 1;
+  string url = 2;
+  message TimeData
+  {
+    uint64 t1 = 1;
+    uint64 t2 = 2;
+  }
+  repeated TimeData time_datas = 3;
+  uint32 RECEIVE_TIMESHIFT_CLOUD = 52;
+}
+
+message ReceiveUpdatePositionCamera
+{
+  repeated Camera cameras = 1;
+  uint32 RECEIVE_UPDATE_POSITION_CAMERA = 53;
+}
+
+message ReceiveUpdateRoleShare // người chủ sở hữu camera sẽ nhận dc receive này
+{
+  enum Role {VIEW = 0; FULL = 1;}
+  bytes camera_id = 1;
+  Role role = 2;
+  bytes ivt_id = 3;
+  uint32 RECEIVE_UPDATE_ROLE_SHARE = 60;
+}
+message ReceiveUpdateRoleCamera // người nhân share camera -> sẽ nhận dc recceive này
+{
+  enum Role {VIEW = 0; FULL = 1;}
+  bytes camera_id = 1;
+  Role role = 2;
+  bytes ivt_id = 3;
+  uint32 RECEIVE_UPDATE_ROLE_CAMERA = 61;
+}
+message ReceiveEventNotification
+{
+  EventType eventType = 1;
+  bytes camera_id = 2;
+  uint64 time = 3;
+  string camera_name = 4;
+  google.protobuf.Any event_metadata = 5;
+  string capture_image = 6;
+  string video_record_url = 7;
+  string capture_image_thumb = 8;
+  string description = 9;
+  Event events = 10;
+  uint32 RECEIVE_EVENT_NOTIFICATION = 55;
+}
+message ReceiveUpdateUserAddress
+{
+  string newAddress = 1;
+  string newDisplayName = 2;
+  string newEmail = 3;
+  string newTel = 4;
+  uint32 RECEIVE_UPDATE_USER_ADDRESS = 56;
+}
+
+/*------------NHOM CHUC NANG QUAN LY CAMERA--------------*/
+message ListCamera // done
+{
+  message Request
+  {
+    uint64 last_time = 1;
+  }
+  message Reply
+  {
+    repeated Camera cameras = 1;
+    repeated DeviceGroup groups = 2;
+  }
+  uint32 ID = 140;
+}
+
+message AddCamera // need update
+{
+  enum Status {OFF = 0; ON = 1;}
+  message Request
+  {
+    string name = 1;
+    string serial_number = 2;
+    string username = 3;
+    string password = 4;
+  }
+  message Reply
+  {
+    Camera camera = 1;
+    Status status = 2;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_EXIST = 1;
+    CAMERA_NOT_CONNECTION = 2;
+    USERNAME_INVALID = 3;
+    PASSWORD_INVALID = 4;
+    SERIAL_NOT_EXIST = 5;
+    ACTIVE_CAMERA_ERROR = 6;
+    ALREADY_ADDED = 7;
+    ALREADY_ADDED_BY_OTHER_ACCOUNT = 8;
+  }
+  uint32 ID = 141;
+}
+
+/*------------NHOM CHUC NANG CAI DAT CAMERA-------------*/
+message UpdateCamera // done
+{
+
+  message Request
+  {
+    bytes camera_id = 1;
+    string name = 2; /// gửi lên nếu muốn thay đổi
+    string rtsp_url = 3; // gửi lên nếu muốn thay đổi rtsp
+    string user_name = 4; // gửi lên nếu thay đổi
+    string password = 5; // gửi lên nếu muốn thay đổi
+    uint32 storage_day = 6; /// bỏ ko sử dụng trường này
+    string xaddr = 7 ;
+    MapLocation location = 8; /// location của camera => nếu ko cập nhật gửi location cũ , xoá location không gửi gì
+    repeated string sub_stream_urls = 9; // Gửi danh sách luồng phụ của camera
+  }
+  message Reply
+  {
+    Camera camera = 1;
+  }
+
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    RTSP_URL_INVALID = 1;
+    NAME_INVALID = 3;
+    CAMERA_ID_INVALID = 4;
+    IP_OR_DOMAIN_INVALID = 5; /// đường dẫn rtsp lỗi
+    RTSP_PORT_ERROR = 6; /// port của rtsp lỗi
+    USER_NAME_OR_PASSWORD_ERROR = 7;/// sai tài khoản hoặc mật khẩu
+    CAMERA_EXIST = 8;
+    CAMERA_UUID_INVALID = 9;
+    XADDR_EMPTY = 10;
+    XADDR_INVALID = 11;  /// lỗi onvif api
+    LOCATION_INVALID = 12;
+    CAMERA_NAME_EXIST = 13;
+    GET_SERIAL_NUMBER_CAMERA_ERROR = 14; /// không lấy được thông tin serial number
+    SERIAL_NUMBER_NOT_MATH = 15; /// SERIAL_NUMBER camera update không giống camera cũ được thêm vào
+    BOX_ID_INVALID = 16;
+    BOX_OFFLINE = 17;
+    SUB_STREAM_INVALID = 18; //Lỗi luồng phụ (TH gửi nhiều substream url --> chỉ trả về lỗi nếu tất cả url đều lỗi, nếu tồn tại url đúng --> lưu url đúng)
+  }
+
+
+  uint32 ID = 142;
+}
+
+message ChangePasswordCamera // done
+{
+  message Request
+  {
+    bytes camera_id = 1;
+    string current = 2;
+    string password = 3;
+  }
+  message Reply
+  {
+    bytes camera_id = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    PASSWORD_INVALID = 1;
+    PASSWORD_WEAKNESS = 2;
+    CAMERA_OFFLINE = 3;
+    PASSWORD_NOT_SAME = 4;
+    OLD_PASSWORD_NOT_MATH = 5;
+  }
+  uint32 ID = 143;
+}
+
+
+message ScheduleRecordingCamera // done
+{
+  message Request
+  {
+    bytes camera_id = 1;
+    Recording recording = 2;
+  }
+  message Reply
+  {
+    bytes camera_id = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_OFFLINE = 1;
+    RTSP_URL_INVALID_OR_NOT_FOUND = 2; // link rtsp không đúng hoặc ko tìm thấy
+    RECORD_CLOUD_STORAGE_INVALID_OR_EXPIRED = 3; /// chưa được gán gói cước hoặc gói cước đã hết hạn
+    RESOLUTION_INVALID = 4; // trả về mã lỗi khi chạy trên cloud , video res lớn hơn gói cước đã mua
+  }
+  uint32 ID = 146;
+}
+
+
+message RestartCamera
+{
+  message Request
+  {
+    bytes camera_id = 1;
+  }
+  message Reply
+  {
+    bytes camera_id = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_OFFLINE = 1;
+  }
+  uint32 ID = 151;
+}
+
+
+message ShareCamera
+{
+  enum Role{VIEW = 0; FULL = 1;}
+  message Request
+  {
+    bytes camera_id = 1;
+    Role role = 2;
+    string account_invite = 3;
+  }
+  message Reply
+  {
+    bytes camera_id = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    ALREADY_SHARE = 1;
+    SHARE_YOURSELF = 2;
+    ALREADY_INVITE = 3;
+    ACCOUNT_INVALID = 4;
+    TEL_INVALID = 5;
+    EMAIL_INVALID = 6;
+    CAMERA_NOT_FOUND = 7;
+  }
+  uint32 ID = 154;
+}
+
+message DeleteCamera // done
+{
+  message Request
+  {
+    bytes camera_id = 1;
+  }
+  message Reply
+  {
+    bytes camera_id = 1;
+  }
+  uint32 ID = 155;
+}
+
+message CheckAccountShare // doneA
+{
+  enum ShareType {CAMERA = 0;GROUP_CAMERA = 1;}
+  message Request
+  {
+    bytes camera_id = 1; /// set khi type = camera
+    string account = 2;
+    ShareType shareType = 3; /// DEFAULT CAMERA
+    bytes group_id = 4; /// set khi type = group
+  }
+  message Reply
+  {
+    bool isExists = 1;
+    bytes account_invite_id = 2;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    TEL_INVALID = 1;
+    EMAIL_INVALID = 2;
+    TEL_NOT_IN_USE = 3;
+    EMAIL_NOT_IN_USE = 4;
+    ALREADY_SHARE = 5;
+    ALREADY_INVITE = 6;
+    SHARE_YOURSELF = 7;
+    PERMISSION_DENIED = 8;
+    ACCOUNT_IVALID = 9;
+    SHARE_TO_ADMIN = 10; //Check cannot share to an admin
+    SHARE_TO_OWNER = 11; //Check cannot share to onwer of camera
+    OVER_SHARED_USER_NUMBER = 12; //Qua so nguoi duoc chia se
+  }
+  uint32 ID = 502;
+}
+message ShareGroupCamera
+{
+  enum GroupShareRole {_NOT_USE = 0;VIEW = 1;MANAGER = 2;}
+  message Request
+  {
+    bytes group_id = 1;
+    GroupShareRole role = 2;
+    bytes account_invite_id = 3;
+  }
+  message Reply
+  {
+    bytes group_id = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    ALREADY_SHARE = 1;
+    SHARE_YOURSELF = 2;
+    ALREADY_INVITE = 3;
+    ACCOUNT_INVALID = 4;
+    GROUP_ID_EMPTY = 5;
+    GROUP_NOT_FOUND = 6;
+  }
+  uint32 ID = 234;
+}
+message ReceiveShareGroupCamera
+{
+  enum GroupShareRole {_NOT_USE = 0;VIEW = 1;MANAGER = 2;}
+  bytes group_id = 1;
+  string account_a = 2;
+  string account_b = 3;
+  string group_name = 4;
+  GroupShareRole role = 5;
+  uint64 time = 6;
+  bool isOwner = 7; // == true , là người share , == false là người nhận share
+  bytes invite_msg_id = 8; // id của invite msg
+  uint32 RECEIVE_SHARE_GROUP_CAMERA = 89;
+}
+
+message ListShareInviteGroup // là danh sách lời mời đã được gửi đi
+{
+  message Request
+  {
+    bytes group_id = 1;
+  }
+  message Reply
+  {
+    repeated InviteMessage invites = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    GROUP_ID_EMPTY = 1;
+    GROUP_NOT_FOUND = 2;
+  }
+  uint32 ID = 235;
+}
+
+message ResponseShareGroupCamera
+{
+  enum Action {ACCEPT = 0; DECLINE = 1;}
+  message Request
+  {
+    Action action = 4;
+    bytes invite_msg_id = 5; // id của invite msg
+  }
+  message Reply
+  {
+    bytes invite_msg_id = 1;
+    repeated DeviceGroup groups = 2;
+  }
+
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    INVALID_SHARE = 1;
+    INVITE_MSG_EMPTY = 2;
+    INVITE_MSG_NOT_FOUND = 3;
+    GROUP_SHARE_NOT_FOUND = 4;
+  }
+  uint32 ID = 236;
+}
+
+message ReceiveResponseShareGroupCamera
+{
+  enum Action {ACCEPT = 0; DECLINE = 1;}
+  Action action = 1;
+  bytes invite_msg_id = 2;
+  bytes group_id = 3;
+  uint32 RECEIVE_RESPONSE_SHARE_GROUP_CAMERA = 90;
+}
+
+
+message DeleteCameraEmapInfo
+{
+  message Request
+  {
+    bytes emap_id = 1;
+    bytes cameraEmapInfo_id = 2;
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    EMAP_ID_EMPTY = 1;
+    EMAP_ID_NOT_FOUND = 2;
+    CAMERA_EMAP_ID_EMPTY = 3;
+    CAMERA_EMAP_NOT_FOUND = 4;
+  }
+  uint32 ID = 237;
+}
+message ReceiveDeleteCameraEmapInfo
+{
+  bytes emap_id = 1;
+  bytes cameraEmapInfo_id = 2;
+  uint32 RECEIVE_DELETE_CAMERA_EMAP_INFO = 91;
+}
+message ReceiveUpdateCamera
+{
+  Camera camera = 1;
+  uint32 RECEIVE_UPDATE_CAMERA = 92;
+}
+message DeleteShareGroup{// chính là xoá lời mời
+  message Request
+  {
+    bytes share_invite_id = 1;
+  }
+  message Reply
+  {
+    bytes share_invite_id = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    INVALID_SHARE = 1;
+  }
+  uint32 ID = 238;
+}
+message ReceiveDeleteShareGroup /// nhận khi có một thiết bị khác xoá lời mời của một nhóm  ( receive chỉ trả về cho chủ nhóm )
+{
+  bytes share_invite_id = 1;
+  bytes group_id = 2;
+  uint32 RECEIVE_DELETE_SHARE_GROUP = 1001;
+}
+message Onvif_PTZ
+{
+  message Request
+  {
+    float pan = 1;
+    float tit = 2;
+    float zoom = 3;
+    bytes camera_id = 4;
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_FOUND = 1;
+    CAMERA_NOT_ONVIF_DEVICE = 2;
+    BOX_OFFLINE = 3;
+  }
+  uint32 ID = 239;
+}
+
+message ReceiveNewVideoPlayback
+{
+  message PlaybackVideo
+  {
+    uint64 start_time = 1;
+    uint64 end_time = 2;
+    string url_playback = 4;
+    bytes camera_id = 5;
+    string url_thumbnail = 6;
+    uint32 duration = 7;
+    bytes playback_id = 8;
+  }
+  bytes camera_id = 1;
+  PlaybackVideo newVideoPlayback = 2;
+  uint32 RECEIVE_NEW_VIDEO_PLAYBACK = 94;
+}
+
+message IVALineCrossing
+{
+  enum DirectionType {A__B = 0; B__A = 1;AB = 2;}
+  message Request
+  {
+    bytes camera_id = 1;
+    DirectionType direction = 2;
+    bool isEnable = 3;
+    //		Level level = 4; /// mức level
+    bool is_send_email = 5;
+    bool is_record = 6;
+    bool isPushNotification = 7;
+    Roi roi_start = 8;
+    Roi roi_end = 9;
+    Roi direction_start = 10;
+    Roi direction_end = 11;
+  }
+  message Reply
+  {
+    Camera camera = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_NOT_FOUND = 2;
+    IVA_SV_ERROR = 3;
+    IVA_NOT_REGISTER = 4; /// chưa kích hoạt gói cước
+    IVA_TOO_MANY_REQUEST = 5; /// sv iva hết tài nguyên
+    OVER_QUOTA = 6;//Vượt quá số camera được add (theo license)
+    PERMISSION_DENIED = 7; //Trả về nếu người dùng không có quyền cấu hình iva
+  }
+  uint32 ID = 240;
+}
+message ReceiveIVALineCrossing
+{
+  Camera camera = 1;
+  uint32 RECEIVE_IVA_LINE_CROSSING = 95;
+}
+message IVAIntrusionDetection
+{
+  message Request
+  {
+    bytes camera_id = 1;
+    bool isEnable = 2;
+    //Level level = 3; /// mức level
+    bool is_send_email = 4;
+    bool is_record = 5;
+    bool isPushNotification = 6;
+    repeated Roi rois = 7;
+  }
+  message Reply
+  {
+    Camera camera = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_NOT_FOUND = 2;
+    IVA_SV_ERROR = 3;
+    IVA_NOT_REGISTER = 4; /// chưa kích hoạt gói cước
+    IVA_TOO_MANY_REQUEST = 5; /// sv iva hết tài nguyên
+    OVER_QUOTA = 6;//Vượt quá số camera được add (theo license)
+    PERMISSION_DENIED = 7; //Trả về nếu người dùng không có quyền cấu hình iva
+  }
+  uint32 ID = 241;
+}
+message ReceiveIVAIntrusionDetection
+{
+  Camera camera = 1;
+  uint32 RECEIVE_IVA_INT_DET = 96;
+}
+
+
+message UpdateInviteGroup
+{
+  enum GroupShareRole {_NOT_USE = 0;VIEW = 1;MANAGER = 2;}
+  message Request
+  {
+    bytes share_invite_id = 1;
+    GroupShareRole role = 2;
+  }
+  message Reply
+  {
+    bytes share_invite_id = 3;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    INVITE_MESSAGE_INVALID = 1;
+    PERMISSION_DENIED = 2;
+    NOT_CHANGE = 3;
+  }
+  uint32 ID = 242;
+}
+message ReceiveUpdateInviteGroup /// nhận khi là cùng tài khoản với chủ group ( cập nhật danh sách lời mời )
+{
+  enum GroupShareRole {_NOT_USE = 0;VIEW = 1;MANAGER = 2;}
+  bytes share_invite_id = 1;
+  GroupShareRole role = 2;
+  uint32 RECEIVE_UPDATE_INVITE_GROUP = 97;
+}
+message ReceiveUpdateGroupRole /// nhận khi là người nhận share 1 group ( cập nhật lại quyền của group mà mình được share )
+{
+  enum GroupShareRole {_NOT_USE = 0;VIEW = 1;MANAGER = 2;}
+  bytes group_id = 1;
+  GroupShareRole role = 2;
+  DeviceGroup group = 3;
+  uint32 RECEIVE_UPDATE_GROUP_ROLE = 98;
+}
+/// lấy về file m3u8 hiện tại mà server vẫn đang record
+message GetCurrentRecoding
+{
+  message Request
+  {
+    bytes camera_id = 1;
+  }
+  message Reply
+  {
+    string current_record_file_path = 1;
+    uint32 start_record = 2;
+  }
+  enum Error
+  {
+    _DEFAULT = 0;
+    CAMERA_NOT_RECORDING = 1;
+  }
+  uint32 ID = 244;
+}
+message GetAllCamera
+{
+  enum Iva_Type{
+    ALL = 0;
+    IVA_MOTION_DETECTION = 1;
+    IVA_LINE_CROSSING = 2;
+    IVA_INTRUSION_DETECTION = 3;
+    IVA_FACE_DETECTION = 4;
+    IVA_SMOKE_DETECTION = 5;
+    IVA_ALPR_DETECTION = 6;
+  }
+  enum Status {ALL_C = 0;RUNNING = 1;NOT_RUNNING = 2;ALL_ACTIVE = 3;}
+
+  // ALL_C : tat ca cam duoc gan, share
+  // RUNNING: list cam dang hoat dong (active, running)
+  // NOT_RUNNING: list cam tam dung hoat dong
+  // ALL_ACTIVE: list cam kich hoat - gan goi
+
+
+  message Request
+  {
+    bytes camera_id = 1;
+    Status status = 2;
+    Iva_Type iva_type = 3 ;
+
+  }
+  message Reply
+  {
+    repeated Camera cameras = 1;
+  }
+  enum Error
+  {
+    _DEFAULT = 0;
+    CAMERA_NOT_FOUND = 1;
+    USER_NOT_OWNER_CAMERA = 2;
+  }
+  uint32 ID = 245;
+}
+message GetAllGroup
+{
+  message Request
+  {
+
+
+  }
+  message Reply
+  {
+    repeated DeviceGroup groups = 2;
+  }
+  uint32 ID = 246;
+}
+message ReceiveGroupChange /// nhận khi có bất kỳ sự thay đổi nào của group mà mình đang sở hữu ( sv sẽ đẩy về danh sách group mới từ root)
+{
+  repeated DeviceGroup groups = 1;
+  uint32 RECEIVE_UPDATE_GROUP_DEVICE = 99;
+}
+message CheckCameraOnvif
+{
+  message Request
+  {
+    string xaddrs = 1;
+    string user_name = 2;
+    string password = 3;
+    bytes box_id = 4;
+  }
+  message Reply
+  {
+    string rtsp_url = 1;
+    string SerialNumber = 2;
+    repeated string sub_stream_url = 3; //Danh sách các luong khác của camera
+  }
+  enum Error
+  {
+    _DEFAULT = 0;
+    IP_OR_DOMAIN_ERROR = 1;
+    USER_OR_PASSWORD_INVALID = 2;
+  }
+  uint32 ID = 247;
+}
+message SetCameraLocation
+{
+  message Request
+  {
+    MapLocation location = 1;
+    bytes camera_id = 2;
+  }
+  message Reply
+  {
+    Camera camera = 1;
+  }
+  enum Error
+  {
+    _DEFAULT = 0;
+    LOCATION_INVALID = 1;
+    CAMERA_ID_INVALID = 2;
+    PERMISSION_DENIED = 3;
+  }
+  uint32 ID = 248;
+}
+message ReceiveUpdateCameraLocation /// nhận update camera location
+{
+  Camera camera = 1;
+  uint32 RECEIVE_UPDATE_CAMERA_LOCATION = 1002;
+}
+message IVASmokeDetection
+{
+  message Request
+  {
+    bytes camera_id = 1;
+
+    bool isEnable = 2;
+    //		Level level = 4; /// mức level
+    bool is_send_email = 3;
+    bool is_record = 4;
+    bool isPushNotification = 5;
+
+  }
+  message Reply
+  {
+    Camera camera = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_NOT_FOUND = 2;
+    IVA_SV_ERROR = 3;
+    IVA_NOT_REGISTER = 4; /// chưa kích hoạt gói cước
+    IVA_TOO_MANY_REQUEST = 5; /// sv iva hết tài nguyên
+    OVER_QUOTA = 6;//Vượt quá số camera được add (theo license)
+    PERMISSION_DENIED = 7; //Trả về nếu người dùng không có quyền cấu hình iva
+  }
+  uint32 ID = 250;
+}
+message ReceiveIVASmokeDetection
+{
+  Camera camera = 1;
+  uint32 RECEIVE_IVA_SMOKE_DETECTION = 1003;
+}
+
+message IVAFaceDetection
+{
+  message Request
+  {
+    bytes camera_id = 1;
+    bool isEnable = 2; //Bật cấu hình nhận diện khuôn mặt
+    bool isStrangerDetectNoti = 3; //Bật cảnh báo người lạ
+    bool isRelativeDetectNoti = 4; // Bật cảnh báo người thân
+    bool is_record = 5; // Bật ghi hình
+    repeated Roi rois = 6;
+  }
+  message Reply
+  {
+    Camera camera = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_NOT_FOUND = 2;
+    IVA_SV_ERROR = 3;
+    IVA_NOT_REGISTER = 4; /// chưa kích hoạt gói cước
+    IVA_TOO_MANY_REQUEST = 5; /// sv iva hết tài nguyên
+    OVER_QUOTA = 6;//Vượt quá số camera được add (theo license)
+    PERMISSION_DENIED = 7; //Trả về nếu người dùng không có quyền cấu hình iva
+  }
+  uint32 ID = 251;
+}
+message ReceiveIVAFaceDetection
+{
+  Camera camera = 1;
+  uint32 RECEIVE_IVA_FACE_DETECTION = 1004;
+}
+
+message GetEventByLogId
+{
+  message Request
+  {
+    string log_id = 1;
+
+  }
+  message Reply
+  {
+    Event event = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    LOG_ID_EMPTY = 1;
+    LOG_ID_NOT_FOUND = 2; // Log_id invalid hoặc không có sự kiện tương ứng
+  }
+  uint32 ID = 252;
+}
+
+
+/// FOR VBOX API
+
+message BoxGetCameras{/// CLIENT ==> VMS /// list camera of box
+  message Request
+  {
+    bytes box_id = 1;
+  }
+  message Reply
+  {
+    repeated Camera camera = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    BOX_ID_EMPTY = 1;
+    BOX_NOT_FOUND = 2;
+  }
+
+  uint32 ID = 253;
+
+}
+
+message UserAddBox{/// CLIENT ==> VMS
+  message Request
+  {
+    string box_name = 1;
+    string box_serial_number = 2; /// lấy theo địa chỉ MAC của device
+  }
+  message Reply
+  {
+    repeated Vbox boxs = 1; /// sv trả về luôn danh sách BOX của người dùng hiện có
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    BOX_NAME_EMPTY = 1;
+    BOX_NAME_INVALID = 2;
+    SERIAL_NUMBER_EMPTY = 3;
+    SERIAL_NUMBER_INVALID = 4;
+    SERIAL_NUMBER_NOT_EXIST = 5;
+    BOX_NOT_REGISTER = 6; // box chưa đăng ký với hệ thống hoặc chưa active
+    BOX_OFFLINE = 7; // box không online
+    BOX_ADDED_BY_OTHER_ACCOUNT = 8; /// box đã được thêm bởi một tài khoản khác
+    BOX_ADDED_BY_MY_SELF = 9;
+    BOX_NAME_EXIST = 10;
+  }
+  uint32 ID = 254;
+}
+
+message ReceiveUserAddBox{/// VMS => CLIENT ( đẩy cho những session còn lại là có bõ được add )
+  repeated Vbox boxs = 1;
+  uint32 RECEIVE_ADD_VBOX = 1100;
+}
+message GetListBox /// CLIENT ==> VMS
+{
+  message Request
+  {
+    string box_name = 1;
+    bytes box_id = 2;
+  }
+  message Reply
+  {
+    repeated Vbox boxs = 1; /// sv trả về luôn danh sách BOX của người dùng hiện có
+  }
+  uint32 ID = 255;
+}
+message UserRemoveBox /// CLIENT ==> VMS
+{
+  message Request
+  {
+    bytes box_id = 1;
+  }
+  message Reply
+  {
+    bytes box_id = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    BOX_ID_EMPTY = 1;
+    BOX_ID_INVALID = 2;
+  }
+  uint32 ID = 256;
+}
+message ReceiveUserRemoveBox{/// VMS => CLIENT ( đẩy cho những session còn lại là có bõ được add )
+  bytes box_id = 1;
+  uint32 RECEIVE_REMOVE_VBOX = 1101;
+}
+
+
+message UserUpdateNameBox /// CLIENT ==> VMS
+{
+  message Request
+  {
+    bytes box_id = 1;
+    string new_name_box = 2;
+  }
+  message Reply
+  {
+    Vbox box = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    BOX_ID_EMPTY = 1;
+    BOX_ID_INVALID = 2;
+    NAME_EMPTY = 3;
+    NAME_INVALID = 4;
+    NAME_EXIST = 5;
+  }
+  uint32 ID = 257;
+}
+message ReceiveUserUpdateNameBox{/// VMS => CLIENT ( đẩy cho những session còn lại là có bõ được add )
+  Vbox box = 1;
+  uint32 RECEIVE_UPDATE_NAME_VBOX = 1102;
+}
+
+message ReceiveBoxOffline
+{
+  Vbox box = 1;
+  uint32 RECEIVE_BOX_OFFLINE = 1103;
+}
+message ReceiveBoxOnline
+{
+  Vbox box = 1;
+  uint32 RECEIVE_BOX_ONLINE = 1104;
+}
+
+
+message AddUser
+{
+  message Request
+  {
+    string account = 1;
+    string email = 2;
+    string tel = 3;
+    string address = 4;
+    string user_name = 5;
+    bool isAdmin = 6;
+    string desc = 7;
+    string password = 8;
+    bool changePassDenied = 9; //TRUE: User nay KHÔNG co quyen doi mat khau, FALSE: dc doi mk
+    bool addCamDenied = 10; //TRUE: User nay KHÔNG co quyen them camera, FALSE: dc add cam
+  }
+  message Reply
+  {
+    User user = 1;
+  }
+
+  enum Error
+  {
+    ACCOUNT_EMPTY =0;
+    ACCOUNT_EXIST = 1;
+    ACCOUNT_INVALID= 2;
+    PASSWORD_INVALID = 3;
+    EMAIL_INVALID = 4;
+    EMAIL_EXIST = 5;
+    TEL_EXIST = 6;
+    TEL_INVALID= 7;
+    USER_TYPE_EMPTY = 8;
+    PASSWORD_EMPTY = 9;
+    SYN_ERROR = 10;// Lỗi đồng bộ vs ONESME
+  }
+  uint32 ID = 258;
+}
+message EditUser
+{
+  message Request
+  {
+    bytes user_id = 1;
+    string account = 2;
+    string email = 3;
+    string tel = 4;
+    string address = 5;
+    string user_name = 6;
+    bool isAdmin = 7;
+    string desc = 8;
+    string password = 9;
+    string uid_str = 10;
+    bool changePassDenied = 11; //TRUE: User nay KHÔNG co quyen doi mat khau, FALSE: dc doi mk
+    bool addCamDenied = 12; //TRUE: User nay KHÔNG co quyen them camera, FALSE: dc add cam
+  }
+  message Reply
+  {
+    User user = 1;
+  }
+
+  enum Error
+  {
+    ACCOUNT_EMPTY =0;
+    ACCOUNT_EXIST = 1;
+    ACCOUNT_INVALID= 2;
+    EMAIL_INVALID = 4;
+    EMAIL_EXIST = 5;
+    TEL_EXIST = 6;
+    TEL_INVALID= 7;
+    USER_TYPE_EMPTY = 8;
+    USER_NOT_FOUND= 9;
+    SYN_ERROR = 10;// Lỗi đồng bộ vs ONESME
+  }
+  uint32 ID = 259;
+}
+message DeleteUser
+{
+  message Request
+  {
+    bytes user_id = 1;
+    string uid_str = 2;
+  }
+  message Reply
+  {
+    bytes user_id = 1;
+  }
+  enum Error
+  {
+    USER_EMPTY = 0;
+    USER_NOT_FOUND= 1;
+  }
+  uint32 ID = 260;
+}
+message ListUser
+{
+  message Request
+  {
+  }
+  message Reply
+  {
+    repeated User users = 1;
+  }
+
+  uint32 ID = 261;
+}
+
+message AddCameraHomeVision
+{
+  message Request
+  {
+    string camera_uid = 1; // Mã ID của thiết bị dạng VNT-000013-YNMCV
+    string camera_user_name = 2;
+    string camera_password = 3;
+    string camera_name = 4;
+    MapLocation location = 5; /// location của camera => nếu ko set sẽ lấy giá trị mặc định lat = 0 , log = 0
+    bytes group_id = 6; ///Thêm camera vào 1 nhóm (ko truyền hoặc truyền rỗng --> add bình thường
+    string mac_address = 7; /// mac address của camera
+  }
+  message Reply
+  {
+    bytes camera_id = 1;
+    Camera camera = 2;
+  }
+  uint32 ID = 263;
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_UID_EMPTY = 1; /// mã uid không được để trống
+    CAMERA_UID_EMPTY_NOT_FOUND = 2; /// không tìm thấy camera trên hệ thống
+    CAMERA_OFFLINE = 3; /// camera đang không online
+    USER_NAME_OR_PASSWORD_ERROR = 4;  /// sai tài khoản hoặc mật khẩu
+    CAMERA_EXIST = 5; /// camera đã được thêm vào hệ thống
+    LOCATION_INVALID = 6; /// local camera sai định dạng
+    CAMERA_NAME_EMPTY = 7; /// tên camera không được để trống
+    CAMERA_NAME_EXIST = 8; /// tên camera đã tồn tại trên hệ thống
+    OVER_QUOTA = 9;//Vượt quá số camera được add (theo license)
+    GROUP_INVALID = 10; //Group không tồn tại
+    UID_INVALID = 11; /// không tìm thấy uid
+    SERVER_P2P_ERROR = 12; /// server p2p lỗi hoặc không hoat động
+    CAMERA_CLOSE_CONNECTION = 13; /// camera đóng kết nối
+    MAC_ADDRESS_EMPTY = 14; ///   địa chỉ mac rỗng
+    MAC_ADDRESS_EXIST = 15; /// có 1 camera nào đó đã định danh bằng địa chỉ mac này
+  }
+}
+
+message PTZCameraHomeVision{/// CLIENT ==> VMS
+  message Request
+  {
+    bytes camera_id = 1;
+    PtzAction action = 2;
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_HOMEVISON = 1; // không phải camera home vision
+    CAMERA_OFFLINE = 2;
+    CAMERA_ID_NOT_FOUND = 3; // ko tìm thấy camera trên hệ thống
+  }
+  uint32 ID = 264;
+}
+message ResetCameraHomeVision{/// CLIENT ==> VMS
+  message Request
+  {
+    bytes camera_id = 1;
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_HOMEVISON = 1; // không phải camera home vision
+    CAMERA_OFFLINE = 2;
+    CAMERA_ID_NOT_FOUND = 3; // ko tìm thấy camera trên hệ thống
+  }
+  uint32 ID = 265;
+}
+
+message ReceivePairCamera
+{
+  enum pairStatus {DEFAULT = 0;CAMERA_ADDED_BY_MYSELF = 1;CAMERA_ADDED_BY_OTHER_ACCOUNT = 2; }
+	string user_id = 1;
+	string camera_id = 2;
+	string camera_type = 3;
+  pairStatus status = 4;
+
+	uint32 RECEIVE_PAIR_CAMERA = 266;
+}
+message generateQRCodeString
+{
+  message Request
+  {
+    string SSID = 1;
+    string PASS = 2;
+  }
+  message Reply
+  {
+    string qrcode = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    SSID_EMPTY = 1;
+    PASS_EMPTY = 2;
+  }
+  uint32 ID = 267;
+}
+message ChangePasswordCameraHomeVision{/// CLIENT ==> VMS
+  message Request
+  {
+    bytes camera_id = 1;
+    string old_pass = 2;
+    string new_pass = 3;
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_HOMEVISON = 1; // không phải camera home vision
+    CAMERA_OFFLINE = 2;
+    CAMERA_ID_NOT_FOUND = 3; // ko tìm thấy camera trên hệ thống
+    OLD_PASS_NOT_MATH = 4;
+    OLD_PASS_EMPTY = 5;
+    NEW_PASS_ENPTY = 6;
+    NEW_PASS_INVALID = 7;
+    USER_NAME_OR_PASSWORD_ERROR = 8;  /// sai tài khoản hoặc mật khẩu
+    CAMERA_ID_INVALID = 9;
+    SERVER_P2P_ERROR = 10; /// server p2p lỗi hoặc không hoat động
+    CAMERA_CLOSE_CONNECTION = 11; /// camera đóng kết nối
+      UID_INVALID = 12; /// sai uid camera
+  }
+  uint32 ID = 268;
+}
+message MDCameraHomeVision{/// CLIENT ==> VMS
+  enum Level { LOW = 0; MEDIUM = 1; HIGH = 2; }
+  message Request
+  {
+    bytes camera_id = 1;
+    bool is_on = 2;
+    Level level = 3; /// mức level dùng chung cho cả MD và Region MD
+    bool is_send_email = 4;
+    bool is_record = 5;
+    bool isPushNotification = 6;
+    repeated Roi rois = 7; // danh sách toạ độ >= 3 toạ độ điểm ( mặc định md = 4 điểm 0,0 100,0 100,100 100,0 toàn khung hình)
+    bool SoundAlarm = 8;
+  }
+  message Reply
+  {
+    bytes camera_id = 1;
+    Camera camera = 2;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_HOMEVISON = 1; // không phải camera home vision
+    CAMERA_OFFLINE = 2;
+    CAMERA_ID_NOT_FOUND = 3; // ko tìm thấy camera trên hệ thống
+    USER_NAME_OR_PASSWORD_ERROR = 8;  /// sai tài khoản hoặc mật khẩu
+    CAMERA_ID_INVALID = 9;
+    SERVER_P2P_ERROR = 10; /// server p2p lỗi hoặc không hoat động
+    CAMERA_CLOSE_CONNECTION = 11; /// camera đóng kết nối
+    UID_INVALID = 12; /// sai uid camera
+  }
+  uint32 ID = 269;
+}
+
+message ResetPassword
+{
+  message Request
+  {
+    bytes user_id = 1;
+    string uid_str = 2;
+    string newPassword = 3;
+  }
+  message Reply
+  {
+  }
+  enum Error
+    {
+      ERROR_DEFAULT = 0;
+      USER_EMPTY = 1;
+      USER_NOT_FOUND = 2;
+      PASSWORD_INVALID = 3;// pass: 8 - 16 ký tự, ko chua khoang trong
+      PERMISSION_DENIED = 4; //Chỉ admin có quyền thực hiện
+    }
+  uint32 ID = 270;
+}
+//// CR010
+/// UPDATE FW CAMERA HOME VISION
+message CheckUpdateCameraHomeVision
+{
+  message Request
+  {
+    bytes camera_id = 1;
+  }
+  message Reply
+  {
+    bool isUpdate = 1;
+    bytes fw_id = 2;
+    uint32 newVersion = 3;
+    string des = 4;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_ID_NOT_FOUND = 2;
+    PERMISSION_DENIED = 3;
+    CAMERA_NOT_HOMEVISION_DEVICE = 4;
+    CAMERA_OFFLINE = 5;
+  }
+  uint32 ID = 271;
+}
+//// CR010
+message UpdateFWCameraHomeVision
+{
+  message Request
+  {
+    bytes camera_id = 1;
+    bytes fw_id = 2;
+
+  }
+  message Reply
+  {
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_ID_NOT_FOUND = 2;
+    PERMISSION_DENIED = 3;
+    CAMERA_NOT_HOMEVISION_DEVICE = 4;
+    CAMERA_OFFLINE = 5;
+    FW_ID_EMPTY = 6;
+    FW_ID_NOT_FOUND = 7;
+    FW_ID_INVALID = 8;
+    FW_ID_NOT_MATCH_DEVICE = 9;
+    CAMERA_UPDATING = 10;
+  }
+  uint32 ID = 272;
+}
+message HomeVisionFlipImage
+{
+
+  message Request
+  {
+    bytes camera_id = 1;
+    bool flip = 2; /// = true khi lật 180 độ
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_ID_NOT_FOUND = 2;
+    PERMISSION_DENIED = 3;
+    CAMERA_NOT_HOMEVISION_DEVICE = 4;
+    CAMERA_OFFLINE = 5;
+    USER_NAME_OR_PASSWORD_ERROR = 6;  /// sai tài khoản hoặc mật khẩu
+    CAMERA_ID_INVALID = 7;
+    SERVER_P2P_ERROR = 8; /// server p2p lỗi hoặc không hoat động
+    CAMERA_CLOSE_CONNECTION = 9; /// camera đóng kết nối
+    UID_INVALID = 10; /// sai uid camera
+  }
+  uint32 ID = 273;
+}
+/// CR10 Format SD Card Camera HOME VISION
+
+message HomeVisionFormatSDCard
+{
+  message Request{
+    bytes camera_id = 1;
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    FORMAT_ERROR = 1;
+    NO_SD_CARD = 2;
+    CAMERA_NOT_HOME_VISION_DEVICE = 3;
+    CAMERA_OFFLINE = 4;
+    CAMERA_ID_EMPTY = 5;
+    CAMERA_NOT_FOUND = 6;
+    USER_NAME_OR_PASSWORD_ERROR = 7;  /// sai tài khoản hoặc mật khẩu
+    CAMERA_ID_INVALID = 8;
+    SERVER_P2P_ERROR = 9; /// server p2p lỗi hoặc không hoat động
+    CAMERA_CLOSE_CONNECTION = 10; /// camera đóng kết nối
+    UID_INVALID = 11; /// sai uid camera
+  }
+  uint32 ID = 276;
+}
+//// CR010 - NOTIFICATION
+// chứa danh sách notifion share , notification thông báo , ....
+message ListNotification
+{
+  enum GetType {
+    DEFAULT = 0; // lấy theo thứ tự từ gần đến xa , có hỗ trợ phân trang
+    ALL_MSG_DAY = 1; //sẽ trả về tất cả message của 1 ngày mà ko quan tâm đến số lượng
+  }
+  message Request{
+    GetType getType = 1; /// kiểu lấy dữ liệu
+    uint32 count = 2; // số bản ghi muốn lấy ( server mặc định 50 )
+    bytes lastNotification = 3; /// lấy sau id nào
+  }
+  message Reply
+  {
+    repeated NotificationMsg messages = 1; /// nếu notification type = share thì data = SharingRecord
+    bool isEnd = 2; /// trả về = true khi đã lấy tới bản ghi cuối cùng
+  }
+  uint32 ID = 274;
+}
+/// Đánh dấu 1 message đã được đọc
+message MarkReadNotification
+{
+  message Request{
+    bytes msg_id = 1;
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    MSG_ID_EMPTY = 1;
+    MSG_ID_NOT_FOUND = 2;
+  }
+  uint32 ID = 275;
+}
+
+message ReceiveNotification
+{
+  NotificationMsg messages = 1;
+  uint32 unread_msg_count = 2;
+  uint32 RECEIVE_MESSAGE = 277;
+}
+message ReceiveNotificationUnReadCount
+{
+  uint32 unread_msg_count = 1;
+  repeated bytes ids_markread = 2;
+  uint32 RECEIVE_UNREAD_NOTIFICATION_COUNT = 278;
+}
+message UpdateVolumeCameraHomeVision
+{
+  message Request{
+    bytes camera_id = 1;
+    uint32 volume = 2; /// 0 ... 100
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_HOME_VISION_DEVICE = 1;
+    CAMERA_OFFLINE = 2;
+    CAMERA_ID_EMPTY = 3;
+    CAMERA_NOT_FOUND = 4;
+    VOLUME_INVALID = 5;
+    USER_NAME_OR_PASSWORD_ERROR = 6;  /// sai tài khoản hoặc mật khẩu
+    CAMERA_ID_INVALID = 7;
+    SERVER_P2P_ERROR = 8; /// server p2p lỗi hoặc không hoat động
+    CAMERA_CLOSE_CONNECTION = 9; /// camera đóng kết nối
+    UID_INVALID = 10; /// sai uid camera
+  }
+  uint32 ID = 279;
+}
+message ReceiveBeginUpdateFWCamera
+{
+  Camera camera = 1;
+  uint32 RECEIVE_BEGIN_UPDATE_FW_CAMERA = 280;
+}
+
+message sdCardTypeCameraHomeVision
+{
+  enum RecordType{
+    OFF = 0;
+    ALWAY = 1;
+    SCHEDULE = 2;
+    EVENT = 3;
+  }
+  message Request{
+    bytes camera_id = 1;
+    RecordType record_type = 2; /// 0 ... 100
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_HOME_VISION_DEVICE = 1;
+    CAMERA_OFFLINE = 2;
+    CAMERA_ID_EMPTY = 3;
+    CAMERA_NOT_FOUND = 4;
+    CAMERA_NO_SDCARD = 5;
+    USER_NAME_OR_PASSWORD_ERROR = 6;  /// sai tài khoản hoặc mật khẩu
+    CAMERA_ID_INVALID = 7;
+    SERVER_P2P_ERROR = 8; /// server p2p lỗi hoặc không hoat động
+    CAMERA_CLOSE_CONNECTION = 9; /// camera đóng kết nối
+    UID_INVALID = 10; /// sai uid camera
+  }
+  uint32 ID = 281;
+}
+
+message ReceiveUpdateFWSuccessCamera
+{
+
+  Camera camera = 1;
+  int32 status = 2; // 0 = thành công , 1 = thất bại
+  uint32 RECEIVE_UPDATE_FW_SUCCESS_CAMERA = 282;
+}
+message ListFileInSDCard
+{
+  message Request{
+    bytes camera_id = 1;
+    uint32 day = 2; //start current UTC time /// ngày quy ra unix timestamps lấy từ 00h00 ví dụ lấy trong ngày 02/08/21 là 1627862400
+  }
+  message Reply
+  {
+    SDCardFiles sdCardFiles = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_NOT_HOME_VISION_DEVICE = 1;
+    CAMERA_OFFLINE = 2;
+    CAMERA_ID_EMPTY = 3;
+    CAMERA_NOT_FOUND = 4;
+    CAMERA_NO_SDCARD = 5;
+    USER_NAME_OR_PASSWORD_ERROR = 6;  /// sai tài khoản hoặc mật khẩu
+    CAMERA_ID_INVALID = 7;
+    SERVER_P2P_ERROR = 8; /// server p2p lỗi hoặc không hoat động
+    CAMERA_CLOSE_CONNECTION = 9; /// camera đóng kết nối
+    UID_INVALID = 10; /// sai uid camera
+  }
+  uint32 ID = 283;
+}
+
+/// iva nhận diện biển số xe
+message IVAALPRConfig
+{
+  message Request
+  {
+    bytes camera_id = 1;
+    bool isEnable = 2;
+    bool is_send_email = 4;
+    bool is_record = 5;
+    bool isPushNotification = 6;
+    repeated Roi rois = 7;
+    bool in = 8; ///TRUE = hướng xe vào, FALSE = hướng xe ra
+  }
+  message Reply
+  {
+    Camera camera = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_NOT_FOUND = 2;
+    IVA_SV_ERROR = 3;
+    IVA_NOT_REGISTER = 4; /// chưa kích hoạt gói cước
+    IVA_TOO_MANY_REQUEST = 5; /// sv iva hết tài nguyên
+    OVER_QUOTA = 6;//Vượt quá số camera được add (theo license)
+    PERMISSION_DENIED = 7; //Trả về nếu người dùng không có quyền cấu hình iva
+  }
+  uint32 ID = 284;
+}
+message ReceiveALPRConfig
+{
+  Camera camera = 1;
+  uint32 RECEIVE_IVA_ALPR = 285;
+}
+message UpdateVehiclePlate
+{
+
+  message Request
+  {
+    bytes event_id = 1;
+    string new_vehicle_plate = 2;
+  }
+  message Reply
+  {
+
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    EVENT_ID_EMPTY = 1;
+    EVENT_NOT_FOUND = 2;
+    EVENT_NOT_ALPR = 3;
+    PERMISSION_DENIED = 4; //Trả về nếu người dùng không có quyền cấu hình iva
+  }
+  uint32 ID = 286;
+}
+
+
+message StartRecordStream
+{
+  message Request
+  {
+    bytes camera_id = 1;
+  }
+  message Reply
+  {
+    bytes record_id = 2;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_EMPTY = 1;
+    CAMERA_NOT_FOUND = 2;
+    SV_RECORD_NOT_AVALIABLE = 3;
+    RECORD_ERROR = 4;
+    CAMERA_NOT_RECORD_IN_CLOUD = 5;
+  }
+  uint32 ID = 287;
+}
+message StopRecordStream
+{
+  message Request
+  {
+    bytes record_id = 1;
+  }
+  message Reply
+  {
+    string url_download = 1;
+    uint32 duration = 2;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    RECORD_ID_EMPTY = 1;
+    RECORD_NOT_FOUND = 2;
+    SV_RECORD_NOT_AVALIABLE = 3;
+    RECORD_ERROR = 4;
+    CAMERA_NOT_RECORD_IN_CLOUD = 5;
+  }
+  uint32 ID = 288;
+}
+
+message ReceiveRecordStreamDone
+{
+  string url_download = 1;
+  uint32 duration = 2;
+  uint32 RECEIVE_RECORD_STREAM_DONE = 289;
+}
+/// Đánh dấu ALL message đã được đọc
+message MarkReadAllNotification
+{
+  message Request
+  {
+
+  }
+  message Reply
+  {
+
+  }
+  uint32 ID = 290;
+}
+
+/// Cấu hình tự động đóng mở barrier trong khoảng thời gian --> sử dụng hệ thống VNPT NET
+message ConfigOnOffBarrier
+{
+  message Request
+  {
+   bool on = 1;
+   string start_time = 2; //Định dạng hh:mm - 24h VD: 08:45
+   string end_time = 3; //Định dạng hh:mm - 24h  VD: 21:37
+  }
+  message Reply
+  {
+    bool on = 1;
+    string start_time = 2; //Định dạng hh:mm - 24h VD: 08:45
+    string end_time = 3; //Định dạng hh:mm - 24h  VD: 21:37
+  }
+  enum Error
+     {
+       ERROR_DEFAULT = 0;
+       START_TIME_INVALID = 1; //start time sai định dạng
+       END_TIME_INVALID = 2; //end time sai định dạng
+       END_TIME_BEFORE_START_TIME = 3; //start time < end time
+     }
+  uint32 ID = 291;
+}
+
+message ReceiveConfigOnOffBarrier
+{
+  bool on = 1;
+  string start_time = 2; //Định dạng hh:mm - 24h VD: 08:45
+  string end_time = 3; //Định dạng hh:mm - 24h  VD: 21:37
+  uint32 RECEIVE_CONFIG_ON_OFF_BARRIER = 62;
+}
+
+/// Lấy danh sách phương tiện
+message ListVehicle
+{
+  message Request
+  {
+   string keyword = 1; ///Tìm kiếm theo biển số hoặc chủ sở hữu
+  }
+  message Reply
+  {
+    repeated Vehicle vehicles = 1;
+  }
+  uint32 ID = 292;
+}
+
+/// Cập nhật thông tin phương tiện
+message UpdateInfoVehicle
+{
+  message Request
+  {
+    Vehicle vehicle = 1;
+  }
+  message Reply
+  {
+    Vehicle vehicle = 1;
+  }
+
+   enum Error
+    {
+      ERROR_DEFAULT = 0;
+      VEHICLE_ID_EMPTY = 1; //ID để trống
+      VEHICLE_NOT_FOUND = 2;
+      VEHICLE_PLATE_EMPTY = 3; //Biển số để trống
+      VEHICLE_OWNER_EMPTY = 4; //Chủ sở hữu để trống
+      VEHICLE_PLATE_EXIST = 5; //Đã tồn tại biển số
+      PERMISSION_DENIED = 6; //Trả về nếu người dùng không có quyền
+    }
+  uint32 ID = 293;
+}
+
+/// Thêm phương tiện
+message AddVehicle
+{
+  message Request
+  {
+    repeated Vehicle vehicles = 1;
+  }
+  message Reply
+  {
+    repeated Vehicle vehicles = 1; // D/s phương tiện hợp lệ và thêm thành công
+  }
+
+   enum Error
+    {
+      ERROR_DEFAULT = 0;
+      VEHICLE_PLATE_EMPTY = 1; //Biển số để trống --> sử dụng trong TH thêm 1 phương tiện
+      VEHICLE_TYPE_INVALID = 2; //Loại xe để trống hoặc không đúng --> sử dụng trong TH thêm 1 phương tiện
+      VEHICLE_OWNER_EMPTY = 3; //Chủ sở hữu để trống --> sử dụng trong TH thêm 1 phương tiện
+      VEHICLE_PLATE_EXIST = 4; //Đã tồn tại biển số --> sử dụng trong TH thêm 1 phương tiện, Thêm nhiều nếu đã tồn tại --> ko thêm
+      PERMISSION_DENIED = 5; //Trả về nếu người dùng không có quyền
+    }
+  uint32 ID = 294;
+}
+
+/// Xóa phương tiện
+message DeleteVehicle
+{
+  message Request
+  {
+    bytes vehicle_id = 1;
+  }
+  message Reply
+  {
+  }
+
+   enum Error
+    {
+      ERROR_DEFAULT = 0;
+      VEHICLE_NOT_FOUND = 1;
+      PERMISSION_DENIED = 2; //Trả về nếu người dùng không có quyền
+    }
+  uint32 ID = 295;
+}
+
+/// Lấy thông tin cấu hình --> sử dụng hệ thống VNPT NET
+message GetConfigBarrier
+{
+  message Request
+  {
+  }
+  message Reply
+  {
+    ConfigBarrier config = 1;
+    uint32 car_in = 2; //Số lượt xe oto vào trong ngày
+    uint32 car_out = 3; //Số lượt xe oto ra trong ngày
+  }
+  uint32 ID = 296;
+}
+
+/// Cấu hình cam vào ra --> sử dụng hệ thống VNPT NET
+message ConfigInOutCam
+{
+  message Request
+  {
+    InOutCam in_out_car = 1; // Cấu hình cặp cam vào/ra cho oto
+    InOutCam in_out_bike = 2; // Cấu hình cặp cam vào/ra cho xe máy
+  }
+  message Reply
+  {
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAM_EMPTY = 1; // 1 trong 2 cam_id của cặp empty
+    CAM_NOT_FOUND = 2; //ID truyền lên không tồn tại
+  }
+  uint32 ID = 297;
+}
+
+/// Cấu hình số chỗ trống --> sử dụng hệ thống VNPT NET
+message ConfigParkingLot
+{
+  message Request
+  {
+    uint32 parking_lots = 1; //Tổng số đỗ xe
+    uint32 used_lots = 2; //Số chỗ đã sử dụng
+  }
+
+  message Reply
+  {
+      uint32 parking_lots = 1; //Tổng số đỗ xe
+      uint32 used_lots = 2; //Số chỗ đã sử dụng
+      uint32 available_lots = 3; //Số chỗ trống
+      uint32 car_in = 4; //Số lượt xe oto vào trong ngày
+      uint32 car_out = 5; //Số lượt xe oto ra trong ngày
+  }
+  uint32 ID = 298;
+}
+
+message ReceiveUpdateParkingLot
+{
+    uint32 parking_lots = 1; //Tổng số đỗ xe
+    uint32 used_lots = 2; //Số chỗ đã sử dụng
+    uint32 available_lots = 3; //Số chỗ trống
+    uint32 car_in = 4; //Số lượt xe oto vào trong ngày
+    uint32 car_out = 5; //Số lượt xe oto ra trong ngày
+    uint32 RECEIVE_CONFIG_ON_OFF_BARRIER = 63;
+}
+message AddCameraRTMP
+{
+  message Request
+  {
+    string name = 1;
+    string encoder = 2; /// mã hóa video H.264 hoặc H.265 bắt buộc nhập trường này
+    uint32 bitrate = 3; /// không bắt buộc
+    uint32 framerate = 4; /// không bắt buộc
+    MapLocation location = 5;
+    bytes group_id = 7; ///Thêm camera vào 1 nhóm (ko truyền hoặc truyền rỗng --> add bình thường
+  }
+  message Reply
+  {
+    bytes camera_id = 1;
+    Camera camera = 2; // stream_origin_url sẽ được vms tự gen ra một link rtmp để app set vào cmaera
+  }
+  uint32 ID = 299;
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    USER_NOT_FOUND = 2;
+    CAMERA_NAME_EMPTY = 3; // tên camera không được để trống
+    ENCODER_NOT_FOUND = 4;
+    ENCODER_INVALID = 5;
+    LOCATION_INVALID = 8; // location không đúng
+    CAMERA_NAME_EXIST = 9;// tên camera đã tồn tại
+    OVER_QUOTA = 12;//Vượt quá số camera được add (theo license)
+    GROUP_INVALID = 13; //Group không tồn tại
+  }
+}
+
+message ReceiveStatusCamera
+{
+  repeated Camera camera = 1;
+  uint32 RECEIVE_STATUS_CAMERA = 1300;
+}

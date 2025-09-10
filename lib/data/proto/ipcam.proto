@@ -1,0 +1,263 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+
+enum ResultType
+{
+  OK = 0;
+  REQUEST_INVALID = 1000;
+  SESSION_INVALID = 1001;
+  SESSION_EXPIRE = 1002;
+  SIZE_LIMITED = 1003;
+  DB_ERROR = 1004;
+  NO_CHANGED = 1005;
+  NETWORK_ERROR = 1006;
+  DATA_ERROR = 1007;
+}
+
+package VIVAS;
+service IPCAM {
+  rpc SendRequest (Request) returns (Reply) {}
+}
+
+message Request {
+  uint32 type = 1;
+  uint64 id = 2;
+  bytes sid = 3;
+  bytes uid = 4;
+  google.protobuf.Any request = 5;
+}
+
+message Reply {
+  uint32 type = 1;
+  uint64 id = 2;
+  uint64 server_time = 3;
+  google.protobuf.Any reply = 4;
+}
+
+
+message KeepAlive /// NODE TO HOST
+{
+  enum AppType
+  {
+    VMS = 0;
+    RECORD = 1;
+    HOMEVISON_CLIENT = 2;
+  }
+  message Request
+  {
+    string node_uuid = 1;
+    uint32 current_task_running = 2;
+    string grpc_host = 3;
+    uint32 grpc_port = 4;
+    AppType apptype = 5;
+  }
+  message Reply
+  {
+
+  }
+  uint32 ID = 100;
+}
+
+
+message StartRecord /// HOST TO NODE
+{
+  message Request{
+    bytes camera_id = 1;
+    string ws_server = 2;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 606;
+}
+message StopRecord /// HOST TO NODE
+{
+  message Request{
+    bytes camera_id = 1;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 607;
+}
+message MakeMp4File //SEND TASK CONVERT M3U8 to MP4 (VMS ==> RECORD )
+{
+  message m3u82mp4{
+    string path_m3u8 = 1;
+    string path_mp4 = 2;
+    bool isDone = 3;
+  }
+  message Request
+  {
+    repeated m3u82mp4 files = 1;
+  }
+  message Reply{
+    repeated m3u82mp4 files = 1;
+  }
+  uint32 ID = 613;
+}
+message DeleteRecordFile //DELETE RECORD FILE
+{
+  message Request
+  {
+    bytes file_path = 1;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 614;
+}
+
+message CaptureVideoEvent  /// SEND EVENT RECORD FROM VMS TO RECORD ( CAPTURE +- 3S VIDEO ) IF CAMERA RECORDING ENABLER
+{
+  message Request
+  {
+    bytes camera_id = 1;
+    bytes event_id = 2;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 612;
+}
+message sendReceiveToSession
+{
+  message Request{
+    bytes msg_data = 1;
+    bytes user_id = 2;
+    bytes session_id = 3;
+    bool send_push_when_session_offline = 4;
+    bytes box_id = 5;
+    bytes connection_id = 6;
+    uint32 msg_type = 7;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 602;
+}
+message WhoIsHost /// NODE TO HOST
+{
+  message Request{
+
+  }
+  message Reply{
+    string master_node_uuid = 1;
+    string master_grpc_host = 2;
+    uint32 master_grpc_port = 3;
+  }
+  uint32 ID = 604;
+}
+
+message RegisterNode /// NODE TO HOST
+{
+  message Request{
+    string node_uuid = 1;
+    uint32 current_task = 2; // gửi đi nếu có 1 new king node
+    uint32 max_task = 4; // số task tối đa mà 1 node có thể thực thi == default = 100 nếu không set
+  }
+  message Reply{
+    bool isBackUpHost = 1;
+  }
+  uint32 ID = 605;
+}
+
+message GetNodeAvaliable{
+  message Request{
+    bool isRecordNode = 1;
+    string node_id = 2;
+  }
+  message Reply{
+    bool host_avaliable = 1;
+    string node_uuid = 2;
+    string grpc_host = 3;
+    uint32 grpc_port = 4;
+  }
+  uint32 ID = 615;
+}
+
+message CameraOnlineOffline{
+  message Request{
+    bytes camera_id = 1;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 616;
+}
+message NewRecordVideo
+{
+  message Request{
+    bytes camera_id = 1;
+    bytes playback_id = 2;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 617;
+}
+message GetAllNodeAvaliable{
+  message Node
+  {
+    string node_uuid = 1;
+    string grpc_host = 2;
+    uint32 grpc_port = 3;
+  }
+  message Request{
+    bool isRecordNode = 1;
+  }
+  message Reply{
+    repeated Node nodes = 1;
+  }
+  uint32 ID = 618;
+}
+message startRecordWithTTL{ /// VMS to RECORD
+  message Request{
+    bytes camera_id = 1;
+    bytes record_id = 2;
+    uint32 ttl = 3;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 619;
+}
+message StopRecordWithTTL{ /// VMS to RECORD
+  message Request{
+    bytes camera_id = 1;
+    bytes record_id = 2;
+  }
+  message Reply{
+    string path = 1;
+    uint32 duration = 2;
+  }
+  uint32 ID = 620;
+}
+message RecordTTLDone{
+  message Request{
+    bytes camera_id = 1;
+    bytes record_id = 2;
+    string path = 3;
+    uint32 duration = 4;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 621;
+}
+message PushReplyToSession
+{
+  message Request{
+    bytes msg_data = 1;
+    bytes user_id = 2;
+    bytes session_id = 3;
+    bytes box_id = 5;
+    bytes connection_id = 6;
+    uint32 msg_type = 7;
+    uint64 msg_id = 8;
+  }
+  message Reply{
+
+  }
+  uint32 ID = 622;
+}

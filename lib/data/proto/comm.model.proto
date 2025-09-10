@@ -1,0 +1,763 @@
+syntax = "proto3";
+import "google/protobuf/any.proto";
+package comm;
+
+enum ResultType
+{
+	OK = 0;
+	REQUEST_INVALID = 1000;
+	SESSION_INVALID = 1001;
+	SESSION_EXPIRE = 1002;
+	SIZE_LIMITED = 1003;
+	DB_ERROR = 1004;
+	NO_CHANGED = 1005;
+	NETWORK_ERROR = 1006;
+	DATA_ERROR = 1007;
+}
+enum EventType { MOTION_DETECTION = 0; LINE_CROSSING = 1; INTRUSION_DETECTION = 2;IVA_FACE_DETECTION = 3;IVA_SMOKE_DETECTION = 4;IVA_ALPR=5;ALL_TYPE = 98;ALL = 99;}
+enum Quality { AUTO = 0; SD = 1; HD = 2; FHD = 3;}
+enum ProjectTarget {VIVAS = 0;VIVAS_CLOUD = 1;KC01 = 99;}
+enum Box_Type { NONE = 0;RASPBERRY = 1;ORANGEPI = 2;}
+enum Box_State {VBOX_ACTIVE = 0;VBOX_INACTIVE = 1;VBOX_LOST = 2;}
+enum Language {DEFAULT = 0;VI = 1;EN = 2;}
+enum CameraType {UNKNOW = 0;RTSP = 1;ONVIF = 2;ONEHOME_VNT = 3;RTMP = 4;}
+enum PtzAction {PTZ_STOP = 0;PTZ_UP = 1;PTZ_DOWN = 2;PTZ_LEFT = 3;PTZ_RIGHT = 6;}
+enum API
+{
+	UNDEFINED = 0;
+	API_VERSION = 111;
+}
+
+message Reply
+{
+	uint32 type = 1;
+	repeated Presence presences = 2;
+	uint64 time = 3;
+	google.protobuf.Any reply = 4;
+	uint64 id = 5;
+	string message_Error = 6; /// message lỗi được gửi trả về khi type != 0 và type < 1000
+}
+message HttpReply
+{
+	uint32 type = 1;
+	uint64 time = 2;
+	google.protobuf.Any reply = 3;
+	string message_Error = 4; /// message lỗi được gửi trả về khi type != 0 và type < 1000
+}
+message Request
+{
+	uint32 type = 1;
+	string toppic_from = 2;
+	string toppic_to = 3;
+	string node_uuid = 4;
+	google.protobuf.Any request = 5;
+}
+message HttpRequest
+{
+	uint32 type = 1;
+	bytes sid = 2;
+	bytes uid = 3;
+	google.protobuf.Any request = 4;
+}
+message Receive
+{
+	uint64 time = 1;
+	string device_token = 2;
+	google.protobuf.Any receive = 3;
+}
+
+/* DATA MODEL */
+message Presence
+{
+	bytes camera_id = 1;
+	uint64 active_time = 2;
+}
+
+message Session
+{
+	enum Platform { BLACKBERRY_ = 0; IOS_ = 1; ANDROID_ = 2; WINPHONE_ = 3;
+					MACX_ = 4; WINDOWS_ = 5; LINUX_ = 6;WEB_SOCK_ = 7;_VBOX = 8; OTHER_ = 99; }
+	string image_base_url = 1;
+}
+
+message TurnAccount
+{
+	string username = 1;
+	string password = 2;
+	string host = 3;
+	uint32 port = 4;
+}
+message CameraEmapInfo
+{
+	bytes camera_id = 1;
+	uint32 type_icon = 2;
+	int32 x_coordinate = 3;
+	int32 y_coordinate = 4;
+	bytes camera_emap_info_id = 5;
+}
+
+
+message EmapInfo
+{
+	bytes emap_id = 1;
+	string emap_name = 2;
+	string background_path = 3;
+}
+
+message Profile
+{
+	enum Type {USER = 0;ADMIN = 1;SUPER_ADMIN = 2;SYS_ADMIN = 3;AGENT=4;ADMIN_CLIENT=5;}//ADMIN_CLIENT use on-premise version
+	string account = 1;
+	string address = 2;
+	bool is_send_email_event = 3;
+	repeated string email_receive = 4;
+	string display_name = 5;
+	bool camera_record_on = 6; /// sử dụng cho kc01
+	bool camera_sd_card_fully_override = 7; // sử dụng cho dự án kc01
+	bool cloud_record_on = 8;
+	uint32 number_day_storage = 9;
+	string tel = 10;
+	string email = 11;
+	bool changePassDenied = 12; //TRUE: User nay KHÔNG co quyen doi mat khau, FALSE: dc doi mk
+	bool addCamDenied = 13; //TRUE: User nay KHÔNG co quyen them camera, FALSE: dc add cam
+	string sme_name = 14; //Tên doanh nghiệp của user
+	uint32 msg_unread_count = 15;
+	bool on_off_barrier = 16; // TRUE = tự động mở khi có sự kiện, FALSE = không tự động mở khi có sự kiện
+	string start_time = 17; //Định dạng hh:mm - 24h VD: 08:45
+    string end_time = 18; //Định dạng hh:mm - 24h  VD: 21:37
+		Type user_type = 19; // loại tài khoản
+}
+
+message BoxInfo
+{
+	enum Box_Type { NONE = 0;RASPBERRY = 1;ORANGEPI = 2;}
+	string box_name = 1;
+	string box_serial_number = 2;
+	Box_Type box_type = 3;
+	bytes owner_user_id = 4;
+	Box_State box_State = 5;
+}
+
+
+message ScheduleTime
+{
+	enum Day { CN = 0; T2 = 1; T3 = 2; T4 = 3; T5 = 4; T6 = 5; T7 = 6;}
+	uint32 start_time = 1; // từ 0 --> 23
+	uint32 end_time = 2;  // từ 0 --> 23
+	Day day_record = 3;
+	bool schedule_Time_Enable = 4;
+}
+message Recording
+{
+	enum TypeSchedule { ALWAY_RECORDING = 0; CUSTOMIZE_RECORDING = 2;}
+	enum RecordingForm { CLOUD = 0; SD_CARD = 1;ALL = 2;}
+	bool turn_on_recording = 1;
+	TypeSchedule type_schedule_recording = 2;
+	repeated ScheduleTime schedules = 3;
+	RecordingForm recordingForm = 4;
+	string prefix_path = 5; /// thư mục SAN mặc định mà camera ghi vào
+	string rtsp_server_local = 6; /// rtsp servver để record server đẩy luồng vào
+	string rtsp_server_public = 7; /// rtsp server để cambox đẩy luồng vào
+	string rtsp_push_user = 8;
+	string rtsp_puss_pass = 9;
+	string upload_url_path = 10;
+}
+message Roi
+{
+	uint32 x = 1 ; ///  toạ độ X tính theo %
+	uint32 y = 2; /// toạ độ Y tính theo %
+}
+enum NetworkType {DHCP = 0;STATIC = 1;}
+message CamNetwork
+{
+	NetworkType type = 2;
+	string ip_address = 3;
+	string subness = 4;
+	string gateway = 5;
+	string DNS = 6;
+}
+message KC01_LineCrossing
+{
+	bool line_crossing_enable = 1;
+	uint32 direction = 2;
+	uint32 width = 3;
+	uint32 height = 4;
+	float startX = 5;
+	float startY = 6;
+	float endX = 7;
+	float endY = 8;
+	bool isSendEmail = 9;
+	bool is_record = 10;
+}
+message KC01_IntrusionDetection
+{
+	bool intrusion_detection_enable = 1;
+	uint32 width = 2;
+	uint32 height = 3;
+	float p_x1 = 4;
+	float p_y1 = 5;
+	float p_x2 = 6;
+	float p_y2 = 7;
+	float p_x3 = 8;
+	float p_y3 = 9;
+	float p_x4 = 10;
+	float p_y4 = 11;
+	bool isSendEmail = 12;
+	bool is_record = 13;
+}
+message KC01_TimeSetting
+{
+	bool is24H = 1; /// default 24h = true
+	bool isAutoUpdateTime = 2; // default = true
+	uint32 camera_time_zone = 3; /// default = 0 // TIME ZONE => DEFAULT GMT 0
+	bool isEnablerNTP = 4; // có sử dụng ntp hay không
+	string ntp_server = 5; // ntp server là gì
+}
+message PrivacyMask
+{
+	bool privacyMaskEnable = 1; // default = false
+	float StartPointX = 2;
+	float EndPointX = 3;
+	float StartPointY = 4;
+	float EndPointY = 5;
+}
+message ActivityRegion // sử dụng cho camera của tech
+{
+	bool activityRegionEnable = 1; // default = false
+	float activity_region_width_major = 2;
+	float activity_region_width_minor = 3;
+	float activity_region_height_major = 4;
+	float activity_region_height_minor = 5;
+}
+message IVAJobRegionMotionDetect
+{
+	enum Level { LOW = 0; MEDIUM = 1; HIGH = 2; }
+	string job_id = 1;
+	bool isRuning = 3;
+	Level level = 4;
+	bool is_region_detect_enable = 5;
+	repeated Roi rois = 6;
+	CameraStream stream = 7; /// hiện tại chưa được set ( sử dụng nếu yêu cầu )
+	bool isSendEmail = 8;
+	bool isPushNotification = 9; // hiển thị cảnh báo trong ứng dụng
+	bool is_record_event = 10;
+	bool isActivePackage = 11; // có đang kích hoạt gói cước ko
+	string msg = 12; ///Message trả về khi gói cước không được kích hoạt (isActivePackage = false)
+	bool soundAlarm = 13; /// Hỗ trợ trên camera HOME VISION
+}
+message IVA_JobLineCrossing_Detect
+{
+	enum DirectionType { A__B = 0; B__A = 1;AB = 2; }
+	enum Level { LOW = 0; MEDIUM = 1; HIGH = 2; }
+	string job_id = 1;
+	bool isRuning = 2;
+	bool isSendEmail = 3;
+	bool isPushNotification = 4; // hiển thị cảnh báo trong ứng dụng
+	bool is_record_event = 5;
+	Level level = 6;
+	DirectionType direction = 7;
+	CameraStream stream = 8;
+	Roi roi_start = 9;
+	Roi roi_end = 10;
+	bool isActivePackage = 11;// có đang kích hoạt gói cước ko
+	string msg = 12; ///Message trả về khi gói cước không được kích hoạt (isActivePackage = false)
+}
+message IVA_IntrusionDetection_Detect
+{
+	enum Level { LOW = 0; MEDIUM = 1; HIGH = 2; }
+	string job_id = 1;
+	bool isRuning = 2;
+	bool isSendEmail = 3;
+	bool isPushNotification = 4; // hiển thị cảnh báo trong ứng dụng
+	bool is_record_event = 5;
+	Level level = 6;
+	repeated Roi rois = 7;
+	CameraStream stream = 8;
+	bool isActivePackage = 9;// có đang kích hoạt gói cước ko
+	string msg = 10; ///Message trả về khi gói cước không được kích hoạt (isActivePackage = false)
+}
+message IVA_Smoke_Detect
+{
+	enum Level { LOW = 0; MEDIUM = 1; HIGH = 2; }
+	string job_id = 1;
+	bool isRuning = 2;
+	bool isSendEmail = 3;
+	bool isPushNotification = 4; // hiển thị cảnh báo trong ứng dụng
+	bool is_record_event = 5;
+	Level level = 6;
+	repeated Roi rois = 7;
+	CameraStream stream = 8;
+	bool isActivePackage = 9;// có đang kích hoạt gói cước ko
+	string msg = 10; ///Message trả về khi gói cước không được kích hoạt (isActivePackage = false)
+}
+
+message IVA_Face_Detect
+{
+	string job_id = 1;
+	bool isRuning = 2;
+	bool isStrangerDetectNoti = 3; // on/off cảnh báo người lạ
+	bool isRelativeDetectNoti = 4; // on/off cảnh báo người quen
+	bool is_record_event = 5;
+	repeated Roi rois = 6;
+	bool isActivePackage = 7;// có đang kích hoạt gói cước ko
+	string msg = 8; ///Message trả về khi gói cước không được kích hoạt (isActivePackage = false)
+}
+
+message IVAALPR
+{
+	string job_id = 1;
+	bool isRuning = 2;
+	bool isSendEmail = 3; /// có gửi email hay không
+	bool isPushNotification = 4; /// hiển thị cảnh báo trong ứng dụng
+	bool is_record_event = 5;
+	repeated Roi rois = 6; /// mặc định là 4 điểm
+	CameraStream stream = 8;
+	bool isActivePackage = 9;// có đang kích hoạt gói cước ko
+	string msg = 10; ///Message trả về khi gói cước không được kích hoạt (isActivePackage = false)
+	bool in = 11; ///TRUE = hướng xe vào, FALSE = hướng xe ra
+}
+
+message MapLocation
+{
+    double lat = 1;
+    double log = 2;
+    string location_des = 3;
+}
+
+
+message HomeVision_Camera_Config
+{
+	uint32 device_type = 1; /// 176 indoor , 177 outdoor
+	uint32 volume = 2;
+	string ip = 3;
+	string mac = 4;
+	string pictureURL = 5;
+	string phpServer = 6;
+	bool flip = 7;
+	uint32 total_sd = 8;
+	uint32 sd_use = 9;
+	string vendor = 10;
+	uint32 version = 11; /// (version >> 16) & 0xFF . (version >> 8) & 0xFF . version & 0xFF
+	string model = 12;
+	uint32 recordType = 13; /// 0 = OFF , 1 = RECORD ALWAY , 2 SCHEDULE , 3 EVENT RECORD
+}
+
+message CameraConfig
+{
+	enum Rotate { NORMAL = 0; RIGHT = 1; LEFT = 2; }
+	enum StorageMode { CLOUD = 0; CLOUD_AND_SDCARD = 1; }
+	enum Level { LOW = 0; MEDIUM = 1; HIGH = 2; }
+	/*config camera*/
+	bool nightvision = 1;
+	uint32 brightness = 2;
+	bool flip = 3;
+	bool mirror = 4;
+	Rotate rotate = 5;
+	uint32 current_major_version = 6;
+	uint32 current_minor_version = 7;
+	bool power_cloud_storage = 8; // ON-OFF
+	StorageMode storage_mode = 9;
+	uint32 number_days_storage = 10; // 7 15 30 or custom
+	bool use_default_account_setting = 32; // sử dụng setting default của tài khoản
+	string wifi_name = 11; /// bỏ không sử dụng nếu vivas 1.1
+	string wifi_password = 12; /// bỏ không sử dụng nếu vivas 1.1
+	bool motion_detection = 13; /// bỏ không sử dụng nếu vivas 1.1
+	bool audio_detection = 14; /// bỏ không sử dụng nếu vivas 1.1
+	bool fully_override = 15; /// bỏ không sử dụng nếu vivas 1.1
+	Recording recording = 16;
+	bool is_send_email_event = 17; /// bỏ không sử dụng lấy theo trong setting từng cảnh báo chuyển động
+	bool is_record = 18; /// bỏ không sử dụng lấy theo trong setting từng cảnh báo chuyển động
+	bool is_region_detect_enable = 19; /// bỏ không sử dụng lấy theo trong setting từng cảnh báo chuyển động
+	repeated Roi rois = 20; /// bỏ không sử dụng lấy theo trong setting từng cảnh báo chuyển động
+	Level md_level = 21; /// bỏ không sử dụng lấy theo trong setting từng cảnh báo chuyển động
+	CamNetwork network = 22;
+	KC01_LineCrossing lineCrossing = 23; /// bỏ không sử dụng nếu vivas 1.1
+	KC01_IntrusionDetection intrusionDetection = 24; /// bỏ không sử dụng nếu vivas 1.1
+	KC01_TimeSetting timeSetting = 25; /// bỏ không sử dụng nếu vivas 1.1
+	Quality rtsp_current_quatity = 26;
+	PrivacyMask privacyMask1 = 27; /// bỏ không sử dụng nếu vivas 1.1
+	PrivacyMask privacyMask2 = 28; /// bỏ không sử dụng nếu vivas 1.1
+	PrivacyMask privacyMask3 = 29; /// bỏ không sử dụng nếu vivas 1.1
+	bool KC01_MD_isSendMD = 30; /// bỏ không sử dụng nếu vivas 1.1
+	ActivityRegion activityRegion = 31;
+	IVAJobRegionMotionDetect iva_md = 33; /// trả về cấu hình khi thiết lập cảnh báo chuyển đọng
+	IVA_JobLineCrossing_Detect iva_line_crossing = 34; /// thiết lập vượt rào ảo
+	IVA_IntrusionDetection_Detect iva_ins_detection = 35; /// cảnh báo xâm nhập
+	MapLocation location = 36; // vị trí của camera
+	IVA_Smoke_Detect iva_smoke_detection = 37; /// cảnh báo khói cháy
+	IVA_Face_Detect iva_face_detection = 38; /// Thiết lập nhận diện khuôn mặt
+	HomeVision_Camera_Config home_vision_camera_config = 39; /// Lưu giá trị config của camera homevision ( chỉ trả về khi CameraType  = ONEHOME_VNT = 3 )
+	uint32 current_micro_version = 40;
+	IVAALPR iva_ALPR = 41; /// thiết lập nhận diện biến số xe
+}
+
+
+
+message CameraStream
+{
+	enum DefaultURL { HLS = 0; RTSP_ORIGIN = 1;RTSP_PROXY = 2; RTMP = 3;}
+
+	message Resolution{
+		uint32 width = 1;
+		uint32 height = 2;
+	}
+
+	message Encoder {
+		uint32 quality = 1;
+		uint32 framerate = 2;
+		uint32 bitrate = 3;
+		string encoding = 4;
+	}
+
+	message PtzRange
+	{
+		message range{
+			uint32 min = 1;
+			uint32 max = 2;
+		}
+		range x = 1;
+		range y = 2;
+		range z = 3;
+	}
+
+	message UrlStream{
+		enum StreamType { HLS = 0; RTSP = 1;UDP = 2; RTSP_PROXY = 3;RTMP = 4;}
+		bool isDefault = 1;
+	  string name_of_stream = 2;
+	  string url_of_stream = 3;  /// sv trả về link full
+	  StreamType stype = 4;
+    bool isMainStream = 5; //TRUE = luồng chính, FALSE = Là các luồng phụ
+    string origin_stream = 6; // Link origin user nhập vào
+	}
+
+	string stream_origin_url	= 1; // sử dụng với camera other
+	string stream_iva_url	= 2; // sử dụng với camera other
+	string stream_name = 3;
+	Resolution res = 4;
+	Encoder encoder = 5;
+	PtzRange ptz_range = 6;
+	string user_origin_added_url = 7; /// là link người dùng nhập vào khi add
+	string stream_hls_url = 8; /// link hls m3u8 sử dụng cho WEB APP
+	DefaultURL default_url = 9;
+	repeated UrlStream streamLinks = 10; /// trả về danh sách link stream
+
+}
+message Onvif
+{
+	string urn = 1;
+	string name = 2;
+	string hardware = 3;
+	string xaddr = 4;
+	repeated string scopes = 5;
+	string onvif_rtsp_url = 6;
+}
+
+message Camera
+{
+	enum Type { OWNER = 0; SHARED = 1;GROUP_SHARED = 2;}
+	enum Role { VIEW = 0; ALL = 1;}
+	enum Status {INACTIVE = 0; ACTIVE = 1;}
+	bytes id = 1;
+	string name = 2;
+	string serial_number = 3;
+	string password = 4;
+	string username = 5;
+	Type type = 6;
+	Role role = 7;
+	bool on = 8;
+	CameraConfig config = 9;
+	uint32 position = 10;
+	uint64 time_added = 11;
+	uint32 current_major_version = 12; // deprecated
+	uint32 current_minor_version = 13; // deprecated
+	CameraStream stream_url = 14;
+	Onvif onvif = 15;
+	bool isOnvif = 16; // deprecated
+	bool isRTSP = 17; // deprecated
+	string plaintext_pw = 18;
+	bytes group_owner_id = 19;
+	bytes owner_user_id = 20;
+	string group_owner_name = 21;
+	bytes box_owner_id = 22;
+	string cam_id = 23;
+	CameraType cameraType = 24;
+	Status status = 25;
+	bool subscribed = 26; //Camera đã được đăng ký sử dụng (Đã mua gói, đã đk gói qua iotGate, đã mua license on-premise)
+}
+
+message Alarm
+{
+	enum Type { MOTION_DETECTION = 0; SOUND_DETECTION = 1; }
+	enum Storage { CLOUD_STORAGE = 0; SD_CARD = 1;}
+	bytes id = 1;
+	bytes camera_id = 2;
+	string camera_name = 3;
+	Type type = 4;
+	uint64 time = 5;
+	string url_video = 6;
+	string url_thumbnail = 7;
+	Storage storage = 8;
+}
+
+message IvaMotionDetection
+{
+	string capture_image = 1;
+	string video_record_url = 2;
+	string capture_image_thumb = 3;
+}
+message IvaIntrusionDetection
+{
+	string capture_image = 1;
+	string video_record_url = 2;
+	string capture_image_thumb = 3;
+}
+message IvaLineCrossingDetection
+{
+	string capture_image = 1;
+	string video_record_url = 2;
+	string capture_image_thumb = 3;
+}
+
+message IvaSmokeDetection
+{
+
+	string capture_image = 1;
+	string video_record_url = 2;
+	string capture_image_thumb = 3;
+}
+
+
+message FaceDetection{
+	enum DetectionType { FACE_DETECTION = 0; UNKNOWN_DETECTION = 1; } //0: người quen, 1: người lạ
+	string display_name = 1; // Full_name người nhận diện được
+	string company_name = 2; // Ko dùng
+	string department = 3; // ~ Group
+	string origin_image = 4; // Ảnh chứa mặt được nhận diện (có vẽ khung mặt)
+	string capture_image = 5; // Ảnh cắt mỗi khuôn mặt
+	string face_id = 6;
+	DetectionType detectionType = 7;
+	string video_record_url = 8; // Link video nhận diện
+}
+enum Vehicle_Type { CAR = 0; MOTOBIKE = 1; TRUCK = 2; }
+message IVAALPRDetection{
+	string vehicle_plate_capture = 1;
+	string img_capture = 2;
+	string vehicle_plate = 3;
+	string vehicle_type = 4;
+	string video_record_url = 5;
+	string img_vehicle = 6;
+}
+
+message Vehicle{
+    bytes vehicle_id = 1;
+	string vehicle_plate = 2;
+	Vehicle_Type vehicle_type = 3;
+	string owner = 4;
+}
+
+message Event
+{
+	bytes camera_id = 1;
+	uint64 time = 2;
+	string camera_name = 3;
+	EventType type = 4;
+	google.protobuf.Any event_metadata = 5;
+	bytes event_id = 6;
+	string capture_image = 7;
+	string video_record_url = 8;
+	string capture_image_thumb = 9;
+	string description = 10;
+	bool has_video_record_url = 11;
+
+}
+message DeviceGroup
+{
+	enum Status { INACTIVE = 0; ACTIVE = 1; }
+	enum Type { OWNER = 0; SHARED = 1; MOVED = 2;}
+	enum Role {  FULL = 0;GVIEW = 1; GMANAGER = 2;}
+	string name = 1;
+	bytes parent_group_id = 2;
+	Status status = 3;
+	uint32 level = 4;
+	uint64 created_date = 5;
+	uint64 last_update = 6;
+	bytes user_created = 7;
+	repeated DeviceGroup groups = 8;
+	bytes group_id = 10;
+	Type group_type = 11;
+	Role group_role = 12;
+
+}
+enum Base_View { V_1X1 = 0; V_2X2 = 1; V_3X3 = 2;V_4X4 = 3;V_5X5 = 4;V_6X6 = 5;}
+message LiveViewPosition
+{
+	uint32 index = 1;
+	bytes camera_id = 2;
+	Camera camera = 3;
+}
+message CustomLiveView
+{
+	bytes id = 1;
+	Base_View base = 2;
+	repeated LiveViewPosition postision = 3;
+	string name = 4;
+
+}
+
+message InviteMessage
+{
+	enum Role {VIEW = 0; ALL = 1;}
+	enum GroupShareRole { GFULL = 0;  GVIEW = 1; GMANAGER = 2;}
+	enum Status {PENDING = 0; ACCEPT = 1; DECLINE = 2;}
+	enum ShareType {CAMERA = 0;GROUP_CAMERA = 1;}
+	bytes camera_id = 1;
+	Role role = 2;
+	Status status = 3;
+	Profile account_share = 4; /// account share
+	Profile account_shared = 5; /// account nhận share
+	uint64 last_update = 6;
+	bytes  account_share_id = 7; /// account id share
+	bytes  account_shared_id = 8; /// account id nhận share
+	uint64 time_share = 9;
+	//// SHARE GROUP
+	ShareType shareType = 10; /// default share camera khi sử dụng cho kc01 và vivas 1.0 trở xuống
+	bytes group_id = 11;
+	GroupShareRole groupShareRole = 12;
+	bytes invite_msg_id = 13;
+}
+
+message Vbox
+{
+
+	bytes box_id = 1;
+	string box_name = 2;
+	string box_serial_number = 3;
+	Box_Type box_type = 4;
+	Box_State box_State = 5;
+	bytes owner_user_id = 6;
+	uint64 time_added = 7;
+	uint64 last_update = 8;
+	string box_id_str = 9;
+	bool isBoxOnline = 10;
+	uint32 camera_count = 11;
+	string box_local_ip = 23;
+	string box_public_ip = 24;
+}
+
+message Ack_for
+{
+    bytes user_id = 1;
+    bytes session_id = 2;
+    bytes connection_id = 3;
+    uint64 message_id = 4;
+    uint32 request_ID = 5;
+    uint64 time_request = 6;
+		google.protobuf.Any metadata = 7; /// request of client or any
+}
+
+message License_profile{
+    enum ISON {OFF = 0; ON = 1;}
+    ISON iva = 1;
+    ISON motion_detection = 2;
+    ISON instrument_detection = 3;
+    ISON line_crossing_detection = 4;
+    ISON smoke_detection = 5;
+    ISON face_detection = 6;
+    ISON admin_management = 7;
+    ISON opt_verify = 8;
+    ISON service_management = 9;
+    ISON forgot_password = 10;
+    ISON register_form = 11;
+    ISON playback = 12; //Chưa cần check
+    ISON notification = 13; //Chưa cần check
+    ISON emap = 14; //Chưa cần check
+    ISON user_edit_md_log = 15; //ON --> user dc them/sua trong giao dien log nhan dien khuon mat
+    ISON setting_default_storage = 16; //ON --> đc phép cấu hình (hiển thị menu cấu hình lưu trữ mặc định)
+    ISON use_cam_box = 17; //ON --> Hiển thị menu QL cam box, OFF --> Ẩn
+    ISON add_rtsp_cam = 18; //ON --> Cho add RTSP cam, OFF --> Ấn nút add thông báo ko hỗ trợ
+    ISON add_onvif_cam = 19; // ON --> Cho add ONVIF cam, OFF --> Ấn nút add thông báo ko hỗ trợ
+    ISON alpr_detection = 20; //Nhận diện biển số
+    ISON mail_config = 21; // Bật hay tắt chế độ cấu hình d/s gửi mail + radio send mail trong cấu hình iva
+    ISON scan_onvif = 22; // Bật hay tắt chế độ scan onvif
+    ISON vehicle_management = 23; // On Off chức năng quản lý phương tiện
+}
+
+message User
+{
+	enum Status { INACTIVE = 0; ACTIVE = 1; AGENT_CREATE = 2; }
+	enum Type {USER = 0;ADMIN = 1;SUPER_ADMIN = 2;SYS_ADMIN = 3;AGENT=4;ADMIN_CLIENT=5;}//ADMIN_CLIENT use on-premise version
+	string account = 1;//account
+	string email_address = 2;//email address
+	string tel_number = 3;//tel
+	string password = 4;
+	Status status = 5;
+	uint64 last_update = 6;
+	Type type = 7;
+	uint64 create_at = 9;
+	string desc = 12;
+	string full_name = 13;
+	bytes id = 14;
+	bool changePassDenied = 15; //TRUE: User nay KHÔNG co quyen doi mat khau, FALSE: dc doi mk
+	bool addCamDenied = 16; //TRUE: User nay KHÔNG co quyen them camera, FALSE: dc add cam
+	uint32 msg_unread_count = 17;
+}
+
+
+message RtspServerSetting
+{
+	uint32 max_camera = 1;
+	uint32 current_Camera = 2;
+	string server_host = 3;
+	string server_local_host = 4;
+	uint32 server_port = 5;
+	string public_user = 6;
+	string public_pass = 7;
+	string read_user = 8;
+	string read_pass = 9;
+	string sv_name = 10;
+}
+
+/// CR010
+message NotificationMsg{
+	enum MsgType{
+		GENERIC = 0;
+		SHARE = 1;
+	}
+	bytes msg_id = 1;
+	string title_msg = 2; /// title
+	string short_des = 3; /// mô tả ngắn ( chi tiết unpack data của từng loại msg để sử dụng )
+	string des = 4; /// mô tả
+	bool isRead = 5; /// đã được đọc hay chưa
+	uint64 time = 6; /// thời gian xảy ra Notificaiton
+	MsgType msgType = 7; //nếu msgType == SHARE thì data = SharingRecord
+	google.protobuf.Any data = 8; /// tuỳ theo từng loại NotiType mà data sẽ được pack với từng loại model khác nhau ( với 1 số thông báo không có data gì đặc biệt thì trường data = rỗng )
+}
+message SDCardFiles
+{
+	message File
+	{
+		uint32 video_file_time = 1;
+		string file_name = 2;
+		uint32 play_total_time = 3;
+	}
+	bool isEnd = 1;
+	repeated File files = 2;
+}
+
+message ConfigBarrier{
+    bool on = 1; //TRUE: tự động mở khi có sự kiện, FALSE: OFF không tự động mở khi có sự kiện
+    string start_time = 2; //Định dạng hh:mm - 24h VD: 08:45
+    string end_time = 3; //Định dạng hh:mm - 24h  VD: 21:37
+    uint32 parking_lots = 4; //Tổng số đỗ xe
+    uint32 used_lots = 5; //Số chỗ đã sử dụng
+}
+
+message InOutCam{
+    enum VehicleType{
+    		CAR = 0;
+    		BIKE = 1;
+    }
+    bytes in = 1;
+    bytes out = 2;
+    VehicleType type = 3;
+}
