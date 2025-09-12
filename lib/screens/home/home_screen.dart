@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import '../../core/base_view.dart';
 import 'home_bloc.dart';
 
@@ -21,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const HomeView();
+    return Scaffold(backgroundColor: Colors.white, body: MonitorScreen());
   }
 }
 
