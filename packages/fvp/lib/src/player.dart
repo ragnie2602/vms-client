@@ -548,15 +548,16 @@ class Player {
     }
   }
 
+  /*
+   * ╔═══════════════ CUSTOM CODE ═══════════════╗
+   * ║ Set frame rate, frames per seconds
+   * ╚═══════════════════════════════════════════╝
+   */
   void setFps(double fps) {
-    try {
-      _player.ref.setFrameRate.asFunction<void Function(Pointer<mdkPlayer>, double)>()(
-        _player.ref.object,
-        fps,
-      );
-    } catch (e) {
-      print("==================> $e");
-    }
+    _player.ref.setFrameRate.asFunction<void Function(Pointer<mdkPlayer>, double)>()(
+      _player.ref.object,
+      fps,
+    );
   }
 
   /// Set position range in milliseconds. Can be used by A-B loop.

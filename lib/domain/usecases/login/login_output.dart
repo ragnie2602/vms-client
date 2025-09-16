@@ -1,4 +1,3 @@
-import '../../entities/user/user.dart';
 import '../base_output.dart';
 
 class LoginOutput extends BaseOutput {

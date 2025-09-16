@@ -425,6 +425,11 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
     _players[textureId]?.record(to: to, format: format);
   }
 
+  /*
+   * ╔═══════════════ CUSTOM CODE ═══════════════╗
+   * ║ Set frame rate, frames per seconds
+   * ╚═══════════════════════════════════════════╝
+   */
   void setFps(int textureId, {required double fps}) {
     _players[textureId]?.setFps(fps);
   }

@@ -89,6 +89,11 @@ extension FVPControllerExtensions on VideoPlayerController {
     _platform.record(_getId(this), to: to, format: format);
   }
 
+  /*
+   * ╔═══════════════ CUSTOM CODE ═══════════════╗
+   * ║ Set frame rate, frames per seconds
+   * ╚═══════════════════════════════════════════╝
+   */
   void setFps(double fps) {
     _platform.setFps(_getId(this), fps: fps);
   }
