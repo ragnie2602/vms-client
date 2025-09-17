@@ -15,6 +15,10 @@ class CameraEntity {
   /// userOriginAddedUrl: rtsp://10.3.3.162:8081/mystream7
   Uri get streamUri => Uri.parse(stream.streamOriginUrl);
 
+  // "rtsp://test:Vivas%402022@10.3.3.131:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif"
+  // "rtsp://admin:Vivas%40115TDH@10.3.3.125:554/onvif/profile2/media.smp"
+  // "rtsp://admin:Vivas%402022@10.3.3.129:554/cam/realmonitor?channel=1&subtype=0"
+
   CameraEntity({
     required this.name,
     required this.id,

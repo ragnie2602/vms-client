@@ -13,7 +13,7 @@ void main() async {
     options: {
       'platforms': ['windows'], // Chỉ sử dụng với platform windows
       'lowLatency': 1,
-      // 'video.decoders': ['VT', 'MFT:d3d=11', 'FFmpeg', 'D3D11'],
+      'video.decoders': ['FFmpeg'],
     },
   );
 
