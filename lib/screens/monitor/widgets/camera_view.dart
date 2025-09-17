@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fvp/fvp.dart';
 import 'package:video_player/video_player.dart';
-
-import '../camera_data.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 class CameraView extends StatefulWidget {
   const CameraView({super.key, required this.data, required this.index});
 
-  final CameraData data;
+  final CameraEntity data;
   final int index;
 
   @override
@@ -36,21 +36,15 @@ class _CameraViewState extends State<CameraView> {
 
     try {
       _controller = VideoPlayerController.networkUrl(
-        widget.data.buildUri(),
+        widget.data.streamUri,
         videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
       );
 
       _controller.addListener(_handleError);
       _controller.setLooping(true);
-      await _controller.initialize().timeout(Duration(seconds: 10));
+      await _controller.initialize().timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT);
       await _controller.play();
       setState(() {}); // Build lại để bắt đầu play video
-
-      Future.delayed(const Duration(seconds: 10), () {
-        if (!_controller.value.isPlaying) return;
-        _controller.setFps(15);
-        print("${widget.index}: Đã cập nhập FPS");
-      });
     } on TimeoutException catch (e) {
       isTimingOut = true;
       _controller.value = VideoPlayerValue.erroneous(e.toString());
@@ -61,6 +55,10 @@ class _CameraViewState extends State<CameraView> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void setFPS(double fps) {
+    _controller.setFps(fps);
   }
 
   void _handleError() {
