@@ -123,3 +123,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+msix_config:
+  display_name: VNPT Secure Vision Flutter
+  publisher_display_name: Vivas
+  identity_name: vivas.vn.vms
+  msix_version: 1.0.0.0
+  logo_path: C:\Users\vapar\logo\app_ico.ico
+  capabilities: internetClient, location
