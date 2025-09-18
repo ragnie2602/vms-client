@@ -1,4 +1,4 @@
-import '../../IRepositories/i_auth_repository.dart';
+import '../../i_repositories/i_auth_repository.dart';
 import '../future_use_case.dart';
 import 'login_input.dart';
 import 'login_output.dart';

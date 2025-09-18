@@ -1,6 +1,6 @@
 import 'package:vms_flutter_client/data/datasources/camera_service.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
-import 'package:vms_flutter_client/domain/IRepositories/i_camera_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 import 'base_repository.dart';

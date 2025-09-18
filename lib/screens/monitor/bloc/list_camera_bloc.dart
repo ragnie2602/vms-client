@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
-import 'package:vms_flutter_client/domain/IRepositories/i_camera_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 part 'list_camera_event.dart';

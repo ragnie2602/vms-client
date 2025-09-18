@@ -1,5 +1,5 @@
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
-import '../../domain/IRepositories/i_auth_repository.dart';
+import '../../domain/i_repositories/i_auth_repository.dart';
 import '../datasources/authenticate_service.dart';
 import 'base_repository.dart';
 

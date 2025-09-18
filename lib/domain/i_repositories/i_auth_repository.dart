@@ -1,7 +1,6 @@
 import '../entities/authentication/authentication.dart';
-import 'i_base_repository.dart';
 
-abstract class IAuthRepository extends IBaseRepository {
+abstract class IAuthRepository {
   Future<Authentication> authenticate(String username, String password);
   Future<bool> login(Authentication authentication);
   Future<void> logout();
