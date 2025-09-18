@@ -45,6 +45,7 @@ class _CameraViewState extends State<CameraView> {
       await _controller.initialize().timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT);
       await _controller.play();
       setState(() {}); // Build lại để bắt đầu play video
+      setFPS(20);
     } on TimeoutException catch (e) {
       isTimingOut = true;
       _controller.value = VideoPlayerValue.erroneous(e.toString());
@@ -91,7 +92,7 @@ class _CameraViewState extends State<CameraView> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.grey.shade200,
-        boxShadow: [BoxShadow(color: Colors.grey.shade300, spreadRadius: 1, blurRadius: 1)],
+        boxShadow: [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)],
       ),
       child: _controller.value.hasError
           ? _buildError()
