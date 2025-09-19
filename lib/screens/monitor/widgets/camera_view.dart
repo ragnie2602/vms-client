@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fvp/fvp.dart';
+import 'package:fvp/mdk.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
@@ -43,6 +44,7 @@ class _CameraViewState extends State<CameraView> {
       _controller.addListener(_handleError);
       _controller.setLooping(true);
       await _controller.initialize().timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT);
+      // _controller.setAudioTracks([]);
       await _controller.play();
       setState(() {}); // Build lại để bắt đầu play video
       setFPS(20);
