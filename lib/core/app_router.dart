@@ -8,13 +8,13 @@ import '../screens/login/login_screen.dart';
 import '../screens/login/bloc/login_bloc.dart';
 import '../domain/usecases/login/login_usecase.dart';
 
-enum Route {
+enum Routes {
   login(name: 'login', path: '/login'),
   home(name: 'home', path: '/home');
 
   final String name;
   final String path;
-  const Route({required this.name, required this.path});
+  const Routes({required this.name, required this.path});
 }
 
 class AppRouter {
@@ -22,14 +22,16 @@ class AppRouter {
     initialLocation: AppConfig.INITIAL_ROUTE.path,
     routes: [
       GoRoute(
-        path: Route.login.path,
+        path: Routes.login.path,
+        name: Routes.login.name,
         builder: (context, state) => BlocProvider(
           create: (context) => LoginBloc(loginUseCase: context.read<LoginUseCase>()),
           child: const LoginScreen(),
         ),
       ),
       GoRoute(
-        path: Route.home.path,
+        path: Routes.home.path,
+        name: Routes.home.name,
         builder: (context, state) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),

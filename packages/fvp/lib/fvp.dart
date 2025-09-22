@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'mdk.dart';
 import 'src/video_player_mdk.dart'
     if (dart.library.js_interop) 'src/video_player_dummy.dart'
     if (dart.library.html) 'src/video_player_dummy.dart';
@@ -43,8 +44,13 @@ export 'src/controller.dart';
 ///   });
 /// ```
 ///
-void registerWith({dynamic options}) {
-  MdkVideoPlayerPlatform.registerVideoPlayerPlatformsWith(options: options);
+/*
+  * ╔═══════════════ CUSTOM CODE ═══════════════╗
+  * ║ Thêm callback hiển thị log từ mdk/fvp
+  * ╚═══════════════════════════════════════════╝
+  */
+void registerWith({dynamic options, void Function(LogLevel level, String msg)? onMdkLog}) {
+  MdkVideoPlayerPlatform.registerVideoPlayerPlatformsWith(options: options, onMdkLog: onMdkLog);
 }
 
 /// Registers this plugin automatically by dart tooling. requires `dartPluginClass: VideoPlayerRegistrant` in pubspec.yaml

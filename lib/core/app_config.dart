@@ -1,9 +1,18 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:vms_flutter_client/core/app_router.dart';
 
 class AppConfig {
   const AppConfig._();
 
-  static const INITIAL_ROUTE = Route.login;
+  static const INITIAL_ROUTE = Routes.login;
 
+  static const LOG_ERROR_MAX_LINES = 10;
+
+  /// Hiển thị log từ MDK (FVP)
+  static bool SHOW_MDK_LOG = false;
+
+  /// [Player] Timeout khi khởi tạo player (VideoPlayerController)
   static const PLAYER_INITIALIZATION_TIMEOUT = Duration(seconds: 60);
+  static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 10);
 }

@@ -10,9 +10,9 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 import 'package:logging/logging.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import '../mdk.dart';
 import 'fvp_platform_interface.dart';
 import 'extensions.dart';
-import 'media_info.dart';
 
 import '../mdk.dart' as mdk;
 
@@ -122,7 +122,10 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
   "video.decoders": a list of decoder names. supported decoders: https://github.com/wang-bin/mdk-sdk/wiki/Decoders
   "maxWidth", "maxHeight": texture max size. if not set, video frame size is used. a small value can reduce memory cost, but may result in lower image quality.
  */
-  static void registerVideoPlayerPlatformsWith({dynamic options}) {
+  static void registerVideoPlayerPlatformsWith({
+    dynamic options,
+    void Function(LogLevel level, String msg)? onMdkLog,
+  }) {
     _log.fine('registerVideoPlayerPlatformsWith: $options');
     if (options is Map<String, dynamic>) {
       final platforms = options['platforms'];
@@ -184,18 +187,21 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
 // delay: ensure log handler is set in main(), blank window if run with debugger.
 // registerWith() can be invoked by dart_plugin_registrant.dart before main. when debugging, won't enter main if posting message from native to dart(new native log message) before main?
     Future.delayed(const Duration(milliseconds: 0), () {
-      _setupMdk();
+      _setupMdk(onMdkLog);
     });
 
     _prevImpl ??= VideoPlayerPlatform.instance;
     VideoPlayerPlatform.instance = MdkVideoPlayerPlatform();
   }
 
-  static void _setupMdk() {
+  static void _setupMdk(void Function(LogLevel level, String msg)? onMdkLog) {
     mdk.setLogHandler((level, msg) {
       if (msg.endsWith('\n')) {
         msg = msg.substring(0, msg.length - 1);
       }
+
+      onMdkLog?.call(level, msg);
+
       switch (level) {
         case mdk.LogLevel.error:
           _mdkLog.severe(msg);

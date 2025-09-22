@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'core/app_router.dart';
 import 'core/env_service.dart';
 import 'di/dependency_injection.dart';
@@ -13,14 +14,9 @@ void main() async {
     options: {
       'platforms': ['windows'], // Chỉ sử dụng với platform windows
       'lowLatency': 1,
-      'video.decoders': [
-        'D3D11', 
-        'DXVA', 
-        'MFT:d3d=11', 
-        'CUDA', 
-        'FFmpeg'
-      ],
+      'video.decoders': ['D3D11', 'DXVA', 'MFT:d3d=11', 'CUDA', 'FFmpeg'],
     },
+    onMdkLog: Logger.onMdkLog,
   );
 
   // Env: Initialize environment configuration

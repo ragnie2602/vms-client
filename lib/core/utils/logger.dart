@@ -1,40 +1,92 @@
 import 'dart:convert';
-import 'dart:developer' as dev;
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:fvp/mdk.dart';
+
+import '../app_config.dart';
 
 class Logger {
   Logger._();
 
   static void log(String message, {String tag = 'VMS'}) {
-    dev.log(message, name: tag, time: DateTime.now(), level: 0);
+    if (kReleaseMode) return;
+
+    final colorTag = _wrapWithColor('info', '[$tag]', needBackground: true);
+    stdout.writeln("$colorTag ${_wrapWithColor('info', message)}");
   }
 
-  /// Dạng: \[file_name:line_number\](function_name): message
+  static void warn(String message, {String tag = 'VMS'}) {
+    if (kReleaseMode) return;
+
+    final colorTag = _wrapWithColor('warn', '[$tag]', needBackground: true);
+    stdout.writeln("$colorTag ${_wrapWithColor('warn', message)}");
+  }
+
+  static void onMdkLog(LogLevel level, String message) {
+    if (!AppConfig.SHOW_MDK_LOG) return;
+
+    final colorTag = _wrapWithColor(
+      'trace',
+      '[MDK:::${level.name.toUpperCase()}]',
+      needBackground: true,
+    );
+    stdout.writeln("$colorTag ${_wrapWithColor('trace', message)}");
+  }
+
   static void error(Object? error, {String tag = 'VMS'}) {
-    final message = _stringifyMessage(error);
-    var stackTrace = StackTrace.current;
+    if (kReleaseMode) return;
+    
+    String message = _wrapWithColor('error', _stringifyMessage(error));
 
-    final traceLines = stackTrace.toString().split('\n').skip(1).toList();
-    if (traceLines.isEmpty) {
-      dev.log(message, name: 'ERROR', stackTrace: stackTrace, level: 1000);
-      return;
-    }
+    var traces = StackTrace.current
+        .toString()
+        .trim()
+        .split('\n')
+        .skip(1)
+        .take(AppConfig.LOG_ERROR_MAX_LINES)
+        .toList();
 
-    // stackTrace = StackTrace.fromString(traceLines.join('\n'));
-    final callerLine = traceLines[0];
-    final match = RegExp(r'#1\s+([^\s]+)\s+\((.+?):(\d+):\d+\)').firstMatch(callerLine);
+    final callerName = traces[0]
+        .replaceFirst(RegExp(r'#\d+\s+'), '')
+        .replaceFirst(RegExp(r'\s*\(.*\)'), '')
+        .replaceAll(".<anonymous closure>", "");
+    message = "${_wrapWithColor('error', '[ERROR:$callerName]', needBackground: true)} $message";
 
-    if (match != null) {
-      final functionName = match.group(1) ?? 'unknown';
-      final filePath = match.group(2) ?? 'unknown.dart';
-      final fileName = filePath.split('/').last;
-      final lineNumber = match.group(3) ?? '?';
+    traces = <String>[
+      '═╡ Traceback ╞═════════════════════════════════════════════════════════════════════════════════════',
+      ...traces,
+      '════════════════════════════════════════════════════════════════════════════════════════════════════',
+    ];
+    final traceStr = traces.map((line) => "\x1B[2m$line$reset").join('\n');
 
-      final fullMessage = '[$fileName:$lineNumber]($functionName): $message';
+    stdout.writeln("$message\n$traceStr\n");
+  }
 
-      dev.log(fullMessage, name: tag, stackTrace: stackTrace, level: 1000);
-    } else {
-      dev.log(message, name: tag, stackTrace: stackTrace, level: 1000);
-    }
+  static final Map<String, Map<String, String>> _colors = {
+    'warn': {'bg': '\x1B[43m', 'fg': '\x1B[30m', 'color': '\x1B[33m'},
+    'error': {'bg': '\x1B[41m', 'fg': '\x1B[37m', 'color': '\x1B[91m'},
+    'info': {'bg': '\x1B[42m', 'fg': '\x1B[37m', 'color': '\x1B[32m'},
+    'debug': {'bg': '\x1B[44m', 'fg': '\x1B[37m', 'color': '\x1B[34m'},
+    'trace': {'bg': '\x1B[46m', 'fg': '\x1B[37m', 'color': '\x1B[36m'},
+    'critical': {'bg': '\x1B[45m', 'fg': '\x1B[37m', 'color': '\x1B[38;5;199m'},
+    'fatal': {'bg': '\x1B[101m', 'fg': '\x1B[37m', 'color': '\x1B[35m'},
+    'style': {
+      'bold': '\x1B[1m',
+      'italic': '\x1B[3m',
+      'underline': '\x1B[4m',
+      'strikethrough': '\x1B[9m',
+    },
+  };
+  static final String reset = '\x1B[0m';
+
+  static String _wrapWithColor(String type, String message, {bool needBackground = false}) {
+    final colors = _colors[type]!;
+
+    // style fg bg text reset
+    return needBackground
+        ? '${colors['fg']}${colors['bg']}$message$reset'
+        : '${colors['color']}$message$reset';
   }
 
   static String _stringifyMessage(dynamic message) {

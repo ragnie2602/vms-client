@@ -1,50 +1,85 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import '../../core/base_bloc.dart';
 
-class HomeState extends BaseState {
-  final String message;
-  final bool isLoading;
-  
-  const HomeState({
-    this.message = 'Welcome to VMS Flutter Client',
-    this.isLoading = false,
+class HomeTab {
+  final String key;
+  final String title;
+  final IconData icon;
+  final Widget content;
+  final List<HomeTab> nested;
+
+  HomeTab(
+    this.key, {
+    required this.title,
+    required this.icon,
+    required this.content,
+    this.nested = const [],
   });
-  
-  HomeState copyWith({
-    String? message,
-    bool? isLoading,
-  }) {
-    return HomeState(
-      message: message ?? this.message,
-      isLoading: isLoading ?? this.isLoading,
-    );
+
+  static final tabs = [
+    HomeTab(
+      'monitor',
+      content: MonitorScreen(),
+      title: 'Giám sát',
+      icon: Icons.fiber_manual_record,
+    ),
+    HomeTab(
+      'test',
+      content: Container(),
+      title: 'Thông tin',
+      icon: Icons.list,
+      nested: [
+        HomeTab(
+          'test-1',
+          content: Container(),
+          title: 'Test 1',
+          icon: Icons.abc,
+          nested: [
+            HomeTab('test-1-1', content: Container(), title: 'Test 1-1', icon: Icons.abc),
+            HomeTab('test-1-2', content: Container(), title: 'Test 1-2', icon: Icons.abc),
+          ],
+        ),
+        HomeTab('test-2', content: Container(), title: 'Test 2', icon: Icons.abc),
+      ],
+    ),
+    HomeTab('about', content: Container(), title: 'Thông tin', icon: Icons.info),
+  ];
+}
+
+class HomeState extends BaseState {
+  final HomeTab selectedTab;
+
+  HomeState({HomeTab? selectedTab}) : selectedTab = selectedTab ?? HomeTab.tabs[0];
+
+  HomeState copyWith({HomeTab? selectedTab}) {
+    return HomeState(selectedTab: selectedTab ?? this.selectedTab);
   }
-  
+
   @override
-  List<Object?> get props => [message, isLoading];
+  List<Object?> get props => [selectedTab];
 }
 
 class HomeEvent extends BaseEvent {
   const HomeEvent();
 }
 
-class LoadHomeData extends HomeEvent {
-  const LoadHomeData();
+class ChangeTab extends HomeEvent {
+  final HomeTab tab;
+  const ChangeTab(this.tab);
 }
 
 class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
-  HomeBloc() : super(const HomeState()) {
-    on<LoadHomeData>(_onLoadHomeData);
+  HomeBloc() : super(HomeState()) {
+    on<ChangeTab>(_onChangeTab);
   }
-  
-  void _onLoadHomeData(LoadHomeData event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(isLoading: true));
-    
-    await Future.delayed(const Duration(seconds: 1));
-    
-    emit(state.copyWith(
-      isLoading: false,
-      message: 'Home data loaded successfully!',
-    ));
+
+  FutureOr<void> _onChangeTab(ChangeTab event, Emitter<HomeState> emit) async {
+    if (state.selectedTab.key == event.tab.key) return;
+
+    emit(state.copyWith(selectedTab: event.tab));
   }
 }
