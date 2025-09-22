@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
+import 'package:vms_flutter_client/core/error_service.dart';
 
 class Header extends StatelessWidget {
   const Header({super.key});
@@ -17,8 +18,19 @@ class Header extends StatelessWidget {
           PopupMenuButton(
             itemBuilder: (context) {
               return <PopupMenuEntry>[
-                // PopupMenuDivider(),
                 PopupMenuItem(
+                  mouseCursor: SystemMouseCursors.click,
+                  padding: EdgeInsets.zero,
+                  onTap: () => ErrorService.openLogFile(),
+                  child: ListTile(
+                    leading: Icon(Icons.article),
+                    title: Text('Mở log file'),
+                    contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
+                  ),
+                ),
+                PopupMenuDivider(height: 1),
+                PopupMenuItem(
+                  mouseCursor: SystemMouseCursors.click,
                   padding: EdgeInsets.zero,
                   onTap: () {
                     context.goNamed(Routes.login.name);
@@ -27,7 +39,6 @@ class Header extends StatelessWidget {
                     leading: Icon(Icons.logout),
                     title: Text('Đăng xuất'),
                     contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-                    mouseCursor: SystemMouseCursors.click,
                   ),
                 ),
               ];

@@ -8,7 +8,7 @@ import 'bloc/list_camera_bloc.dart';
 import 'widgets/camera_view.dart';
 
 class MonitorScreen extends StatefulWidget {
-  const MonitorScreen({super.key, this.rows = 6, this.columns = 6, this.spacing = 3.0});
+  const MonitorScreen({super.key, this.rows = 2, this.columns = 2, this.spacing = 3.0});
 
   final int rows;
   final int columns;

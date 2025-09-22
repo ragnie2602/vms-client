@@ -5,4 +5,10 @@ extension IterableExt<T> on Iterable<T> {
       yield convert(index++, element);
     }
   }
+
+  T? get firstOrNull {
+    var iterator = this.iterator;
+    if (iterator.moveNext()) return iterator.current;
+    return null;
+  }
 }

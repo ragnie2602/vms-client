@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:web_socket_client/web_socket_client.dart';
@@ -124,7 +125,11 @@ class SocketConnectionParams extends BaseConnectionParams {
   final int port;
   final int timeout;
 
-  SocketConnectionParams(this.host, this.port, {this.timeout = 30});
+  SocketConnectionParams(
+    this.host,
+    this.port, {
+    this.timeout = AppConfig.SOCKET_CONNECTION_TIMEOUT,
+  });
 }
 
 class SocketRequestPayload extends BaseRequestPayload {

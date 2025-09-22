@@ -19,7 +19,7 @@ class CameraView extends StatefulWidget {
 
 class _CameraViewState extends State<CameraView> {
   late VideoPlayerController _controller;
-  late List<int>? baseAudioTracks;
+  List<int>? baseAudioTracks;
 
   Timer? _timer;
   Timer? _debounce;
@@ -34,6 +34,9 @@ class _CameraViewState extends State<CameraView> {
   @override
   void dispose() {
     _controller.dispose();
+    _timer?.cancel();
+    _debounce?.cancel();
+    _countdown.dispose();
     super.dispose();
   }
 
@@ -72,6 +75,8 @@ class _CameraViewState extends State<CameraView> {
   void _debounceConnectionLost() {
     _debounce?.cancel();
     _debounce = Timer(AppConfig.PLAYER_DISCONNECTION_THRESHOLD, () {
+      if (!mounted) return;
+
       Logger.warn("Camera '${widget.data.name}' disconnected");
       _controller.value = VideoPlayerValue.erroneous("Disconnected");
     });

@@ -7,6 +7,11 @@ class AppConfig {
 
   static const INITIAL_ROUTE = Routes.login;
 
+  /* File log */
+  static const LOG_FILE_RETENTION_PERIOD = Duration(days: 3);
+  static const LOG_FILE_MAX_TRACE_LINES = 16;
+
+  /// Log
   static const LOG_ERROR_MAX_LINES = 10;
 
   /// Hiển thị log từ MDK (FVP)
@@ -15,4 +20,5 @@ class AppConfig {
   /// [Player] Timeout khi khởi tạo player (VideoPlayerController)
   static const PLAYER_INITIALIZATION_TIMEOUT = Duration(seconds: 60);
   static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 10);
+  static const SOCKET_CONNECTION_TIMEOUT = 60;
 }

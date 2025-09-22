@@ -65,6 +65,7 @@ dependencies:
 
   # Utils
   meta: ^1.15.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

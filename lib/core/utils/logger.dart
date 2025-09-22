@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:fvp/mdk.dart';
 
 import '../app_config.dart';
+import '../error_service.dart';
 
 class Logger {
   Logger._();
@@ -34,10 +35,10 @@ class Logger {
     stdout.writeln("$colorTag ${_wrapWithColor('trace', message)}");
   }
 
-  static void error(Object? error, {String tag = 'VMS'}) {
+  static void error(Object? error, {String tag = 'VMS', bool writeLog = false}) {
     if (kReleaseMode) return;
-    
-    String message = _wrapWithColor('error', _stringifyMessage(error));
+
+    String message = _wrapWithColor('error', stringifyObject(error));
 
     var traces = StackTrace.current
         .toString()
@@ -58,9 +59,13 @@ class Logger {
       ...traces,
       '════════════════════════════════════════════════════════════════════════════════════════════════════',
     ];
-    final traceStr = traces.map((line) => "\x1B[2m$line$reset").join('\n');
+    final traceStr = traces.map((line) => "\x1B[2m$line$_reset").join('\n');
 
     stdout.writeln("$message\n$traceStr\n");
+
+    if (writeLog && error != null) {
+      ErrorService.record('APP LOG', error, StackTrace.current, level: 'ERROR');
+    }
   }
 
   static final Map<String, Map<String, String>> _colors = {
@@ -78,18 +83,18 @@ class Logger {
       'strikethrough': '\x1B[9m',
     },
   };
-  static final String reset = '\x1B[0m';
+  static final String _reset = '\x1B[0m';
 
   static String _wrapWithColor(String type, String message, {bool needBackground = false}) {
     final colors = _colors[type]!;
 
     // style fg bg text reset
     return needBackground
-        ? '${colors['fg']}${colors['bg']}$message$reset'
-        : '${colors['color']}$message$reset';
+        ? '${colors['fg']}${colors['bg']}$message$_reset'
+        : '${colors['color']}$message$_reset';
   }
 
-  static String _stringifyMessage(dynamic message) {
+  static String stringifyObject(dynamic message) {
     final finalMessage = message is Function ? message() : message;
     if (finalMessage is Map || finalMessage is Iterable) {
       var encoder = JsonEncoder.withIndent('  ', (obj) => obj.toString());
