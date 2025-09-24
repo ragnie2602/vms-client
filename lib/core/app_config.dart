@@ -16,7 +16,7 @@ class AppConfig {
   static const LOG_ERROR_MAX_LINES = 10;
 
   /* MDK (FVP) */
-  static const MDK_LOG_LEVEL = LogLevel.all; // off < error < warning < info < debug < all
+  static const MDK_LOG_LEVEL = LogLevel.debug; // off < error < warning < info < debug < all
   static const SHOW_MDK_LOG = false;
 
   /* [Player] Timeout khi khởi tạo player (VideoPlayerController) */
@@ -26,6 +26,6 @@ class AppConfig {
 
   /* Monitoring view */
   static const double MONITOR_GRID_SPACING = 3.0;
-  static const int? OVERRIDE_MONITOR_GRID_ROWS = 2; // = null;
-  static const int? OVERRIDE_MONITOR_GRID_COLUMNS = 2; // = null;
+  static const int? OVERRIDE_MONITOR_GRID_ROWS = null; // = null;
+  static const int? OVERRIDE_MONITOR_GRID_COLUMNS = null; // = null;
 }

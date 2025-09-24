@@ -26,7 +26,7 @@ class MonitorLiveView extends StatelessWidget {
             alignment: Alignment.center,
             color: Colors.black,
             padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05),
-            child: CameraView(data: data, index: -1, mute: false),
+            child: CameraView(data: data, index: -1, isLiveView: true),
           ),
         ),
       ],

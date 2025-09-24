@@ -1,3 +1,4 @@
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 
 class CameraEntity {
@@ -13,8 +14,11 @@ class CameraEntity {
   /// streamHlsUrl: http://ipcam.vivas.vn:8080/record01/EfCSykeCNyi-VwJCrB4AAg/EfCSykeCNyi-VwJCrB4AAg.m3u8
   /// streamOriginUrl: rtsp://any:1@10.3.3.162:8081/mystream7
   /// userOriginAddedUrl: rtsp://10.3.3.162:8081/mystream7
-  Uri get streamUri => Uri.parse(stream.streamOriginUrl);
-  // Uri get streamUri => Uri.parse(stream.streamLinks.firstWhere((e) => e.nameOfStream == "SUB STREAM").urlOfStream);
+  Uri get mainStreamUri => Uri.parse(stream.streamOriginUrl);
+  Uri get subStreamUri => Uri.parse(
+    stream.streamLinks.firstWhereOrNull((e) => e.nameOfStream == "SUB STREAM")?.urlOfStream ??
+        stream.streamOriginUrl,
+  );
 
   // "rtsp://test:Vivas%402022@10.3.3.131:554/cam/realmonitor?channel=1&subtype=0&unicast=true&proto=Onvif"
   // "rtsp://admin:Vivas%40115TDH@10.3.3.125:554/onvif/profile2/media.smp"

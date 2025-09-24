@@ -40,6 +40,7 @@ class SocketApiClient extends BaseApiClient {
       _socket.messages.listen(_handleMessages);
       _socket.connection.listen((state) {
         Logger.log("Connection status: ${state.runtimeType}", tag: 'SOCKET');
+        if (_stateController.isClosed) return;
         _stateController.add(state);
       });
 

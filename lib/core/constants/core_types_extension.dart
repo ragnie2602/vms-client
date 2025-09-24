@@ -11,4 +11,11 @@ extension IterableExt<T> on Iterable<T> {
     if (iterator.moveNext()) return iterator.current;
     return null;
   }
+
+  T? firstWhereOrNull(bool Function(T element) test) {
+    for (var element in this) {
+      if (test(element)) return element;
+    }
+    return null;
+  }
 }

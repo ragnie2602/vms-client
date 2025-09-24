@@ -8,11 +8,11 @@ import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 class CameraView extends StatefulWidget {
-  const CameraView({super.key, required this.data, required this.index, this.mute = true});
+  const CameraView({super.key, required this.data, required this.index, this.isLiveView = false});
 
   final CameraEntity data;
   final int index;
-  final bool mute;
+  final bool isLiveView;
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -48,7 +48,7 @@ class _CameraViewState extends State<CameraView> {
 
     try {
       _controller = VideoPlayerController.networkUrl(
-        widget.data.streamUri,
+        widget.isLiveView ? widget.data.mainStreamUri : widget.data.subStreamUri,
         videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
       );
 
@@ -67,7 +67,7 @@ class _CameraViewState extends State<CameraView> {
     baseAudioTracks ??= _controller.getActiveAudioTracks();
 
     _controller.setFps(20);
-    if (widget.mute) {
+    if (!widget.isLiveView) {
       _controller.setAudioTracks([]); // Tắt âm thanh
     }
 

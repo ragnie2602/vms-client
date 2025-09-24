@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
+import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 
 import '../../common/popup_menu.dart';
 
@@ -102,7 +104,10 @@ class Header extends StatelessWidget {
                       ),
                       Divider(height: 0.5, color: Colors.grey.shade300),
                       ListTile(
-                        onTap: () => context.goNamed(Routes.login.name),
+                        onTap: () {
+                          context.read<SocketApiClient>().disconnect();
+                          context.goNamed(Routes.login.name);
+                        },
                         leading: Icon(Icons.logout),
                         title: Text('Đăng xuất', style: textStyle),
                         contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),

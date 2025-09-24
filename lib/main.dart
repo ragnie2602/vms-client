@@ -30,8 +30,7 @@ void main() async {
     await EnvService.init();
 
     await SentryFlutter.init((options) {
-      options.dsn =
-          'https://8168a7d1fdf6b839c0a84f7f111d8592@o4510069418557440.ingest.de.sentry.io/4510069475704912';
+      options.dsn = EnvService.read('SENTRY_DSN');
       options.beforeSend = (event, hint) async {
         try {
           await ErrorService.recordSentryEvent(event);
