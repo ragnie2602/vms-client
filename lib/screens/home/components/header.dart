@@ -12,9 +12,7 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shadows = [
-      BoxShadow(color: Colors.black26, blurRadius: 2, spreadRadius: 0, offset: Offset(1, 1)),
-    ];
+    final shadows = [BoxShadow(color: Colors.black26, blurRadius: 2, spreadRadius: 0, offset: Offset(1, 1))];
     final textStyle = TextStyle(fontSize: 13, color: Colors.black);
 
     return Container(
@@ -98,9 +96,7 @@ class Header extends StatelessWidget {
                         leading: Icon(Icons.article),
                         title: Text('Mở log file', style: textStyle),
                         contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(3))),
                       ),
                       Divider(height: 0.5, color: Colors.grey.shade300),
                       ListTile(
@@ -111,9 +107,7 @@ class Header extends StatelessWidget {
                         leading: Icon(Icons.logout),
                         title: Text('Đăng xuất', style: textStyle),
                         contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(3))),
                       ),
                     ],
                   ),
@@ -136,7 +130,7 @@ class Header extends StatelessWidget {
                   children: <Widget>[
                     CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.person)),
                     SizedBox(width: 6),
-                    Text('Admin', style: textStyle),
+                    Text('pmc5', style: textStyle),
                   ],
                 ),
               ),

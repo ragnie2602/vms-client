@@ -66,8 +66,8 @@ class _CameraViewState extends State<CameraView> {
     // Gán reference
     baseAudioTracks ??= _controller.getActiveAudioTracks();
 
-    _controller.setFps(20);
     if (!widget.isLiveView) {
+      _controller.setFps(20);
       _controller.setAudioTracks([]); // Tắt âm thanh
     }
 
@@ -112,17 +112,14 @@ class _CameraViewState extends State<CameraView> {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Colors.black,
         boxShadow: [BoxShadow(color: Colors.white, spreadRadius: 1, blurRadius: 1)],
       ),
       child: _controller.value.hasError
           ? _buildError()
           : !_controller.value.isInitialized
           ? const Center(child: CircularProgressIndicator.adaptive())
-          : AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            ),
+          : AspectRatio(aspectRatio: _controller.value.aspectRatio, child: VideoPlayer(_controller)),
     );
   }
 
@@ -133,11 +130,14 @@ class _CameraViewState extends State<CameraView> {
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 14),
-        Icon(Icons.error_outline, color: Colors.red, size: 36),
+        Icon(Icons.videocam_off, color: Colors.red, size: 36),
         ValueListenableBuilder(
           valueListenable: _countdown,
           builder: (context, value, child) {
-            return Text('Kết nối lại sau ${value}s', style: TextStyle(fontSize: 14));
+            return Text(
+              'Camera ${widget.data.name} đang ngoại tuyến',
+              style: TextStyle(fontSize: 13, color: Colors.white),
+            );
           },
         ),
       ],
