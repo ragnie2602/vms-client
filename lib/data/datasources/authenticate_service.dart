@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
+import 'package:vms_flutter_client/screens/login/login_screen.dart';
 
 import '../models/packet.dart';
 import '../proto/models/comm.profile.pb.dart';
@@ -34,6 +35,8 @@ class AuthenticateService {
         platform: 5, // Fixed platform value as requested
       );
 
+      loginStatus.text += "--- Thực hiện xác thực tài khoản '$username' tại '$server' ---\n";
+
       // Serialize the request to protobuf bytes
       final requestBytes = request.writeToBuffer();
       // Send the request and get response
@@ -46,12 +49,18 @@ class AuthenticateService {
       if (reply.isSuccess) {
         final authenticateReplyBytes = reply.reply.value;
         final authenticateReply = Authenticate_Reply.fromBuffer(authenticateReplyBytes);
+
+        loginStatus.text += "Xác thực thành công ($username)\n";
+
         return authenticateReply;
       } else {
-        Logger.error('Authenticate failed: ${Authenticate_Error.valueOf(reply.type).translate()}');
+        final msg = Authenticate_Error.valueOf(reply.type).translate();
+        Logger.error('Authenticate failed: $msg');
+        loginStatus.text += "Xác thực thất bại ($msg)\n";
         return Authenticate_Reply();
       }
     } catch (e) {
+      loginStatus.text += "Xác thực thất bại (${e.toString()})\n";
       rethrow;
     }
   }
@@ -59,8 +68,13 @@ class AuthenticateService {
   Future<bool> login(Authentication data) async {
     if (data.uid.isEmpty || data.sessionId.isEmpty || data.host.isEmpty) return false;
 
+    loginStatus.text += "--- Thực hiện đăng nhập ---\n";
+    loginStatus.text += "Đang kết nối socket ws://${data.host}:${data.port}...\n";
+
     final status = await _socketApiClient.connect(SocketConnectionParams(data.host, data.port));
     if (status) {
+      loginStatus.text += "Kết nối socket thành công\n";
+      loginStatus.text += "Thực hiện đăng nhập...\n";
       final response = await _socketApiClient.send<List<int>>(
         SocketRequestPayload(
           Packet(
@@ -74,11 +88,15 @@ class AuthenticateService {
       if (response != null) {
         final loginReply = Login_Reply.fromBuffer(response);
         Logger.log("Logged in as: ${loginReply.profile.account}");
+        loginStatus.text += "Đang đăng thành công\n";
+      } else {
+        loginStatus.text += "Đăng nhập thất bại (timeout)\n";
       }
 
       return response != null;
     }
 
+    loginStatus.text += "Kết nối socket thất bại\n";
     return false;
   }
 }
