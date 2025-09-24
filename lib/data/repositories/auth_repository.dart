@@ -14,12 +14,13 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   }
 
   @override
-  Future<Authentication> authenticate(String username, String password) async {
+  Future<Authentication> authenticate(String server, String username, String password) async {
     try {
       // Call the real authenticate API
       final authReply = await authenticateService.authenticate(
         username: username,
         password: password,
+        server: server,
       );
 
       return Authentication(

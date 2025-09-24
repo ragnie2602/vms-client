@@ -7,10 +7,12 @@ class LoginEvent extends BaseEvent {
 class LoginSubmitted extends LoginEvent {
   final String username;
   final String password;
+  final String server;
 
   const LoginSubmitted({
     required this.username,
     required this.password,
+    required this.server,
   });
 
   @override

@@ -20,6 +20,7 @@ class LoginBloc extends BaseBloc<LoginEvent, LoginState> {
       final loginInput = LoginInput(
         username: event.username,
         password: event.password,
+        server: event.server,
       );
 
       final loginOutput = await loginUseCase.execute(loginInput);

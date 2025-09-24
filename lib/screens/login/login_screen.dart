@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/constants/app_keys.dart';
+import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_event.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_state.dart';
+
 import '../../core/base_view.dart';
 import 'bloc/login_bloc.dart';
 
@@ -33,112 +37,182 @@ class LoginView extends BaseView<LoginBloc> {
 
   @override
   Widget buildView(BuildContext context) {
-    final usernameController = TextEditingController();
-    final passwordController = TextEditingController();
+    final serverController = TextEditingController(
+      text: AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? EnvService.apiBaseUrl,
+    );
+    final usernameController = TextEditingController(
+      text: AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY),
+    );
+    final passwordController = TextEditingController(
+      text: AppData.instance.read<String>(AppKeys.SP_PASSWORD_KEY),
+    );
+
     final formKey = GlobalKey<FormState>();
+    bool obscure = true;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: BlocListener<LoginBloc, LoginState>(
-        listener: (context, state) {
-          if (state.isSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Welcome ${state.account ?? 'User'}!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            context.go('/home');
-          } else if (state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'VMS Flutter Client',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
+      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      body: Center(
+        child: BlocListener<LoginBloc, LoginState>(
+          listener: (context, state) {
+            if (state.isSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Welcome ${state.account ?? 'User'}!'),
+                  backgroundColor: Colors.green,
                 ),
-                const SizedBox(height: 48),
-                TextFormField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Username',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter username';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
-                  ),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                BlocBuilder<LoginBloc, LoginState>(
-                  builder: (context, state) {
-                    return SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: state.isLoading ? null : () {
-                          if (formKey.currentState!.validate()) {
-                            bloc(context).add(LoginSubmitted(
-                              username: usernameController.text,
-                              password: passwordController.text,
-                            ));
-                          }
-                        },
-                        child: state.isLoading
-                            ? const CircularProgressIndicator()
-                            : const Text('Login'),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    context.go('/home');
-                  },
-                  child: const Text('Continue as Guest'),
+              );
+              context.go('/home');
+            } else if (state.errorMessage != null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),
+              );
+            }
+          },
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.25,
+            height: MediaQuery.of(context).size.height * 0.5,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x14000000),
+                  blurRadius: 30,
+                  offset: Offset(0, 20),
+                  spreadRadius: 0,
                 ),
               ],
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
+            child: Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  Spacer(),
+                  const Text(
+                    'VMS Client',
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 6),
+                  const Text(
+                    'Đăng nhập',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  Spacer(flex: 2),
+                  TextFormField(
+                    controller: serverController,
+                    decoration: const InputDecoration(
+                      labelText: 'Máy chủ',
+                      hintText: 'http://10.3.3.162:8787',
+                      border: OutlineInputBorder(),
+                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                      prefixIcon: Icon(Icons.cloud),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Máy chủ không được để trống';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: usernameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Tài khoản',
+                      hintText: 'Nhập tài khoản, email hoặc số điện thoại',
+                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Tài khoản không được để trống';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  StatefulBuilder(
+                    builder: (context, setState) => TextFormField(
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        labelText: 'Mật khẩu',
+                        hintText: 'Nhập mật khẩu',
+                        hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          onPressed: () => setState(() => obscure = !obscure),
+                          icon: Icon(obscure ? Icons.visibility : Icons.visibility_off),
+                          iconSize: 20,
+                        ),
+                      ),
+                      obscureText: obscure,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Mật khẩu không được để trống';
+                        }
+                        if (value.length < 6) {
+                          return 'Mật khẩu phải có ít nhất 6 ký tự';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+
+                  BlocBuilder<LoginBloc, LoginState>(
+                    builder: (context, state) {
+                      return ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          backgroundColor: Colors.blueAccent,
+                          minimumSize: Size(double.infinity, 60),
+                        ),
+                        onPressed: state.isLoading
+                            ? null
+                            : () {
+                                if (formKey.currentState!.validate()) {
+                                  bloc(context).add(
+                                    LoginSubmitted(
+                                      username: usernameController.text,
+                                      password: passwordController.text,
+                                      server: serverController.text,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: state.isLoading
+                            ? Center(child: const CircularProgressIndicator(color: Colors.white))
+                            : Text(
+                                'ĐĂNG NHẬP',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      );
+                    },
+                  ),
+                  Spacer(),
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      padding: EdgeInsets.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () => context.go('/home'),
+                    icon: Icon(Icons.login, size: 13, color: Colors.grey),
+                    label: Text(
+                      'Continue as Guest',
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

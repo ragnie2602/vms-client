@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
@@ -23,6 +24,7 @@ class AuthenticateService {
   Future<Authenticate_Reply> authenticate({
     required String username,
     required String password,
+    required String server,
   }) async {
     try {
       // Create the authenticate request with only required fields
@@ -35,7 +37,10 @@ class AuthenticateService {
       // Serialize the request to protobuf bytes
       final requestBytes = request.writeToBuffer();
       // Send the request and get response
-      final responseBytes = await _httpClient.authenticate(Uint8List.fromList(requestBytes));
+      final responseBytes = await _httpClient.post(
+        url: '$server${EnvService.authenticateEndpoint}',
+        data: Uint8List.fromList(requestBytes),
+      );
       final reply = Reply.fromBuffer(responseBytes);
 
       if (reply.isSuccess) {

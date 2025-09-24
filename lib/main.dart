@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'core/app_router.dart';
@@ -17,14 +20,27 @@ void main() async {
         'platforms': ['windows'], // Chỉ sử dụng với platform windows
         'lowLatency': 1,
         'video.decoders': ['D3D11', 'DXVA', 'MFT:d3d=11', 'CUDA', 'FFmpeg'],
+        'global': <String, Object>{'log': AppConfig.MDK_LOG_LEVEL},
+        'player': <String, String>{},
+        'onMdkLog': Logger.onMdkLog,
       },
-      onMdkLog: Logger.onMdkLog,
     );
 
-    // Env: Initialize environment configuration
+    await AppData.instance.init(); // Trước EnvService
     await EnvService.init();
 
-    runApp(const MyApp());
+    await SentryFlutter.init((options) {
+      options.dsn =
+          'https://8168a7d1fdf6b839c0a84f7f111d8592@o4510069418557440.ingest.de.sentry.io/4510069475704912';
+      options.beforeSend = (event, hint) async {
+        try {
+          await ErrorService.recordSentryEvent(event);
+          return null;
+        } catch (_) {
+          return event;
+        }
+      };
+    }, appRunner: () => runApp(const MyApp()));
   });
 }
 

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 
@@ -78,6 +79,28 @@ class ErrorService {
     String message = "\n\n═══╡ [${level.toUpperCase()}] $timestamp ╞═══════════════";
     message += '\n[$type] ${Logger.stringifyObject(error)}\n';
     message += stack.toString().split('\n').take(AppConfig.LOG_FILE_MAX_TRACE_LINES).join('\n');
+
+    await _logFile!.writeAsString(message, mode: FileMode.append);
+  }
+
+  static Future<void> recordSentryEvent(SentryEvent event) async {
+    if (_logFile == null) await _initLogFile();
+
+    final timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(event.timestamp ?? DateTime.now());
+    final level = event.level?.name.toUpperCase() ?? 'ERROR';
+
+    String message = "\n\n═══╡ [$level] $timestamp ╞═══════════════";
+    for (var error in event.exceptions ?? <SentryException>[]) {
+      int index = 0;
+      message += '\n[${error.type}] ${error.value}\n';
+      message +=
+          error.stackTrace?.frames
+              .map(
+                (e) => "#${index++}\t${e.function} (${e.absPath}:${e.lineNo ?? 0}:${e.colNo ?? 0})",
+              )
+              .join('\n') ??
+          "";
+    }
 
     await _logFile!.writeAsString(message, mode: FileMode.append);
   }

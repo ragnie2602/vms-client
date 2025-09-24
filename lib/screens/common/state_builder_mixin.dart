@@ -38,7 +38,6 @@ mixin StateBuilderMixin {
   }
 
   Widget stateBuilder<T extends BaseState>(
-    BuildContext context,
     covariant BaseState state, {
     Widget Function()? loadingBuilder,
     Widget Function(String message)? errorBuilder,

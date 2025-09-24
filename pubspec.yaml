@@ -63,9 +63,13 @@ dependencies:
   # Environment Configuration
   flutter_dotenv: ^5.1.0
 
+  # Crash Reporting
+  sentry_flutter: ^8.11.2 # 8.11.2 -> support parallel mac
+
   # Utils
   meta: ^1.15.0
   intl: ^0.20.2
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

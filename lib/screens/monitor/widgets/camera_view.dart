@@ -8,10 +8,11 @@ import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 class CameraView extends StatefulWidget {
-  const CameraView({super.key, required this.data, required this.index});
+  const CameraView({super.key, required this.data, required this.index, this.mute = true});
 
   final CameraEntity data;
   final int index;
+  final bool mute;
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -66,7 +67,9 @@ class _CameraViewState extends State<CameraView> {
     baseAudioTracks ??= _controller.getActiveAudioTracks();
 
     _controller.setFps(20);
-    _controller.setAudioTracks([]); // Tắt âm thanh
+    if (widget.mute) {
+      _controller.setAudioTracks([]); // Tắt âm thanh
+    }
 
     setState(() {}); // Build lại để bắt đầu play video
     await _controller.play();
@@ -127,6 +130,7 @@ class _CameraViewState extends State<CameraView> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 14),
         Icon(Icons.error_outline, color: Colors.red, size: 36),

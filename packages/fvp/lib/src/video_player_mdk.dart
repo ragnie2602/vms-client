@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/widgets.dart'; //
 import 'package:flutter/services.dart';
@@ -115,6 +116,9 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
   // _prevImpl: required if registerWith() can be invoked multiple times by user
   static VideoPlayerPlatform? _prevImpl;
 
+  /* ╔═══════════════ CUSTOM CODE ═══════════════╗ */
+  static void Function(LogLevel, String)? _onMdkLog;
+
 /*
   Registers this class as the default instance of [VideoPlayerPlatform].
 
@@ -122,10 +126,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
   "video.decoders": a list of decoder names. supported decoders: https://github.com/wang-bin/mdk-sdk/wiki/Decoders
   "maxWidth", "maxHeight": texture max size. if not set, video frame size is used. a small value can reduce memory cost, but may result in lower image quality.
  */
-  static void registerVideoPlayerPlatformsWith({
-    dynamic options,
-    void Function(LogLevel level, String msg)? onMdkLog,
-  }) {
+  static void registerVideoPlayerPlatformsWith({dynamic options}) {
     _log.fine('registerVideoPlayerPlatformsWith: $options');
     if (options is Map<String, dynamic>) {
       final platforms = options['platforms'];
@@ -155,6 +156,13 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
       // TODO: _env => putenv
       _decoders = options['video.decoders'];
       _subtitleFontFile = options['subtitleFontFile'];
+
+      /* ╔═══════════════ CUSTOM CODE ═══════════════╗ */
+      try {
+        _onMdkLog = options['onMdkLog'];
+      } catch (e) {
+        log(e.toString(), name: "MDK", error: e);
+      }
     }
 
     if (_decoders == null && !PlatformEx.isAndroidEmulator()) {
@@ -187,36 +195,42 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
 // delay: ensure log handler is set in main(), blank window if run with debugger.
 // registerWith() can be invoked by dart_plugin_registrant.dart before main. when debugging, won't enter main if posting message from native to dart(new native log message) before main?
     Future.delayed(const Duration(milliseconds: 0), () {
-      _setupMdk(onMdkLog);
+      _setupMdk();
     });
 
     _prevImpl ??= VideoPlayerPlatform.instance;
     VideoPlayerPlatform.instance = MdkVideoPlayerPlatform();
   }
 
-  static void _setupMdk(void Function(LogLevel level, String msg)? onMdkLog) {
-    mdk.setLogHandler((level, msg) {
-      if (msg.endsWith('\n')) {
-        msg = msg.substring(0, msg.length - 1);
-      }
+  static void _setupMdk() {
+    /* ╔═══════════════ CUSTOM CODE ═══════════════╗ */
+    mdk.setLogHandler(_globalOpts?['log'] == LogLevel.off
+        ? null
+        : (level, msg) {
+            if (msg.endsWith('\n')) {
+              msg = msg.substring(0, msg.length - 1);
+            }
 
-      onMdkLog?.call(level, msg);
+            if (_onMdkLog != null) {
+              return _onMdkLog!(level, msg);
+            }
 
-      switch (level) {
-        case mdk.LogLevel.error:
-          _mdkLog.severe(msg);
-        case mdk.LogLevel.warning:
-          _mdkLog.warning(msg);
-        case mdk.LogLevel.info:
-          _mdkLog.info(msg);
-        case mdk.LogLevel.debug:
-          _mdkLog.fine(msg);
-        case mdk.LogLevel.all:
-          _mdkLog.finest(msg);
-        default:
-          return;
-      }
-    });
+            switch (level) {
+              case mdk.LogLevel.error:
+                _mdkLog.severe(msg);
+              case mdk.LogLevel.warning:
+                _mdkLog.warning(msg);
+              case mdk.LogLevel.info:
+                _mdkLog.info(msg);
+              case mdk.LogLevel.debug:
+                _mdkLog.fine(msg);
+              case mdk.LogLevel.all:
+                _mdkLog.finest(msg);
+              default:
+                return;
+            }
+          });
+
     // mdk.setGlobalOptions('plugins', 'mdk-braw');
     mdk.setGlobalOption("log", "all");
     mdk.setGlobalOption('d3d11.sync.cpu', 1);
