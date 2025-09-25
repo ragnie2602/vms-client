@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/screens/common/platform_widget.dart';
-import 'package:vms_flutter_client/screens/monitor/monitor_live_view.dart';
+import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 
-import '../common/state_builder_mixin.dart';
+import '../camera_live/camera_live_screen.dart';
+import '../shared/state_builder_mixin.dart';
 import 'bloc/list_camera_bloc.dart';
-import 'widgets/camera_view.dart';
+import 'widgets/camera_player.dart';
 
-class MonitorScreen extends StatefulWidget {
+class MonitorScreen extends StatelessWidget with StateBuilderMixin {
   const MonitorScreen({super.key});
-
-  @override
-  State<MonitorScreen> createState() => _MonitorScreenState();
-}
-
-class _MonitorScreenState extends State<MonitorScreen> with StateBuilderMixin {
-  CameraEntity? liveViewCamera;
 
   // Getters
   int get rows => AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? 6;
@@ -34,13 +29,6 @@ class _MonitorScreenState extends State<MonitorScreen> with StateBuilderMixin {
 
   @override
   Widget build(BuildContext context) {
-    if (liveViewCamera != null) {
-      return MonitorLiveView(
-        data: liveViewCamera!,
-        onBack: () => setState(() => liveViewCamera = null),
-      );
-    }
-
     return BlocBuilder<ListCameraBloc, ListCameraState>(
       builder: (context, blocState) => stateBuilder<ListCameraSuccess>(
         blocState,
@@ -57,18 +45,12 @@ class _MonitorScreenState extends State<MonitorScreen> with StateBuilderMixin {
                 spacing: spacing,
                 runSpacing: spacing,
                 children: state.cameras.mapIndexed((index, camera) {
-                  return MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => setState(() => liveViewCamera = camera),
-                      child: SizedBox.fromSize(
-                        size: size,
-                        child: CameraView(
-                          index: index,
-                          data: camera,
-                          key: ValueKey("player($index)___${camera.camId}"),
-                        ),
-                      ),
+                  return SizedBox.fromSize(
+                    size: size,
+                    child: CameraPlayer(
+                      data: camera,
+                      key: ValueKey("player($index)___${camera.camId}"),
+                      builder: _buildCameraView,
                     ),
                   );
                 }).toList(),
@@ -76,6 +58,36 @@ class _MonitorScreenState extends State<MonitorScreen> with StateBuilderMixin {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
+    return GestureDetector(
+      onTap: () {
+        context.goNamed(
+          Routes.livecamera.name,
+          extra: CameraLiveScreenArgs(data: data, previous: Routes.monitoring),
+        );
+      },
+      child: Stack(
+        children: [
+          player,
+
+          Positioned(
+            bottom: 6,
+            left: 6,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(3),
+                boxShadow: [BoxShadow(color: Colors.white10, blurRadius: 6, offset: Offset(0, 2))],
+              ),
+              padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+              child: Text(data.name, style: TextStyle(color: Colors.black, fontSize: 12)),
+            ),
+          ),
+        ],
       ),
     );
   }

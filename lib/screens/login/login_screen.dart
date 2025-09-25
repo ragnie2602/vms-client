@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/app_keys.dart';
 import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_event.dart';
@@ -66,7 +67,7 @@ class LoginView extends BaseView<LoginBloc> {
                       backgroundColor: Colors.green,
                     ),
                   );
-                  context.go('/home');
+                  context.goNamed(Routes.monitoring.name);
                 } else if (state.errorMessage != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),

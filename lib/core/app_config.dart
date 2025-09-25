@@ -10,13 +10,16 @@ class AppConfig {
 
   /* File log */
   static const LOG_FILE_RETENTION_PERIOD = Duration(days: 3);
-  static const LOG_FILE_MAX_TRACE_LINES = 16;
+  static const LOG_FILE_MAX_TRACE_LINES = 31;
+
+  /*  */
+  static const SHOW_HOME_SIDEBAR = false;
 
   /* Log */
   static const LOG_ERROR_MAX_LINES = 10;
 
   /* MDK (FVP) */
-  static const MDK_LOG_LEVEL = LogLevel.debug; // off < error < warning < info < debug < all
+  static const MDK_LOG_LEVEL = LogLevel.off; // off < error < warning < info < debug < all
   static const SHOW_MDK_LOG = false;
 
   /* [Player] Timeout khi khởi tạo player (VideoPlayerController) */

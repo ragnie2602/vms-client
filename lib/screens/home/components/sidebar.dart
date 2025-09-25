@@ -12,6 +12,7 @@ class Sidebar extends StatefulWidget {
     this.initialWidth = 200,
     this.dividerWidth = 1,
     this.onCursorChange,
+    this.enable = true,
   });
 
   final double minWidth;
@@ -19,6 +20,7 @@ class Sidebar extends StatefulWidget {
   final double initialWidth;
   final double dividerWidth;
   final Function(MouseCursor)? onCursorChange;
+  final bool enable;
 
   @override
   State<Sidebar> createState() => _SidebarState();
@@ -43,6 +45,8 @@ class _SidebarState extends State<Sidebar> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.enable) return SizedBox.shrink();
+
     return ValueListenableBuilder<double>(
       valueListenable: width,
       builder: (context, value, child) => AnimatedContainer(

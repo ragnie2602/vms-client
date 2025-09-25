@@ -7,24 +7,24 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
-class CameraView extends StatefulWidget {
-  const CameraView({super.key, required this.data, required this.index, this.isLiveView = false});
+class CameraPlayer extends StatefulWidget {
+  const CameraPlayer({super.key, required this.data, this.isSubStream = true, this.builder});
 
   final CameraEntity data;
-  final int index;
-  final bool isLiveView;
+  final bool isSubStream;
+  final Widget Function(BuildContext context, VideoPlayer playerWidget, CameraEntity data)? builder;
 
   @override
-  State<CameraView> createState() => _CameraViewState();
+  State<CameraPlayer> createState() => _CameraPlayerState();
 }
 
-class _CameraViewState extends State<CameraView> {
+class _CameraPlayerState extends State<CameraPlayer> {
   late VideoPlayerController _controller;
   List<int>? baseAudioTracks;
 
   Timer? _timer;
   Timer? _debounce;
-  final ValueNotifier<int> _countdown = ValueNotifier(5);
+  int _countdown = 5;
 
   @override
   void initState() {
@@ -37,7 +37,6 @@ class _CameraViewState extends State<CameraView> {
     _controller.dispose();
     _timer?.cancel();
     _debounce?.cancel();
-    _countdown.dispose();
     super.dispose();
   }
 
@@ -48,7 +47,7 @@ class _CameraViewState extends State<CameraView> {
 
     try {
       _controller = VideoPlayerController.networkUrl(
-        widget.isLiveView ? widget.data.mainStreamUri : widget.data.subStreamUri,
+        widget.isSubStream ? widget.data.subStreamUri : widget.data.mainStreamUri,
         videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
       );
 
@@ -66,7 +65,8 @@ class _CameraViewState extends State<CameraView> {
     // Gán reference
     baseAudioTracks ??= _controller.getActiveAudioTracks();
 
-    if (!widget.isLiveView) {
+    if (widget.isSubStream) {
+      _controller.setBufferRange(min: 0, max: 1, drop: true);
       _controller.setFps(20);
       _controller.setAudioTracks([]); // Tắt âm thanh
     }
@@ -91,12 +91,12 @@ class _CameraViewState extends State<CameraView> {
     if (_controller.value.hasError) {
       _timer?.cancel();
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (_countdown.value == 0) {
+        if (_countdown == 0) {
           timer.cancel();
-          _countdown.value = 5;
+          _countdown = 5;
           _connect(retry: true);
         } else {
-          _countdown.value--;
+          _countdown--;
         }
       });
     }
@@ -113,13 +113,18 @@ class _CameraViewState extends State<CameraView> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.black,
-        boxShadow: [BoxShadow(color: Colors.white, spreadRadius: 1, blurRadius: 1)],
+        boxShadow: [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)],
       ),
       child: _controller.value.hasError
           ? _buildError()
           : !_controller.value.isInitialized
           ? const Center(child: CircularProgressIndicator.adaptive())
-          : AspectRatio(aspectRatio: _controller.value.aspectRatio, child: VideoPlayer(_controller)),
+          : AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child:
+                  widget.builder?.call(context, VideoPlayer(_controller), widget.data) ??
+                  VideoPlayer(_controller),
+            ),
     );
   }
 
@@ -131,14 +136,10 @@ class _CameraViewState extends State<CameraView> {
       children: [
         const SizedBox(height: 14),
         Icon(Icons.videocam_off, color: Colors.red, size: 36),
-        ValueListenableBuilder(
-          valueListenable: _countdown,
-          builder: (context, value, child) {
-            return Text(
-              'Camera ${widget.data.name} đang ngoại tuyến',
-              style: TextStyle(fontSize: 13, color: Colors.white),
-            );
-          },
+        SizedBox(height: 6),
+        Text(
+          'Camera ${widget.data.name} đang ngoại tuyến',
+          style: TextStyle(fontSize: 13, color: Colors.white),
         ),
       ],
     );

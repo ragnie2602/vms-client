@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 
 import '../components/header.dart';
-// import '../components/sidebar.dart';
+import '../components/sidebar.dart';
 
 class HomeDesktopLayout extends StatelessWidget {
   final Widget content;
@@ -9,7 +10,7 @@ class HomeDesktopLayout extends StatelessWidget {
   HomeDesktopLayout({super.key, required this.content});
 
   late final cursor = ValueNotifier(MouseCursor.defer);
-  // void _onCursorChange(MouseCursor cursor) => this.cursor.value = cursor;
+  void _onCursorChange(MouseCursor cursor) => this.cursor.value = cursor;
 
   @override
   Widget build(BuildContext context) {
@@ -19,17 +20,21 @@ class HomeDesktopLayout extends StatelessWidget {
       child: Row(
         children: <Widget>[
           // Sidebar
-          // Sidebar(
-          //   maxWidth: MediaQuery.of(context).size.width * 0.15,
-          //   onCursorChange: _onCursorChange,
-          // ),
+          Sidebar(
+            maxWidth: MediaQuery.of(context).size.width * 0.15,
+            onCursorChange: _onCursorChange,
+            enable: AppConfig.SHOW_HOME_SIDEBAR,
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // Header
                 Header(),
-                Expanded(child: content),
+                Expanded(child: Padding(
+                  padding: const EdgeInsets.fromLTRB(1, 1, 0, 0),
+                  child: content,
+                )),
               ],
             ),
           ),

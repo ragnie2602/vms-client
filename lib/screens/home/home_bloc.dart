@@ -2,51 +2,37 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import '../../core/base_bloc.dart';
 
 class HomeTab {
-  final String key;
+  final Routes? route;
   final String title;
   final IconData icon;
-  final Widget content;
   final List<HomeTab> nested;
 
-  HomeTab(
-    this.key, {
-    required this.title,
-    required this.icon,
-    required this.content,
-    this.nested = const [],
-  });
+  HomeTab(this.route, {required this.title, required this.icon, this.nested = const []});
 
   static final tabs = [
+    HomeTab(Routes.monitoring, title: 'Giám sát', icon: Icons.fiber_manual_record),
     HomeTab(
-      'monitor',
-      content: MonitorScreen(),
-      title: 'Giám sát',
-      icon: Icons.fiber_manual_record,
-    ),
-    HomeTab(
-      'test',
-      content: Container(),
+      null,
       title: 'Thông tin',
       icon: Icons.list,
       nested: [
         HomeTab(
-          'test-1',
-          content: Container(),
+          null,
           title: 'Test 1',
           icon: Icons.abc,
           nested: [
-            HomeTab('test-1-1', content: Container(), title: 'Test 1-1', icon: Icons.abc),
-            HomeTab('test-1-2', content: Container(), title: 'Test 1-2', icon: Icons.abc),
+            HomeTab(Routes.test11, title: 'Test 1-1', icon: Icons.abc),
+            HomeTab(Routes.test12, title: 'Test 1-2', icon: Icons.abc),
           ],
         ),
-        HomeTab('test-2', content: Container(), title: 'Test 2', icon: Icons.abc),
+        HomeTab(Routes.test2, title: 'Test 2', icon: Icons.abc),
       ],
     ),
-    HomeTab('about', content: Container(), title: 'Thông tin', icon: Icons.info),
+    HomeTab(Routes.about, title: 'Thông tin', icon: Icons.info),
   ];
 }
 
@@ -78,8 +64,9 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
   }
 
   FutureOr<void> _onChangeTab(ChangeTab event, Emitter<HomeState> emit) async {
-    if (state.selectedTab.key == event.tab.key) return;
+    if (state.selectedTab == event.tab) return;
 
     emit(state.copyWith(selectedTab: event.tab));
+    if (event.tab.route != null) AppRouter.router.goNamed(event.tab.route!.name);
   }
 }

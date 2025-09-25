@@ -18,7 +18,7 @@ void main() async {
     fvp.registerWith(
       options: {
         'platforms': ['windows'], // Chỉ sử dụng với platform windows
-        'lowLatency': 1,
+        'lowLatency': 2,
         'video.decoders': ['D3D11', 'DXVA', 'MFT:d3d=11', 'CUDA', 'FFmpeg'],
         'global': <String, Object>{'log': AppConfig.MDK_LOG_LEVEL},
         'player': <String, String>{},
