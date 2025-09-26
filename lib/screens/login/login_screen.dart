@@ -8,7 +8,6 @@ import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_event.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_state.dart';
 
-import '../../core/base_view.dart';
 import 'bloc/login_bloc.dart';
 
 TextEditingController loginStatus = TextEditingController();
@@ -21,6 +20,22 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final serverController = TextEditingController(
+    text: AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? EnvService.apiBaseUrl,
+  );
+  final serverFN = FocusNode();
+  final usernameController = TextEditingController(
+    text: AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY),
+  );
+  final usernameFN = FocusNode();
+  final passwordController = TextEditingController(
+    text: AppData.instance.read<String>(AppKeys.SP_PASSWORD_KEY),
+  );
+  final passwordFN = FocusNode();
+
+  final formKey = GlobalKey<FormState>();
+  bool obscure = true;
+
   @override
   void initState() {
     super.initState();
@@ -30,29 +45,32 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const LoginView();
+  void dispose() {
+    serverController.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
+    serverFN.dispose();
+    usernameFN.dispose();
+    passwordFN.dispose();
+    super.dispose();
   }
-}
 
-class LoginView extends BaseView<LoginBloc> {
-  const LoginView({super.key});
+  void _login() {
+    if (formKey.currentState!.validate()) {
+      loginStatus.text += loginStatus.text.isNotEmpty ? "\n" : "";
+
+      context.read<LoginBloc>().add(
+        LoginSubmitted(
+          username: usernameController.text,
+          password: passwordController.text,
+          server: serverController.text,
+        ),
+      );
+    }
+  }
 
   @override
-  Widget buildView(BuildContext context) {
-    final serverController = TextEditingController(
-      text: AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? EnvService.apiBaseUrl,
-    );
-    final usernameController = TextEditingController(
-      text: AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY),
-    );
-    final passwordController = TextEditingController(
-      text: AppData.instance.read<String>(AppKeys.SP_PASSWORD_KEY),
-    );
-
-    final formKey = GlobalKey<FormState>();
-    bool obscure = true;
-
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       body: Stack(
@@ -106,6 +124,8 @@ class LoginView extends BaseView<LoginBloc> {
                       ),
                       Spacer(flex: 2),
                       TextFormField(
+                        autofocus: true,
+                        focusNode: serverFN,
                         controller: serverController,
                         decoration: const InputDecoration(
                           labelText: 'Máy chủ',
@@ -120,9 +140,12 @@ class LoginView extends BaseView<LoginBloc> {
                           }
                           return null;
                         },
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => usernameFN.requestFocus(),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
+                        focusNode: usernameFN,
                         controller: usernameController,
                         decoration: const InputDecoration(
                           labelText: 'Tài khoản',
@@ -137,10 +160,13 @@ class LoginView extends BaseView<LoginBloc> {
                           }
                           return null;
                         },
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => passwordFN.requestFocus(),
                       ),
                       const SizedBox(height: 16),
                       StatefulBuilder(
                         builder: (context, setState) => TextFormField(
+                          focusNode: passwordFN,
                           controller: passwordController,
                           decoration: InputDecoration(
                             labelText: 'Mật khẩu',
@@ -164,6 +190,8 @@ class LoginView extends BaseView<LoginBloc> {
                             }
                             return null;
                           },
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _login(),
                         ),
                       ),
                       const SizedBox(height: 36),
@@ -176,21 +204,7 @@ class LoginView extends BaseView<LoginBloc> {
                               backgroundColor: Colors.blueAccent,
                               minimumSize: Size(double.infinity, 60),
                             ),
-                            onPressed: state.isLoading
-                                ? null
-                                : () {
-                                    if (formKey.currentState!.validate()) {
-                                      loginStatus.text += loginStatus.text.isNotEmpty ? "\n" : "";
-
-                                      bloc(context).add(
-                                        LoginSubmitted(
-                                          username: usernameController.text,
-                                          password: passwordController.text,
-                                          server: serverController.text,
-                                        ),
-                                      );
-                                    }
-                                  },
+                            onPressed: state.isLoading ? null : _login,
                             child: state.isLoading
                                 ? Center(
                                     child: const CircularProgressIndicator(color: Colors.white),
@@ -213,7 +227,7 @@ class LoginView extends BaseView<LoginBloc> {
                           padding: EdgeInsets.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        onPressed: () => context.go('/home'),
+                        onPressed: () => context.goNamed(Routes.monitoring.name),
                         icon: Icon(Icons.login, size: 13, color: Colors.grey),
                         label: Text(
                           'Continue as Guest',

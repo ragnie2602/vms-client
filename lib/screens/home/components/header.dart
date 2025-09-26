@@ -12,7 +12,9 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shadows = [BoxShadow(color: Colors.black26, blurRadius: 2, spreadRadius: 0, offset: Offset(1, 1))];
+    final shadows = [
+      BoxShadow(color: Colors.black26, blurRadius: 2, spreadRadius: 0, offset: Offset(1, 1)),
+    ];
     final textStyle = TextStyle(fontSize: 13, color: Colors.black);
 
     return Container(
@@ -21,6 +23,7 @@ class Header extends StatelessWidget {
       color: Theme.of(context).colorScheme.inversePrimary,
       child: Row(
         children: <Widget>[
+          _buildLeading(context),
           Spacer(),
           // PopupMenuButton(
           //   itemBuilder: (context) {
@@ -96,7 +99,9 @@ class Header extends StatelessWidget {
                         leading: Icon(Icons.article),
                         title: Text('Mở log file', style: textStyle),
                         contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(3))),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
+                        ),
                       ),
                       Divider(height: 0.5, color: Colors.grey.shade300),
                       ListTile(
@@ -107,7 +112,9 @@ class Header extends StatelessWidget {
                         leading: Icon(Icons.logout),
                         title: Text('Đăng xuất', style: textStyle),
                         contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(3))),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
+                        ),
                       ),
                     ],
                   ),
@@ -141,5 +148,32 @@ class Header extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildLeading(BuildContext context) {
+    final RouteMatchList currentConfiguration = GoRouter.of(
+      context,
+    ).routerDelegate.currentConfiguration;
+    final RouteMatch lastMatch = currentConfiguration.last;
+    final Uri location = lastMatch is ImperativeRouteMatch
+        ? lastMatch.matches.uri
+        : currentConfiguration.uri;
+    final bool canPop = location.pathSegments.length > 1;
+
+    return canPop
+        ? Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: TextButton.icon(
+              style: TextButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                padding: EdgeInsets.fromLTRB(4, 8, 8, 8),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed: GoRouter.of(context).pop,
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 14),
+              label: Text('Quay lại', style: TextStyle(color: Colors.black, fontSize: 14)),
+            ),
+          )
+        : SizedBox.shrink();
   }
 }

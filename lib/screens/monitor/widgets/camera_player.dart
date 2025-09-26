@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fvp/fvp.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+
+import '../bloc/list_camera_bloc.dart';
 
 class CameraPlayer extends StatefulWidget {
   const CameraPlayer({super.key, required this.data, this.isSubStream = true, this.builder});
@@ -21,6 +24,7 @@ class CameraPlayer extends StatefulWidget {
 class _CameraPlayerState extends State<CameraPlayer> {
   late VideoPlayerController _controller;
   List<int>? baseAudioTracks;
+  late ListCameraBloc blocRef;
 
   Timer? _timer;
   Timer? _debounce;
@@ -28,13 +32,14 @@ class _CameraPlayerState extends State<CameraPlayer> {
 
   @override
   void initState() {
+    blocRef = context.read<ListCameraBloc>();
     super.initState();
     _connect();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    blocRef.add(DisposePlayer(_controller, sequentialMode: true));
     _timer?.cancel();
     _debounce?.cancel();
     super.dispose();
@@ -42,7 +47,7 @@ class _CameraPlayerState extends State<CameraPlayer> {
 
   Future<void> _connect({bool retry = false}) async {
     if (retry) {
-      _controller.dispose();
+      blocRef.add(DisposePlayer(_controller, sequentialMode: true));
     }
 
     try {
@@ -57,21 +62,21 @@ class _CameraPlayerState extends State<CameraPlayer> {
 
       onConnected();
     } on TimeoutException catch (e) {
-      _controller.value = VideoPlayerValue.erroneous(e.toString());
+      if (mounted) _controller.value = VideoPlayerValue.erroneous(e.toString());
     }
   }
 
   Future<void> onConnected() async {
-    // Gán reference
-    baseAudioTracks ??= _controller.getActiveAudioTracks();
-
+    _controller.setBufferRange(min: 0, max: 1, drop: true);
     if (widget.isSubStream) {
-      _controller.setBufferRange(min: 0, max: 1, drop: true);
       _controller.setFps(20);
+
+      // Gán reference
+      baseAudioTracks ??= _controller.getActiveAudioTracks();
       _controller.setAudioTracks([]); // Tắt âm thanh
     }
 
-    setState(() {}); // Build lại để bắt đầu play video
+    if (mounted) setState(() {}); // Build lại để bắt đầu play video
     await _controller.play();
   }
 

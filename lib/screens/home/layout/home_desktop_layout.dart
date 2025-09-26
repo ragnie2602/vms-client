@@ -31,10 +31,9 @@ class HomeDesktopLayout extends StatelessWidget {
               children: <Widget>[
                 // Header
                 Header(),
-                Expanded(child: Padding(
-                  padding: const EdgeInsets.fromLTRB(1, 1, 0, 0),
-                  child: content,
-                )),
+                Expanded(
+                  child: Padding(padding: const EdgeInsets.fromLTRB(1, 1, 1, 1), child: content),
+                ),
               ],
             ),
           ),

@@ -38,6 +38,7 @@ dependencies:
   # State Management
   flutter_bloc: ^8.1.6
   equatable: ^2.0.5
+  bloc_concurrency: ^0.2.5
 
   # Immutable Models
   freezed_annotation: ^2.4.4

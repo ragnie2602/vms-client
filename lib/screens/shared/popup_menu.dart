@@ -96,36 +96,36 @@ class _CustomPopupMenuState extends State<CustomPopupMenu> with SingleTickerProv
             maxWidth: _parentBox!.size.width - 2 * widget.horizontalMargin,
             minWidth: 0,
           ),
-          child: AnimatedBuilder(
-            animation: _scaleAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                origin: Offset(0, _childBox!.size.height),
-                scale: _scaleAnimation.value,
-                alignment: Alignment.topRight,
-                child: child,
-              );
-            },
-            child: CustomMultiChildLayout(
-              delegate: _MenuLayoutDelegate(
-                anchorSize: _childBox!.size,
-                anchorOffset: _childBox!.localToGlobal(Offset(-widget.horizontalMargin, 0)),
-                verticalMargin: widget.verticalMargin,
-                position: widget.position,
-              ),
-              children: <Widget>[
-                if (widget.showArrow) LayoutId(id: _MenuLayoutId.arrow, child: arrow),
-                if (widget.showArrow)
-                  LayoutId(
-                    id: _MenuLayoutId.downArrow,
-                    child: Transform.rotate(angle: math.pi, child: arrow),
-                  ),
+          child: CustomMultiChildLayout(
+            delegate: _MenuLayoutDelegate(
+              anchorSize: _childBox!.size,
+              anchorOffset: _childBox!.localToGlobal(Offset(-widget.horizontalMargin, 0)),
+              verticalMargin: widget.verticalMargin,
+              position: widget.position,
+            ),
+            children: <Widget>[
+              if (widget.showArrow) LayoutId(id: _MenuLayoutId.arrow, child: arrow),
+              if (widget.showArrow)
                 LayoutId(
-                  id: _MenuLayoutId.content,
+                  id: _MenuLayoutId.downArrow,
+                  child: Transform.rotate(angle: math.pi, child: arrow),
+                ),
+              LayoutId(
+                id: _MenuLayoutId.content,
+                child: AnimatedBuilder(
+                  animation: _scaleAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      // origin: Offset(0, _childBox!.size.height),
+                      scale: _scaleAnimation.value,
+                      alignment: Alignment.topCenter,
+                      child: child,
+                    );
+                  },
                   child: widget.menuBuilder(),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
         return Listener(
