@@ -272,6 +272,10 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
 
   @override
   Future<int?> create(DataSource dataSource) async {
+    /* ╔═══════════════ CUSTOM CODE ═══════════════╗ */
+    final textureWidth = double.tryParse(dataSource.httpHeaders['texture_width'] ?? '')?.round();
+    final textureHeight = double.tryParse(dataSource.httpHeaders['texture_height'] ?? '')?.round();
+
     final uri = _toUri(dataSource);
     final player = MdkVideoPlayer();
     _log.fine('$hashCode player${player.nativeHandle} create($uri)');
@@ -303,7 +307,7 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
       player.setProperty('avformat.fpsprobesize', '0');
       player.setProperty('avformat.analyzeduration', '100000');
       if (_lowLatency > 1) {
-        player.setBufferRange(min: 0, max: 1000, drop: true);
+        player.setBufferRange(min: 0, max: 100, drop: true);
       } else {
         player.setBufferRange(min: 0);
       }
@@ -331,8 +335,8 @@ class MdkVideoPlayerPlatform extends VideoPlayerPlatform {
 // FIXME: pending events will be processed after texture returned, but no events before prepared
 // FIXME: set tunnel too late
     final tex = await player.updateTexture(
-        width: _maxWidth,
-        height: _maxHeight,
+        width: textureWidth ?? _maxWidth,
+        height: textureHeight ?? _maxHeight,
         tunnel: _tunnel,
         fit: _fitMaxSize);
     if (tex < 0) {

@@ -5,17 +5,26 @@ import 'package:fvp/fvp.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
+import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 import '../bloc/list_camera_bloc.dart';
 
 class CameraPlayer extends StatefulWidget {
-  const CameraPlayer({super.key, required this.data, this.isSubStream = true, this.builder});
+  const CameraPlayer({
+    super.key,
+    required this.data,
+    this.isSubStream = true,
+    this.builder,
+    this.size,
+  });
 
   final CameraEntity data;
   final bool isSubStream;
   final Widget Function(BuildContext context, VideoPlayer playerWidget, CameraEntity data)? builder;
+  final Size? size;
 
   @override
   State<CameraPlayer> createState() => _CameraPlayerState();
@@ -51,9 +60,19 @@ class _CameraPlayerState extends State<CameraPlayer> {
     }
 
     try {
+      final headers = widget.size != null
+          ? StandardResolution.snapFromSize(widget.size!, mode: RoundMode.up).let(
+              (size) => {
+                'texture_width': size.width.toString(),
+                'texture_height': size.height.toString(),
+              },
+            )
+          : <String, String>{};
+
       _controller = VideoPlayerController.networkUrl(
         widget.isSubStream ? widget.data.subStreamUri : widget.data.mainStreamUri,
         videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+        httpHeaders: headers,
       );
 
       _controller.addListener(_onMessage);

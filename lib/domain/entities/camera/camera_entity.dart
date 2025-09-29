@@ -14,8 +14,8 @@ class CameraEntity {
   /// streamHlsUrl: http://ipcam.vivas.vn:8080/record01/EfCSykeCNyi-VwJCrB4AAg/EfCSykeCNyi-VwJCrB4AAg.m3u8
   /// streamOriginUrl: rtsp://any:1@10.3.3.162:8081/mystream7
   /// userOriginAddedUrl: rtsp://10.3.3.162:8081/mystream7
-  Uri get mainStreamUri => Uri.parse(stream.streamOriginUrl);
-  Uri get subStreamUri => Uri.parse(
+  Uri get mainStreamUri => parseUri(stream.streamOriginUrl);
+  Uri get subStreamUri => parseUri(
     stream.streamLinks.firstWhereOrNull((e) => e.nameOfStream == "SUB STREAM")?.urlOfStream ??
         stream.streamOriginUrl,
   );
@@ -45,6 +45,24 @@ class CameraEntity {
       type: camera.cameraType,
       status: camera.status,
       stream: camera.streamUrl,
+    );
+  }
+
+  Uri parseUri(String url) {
+    Uri? uri = Uri.tryParse(url);
+    if (uri != null) return uri;
+
+    // rtsp://any:Vivas@123@123.25.70.15:8081/EfCaAv5el-qzFNr-TC3-SA
+    final schemeSep = url.indexOf('://');
+    final rest = url.substring(schemeSep + 3); // sau rtsp://
+
+    final userInfo = rest.substring(0, rest.lastIndexOf('@')); // any:Vivas@123
+
+    final newUrl = url.replaceFirst(userInfo, "");
+    final userParts = userInfo.split(':');
+
+    return Uri.parse(newUrl).replace(
+      userInfo: "${Uri.encodeComponent(userParts[0])}:${Uri.encodeComponent(userParts[1])}}",
     );
   }
 }
