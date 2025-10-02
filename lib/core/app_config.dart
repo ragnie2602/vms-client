@@ -13,7 +13,7 @@ class AppConfig {
   static const LOG_FILE_MAX_TRACE_LINES = 31;
 
   /*  */
-  static const SHOW_HOME_SIDEBAR = false;
+  static const SHOW_HOME_SIDEBAR = true;
 
   /* Log */
   static const LOG_ERROR_MAX_LINES = 10;
