@@ -15,6 +15,8 @@ class PlatformWidget extends StatelessWidget {
     this.onWeb,
     this.onMaterial,
     this.onCupertino,
+    this.onDesktop,
+    this.onMobile,
   });
 
   factory PlatformWidget.builder({
@@ -33,6 +35,13 @@ class PlatformWidget extends StatelessWidget {
     onWeb: onWeb,
   );
 
+  factory PlatformWidget.groupBuilder({
+    Key? key,
+    required Function(BuildContext) onDesktop,
+    required Function(BuildContext) onMobile,
+    Function(BuildContext)? onWeb,
+  }) => PlatformWidget._internal(key: key, onDesktop: onDesktop, onMobile: onMobile, onWeb: onWeb);
+
   factory PlatformWidget.styleBuilder({
     Key? key,
     required Function(BuildContext) onMaterial,
@@ -46,16 +55,31 @@ class PlatformWidget extends StatelessWidget {
   final Function(BuildContext)? onWeb;
   final Function(BuildContext)? onMaterial;
   final Function(BuildContext)? onCupertino;
+  final Function(BuildContext)? onDesktop;
+  final Function(BuildContext)? onMobile;
 
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) return onMaterial?.call(context) ?? onWeb?.call(context) ?? _error();
 
     return switch (defaultTargetPlatform) {
-      TargetPlatform.android => onMaterial?.call(context) ?? onAndroid?.call(context) ?? _error(),
-      TargetPlatform.windows => onMaterial?.call(context) ?? onWindows?.call(context) ?? _error(),
-      TargetPlatform.iOS => onCupertino?.call(context) ?? onIOS?.call(context) ?? _error(),
-      TargetPlatform.macOS => onCupertino?.call(context) ?? onMacOS?.call(context) ?? _error(),
+      TargetPlatform.android =>
+        onMobile?.call(context) ??
+            onMaterial?.call(context) ??
+            onAndroid?.call(context) ??
+            _error(),
+      TargetPlatform.windows =>
+        onDesktop?.call(context) ??
+            onMaterial?.call(context) ??
+            onWindows?.call(context) ??
+            _error(),
+      TargetPlatform.iOS =>
+        onMobile?.call(context) ?? onCupertino?.call(context) ?? onIOS?.call(context) ?? _error(),
+      TargetPlatform.macOS =>
+        onDesktop?.call(context) ??
+            onCupertino?.call(context) ??
+            onMacOS?.call(context) ??
+            _error(),
       _ => _error("Unsupported platform ($defaultTargetPlatform)"),
     };
   }

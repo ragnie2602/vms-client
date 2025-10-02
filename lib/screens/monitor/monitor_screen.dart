@@ -33,11 +33,9 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
       builder: (context, blocState) => stateBuilder<ListCameraSuccess>(
         blocState,
         onReload: () => context.read<ListCameraBloc>().add(GetAllCamera()),
-        child: (state) => PlatformWidget.builder(
-          onAndroid: (context) => Container(),
-          onIOS: (context) => Container(),
-          onMacOS: (context) => Container(),
-          onWindows: (context) => LayoutBuilder(
+        child: (state) => PlatformWidget.groupBuilder(
+          onMobile: (context) => Container(),
+          onDesktop: (context) => LayoutBuilder(
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints);
 
