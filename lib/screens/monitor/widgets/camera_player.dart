@@ -27,10 +27,10 @@ class CameraPlayer extends StatefulWidget {
   final Size? size;
 
   @override
-  State<CameraPlayer> createState() => _CameraPlayerState();
+  State<CameraPlayer> createState() => CameraPlayerState();
 }
 
-class _CameraPlayerState extends State<CameraPlayer> {
+class CameraPlayerState extends State<CameraPlayer> {
   late VideoPlayerController _controller;
   List<int>? baseAudioTracks;
   late ListCameraBloc blocRef;
@@ -38,6 +38,8 @@ class _CameraPlayerState extends State<CameraPlayer> {
   Timer? _timer;
   Timer? _debounce;
   int _countdown = 5;
+
+  VideoPlayerController get controller => _controller;
 
   @override
   void initState() {
@@ -101,6 +103,10 @@ class _CameraPlayerState extends State<CameraPlayer> {
 
   void _debounceConnectionLost() {
     _debounce?.cancel();
+
+    // Pause thì cancel debounce + không check disconnected
+    if (_controller.value.isPlaying == false) return;
+
     _debounce = Timer(AppConfig.PLAYER_DISCONNECTION_THRESHOLD, () {
       if (!mounted) return;
 
@@ -137,7 +143,9 @@ class _CameraPlayerState extends State<CameraPlayer> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.black,
-        boxShadow: [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)],
+        boxShadow: _controller.value.isInitialized
+            ? [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)]
+            : null,
       ),
       child: _controller.value.hasError
           ? _buildError()
