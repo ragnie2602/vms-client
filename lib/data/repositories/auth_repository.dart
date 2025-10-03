@@ -1,9 +1,6 @@
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
-import '../../domain/IRepositories/i_auth_repository.dart';
-import '../../domain/usecases/login/login_output.dart';
-import '../../domain/entities/user/user.dart';
+import '../../domain/i_repositories/i_auth_repository.dart';
 import '../datasources/authenticate_service.dart';
-import '../models/user_model.dart';
 import 'base_repository.dart';
 
 class AuthRepository extends BaseRepository implements IAuthRepository {
@@ -12,26 +9,30 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   const AuthRepository({required this.authenticateService});
 
   @override
-  Future<Authentication> login(String username, String password) async {
+  Future<bool> login(Authentication authentication) async {
+    return authenticateService.login(authentication);
+  }
+
+  @override
+  Future<Authentication> authenticate(String server, String username, String password) async {
     try {
       // Call the real authenticate API
       final authReply = await authenticateService.authenticate(
         username: username,
         password: password,
+        server: server,
       );
+
       return Authentication(
-        account: username, 
-        sessionId: authReply.sessionId, 
-        uid: authReply.uid, 
-        ssid: authReply.ssid
+        account: username,
+        sessionId: authReply.sessionId,
+        uid: authReply.uid,
+        ssid: authReply.ssid,
+        host: authReply.webSockHost,
+        port: authReply.webSockPort,
       );
     } catch (e) {
-      return Authentication(
-        account: username, 
-        sessionId: [], 
-        uid: [], 
-        ssid: ''
-      );
+      return Authentication(account: username, sessionId: [], uid: [], ssid: '', host: '', port: 0);
     }
   }
 

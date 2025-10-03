@@ -8,5 +8,8 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<!-- Sửa lỗi SocketException: Connection failed (OS Error: Operation not permitted, errno = 1) -->
+	<key>com.apple.security.network.client</key>
+	<true/>
 </dict>
 </plist>

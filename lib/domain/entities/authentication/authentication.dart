@@ -9,6 +9,8 @@ class Authentication with _$Authentication {
     required List<int> sessionId,
     required List<int> uid,
     required String ssid,
+    required String host,
+    required int port,
   }) = _Authentication;
 
   factory Authentication.fromJson(Map<String, dynamic> json) => _$AuthenticationFromJson(json);

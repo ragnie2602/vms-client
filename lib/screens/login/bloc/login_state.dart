@@ -1,5 +1,4 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/domain/entities/user/user.dart';
 
 class LoginState extends BaseState {
   final bool isLoading;

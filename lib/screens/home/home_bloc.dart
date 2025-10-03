@@ -1,50 +1,72 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import '../../core/base_bloc.dart';
 
+class HomeTab {
+  final Routes? route;
+  final String title;
+  final IconData icon;
+  final List<HomeTab> nested;
+
+  HomeTab(this.route, {required this.title, required this.icon, this.nested = const []});
+
+  static final tabs = [
+    HomeTab(Routes.monitoring, title: 'Giám sát', icon: Icons.fiber_manual_record),
+    HomeTab(
+      null,
+      title: 'Thông tin',
+      icon: Icons.list,
+      nested: [
+        HomeTab(
+          null,
+          title: 'Test 1',
+          icon: Icons.abc,
+          nested: [
+            HomeTab(Routes.test11, title: 'Test 1-1', icon: Icons.abc),
+            HomeTab(Routes.test12, title: 'Test 1-2', icon: Icons.abc),
+          ],
+        ),
+        HomeTab(Routes.test2, title: 'Test 2', icon: Icons.abc),
+      ],
+    ),
+    HomeTab(Routes.about, title: 'Thông tin', icon: Icons.info),
+  ];
+}
+
 class HomeState extends BaseState {
-  final String message;
-  final bool isLoading;
-  
-  const HomeState({
-    this.message = 'Welcome to VMS Flutter Client',
-    this.isLoading = false,
-  });
-  
-  HomeState copyWith({
-    String? message,
-    bool? isLoading,
-  }) {
-    return HomeState(
-      message: message ?? this.message,
-      isLoading: isLoading ?? this.isLoading,
-    );
+  final HomeTab selectedTab;
+
+  HomeState({HomeTab? selectedTab}) : selectedTab = selectedTab ?? HomeTab.tabs[0];
+
+  HomeState copyWith({HomeTab? selectedTab}) {
+    return HomeState(selectedTab: selectedTab ?? this.selectedTab);
   }
-  
+
   @override
-  List<Object?> get props => [message, isLoading];
+  List<Object?> get props => [selectedTab];
 }
 
 class HomeEvent extends BaseEvent {
   const HomeEvent();
 }
 
-class LoadHomeData extends HomeEvent {
-  const LoadHomeData();
+class ChangeTab extends HomeEvent {
+  final HomeTab tab;
+  const ChangeTab(this.tab);
 }
 
 class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
-  HomeBloc() : super(const HomeState()) {
-    on<LoadHomeData>(_onLoadHomeData);
+  HomeBloc() : super(HomeState()) {
+    on<ChangeTab>(_onChangeTab);
   }
-  
-  void _onLoadHomeData(LoadHomeData event, Emitter<HomeState> emit) async {
-    emit(state.copyWith(isLoading: true));
-    
-    await Future.delayed(const Duration(seconds: 1));
-    
-    emit(state.copyWith(
-      isLoading: false,
-      message: 'Home data loaded successfully!',
-    ));
+
+  FutureOr<void> _onChangeTab(ChangeTab event, Emitter<HomeState> emit) async {
+    if (state.selectedTab == event.tab) return;
+
+    emit(state.copyWith(selectedTab: event.tab));
+    if (event.tab.route != null) AppRouter.router.goNamed(event.tab.route!.name);
   }
 }

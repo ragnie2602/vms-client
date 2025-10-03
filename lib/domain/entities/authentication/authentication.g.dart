@@ -16,6 +16,8 @@ _$AuthenticationImpl _$$AuthenticationImplFromJson(Map<String, dynamic> json) =>
           .map((e) => (e as num).toInt())
           .toList(),
       ssid: json['ssid'] as String,
+      host: json['host'] as String,
+      port: (json['port'] as num).toInt(),
     );
 
 Map<String, dynamic> _$$AuthenticationImplToJson(
@@ -25,4 +27,6 @@ Map<String, dynamic> _$$AuthenticationImplToJson(
   'sessionId': instance.sessionId,
   'uid': instance.uid,
   'ssid': instance.ssid,
+  'host': instance.host,
+  'port': instance.port,
 };

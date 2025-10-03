@@ -25,6 +25,8 @@ mixin _$Authentication {
   List<int> get sessionId => throw _privateConstructorUsedError;
   List<int> get uid => throw _privateConstructorUsedError;
   String get ssid => throw _privateConstructorUsedError;
+  String get host => throw _privateConstructorUsedError;
+  int get port => throw _privateConstructorUsedError;
 
   /// Serializes this Authentication to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -43,7 +45,14 @@ abstract class $AuthenticationCopyWith<$Res> {
     $Res Function(Authentication) then,
   ) = _$AuthenticationCopyWithImpl<$Res, Authentication>;
   @useResult
-  $Res call({String account, List<int> sessionId, List<int> uid, String ssid});
+  $Res call({
+    String account,
+    List<int> sessionId,
+    List<int> uid,
+    String ssid,
+    String host,
+    int port,
+  });
 }
 
 /// @nodoc
@@ -65,6 +74,8 @@ class _$AuthenticationCopyWithImpl<$Res, $Val extends Authentication>
     Object? sessionId = null,
     Object? uid = null,
     Object? ssid = null,
+    Object? host = null,
+    Object? port = null,
   }) {
     return _then(
       _value.copyWith(
@@ -84,6 +95,14 @@ class _$AuthenticationCopyWithImpl<$Res, $Val extends Authentication>
                 ? _value.ssid
                 : ssid // ignore: cast_nullable_to_non_nullable
                       as String,
+            host: null == host
+                ? _value.host
+                : host // ignore: cast_nullable_to_non_nullable
+                      as String,
+            port: null == port
+                ? _value.port
+                : port // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -99,7 +118,14 @@ abstract class _$$AuthenticationImplCopyWith<$Res>
   ) = __$$AuthenticationImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String account, List<int> sessionId, List<int> uid, String ssid});
+  $Res call({
+    String account,
+    List<int> sessionId,
+    List<int> uid,
+    String ssid,
+    String host,
+    int port,
+  });
 }
 
 /// @nodoc
@@ -120,6 +146,8 @@ class __$$AuthenticationImplCopyWithImpl<$Res>
     Object? sessionId = null,
     Object? uid = null,
     Object? ssid = null,
+    Object? host = null,
+    Object? port = null,
   }) {
     return _then(
       _$AuthenticationImpl(
@@ -139,6 +167,14 @@ class __$$AuthenticationImplCopyWithImpl<$Res>
             ? _value.ssid
             : ssid // ignore: cast_nullable_to_non_nullable
                   as String,
+        host: null == host
+            ? _value.host
+            : host // ignore: cast_nullable_to_non_nullable
+                  as String,
+        port: null == port
+            ? _value.port
+            : port // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -152,6 +188,8 @@ class _$AuthenticationImpl implements _Authentication {
     required final List<int> sessionId,
     required final List<int> uid,
     required this.ssid,
+    required this.host,
+    required this.port,
   }) : _sessionId = sessionId,
        _uid = uid;
 
@@ -178,10 +216,14 @@ class _$AuthenticationImpl implements _Authentication {
 
   @override
   final String ssid;
+  @override
+  final String host;
+  @override
+  final int port;
 
   @override
   String toString() {
-    return 'Authentication(account: $account, sessionId: $sessionId, uid: $uid, ssid: $ssid)';
+    return 'Authentication(account: $account, sessionId: $sessionId, uid: $uid, ssid: $ssid, host: $host, port: $port)';
   }
 
   @override
@@ -195,7 +237,9 @@ class _$AuthenticationImpl implements _Authentication {
               _sessionId,
             ) &&
             const DeepCollectionEquality().equals(other._uid, _uid) &&
-            (identical(other.ssid, ssid) || other.ssid == ssid));
+            (identical(other.ssid, ssid) || other.ssid == ssid) &&
+            (identical(other.host, host) || other.host == host) &&
+            (identical(other.port, port) || other.port == port));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -206,6 +250,8 @@ class _$AuthenticationImpl implements _Authentication {
     const DeepCollectionEquality().hash(_sessionId),
     const DeepCollectionEquality().hash(_uid),
     ssid,
+    host,
+    port,
   );
 
   /// Create a copy of Authentication
@@ -231,6 +277,8 @@ abstract class _Authentication implements Authentication {
     required final List<int> sessionId,
     required final List<int> uid,
     required final String ssid,
+    required final String host,
+    required final int port,
   }) = _$AuthenticationImpl;
 
   factory _Authentication.fromJson(Map<String, dynamic> json) =
@@ -244,6 +292,10 @@ abstract class _Authentication implements Authentication {
   List<int> get uid;
   @override
   String get ssid;
+  @override
+  String get host;
+  @override
+  int get port;
 
   /// Create a copy of Authentication
   /// with the given fields replaced by the non-null parameter values.
