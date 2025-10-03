@@ -30,7 +30,20 @@ void main() async {
     await EnvService.init();
 
     await SentryFlutter.init((options) {
-      options.dsn = EnvService.read('SENTRY_DSN');
+      options.debug = false;
+      options.diagnosticLevel = SentryLevel.warning;
+      options.dsn = ''; // EnvService.read('SENTRY_DSN');
+      options.autoInitializeNativeSdk = true;
+      options.enableNativeCrashHandling = true;
+      options.enableAutoSessionTracking = false;
+      options.enableAutoPerformanceTracing = false;
+      options.enableBrightnessChangeBreadcrumbs = false;
+      options.enableFramesTracking = false;
+      options.enableAutoNativeBreadcrumbs = true;
+      options.enableSentryJs = false;
+      options.enableWatchdogTerminationTracking = true;
+      options.enableWindowMetricBreadcrumbs = false;
+      options.maxBreadcrumbs = 30;
       options.beforeSend = (event, hint) async {
         try {
           await ErrorService.recordSentryEvent(event);
