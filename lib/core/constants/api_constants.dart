@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:protobuf/protobuf.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
@@ -7,7 +8,11 @@ extension ReplyExts on Reply {
 }
 
 extension PbEnumExt on ProtobufEnum? {
-  String translate() => vi[this?.name] ?? DEFAULT_ERROR_MESSAGE;
+  String translate() {
+    if (this == null) return DEFAULT_ERROR_MESSAGE;
+
+    return vi[this!.name] ?? (kReleaseMode ? DEFAULT_ERROR_MESSAGE : this!.name);
+  }
 }
 
 enum PacketType {

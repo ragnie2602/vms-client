@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/lang/language.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:web_socket_client/web_socket_client.dart';
 import '../models/packet.dart';
@@ -67,10 +69,10 @@ class SocketApiClient extends BaseApiClient {
   }
 
   @override
-  Future<T?> send<T>(SocketRequestPayload data) async {
-    if (!isConnected) return null;
+  Future<Either<Failure, T>> send<T>(SocketRequestPayload data) async {
+    if (!isConnected) return Left(Failure.message(SOCKET_UNCONNECTED));
 
-    final completer = Completer<T?>();
+    final completer = Completer<Either<Failure, T>>();
     _requestCompleters[data.packet.id] = completer;
 
     _socket.send(data.packet.writeToBuffer());
@@ -79,7 +81,7 @@ class SocketApiClient extends BaseApiClient {
       Duration(seconds: data.timeout),
       onTimeout: () {
         _disposeCompleter(data.packet.id);
-        return null;
+        return Left(Failure.message(TIMEOUT_DEFAULT));
       },
     );
   }
@@ -91,15 +93,18 @@ class SocketApiClient extends BaseApiClient {
     if (packet.type.isResponseFromApi) {
       // Response từ server sau khi client gửi request
       final reply = Reply.fromBuffer(packet.data);
+      late Either<Failure, List<int>> result;
 
       if (reply.isSuccess) {
         Logger.log("Request '${reply.reply.typeUrl}' success!", tag: 'SOCKET');
+        result = Right(reply.reply.value);
       } else {
         final msg = ResultType.valueOf(reply.type).translate();
         Logger.error("Request '${reply.reply.typeUrl}' failed: $msg", tag: 'SOCKET');
+        result = Left(Failure.code(reply.type));
       }
 
-      _disposeCompleter(packet.id, value: reply.reply.value);
+      _disposeCompleter(packet.id, value: result);
     } else {
       // Message gửi từ server xuống
       final receive = Receive.fromBuffer(packet.data);

@@ -85,15 +85,19 @@ class AuthenticateService {
         ),
       );
 
-      if (response != null) {
-        final loginReply = Login_Reply.fromBuffer(response);
-        Logger.log("Logged in as: ${loginReply.profile.account}");
-        loginStatus.text += "Đang đăng thành công\n";
-      } else {
-        loginStatus.text += "Đăng nhập thất bại (timeout)\n";
-      }
-
-      return response != null;
+      return response.fold(
+        (failure) {
+          final msg = failure.parseMessage(Login_Error.valueOf);
+          loginStatus.text += "Đăng nhập thất bại ($msg)\n";
+          return false;
+        },
+        (buffer) {
+          final loginReply = Login_Reply.fromBuffer(response.right!);
+          Logger.log("Logged in as: ${loginReply.profile.account}");
+          loginStatus.text += "Đang đăng thành công\n";
+          return true;
+        },
+      );
     }
 
     loginStatus.text += "Kết nối socket thất bại\n";
