@@ -12,6 +12,7 @@ enum StateType {
   bool get isError => this == StateType.failure;
   bool get isSuccess => this == StateType.success;
   bool get isEmpty => this == StateType.empty;
+  bool get isInit => this == StateType.initial;
   bool get isLoading => this == StateType.loading || StateType.initial == this;
 }
 
