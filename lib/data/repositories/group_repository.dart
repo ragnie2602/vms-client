@@ -18,4 +18,18 @@ class GroupRepository extends BaseRepository implements IGroupRepository {
       return Right(groups.map((e) => e.toDomain()).toList());
     });
   }
+
+  @override
+  Future<Either<Failure, List<DeviceGroup>?>> addGroupCamera({
+    String? groupName,
+    List<int>? parentGroupId,
+  }) async {
+    return await catchError<List<DeviceGroup>>(() async {
+      final groups = await service.addGroupCamera(
+        groupName: groupName,
+        parentGroupId: parentGroupId,
+      );
+      return Right(groups.map((e) => e.toDomain()).toList());
+    });
+  }
 }
