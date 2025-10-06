@@ -21,13 +21,14 @@ class ListCameraBloc extends BaseBloc<ListCameraEvent, ListCameraState> {
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<ListCameraState> emit) async {
     emit(ListCameraLoading());
 
-    final cameras = await cameraRepository.getAllCamera();
-
-    if (cameras != null) {
-      emit(ListCameraSuccess(cameras: cameras));
-    } else {
-      emit(ListCameraFailure('No Camera'));
-    }
+    (await cameraRepository.getAllCamera()).fold(
+      (failure) {
+        emit(ListCameraFailure(failure.parseMessage()));
+      },
+      (cameras) {
+        emit(ListCameraSuccess(cameras: cameras));
+      },
+    );
   }
 
   FutureOr<void> _onDisposePlayer(DisposePlayer event, Emitter<ListCameraState> emit) async {
