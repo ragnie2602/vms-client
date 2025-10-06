@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/core/base_response.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_group_repository.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
+import 'package:vms_flutter_client/data/mappers/group_mapper.dart';
 
 import '../datasources/group_service.dart';
 import 'base_repository.dart';
@@ -13,7 +14,8 @@ class GroupRepository extends BaseRepository implements IGroupRepository {
   @override
   Future<Either<Failure, List<DeviceGroup>>> getAllGroup() async {
     return await catchError<List<DeviceGroup>>(() async {
-      return Right(await service.getAllGroup());
+      final groups = await service.getAllGroup();
+      return Right(groups.map((e) => e.toDomain()).toList());
     });
   }
 }

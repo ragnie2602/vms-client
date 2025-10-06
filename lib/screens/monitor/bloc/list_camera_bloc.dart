@@ -4,7 +4,6 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 
@@ -22,7 +21,7 @@ class ListCameraBloc extends BaseBloc<ListCameraEvent, ListCameraState> {
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<ListCameraState> emit) async {
     emit(ListCameraLoading());
 
-    final cameras = await cameraRepository.getAllCamera(GetAllCamera_Request());
+    final cameras = await cameraRepository.getAllCamera();
 
     if (cameras != null) {
       emit(ListCameraSuccess(cameras: cameras));
