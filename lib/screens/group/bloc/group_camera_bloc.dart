@@ -23,10 +23,11 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       groupName: event.groupName,
       parentGroupId: event.parentGroupId,
     );
-    if (groups.right != null) {
-      emit(AddGroupCameraSuccessState(groups: groups.right));
-    } else {
-      emit(AddGroupCameraFailState(groups.left.toString()));
-    }
+    groups.fold(
+      (onFailure) => emit(AddGroupCameraFailState(groups.left.toString())),
+      (onSuccess) {
+        emit(AddGroupCameraSuccessState(groups: groups.right));
+      },
+    );
   }
 }
