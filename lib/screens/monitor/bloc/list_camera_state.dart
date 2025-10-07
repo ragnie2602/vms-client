@@ -24,12 +24,25 @@ class ListCameraFailure extends ListCameraState {
 
 class ListCameraSuccess extends ListCameraState {
   final List<CameraEntity> cameras;
+  final BaseView mode;
+  final int page;
 
-  const ListCameraSuccess({required this.cameras});
+  const ListCameraSuccess({required this.cameras, required this.mode, this.page = 1});
 
   @override
-  List<Object?> get props => [cameras];
+  List<Object?> get props => [cameras, mode, page];
   @override
   StateType get type => isEmpty ? StateType.empty : StateType.success;
   bool get isEmpty => cameras.isEmpty;
+
+  List<CameraEntity> get paginatedCameras =>
+      cameras.skip((page - 1) * mode.total).take(mode.total).toList();
+
+  ListCameraSuccess copyWith({BaseView? mode, List<CameraEntity>? cameras, int? page}) {
+    return ListCameraSuccess(
+      cameras: cameras ?? this.cameras,
+      mode: mode ?? this.mode,
+      page: page ?? this.page,
+    );
+  }
 }

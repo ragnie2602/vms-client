@@ -160,7 +160,7 @@ class Player {
   }
 
   /// Release resources
-  void dispose() async {
+  Future<void> dispose() async {
     if (_pp == nullptr) {
       textureId.dispose();
       return;
@@ -559,6 +559,8 @@ class Player {
       fps,
     );
   }
+  void play() => state = PlaybackState.playing;
+  void pause() => state = PlaybackState.paused;
 
   /// Set position range in milliseconds. Can be used by A-B loop.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setrangeint64_t-a-int64_t-b--int64_max

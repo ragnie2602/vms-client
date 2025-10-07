@@ -55,6 +55,9 @@ sealed class Failure {
         }
     }
   }
+
+  @override
+  String toString() => parseMessage();
 }
 
 class MessageFailure extends Failure {

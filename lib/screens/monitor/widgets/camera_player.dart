@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:fvp/fvp.dart';
+import 'package:fvp/mdk.dart';
 import 'package:provider/provider.dart';
-import 'package:video_player/video_player.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
@@ -11,6 +10,8 @@ import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 import '../bloc/list_camera_bloc.dart';
+
+enum _PlayerState { initializing, initialized, error }
 
 class CameraPlayer extends StatefulWidget {
   const CameraPlayer({
@@ -23,7 +24,7 @@ class CameraPlayer extends StatefulWidget {
 
   final CameraEntity data;
   final bool isSubStream;
-  final Widget Function(BuildContext context, VideoPlayer playerWidget, CameraEntity data)? builder;
+  final Widget Function(BuildContext context, Widget playerWidget, CameraEntity data)? builder;
   final Size? size;
 
   @override
@@ -31,132 +32,181 @@ class CameraPlayer extends StatefulWidget {
 }
 
 class CameraPlayerState extends State<CameraPlayer> {
-  late VideoPlayerController _controller;
-  List<int>? baseAudioTracks;
   late ListCameraBloc blocRef;
+
+  int _lastPosition = -1;
+  late Player _player;
+  Player get player => _player;
 
   Timer? _timer;
   Timer? _debounce;
   int _countdown = 5;
 
-  VideoPlayerController get controller => _controller;
+  final _state = ValueNotifier(_PlayerState.initializing);
+  double _aspectRatio = 1.0;
 
   @override
   void initState() {
     blocRef = context.read<ListCameraBloc>();
     super.initState();
-    _connect();
+    _initPlayer();
+    _onConnecting();
   }
 
   @override
   void dispose() {
-    blocRef.add(DisposePlayer(_controller, sequentialMode: true));
+    blocRef.add(DisposePlayer(_player, sequentialMode: true));
     _timer?.cancel();
     _debounce?.cancel();
     super.dispose();
   }
 
-  Future<void> _connect({bool retry = false}) async {
-    if (retry) {
-      blocRef.add(DisposePlayer(_controller, sequentialMode: true));
-    }
+  @override
+  void didUpdateWidget(covariant CameraPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-    try {
-      final headers = widget.size != null
-          ? StandardResolution.snapFromSize(widget.size!, mode: RoundMode.up).let(
-              (size) => {
-                'texture_width': size.width.toString(),
-                'texture_height': size.height.toString(),
-              },
-            )
-          : <String, String>{};
-
-      _controller = VideoPlayerController.networkUrl(
-        widget.isSubStream ? widget.data.subStreamUri : widget.data.mainStreamUri,
-        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
-        httpHeaders: headers,
+    // Thay đổi chế độ xem
+    if (oldWidget.size != widget.size) {
+      final data = widget.size?.let(
+        (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
       );
 
-      _controller.addListener(_onMessage);
-      _controller.setLooping(true);
-      await _controller.initialize().timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT);
-
-      onConnected();
-    } on TimeoutException catch (e) {
-      if (mounted) _controller.value = VideoPlayerValue.erroneous(e.toString());
+      _player.updateTexture(width: data?.width, height: data?.height);
     }
   }
 
-  Future<void> onConnected() async {
-    _controller.setBufferRange(min: 0, max: 1, drop: true);
+  void _initPlayer() {
+    try {
+      // Dispose player trước khi tạo mới
+      blocRef.add(DisposePlayer(_player, sequentialMode: true));
+    } catch (_) {}
+
+    _player = Player();
+    // _player.onMediaStatus(_onStatusChanged);
+
+    // Properties
+    _player.setProperty('video.decoder', 'shader_resource=0');
+    _player.setProperty('avformat.strict', 'experimental');
+    _player.setProperty('avformat.safe', '0');
+    _player.setProperty('avio.reconnect', '1');
+    _player.setProperty('avio.reconnect_delay_max', '7');
+    _player.setProperty('avformat.rtsp_transport', 'tcp');
+    _player.setProperty('avformat.extension_picky', '0');
+    _player.setProperty('avformat.allowed_segment_extensions', 'ALL');
+    // Reduce latency:
+    _player.setProperty('avformat.fflags', '+nobuffer');
+    _player.setProperty('avformat.fpsprobesize', '0');
+    _player.setProperty('avformat.analyzeduration', '100000');
+    _player.setBufferRange(min: 0, max: 1, drop: true);
+    _player.videoDecoders = AppConfig.MDK_DECODERS;
+
     if (widget.isSubStream) {
-      _controller.setFps(20);
-
-      // Gán reference
-      baseAudioTracks ??= _controller.getActiveAudioTracks();
-      _controller.setAudioTracks([]); // Tắt âm thanh
+      _player.setFps(20);
+      _player.activeAudioTracks = [];
     }
+  }
 
-    if (mounted) setState(() {}); // Build lại để bắt đầu play video
-    await _controller.play();
+  Future<void> _onConnecting([bool isRetry = false]) async {
+    try {
+      if (isRetry) _state.value = _PlayerState.initializing;
+
+      _player
+        ..media = widget.isSubStream
+            ? widget.data.subStreamUri.toString()
+            : widget.data.mainStreamUri.toString()
+        ..loop = -1
+        ..state = PlaybackState.playing;
+
+      final textureConstraints = widget.size?.let(
+        (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
+      );
+
+      _player
+          .updateTexture(width: textureConstraints?.width, height: textureConstraints?.height)
+          .timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT)
+          .then((id) => _onInitialized(id));
+    } catch (e) {
+      _onError(e);
+    }
+  }
+
+  Future<void> _onInitialized(int id) async {
+    if (id == -1) return _onError();
+
+    final size = await _player.textureSize;
+    _aspectRatio = size == null ? 1.0 : size.width / size.height;
+    _state.value = _PlayerState.initialized;
+
+    _timer?.cancel();
+    _lastPosition = -1;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return _timer?.cancel();
+
+      _player.position.let((pos) {
+        if (_lastPosition != pos) _debounceConnectionLost();
+        _lastPosition = pos;
+      });
+    });
+  }
+
+  void _onError([e]) {
+    if (!mounted) return;
+    _state.value = _PlayerState.error;
+
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_countdown == 0) {
+        timer.cancel();
+        _countdown = 5;
+        _onConnecting(true);
+      } else {
+        _countdown--;
+      }
+    });
   }
 
   void _debounceConnectionLost() {
-    _debounce?.cancel();
-
     // Pause thì cancel debounce + không check disconnected
-    if (_controller.value.isPlaying == false) return;
+    if (_player.state == PlaybackState.paused) return;
 
+    _debounce?.cancel();
     _debounce = Timer(AppConfig.PLAYER_DISCONNECTION_THRESHOLD, () {
       if (!mounted) return;
 
       Logger.warn("Camera '${widget.data.name}' disconnected");
-      _controller.value = VideoPlayerValue.erroneous("Disconnected");
-    });
-  }
-
-  void _onMessage() {
-    if (!mounted) return;
-
-    if (_controller.value.hasError) {
       _timer?.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (_countdown == 0) {
-          timer.cancel();
-          _countdown = 5;
-          _connect(retry: true);
-        } else {
-          _countdown--;
-        }
-      });
-    }
-
-    if (_controller.value.isInitialized == false) {
-      setState(() {});
-    } else {
-      _debounceConnectionLost();
-    }
+      _initPlayer();
+      _onError();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black,
-        boxShadow: _controller.value.isInitialized
-            ? [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)]
-            : null,
+    return ValueListenableBuilder<_PlayerState>(
+      valueListenable: _state,
+      builder: (context, state, _) => DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.black,
+          boxShadow: state == _PlayerState.initialized
+              ? [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)]
+              : null,
+        ),
+        child: state == _PlayerState.error
+            ? _buildError()
+            : state == _PlayerState.initializing
+            ? const Center(child: CircularProgressIndicator.adaptive())
+            : AspectRatio(
+                aspectRatio: _aspectRatio,
+                child: ValueListenableBuilder(
+                  valueListenable: _player.textureId,
+                  builder: (context, id, _) {
+                    final player = id == null ? const SizedBox.shrink() : Texture(textureId: id);
+
+                    return widget.builder?.call(context, player, widget.data) ?? player;
+                  },
+                ),
+              ),
       ),
-      child: _controller.value.hasError
-          ? _buildError()
-          : !_controller.value.isInitialized
-          ? const Center(child: CircularProgressIndicator.adaptive())
-          : AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child:
-                  widget.builder?.call(context, VideoPlayer(_controller), widget.data) ??
-                  VideoPlayer(_controller),
-            ),
     );
   }
 

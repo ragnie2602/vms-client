@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 
 import '../camera_live/camera_live_screen.dart';
@@ -16,15 +17,21 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
   const MonitorScreen({super.key});
 
   // Getters
-  int get rows => AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? 6;
-  int get columns => AppConfig.OVERRIDE_MONITOR_GRID_COLUMNS ?? 6;
   double get spacing => AppConfig.MONITOR_GRID_SPACING;
 
-  Size _initPlayerSize(BoxConstraints constraints) {
+  Size _initPlayerSize(BoxConstraints constraints, [int rows = 6, int columns = 6]) {
+    rows = AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? rows;
+    columns = AppConfig.OVERRIDE_MONITOR_GRID_COLUMNS ?? columns;
+
     final width = (constraints.maxWidth - spacing * (columns - 1)) / columns;
     final height = (constraints.maxHeight - spacing * (rows - 1)) / rows;
 
     return Size(width, height);
+  }
+
+  // ignore: unused_element
+  void _onChangeGridMode(BuildContext context, BaseView mode) {
+    context.read<ListCameraBloc>().add(ChangeGridMode(mode));
   }
 
   @override
@@ -37,16 +44,16 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
           onMobile: (context) => Container(),
           onDesktop: (context) => LayoutBuilder(
             builder: (context, constraints) {
-              final size = _initPlayerSize(constraints);
+              final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
 
               return Wrap(
                 spacing: spacing,
                 runSpacing: spacing,
-                children: state.cameras.mapIndexed((index, camera) {
+                children: state.paginatedCameras.mapIndexed((index, camera) {
                   return SizedBox.fromSize(
                     size: size,
                     child: CameraPlayer(
-                      size: size,
+                      size: state.mode.total == 1 ? null : size,
                       data: camera,
                       key: ValueKey("player($index)___${camera.camId}"),
                       builder: _buildCameraView,
