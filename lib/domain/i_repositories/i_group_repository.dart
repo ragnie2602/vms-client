@@ -7,4 +7,12 @@ abstract class IGroupRepository {
     String? groupName,
     List<int>? parentGroupId,
   });
+  Future<Either<Failure, List<DeviceGroup>?>> removeGroupCamera({
+    List<int>? groupId,
+  });
+  Future<Either<Failure, List<DeviceGroup>?>> updateGroupCamera({
+    List<int>? groupId,
+    String? groupName,
+    List<int>? parentGroupId,
+  });
 }

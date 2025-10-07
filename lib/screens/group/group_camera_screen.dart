@@ -96,6 +96,7 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
                 backgroundColor: Colors.green,
               ),
             );
+            groupNameController.clear();
           }
           if (state.type.isError) {
             ScaffoldMessenger.of(context).showSnackBar(

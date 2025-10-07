@@ -53,4 +53,59 @@ class GroupService {
       (buffer) => AddGroupCamera_Reply.fromBuffer(buffer).groups,
     );
   }
+
+  // xóa nhóm camera
+  Future<List<DeviceGroup>> removeGroupCamera({List<int>? groupId}) async {
+    final removeGroupCameraRequest = RemoveGroupCamera_Request();
+
+    if (groupId != null) {
+      removeGroupCameraRequest.groupId = groupId;
+    }
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: removeGroupCameraRequest.writeToBuffer(),
+          type: PacketType.removeGroupCamera,
+        ),
+      ),
+    );
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(RemoveGroupCamera_Error.valueOf),
+      (buffer) => RemoveGroupCamera_Reply.fromBuffer(buffer).groups,
+    );
+  }
+
+  // sửa nhóm camera
+  Future<List<DeviceGroup>> updateGroupCamera({
+    List<int>? groupId,
+    String? groupName,
+    List<int>? parentGroupId,
+  }) async {
+    final updateGroupCameraRequest = UpdateGroupDevice_Request();
+    if (groupName != null) {
+      updateGroupCameraRequest.groupName = groupName;
+    }
+    if (parentGroupId != null) {
+      updateGroupCameraRequest.parentGroup = parentGroupId;
+    }
+    if (groupId != null) {
+      updateGroupCameraRequest.groupId = groupId;
+    }
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: updateGroupCameraRequest.writeToBuffer(),
+          type: PacketType.updateGroupDevice,
+        ),
+      ),
+    );
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(UpdateGroupDevice_Error.valueOf),
+      (buffer) => UpdateGroupDevice_Reply.fromBuffer(buffer).groups,
+    );
+  }
 }
