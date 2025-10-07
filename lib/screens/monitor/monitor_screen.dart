@@ -36,32 +36,39 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ListCameraBloc, ListCameraState>(
-      builder: (context, blocState) => stateBuilder<ListCameraSuccess>(
-        blocState,
-        onReload: () => context.read<ListCameraBloc>().add(GetAllCamera()),
-        child: (state) => PlatformWidget.groupBuilder(
-          onMobile: (context) => Container(),
-          onDesktop: (context) => LayoutBuilder(
-            builder: (context, constraints) {
-              final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Color(0xFFF8F9FE),
+      padding: const EdgeInsets.all(20.0),
+      child: BlocBuilder<ListCameraBloc, ListCameraState>(
+        builder: (context, blocState) => stateBuilder<ListCameraSuccess>(
+          blocState,
+          onReload: () => context.read<ListCameraBloc>().add(GetAllCamera()),
+          child: (state) => PlatformWidget.groupBuilder(
+            onMobile: (context) => Container(),
+            onDesktop: (context) => LayoutBuilder(
+              builder: (context, constraints) {
+                final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
 
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: state.paginatedCameras.mapIndexed((index, camera) {
-                  return SizedBox.fromSize(
-                    size: size,
-                    child: CameraPlayer(
-                      size: state.mode.total == 1 ? null : size,
-                      data: camera,
-                      key: ValueKey("player($index)___${camera.camId}"),
-                      builder: _buildCameraView,
-                    ),
-                  );
-                }).toList(),
-              );
-            },
+                return Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: state.paginatedCameras.mapIndexed((index, camera) {
+                    return SizedBox.fromSize(
+                      size: size,
+                      child: CameraPlayer(
+                        size: state.mode.total == 1 ? null : size,
+                        data: camera,
+                        key: ValueKey("player($index)___${camera.camId}"),
+                        builder: _buildCameraView,
+                        borderRadius: 10,
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -81,16 +88,19 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
           player,
 
           Positioned(
-            bottom: 6,
-            left: 6,
+            bottom: 10,
+            right: 10,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: Colors.white.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(3),
-                boxShadow: [BoxShadow(color: Colors.white10, blurRadius: 6, offset: Offset(0, 2))],
+                boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
               ),
               padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-              child: Text(data.name, style: TextStyle(color: Colors.black, fontSize: 12)),
+              child: Text(
+                data.name,
+                style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w600),
+              ),
             ),
           ),
         ],

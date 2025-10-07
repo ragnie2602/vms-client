@@ -20,12 +20,14 @@ class CameraPlayer extends StatefulWidget {
     this.isSubStream = true,
     this.builder,
     this.size,
+    this.borderRadius,
   });
 
   final CameraEntity data;
   final bool isSubStream;
   final Widget Function(BuildContext context, Widget playerWidget, CameraEntity data)? builder;
   final Size? size;
+  final double? borderRadius;
 
   @override
   State<CameraPlayer> createState() => CameraPlayerState();
@@ -121,7 +123,8 @@ class CameraPlayerState extends State<CameraPlayer> {
         (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
       );
 
-      _player
+      // await timeout thì catch ở ngoài ms bắt được, không phải dùng catchError/onError
+      await _player
           .updateTexture(width: textureConstraints?.width, height: textureConstraints?.height)
           .timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT)
           .then((id) => _onInitialized(id));
@@ -186,6 +189,7 @@ class CameraPlayerState extends State<CameraPlayer> {
       valueListenable: _state,
       builder: (context, state, _) => DecoratedBox(
         decoration: BoxDecoration(
+          borderRadius: BorderRadiusGeometry.circular(widget.borderRadius ?? 0),
           color: Colors.black,
           boxShadow: state == _PlayerState.initialized
               ? [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)]
@@ -200,7 +204,14 @@ class CameraPlayerState extends State<CameraPlayer> {
                 child: ValueListenableBuilder(
                   valueListenable: _player.textureId,
                   builder: (context, id, _) {
-                    final player = id == null ? const SizedBox.shrink() : Texture(textureId: id);
+                    final player = id == null
+                        ? const SizedBox.shrink()
+                        : widget.borderRadius != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadiusGeometry.circular(widget.borderRadius!),
+                            child: Texture(textureId: id),
+                          )
+                        : Texture(textureId: id);
 
                     return widget.builder?.call(context, player, widget.data) ?? player;
                   },
