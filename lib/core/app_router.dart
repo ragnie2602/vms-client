@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/list_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 
@@ -16,6 +18,7 @@ enum Routes {
   test11(name: 'test11', path: '/test11'),
   test12(name: 'test12', path: '/test12'),
   test2(name: 'test2', path: '/test2'),
+  addGroupCamera(name: 'addGroupCamera', path: '/addGroupCamera'),
 
   login(name: 'login', path: '/login'),
   monitoring(name: 'monitoring', path: '/monitoring'),
@@ -35,7 +38,8 @@ class AppRouter {
         path: Routes.login.path,
         name: Routes.login.name,
         builder: (context, state) => BlocProvider(
-          create: (context) => LoginBloc(loginUseCase: context.read<LoginUseCase>()),
+          create: (context) =>
+              LoginBloc(loginUseCase: context.read<LoginUseCase>()),
           child: const LoginScreen(),
         ),
       ),
@@ -43,7 +47,14 @@ class AppRouter {
         builder: (context, state, child) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
-            BlocProvider(create: (context) => ListCameraBloc(context.read())..add(GetAllCamera())),
+            BlocProvider(
+              create: (context) =>
+                  ListCameraBloc(context.read())..add(GetAllCamera()),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  GroupCameraBloc(groupCameraRepository: context.read()),
+            ),
           ],
           child: HomeScreen(body: child),
         ),
@@ -80,6 +91,11 @@ class AppRouter {
             path: Routes.about.path,
             name: Routes.about.name,
             builder: (context, state) => Center(child: Text('About')),
+          ),
+          GoRoute(
+            path: Routes.addGroupCamera.path,
+            name: Routes.addGroupCamera.name,
+            builder: (context, state) => GroupCameraScreen(),
           ),
         ],
       ),
