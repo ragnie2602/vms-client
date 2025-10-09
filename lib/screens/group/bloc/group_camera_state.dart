@@ -18,6 +18,10 @@ class GetAllGroupCameraSuccessState extends GroupCameraState {
   StateType get type => StateType.success;
   @override
   List<Object?> get props => [groups];
+
+  GetAllGroupCameraSuccessState copyWith({List<DeviceGroup>? groups}) {
+    return GetAllGroupCameraSuccessState(groups: groups?? this.groups);
+  }
 }
 
 class GetAllGroupCameraFailState extends GroupCameraState {
@@ -36,15 +40,15 @@ class AddGroupCameraLoadingState extends GroupCameraState {
   StateType get type => StateType.loading;
 }
 
-class AddGroupCameraSuccessState extends GroupCameraState {
-  final List<DeviceGroup>? groups;
-  const AddGroupCameraSuccessState({required this.groups});
+// class AddGroupCameraSuccessState extends GroupCameraState {
+//   final List<DeviceGroup>? groups;
+//   const AddGroupCameraSuccessState({required this.groups});
 
-  @override
-  StateType get type => StateType.success;
-  @override
-  List<Object?> get props => [groups];
-}
+//   @override
+//   StateType get type => StateType.success;
+//   @override
+//   List<Object?> get props => [groups];
+// }
 
 class AddGroupCameraFailState extends GroupCameraState {
   final String message;
@@ -57,15 +61,15 @@ class AddGroupCameraFailState extends GroupCameraState {
   String get errorMsg => message;
 }
 
-class RemoveGroupCameraSuccessState extends GroupCameraState {
-  final List<DeviceGroup>? groups;
-  const RemoveGroupCameraSuccessState({required this.groups});
+// class RemoveGroupCameraSuccessState extends GroupCameraState {
+//   final List<DeviceGroup>? groups;
+//   const RemoveGroupCameraSuccessState({required this.groups});
 
-  @override
-  StateType get type => StateType.success;
-  @override
-  List<Object?> get props => [groups];
-}
+//   @override
+//   StateType get type => StateType.success;
+//   @override
+//   List<Object?> get props => [groups];
+// }
 
 class RemoveGroupCameraFailState extends GroupCameraState {
   final String message;
@@ -78,15 +82,15 @@ class RemoveGroupCameraFailState extends GroupCameraState {
   String get errorMsg => message;
 }
 
-class UpdateGroupCameraSuccessState extends GroupCameraState {
-  final List<DeviceGroup>? groups;
-  const UpdateGroupCameraSuccessState({required this.groups});
+// class UpdateGroupCameraSuccessState extends GroupCameraState {
+//   final List<DeviceGroup>? groups;
+//   const UpdateGroupCameraSuccessState({required this.groups});
 
-  @override
-  StateType get type => StateType.success;
-  @override
-  List<Object?> get props => [groups];
-}
+//   @override
+//   StateType get type => StateType.success;
+//   @override
+//   List<Object?> get props => [groups];
+// }
 
 class UpdateGroupCameraFailState extends GroupCameraState {
   final String message;
