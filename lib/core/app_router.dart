@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/list_camera_bloc.dart';
@@ -18,6 +20,7 @@ enum Routes {
   test11(name: 'test11', path: '/test11'),
   test12(name: 'test12', path: '/test12'),
   test2(name: 'test2', path: '/test2'),
+  controlCamera(name: 'controlCamera', path: '/controlCamera'),
   addGroupCamera(name: 'addGroupCamera', path: '/addGroupCamera'),
 
   login(name: 'login', path: '/login'),
@@ -50,6 +53,10 @@ class AppRouter {
             BlocProvider(
               create: (context) =>
                   ListCameraBloc(context.read())..add(GetAllCamera()),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  ControlCameraBloc(controlGroupRepository: context.read()),
             ),
             BlocProvider(
               create: (context) =>
@@ -91,6 +98,11 @@ class AppRouter {
             path: Routes.about.path,
             name: Routes.about.name,
             builder: (context, state) => Center(child: Text('About')),
+          ),
+          GoRoute(
+            path: Routes.controlCamera.path,
+            name: Routes.controlCamera.name,
+            builder: (context, state) => ControlCameraScreen(),
           ),
           GoRoute(
             path: Routes.addGroupCamera.path,
