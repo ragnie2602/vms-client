@@ -22,6 +22,7 @@ class DependencyInjection {
     ),
     Provider<CameraService>(create: (context) => CameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
+    Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -35,6 +36,9 @@ class DependencyInjection {
     ),
     Provider<IGroupRepository>(
       create: (context) => GroupRepository(context.read()),
+    ),
+    Provider<IPlaybackRepository>(
+      create: (context) => PlaybackRepository(context.read()),
     ),
 
     // Use Cases

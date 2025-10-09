@@ -18,14 +18,14 @@ class PlayerControls extends StatelessWidget {
           color: Colors.white,
           icon: Icon(Icons.play_arrow),
           onPressed: () {
-            ref.currentState!.controller.play();
+            ref.currentState!.player.play();
           },
         ),
         IconButton(
           color: Colors.white,
           icon: Icon(Icons.pause),
           onPressed: () {
-            ref.currentState!.controller.pause();
+            ref.currentState!.player.pause();
           },
         ),
 

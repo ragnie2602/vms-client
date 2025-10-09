@@ -59,7 +59,6 @@ dependencies:
   # Player
   fvp:
     path: packages/fvp
-  video_player: ^2.6.1
 
   # Environment Configuration
   flutter_dotenv: ^5.1.0

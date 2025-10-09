@@ -19,7 +19,7 @@ void main() async {
       options: {
         // 'platforms': ['windows'], // Chỉ sử dụng với platform windows
         'lowLatency': 2,
-        'video.decoders': ['D3D11', 'DXVA', 'MFT:d3d=11', 'CUDA', 'FFmpeg'],
+        'video.decoders': AppConfig.MDK_DECODERS,
         'global': <String, Object>{'log': AppConfig.MDK_LOG_LEVEL},
         'player': <String, String>{},
         'onMdkLog': Logger.onMdkLog,
