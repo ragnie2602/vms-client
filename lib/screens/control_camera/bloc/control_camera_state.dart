@@ -1,8 +1,29 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 
 class ControlCameraState extends BaseState {
   const ControlCameraState();
+}
+
+class GetListCameraSuccessState extends ControlCameraState {
+  final List<CameraEntity> cameras;
+  const GetListCameraSuccessState({required this.cameras});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [cameras];
+}
+
+class GetListCameraFailState extends ControlCameraState {
+  final String message;
+
+  const GetListCameraFailState(this.message);
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
 }
 
 class ControlCameraLoadingState extends ControlCameraState {
@@ -30,6 +51,7 @@ class AddCameraFailState extends ControlCameraState {
   @override
   String get errorMsg => message;
 }
+
 class ValidateCameraState extends ControlCameraState {
   final String message;
 

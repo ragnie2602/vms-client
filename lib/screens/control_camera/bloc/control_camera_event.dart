@@ -6,8 +6,12 @@ class ControlCameraEvent extends BaseEvent {
 
 class ValidateCameraEvent extends ControlCameraEvent {
   final String message;
-  const ValidateCameraEvent({
-    required this.message,
-  });
+  const ValidateCameraEvent({required this.message});
 }
-class GetListCameraEvent extends ControlCameraEvent{}
+
+class GetListCameraEvent extends ControlCameraEvent {
+  final List<int>? cameraId;
+  final int? status;
+  final int? ivaType;
+  const GetListCameraEvent({this.cameraId, this.ivaType, this.status});
+}

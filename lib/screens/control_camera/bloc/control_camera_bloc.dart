@@ -6,11 +6,25 @@ import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_reposi
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 
-class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState> {
+class ControlCameraBloc
+    extends BaseBloc<ControlCameraEvent, ControlCameraState> {
   final IControlCameraRepository controlGroupRepository;
   ControlCameraBloc({required this.controlGroupRepository})
     : super(const ControlCameraState()) {
     on<ValidateCameraEvent>(_onValidateCamera);
+    on<GetListCameraEvent>(_onGetListCamera);
+  }
+  FutureOr<void> _onGetListCamera(
+    GetListCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final groups = await controlGroupRepository.getAllCamera();
+    groups.fold(
+      (onFailure) => emit(GetListCameraFailState(groups.left.toString())),
+      (onSuccess) {
+        emit(GetListCameraSuccessState(cameras: onSuccess));
+      },
+    );
   }
 
   FutureOr<void> _onValidateCamera(
