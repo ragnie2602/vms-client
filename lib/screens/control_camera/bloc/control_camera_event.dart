@@ -10,3 +10,4 @@ class ValidateCameraEvent extends ControlCameraEvent {
     required this.message,
   });
 }
+class GetListCameraEvent extends ControlCameraEvent{}

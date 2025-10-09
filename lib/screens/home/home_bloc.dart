@@ -33,11 +33,7 @@ class HomeTab {
       ],
     ),
     HomeTab(Routes.about, title: 'Thông tin', icon: Icons.info),
-    HomeTab(
-      Routes.controlCamera,
-      title: 'Quản lý camera đơn',
-      icon: Icons.info,
-    ),
+    HomeTab(Routes.controlCamera, title: 'Quản lý camera', icon: Icons.info),
     HomeTab(
       Routes.addGroupCamera,
       title: 'Quản lý thiết bị (nhóm camera)',
