@@ -36,8 +36,15 @@ class HomeTab {
             HomeTab(Routes.test12, title: 'Nested child 1-2', svg: AppAssets.tabMonitor),
           ],
         ),
-        HomeTab(Routes.test2, title: 'Nested 2', svg: AppAssets.tabMonitor),
+        HomeTab(Routes.test2, title: 'Test 2', icon: Icons.abc),
       ],
+    ),
+    HomeTab(Routes.about, title: 'Thông tin', icon: Icons.info),
+    HomeTab(Routes.controlCamera, title: 'Quản lý camera', icon: Icons.info),
+    HomeTab(
+      Routes.addGroupCamera,
+      title: 'Quản lý thiết bị (nhóm camera)',
+      icon: Icons.home,
     ),
   ];
 }
