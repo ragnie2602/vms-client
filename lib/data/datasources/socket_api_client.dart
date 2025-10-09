@@ -19,6 +19,7 @@ class SocketApiClient extends BaseApiClient {
   Stream<ConnectionState> get state => _stateController.stream.distinct();
 
   final Map<int, Completer> _requestCompleters = {};
+  Timer? _keepAliveTimer;
 
   @override
   Future<bool> connect(SocketConnectionParams params) async {
@@ -54,6 +55,8 @@ class SocketApiClient extends BaseApiClient {
             onTimeout: () => throw TimeoutException('Connection timeout'),
           );
 
+      _keepAliveTimer = Timer.periodic(const Duration(seconds: 30), _sendKeepAlive);
+
       return true;
     } catch (e) {
       Logger.error(e, tag: 'SOCKET');
@@ -63,6 +66,7 @@ class SocketApiClient extends BaseApiClient {
 
   @override
   Future<void> disconnect() async {
+    _keepAliveTimer?.cancel();
     await _messageController.close();
     await _stateController.close();
     _socket.close();
@@ -84,6 +88,10 @@ class SocketApiClient extends BaseApiClient {
         return Left(Failure.message(TIMEOUT_DEFAULT));
       },
     );
+  }
+
+  void _sendKeepAlive(Timer _) {
+    _socket.send(Packet(id: 100, data: [], type: PacketType.keepAlive).writeToBuffer());
   }
 
   void _handleMessages(dynamic message) {

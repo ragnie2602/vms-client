@@ -56,21 +56,4 @@ class CameraService {
       (buffer) => GetCameraInGroup_Reply.fromBuffer(buffer).cameras,
     );
   }
-
-  Future<List<CustomLiveView>> getListCustomLiveView() async {
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: GetListCustomLiveView_Request().writeToBuffer(),
-          type: PacketType.getListCustomLiveView,
-        ),
-      ),
-    );
-
-    return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(),
-      (buffer) => GetListCustomLiveView_Reply.fromBuffer(buffer).customs,
-    );
-  }
 }
