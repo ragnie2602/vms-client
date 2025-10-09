@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 
+import '../bloc/playback_bloc.dart';
 import '../widgets/player_timeline_painter.dart';
 
 class PlayerTimeline extends StatefulWidget {
@@ -36,9 +38,7 @@ class PlayerTimeline extends StatefulWidget {
 }
 
 class _PlayerTimelineState extends State<PlayerTimeline> {
-  late final _centralDate = ValueNotifier(
-    DateTime.now().copyWith(microsecond: 0, millisecond: 0),
-  );
+  late final _centralDate = ValueNotifier(DateTime.now().copyWith(microsecond: 0, millisecond: 0));
   late Timer _timer;
 
   bool _isInteracting = false;
@@ -60,7 +60,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       if (_isInteracting || _centralDate.value.isAfter(DateTime.now())) return;
 
-      // _centralDate.value = DateTime.now().copyWith(microsecond: 0, millisecond: 0);
+      _centralDate.value = DateTime.now().copyWith(microsecond: 0, millisecond: 0);
     });
   }
 
@@ -105,33 +105,41 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
           onHorizontalDragUpdate: _onHorizontalDragUpdate,
           onHorizontalDragStart: (_) => _isInteracting = true,
           onHorizontalDragEnd: (_) => _isInteracting = false,
-          child: RepaintBoundary(
-            child: CustomPaint(
-              size: Size(_timelineWidth, widget.size?.height ?? widget.majorTickHeight),
-              isComplex: true,
-              willChange: true,
-              painter: PlayerTimelinePainter(
-                onCentralOffset: (offset) => _centralOffset = offset,
-                majorTickHeight: widget.majorTickHeight,
-                minorTickHeight: widget.minorTickHeight,
-                minorTickCount: widget.minorTickCount,
-                tickGap: widget.tickGap,
-                tickWidth: widget.tickWidth,
-                centralDate: _centralDate,
-                startDate: widget.startDate,
-                endDate: widget.endDate,
-                interval: widget.interval,
-                formatPattern: widget.formatPattern,
-                normalStyle: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                ),
-                highlightStyle: const TextStyle(
-                  color: Colors.indigoAccent,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                ),
+          // Không bị vẽ ra ngoài
+          child: ClipRRect(
+            child: RepaintBoundary(
+              child: BlocBuilder<PlaybackBloc, PlaybackState>(
+                builder: (context, state) {
+                  return CustomPaint(
+                    size: Size(_timelineWidth, widget.size?.height ?? widget.majorTickHeight),
+                    isComplex: true,
+                    willChange: true,
+                    painter: PlayerTimelinePainter(
+                      onCentralOffset: (offset) => _centralOffset = offset,
+                      majorTickHeight: widget.majorTickHeight,
+                      minorTickHeight: widget.minorTickHeight,
+                      minorTickCount: widget.minorTickCount,
+                      tickGap: widget.tickGap,
+                      tickWidth: widget.tickWidth,
+                      centralDate: _centralDate,
+                      playbacks: state.type.isSuccess ? (state as PlaybackSuccess).playbacks : [],
+                      startDate: widget.startDate,
+                      endDate: widget.endDate,
+                      interval: widget.interval,
+                      formatPattern: widget.formatPattern,
+                      normalStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      highlightStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),

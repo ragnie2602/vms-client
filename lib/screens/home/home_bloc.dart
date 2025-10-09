@@ -1,39 +1,44 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
+
 import '../../core/base_bloc.dart';
 
 class HomeTab {
   final Routes? route;
   final String title;
-  final IconData icon;
+  final String svg;
   final List<HomeTab> nested;
 
-  HomeTab(this.route, {required this.title, required this.icon, this.nested = const []});
+  HomeTab(this.route, {required this.title, required this.svg, this.nested = const []});
 
   static final tabs = [
-    HomeTab(Routes.monitoring, title: 'Giám sát', icon: Icons.fiber_manual_record),
+    HomeTab(Routes.monitoring, title: 'Liveview', svg: AppAssets.tabMonitor),
+    HomeTab(Routes.playback, title: 'Playback', svg: AppAssets.tabPlayback),
+    HomeTab(Routes.controlCamera, title: 'Quản lý camera', svg: AppAssets.tabCameras),
+    HomeTab(Routes.addGroupCamera, title: 'Quản lý nhóm camera', svg: AppAssets.tabCameraGroups),
+    HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
+    HomeTab(Routes.setting, title: 'Cấu hình hệ thống', svg: AppAssets.tabSettings),
+    HomeTab(Routes.about, title: 'Thông tin ứng dụng', svg: AppAssets.tabInfo),
     HomeTab(
       null,
-      title: 'Thông tin',
-      icon: Icons.list,
+      title: 'Test group tab',
+      svg: AppAssets.tabMonitor,
       nested: [
         HomeTab(
           null,
-          title: 'Test 1',
-          icon: Icons.abc,
+          title: 'Nested 1',
+          svg: AppAssets.tabMonitor,
           nested: [
-            HomeTab(Routes.test11, title: 'Test 1-1', icon: Icons.abc),
-            HomeTab(Routes.test12, title: 'Test 1-2', icon: Icons.abc),
+            HomeTab(Routes.test11, title: 'Nested child 1-1', svg: AppAssets.tabMonitor),
+            HomeTab(Routes.test12, title: 'Nested child 1-2', svg: AppAssets.tabMonitor),
           ],
         ),
-        HomeTab(Routes.test2, title: 'Test 2', icon: Icons.abc),
+        HomeTab(Routes.test2, title: 'Nested 2', svg: AppAssets.tabMonitor),
       ],
     ),
-    HomeTab(Routes.about, title: 'Thông tin', icon: Icons.info),
-    HomeTab(Routes.addGroupCamera, title: 'Quản lý thiết bị (nhóm camera)', icon: Icons.home),
   ];
 }
 
