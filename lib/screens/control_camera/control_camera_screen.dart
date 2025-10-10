@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vms_flutter_client/core/app_colors.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
-import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
@@ -65,7 +64,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(3),
-                    border: Border.all(width: 1, color: AppColors.blue005AA9),
+                    border: Border.all(width: 1, color: AppColors.secondary),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -73,7 +72,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                       Text(
                         'Thêm camera',
                         style: TextStyle(
-                          color: AppColors.blue005AA9,
+                          color: AppColors.secondary,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
