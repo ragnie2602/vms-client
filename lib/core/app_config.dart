@@ -14,6 +14,7 @@ class AppConfig {
 
   /*  */
   static const SHOW_HOME_SIDEBAR = true;
+  static const double APP_BAR_HEIGHT = 67;
 
   /* Log */
   static const LOG_ERROR_MAX_LINES = 10;

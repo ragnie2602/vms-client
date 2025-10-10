@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 
@@ -18,9 +20,9 @@ class Header extends StatelessWidget {
     final textStyle = TextStyle(fontSize: 13, color: Colors.black);
 
     return Container(
-      height: 60,
+      height: AppConfig.APP_BAR_HEIGHT,
       width: double.infinity,
-      color: Theme.of(context).colorScheme.inversePrimary,
+      color: AppColors.contentBg,
       child: Row(
         children: <Widget>[
           _buildLeading(context),

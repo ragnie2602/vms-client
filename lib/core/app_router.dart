@@ -20,12 +20,15 @@ enum Routes {
   test11(name: 'test11', path: '/test11'),
   test12(name: 'test12', path: '/test12'),
   test2(name: 'test2', path: '/test2'),
+
   controlCamera(name: 'controlCamera', path: '/controlCamera'),
   addGroupCamera(name: 'addGroupCamera', path: '/addGroupCamera'),
-
   login(name: 'login', path: '/login'),
   monitoring(name: 'monitoring', path: '/monitoring'),
   livecamera(name: 'livecamera', path: 'livecamera'),
+  playback(name: 'playback', path: '/playback'),
+  users(name: 'users', path: '/users'),
+  setting(name: 'setting', path: '/setting'),
   about(name: 'about', path: '/about');
 
   final String name;
@@ -34,15 +37,17 @@ enum Routes {
 }
 
 class AppRouter {
+  static final rootNavigatorKey = GlobalKey<NavigatorState>();
+
   static final GoRouter router = GoRouter(
     initialLocation: AppConfig.INITIAL_ROUTE.path,
+    navigatorKey: rootNavigatorKey,
     routes: [
       GoRoute(
         path: Routes.login.path,
         name: Routes.login.name,
         builder: (context, state) => BlocProvider(
-          create: (context) =>
-              LoginBloc(loginUseCase: context.read<LoginUseCase>()),
+          create: (context) => LoginBloc(loginUseCase: context.read<LoginUseCase>()),
           child: const LoginScreen(),
         ),
       ),
@@ -50,17 +55,12 @@ class AppRouter {
         builder: (context, state, child) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
+            BlocProvider(create: (context) => ListCameraBloc(context.read())..add(GetAllCamera())),
             BlocProvider(
-              create: (context) =>
-                  ListCameraBloc(context.read())..add(GetAllCamera()),
+              create: (context) => ControlCameraBloc(controlGroupRepository: context.read()),
             ),
             BlocProvider(
-              create: (context) =>
-                  ControlCameraBloc(controlGroupRepository: context.read()),
-            ),
-            BlocProvider(
-              create: (context) =>
-                  GroupCameraBloc(groupCameraRepository: context.read()),
+              create: (context) => GroupCameraBloc(groupCameraRepository: context.read()),
             ),
           ],
           child: HomeScreen(body: child),
@@ -69,13 +69,20 @@ class AppRouter {
           GoRoute(
             path: Routes.monitoring.path,
             name: Routes.monitoring.name,
-            builder: (context, state) => MonitorScreen(),
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: MonitorScreen());
+            },
             routes: [
               GoRoute(
                 path: Routes.livecamera.path,
                 name: Routes.livecamera.name,
-                builder: (context, state) =>
-                    CameraLiveScreen(args: state.extra as CameraLiveScreenArgs),
+                pageBuilder: (context, state) {
+                  return fadeTransition(
+                    context: context,
+                    state: state,
+                    child: CameraLiveScreen(args: state.extra as CameraLiveScreenArgs),
+                  );
+                },
               ),
             ],
           ),
@@ -102,15 +109,69 @@ class AppRouter {
           GoRoute(
             path: Routes.controlCamera.path,
             name: Routes.controlCamera.name,
-            builder: (context, state) => ControlCameraScreen(),
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: ControlCameraScreen());
+            },
           ),
           GoRoute(
             path: Routes.addGroupCamera.path,
             name: Routes.addGroupCamera.name,
-            builder: (context, state) => GroupCameraScreen(),
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: GroupCameraScreen());
+            },
           ),
         ],
       ),
     ],
+  );
+}
+
+CustomTransitionPage fadeTransition<T>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 250),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
+      opacity: CurveTween(curve: Curves.easeIn).animate(animation),
+      child: child,
+    ),
+  );
+}
+
+enum _SlideType { ltr, rtl, btt, ttb }
+
+CustomTransitionPage slideTransition<T>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+  // ignore: library_private_types_in_public_api
+  _SlideType type = _SlideType.ltr,
+}) {
+  Offset begin = switch (type) {
+    _SlideType.ltr => const Offset(-2.5, 0),
+    _SlideType.rtl => const Offset(2.5, 0),
+    _SlideType.btt => const Offset(0, 1),
+    _SlideType.ttb => const Offset(0, -2.5),
+  };
+  Offset end = Offset.zero;
+
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 250),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return SlideTransition(
+        position: animation.drive(
+          Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.ease)),
+        ),
+        child: child,
+      );
+    },
   );
 }

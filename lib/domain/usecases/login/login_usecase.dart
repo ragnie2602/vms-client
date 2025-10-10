@@ -1,5 +1,5 @@
 import 'package:vms_flutter_client/core/app_data.dart';
-import 'package:vms_flutter_client/core/constants/app_keys.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 
 import '../../i_repositories/i_auth_repository.dart';
 import '../future_use_case.dart';
