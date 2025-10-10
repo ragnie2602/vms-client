@@ -13,3 +13,14 @@ enum CameraStatus {
     );
   }
 }
+
+extension CameraStatusExt on CameraStatus {
+  String getName() {
+    switch (this) {
+      case CameraStatus.active:
+        return 'Online';
+      default:
+        return 'Offline';
+    }
+  }
+}

@@ -105,6 +105,8 @@ extension CameraMapper on pb.Camera {
       camId: camId,
       username: username,
       password: password,
+      iPUrlStream: streamUrl.userOriginAddedUrl,
+      timeAdded: timeAdded,
       type: cameraType.toDomain(),
       status: status.toDomain(),
       stream: streamUrl.toDomain(),

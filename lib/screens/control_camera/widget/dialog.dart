@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vms_flutter_client/core/app_colors.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 
 /// Entry point to show the dialog
 Future<T?> showAddCameraRtspDialog<T>(
