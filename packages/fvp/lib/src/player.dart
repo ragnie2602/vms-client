@@ -24,6 +24,7 @@ class Player {
 
   /// for builder
   final ValueNotifier<int?> textureId = ValueNotifier<int?>(null);
+  Completer<void>? _creatingCompleter;
 
   Player() {
     _pp.value = _player;
@@ -165,20 +166,26 @@ class Player {
       textureId.dispose();
       return;
     }
-    // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
-    await updateTexture(width: -1);
-    state = PlaybackState.stopped;
-    Libfvp.unregisterPort(nativeHandle);
-    onEvent(null);
-    onStateChanged(null);
-    onMediaStatus(null);
 
-    _receivePort.close();
+    if (_creatingCompleter != null) {
+      // Đợi đến khi tạo xong thì mới thực hiện dispose --> fix crash
+      await _creatingCompleter!.future;
 
-    Libmdk.instance.mdkPlayerAPI_delete(_pp);
-    calloc.free(_pp);
-    _pp = nullptr;
-    textureId.dispose();
+      // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
+      await updateTexture(width: -1);
+      state = PlaybackState.stopped;
+      Libfvp.unregisterPort(nativeHandle);
+      onEvent(null);
+      onStateChanged(null);
+      onMediaStatus(null);
+
+      _receivePort.close();
+
+      Libmdk.instance.mdkPlayerAPI_delete(_pp);
+      calloc.free(_pp);
+      _pp = nullptr;
+      textureId.dispose();
+    }
   }
 
   /// Release current texture then create a new one for current [media], and update [textureId].
@@ -187,18 +194,23 @@ class Player {
   /// If both [width] and [height] are null, texture size is video frame size, otherwise is requested size.
   Future<int> updateTexture(
       {int? width, int? height, bool? tunnel, bool? fit}) async {
+    _creatingCompleter = Completer<void>();
+
     if ((textureId.value ?? -1) >= 0) {
       await FvpPlatform.instance.releaseTexture(nativeHandle, textureId.value!);
       textureId.value = null;
     }
+
     final size = await _videoSize.future;
     if (size == null) {
+      _creatingCompleter!.complete(null);
       return -1;
     }
     if (width == null && height == null) {
       // original size
       textureId.value = await FvpPlatform.instance.createTexture(nativeHandle,
           size.width.toInt(), size.height.toInt(), tunnel ?? false);
+      _creatingCompleter!.complete(null);
       return textureId.value!;
     }
     if (width != null && height != null && width > 0 && height > 0) {
@@ -213,8 +225,10 @@ class Player {
       }
       textureId.value = await FvpPlatform.instance
           .createTexture(nativeHandle, width, height, tunnel ?? false);
+      _creatingCompleter!.complete(null);
       return textureId.value!;
     }
+    _creatingCompleter!.complete(null);
     // release texture if width or height <= 0
     return -1;
   }
