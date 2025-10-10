@@ -4,6 +4,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
+import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'core/app_router.dart';
 import 'core/env_service.dart';
@@ -65,11 +66,10 @@ class MyApp extends StatelessWidget {
       providers: DependencyInjection.providers,
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        title: 'VMS Flutter Client',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
+        title: 'VNPT Secure Vision',
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.light,
         routerConfig: AppRouter.router,
       ),
     );

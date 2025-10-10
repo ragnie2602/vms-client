@@ -1,6 +1,6 @@
 class PlaybackVideo {
-  final int startTime;
-  final int endTime;
+  final DateTime startTime;
+  final DateTime endTime;
   final String urlPlayback;
   final List<int> cameraId;
   final String urlThumbnail;
@@ -16,4 +16,9 @@ class PlaybackVideo {
     required this.duration,
     required this.playbackId,
   });
+
+  @override
+  String toString() {
+    return 'PlaybackVideo(startTime: $startTime -> endTime: $endTime)';
+  }
 }

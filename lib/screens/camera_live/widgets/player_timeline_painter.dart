@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
+import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 
 class PlayerTimelinePainter extends CustomPainter {
   final DateTime? startDate;
   final DateTime? endDate;
   final ValueNotifier<DateTime> _centralDate;
+  final List<PlaybackVideo> playbacks;
 
   final void Function(double offset)? onCentralOffset;
 
@@ -51,17 +54,17 @@ class PlayerTimelinePainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..strokeWidth = tickWidth * 5;
   late final majorTickPaint = Paint()
-    ..color = Colors.indigoAccent
+    ..color = highlightStyle.color ?? Colors.white
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke
     ..strokeWidth = tickWidth;
   late final minorTickPaint = Paint()
-    ..color = Colors.grey
+    ..color = normalStyle.color ?? Colors.white
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke
     ..strokeWidth = tickWidth;
   final rectLinePaint = Paint()
-    ..color = Colors.indigo.withValues(alpha: 0.25)
+    ..color = AppColors.primary
     ..style = PaintingStyle.fill;
 
   PlayerTimelinePainter({
@@ -78,48 +81,40 @@ class PlayerTimelinePainter extends CustomPainter {
     required this.formatPattern,
     required this.normalStyle,
     required this.highlightStyle,
+    this.playbacks = const [],
   }) : _centralDate = centralDate,
        _textSpan = TextSpan(text: '', style: normalStyle),
        super(repaint: centralDate);
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant PlayerTimelinePainter oldDelegate) {
+    return oldDelegate.playbacks != playbacks;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
     /// Trường hợp central gần về start
     final leftCentralOffset = startDate?.let((startDate) {
-      final offset =
-          central.difference(startDate).inMicroseconds /
-          minorInterval.inMicroseconds *
-          minorIntervalWidth;
-
+      final offset = _getOffset(central, startDate);
       return offset <= size.width / 2 ? offset : null;
     });
     if (leftCentralOffset != null) {
-      _drawBottomLine(canvas, size, size.width / 2 - leftCentralOffset);
-      _drawPastRectangle(canvas, size, size.width / 2 - leftCentralOffset);
+      _drawPlaybacks(canvas, size, size.width / 2 - leftCentralOffset);
       return _drawTimelineFromStart(canvas, size, leftCentralOffset);
     }
 
     /// Trường hợp central gần về start
     final rightCentralOffset = endDate?.let((endDate) {
-      final offset =
-          endDate.difference(central).inMicroseconds /
-          minorInterval.inMicroseconds *
-          minorIntervalWidth;
-
+      final offset = _getOffset(endDate, central);
       return offset <= size.width / 2 ? offset : null;
     });
     if (rightCentralOffset != null) {
-      _drawBottomLine(canvas, size, rightCentralOffset - size.width / 2);
-      _drawPastRectangle(canvas, size, rightCentralOffset - size.width / 2);
+      _drawPlaybacks(canvas, size, size.width - rightCentralOffset);
       return _drawTimelineFromEnd(canvas, size, size.width - rightCentralOffset);
     }
 
     /// Trường hợp central ở giữa
-    _drawBottomLine(canvas, size, 0);
-    _drawPastRectangle(canvas, size, 0);
+    _drawPlaybacks(canvas, size, size.width / 2);
     canvas.translate(size.width / 2, 0); // Bắt đầu từ chính giữa
     _drawTimelineFromMiddle(canvas, Size(size.width / 2, size.height));
   }
@@ -134,10 +129,7 @@ class PlayerTimelinePainter extends CustomPainter {
     final nearestMajorTick = DateTime.fromMicrosecondsSinceEpoch(
       centralMicroseconds - centralMicroseconds % interval.inMicroseconds,
     );
-    final diffFromCentralToNearestTick =
-        central.difference(nearestTick).inMicroseconds /
-        minorInterval.inMicroseconds *
-        minorIntervalWidth;
+    final diffFromCentralToNearestTick = _getOffset(central, nearestTick);
     final numStepFromNearestTickToMajorTick =
         nearestTick.difference(nearestMajorTick).inMicroseconds / minorInterval.inMicroseconds;
 
@@ -245,19 +237,6 @@ class PlayerTimelinePainter extends CustomPainter {
     }
   }
 
-  void _drawBottomLine(Canvas canvas, Size size, double centralOffset) {
-    final Offset startingPoint = Offset(0, size.height + 1);
-    final Offset endingPoint = Offset(size.width / 2 - centralOffset, size.height + 1);
-    canvas.drawLine(startingPoint, endingPoint, bottomLinePaint);
-  }
-
-  void _drawPastRectangle(Canvas canvas, Size size, double centralOffset) {
-    canvas.drawRect(
-      Rect.fromPoints(Offset(0, size.height), Offset(size.width / 2 - centralOffset, 0)),
-      rectLinePaint,
-    );
-  }
-
   void _drawTick(Canvas canvas, Size size, double offsetX, bool isMajorTick, bool isHighlighted) {
     final height =
         size.height -
@@ -284,5 +263,36 @@ class PlayerTimelinePainter extends CustomPainter {
         ..lineTo(offsetX, 2), // Vẽ từ đáy dưới lên đáy trên
       centralLinePaint,
     );
+  }
+
+  void _drawPlaybacks(Canvas canvas, Size size, double centralOffsetX) {
+    if (playbacks.isEmpty) return;
+
+    double currentOffset = centralOffsetX;
+    DateTime comparedTime = central;
+    for (final playback in playbacks) {
+      final endOffset = _getOffset(playback.endTime, comparedTime);
+      final durationOffset = _getOffset(playback.endTime, playback.startTime);
+
+      if (endOffset + durationOffset > size.width) continue;
+
+      currentOffset += endOffset;
+      canvas.drawRect(
+        Rect.fromPoints(
+          Offset(currentOffset, size.height),
+          Offset(currentOffset - durationOffset, 0),
+        ),
+        rectLinePaint,
+      );
+      comparedTime = playback.startTime;
+      currentOffset -= durationOffset;
+
+      print("Lát current Offset: $currentOffset -- ${playback.toString()}");
+      if (currentOffset < 0) break;
+    }
+  }
+
+  double _getOffset(DateTime from, DateTime to) {
+    return from.difference(to).inMicroseconds / minorInterval.inMicroseconds * minorIntervalWidth;
   }
 }

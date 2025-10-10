@@ -1,26 +1,23 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 
 import '../widgets/home_drawer.dart';
+import '../widgets/logo.dart';
 
 class Sidebar extends StatefulWidget {
   const Sidebar({
     super.key,
-    this.minWidth = 50,
-    this.maxWidth = 300,
-    this.initialWidth = 200,
-    this.dividerWidth = 1,
-    this.onCursorChange,
-    this.enable = true,
+    this.minWidth = 63,
+    this.maxWidth = 255,
+    this.initialWidth = 255,
+    this.dividerWidth = 6,
   });
 
   final double minWidth;
   final double maxWidth;
   final double initialWidth;
   final double dividerWidth;
-  final Function(MouseCursor)? onCursorChange;
-  final bool enable;
 
   @override
   State<Sidebar> createState() => _SidebarState();
@@ -43,9 +40,13 @@ class _SidebarState extends State<Sidebar> {
     }
   }
 
+  void _onToggleExpanded() {
+    width.value = width.value >= widget.maxWidth ? widget.minWidth : widget.maxWidth;
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (!widget.enable) return SizedBox.shrink();
+    if (!AppConfig.SHOW_HOME_SIDEBAR) return SizedBox.shrink();
 
     return ValueListenableBuilder<double>(
       valueListenable: width,
@@ -53,43 +54,45 @@ class _SidebarState extends State<Sidebar> {
         duration: Durations.short2,
         width: value + widget.dividerWidth,
         height: double.infinity,
-        color: Theme.of(context).colorScheme.inversePrimary,
-        child: Row(
-          children: <Widget>[
-            Expanded(child: HomeDrawer()),
-            MouseRegion(
-              cursor: SystemMouseCursors.resizeColumn,
-              child: GestureDetector(
-                onHorizontalDragStart: (_) =>
-                    widget.onCursorChange?.call(SystemMouseCursors.resizeColumn),
-                onHorizontalDragEnd: (_) => widget.onCursorChange?.call(MouseCursor.defer),
-                onHorizontalDragUpdate: (details) {
-                  if (details.primaryDelta == null) return;
-
-                  var newOffset = width.value + min(details.primaryDelta!, 60);
-                  if (newOffset <= widget.minWidth) {
-                    width.value = widget.minWidth;
-                  } else if (newOffset >= widget.maxWidth) {
-                    width.value = widget.maxWidth;
-                  } else {
-                    width.value = newOffset;
-                  }
-                },
-                child: Container(
-                  width: widget.dividerWidth,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white70,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0x14000000),
-                        blurRadius: 30,
-                        offset: Offset(0, 20),
-                        spreadRadius: 0,
-                      ),
-                    ],
+        color: AppColors.contentBg,
+        child: Column(
+          children: [
+            Logo(onToggle: _onToggleExpanded, isExpanded: value >= widget.maxWidth),
+            Expanded(
+              child: Row(
+                children: <Widget>[
+                  Expanded(child: HomeDrawer(maxWidth: widget.maxWidth)),
+                  Container(
+                    height: double.infinity,
+                    width: widget.dividerWidth,
+                    color: AppColors.scaffoldBg,
                   ),
-                ),
+                  // MouseRegion(
+                  //   cursor: SystemMouseCursors.resizeColumn,
+                  //   child: GestureDetector(
+                  //     onHorizontalDragStart: (_) =>
+                  //         widget.onCursorChange?.call(SystemMouseCursors.resizeColumn),
+                  //     onHorizontalDragEnd: (_) => widget.onCursorChange?.call(MouseCursor.defer),
+                  //     onHorizontalDragUpdate: (details) {
+                  //       if (details.primaryDelta == null) return;
+
+                  //       var newOffset = width.value + min(details.primaryDelta!, 60);
+                  //       if (newOffset <= widget.minWidth) {
+                  //         width.value = widget.minWidth;
+                  //       } else if (newOffset >= widget.maxWidth) {
+                  //         width.value = widget.maxWidth;
+                  //       } else {
+                  //         width.value = newOffset;
+                  //       }
+                  //     },
+                  //     child: Container(
+                  //       width: widget.dividerWidth,
+                  //       height: double.infinity,
+                  //       color: Colors.white70,
+                  //     ),
+                  //   ),
+                  // ),
+                ],
               ),
             ),
           ],
