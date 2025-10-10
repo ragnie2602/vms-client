@@ -1,0 +1,18 @@
+import 'package:vms_flutter_client/core/base_response.dart';
+import 'package:vms_flutter_client/data/datasources/user_service.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
+
+import 'base_repository.dart';
+
+class UserManagementRepository extends BaseRepository
+    implements IUserManagementRepository {
+  final UserService service;
+
+  const UserManagementRepository(this.service);
+
+  @override
+  Future<Either<Failure, List<User>>> listUser() {
+    throw UnimplementedError();
+  }
+}

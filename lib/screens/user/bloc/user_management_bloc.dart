@@ -1,0 +1,30 @@
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
+import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
+import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
+
+class UserManagementBloc
+    extends BaseBloc<UserManagementEvent, UserManagementState> {
+  final IUserManagementRepository userManagermentRepository;
+  UserManagementBloc({required this.userManagermentRepository})
+    : super(const UserManagementState()) {
+    on<GetListUserEvent>(_onGetListUser);
+  }
+  
+  FutureOr<void> _onGetListUser(
+    GetListUserEvent event,
+    Emitter<UserManagementState> emit,
+  ) async {
+    emit(UserManagementLoadingState());
+    final groups = await userManagermentRepository.listUser();
+    groups.fold(
+      (onFailure) => emit(GetListUserStateFail(groups.left.toString())),
+      (onSuccess) {
+        emit(GetListUserState(users: groups.right));
+      },
+    );
+  }
+}
