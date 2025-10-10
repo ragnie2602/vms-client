@@ -11,10 +11,7 @@ enum CameraStatus {
   const CameraStatus(this.value);
 
   static CameraStatus fromValue(int value) {
-    return CameraStatus.values.firstWhere(
-      (status) => status.value == value,
-      orElse: () => CameraStatus.inactive,
-    );
+    return CameraStatus.values.firstWhere((status) => status.value == value, orElse: () => CameraStatus.inactive);
   }
 }
 

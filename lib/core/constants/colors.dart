@@ -4,7 +4,7 @@ import 'package:vms_flutter_client/core/theme/app_theme.dart';
 class AppColors {
   const AppColors._();
 
-  static bool get isDarkMode => AppTheme.currentMode == ThemeMode.dark;
+  static bool get isDarkMode => AppRouter.rootNavigatorKey.currentContext?.let((context) => Theme.of(context).brightness == Brightness.dark) ?? true;
 
   static const primary = Color(0xFF15ABFF);
 
