@@ -5,7 +5,10 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
+import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
+import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 
@@ -225,7 +228,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TitleWidget(),
-                  state is ListCameraSuccessState
+                  state is GetListCameraSuccessState
                       ? Flexible(
                           child: ListView.builder(
                             shrinkWrap: true,
@@ -236,7 +239,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             ),
                           ),
                         )
-                      : const SizedBox(),
+                      : Text('data'),
                 ],
               ),
             ),

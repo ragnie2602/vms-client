@@ -4,7 +4,7 @@ import 'package:vms_flutter_client/core/theme/app_theme.dart';
 class AppColors {
   const AppColors._();
 
-  static bool get isDarkMode => AppTheme.currentMode == ThemeMode.dark;
+  static bool get isDarkMode => AppRouter.rootNavigatorKey.currentContext?.let((context) => Theme.of(context).brightness == Brightness.dark) ?? true;
 
   static const primary = Color(0xFF15ABFF);
 
@@ -24,8 +24,8 @@ class AppColors {
   static Color get contentFg => isDarkMode ? contentFgDark : contentFgLight;
 
   static const black171725 = Color(0xFF171725);
-  static const black = Color(0xFF000000);
   static const black4A4A4A = Color(0xFF4A4A4A);
+  static const black = Color(0xFF000000);
 
   static const secondary = Color(0xFF005AA9);
   static const blue005AA9 = Color(0xFF005AA9);
@@ -34,6 +34,7 @@ class AppColors {
 
   static const greyE2E8F0 = Color(0xFFE2E8F0);
   static const grey6F767E = Color(0xFF6F767E);
+
   static const greyF2F4FA = Color(0xFFF2F4FA);
   static const grey64748B = Color(0xFF64748B);
   static const green21CCC3 = Color(0xFF21CCC3);
