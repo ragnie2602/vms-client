@@ -9,21 +9,20 @@ import 'bloc/playback_bloc.dart';
 import 'components/player_controls.dart';
 import 'components/player_timeline.dart';
 
-class CameraLiveScreenArgs {
+class CameraLiveScreenArgs extends BaseScreenArgs {
   final CameraEntity data;
-  final Routes? previous;
   final bool isPlayback;
-  CameraLiveScreenArgs({required this.data, this.previous, this.isPlayback = false});
+
+  CameraLiveScreenArgs({required this.data, this.isPlayback = false, super.onBack})
+    : super(title: data.name, );
 }
 
 class CameraLiveScreen extends StatefulWidget {
   CameraLiveScreen({super.key, required CameraLiveScreenArgs args})
     : data = args.data,
-      previous = args.previous,
       isPlayback = args.isPlayback;
 
   final CameraEntity data;
-  final Routes? previous;
   final bool isPlayback;
 
   @override

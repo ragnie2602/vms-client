@@ -39,7 +39,6 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: Color(0xFFF8F9FE),
       padding: const EdgeInsets.all(20.0),
       child: BlocBuilder<ListCameraBloc, ListCameraState>(
         builder: (context, blocState) => stateBuilder<ListCameraSuccess>(
@@ -80,7 +79,7 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
       onTap: () {
         context.goNamed(
           Routes.livecamera.name,
-          extra: CameraLiveScreenArgs(data: data, previous: Routes.monitoring),
+          extra: CameraLiveScreenArgs(data: data),
         );
       },
       child: Stack(
