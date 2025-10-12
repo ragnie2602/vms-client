@@ -1,9 +1,12 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vms_flutter_client/domain/entities/user/my_profile.dart';
 
 class AppData {
   AppData._internal();
   static final AppData instance = AppData._internal();
   factory AppData() => instance;
+
+  MyProfile? profile;
 
   late final SharedPreferences _prefs;
 

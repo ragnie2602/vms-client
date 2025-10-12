@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:vms_flutter_client/core/app_router.dart';
-import 'package:vms_flutter_client/core/constants/scope_functions.dart';
+import 'package:vms_flutter_client/core/theme/app_theme.dart';
 
 class AppColors {
   const AppColors._();
 
-  static bool get isDarkMode => AppRouter.rootNavigatorKey.currentContext?.let((context) => Theme.of(context).brightness == Brightness.dark) ?? true;
+  static bool get isDarkMode => AppTheme.currentMode == ThemeMode.dark;
 
   static const primary = Color(0xFF15ABFF);
 
@@ -16,6 +15,9 @@ class AppColors {
   static const contentBgLight = Colors.white;
   static const contentBgDark = Color(0xFF1D1F2B);
   static Color get contentBg => isDarkMode ? contentBgDark : contentBgLight;
+
+  static Color get blackOrWhite => isDarkMode ? Colors.white : Colors.black;
+  static Color get blackOrWhiteReverse => isDarkMode ? Colors.black : Colors.white;
 
   static const contentFgLight = Color(0xFF000000);
   static const contentFgDark = Color(0xFFC3D3D9);

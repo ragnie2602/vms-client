@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class TileExpansion extends StatefulWidget {
@@ -39,7 +41,20 @@ class _TileExpansionState extends State<TileExpansion> {
       return Row(
         children: [
           Expanded(child: widget.header),
-          Icon(Icons.arrow_drop_down),
+          TweenAnimationBuilder<double>(
+            tween: Tween(
+              begin: controller.isExpanded ? 180 : 0,
+              end: controller.isExpanded ? 0 : 180,
+            ),
+            duration: Durations.short4,
+            builder: (context, angle, child) {
+              return Transform.rotate(
+                angle: angle * (math.pi / 180), // đổi độ sang radian
+                child: child,
+              );
+            },
+            child: Icon(Icons.arrow_drop_up),
+          ),
           SizedBox(width: 6),
         ],
       );
