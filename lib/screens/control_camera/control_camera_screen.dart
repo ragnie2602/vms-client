@@ -224,7 +224,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TitleWidget(),
-                  state is GetListCameraSuccessState
+                  state is ListCameraSuccessState
                       ? Flexible(
                           child: ListView.builder(
                             shrinkWrap: true,
@@ -235,7 +235,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             ),
                           ),
                         )
-                      : Text('data'),
+                      : const SizedBox(),
                 ],
               ),
             ),

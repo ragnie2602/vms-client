@@ -1,3 +1,7 @@
+import 'dart:ui';
+
+import 'package:vms_flutter_client/core/constants/colors.dart';
+
 enum CameraStatus {
   inactive(0),
   active(1);
@@ -21,6 +25,24 @@ extension CameraStatusExt on CameraStatus {
         return 'Online';
       default:
         return 'Offline';
+    }
+  }
+
+  Color get contentColor {
+    switch (this) {
+      case CameraStatus.active:
+        return AppColors.primary;
+      default:
+        return AppColors.grey6F767E;
+    }
+  }
+
+  Color get bgColor {
+    switch (this) {
+      case CameraStatus.active:
+        return AppColors.blueD7F1FF;
+      default:
+        return AppColors.scaffoldBgLight;
     }
   }
 }

@@ -31,4 +31,5 @@ class AppAssets {
   static const icZoomOut = '$_svgPath/zoom_out.svg';
   static const icArrowSquareLeft = '$_svgPath/arrow_square_left.svg';
   static const icArrowSquareRight = '$_svgPath/arrow_square_right.svg';
+  static const icAction = '$_svgPath/ic_action.svg';
 }

@@ -7,19 +7,19 @@ class ControlCameraState extends BaseState {
   const ControlCameraState();
 }
 
-class GetListCameraSuccessState extends ControlCameraState {
+class ListCameraSuccessState extends ControlCameraState {
   final List<CameraEntity> cameras;
-  const GetListCameraSuccessState({required this.cameras});
+  const ListCameraSuccessState({required this.cameras});
   @override
   StateType get type => StateType.success;
   @override
   List<Object?> get props => [cameras];
 }
 
-class GetListCameraFailState extends ControlCameraState {
+class ListCameraFailState extends ControlCameraState {
   final String message;
 
-  const GetListCameraFailState(this.message);
+  const ListCameraFailState(this.message);
 
   @override
   StateType get type => StateType.failure;
