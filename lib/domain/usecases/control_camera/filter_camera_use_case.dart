@@ -14,7 +14,7 @@ class FilterCameraUseCase
     if (input.cameraStatus == null && (input.nameCamera ?? '').isEmpty) {
       return FilterCameraOutput(listCamera: listCameraOrigin);
     }
-    // tìm kiếm theo tên camera
+    // lọc theo tên camera
     if ((input.nameCamera ?? '').isNotEmpty) {
       listCameraAfterFilter = listCameraAfterFilter
           .where(
@@ -24,6 +24,7 @@ class FilterCameraUseCase
           )
           .toList();
     }
+    // lọc theo trạng thái
     if (input.cameraStatus != null) {
       listCameraAfterFilter = listCameraAfterFilter
           .where((e) => e.status == input.cameraStatus)
