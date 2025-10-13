@@ -1,5 +1,5 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
+import 'package:vms_flutter_client/domain/entities/user/user.dart';
 
 class UserManagementState extends BaseState {
   const UserManagementState();
