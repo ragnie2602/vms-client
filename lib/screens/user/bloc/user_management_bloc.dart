@@ -12,8 +12,9 @@ class UserManagementBloc
   UserManagementBloc({required this.userManagermentRepository})
     : super(const UserManagementState()) {
     on<GetListUserEvent>(_onGetListUser);
+    on<AddUserEvent>(_onAddUser);
   }
-  
+
   FutureOr<void> _onGetListUser(
     GetListUserEvent event,
     Emitter<UserManagementState> emit,
@@ -24,6 +25,20 @@ class UserManagementBloc
       (onFailure) => emit(GetListUserStateFail(groups.left.toString())),
       (onSuccess) {
         emit(GetListUserState(users: groups.right));
+      },
+    );
+  }
+
+  FutureOr<void> _onAddUser(
+    AddUserEvent event,
+    Emitter<UserManagementState> emit,
+  ) async {
+    emit(UserManagementLoadingState());
+    final groups = await userManagermentRepository.user();
+    groups.fold(
+      (onFailure) => emit(GetListUserStateFail(groups.left.toString())),
+      (onSuccess) {
+        emit(AddUserSuccess(user: groups.right));
       },
     );
   }
