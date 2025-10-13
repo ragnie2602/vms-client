@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vms_flutter_client/core/app_colors.dart';
+import 'package:vms_flutter_client/core/app_colors.dart' hide AppColors;
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';

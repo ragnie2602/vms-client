@@ -23,4 +23,3 @@ class CheckOnvifEvent extends ControlCameraEvent {
   final List<int>? boxId;
   const CheckOnvifEvent({required this.xaddrs, required this.userName, required this.password, this.boxId});
 }
-class GetListCameraEvent extends ControlCameraEvent{}
