@@ -40,4 +40,6 @@ class AppAssets {
   static const icDarkMode = '$_svgPath/dark_mode.svg';
   static const icLightMode = '$_svgPath/light_mode.svg';
   static const icAction = '$_svgPath/ic_action.svg';
+  static const icDropdown = '$_svgPath/ic_dropdown.svg';
+  static const icAdd = '$_svgPath/ic_add.svg';
 }

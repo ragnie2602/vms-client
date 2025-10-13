@@ -2,15 +2,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
-import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/list_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
-import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
@@ -89,7 +88,7 @@ class AppRouter {
             ),
             BlocProvider(
               create: (context) =>
-                  ControlCameraBloc(controlGroupRepository: context.read()),
+                  ControlCameraBloc(controlGroupRepository: context.read(), filterCameraUseCase: context.read<FilterCameraUseCase>()),
             ),
 
             BlocProvider(

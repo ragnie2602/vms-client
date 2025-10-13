@@ -6,8 +6,9 @@ import 'package:vms_flutter_client/data/repositories/control_group_repository.da
 import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/data/repositories/user_management_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
+
 import '../domain/usecases/login/login_usecase.dart';
 
 class DependencyInjection {
@@ -36,6 +37,7 @@ class DependencyInjection {
     Provider<ICameraRepository>(
       create: (context) => CameraRepository(context.read()),
     ),
+    Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
     Provider<IControlCameraRepository>(
       create: (context) => ControlCameraRepository(context.read()),
     ),
