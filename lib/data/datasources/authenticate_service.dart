@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
+import 'package:vms_flutter_client/domain/entities/user/my_profile.dart';
 import 'package:vms_flutter_client/screens/login/login_screen.dart';
 
 import '../models/packet.dart';
@@ -95,6 +97,12 @@ class AuthenticateService {
           final loginReply = Login_Reply.fromBuffer(response.right!);
           Logger.log("Logged in as: ${loginReply.profile.account}");
           loginStatus.text += "Đang đăng thành công\n";
+
+          AppData.instance.profile = MyProfile(
+            avatar: loginReply.baseImageUrl,
+            displayName: loginReply.profile.displayName,
+          );
+
           return true;
         },
       );

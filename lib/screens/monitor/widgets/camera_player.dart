@@ -42,6 +42,7 @@ class CameraPlayerState extends State<CameraPlayer> {
 
   Timer? _timer;
   Timer? _debounce;
+  Timer? _debounceUpdateTexture;
   int _countdown = 5;
 
   final _state = ValueNotifier(_PlayerState.initializing);
@@ -60,6 +61,7 @@ class CameraPlayerState extends State<CameraPlayer> {
     blocRef.add(DisposePlayer(_player, sequentialMode: true));
     _timer?.cancel();
     _debounce?.cancel();
+    _debounceUpdateTexture?.cancel();
     super.dispose();
   }
 
@@ -69,11 +71,13 @@ class CameraPlayerState extends State<CameraPlayer> {
 
     // Thay đổi chế độ xem
     if (oldWidget.size != widget.size) {
-      final data = widget.size?.let(
-        (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
-      );
-
-      _player.updateTexture(width: data?.width, height: data?.height);
+      _debounceUpdateTexture?.cancel();
+      _debounceUpdateTexture = Timer(const Duration(milliseconds: 300), () {
+        final data = widget.size?.let(
+          (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
+        );
+        _player.updateTexture(width: data?.width, height: data?.height);
+      });
     }
   }
 

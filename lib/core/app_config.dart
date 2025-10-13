@@ -1,5 +1,6 @@
 // ignore_for_file: non_constant_identifier_names, unnecessary_nullable_for_final_variable_declarations
 
+import 'package:flutter/material.dart';
 import 'package:fvp/mdk.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 
@@ -7,6 +8,7 @@ class AppConfig {
   const AppConfig._();
 
   static const INITIAL_ROUTE = Routes.login;
+  static const DEFAULT_THEME_MODE = ThemeMode.light;
 
   /* File log */
   static const LOG_FILE_RETENTION_PERIOD = Duration(days: 3);
