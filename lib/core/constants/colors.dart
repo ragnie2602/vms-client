@@ -24,6 +24,7 @@ class AppColors {
   static Color get contentFg => isDarkMode ? contentFgDark : contentFgLight;
 
   static const black171725 = Color(0xFF171725);
+  static const black = Color(0xFF000000);
   static const black4A4A4A = Color(0xFF4A4A4A);
   static const black = Color(0xFF000000);
 
