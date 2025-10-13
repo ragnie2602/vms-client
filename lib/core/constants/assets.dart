@@ -39,4 +39,5 @@ class AppAssets {
   static const icSearch = '$_svgPath/search.svg';
   static const icDarkMode = '$_svgPath/dark_mode.svg';
   static const icLightMode = '$_svgPath/light_mode.svg';
+  static const icAction = '$_svgPath/ic_action.svg';
 }
