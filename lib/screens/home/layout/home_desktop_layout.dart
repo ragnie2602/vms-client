@@ -20,7 +20,10 @@ class HomeDesktopLayout extends StatelessWidget {
             children: <Widget>[
               // Header
               const Header(),
-              Expanded(child: content),
+              Expanded(child: Padding(
+                padding: const EdgeInsets.only(left: 1, top: 1),
+                child: content,
+              )),
             ],
           ),
         ),

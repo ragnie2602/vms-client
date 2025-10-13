@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
@@ -6,6 +7,7 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
+import 'app_bloc.dart';
 import 'core/app_router.dart';
 import 'core/env_service.dart';
 import 'di/dependency_injection.dart';
@@ -64,13 +66,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: DependencyInjection.providers,
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        title: 'VNPT Secure Vision',
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.light,
-        routerConfig: AppRouter.router,
+      child: BlocProvider(
+        create: (context) => AppBloc()..add(AppStarted()),
+        child: BlocBuilder<AppBloc, AppState>(
+          builder: (context, state) => MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            title: 'VNPT Secure Vision',
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: state.themeMode,
+            routerConfig: AppRouter.router,
+          ),
+        ),
       ),
     );
   }
