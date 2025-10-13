@@ -36,7 +36,6 @@ class HomeTab {
             HomeTab(Routes.test12, title: 'Nested child 1-2', svg: AppAssets.tabMonitor),
           ],
         ),
-        HomeTab(Routes.test2, title: 'Nested 2', svg: AppAssets.tabMonitor),
       ],
     ),
   ];
