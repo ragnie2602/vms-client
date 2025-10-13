@@ -18,9 +18,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   }
 
   void _onGetListCamera({List<int>? cameraId, int? status, int? ivaType}) {
-    context.read<ControlCameraBloc>().add(
-      GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType),
-    );
+    context.read<ControlCameraBloc>().add(GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType));
+  }
+
+  void _onCheckOnvif({required String xaddrs, required String userName, required String password, required List<int> boxId}) {
+    context.read<ControlCameraBloc>().add(CheckOnvifEvent(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId));
   }
 
   @override
@@ -33,10 +35,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
-        color: Colors.white,
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
 
       child: Column(
@@ -48,15 +47,15 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
             children: [
               Text(
                 'Quản lý danh sách camera',
-                style: TextStyle(
-                  color: AppColors.black171725,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(color: AppColors.black171725, fontSize: 14, fontWeight: FontWeight.w500),
               ),
               InkWell(
                 onTap: () {
-                  showAddCameraRtspDialog(context);
+                  showAddCameraRtspDialog(
+                    context,
+                    onCheck: (xaddrs, userName, password, boxId) =>
+                        _onCheckOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId ?? []),
+                  );
                 },
                 splashColor: Colors.transparent,
 
@@ -71,11 +70,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                     children: [
                       Text(
                         'Thêm camera',
-                        style: TextStyle(
-                          color: AppColors.secondary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: TextStyle(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
@@ -91,23 +86,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Tên nhóm camera',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                    Text('Tên nhóm camera', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
                     const SizedBox(height: 10),
                     TextField(
                       decoration: InputDecoration(
                         prefixIcon: Icon(Icons.search),
                         hintText: 'Nhập tên camera',
-                        hintStyle: TextStyle(
-                          color: AppColors.grey64748B,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                        ),
+                        hintStyle: TextStyle(color: AppColors.grey64748B, fontSize: 14, fontWeight: FontWeight.w400),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(3),
                           borderSide: BorderSide(color: Colors.red, width: 1),
@@ -123,22 +108,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Nguồn kết nối',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                    Text('Nguồn kết nối', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
                     const SizedBox(height: 10),
                     TextField(
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(3),
-                          borderSide: BorderSide(
-                            color: AppColors.greyE2E8F0,
-                            width: 1,
-                          ),
+                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                         ),
                       ),
                     ),
@@ -151,17 +127,9 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Thời gian thêm',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                    Text('Thời gian thêm', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
                     const SizedBox(height: 10),
-                    TextField(
-                      decoration: InputDecoration(border: OutlineInputBorder()),
-                    ),
+                    TextField(decoration: InputDecoration(border: OutlineInputBorder())),
                   ],
                 ),
               ),
@@ -171,17 +139,9 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Trạng thái',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                    Text('Trạng thái', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
                     const SizedBox(height: 10),
-                    TextField(
-                      decoration: InputDecoration(border: OutlineInputBorder()),
-                    ),
+                    TextField(decoration: InputDecoration(border: OutlineInputBorder())),
                   ],
                 ),
               ),

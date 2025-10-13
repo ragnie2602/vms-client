@@ -1,8 +1,10 @@
+import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart' as pb;
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 
 extension CameraTypeMapper on pb.CameraType {
   CameraType toDomain() {
@@ -18,40 +20,25 @@ extension CameraStatusMapper on pb.Camera_Status {
 
 extension CameraStreamResolutionMapper on pb.CameraStream_Resolution {
   CameraStreamResolution toDomain() {
-    return CameraStreamResolution(
-      width: width,
-      height: height,
-    );
+    return CameraStreamResolution(width: width, height: height);
   }
 }
 
 extension CameraStreamEncoderMapper on pb.CameraStream_Encoder {
   CameraStreamEncoder toDomain() {
-    return CameraStreamEncoder(
-      quality: quality,
-      framerate: framerate,
-      bitrate: bitrate,
-      encoding: encoding,
-    );
+    return CameraStreamEncoder(quality: quality, framerate: framerate, bitrate: bitrate, encoding: encoding);
   }
 }
 
 extension CameraStreamPtzRangeValueMapper on pb.CameraStream_PtzRange_range {
   CameraStreamPtzRangeValue toDomain() {
-    return CameraStreamPtzRangeValue(
-      min: min,
-      max: max,
-    );
+    return CameraStreamPtzRangeValue(min: min, max: max);
   }
 }
 
 extension CameraStreamPtzRangeMapper on pb.CameraStream_PtzRange {
   CameraStreamPtzRange toDomain() {
-    return CameraStreamPtzRange(
-      x: x.toDomain(),
-      y: y.toDomain(),
-      z: z.toDomain(),
-    );
+    return CameraStreamPtzRange(x: x.toDomain(), y: y.toDomain(), z: z.toDomain());
   }
 }
 
@@ -109,5 +96,11 @@ extension CameraMapper on pb.Camera {
       status: status.toDomain(),
       stream: streamUrl.toDomain(),
     );
+  }
+}
+
+extension CameraOnvifMapper on CheckCameraOnvif_Reply {
+  CameraOnvif toDomain() {
+    return CameraOnvif(rtspUrl: rtspUrl, serialNumber: serialNumber, subStreamUrl: subStreamUrl.toList());
   }
 }

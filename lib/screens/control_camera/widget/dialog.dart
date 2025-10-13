@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:vms_flutter_client/core/app_colors.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 
 /// Entry point to show the dialog
 Future<T?> showAddCameraRtspDialog<T>(
   BuildContext context, {
   void Function(AddCameraPayload value)? onSubmit,
   VoidCallback? onBack,
-  VoidCallback? onCheck,
+  final Function(String xaddrs, String userName, String password, List<int>? boxId)? onCheck,
 }) {
   return showDialog<T>(
     context: context,
@@ -44,7 +44,7 @@ class _AddCameraDialog extends StatefulWidget {
   const _AddCameraDialog({this.onSubmit, this.onBack, this.onCheck});
   final void Function(AddCameraPayload value)? onSubmit;
   final VoidCallback? onBack;
-  final VoidCallback? onCheck;
+  final Function(String xaddrs, String userName, String password, List<int>? boxId)? onCheck;
 
   @override
   State<_AddCameraDialog> createState() => _AddCameraDialogState();
@@ -112,34 +112,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 ),
                 // Phương thức selection
                 _buildMethodCamera(),
-                AppField(controller: _user, hintText: 'Nhập tài khoản camera', label: 'Tài khoản camera', requiredField: true),
-                AppField(
-                  controller: _pass,
-                  hintText: 'Nhập mật khẩu',
-                  label: 'Mật khẩu camera',
-                  requiredField: true,
-                  maxLength: 50,
-                  obscureText: _obscure,
-                  suffix: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  ),
-                  trailingButton: ElevatedButton(
-                    onPressed: () {
-                      // TODO: Thêm logic kiểm tra mật khẩu
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF007AFF),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      minimumSize: const Size(0, 48), // Chiều cao bằng TextField (14*2 + 20 = 48)
-                      fixedSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                      elevation: 0,
-                    ),
-                    child: const Text('Kiểm tra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                  ),
-                ),
+                _buildAccountCamera(),
                 AppField(
                   controller: _rtsp,
                   hintText: 'Nhập địa chỉ RTSP',
@@ -223,6 +196,52 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     );
   }
 
+  Widget _buildAccountCamera() {
+    return Visibility(
+      visible: _method != 'RTSP',
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 2,
+            child: AppField(controller: _user, hintText: 'Nhập tài khoản camera', label: 'Tài khoản camera', requiredField: true),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 3,
+            child: AppField(
+              controller: _pass,
+              hintText: 'Nhập mật khẩu',
+              label: 'Mật khẩu camera',
+              requiredField: true,
+              maxLength: 50,
+              obscureText: _obscure,
+              suffix: IconButton(
+                icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                onPressed: () => setState(() => _obscure = !_obscure),
+              ),
+              trailingButton: ElevatedButton(
+                onPressed: () {
+                  // TODO: Thêm logic kiểm tra mật khẩu
+                  widget.onCheck?.call('http://camiot.ddns.net:8809/onvif/device_service', 'admin', 'Aa123456', []);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF007AFF),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  minimumSize: const Size(0, 48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                  elevation: 0,
+                ),
+                child: const Text('Kiểm tra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMethodCamera() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,37 +261,24 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         const SizedBox(height: 6),
         Row(
           children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Radio<String>(
-                    value: 'RTSP',
-                    groupValue: _method,
-                    onChanged: (value) => setState(() => _method = value!),
-                    activeColor: Colors.black,
-                  ),
-                  const Text(
-                    'RTSP',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF000000)),
-                  ),
-                ],
-              ),
+            Row(
+              children: [
+                Radio<String>(value: 'RTSP', groupValue: _method, onChanged: (value) => setState(() => _method = value!), activeColor: Colors.black),
+                const Text(
+                  'RTSP',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF000000)),
+                ),
+              ],
             ),
-            Expanded(
-              child: Row(
-                children: [
-                  Radio<String>(
-                    value: 'ONVIF',
-                    groupValue: _method,
-                    onChanged: (value) => setState(() => _method = value!),
-                    activeColor: Colors.black,
-                  ),
-                  const Text(
-                    'ONVIF',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF000000)),
-                  ),
-                ],
-              ),
+            const SizedBox(width: 12),
+            Row(
+              children: [
+                Radio<String>(value: 'ONVIF', groupValue: _method, onChanged: (value) => setState(() => _method = value!), activeColor: Colors.black),
+                const Text(
+                  'ONVIF',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF000000)),
+                ),
+              ],
             ),
           ],
         ),
