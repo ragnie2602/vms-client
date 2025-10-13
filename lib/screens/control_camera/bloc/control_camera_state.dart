@@ -1,7 +1,7 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
-import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 
 class ControlCameraState extends BaseState {
   const ControlCameraState();
@@ -33,13 +33,13 @@ class ControlCameraLoadingState extends ControlCameraState {
 }
 
 class AddCameraSuccessState extends ControlCameraState {
-  final List<DeviceGroup>? groups;
-  const AddCameraSuccessState({required this.groups});
+  final AddCameraEntity cameraEntity;
+  const AddCameraSuccessState({required this.cameraEntity});
 
   @override
   StateType get type => StateType.success;
   @override
-  List<Object?> get props => [groups];
+  List<Object?> get props => [cameraEntity];
 }
 
 class AddCameraFailState extends ControlCameraState {
