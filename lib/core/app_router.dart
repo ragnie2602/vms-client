@@ -25,9 +25,20 @@ enum Routes {
   test2(name: 'test2', path: '/test2'),
 
   controlCamera(name: 'controlCamera', path: '/controlCamera'),
-  addGroupCamera(name: 'addGroupCamera', path: '/addGroupCamera'),
+  addGroupCamera(
+    name: 'addGroupCamera',
+    path: '/addGroupCamera',
+    title: 'Quản lý nhóm camera',
+    description:
+        'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
+  ),
   login(name: 'login', path: '/login'),
-  monitoring(name: 'monitoring', path: '/monitoring'),
+  monitoring(
+    name: 'monitoring',
+    path: '/monitoring',
+    title: 'Liveview',
+    description: 'Hiển thị các màn hình theo dõi theo thời gian thực',
+  ),
   livecamera(name: 'livecamera', path: 'livecamera'),
   playback(name: 'playback', path: '/playback'),
   users(name: 'users', path: '/users'),
@@ -36,7 +47,20 @@ enum Routes {
 
   final String name;
   final String path;
-  const Routes({required this.name, required this.path});
+  final String title;
+  final String description;
+  const Routes({required this.name, required this.path, this.title = '', this.description = ''});
+
+  static final _mapper = {for (var element in values) element.name: element};
+  static Routes? fromName(String name) => _mapper[name];
+}
+
+abstract class BaseScreenArgs {
+  final String? title;
+  final String? description;
+  final VoidCallback? onBack;
+
+  BaseScreenArgs({this.title, this.description, this.onBack});
 }
 
 class AppRouter {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -9,14 +10,15 @@ import '../home_bloc.dart';
 import 'tile_expansion.dart';
 
 class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({super.key, required this.maxWidth});
+  const HomeDrawer({super.key, required this.maxWidth, required this.onToggleExpanded});
   final double maxWidth;
+  final VoidCallback onToggleExpanded;
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
       shape: RoundedRectangleBorder(),
-      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      backgroundColor: AppColors.contentBg,
       child: BlocSelector<HomeBloc, HomeState, HomeTab>(
         selector: (state) => state.selectedTab,
         builder: (context, currentTab) {
@@ -25,21 +27,7 @@ class HomeDrawer extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(23, 18, 0, 20),
-                    child: Text(
-                      constraints.maxWidth >= maxWidth ? "DANH MỤC CHÍNH" : "",
-                      style: AppTypography.style(
-                        9,
-                        letterSpacing: 3,
-                        darkColor: Color(0xFF93989A),
-                        lightColor: Color(0xFF92929D),
-                        fontWeight: FontWeight.w600,
-                      ),
-                      overflow: TextOverflow.visible,
-                      maxLines: 1,
-                    ),
-                  ),
+                  _buildToggleSection(constraints.maxWidth >= maxWidth),
 
                   ...HomeTab.tabs.map(
                     (tab) => DrawerTile(tab: tab, selectedTab: currentTab, maxWidth: maxWidth),
@@ -49,6 +37,50 @@ class HomeDrawer extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildToggleSection(bool isExpanded) {
+    return InkWell(
+      onTap: isExpanded ? null : onToggleExpanded,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Row(
+          children: [
+            Visibility(
+              visible: isExpanded,
+              replacement: SizedBox(width: 3),
+              child: Expanded(
+                child: Text(
+                  "DANH MỤC CHÍNH",
+                  style: AppTypography.style(
+                    9,
+                    letterSpacing: 3,
+                    darkColor: Color(0xFF93989A),
+                    lightColor: Color(0xFF92929D),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.visible,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+
+            /*  */
+            InkWell(
+              onTap: isExpanded ? onToggleExpanded : null,
+              borderRadius: BorderRadius.circular(16),
+              child: SvgPicture.asset(
+                isExpanded ? AppAssets.icArrowSquareLeft : AppAssets.icArrowSquareRight,
+                width: 16,
+                height: 16,
+                colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -75,9 +107,14 @@ class DrawerTile extends StatelessWidget {
     return AnimatedContainer(
       duration: Durations.short2,
       decoration: BoxDecoration(
+        color: AppColors.contentBg,
         gradient: isSelected
             ? LinearGradient(
-                colors: [Colors.white54, Colors.white10],
+                colors: [
+                  AppColors.blackOrWhiteReverse.withValues(alpha: 0.35),
+                  AppColors.blackOrWhiteReverse.withValues(alpha: 0.25),
+                  AppColors.blackOrWhiteReverse.withValues(alpha: 0.05),
+                ],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               )

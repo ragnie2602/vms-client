@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
 class AppTheme {
   const AppTheme._internal();
+
+  static ThemeMode currentMode = AppConfig.DEFAULT_THEME_MODE;
 
   static ThemeData light = ThemeData(
     useMaterial3: true,
