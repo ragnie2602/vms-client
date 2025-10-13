@@ -7,22 +7,18 @@ import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_reposi
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 
-class ControlCameraBloc
-    extends BaseBloc<ControlCameraEvent, ControlCameraState> {
+class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState> {
   final IControlCameraRepository controlGroupRepository;
-  ControlCameraBloc({required this.controlGroupRepository})
-    : super(const ControlCameraState()) {
+  ControlCameraBloc({required this.controlGroupRepository}) : super(const ControlCameraState()) {
     on<ValidateCameraEvent>(_onValidateCamera);
     on<GetListCameraEvent>(_onGetListCamera);
+    on<CheckOnvifEvent>(_onCheckOnvif);
   }
 
   // list camera
   List<CameraEntity> listCamera = [];
 
-  FutureOr<void> _onGetListCamera(
-    GetListCameraEvent event,
-    Emitter<ControlCameraState> emit,
-  ) async {
+  FutureOr<void> _onGetListCamera(GetListCameraEvent event, Emitter<ControlCameraState> emit) async {
     final groups = await controlGroupRepository.getAllCamera();
     groups.fold(
       (onFailure) {
@@ -36,19 +32,24 @@ class ControlCameraBloc
     );
   }
 
-  FutureOr<void> _onValidateCamera(
-    ValidateCameraEvent event,
-    Emitter<ControlCameraState> emit,
-  ) async {
+  FutureOr<void> _onValidateCamera(ValidateCameraEvent event, Emitter<ControlCameraState> emit) async {
     emit(ControlCameraState());
-    final validateCamera = await controlGroupRepository.validateCamera(
-      message: event.message,
+    final validateCamera = await controlGroupRepository.validateCamera(message: event.message);
+    validateCamera.fold((onFailure) => emit(ValidateCameraState(validateCamera.left.toString())), (onSuccess) {
+      emit(ValidateCameraState(validateCamera.left.toString()));
+    });
+  }
+
+  FutureOr<void> _onCheckOnvif(CheckOnvifEvent event, Emitter<ControlCameraState> emit) async {
+    final checkOnvif = await controlGroupRepository.checkCameraOnvif(
+      xaddrs: event.xaddrs,
+      userName: event.userName,
+      password: event.password,
+      boxId: event.boxId,
     );
-    validateCamera.fold(
-      (onFailure) => emit(ValidateCameraState(validateCamera.left.toString())),
-      (onSuccess) {
-        emit(ValidateCameraState(validateCamera.left.toString()));
-      },
+    checkOnvif.fold(
+      (onFailure) => emit(CheckOnvifFailState(checkOnvif.left.toString())),
+      (onSuccess) => emit(CheckOnvifSuccessState(cameraOnvif: onSuccess)),
     );
   }
 }

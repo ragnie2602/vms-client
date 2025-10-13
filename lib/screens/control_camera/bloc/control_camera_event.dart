@@ -15,3 +15,11 @@ class GetListCameraEvent extends ControlCameraEvent {
   final int? ivaType;
   const GetListCameraEvent({this.cameraId, this.ivaType, this.status});
 }
+
+class CheckOnvifEvent extends ControlCameraEvent {
+  final String xaddrs;
+  final String userName;
+  final String password;
+  final List<int>? boxId;
+  const CheckOnvifEvent({required this.xaddrs, required this.userName, required this.password, this.boxId});
+}
