@@ -11,4 +11,10 @@ abstract class IControlCameraRepository {
     required String password,
     List<int>? boxId,
   });
+  Future<Either<Failure, CameraOnvif>> checkCameraOnvif({
+    required String xaddrs,
+    required String userName,
+    required String password,
+    List<int>? boxId,
+  });
 }
