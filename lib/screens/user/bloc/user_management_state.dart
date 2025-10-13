@@ -19,6 +19,7 @@ class GetListUserState extends UserManagementState {
   @override
   List<Object?> get props => [users];
 }
+
 class GetListUserStateFail extends UserManagementState {
   final String message;
 
@@ -28,4 +29,30 @@ class GetListUserStateFail extends UserManagementState {
   StateType get type => StateType.failure;
   @override
   String get errorMsg => message;
+}
+
+class AddUserFail extends UserManagementState {
+  final String message;
+
+  const AddUserFail(this.message);
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+}
+
+class AddUserLoadingState extends UserManagementState {
+  @override
+  StateType get type => StateType.loading;
+}
+
+class AddUserSuccess extends UserManagementState {
+  final User? user;
+  const AddUserSuccess({required this.user});
+
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [user];
 }
