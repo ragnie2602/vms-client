@@ -143,13 +143,13 @@ class AppRouter {
             name: Routes.about.name,
             builder: (context, state) => Center(child: Text('About')),
           ),
-          GoRoute(
-            path: Routes.controlCamera.path,
-            name: Routes.controlCamera.name,
-            pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: ControlCameraScreen());
-            },
-          ),
+          // GoRoute(
+          //   path: Routes.controlCamera.path,
+          //   name: Routes.controlCamera.name,
+          //   pageBuilder: (context, state) {
+          //     return fadeTransition(context: context, state: state, child: ControlCameraScreen());
+          //   },
+          // ),
           GoRoute(
             path: Routes.addGroupCamera.path,
             name: Routes.addGroupCamera.name,
