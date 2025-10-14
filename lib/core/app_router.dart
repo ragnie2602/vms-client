@@ -30,16 +30,10 @@ enum Routes {
     name: 'addGroupCamera',
     path: '/addGroupCamera',
     title: 'Quản lý nhóm camera',
-    description:
-        'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
+    description: 'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
   ),
   login(name: 'login', path: '/login'),
-  monitoring(
-    name: 'monitoring',
-    path: '/monitoring',
-    title: 'Liveview',
-    description: 'Hiển thị các màn hình theo dõi theo thời gian thực',
-  ),
+  monitoring(name: 'monitoring', path: '/monitoring', title: 'Liveview', description: 'Hiển thị các màn hình theo dõi theo thời gian thực'),
   livecamera(name: 'livecamera', path: 'livecamera'),
   playback(name: 'playback', path: '/playback'),
   users(name: 'users', path: '/users'),
@@ -171,11 +165,7 @@ class AppRouter {
   );
 }
 
-CustomTransitionPage fadeTransition<T>({
-  required BuildContext context,
-  required GoRouterState state,
-  required Widget child,
-}) {
+CustomTransitionPage fadeTransition<T>({required BuildContext context, required GoRouterState state, required Widget child}) {
   return CustomTransitionPage<T>(
     key: state.pageKey,
     child: child,
@@ -212,9 +202,7 @@ CustomTransitionPage slideTransition<T>({
     reverseTransitionDuration: const Duration(milliseconds: 250),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return SlideTransition(
-        position: animation.drive(
-          Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.ease)),
-        ),
+        position: animation.drive(Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.ease))),
         child: child,
       );
     },

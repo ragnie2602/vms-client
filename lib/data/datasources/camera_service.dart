@@ -1,6 +1,8 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
+import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 
 import '../proto/models/comm.command2.pb.dart';
 import '../proto/models/comm.model.pb.dart';
@@ -10,6 +12,76 @@ class CameraService {
   final SocketApiClient socketClient;
 
   const CameraService(this.socketClient);
+
+  Future<AddCameraEntity> addCameraRTSP({
+    required String name,
+    required String username,
+    required String password,
+    required String rtspUrl,
+    MapLocation? location,
+    List<int>? boxId,
+    List<int>? groupId,
+    List<String>? subStreamUrls,
+  }) async {
+    final request = AddCameraRTSP_Request()
+      ..name = name
+      ..username = username
+      ..password = password
+      ..rtspUrl = rtspUrl;
+    if (location != null) request.location = location;
+    if (boxId != null) request.boxId = boxId;
+    if (groupId != null) request.groupId = groupId;
+    if (subStreamUrls != null && subStreamUrls.isNotEmpty) {
+      request.subStreamUrls.addAll(subStreamUrls);
+    }
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.addCameraRTSP)),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(AddCameraRTSP_Error.valueOf),
+      (buffer) => AddCameraRTSP_Reply.fromBuffer(buffer).toDomain(),
+    );
+  }
+
+  Future<AddCameraEntity> addCameraOnVif({
+    required String name,
+    required String username,
+    required String password,
+    required String onvifDeviceIp,
+    String? rtspUrl,
+    String? serialNumber,
+    MapLocation? location,
+    List<int>? boxId,
+    List<int>? groupId,
+    String? urn,
+    List<String>? subStreamUrls,
+  }) async {
+    final request = AddCameraOnVif_Request()
+      ..name = name
+      ..username = username
+      ..password = password
+      ..onvifDeviceIp = onvifDeviceIp;
+    if (rtspUrl != null) request.rtspUrl = rtspUrl;
+    if (serialNumber != null) request.serialNumber = serialNumber;
+    if (location != null) request.location = location;
+    if (boxId != null) request.boxId = boxId;
+    if (groupId != null) request.groupId = groupId;
+    if (urn != null) request.urn = urn;
+    if (subStreamUrls != null && subStreamUrls.isNotEmpty) {
+      request.subStreamUrls.addAll(subStreamUrls);
+    }
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.addCameraOnVif)),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(AddCameraOnVif_Error.valueOf),
+      (buffer) => AddCameraOnVif_Reply.fromBuffer(buffer).toDomain(),
+    );
+  }
 
   Future<CheckCameraOnvif_Reply> checkCameraOnvif({
     required String xaddrs,

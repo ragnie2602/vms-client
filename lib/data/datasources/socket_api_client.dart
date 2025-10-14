@@ -1,14 +1,16 @@
 import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:web_socket_client/web_socket_client.dart';
+
 import '../models/packet.dart';
 import '../proto/models/comm.model.pb.dart';
 import 'base_api_client.dart';
-import 'dart:typed_data';
 
 class SocketApiClient extends BaseApiClient {
   late WebSocket _socket;
@@ -50,10 +52,7 @@ class SocketApiClient extends BaseApiClient {
       // Wait until a connection has been established.
       await _socket.connection
           .firstWhere((state) => state is Connected)
-          .timeout(
-            Duration(seconds: params.timeout),
-            onTimeout: () => throw TimeoutException('Connection timeout'),
-          );
+          .timeout(Duration(seconds: params.timeout), onTimeout: () => throw TimeoutException('Connection timeout'));
 
       _keepAliveTimer = Timer.periodic(const Duration(seconds: 30), _sendKeepAlive);
 
@@ -139,11 +138,7 @@ class SocketConnectionParams extends BaseConnectionParams {
   final int port;
   final int timeout;
 
-  SocketConnectionParams(
-    this.host,
-    this.port, {
-    this.timeout = AppConfig.SOCKET_CONNECTION_TIMEOUT,
-  });
+  SocketConnectionParams(this.host, this.port, {this.timeout = AppConfig.SOCKET_CONNECTION_TIMEOUT});
 }
 
 class SocketRequestPayload extends BaseRequestPayload {

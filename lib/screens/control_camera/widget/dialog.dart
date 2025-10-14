@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
+import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
+
+import '../bloc/control_camera_bloc.dart';
 
 /// Entry point to show the dialog
 Future<T?> showAddCameraRtspDialog<T>(
   BuildContext context, {
-  void Function(AddCameraPayload value)? onSubmit,
+  Future<void> Function(AddCameraPayload value)? onSubmit,
+
   VoidCallback? onBack,
   final Function(String xaddrs, String userName, String password, List<int>? boxId)? onCheck,
 }) {
+  final controlCameraBloc = context.read<ControlCameraBloc>();
   return showDialog<T>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => _AddCameraDialog(onSubmit: onSubmit, onBack: onBack, onCheck: onCheck),
+    builder: (_) => BlocProvider.value(
+      value: controlCameraBloc,
+      child: _AddCameraDialog(onSubmit: onSubmit, onBack: onBack, onCheck: onCheck),
+    ),
   );
 }
 
@@ -20,29 +31,37 @@ class AddCameraPayload {
   final String name;
   final String method; // 'RTSP' hoặc 'ONVIF'
   final String rtsp;
+  final String onifDeviceIp;
   final String username;
   final String password;
   final String subStream;
-  final double? lon;
-  final double? lat;
-  final String description;
+  final CameraMap location;
+  // final List<int> boxId;
+  // final List<int> groupId;
+  final List<String> subStreamUrls;
+  // final String urn;
+  // final String serialNumber;
 
   const AddCameraPayload({
     required this.name,
     required this.method,
     required this.rtsp,
+    required this.onifDeviceIp,
     required this.username,
     required this.password,
     required this.subStream,
-    this.lon,
-    this.lat,
-    required this.description,
+    required this.location,
+    // required this.boxId,
+    // required this.groupId,
+    required this.subStreamUrls,
+    // required this.urn,
+    // required this.serialNumber,
   });
 }
 
 class _AddCameraDialog extends StatefulWidget {
   const _AddCameraDialog({this.onSubmit, this.onBack, this.onCheck});
-  final void Function(AddCameraPayload value)? onSubmit;
+  final Future<void> Function(AddCameraPayload value)? onSubmit;
   final VoidCallback? onBack;
   final Function(String xaddrs, String userName, String password, List<int>? boxId)? onCheck;
 
@@ -54,12 +73,13 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   final _form = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _rtsp = TextEditingController();
-  final _user = TextEditingController();
-  final _pass = TextEditingController();
   final _sub = TextEditingController();
   final _lon = TextEditingController();
   final _lat = TextEditingController();
   final _desc = TextEditingController();
+  final _onvifXaddrs = TextEditingController();
+  final _onvifUserName = TextEditingController();
+  final _onvifPassword = TextEditingController();
   bool _obscure = true;
   String _method = 'RTSP'; // 'RTSP' hoặc 'ONVIF'
 
@@ -67,175 +87,201 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   void dispose() {
     _name.dispose();
     _rtsp.dispose();
-    _user.dispose();
-    _pass.dispose();
     _sub.dispose();
     _lon.dispose();
     _lat.dispose();
     _desc.dispose();
+    _onvifXaddrs.dispose();
+    _onvifUserName.dispose();
+    _onvifPassword.dispose();
+
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return AlertDialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
-      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text('Thêm camera', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
-          ),
-          IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close), tooltip: 'Đóng'),
-        ],
-      ),
-      content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.3,
-        child: SingleChildScrollView(
-          child: Form(
-            key: _form,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 12),
-                AppField(
-                  controller: _name,
-                  hintText: 'Nhập tên camera',
-                  validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
-                  label: 'Tên camera',
-                  requiredField: true,
-                  maxLength: 50,
-                ),
-                // Phương thức selection
-                _buildMethodCamera(),
-                _buildAccountCamera(),
-                AppField(
-                  controller: _rtsp,
-                  hintText: 'Nhập địa chỉ RTSP',
-                  keyboardType: TextInputType.url,
-                  label: 'Địa chỉ RTSP',
-                  requiredField: true,
-                ),
-                AppField(controller: _sub, hintText: 'Nhập địa chỉ luồng phụ', label: 'Địa chỉ luồng phụ', requiredField: true),
-                const SizedBox(height: 4),
-                Text(
-                  'Tọa độ vị trí',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF000000)),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: AppField(
-                        controller: _lon,
-                        label: 'Kinh độ',
-                        hintText: 'Nhập kinh độ',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AppField(
-                        controller: _lat,
-                        label: 'Vĩ độ',
-                        hintText: 'Nhập vĩ độ',
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        trailingButton: Container(
-                          decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(5)), color: AppColors.green21CCC3),
-                          padding: const EdgeInsets.all(12),
-                          child: const Icon(Icons.location_on, size: 20, color: Colors.white),
+    return BlocListener<ControlCameraBloc, ControlCameraState>(
+      listenWhen: (prev, curr) => curr is CheckOnvifSuccessState || curr is CheckOnvifFailState,
+      listener: (context, state) {
+        if (state is CheckOnvifSuccessState) {
+          _rtsp.text = state.cameraOnvif.rtspUrl;
+          _sub.text = state.cameraOnvif.subStreamUrl.isNotEmpty ? state.cameraOnvif.subStreamUrl.first : '';
+          setState(() => _method = 'ONVIF');
+        } else if (state is CheckOnvifFailState) {
+          showAppMessageDialog(context, type: AppMessageType.error, message: state.message);
+        }
+      },
+      child: AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
+        contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text('Thêm camera', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+            ),
+            IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close), tooltip: 'Đóng'),
+          ],
+        ),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.3,
+          child: SingleChildScrollView(
+            child: Form(
+              key: _form,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  AppField(
+                    controller: _name,
+                    hintText: 'Nhập tên camera',
+                    validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
+                    label: 'Tên camera',
+                    requiredField: true,
+                    maxLength: 50,
+                  ),
+                  // Phương thức selection
+                  _buildMethodCamera(),
+                  _buildAccountCamera(),
+                  AppField(
+                    controller: _rtsp,
+                    hintText: 'Nhập địa chỉ RTSP',
+                    keyboardType: TextInputType.url,
+                    label: 'Địa chỉ RTSP',
+                    requiredField: true,
+                  ),
+                  AppField(controller: _sub, hintText: 'Nhập địa chỉ luồng phụ', label: 'Địa chỉ luồng phụ', requiredField: true),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Tọa độ vị trí',
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF000000)),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppField(
+                          controller: _lon,
+                          label: 'Kinh độ',
+                          hintText: 'Nhập kinh độ',
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                AppField(controller: _desc, hintText: 'Nhập địa chỉ khu vực', label: "Địa chỉ khu vực", maxLength: 50),
-                const SizedBox(height: 6),
-              ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppField(
+                          controller: _lat,
+                          label: 'Vĩ độ',
+                          hintText: 'Nhập vĩ độ',
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                          trailingButton: Container(
+                            decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(5)), color: AppColors.green21CCC3),
+                            padding: const EdgeInsets.all(12),
+                            child: const Icon(Icons.location_on, size: 20, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  AppField(controller: _desc, hintText: 'Nhập địa chỉ khu vực', label: "Địa chỉ khu vực", maxLength: 50),
+                  const SizedBox(height: 6),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-      actions: [
-        Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppButton.outline(label: 'HỦY', onPressed: () => Navigator.pop(context)),
-              const SizedBox(width: 12),
-              AppButton.filled(
-                label: 'XÁC NHẬN',
-                onPressed: () {
-                  if (_form.currentState?.validate() ?? false) {
-                    final payload = AddCameraPayload(
-                      name: _name.text.trim(),
-                      method: _method,
-                      rtsp: _rtsp.text.trim(),
-                      username: _user.text.trim(),
-                      password: _pass.text,
-                      subStream: _sub.text.trim(),
-                      lon: double.tryParse(_lon.text.replaceAll(',', '.')),
-                      lat: double.tryParse(_lat.text.replaceAll(',', '.')),
-                      description: _desc.text.trim(),
-                    );
-                    widget.onSubmit?.call(payload);
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-            ],
+        actions: [
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppButton.outline(label: 'HỦY', onPressed: () => Navigator.pop(context)),
+                const SizedBox(width: 12),
+                AppButton.filled(
+                  label: 'XÁC NHẬN',
+                  onPressed: () async {
+                    if (_form.currentState?.validate() ?? false) {
+                      final payload = AddCameraPayload(
+                        name: _name.text.trim(),
+                        method: _method,
+                        rtsp: _rtsp.text.trim(),
+                        onifDeviceIp: _onvifXaddrs.text.trim(),
+                        username: _onvifUserName.text.trim(),
+                        password: _onvifPassword.text.trim(),
+                        subStream: _sub.text.trim(),
+                        location: CameraMap(
+                          lat: double.tryParse(_lat.text.replaceAll(',', '.')) ?? 0,
+                          log: double.tryParse(_lon.text.replaceAll(',', '.')) ?? 0,
+                          locationDes: _desc.text.trim(),
+                        ),
+                        // boxId: _boxId.text.trim(),
+                        // groupId: _groupId.text.trim(),
+                        subStreamUrls: _sub.text.trim().split(','),
+                        // urn: _urn.text.trim(),
+                        // serialNumber: _serialNumber.text.trim(),
+                      );
+                      await widget.onSubmit?.call(payload);
+                      Navigator.pop(context);
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildAccountCamera() {
     return Visibility(
       visible: _method != 'RTSP',
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
         children: [
-          Expanded(
-            flex: 2,
-            child: AppField(controller: _user, hintText: 'Nhập tài khoản camera', label: 'Tài khoản camera', requiredField: true),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 3,
-            child: AppField(
-              controller: _pass,
-              hintText: 'Nhập mật khẩu',
-              label: 'Mật khẩu camera',
-              requiredField: true,
-              maxLength: 50,
-              obscureText: _obscure,
-              suffix: IconButton(
-                icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                onPressed: () => setState(() => _obscure = !_obscure),
+          AppField(controller: _onvifXaddrs, hintText: 'Nhập địa chỉ ONVIF', label: 'Địa chỉ ONVIF', requiredField: true),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                flex: 2,
+                child: AppField(controller: _onvifUserName, hintText: 'Nhập tài khoản camera', label: 'Tài khoản camera', requiredField: true),
               ),
-              trailingButton: ElevatedButton(
-                onPressed: () {
-                  // TODO: Thêm logic kiểm tra mật khẩu
-                  widget.onCheck?.call('http://camiot.ddns.net:8809/onvif/device_service', 'admin', 'Aa123456', []);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF007AFF),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  minimumSize: const Size(0, 48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                  elevation: 0,
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 3,
+                child: AppField(
+                  controller: _onvifPassword,
+                  hintText: 'Nhập mật khẩu',
+                  label: 'Mật khẩu camera',
+                  requiredField: true,
+                  maxLength: 50,
+                  obscureText: _obscure,
+                  suffix: IconButton(
+                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                  trailingButton: ElevatedButton(
+                    onPressed: () {
+                      widget.onCheck?.call(_onvifXaddrs.text.trim(), _onvifUserName.text.trim(), _onvifPassword.text.trim(), []);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF007AFF),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      minimumSize: const Size(0, 48),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Kiểm tra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                  ),
                 ),
-                child: const Text('Kiểm tra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
               ),
-            ),
+            ],
           ),
         ],
       ),

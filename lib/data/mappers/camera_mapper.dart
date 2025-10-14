@@ -1,6 +1,9 @@
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.command2.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart' as pb;
+import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
@@ -104,5 +107,23 @@ extension CameraMapper on pb.Camera {
 extension CameraOnvifMapper on CheckCameraOnvif_Reply {
   CameraOnvif toDomain() {
     return CameraOnvif(rtspUrl: rtspUrl, serialNumber: serialNumber, subStreamUrl: subStreamUrl.toList());
+  }
+}
+
+extension MapLocationMapper on CameraMap {
+  pb.MapLocation toMapper() {
+    return pb.MapLocation(lat: lat, log: log, locationDes: locationDes);
+  }
+}
+
+extension AddCameraRTSPMapper on AddCameraRTSP_Reply {
+  AddCameraEntity toDomain() {
+    return AddCameraEntity(cameraId: cameraId, camera: camera.toDomain());
+  }
+}
+
+extension AddCameraOnvifMapper on AddCameraOnVif_Reply {
+  AddCameraEntity toDomain() {
+    return AddCameraEntity(cameraId: cameraId, camera: camera.toDomain());
   }
 }

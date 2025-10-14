@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
@@ -12,6 +13,7 @@ import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
+import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
   const ControlCameraScreen({super.key});
@@ -24,21 +26,68 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final TextEditingController cameraNameController = TextEditingController();
   CameraStatus? cameraStatus;
 
-  void _onValidateCamera() {
-    context.read<ControlCameraBloc>().add(ValidateCameraEvent(message: ''));
+  void _onGetListCamera({List<int>? cameraId, int? status, int? ivaType}) {
+    context.read<ControlCameraBloc>().add(GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType));
   }
 
-  void _onGetListCamera({List<int>? cameraId, int? status, int? ivaType}) {
-    context.read<ControlCameraBloc>().add(
-      GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType),
-    );
+  void _onCheckOnvif({required String xaddrs, required String userName, required String password, List<int>? boxId}) {
+    context.read<ControlCameraBloc>().add(CheckOnvifEvent(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId));
   }
 
   void _onSearch() {
+    context.read<ControlCameraBloc>().add(FilterCameraEvent(cameraName: cameraNameController.text, cameraStatus: cameraStatus));
+  }
+
+  void _onAddCameraRTSP({
+    required String name,
+    required String username,
+    required String password,
+    required String rtspUrl,
+    required CameraMap location,
+    required List<int> boxId,
+    required List<int> groupId,
+    required List<String> subStreamUrls,
+  }) {
     context.read<ControlCameraBloc>().add(
-      FilterCameraEvent(
-        cameraName: cameraNameController.text,
-        cameraStatus: cameraStatus,
+      AddCameraRTSPEvent(
+        name: name,
+        username: username,
+        password: password,
+        rtspUrl: rtspUrl,
+        location: location,
+        boxId: boxId,
+        groupId: groupId,
+        subStreamUrls: subStreamUrls,
+      ),
+    );
+  }
+
+  void _onAddCameraOnvif({
+    required String name,
+    required String username,
+    required String password,
+    required String onvifDeviceIp,
+    required String rtspUrl,
+    required String serialNumber,
+    required CameraMap location,
+    required List<int> boxId,
+    required List<int> groupId,
+    required String urn,
+    required List<String> subStreamUrls,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      AddCameraOnvifEvent(
+        name: name,
+        username: username,
+        password: password,
+        onvifDeviceIp: onvifDeviceIp,
+        rtspUrl: rtspUrl,
+        serialNumber: serialNumber,
+        location: location,
+        boxId: boxId,
+        groupId: groupId,
+        urn: urn,
+        subStreamUrls: subStreamUrls,
       ),
     );
   }
@@ -49,6 +98,21 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     super.initState();
   }
 
+  void _handleAddCameraSuccess() {
+    showAppMessageDialog(
+      context,
+      message: 'Thêm camera thành công!',
+      type: AppMessageType.success,
+      onOk: () {
+        _onGetListCamera(); // Reload danh sách camera
+      },
+    );
+  }
+
+  void _handleAddCameraError(String errorMessage) {
+    showAppMessageDialog(context, message: 'Lỗi khi thêm camera: $errorMessage', type: AppMessageType.error);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -57,10 +121,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: Colors.white,
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
             margin: EdgeInsets.only(bottom: 10),
             child: Row(
@@ -73,42 +134,19 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Tên nhóm camera',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
+                      Text('Tên nhóm camera', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
                       const SizedBox(height: 10),
                       TextField(
                         controller: cameraNameController,
                         decoration: InputDecoration(
                           prefixIcon: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 12,
-                            ),
+                            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                             child: SvgPicture.asset(AppAssets.icSearch),
                           ),
                           hintText: 'Nhập tên camera',
-                          hintStyle: TextStyle(
-                            color: AppColors.grey64748B,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: AppColors.greyE2E8F0,
-                              width: 1,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: AppColors.greyE2E8F0,
-                              width: 1,
-                            ),
-                          ),
+                          hintStyle: TextStyle(color: AppColors.grey64748B, fontSize: 14, fontWeight: FontWeight.w400),
+                          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1)),
+                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1)),
                           border: UnderlineInputBorder(),
                         ),
                       ),
@@ -122,13 +160,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Trạng thái',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
+                      Text('Trạng thái', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
                       const SizedBox(height: 10),
                       CustomCommonDropdown<CameraStatus>(
                         items: CameraStatus.values,
@@ -139,18 +171,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                           });
                         },
                         itemAsString: (p0) => p0.getName(),
-                        contentTextStyle: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.grey64748B,
-                        ),
+                        contentTextStyle: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.grey64748B),
                         hint: Text(
                           'Tất cả',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.grey64748B,
-                          ),
+                          style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.grey64748B),
                         ),
                       ),
                     ],
@@ -162,24 +186,49 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                   },
                   splashColor: Colors.transparent,
                   child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      color: AppColors.secondary,
-                    ),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: AppColors.secondary),
                     padding: EdgeInsets.symmetric(vertical: 12, horizontal: 18),
                     margin: EdgeInsets.only(left: 15),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        AppAssets.icSearch,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: Center(child: SvgPicture.asset(AppAssets.icSearch, color: Colors.white)),
                   ),
                 ),
                 const SizedBox(width: 25),
                 InkWell(
                   onTap: () {
-                    showAddCameraRtspDialog(context);
+                    showAddCameraRtspDialog(
+                      context,
+                      onSubmit: (payload) async {
+                        if (payload.method == 'RTSP') {
+                          _onAddCameraRTSP(
+                            name: payload.name,
+                            username: payload.username,
+                            password: payload.password,
+                            rtspUrl: payload.rtsp,
+                            location: payload.location,
+                            boxId: const [],
+                            groupId: const [],
+                            subStreamUrls: payload.subStreamUrls,
+                          );
+                        } else {
+                          _onAddCameraOnvif(
+                            name: payload.name,
+                            username: payload.username,
+                            password: payload.password,
+                            onvifDeviceIp: payload.onifDeviceIp,
+                            rtspUrl: payload.rtsp,
+                            serialNumber: '',
+                            location: payload.location,
+                            boxId: const [],
+                            groupId: const [],
+                            urn: '',
+                            subStreamUrls: payload.subStreamUrls,
+                          );
+                        }
+                      },
+                      onCheck: (xaddrs, userName, password, boxId) {
+                        _onCheckOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId);
+                      },
+                    );
                   },
                   splashColor: Colors.transparent,
 
@@ -197,11 +246,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                           const SizedBox(width: 8),
                           Text(
                             'Thêm camera',
-                            style: TextStyle(
-                              color: AppColors.secondary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: TextStyle(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
@@ -211,31 +256,38 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
               ],
             ),
           ),
-          BlocBuilder<ControlCameraBloc, ControlCameraState>(
-            builder: (context, state) => Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                color: Colors.white,
-              ),
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TitleWidget(),
-                  state is ListCameraSuccessState
-                      ? Flexible(
+          BlocListener<ControlCameraBloc, ControlCameraState>(
+            listener: (context, state) {
+              if (state is AddCameraSuccessState) {
+                _handleAddCameraSuccess();
+              } else if (state is AddCameraFailState) {
+                _handleAddCameraError(state.errorMsg);
+              }
+            },
+            child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
+              builder: (context, state) => Container(
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TitleWidget(),
+                    Builder(
+                      builder: (context) {
+                        final cameras = state is ListCameraSuccessState ? state.cameras : context.read<ControlCameraBloc>().listCamera;
+                        if (cameras.isEmpty) return const SizedBox();
+                        return Flexible(
                           child: ListView.builder(
                             shrinkWrap: true,
-                            itemCount: state.cameras.length,
-                            itemBuilder: (context, index) => ItemCameraWidget(
-                              itemCamera: state.cameras[index],
-                              index: index + 1,
-                            ),
+                            itemCount: cameras.length,
+                            itemBuilder: (context, index) => ItemCameraWidget(itemCamera: cameras[index], index: index + 1),
                           ),
-                        )
-                      : Container(width: 10, height: 10, color: Colors.amber),
-                ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

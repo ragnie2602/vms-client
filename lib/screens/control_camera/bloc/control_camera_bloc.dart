@@ -22,6 +22,8 @@ class ControlCameraBloc
     on<GetListCameraEvent>(_onGetListCamera);
     on<CheckOnvifEvent>(_onCheckOnvif);
     on<FilterCameraEvent>(_onFilterCamera);
+    on<AddCameraRTSPEvent>(_onAddCameraRTSP);
+    on<AddCameraOnvifEvent>(_onAddCameraOnvif);
   }
 
   // list camera
@@ -87,5 +89,42 @@ class ControlCameraBloc
     );
     final FilterCameraOutput output = filterCameraUseCase.execute(input);
     emit(ListCameraSuccessState(cameras: output.listCamera ?? []));
+  }
+
+  FutureOr<void> _onAddCameraRTSP(AddCameraRTSPEvent event, Emitter<ControlCameraState> emit) async {
+    final addCameraRTSP = await controlGroupRepository.addCameraRTSP(
+      name: event.name,
+      username: event.username,
+      password: event.password,
+      rtspUrl: event.rtspUrl,
+      location: event.location,
+      boxId: event.boxId,
+      groupId: event.groupId,
+      subStreamUrls: event.subStreamUrls,
+    );
+    addCameraRTSP.fold(
+      (onFailure) => emit(AddCameraFailState(addCameraRTSP.left.toString())),
+      (onSuccess) => emit(AddCameraSuccessState(cameraEntity: onSuccess)),
+    );
+  }
+
+  FutureOr<void> _onAddCameraOnvif(AddCameraOnvifEvent event, Emitter<ControlCameraState> emit) async {
+    final addCameraOnvif = await controlGroupRepository.addCameraOnvif(
+      name: event.name,
+      username: event.username,
+      password: event.password,
+      onvifDeviceIp: event.onvifDeviceIp,
+      rtspUrl: event.rtspUrl,
+      serialNumber: event.serialNumber,
+      location: event.location,
+      boxId: event.boxId,
+      groupId: event.groupId,
+      urn: event.urn,
+      subStreamUrls: event.subStreamUrls,
+    );
+    addCameraOnvif.fold(
+      (onFailure) => emit(AddCameraFailState(addCameraOnvif.left.toString())),
+      (onSuccess) => emit(AddCameraSuccessState(cameraEntity: onSuccess)),
+    );
   }
 }
