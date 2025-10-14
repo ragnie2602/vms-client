@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/data/repositories/user_management_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
 
@@ -25,12 +26,27 @@ class DependencyInjection {
     Provider<UserService>(create: (context) => UserService(context.read())),
 
     // Repositories
-    Provider<IAuthRepository>(create: (context) => AuthRepository(authenticateService: context.read<AuthenticateService>())),
-    Provider<ICameraRepository>(create: (context) => CameraRepository(context.read())),
-    Provider<IControlCameraRepository>(create: (context) => ControlCameraRepository(context.read<CameraService>())),
-    Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
-    Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
-    Provider<IUserManagementRepository>(create: (context) => UserManagementRepository(context.read())),
+    Provider<IAuthRepository>(
+      create: (context) => AuthRepository(
+        authenticateService: context.read<AuthenticateService>(),
+      ),
+    ),
+    Provider<ICameraRepository>(
+      create: (context) => CameraRepository(context.read()),
+    ),
+    Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
+    Provider<IControlCameraRepository>(
+      create: (context) => ControlCameraRepository(context.read()),
+    ),
+    Provider<IGroupRepository>(
+      create: (context) => GroupRepository(context.read()),
+    ),
+    Provider<IPlaybackRepository>(
+      create: (context) => PlaybackRepository(context.read()),
+    ),
+    Provider<IUserManagementRepository>(
+      create: (context) => UserManagementRepository(context.read()),
+    ),
 
     // Use Cases
     Provider<LoginUseCase>(create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>())),

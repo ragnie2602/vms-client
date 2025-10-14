@@ -2,9 +2,11 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 
 class ControlCameraState extends BaseState {
-  const ControlCameraState();
+   final CameraStatus? status;
+  const ControlCameraState({this.status});
 }
 
 class ListCameraSuccessState extends ControlCameraState {
