@@ -270,11 +270,11 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       widget.onCheck?.call(_onvifXaddrs.text.trim(), _onvifUserName.text.trim(), _onvifPassword.text.trim(), []);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF007AFF),
+                      backgroundColor: AppColors.blue005AA9,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       minimumSize: const Size(0, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                       elevation: 0,
                     ),
                     child: const Text('Kiểm tra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -307,28 +307,70 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         const SizedBox(height: 6),
         Row(
           children: [
-            Row(
-              children: [
-                Radio<String>(value: 'RTSP', groupValue: _method, onChanged: (value) => setState(() => _method = value!), activeColor: Colors.black),
-                const Text(
-                  'RTSP',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF000000)),
-                ),
-              ],
+            Expanded(
+              child: _CustomRadioButton(
+                title: 'RTSP',
+                value: 'RTSP',
+                groupValue: _method,
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _method = value);
+                },
+              ),
             ),
             const SizedBox(width: 12),
-            Row(
-              children: [
-                Radio<String>(value: 'ONVIF', groupValue: _method, onChanged: (value) => setState(() => _method = value!), activeColor: Colors.black),
-                const Text(
-                  'ONVIF',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF000000)),
-                ),
-              ],
+            Expanded(
+              child: _CustomRadioButton(
+                title: 'ONVIF',
+                value: 'ONVIF',
+                groupValue: _method,
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _method = value);
+                },
+              ),
             ),
           ],
         ),
       ],
+    );
+  }
+}
+
+/// Custom Radio Button Widget
+class _CustomRadioButton<T> extends StatelessWidget {
+  const _CustomRadioButton({required this.title, required this.value, required this.groupValue, required this.onChanged});
+
+  final String title;
+  final T value;
+  final T? groupValue;
+  final ValueChanged<T?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = value == groupValue;
+
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: Row(
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isSelected ? AppColors.black : Colors.transparent,
+              border: Border.all(color: AppColors.black, width: 1.5),
+            ),
+            child: Icon(Icons.check_rounded, size: 14, color: isSelected ? Colors.white : Colors.transparent),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF000000)),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -456,16 +498,17 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = Text(label, style: const TextStyle(fontSize: 16));
+    final child = Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500));
 
     if (filled) {
       return ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
+          backgroundColor: AppColors.blue005AA9,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          minimumSize: const Size(150, 48),
           elevation: 0,
         ),
         child: child,
@@ -475,9 +518,10 @@ class AppButton extends StatelessWidget {
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.black,
-          side: const BorderSide(color: AppColors.blue005AA9, width: 1),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+          side: const BorderSide(color: AppColors.greyC3D3D9, width: 1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          minimumSize: const Size(150, 48),
           backgroundColor: Colors.white,
         ),
         child: child,
