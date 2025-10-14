@@ -8,11 +8,11 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 
-part 'list_camera_event.dart';
-part 'list_camera_state.dart';
+part 'monitor_event.dart';
+part 'monitor_state.dart';
 
-class ListCameraBloc extends BaseBloc<ListCameraEvent, ListCameraState> {
-  ListCameraBloc(this.cameraRepository) : super(ListCameraInitial()) {
+class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
+  MonitorBloc(this.cameraRepository) : super(MonitorInitial()) {
     on<GetAllCamera>(_onGetAllCamera);
     on<ChangeGridMode>(_onChangeGridMode);
     on<DisposePlayer>(_onDisposePlayer, transformer: sequential());
@@ -20,25 +20,25 @@ class ListCameraBloc extends BaseBloc<ListCameraEvent, ListCameraState> {
 
   final ICameraRepository cameraRepository;
 
-  FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<ListCameraState> emit) async {
-    emit(ListCameraLoading());
+  FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
+    emit(MonitorLoading());
 
     (await cameraRepository.getAllCamera()).fold(
       (failure) {
-        emit(ListCameraFailure(failure.toString()));
+        emit(MonitorFailure(failure.toString()));
       },
       (cameras) {
         emit(
-          ListCameraSuccess(
+          MonitorSuccess(
             cameras: cameras,
-            mode: BaseView.fitWithLength(cameras.length, min: BaseView.v2x2),
+            mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
           ),
         );
       },
     );
   }
 
-  FutureOr<void> _onDisposePlayer(DisposePlayer event, Emitter<ListCameraState> emit) async {
+  FutureOr<void> _onDisposePlayer(DisposePlayer event, Emitter<MonitorState> emit) async {
     if (event.sequentialMode) {
       await event.player.dispose();
     } else {
@@ -46,10 +46,10 @@ class ListCameraBloc extends BaseBloc<ListCameraEvent, ListCameraState> {
     }
   }
 
-  FutureOr<void> _onChangeGridMode(ChangeGridMode event, Emitter<ListCameraState> emit) async {
-    if (state is! ListCameraSuccess) return;
+  FutureOr<void> _onChangeGridMode(ChangeGridMode event, Emitter<MonitorState> emit) async {
+    if (state is! MonitorSuccess) return;
 
-    final preState = state as ListCameraSuccess;
+    final preState = state as MonitorSuccess;
     if (preState.mode != event.mode) emit(preState.copyWith(mode: event.mode));
   }
 }

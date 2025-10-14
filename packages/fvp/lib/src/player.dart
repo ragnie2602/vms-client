@@ -194,6 +194,8 @@ class Player {
   /// If both [width] and [height] are null, texture size is video frame size, otherwise is requested size.
   Future<int> updateTexture(
       {int? width, int? height, bool? tunnel, bool? fit}) async {
+    if (_creatingCompleter?.isCompleted == false) return textureId.value ?? -1;
+
     _creatingCompleter = Completer<void>();
 
     if ((textureId.value ?? -1) >= 0) {

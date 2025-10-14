@@ -9,7 +9,7 @@ import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
-import '../bloc/list_camera_bloc.dart';
+import '../bloc/monitor/monitor_bloc.dart';
 
 enum _PlayerState { initializing, initialized, error }
 
@@ -34,7 +34,7 @@ class CameraPlayer extends StatefulWidget {
 }
 
 class CameraPlayerState extends State<CameraPlayer> {
-  late ListCameraBloc blocRef;
+  late MonitorBloc blocRef;
 
   int _lastPosition = -1;
   late Player _player;
@@ -50,7 +50,7 @@ class CameraPlayerState extends State<CameraPlayer> {
 
   @override
   void initState() {
-    blocRef = context.read<ListCameraBloc>();
+    blocRef = context.read<MonitorBloc>();
     super.initState();
     _initPlayer();
     _onConnecting();

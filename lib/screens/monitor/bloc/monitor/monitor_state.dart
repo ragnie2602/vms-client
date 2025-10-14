@@ -1,20 +1,20 @@
-part of 'list_camera_bloc.dart';
+part of 'monitor_bloc.dart';
 
-class ListCameraState extends BaseState {
-  const ListCameraState();
+class MonitorState extends BaseState {
+  const MonitorState();
 }
 
-class ListCameraInitial extends ListCameraState {}
+class MonitorInitial extends MonitorState {}
 
-class ListCameraLoading extends ListCameraState {
+class MonitorLoading extends MonitorState {
   @override
   StateType get type => StateType.loading;
 }
 
-class ListCameraFailure extends ListCameraState {
+class MonitorFailure extends MonitorState {
   final String message;
 
-  const ListCameraFailure(this.message);
+  const MonitorFailure(this.message);
 
   @override
   StateType get type => StateType.failure;
@@ -22,12 +22,12 @@ class ListCameraFailure extends ListCameraState {
   String get errorMsg => message;
 }
 
-class ListCameraSuccess extends ListCameraState {
+class MonitorSuccess extends MonitorState {
   final List<CameraEntity> cameras;
-  final BaseView mode;
+  final ViewMode mode;
   final int page;
 
-  const ListCameraSuccess({required this.cameras, required this.mode, this.page = 1});
+  const MonitorSuccess({required this.cameras, required this.mode, this.page = 1});
 
   @override
   List<Object?> get props => [cameras, mode, page];
@@ -38,8 +38,8 @@ class ListCameraSuccess extends ListCameraState {
   List<CameraEntity> get paginatedCameras =>
       cameras.skip((page - 1) * mode.total).take(mode.total).toList();
 
-  ListCameraSuccess copyWith({BaseView? mode, List<CameraEntity>? cameras, int? page}) {
-    return ListCameraSuccess(
+  MonitorSuccess copyWith({ViewMode? mode, List<CameraEntity>? cameras, int? page}) {
+    return MonitorSuccess(
       cameras: cameras ?? this.cameras,
       mode: mode ?? this.mode,
       page: page ?? this.page,
