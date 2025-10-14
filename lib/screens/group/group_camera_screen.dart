@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
+import 'package:animated_tree_view/animated_tree_view.dart';
 
 class GroupCameraScreen extends StatefulWidget {
   const GroupCameraScreen({super.key});
@@ -14,7 +18,7 @@ class GroupCameraScreen extends StatefulWidget {
 
 class _GroupCameraScreenState extends State<GroupCameraScreen> {
   TextEditingController groupNameController = TextEditingController();
-
+  TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controllerTree;
   @override
   void dispose() {
     groupNameController.dispose();
@@ -51,6 +55,7 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Flexible(
           flex: 1,
@@ -71,20 +76,23 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
                       if ((newState.groups ?? []).isEmpty) {
                         return Center(child: Text('Chưa có dữ liệu.'));
                       } else {
-                        return GroupTreeWidget(groups: newState.groups ?? []);
-                        // return ListView.builder(
-                        //   shrinkWrap: true,
-                        //   physics: NeverScrollableScrollPhysics(),
-                        //   itemCount: newState.groups?.length,
-                        //   itemBuilder: (_, index) => InkWell(
-                        //     onTap: () {
-                        //       _onRemoveGroupCamera(
-                        //         groupId: newState.groups![index].groupId,
-                        //       );
-                        //     },
-                        //     child: Text(newState.groups![index].name),
-                        //   ),
-                        // );
+                        return TreeGroupWidget(
+                          controller: controllerTree,
+                          tree: newState.tree,
+                          isShowGroupAll: true,
+                          isShowNoGroup: true,
+                          action: InkWell(
+                            splashColor: Colors.transparent,
+                            child: SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: SvgPicture.asset(
+                                AppAssets.icAction,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        );
                       }
                     }
                     return SizedBox();
@@ -96,7 +104,7 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
         ),
         const SizedBox(width: 10),
         Flexible(
-          flex: 1,
+          flex: 2,
           child: Center(
             child: BlocConsumer<GroupCameraBloc, GroupCameraState>(
               builder: (context, newState) {
