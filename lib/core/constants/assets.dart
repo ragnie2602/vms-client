@@ -53,6 +53,9 @@ class AppAssets {
   static const icMode4x4 = '$_svgPath/mode_4x4.svg';
   static const icMode5x5 = '$_svgPath/mode_5x5.svg';
   static const icMode6x6 = '$_svgPath/mode_6x6.svg';
+  // group + cam
   static const icAction = '$_svgPath/ic_action.svg';
+  static const icCollapse = '$_svgPath/ic_collapse.svg';
+  static const icExpand = '$_svgPath/ic_expand.svg';
   static const icDropdown = '$_svgPath/ic_dropdown.svg';
 }
