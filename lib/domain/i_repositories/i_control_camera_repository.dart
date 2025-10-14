@@ -37,4 +37,15 @@ abstract class IControlCameraRepository {
     String? urn,
     List<String>? subStreamUrls,
   });
+
+  Future<Either<Failure, CameraEntity>> updateCamera({
+    required List<int> cameraId,
+    String? name,
+    String? rtspUrl,
+    String? userName,
+    String? password,
+    String? xaddr,
+    CameraMap? location,
+    List<String>? subStreamUrls,
+  });
 }

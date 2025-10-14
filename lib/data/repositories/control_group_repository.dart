@@ -98,4 +98,30 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
       return Right(addCameraRTSP);
     });
   }
+
+  @override
+  Future<Either<Failure, CameraEntity>> updateCamera({
+    required List<int> cameraId,
+    String? name,
+    String? rtspUrl,
+    String? userName,
+    String? password,
+    String? xaddr,
+    CameraMap? location,
+    List<String>? subStreamUrls,
+  }) async {
+    return await catchError<CameraEntity>(() async {
+      final camera = await service.updateCamera(
+        cameraId: cameraId,
+        name: name,
+        rtspUrl: rtspUrl,
+        userName: userName,
+        password: password,
+        xaddr: xaddr,
+        location: location?.toMapper(),
+        subStreamUrls: subStreamUrls,
+      );
+      return Right(camera.toDomain());
+    });
+  }
 }

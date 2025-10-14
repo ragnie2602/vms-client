@@ -1,17 +1,23 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import '../bloc/control_camera_bloc.dart';
 
+enum CameraDialogMode { add, edit }
+
 /// Entry point to show the dialog
 Future<T?> showAddCameraRtspDialog<T>(
   BuildContext context, {
+  CameraDialogMode mode = CameraDialogMode.add,
+  CameraEntity? cameraData,
   Future<void> Function(AddCameraPayload value)? onSubmit,
-
+  Future<void> Function(AddCameraPayload value)? onEdit,
   VoidCallback? onBack,
   final Function(String xaddrs, String userName, String password, List<int>? boxId)? onCheck,
 }) {
@@ -21,7 +27,7 @@ Future<T?> showAddCameraRtspDialog<T>(
     barrierDismissible: false,
     builder: (_) => BlocProvider.value(
       value: controlCameraBloc,
-      child: _AddCameraDialog(onSubmit: onSubmit, onBack: onBack, onCheck: onCheck),
+      child: _AddCameraDialog(mode: mode, cameraData: cameraData, onSubmit: onSubmit, onEdit: onEdit, onBack: onBack, onCheck: onCheck),
     ),
   );
 }
@@ -60,8 +66,11 @@ class AddCameraPayload {
 }
 
 class _AddCameraDialog extends StatefulWidget {
-  const _AddCameraDialog({this.onSubmit, this.onBack, this.onCheck});
+  const _AddCameraDialog({required this.mode, this.cameraData, this.onSubmit, this.onEdit, this.onBack, this.onCheck});
+  final CameraDialogMode mode;
+  final CameraEntity? cameraData;
   final Future<void> Function(AddCameraPayload value)? onSubmit;
+  final Future<void> Function(AddCameraPayload value)? onEdit;
   final VoidCallback? onBack;
   final Function(String xaddrs, String userName, String password, List<int>? boxId)? onCheck;
 
@@ -82,6 +91,40 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   final _onvifPassword = TextEditingController();
   bool _obscure = true;
   String _method = 'RTSP'; // 'RTSP' hoặc 'ONVIF'
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  void _initializeData() {
+    if (widget.mode == CameraDialogMode.edit && widget.cameraData != null) {
+      final camera = widget.cameraData!;
+      _name.text = camera.name;
+      _rtsp.text = camera.stream.streamOriginUrl;
+      _onvifUserName.text = camera.username;
+      _onvifPassword.text = camera.password;
+
+      // Parse sub stream URL nếu có
+      final subStreamUrl = camera.stream.streamLinks.firstWhereOrNull((e) => e.nameOfStream == "SUB STREAM")?.urlOfStream ?? '';
+      _sub.text = subStreamUrl;
+
+      // Parse location data nếu có (có thể cần thêm vào CameraEntity)
+      // _lat.text = camera.location?.lat.toString() ?? '';
+      // _lon.text = camera.location?.log.toString() ?? '';
+      // _desc.text = camera.location?.locationDes ?? '';
+
+      // Xác định method dựa trên camera type hoặc URL
+      _method = _determineCameraMethod(camera);
+    }
+  }
+
+  String _determineCameraMethod(CameraEntity camera) {
+    // Logic để xác định method dựa trên camera data
+    // Có thể dựa vào type hoặc URL pattern
+    return 'RTSP'; // Default, có thể cải thiện logic này
+  }
 
   @override
   void dispose() {
@@ -121,7 +164,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         title: Row(
           children: [
             Expanded(
-              child: Text('Thêm camera', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+              child: Text(
+                widget.mode == CameraDialogMode.add ? 'Thêm camera' : 'Sửa camera',
+                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              ),
             ),
             IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close), tooltip: 'Đóng'),
           ],
@@ -225,7 +271,13 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                         // urn: _urn.text.trim(),
                         // serialNumber: _serialNumber.text.trim(),
                       );
-                      await widget.onSubmit?.call(payload);
+
+                      // Gọi callback tương ứng với mode
+                      if (widget.mode == CameraDialogMode.add) {
+                        await widget.onSubmit?.call(payload);
+                      } else {
+                        await widget.onEdit?.call(payload);
+                      }
                       Navigator.pop(context);
                     }
                   },
@@ -239,33 +291,36 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   }
 
   Widget _buildAccountCamera() {
-    return Visibility(
-      visible: _method != 'RTSP',
-      child: Column(
-        children: [
-          AppField(controller: _onvifXaddrs, hintText: 'Nhập địa chỉ ONVIF', label: 'Địa chỉ ONVIF', requiredField: true),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                flex: 2,
-                child: AppField(controller: _onvifUserName, hintText: 'Nhập tài khoản camera', label: 'Tài khoản camera', requiredField: true),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 3,
-                child: AppField(
-                  controller: _onvifPassword,
-                  hintText: 'Nhập mật khẩu',
-                  label: 'Mật khẩu camera',
-                  requiredField: true,
-                  maxLength: 50,
-                  obscureText: _obscure,
-                  suffix: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  ),
-                  trailingButton: ElevatedButton(
+    return Column(
+      children: [
+        Visibility(
+          visible: _method != 'RTSP',
+          child: AppField(controller: _onvifXaddrs, hintText: 'Nhập địa chỉ ONVIF', label: 'Địa chỉ ONVIF', requiredField: true),
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 2,
+              child: AppField(controller: _onvifUserName, hintText: 'Nhập tài khoản camera', label: 'Tài khoản camera', requiredField: true),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: _method != 'RTSP' ? 3 : 2,
+              child: AppField(
+                controller: _onvifPassword,
+                hintText: 'Nhập mật khẩu',
+                label: 'Mật khẩu camera',
+                requiredField: true,
+                maxLength: 50,
+                obscureText: _obscure,
+                suffix: IconButton(
+                  icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                ),
+                trailingButton: Visibility(
+                  visible: _method != 'RTSP',
+                  child: ElevatedButton(
                     onPressed: () {
                       widget.onCheck?.call(_onvifXaddrs.text.trim(), _onvifUserName.text.trim(), _onvifPassword.text.trim(), []);
                     },
@@ -281,10 +336,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                   ),
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
