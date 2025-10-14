@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
+import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 
 import '../widgets/group_node.dart';
 
@@ -124,24 +125,24 @@ class _MonitorModeState extends State<MonitorMode> {
                 child: BlocBuilder<GroupCameraBloc, GroupCameraState>(
                   builder: (context, state) {
                     if (state is! GetAllGroupCameraSuccessState) return SizedBox();
-
-                    return TreeView.simple(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      showRootNode: false,
-                      tree: state.tree,
-                      expansionBehavior: ExpansionBehavior.scrollToLastChild,
-                      indentation: const Indentation(),
-                      expansionIndicatorBuilder: (context, node) =>
-                          NoExpansionIndicator(tree: node),
-                      builder: (context, node) => GroupNode(
-                        group: node.data!,
-                        onToggleExpansion: () => _controller?.toggleExpansion(node),
-                      ),
-                      onTreeReady: (controller) {
-                        _controller = controller;
-                        controller.expandAllChildren(controller.tree);
-                      },
-                    );
+                    return TreeGroupWidget(controller: _controller, tree: state.tree);
+                    // return TreeView.simple(
+                    //   padding: EdgeInsets.symmetric(horizontal: 24),
+                    //   showRootNode: false,
+                    //   tree: state.tree,
+                    //   expansionBehavior: ExpansionBehavior.scrollToLastChild,
+                    //   indentation: const Indentation(),
+                    //   expansionIndicatorBuilder: (context, node) =>
+                    //       NoExpansionIndicator(tree: node),
+                    //   builder: (context, node) => GroupNode(
+                    //     group: node.data!,
+                    //     onToggleExpansion: () => _controller?.toggleExpansion(node),
+                    //   ),
+                    //   onTreeReady: (controller) {
+                    //     _controller = controller;
+                    //     controller.expandAllChildren(controller.tree);
+                    //   },
+                    // );
                   },
                 ),
               ),
