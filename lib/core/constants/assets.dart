@@ -53,4 +53,5 @@ class AppAssets {
   static const icMode4x4 = '$_svgPath/mode_4x4.svg';
   static const icMode5x5 = '$_svgPath/mode_5x5.svg';
   static const icMode6x6 = '$_svgPath/mode_6x6.svg';
+  static const icAction = '$_svgPath/ic_action.svg';
 }

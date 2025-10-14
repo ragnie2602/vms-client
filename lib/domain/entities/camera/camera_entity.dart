@@ -1,3 +1,4 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
@@ -9,6 +10,8 @@ class CameraEntity {
   final String camId;
   final String username;
   final String password;
+  final String iPUrlStream;
+  final Int64 timeAdded;
   final CameraType type;
   final CameraStatus status;
   final CameraStream stream;
@@ -32,6 +35,8 @@ class CameraEntity {
     required this.camId,
     required this.username,
     required this.password,
+    required this.iPUrlStream,
+    required this.timeAdded,
     required this.type,
     required this.status,
     required this.stream,
