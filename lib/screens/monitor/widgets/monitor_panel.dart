@@ -19,7 +19,9 @@ class MonitorPanelState extends State<MonitorPanel> {
   Completer<void> _completer = Completer<void>();
   bool get isOpening => _panelWidth.value == widget.width;
   double get maxWidth => widget.width;
+
   Widget? content;
+  Function(int?)? onPanelIndexChanged;
 
   @override
   void dispose() {
@@ -27,15 +29,30 @@ class MonitorPanelState extends State<MonitorPanel> {
     super.dispose();
   }
 
-  Future<void> togglePanel(Widget content) async {
+  Future<void> togglePanel(
+    Widget content, {
+    int? id,
+    Function(int?)? onPanelIndexChanged,
+    bool closePrevious = false,
+  }) async {
+    this.onPanelIndexChanged = onPanelIndexChanged;
+    this.onPanelIndexChanged?.call(id);
+
     if (isOpening && this.content != null && this.content!.key != content.key) {
-      _completer = Completer<void>();
-      _panelWidth.value = 0;
-      await _completer.future;
+      if (closePrevious) {
+        _completer = Completer<void>();
+        _panelWidth.value = 0;
+        await _completer.future;
+      } else {
+        this.content = content;
+        setState(() {});
+        return;
+      }
     }
 
     this.content = content;
     _panelWidth.value = _panelWidth.value == 0 ? widget.width : 0;
+    if (!isOpening) this.onPanelIndexChanged?.call(null);
   }
 
   @override
@@ -51,14 +68,19 @@ class MonitorPanelState extends State<MonitorPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(0, 4, 4, 12),
-            child: InkWell(
-              onTap: () => _panelWidth.value = 0,
-              child: SvgPicture.asset(AppAssets.icClose),
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 4, 4, 12),
+              child: InkWell(
+                onTap: () {
+                  _panelWidth.value = 0;
+                  onPanelIndexChanged?.call(null);
+                },
+                child: SvgPicture.asset(AppAssets.icClose),
+              ),
             ),
-          ),
-          if (content != null) Expanded(child: content!)]),
+            if (content != null) Expanded(child: content!),
+          ],
+        ),
       ),
     );
   }

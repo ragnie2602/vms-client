@@ -9,7 +9,7 @@ import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
-import '../bloc/monitor_bloc.dart';
+import '../bloc/monitor/monitor_bloc.dart';
 
 enum _PlayerState { initializing, initialized, error }
 

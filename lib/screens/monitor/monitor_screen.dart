@@ -10,7 +10,7 @@ import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 
 import '../camera_live/camera_live_screen.dart';
 import '../shared/state_builder_mixin.dart';
-import 'bloc/monitor_bloc.dart';
+import 'bloc/monitor/monitor_bloc.dart';
 import 'layout/monitor_desktop_layout.dart';
 import 'widgets/camera_player.dart';
 
