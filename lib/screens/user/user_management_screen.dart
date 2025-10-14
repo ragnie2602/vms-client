@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
+import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
 
 class UserManagementScreen extends StatefulWidget {
@@ -11,6 +12,18 @@ class UserManagementScreen extends StatefulWidget {
 }
 
 class _UserManagementScreenState extends State<UserManagementScreen> {
+  @override
+  void initState() {
+    _onGetListUser();
+    super.initState();
+  }
+
+  void _onGetListUser() {
+    context.read<UserManagementBloc>().add(GetListUserEvent());
+  }
+
+  void _onAddUser() {}
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UserManagementBloc, UserManagementState>(
@@ -25,7 +38,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     onTap: () async {},
                     child: Container(
                       color: Colors.blue,
-                      child: Text('Thêm Người Dùng', ),
+                      child: Text('Thêm Người Dùng'),
                     ),
                   ),
                 ],
@@ -33,20 +46,40 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
             SizedBox(height: 200),
             Flexible(
-              child: ListView.separated(
-                physics: NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: 100,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, i) {
-                  final name = "Thuy";
-                  return ListTile(
-                    title: Text(name),
-                    leading: CircleAvatar(
-                      child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?',style: TextStyle(color:Colors.red )),
-                    ),
-                    onTap: () {},
-                  );
+              child: BlocBuilder<UserManagementBloc, UserManagementState>(
+                builder: (context, newState) {
+                  if (newState is UserManagementLoadingState) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (newState is GetListUserStateFail) {
+                    return Center(child: Text(newState.errorMsg));
+                  } else if (newState.type.isSuccess &&
+                      newState is GetListUserState) {
+                    if ((newState.props).isEmpty) {
+                      return Center(child: Text('Chưa có dữ liệu.'));
+                    } else {
+                      return ListView.separated(
+                        physics: NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: newState.props.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, i) {
+                          final name = "Thuy";
+                          return ListTile(
+                            title: Text(name),
+                            leading: CircleAvatar(
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                            onTap: () {},
+                          );
+                        },
+                      );
+                    }
+                  }
+                  return SizedBox();
                 },
               ),
             ),

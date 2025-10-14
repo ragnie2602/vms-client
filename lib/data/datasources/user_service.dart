@@ -16,7 +16,7 @@ class UserService {
         Packet(
           id: DateTime.now().microsecondsSinceEpoch,
           data: ListUser_Request().writeToBuffer(),
-          type: PacketType.getAllGroup,
+          type: PacketType.listUser,
         ),
       ),
     );
@@ -24,6 +24,23 @@ class UserService {
     return responseBuffer.fold(
       (failure) => throw failure.toMessageFailure(),
       (buffer) => ListUser_Reply.fromBuffer(buffer).users,
+    );
+  }
+
+  Future<User> addUser() async {
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: AddUser_Request().writeToBuffer(),
+          type: PacketType.addUser,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(),
+      (buffer) => AddUser_Reply.fromBuffer(buffer).user,
     );
   }
 }

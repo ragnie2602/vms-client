@@ -2,8 +2,9 @@ import 'package:vms_flutter_client/domain/usecases/base_input.dart';
 import 'package:vms_flutter_client/domain/usecases/base_output.dart';
 import 'package:vms_flutter_client/domain/usecases/base_use_case.dart';
 
-abstract class SyncUseCaseBase<Input extends BaseInput, Output extends BaseOutput> extends BaseUseCase<Input, Output> {
-  const SyncUseCaseBase(); 
+abstract class SyncUseCase<Input extends BaseInput, Output extends BaseOutput>
+    extends BaseUseCase<Input, Output> {
+  const SyncUseCase();
 
   Output execute(Input input) {
     try {

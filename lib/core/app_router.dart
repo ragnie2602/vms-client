@@ -2,7 +2,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
@@ -88,6 +90,13 @@ class AppRouter {
                     ..add(GetAllGroupCameraEvent()),
               lazy: false,
             ),
+            BlocProvider(
+              create: (context) => ControlCameraBloc(
+                controlGroupRepository: context.read(),
+                filterCameraUseCase: context.read<FilterCameraUseCase>(),
+              ),
+            ),
+
             BlocProvider(
               create: (context) => UserManagementBloc(userManagermentRepository: context.read()),
             ),
