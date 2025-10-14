@@ -319,9 +319,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                       name: payload.name,
                                       rtspUrl: payload.rtsp,
                                       userName: payload.username,
+
                                       password: payload.password,
                                       subStreamUrls: payload.subStreamUrls,
-                                      xaddr: payload.onifDeviceIp,
+                                      xaddr: payload.xaddr,
                                     );
                                   },
                                   onCheck: (xaddrs, userName, password, boxId) {

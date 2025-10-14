@@ -49,6 +49,9 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
   }
 
   FutureOr<void> _onCheckOnvif(CheckOnvifEvent event, Emitter<ControlCameraState> emit) async {
+    // Reset state trước khi check để đảm bảo listener luôn được trigger
+    emit(const ControlCameraState());
+
     final checkOnvif = await controlGroupRepository.checkCameraOnvif(
       xaddrs: event.xaddrs,
       userName: event.userName,

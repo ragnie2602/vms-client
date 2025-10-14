@@ -42,6 +42,7 @@ class AddCameraPayload {
   final String password;
   final String subStream;
   final CameraMap location;
+  final String xaddr;
   // final List<int> boxId;
   // final List<int> groupId;
   final List<String> subStreamUrls;
@@ -57,6 +58,7 @@ class AddCameraPayload {
     required this.password,
     required this.subStream,
     required this.location,
+    required this.xaddr,
     // required this.boxId,
     // required this.groupId,
     required this.subStreamUrls,
@@ -91,6 +93,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   final _onvifPassword = TextEditingController();
   bool _obscure = true;
   String _method = 'RTSP'; // 'RTSP' hoặc 'ONVIF'
+  bool _isChecking = false;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -105,6 +109,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       _rtsp.text = camera.stream.streamOriginUrl;
       _onvifUserName.text = camera.username;
       _onvifPassword.text = camera.password;
+      _onvifXaddrs.text = camera.onvif.xaddr;
 
       // Parse sub stream URL nếu có
       final subStreamUrl = camera.stream.streamLinks.firstWhereOrNull((e) => e.nameOfStream == "SUB STREAM")?.urlOfStream ?? '';
@@ -145,14 +150,27 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return BlocListener<ControlCameraBloc, ControlCameraState>(
-      listenWhen: (prev, curr) => curr is CheckOnvifSuccessState || curr is CheckOnvifFailState,
+      listenWhen: (prev, curr) =>
+          curr is CheckOnvifSuccessState || curr is CheckOnvifFailState || curr is AddCameraSuccessState || curr is AddCameraFailState,
       listener: (context, state) {
         if (state is CheckOnvifSuccessState) {
+          setState(() => _isChecking = false);
           _rtsp.text = state.cameraOnvif.rtspUrl;
           _sub.text = state.cameraOnvif.subStreamUrl.isNotEmpty ? state.cameraOnvif.subStreamUrl.first : '';
           setState(() => _method = 'ONVIF');
         } else if (state is CheckOnvifFailState) {
+          setState(() => _isChecking = false);
           showAppMessageDialog(context, type: AppMessageType.error, message: state.message);
+        } else if (state is AddCameraSuccessState) {
+          setState(() => _isSubmitting = false);
+          // Pop dialog khi thành công
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        } else if (state is AddCameraFailState) {
+          setState(() => _isSubmitting = false);
+          // Hiển thị dialog lỗi khi thất bại, không pop dialog chính
+          showAppMessageDialog(context, type: AppMessageType.error, message: state.errorMsg);
         }
       },
       child: AlertDialog(
@@ -246,41 +264,53 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AppButton.outline(label: 'HỦY', onPressed: () => Navigator.pop(context)),
+                AppButton.outline(label: 'HỦY', onPressed: (_isChecking || _isSubmitting) ? null : () => Navigator.pop(context)),
                 const SizedBox(width: 12),
                 AppButton.filled(
-                  label: 'XÁC NHẬN',
-                  onPressed: () async {
-                    if (_form.currentState?.validate() ?? false) {
-                      final payload = AddCameraPayload(
-                        name: _name.text.trim(),
-                        method: _method,
-                        rtsp: _rtsp.text.trim(),
-                        onifDeviceIp: _onvifXaddrs.text.trim(),
-                        username: _onvifUserName.text.trim(),
-                        password: _onvifPassword.text.trim(),
-                        subStream: _sub.text.trim(),
-                        location: CameraMap(
-                          lat: double.tryParse(_lat.text.replaceAll(',', '.')) ?? 0,
-                          log: double.tryParse(_lon.text.replaceAll(',', '.')) ?? 0,
-                          locationDes: _desc.text.trim(),
-                        ),
-                        // boxId: _boxId.text.trim(),
-                        // groupId: _groupId.text.trim(),
-                        subStreamUrls: _sub.text.trim().split(','),
-                        // urn: _urn.text.trim(),
-                        // serialNumber: _serialNumber.text.trim(),
-                      );
+                  label: _isSubmitting ? '' : 'XÁC NHẬN',
+                  onPressed: _isSubmitting
+                      ? null
+                      : () async {
+                          if (_form.currentState?.validate() ?? false) {
+                            setState(() => _isSubmitting = true);
 
-                      // Gọi callback tương ứng với mode
-                      if (widget.mode == CameraDialogMode.add) {
-                        await widget.onSubmit?.call(payload);
-                      } else {
-                        await widget.onEdit?.call(payload);
-                      }
-                      Navigator.pop(context);
-                    }
-                  },
+                            final payload = AddCameraPayload(
+                              name: _name.text.trim(),
+                              method: _method,
+                              rtsp: _rtsp.text.trim(),
+                              onifDeviceIp: _onvifXaddrs.text.trim(),
+                              username: _onvifUserName.text.trim(),
+                              password: _onvifPassword.text.trim(),
+                              subStream: _sub.text.trim(),
+                              location: CameraMap(
+                                lat: double.tryParse(_lat.text.replaceAll(',', '.')) ?? 0,
+                                log: double.tryParse(_lon.text.replaceAll(',', '.')) ?? 0,
+                                locationDes: _desc.text.trim(),
+                              ),
+                              xaddr: _onvifXaddrs.text.trim(),
+                              // boxId: _boxId.text.trim(),
+                              // groupId: _groupId.text.trim(),
+                              subStreamUrls: _sub.text.trim().split(','),
+                              // urn: _urn.text.trim(),
+                              // serialNumber: _serialNumber.text.trim(),
+                            );
+
+                            // Gọi callback tương ứng với mode
+                            if (widget.mode == CameraDialogMode.add) {
+                              await widget.onSubmit?.call(payload);
+                            } else {
+                              await widget.onEdit?.call(payload);
+                            }
+                            // Không pop ở đây, sẽ pop trong BlocListener khi API hoàn thành
+                          }
+                        },
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                        )
+                      : null,
                 ),
               ],
             ),
@@ -321,9 +351,12 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 trailingButton: Visibility(
                   visible: _method != 'RTSP',
                   child: ElevatedButton(
-                    onPressed: () {
-                      widget.onCheck?.call(_onvifXaddrs.text.trim(), _onvifUserName.text.trim(), _onvifPassword.text.trim(), []);
-                    },
+                    onPressed: _isChecking
+                        ? null
+                        : () {
+                            setState(() => _isChecking = true);
+                            widget.onCheck?.call(_onvifXaddrs.text.trim(), _onvifUserName.text.trim(), _onvifPassword.text.trim(), []);
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.blue005AA9,
                       foregroundColor: Colors.white,
@@ -332,7 +365,13 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                       elevation: 0,
                     ),
-                    child: const Text('Kiểm tra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                    child: _isChecking
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                          )
+                        : const Text('Kiểm tra', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                   ),
                 ),
               ),
@@ -362,28 +401,24 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         const SizedBox(height: 6),
         Row(
           children: [
-            Expanded(
-              child: _CustomRadioButton(
-                title: 'RTSP',
-                value: 'RTSP',
-                groupValue: _method,
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _method = value);
-                },
-              ),
+            _CustomRadioButton(
+              title: 'RTSP',
+              value: 'RTSP',
+              groupValue: _method,
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() => _method = value);
+              },
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _CustomRadioButton(
-                title: 'ONVIF',
-                value: 'ONVIF',
-                groupValue: _method,
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _method = value);
-                },
-              ),
+            const SizedBox(width: 24),
+            _CustomRadioButton(
+              title: 'ONVIF',
+              value: 'ONVIF',
+              groupValue: _method,
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() => _method = value);
+              },
             ),
           ],
         ),
@@ -543,17 +578,19 @@ class AppField extends StatelessWidget {
 }
 
 class AppButton extends StatelessWidget {
-  const AppButton._(this.label, this.onPressed, this.filled, {super.key});
+  const AppButton._(this.label, this.onPressed, this.filled, {super.key, this.child});
   final String label;
   final VoidCallback? onPressed;
   final bool filled;
+  final Widget? child;
 
-  factory AppButton.filled({Key? key, required String label, VoidCallback? onPressed}) => AppButton._(label, onPressed, true, key: key);
+  factory AppButton.filled({Key? key, required String label, VoidCallback? onPressed, Widget? child}) =>
+      AppButton._(label, onPressed, true, key: key, child: child);
   factory AppButton.outline({Key? key, required String label, VoidCallback? onPressed}) => AppButton._(label, onPressed, false, key: key);
 
   @override
   Widget build(BuildContext context) {
-    final child = Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500));
+    final buttonChild = child ?? Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500));
 
     if (filled) {
       return ElevatedButton(
@@ -566,7 +603,7 @@ class AppButton extends StatelessWidget {
           minimumSize: const Size(150, 48),
           elevation: 0,
         ),
-        child: child,
+        child: buttonChild,
       );
     } else {
       return OutlinedButton(
@@ -579,7 +616,7 @@ class AppButton extends StatelessWidget {
           minimumSize: const Size(150, 48),
           backgroundColor: Colors.white,
         ),
-        child: child,
+        child: buttonChild,
       );
     }
   }
