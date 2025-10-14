@@ -68,30 +68,25 @@ class ThemeBox extends StatelessWidget {
                   ? DefaultTabController(
                       length: 2,
                       initialIndex: context.isDarkMode ? 1 : 0,
-                      child: StatefulBuilder(
-                        builder: (context, setState) => TabBar(
-                          onTap: (value) => context.read<AppBloc>().add(
-                            ChangeTheme(value == 0 ? ThemeMode.light : ThemeMode.dark),
-                          ),
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          dividerColor: Colors.transparent,
-                          indicator: BoxDecoration(
-                            borderRadius: BorderRadius.circular(32),
-                            color: AppColors.blackOrWhiteReverse,
-                          ),
-                          labelPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                          labelColor: AppColors.blackOrWhite,
-                          unselectedLabelColor: Color(0xFF6F767E),
-                          labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
-                          unselectedLabelStyle: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          tabs: [
-                            _buildThemeItem(title: 'Sáng', svg: AppAssets.icLightMode),
-                            _buildThemeItem(title: 'Tối', svg: AppAssets.icDarkMode),
-                          ],
+                      child: TabBar(
+                        onTap: (value) => context.read<AppBloc>().add(
+                          ChangeTheme(value == 0 ? ThemeMode.light : ThemeMode.dark),
                         ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        dividerColor: Colors.transparent,
+                        indicator: BoxDecoration(
+                          borderRadius: BorderRadius.circular(32),
+                          color: AppColors.blackOrWhiteReverse,
+                        ),
+                        labelPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                        labelColor: AppColors.blackOrWhite,
+                        unselectedLabelColor: Color(0xFF6F767E),
+                        labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+                        unselectedLabelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+                        tabs: [
+                          _buildThemeItem(title: 'Sáng', svg: AppAssets.icLightMode),
+                          _buildThemeItem(title: 'Tối', svg: AppAssets.icDarkMode),
+                        ],
                       ),
                     )
                   : _buildAdaptiveTheme(context),

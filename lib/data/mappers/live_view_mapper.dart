@@ -6,8 +6,8 @@ import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.da
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 
 extension BaseViewMapper on pb.Base_View {
-  BaseView toDomain() {
-    return BaseView.fromValue(value);
+  ViewMode toDomain() {
+    return ViewMode.fromValue(value);
   }
 }
 

@@ -6,8 +6,10 @@ import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/list_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
@@ -75,16 +77,23 @@ class AppRouter {
         builder: (context, state, child) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
+            BlocProvider(create: (context) => MonitorBloc(context.read())..add(GetAllCamera())),
             BlocProvider(
               create: (context) =>
-                  ListCameraBloc(context.read())..add(GetAllCamera()),
+                  GroupCameraBloc(groupCameraRepository: context.read())
+                    ..add(GetAllGroupCameraEvent()),
+              lazy: false,
             ),
             BlocProvider(
-              create: (context) =>
-                  ControlCameraBloc(controlGroupRepository: context.read(), filterCameraUseCase: context.read<FilterCameraUseCase>()),
+              create: (context) => ControlCameraBloc(
+                controlGroupRepository: context.read(),
+                filterCameraUseCase: context.read<FilterCameraUseCase>(),
+              ),
             ),
 
-            BlocProvider(create: (context) => UserManagementBloc(userManagermentRepository: context.read())),
+            BlocProvider(
+              create: (context) => UserManagementBloc(userManagermentRepository: context.read()),
+            ),
           ],
           child: HomeScreen(body: child),
         ),
