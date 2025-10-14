@@ -1,7 +1,9 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/camera_service.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
+import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 
@@ -36,6 +38,64 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
     return await catchError<CameraOnvif>(() async {
       final checkCameraOnvif = await service.checkCameraOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId);
       return Right(checkCameraOnvif.toDomain());
+    });
+  }
+
+  @override
+  Future<Either<Failure, AddCameraEntity>> addCameraOnvif({
+    required String name,
+    required String username,
+    required String password,
+    required String onvifDeviceIp,
+    String? rtspUrl,
+    String? serialNumber,
+    CameraMap? location,
+    List<int>? boxId,
+    List<int>? groupId,
+    String? urn,
+    List<String>? subStreamUrls,
+  }) async {
+    return await catchError<AddCameraEntity>(() async {
+      final checkCameraOnvif = await service.addCameraOnVif(
+        name: name,
+        username: username,
+        password: password,
+        onvifDeviceIp: onvifDeviceIp,
+        rtspUrl: rtspUrl,
+        serialNumber: serialNumber,
+        location: location?.toMapper(),
+        boxId: boxId,
+        groupId: groupId,
+        urn: urn,
+        subStreamUrls: subStreamUrls,
+      );
+      return Right(checkCameraOnvif);
+    });
+  }
+
+  @override
+  Future<Either<Failure, AddCameraEntity>> addCameraRTSP({
+    required String name,
+    required String username,
+    required String password,
+    required String rtspUrl,
+    CameraMap? location,
+    List<int>? boxId,
+    List<int>? groupId,
+    List<String>? subStreamUrls,
+  }) async {
+    return await catchError<AddCameraEntity>(() async {
+      final addCameraRTSP = await service.addCameraRTSP(
+        name: name,
+        username: username,
+        password: password,
+        rtspUrl: rtspUrl,
+        location: location?.toMapper(),
+        boxId: boxId,
+        groupId: groupId,
+        subStreamUrls: subStreamUrls,
+      );
+      return Right(addCameraRTSP);
     });
   }
 }

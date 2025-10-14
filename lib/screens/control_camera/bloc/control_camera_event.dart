@@ -1,5 +1,6 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 
 class ControlCameraEvent extends BaseEvent {
   const ControlCameraEvent();
@@ -28,4 +29,51 @@ class FilterCameraEvent extends ControlCameraEvent{
   final String? cameraName;
    final CameraStatus? cameraStatus;
   const FilterCameraEvent({this.cameraName, this.cameraStatus});
+}
+class AddCameraRTSPEvent extends ControlCameraEvent {
+  final String name;
+  final String username;
+  final String password;
+  final String rtspUrl;
+  final CameraMap location;
+  final List<int> boxId;
+  final List<int> groupId;
+  final List<String> subStreamUrls;
+  const AddCameraRTSPEvent({
+    required this.name,
+    required this.username,
+    required this.password,
+    required this.rtspUrl,
+    required this.location,
+    required this.boxId,
+    required this.groupId,
+    required this.subStreamUrls,
+  });
+}
+
+class AddCameraOnvifEvent extends ControlCameraEvent {
+  final String name;
+  final String username;
+  final String password;
+  final String onvifDeviceIp;
+  final String rtspUrl;
+  final String serialNumber;
+  final CameraMap location;
+  final List<int> boxId;
+  final List<int> groupId;
+  final String urn;
+  final List<String> subStreamUrls;
+  const AddCameraOnvifEvent({
+    required this.rtspUrl,
+    required this.serialNumber,
+    required this.location,
+    required this.boxId,
+    required this.groupId,
+    required this.urn,
+    required this.subStreamUrls,
+    required this.name,
+    required this.username,
+    required this.password,
+    required this.onvifDeviceIp,
+  });
 }

@@ -13,10 +13,7 @@ class DependencyInjection {
 
     // Data Sources
     Provider<AuthenticateService>(
-      create: (context) => AuthenticateService(
-        httpClient: context.read<ProtobufHttpClient>(),
-        socketApiClient: context.read<SocketApiClient>(),
-      ),
+      create: (context) => AuthenticateService(httpClient: context.read<ProtobufHttpClient>(), socketApiClient: context.read<SocketApiClient>()),
     ),
     Provider<CameraService>(create: (context) => CameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
@@ -50,9 +47,6 @@ class DependencyInjection {
     ),
 
     // Use Cases
-    Provider<LoginUseCase>(
-      create: (context) =>
-          LoginUseCase(authRepository: context.read<IAuthRepository>()),
-    ),
+    Provider<LoginUseCase>(create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>())),
   ];
 }
