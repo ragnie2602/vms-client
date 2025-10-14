@@ -19,10 +19,9 @@ class UserManagementRepository extends BaseRepository
       return Right(groups.map((e) => e.toDomain()).toList());
     });
   }
-  
+
   @override
-  Future<Either<Failure, User>> user() {
-    // TODO: implement user
+  Future<Either<Failure, User>> addUser() {
     throw UnimplementedError();
   }
 }
