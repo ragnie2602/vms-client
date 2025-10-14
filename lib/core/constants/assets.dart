@@ -63,4 +63,8 @@ class AppAssets {
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
+  static const iconAdd = '$_svgPath/icon_add.svg';
+  static const iconEdit = '$_svgPath/icon_edit.svg';
+  static const iconRemove = '$_svgPath/icon_remove.svg';
+  static const iconShare = '$_svgPath/icon_share.svg';
 }
