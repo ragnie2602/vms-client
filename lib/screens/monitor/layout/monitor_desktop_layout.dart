@@ -8,7 +8,7 @@ class MonitorDesktopLayout extends StatefulWidget {
   const MonitorDesktopLayout({
     super.key,
     required this.content,
-    this.leftPanelWidth = 328,
+    this.leftPanelWidth = 281,
     this.rightPanelWidth = 280,
   });
   final Widget content;
