@@ -21,7 +21,35 @@ class UserManagementRepository extends BaseRepository
   }
 
   @override
-  Future<Either<Failure, UserEntity>> addUser() {
-    throw UnimplementedError();
+  Future<Either<Failure, UserEntity>> addUser({
+    required String account,
+    required String password,
+    String? tel,
+    String? email,
+    String? address,
+    String? desc,
+    String? fullName,
+    bool? isAmin,
+    bool? changePassDenied,
+    bool? addCamDenied,
+  }) async {
+    {
+      return await catchError<UserEntity>(() async {
+        final groups = await service.addUser(
+          account: account,
+          password: password,
+          tel: tel,
+          address: address,
+          email: email,
+          desc: desc,
+          fullName: fullName,
+          isAmin: isAmin,
+          changePassDenied: changePassDenied,
+          addCamDenied: addCamDenied,
+        );
+        return Right(groups.toDomain());
+      });
+    }
+    ;
   }
 }

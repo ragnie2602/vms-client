@@ -4,6 +4,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
+import 'package:vms_flutter_client/screens/user/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/user/widget/item_user_widget.dart';
 import 'package:vms_flutter_client/screens/user/widget/title_widget.dart';
 
@@ -57,7 +58,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         ),
                       ),
                       InkWell(
-                        onTap: () {},
+                        onTap: () async {
+                          await showAddAccountDialog(context);
+                        },
                         splashColor: Colors.transparent,
 
                         child: Container(
@@ -105,8 +108,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TitleWidget(),
-                      state is UserManagementLoadingState ? Center(child: CircularProgressIndicator()):
-                      state is GetListUserState
+                      state is UserManagementLoadingState
+                          ? Center(child: CircularProgressIndicator())
+                          : state is GetListUserState
                           ? Flexible(
                               child: ListView.builder(
                                 shrinkWrap: true,

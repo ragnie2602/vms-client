@@ -68,6 +68,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                       ),
                     ),
                     InkWell(
+                      
                       onTap: () {
                         showAddCameraRtspDialog(context);
                       },

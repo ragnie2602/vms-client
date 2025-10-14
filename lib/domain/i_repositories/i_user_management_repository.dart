@@ -3,5 +3,16 @@ import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
 abstract class IUserManagementRepository {
   Future<Either<Failure, List<UserEntity>>> listUser();
-  Future<Either<Failure, UserEntity>> addUser();
+  Future<Either<Failure, UserEntity>> addUser({
+    required String account,
+    required String password,
+    String? tel,
+    String? email,
+    String? address,
+    String? desc,
+    String? fullName,
+    bool? isAmin,
+    bool? changePassDenied,
+    bool? addCamDenied,
+  });
 }
