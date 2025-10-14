@@ -3,5 +3,5 @@ import 'package:vms_flutter_client/domain/entities/user/user.dart';
 
 abstract class IUserManagementRepository {
   Future<Either<Failure, List<User>>> listUser();
-   Future<Either<Failure,User>> user();
+  Future<Either<Failure,User>> addUser();
 }
