@@ -16,6 +16,8 @@ import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.da
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
+  const ControlCameraScreen({super.key});
+
   @override
   State<ControlCameraScreen> createState() => _ControlCameraScreenState();
 }
