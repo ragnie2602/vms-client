@@ -39,4 +39,18 @@ class AppAssets {
   static const icSearch = '$_svgPath/search.svg';
   static const icDarkMode = '$_svgPath/dark_mode.svg';
   static const icLightMode = '$_svgPath/light_mode.svg';
+  static const icAlertTriangle = '$_svgPath/alert_triangle.svg';
+  static const icTv = '$_svgPath/tv.svg';
+  static const icViewMode = '$_svgPath/view_mode.svg';
+  static const icListCamera = '$_svgPath/list_camera.svg';
+  static const icAdd = '$_svgPath/add.svg';
+  static const icRootFolder = '$_svgPath/root_folder.svg';
+  static const icDotHorizontal = '$_svgPath/dot_horizontal.svg';
+
+  static const icMode1x1 = '$_svgPath/mode_1x1.svg';
+  static const icMode2x2 = '$_svgPath/mode_2x2.svg';
+  static const icMode3x3 = '$_svgPath/mode_3x3.svg';
+  static const icMode4x4 = '$_svgPath/mode_4x4.svg';
+  static const icMode5x5 = '$_svgPath/mode_5x5.svg';
+  static const icMode6x6 = '$_svgPath/mode_6x6.svg';
 }

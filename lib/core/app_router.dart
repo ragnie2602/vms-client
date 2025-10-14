@@ -6,8 +6,9 @@ import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/list_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
@@ -79,12 +80,15 @@ class AppRouter {
         builder: (context, state, child) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
-            BlocProvider(create: (context) => ListCameraBloc(context.read())..add(GetAllCamera())),
+            BlocProvider(create: (context) => MonitorBloc(context.read())..add(GetAllCamera())),
             BlocProvider(
               create: (context) => ControlCameraBloc(controlGroupRepository: context.read()),
             ),
             BlocProvider(
-              create: (context) => GroupCameraBloc(groupCameraRepository: context.read()),
+              create: (context) =>
+                  GroupCameraBloc(groupCameraRepository: context.read())
+                    ..add(GetAllGroupCameraEvent()),
+              lazy: false,
             ),
           ],
           child: HomeScreen(body: child),
