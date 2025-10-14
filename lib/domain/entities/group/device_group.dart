@@ -1,3 +1,4 @@
+import 'package:animated_tree_view/tree_view/tree_node.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_status.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_type.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
@@ -28,4 +29,14 @@ class DeviceGroup {
     required this.groupType,
     required this.groupRole,
   });
+
+  TreeNode<DeviceGroup> toTreeNode() {
+    final node = TreeNode<DeviceGroup>(data: this);
+
+    for (final child in groups) {
+      node.add(child.toTreeNode());
+    }
+
+    return node;
+  }
 }

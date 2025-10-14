@@ -3,7 +3,7 @@ import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.
 
 class CustomLiveView {
   final List<int> id;
-  final BaseView base;
+  final ViewMode base;
   final List<LiveViewPosition> positions;
   final String name;
 

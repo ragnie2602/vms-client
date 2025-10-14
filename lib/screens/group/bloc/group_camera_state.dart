@@ -1,3 +1,4 @@
+import 'package:animated_tree_view/tree_view/tree_node.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 
@@ -12,7 +13,13 @@ class GroupCameraLoadingState extends GroupCameraState {
 
 class GetAllGroupCameraSuccessState extends GroupCameraState {
   final List<DeviceGroup>? groups;
-  const GetAllGroupCameraSuccessState({required this.groups});
+  final TreeNode<DeviceGroup> tree;
+
+  GetAllGroupCameraSuccessState({required this.groups}) : tree = TreeNode.root() {
+    for (var group in groups ?? <DeviceGroup>[]) {
+      tree.add(group.toTreeNode());
+    }
+  }
 
   @override
   StateType get type => StateType.success;
@@ -20,7 +27,7 @@ class GetAllGroupCameraSuccessState extends GroupCameraState {
   List<Object?> get props => [groups];
 
   GetAllGroupCameraSuccessState copyWith({List<DeviceGroup>? groups}) {
-    return GetAllGroupCameraSuccessState(groups: groups?? this.groups);
+    return GetAllGroupCameraSuccessState(groups: groups ?? this.groups);
   }
 }
 

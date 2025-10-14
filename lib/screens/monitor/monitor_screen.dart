@@ -10,7 +10,8 @@ import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 
 import '../camera_live/camera_live_screen.dart';
 import '../shared/state_builder_mixin.dart';
-import 'bloc/list_camera_bloc.dart';
+import 'bloc/monitor_bloc.dart';
+import 'layout/monitor_desktop_layout.dart';
 import 'widgets/camera_player.dart';
 
 class MonitorScreen extends StatelessWidget with StateBuilderMixin {
@@ -30,20 +31,17 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
   }
 
   // ignore: unused_element
-  void _onChangeGridMode(BuildContext context, BaseView mode) {
-    context.read<ListCameraBloc>().add(ChangeGridMode(mode));
+  void _onChangeGridMode(BuildContext context, ViewMode mode) {
+    context.read<MonitorBloc>().add(ChangeGridMode(mode));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      padding: const EdgeInsets.all(20.0),
-      child: BlocBuilder<ListCameraBloc, ListCameraState>(
-        builder: (context, blocState) => stateBuilder<ListCameraSuccess>(
+    return MonitorDesktopLayout(
+      content: BlocBuilder<MonitorBloc, MonitorState>(
+        builder: (context, blocState) => stateBuilder<MonitorSuccess>(
           blocState,
-          onReload: () => context.read<ListCameraBloc>().add(GetAllCamera()),
+          onReload: () => context.read<MonitorBloc>().add(GetAllCamera()),
           child: (state) => PlatformWidget.groupBuilder(
             onMobile: (context) => Container(),
             onDesktop: (context) => LayoutBuilder(
@@ -77,10 +75,7 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
     return GestureDetector(
       onTap: () {
-        context.goNamed(
-          Routes.livecamera.name,
-          extra: CameraLiveScreenArgs(data: data),
-        );
+        context.goNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
       },
       child: Stack(
         children: [
