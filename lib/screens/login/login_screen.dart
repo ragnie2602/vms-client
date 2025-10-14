@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
@@ -20,17 +21,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final serverController = TextEditingController(
-    text: AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? EnvService.apiBaseUrl,
-  );
+  late final TextEditingController serverController;
   final serverFN = FocusNode();
-  final usernameController = TextEditingController(
-    text: AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY),
-  );
+  late final TextEditingController usernameController;
   final usernameFN = FocusNode();
-  final passwordController = TextEditingController(
-    text: AppData.instance.read<String>(AppKeys.SP_PASSWORD_KEY),
-  );
+  late final TextEditingController passwordController;
   final passwordFN = FocusNode();
 
   final formKey = GlobalKey<FormState>();
@@ -38,9 +33,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
+    final storedServer = AppData.instance.read<String>(AppKeys.SP_SERVER_KEY);
+    final storedUsername = AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY);
+    final storedPassword = AppData.instance.read<String>(AppKeys.SP_PASSWORD_KEY);
+
+    serverController = TextEditingController(text: storedServer ?? EnvService.apiBaseUrl);
+    usernameController = TextEditingController(text: storedUsername);
+    passwordController = TextEditingController(text: storedPassword);
+
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LoginBloc>().add(const LoginReset());
+
+      if (AppConfig.AUTO_LOGIN &&
+          storedUsername != null &&
+          storedPassword != null &&
+          storedServer != null) {
+        _login();
+      }
     });
   }
 

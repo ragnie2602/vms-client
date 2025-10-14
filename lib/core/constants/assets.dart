@@ -46,16 +46,21 @@ class AppAssets {
   static const icAdd = '$_svgPath/add.svg';
   static const icRootFolder = '$_svgPath/root_folder.svg';
   static const icDotHorizontal = '$_svgPath/dot_horizontal.svg';
-
-  static const icMode1x1 = '$_svgPath/mode_1x1.svg';
-  static const icMode2x2 = '$_svgPath/mode_2x2.svg';
-  static const icMode3x3 = '$_svgPath/mode_3x3.svg';
-  static const icMode4x4 = '$_svgPath/mode_4x4.svg';
-  static const icMode5x5 = '$_svgPath/mode_5x5.svg';
-  static const icMode6x6 = '$_svgPath/mode_6x6.svg';
-  // group + cam
   static const icAction = '$_svgPath/ic_action.svg';
+  static const icDropdown = '$_svgPath/ic_dropdown.svg';
+  static const icMode1x1 = '$_svgPath/mode_1x1.svg';
+  static const icMode1x1Active = '$_svgPath/mode_1x1_active.svg';
+  static const icMode2x2 = '$_svgPath/mode_2x2.svg';
+  static const icMode2x2Active = '$_svgPath/mode_2x2_active.svg';
+  static const icMode3x3 = '$_svgPath/mode_3x3.svg';
+  static const icMode3x3Active = '$_svgPath/mode_3x3_active.svg';
+  static const icMode4x4 = '$_svgPath/mode_4x4.svg';
+  static const icMode4x4Active = '$_svgPath/mode_4x4_active.svg';
+  static const icMode5x5 = '$_svgPath/mode_5x5.svg';
+  static const icMode5x5Active = '$_svgPath/mode_5x5_active.svg';
+  static const icMode6x6 = '$_svgPath/mode_6x6.svg';
+  static const icMode6x6Active = '$_svgPath/mode_6x6_active.svg';
+  // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
-  static const icDropdown = '$_svgPath/ic_dropdown.svg';
 }

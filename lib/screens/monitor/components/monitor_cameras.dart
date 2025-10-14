@@ -7,7 +7,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 
-import '../bloc/monitor_bloc.dart';
+import '../bloc/monitor/monitor_bloc.dart';
 
 class MonitorCameras extends StatefulWidget {
   const MonitorCameras({super.key, required this.maxWidth});
