@@ -9,7 +9,8 @@ import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/monitor_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
@@ -79,6 +80,10 @@ class AppRouter {
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(create: (context) => MonitorBloc(context.read())..add(GetAllCamera())),
             BlocProvider(
+              create: (context) => CustomViewBloc(context.read())..add(GetListCustomViews()),
+              lazy: false,
+            ),
+            BlocProvider(
               create: (context) =>
                   GroupCameraBloc(groupCameraRepository: context.read())
                     ..add(GetAllGroupCameraEvent()),
@@ -138,13 +143,13 @@ class AppRouter {
             name: Routes.about.name,
             builder: (context, state) => Center(child: Text('About')),
           ),
-          GoRoute(
-            path: Routes.controlCamera.path,
-            name: Routes.controlCamera.name,
-            pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: ControlCameraScreen());
-            },
-          ),
+          // GoRoute(
+          //   path: Routes.controlCamera.path,
+          //   name: Routes.controlCamera.name,
+          //   pageBuilder: (context, state) {
+          //     return fadeTransition(context: context, state: state, child: ControlCameraScreen());
+          //   },
+          // ),
           GoRoute(
             path: Routes.addGroupCamera.path,
             name: Routes.addGroupCamera.name,

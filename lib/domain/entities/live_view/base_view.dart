@@ -1,19 +1,20 @@
 import 'package:vms_flutter_client/core/constants/assets.dart';
 
 enum ViewMode {
-  v1x1(0, 1, 1, AppAssets.icMode1x1),
-  v2x2(1, 2, 2, AppAssets.icMode2x2),
-  v3x3(2, 3, 3, AppAssets.icMode3x3),
-  v4x4(3, 4, 4, AppAssets.icMode4x4),
-  v5x5(4, 5, 5, AppAssets.icMode5x5),
-  v6x6(5, 6, 6, AppAssets.icMode6x6);
+  v1x1(0, 1, 1, AppAssets.icMode1x1, AppAssets.icMode1x1Active),
+  v2x2(1, 2, 2, AppAssets.icMode2x2, AppAssets.icMode2x2Active),
+  v3x3(2, 3, 3, AppAssets.icMode3x3, AppAssets.icMode3x3Active),
+  v4x4(3, 4, 4, AppAssets.icMode4x4, AppAssets.icMode4x4Active),
+  v5x5(4, 5, 5, AppAssets.icMode5x5, AppAssets.icMode5x5Active),
+  v6x6(5, 6, 6, AppAssets.icMode6x6, AppAssets.icMode6x6Active);
 
   final int value;
   final int rows;
   final int columns;
   final String icon;
+  final String iconActive;
 
-  const ViewMode(this.value, this.rows, this.columns, this.icon);
+  const ViewMode(this.value, this.rows, this.columns, this.icon, this.iconActive);
   int get total => rows * columns;
 
   static ViewMode fromValue(int value) {

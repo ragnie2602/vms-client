@@ -10,6 +10,8 @@ class AppConfig {
   static const INITIAL_ROUTE = Routes.login;
   static const DEFAULT_THEME_MODE = ThemeMode.light;
 
+  static const AUTO_LOGIN = true;
+
   /* File log */
   static const LOG_FILE_RETENTION_PERIOD = Duration(days: 3);
   static const LOG_FILE_MAX_TRACE_LINES = 31;

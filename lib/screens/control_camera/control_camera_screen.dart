@@ -140,7 +140,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

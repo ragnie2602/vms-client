@@ -1,15 +1,9 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
-import 'package:vms_flutter_client/data/datasources/user_service.dart';
-import 'package:vms_flutter_client/data/repositories/control_group_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
-import 'package:vms_flutter_client/data/repositories/user_management_repository.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
-import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
-
-import '../domain/usecases/login/login_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/sources.dart';
 
 class DependencyInjection {
   static List<SingleChildWidget> providers = [
@@ -24,6 +18,7 @@ class DependencyInjection {
     Provider<CameraService>(create: (context) => CameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
     Provider<UserService>(create: (context) => UserService(context.read())),
+    Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -46,6 +41,9 @@ class DependencyInjection {
     ),
     Provider<IUserManagementRepository>(
       create: (context) => UserManagementRepository(context.read()),
+    ),
+    Provider<ICustomLiveViewRepository>(
+      create: (context) => CustomLiveViewRepository(context.read()),
     ),
 
     // Use Cases
