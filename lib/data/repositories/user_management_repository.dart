@@ -50,6 +50,15 @@ class UserManagementRepository extends BaseRepository
         return Right(groups.toDomain());
       });
     }
-    ;
+  }
+
+  @override
+  Future<Either<Failure, List<int>>> removeUser({
+    required List<int> userId,
+  }) async {
+    return await catchError<List<int>>(() async {
+      final groups = await service.removeUser(userId: userId);
+      return Right(groups.toList());
+    });
   }
 }

@@ -40,3 +40,11 @@ class AddUserEvent extends UserManagementEvent {
     addCamDenied,
   ];
 }
+
+class RemoveUserEvent extends UserManagementEvent {
+  final List<int> userId;
+  final String uidStr;
+  const RemoveUserEvent({required this.userId, required this.uidStr});
+  @override
+  List<Object> get props => [userId, uidStr];
+}
