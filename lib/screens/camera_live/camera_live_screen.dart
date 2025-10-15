@@ -43,10 +43,7 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
           ),
           lazy: false,
         ),
-        BlocProvider(
-          create: (_) => PlaybackBloc(context.read())..add(GetVideoPlaybacks(data.id)),
-          lazy: false,
-        ),
+        BlocProvider(create: (_) => PlaybackBloc(context.read())),
       ],
       child: BlocBuilder<CameraLiveBloc, CameraLiveState>(
         buildWhen: (previous, current) =>
@@ -55,7 +52,9 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: CameraLiveDesktopLayout(
-              content: state.mode.isPlayback ? _waitingPlayback(state) : _buildPlayer(state),
+              content: state.mode.isPlayback
+                  ? _waitingPlayback(state, context)
+                  : _buildPlayer(state),
               mode: state.mode,
             ),
           );
@@ -64,7 +63,9 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
     );
   }
 
-  Widget _waitingPlayback(CameraLiveState data) {
+  Widget _waitingPlayback(CameraLiveState data, BuildContext context) {
+    context.read<PlaybackBloc>().add(GetVideoPlaybacks(data.camera.id));
+
     return BlocBuilder<PlaybackBloc, PlaybackState>(
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,

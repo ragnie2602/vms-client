@@ -76,7 +76,7 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
     return GestureDetector(
       onTap: () {
-        context.goNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
+        context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
       },
       child: Stack(
         children: [

@@ -17,7 +17,18 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
     on<ChangePlayback>(_onChangePlayback);
   }
 
+  List<int> _belongCameraId = [];
+
   FutureOr<void> _onGetVideoPlaybacks(GetVideoPlaybacks event, Emitter<PlaybackState> emit) async {
+    if (state is PlaybackSuccess && _belongCameraId == event.id) {
+      return emit(
+        (state as PlaybackSuccess).copyWith(
+          setStartTimeInstantly: true,
+          currentPlayback: (state as PlaybackSuccess).playbacks.firstOrNull,
+        ),
+      );
+    }
+
     emit(PlaybackLoading());
 
     (await playbackRepository.getTimeShiftVideoCloudCamera(
@@ -29,6 +40,7 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
         emit(PlaybackFailure(failure.toString()));
       },
       (playbacks) {
+        _belongCameraId = event.id;
         emit(
           PlaybackSuccess(
             playbacks: playbacks,
