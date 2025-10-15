@@ -34,7 +34,7 @@ class AppConfig {
   static const SOCKET_CONNECTION_TIMEOUT = 60;
 
   /* Monitoring view */
-  static const double MONITOR_GRID_SPACING = 10.0;
+  static const double MONITOR_GRID_SPACING = 4.00;
   static const int? OVERRIDE_MONITOR_GRID_ROWS = null; // = null;
   static const int? OVERRIDE_MONITOR_GRID_COLUMNS = null; // = null;
 }
