@@ -34,7 +34,17 @@ class UserManagementBloc
     Emitter<UserManagementState> emit,
   ) async {
     emit(UserManagementLoadingState());
-    final groups = await userManagermentRepository.addUser();
+    final groups = await userManagermentRepository.addUser(
+      account: event.account,
+      password: event.password,
+      tel: event.tel,
+      email: event.email,
+      address: event.address,
+      desc: event.desc,
+      addCamDenied: event.addCamDenied,
+      isAmin: event.isAdmin,
+      changePassDenied: event.changePassDenied,
+    );
     groups.fold(
       (onFailure) => emit(GetListUserStateFail(groups.left.toString())),
       (onSuccess) {

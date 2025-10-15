@@ -27,12 +27,39 @@ class UserService {
     );
   }
 
-  Future<User> addUser() async {
+  Future<User> addUser({
+    required String account,
+    required String password,
+    String? tel,
+    String? email,
+    String? address,
+    String? desc,
+    String? fullName,
+    bool? isAmin,
+    bool? changePassDenied,
+    bool? addCamDenied,
+  }) async {
+    final addUserRequest = AddUser_Request();
+    if (account != null) {
+      addUserRequest.account = account;
+    }
+    if (password != null) {
+      addUserRequest.password = password;
+    }
+    addUserRequest.tel = tel ?? "";
+    addUserRequest.email = email ?? "";
+    addUserRequest.desc = desc ?? "";
+    addUserRequest.userName = fullName ?? "";
+    addUserRequest.address = address ?? "";
+    addUserRequest.isAdmin = isAmin ?? false;
+    addUserRequest.changePassDenied = changePassDenied ?? false;
+     addUserRequest.addCamDenied = addCamDenied ?? false;
+
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
           id: DateTime.now().microsecondsSinceEpoch,
-          data: AddUser_Request().writeToBuffer(),
+          data: addUserRequest.writeToBuffer(),
           type: PacketType.addUser,
         ),
       ),
