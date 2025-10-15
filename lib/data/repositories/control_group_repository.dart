@@ -124,4 +124,12 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
       return Right(camera.toDomain());
     });
   }
+
+  @override
+  Future<Either<Failure, List<int>>> deleteCamera({required List<int> cameraId}) async {
+    return await catchError<List<int>>(() async {
+      final deletedCameraId = await service.deleteCamera(cameraId: cameraId);
+      return Right(deletedCameraId);
+    });
+  }
 }

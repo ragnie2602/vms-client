@@ -48,4 +48,6 @@ abstract class IControlCameraRepository {
     CameraMap? location,
     List<String>? subStreamUrls,
   });
+
+  Future<Either<Failure, List<int>>> deleteCamera({required List<int> cameraId});
 }

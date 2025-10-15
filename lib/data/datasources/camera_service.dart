@@ -164,4 +164,14 @@ class CameraService {
       (buffer) => GetCameraInGroup_Reply.fromBuffer(buffer).cameras,
     );
   }
+
+  Future<List<int>> deleteCamera({required List<int> cameraId}) async {
+    final request = DeleteCamera_Request()..cameraId = cameraId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.deleteCamera)),
+    );
+
+    return responseBuffer.fold((failure) => throw failure, (buffer) => DeleteCamera_Reply.fromBuffer(buffer).cameraId);
+  }
 }

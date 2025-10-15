@@ -21,6 +21,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     on<AddCameraRTSPEvent>(_onAddCameraRTSP);
     on<AddCameraOnvifEvent>(_onAddCameraOnvif);
     on<UpdateCameraEvent>(_onUpdateCamera);
+    on<DeleteCameraEvent>(_onDeleteCamera);
   }
 
   // list camera
@@ -108,6 +109,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
   }
 
   FutureOr<void> _onUpdateCamera(UpdateCameraEvent event, Emitter<ControlCameraState> emit) async {
+    emit(const ControlCameraState());
     final res = await controlGroupRepository.updateCamera(
       cameraId: event.cameraId,
       name: event.name,
@@ -119,5 +121,14 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       subStreamUrls: event.subStreamUrls,
     );
     res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) => emit(ListCameraSuccessState(cameras: [onSuccess])));
+  }
+
+  FutureOr<void> _onDeleteCamera(DeleteCameraEvent event, Emitter<ControlCameraState> emit) async {
+    final res = await controlGroupRepository.deleteCamera(cameraId: event.cameraId);
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) {
+      // Xóa camera khỏi danh sách local
+      listCamera.removeWhere((camera) => camera.id == event.cameraId);
+      emit(ListCameraSuccessState(cameras: listCamera));
+    });
   }
 }

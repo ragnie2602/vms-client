@@ -100,3 +100,8 @@ class UpdateCameraEvent extends ControlCameraEvent {
     this.subStreamUrls,
   });
 }
+
+class DeleteCameraEvent extends ControlCameraEvent {
+  final List<int> cameraId;
+  const DeleteCameraEvent({required this.cameraId});
+}

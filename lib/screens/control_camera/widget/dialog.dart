@@ -4,11 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import '../../home/components/components_src.dart';
 import '../bloc/control_camera_bloc.dart';
+import '../bloc/control_camera_event.dart';
 
 enum CameraDialogMode { add, edit }
 
@@ -128,8 +130,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
   String _determineCameraMethod(CameraEntity camera) {
     // Logic để xác định method dựa trên camera data
-    // Có thể dựa vào type hoặc URL pattern
-    return 'RTSP'; // Default, có thể cải thiện logic này
+    return camera.type == CameraType.onvif ? 'ONVIF' : 'RTSP';
   }
 
   @override
@@ -158,7 +159,6 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
           setState(() => _isChecking = false);
           _rtsp.text = state.cameraOnvif.rtspUrl;
           _sub.text = state.cameraOnvif.subStreamUrl.isNotEmpty ? state.cameraOnvif.subStreamUrl.first : '';
-          setState(() => _method = 'ONVIF');
         } else if (state is CheckOnvifFailState) {
           setState(() => _isChecking = false);
           showAppMessageDialog(context, type: AppMessageType.error, message: state.message);
@@ -167,10 +167,22 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
           // Pop dialog khi thành công
           if (mounted) {
             Navigator.pop(context);
+            // Hiển thị dialog thành công và reload danh sách
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showAppMessageDialog(
+                context,
+                message: 'Thêm camera thành công!',
+                type: AppMessageType.success,
+                onOk: () {
+                  // Reload danh sách camera
+                  context.read<ControlCameraBloc>().add(const GetListCameraEvent());
+                },
+              );
+            });
           }
         } else if (state is AddCameraFailState) {
           setState(() => _isSubmitting = false);
-          // Hiển thị dialog lỗi khi thất bại, không pop dialog chính
+          // Hiển thị dialog lỗi trước khi pop
           showAppMessageDialog(context, type: AppMessageType.error, message: state.errorMsg);
         }
       },

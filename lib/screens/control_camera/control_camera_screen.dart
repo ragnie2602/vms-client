@@ -8,12 +8,10 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
-import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
-import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
   const ControlCameraScreen({super.key});
@@ -120,21 +118,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   void initState() {
     _onGetListCamera();
     super.initState();
-  }
-
-  void _handleAddCameraSuccess() {
-    showAppMessageDialog(
-      context,
-      message: 'Thêm camera thành công!',
-      type: AppMessageType.success,
-      onOk: () {
-        _onGetListCamera(); // Reload danh sách camera
-      },
-    );
-  }
-
-  void _handleAddCameraError(String errorMessage) {
-    showAppMessageDialog(context, message: 'Lỗi khi thêm camera: $errorMessage', type: AppMessageType.error);
   }
 
   @override
@@ -280,64 +263,52 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
               ],
             ),
           ),
-          BlocListener<ControlCameraBloc, ControlCameraState>(
-            listener: (context, state) {
-              if (state is AddCameraSuccessState) {
-                _handleAddCameraSuccess();
-              } else if (state is AddCameraFailState) {
-                _handleAddCameraError(state.errorMsg);
-              }
-            },
-            child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
-              builder: (context, state) => Container(
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TitleWidget(),
-                    Builder(
-                      builder: (context) {
-                        final cameras = state is ListCameraSuccessState ? state.cameras : context.read<ControlCameraBloc>().listCamera;
-                        if (cameras.isEmpty) return const SizedBox();
-                        return Flexible(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: cameras.length,
-                            itemBuilder: (context, index) => ItemCameraWidget(
-                              itemCamera: cameras[index],
-                              index: index + 1,
-                              onEdit: () {
-                                showAddCameraRtspDialog(
-                                  context,
-                                  mode: CameraDialogMode.edit,
-                                  cameraData: cameras[index],
-                                  onEdit: (payload) async {
-                                    _onUpdateCamera(
-                                      cameraId: cameras[index].id,
-                                      name: payload.name,
-                                      rtspUrl: payload.rtsp,
-                                      userName: payload.username,
-
-                                      password: payload.password,
-                                      subStreamUrls: payload.subStreamUrls,
-                                      xaddr: payload.xaddr,
-                                    );
-                                  },
-                                  onCheck: (xaddrs, userName, password, boxId) {
-                                    _onCheckOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId);
-                                  },
+          Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TitleWidget(),
+                Builder(
+                  builder: (context) {
+                    final cameras = context.read<ControlCameraBloc>().listCamera;
+                    if (cameras.isEmpty) return const SizedBox();
+                    return Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: cameras.length,
+                        itemBuilder: (context, index) => ItemCameraWidget(
+                          itemCamera: cameras[index],
+                          index: index + 1,
+                          onEdit: () {
+                            showAddCameraRtspDialog(
+                              context,
+                              mode: CameraDialogMode.edit,
+                              cameraData: cameras[index],
+                              onEdit: (payload) async {
+                                _onUpdateCamera(
+                                  cameraId: cameras[index].id,
+                                  name: payload.name,
+                                  rtspUrl: payload.rtsp,
+                                  userName: payload.username,
+                                  password: payload.password,
+                                  subStreamUrls: payload.subStreamUrls,
+                                  xaddr: payload.xaddr,
                                 );
                               },
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                              onCheck: (xaddrs, userName, password, boxId) {
+                                _onCheckOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ),
+              ],
             ),
           ),
         ],
