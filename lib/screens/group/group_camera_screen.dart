@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
+import 'package:vms_flutter_client/screens/group/widget/add_group_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/item_group_action.dart';
 
@@ -92,6 +93,9 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
                   searchController: searchGroupNameController,
                   onSearchGroup: ({keySearchGroup}) {
                     _onSearchGroup();
+                  },
+                  onClickAddGroup: () {
+                    showDialogAddGroup(context);
                   },
                   tree: newState.tree,
                   isShowGroupAll: true,

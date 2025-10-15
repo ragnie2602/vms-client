@@ -21,6 +21,7 @@ class TreeGroupWidget extends StatelessWidget {
     this.enableAddGroup,
     this.onSearchGroup,
     this.searchController,
+    this.onClickAddGroup,
   });
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controller;
   final TreeNode<DeviceGroup> tree;
@@ -29,6 +30,7 @@ class TreeGroupWidget extends StatelessWidget {
   final VoidCallback? onClickAllGroup;
   final bool? isShowNoGroup;
   final VoidCallback? onClickNoGroup;
+  final VoidCallback? onClickAddGroup;
   final bool? enableAddGroup;
   final Function({String? keySearchGroup})? onSearchGroup;
   final TextEditingController? searchController;
@@ -87,27 +89,33 @@ class TreeGroupWidget extends StatelessWidget {
                         },
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Tạo nhóm Camera',
-                              style: AppTypography.style(
-                                14,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.black,
+                      InkWell(
+                        onTap: () {
+                          onClickAddGroup?.call();
+                        },
+                        splashColor: Colors.transparent,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Tạo nhóm Camera',
+                                style: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: SvgPicture.asset(
-                              AppAssets.icExpand,
-                              width: 24,
-                              height: 24,
+                            Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: SvgPicture.asset(
+                                AppAssets.icExpand,
+                                width: 24,
+                                height: 24,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       Container(
                         margin: EdgeInsets.only(top: 8),
