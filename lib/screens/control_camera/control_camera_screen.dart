@@ -202,6 +202,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             const SizedBox(height: 10),
                             TextField(
                               controller: cameraNameController,
+                              onSubmitted: (_) {
+                                _onSearch();
+                              },
+                              onChanged: (_) {
+                                _onSearch();
+                              },
                               decoration: InputDecoration(
                                 prefixIcon: Container(
                                   padding: EdgeInsets.symmetric(
@@ -255,6 +261,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                               onChanged: (p0) {
                                 setState(() {
                                   cameraStatus = p0;
+                                  _onSearch();
                                 });
                               },
                               itemAsString: (p0) => p0.getName(),
