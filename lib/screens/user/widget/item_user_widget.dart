@@ -116,7 +116,7 @@ class ItemUserWidget extends StatelessWidget {
                 onTap: () {
                   print("delete user");
                   context.read<UserManagementBloc>().add(
-                    RemoveUserEvent(userId: ItemUser.id, uidStr: ""),
+                    DeleteUserEvent(userId: ItemUser.id, uidStr: ""),
                   );
                 },
                 child: Center(child: SvgPicture.asset(AppAssets.icAction)),

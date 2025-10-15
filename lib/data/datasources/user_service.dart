@@ -71,7 +71,7 @@ class UserService {
     );
   }
 
-  Future<List<int>> removeUser({
+  Future<List<int>> deleteUser({
     required List<int> userId,
     String? rtspUrl,
   }) async {

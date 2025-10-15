@@ -53,11 +53,11 @@ class UserManagementRepository extends BaseRepository
   }
 
   @override
-  Future<Either<Failure, List<int>>> removeUser({
+  Future<Either<Failure, List<int>>> deleteUser({
     required List<int> userId,
   }) async {
     return await catchError<List<int>>(() async {
-      final groups = await service.removeUser(userId: userId);
+      final groups = await service.deleteUser(userId: userId);
       return Right(groups.toList());
     });
   }

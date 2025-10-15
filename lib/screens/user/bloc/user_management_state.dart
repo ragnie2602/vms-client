@@ -58,9 +58,9 @@ class AddUserSuccess extends UserManagementState {
   List<Object?> get props => [user];
 }
 
-class RemoveUserSuccess extends UserManagementState {
+class DeleteUserSuccess extends UserManagementState {
   final List<int>? userId;
-  const RemoveUserSuccess({required this.userId});
+  const DeleteUserSuccess({required this.userId});
 
   @override
   StateType get type => StateType.success;
@@ -68,10 +68,10 @@ class RemoveUserSuccess extends UserManagementState {
   List<Object?> get props => [userId];
 }
 
-class RemoveUserFail extends UserManagementState {
+class DeleteUserFail extends UserManagementState {
   final String message;
 
-  const RemoveUserFail(this.message);
+  const DeleteUserFail(this.message);
 
   @override
   StateType get type => StateType.failure;
@@ -79,7 +79,12 @@ class RemoveUserFail extends UserManagementState {
   String get errorMsg => message;
 }
 
-class RemoveUserLoadingState extends UserManagementState {
+class DeleteUserLoadingState extends UserManagementState {
+  @override
+  StateType get type => StateType.loading;
+}
+
+class ReSetPassWordLoadingState extends UserManagementState {
   @override
   StateType get type => StateType.loading;
 }

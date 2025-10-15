@@ -13,7 +13,7 @@ class UserManagementBloc
     : super(const UserManagementState()) {
     on<GetListUserEvent>(_onGetListUser);
     on<AddUserEvent>(_onAddUser);
-    on<RemoveUserEvent>(_onRemoveUser);
+    on<DeleteUserEvent>(_onDeleteUser);
   }
 
   FutureOr<void> _onGetListUser(
@@ -54,18 +54,18 @@ class UserManagementBloc
     );
   }
 
-  FutureOr<void> _onRemoveUser(
-    RemoveUserEvent event,
+  FutureOr<void> _onDeleteUser(
+    DeleteUserEvent event,
     Emitter<UserManagementState> emit,
   ) async {
     emit(UserManagementLoadingState());
-    final groups = await userManagermentRepository.removeUser(
+    final groups = await userManagermentRepository.deleteUser(
       userId: event.userId,
     );
-    groups.fold((onFailure) => emit(RemoveUserFail(groups.left.toString())), (
+    groups.fold((onFailure) => emit(DeleteUserFail(groups.left.toString())), (
       onSuccess,
     ) {
-      emit(RemoveUserSuccess(userId: groups.right));
+      emit(DeleteUserSuccess(userId: groups.right));
     });
   }
 }

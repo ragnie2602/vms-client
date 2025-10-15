@@ -41,10 +41,10 @@ class AddUserEvent extends UserManagementEvent {
   ];
 }
 
-class RemoveUserEvent extends UserManagementEvent {
+class DeleteUserEvent extends UserManagementEvent {
   final List<int> userId;
   final String uidStr;
-  const RemoveUserEvent({required this.userId, required this.uidStr});
+  const DeleteUserEvent({required this.userId, required this.uidStr});
   @override
   List<Object> get props => [userId, uidStr];
 }
