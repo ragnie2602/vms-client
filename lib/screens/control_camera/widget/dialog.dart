@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
+import '../../home/components/components_src.dart';
 import '../bloc/control_camera_bloc.dart';
 
 enum CameraDialogMode { add, edit }
@@ -401,7 +402,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         const SizedBox(height: 6),
         Row(
           children: [
-            _CustomRadioButton(
+            CustomRadioButton(
               title: 'RTSP',
               value: 'RTSP',
               groupValue: _method,
@@ -411,7 +412,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
               },
             ),
             const SizedBox(width: 24),
-            _CustomRadioButton(
+            CustomRadioButton(
               title: 'ONVIF',
               value: 'ONVIF',
               groupValue: _method,
@@ -424,200 +425,5 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         ),
       ],
     );
-  }
-}
-
-/// Custom Radio Button Widget
-class _CustomRadioButton<T> extends StatelessWidget {
-  const _CustomRadioButton({required this.title, required this.value, required this.groupValue, required this.onChanged});
-
-  final String title;
-  final T value;
-  final T? groupValue;
-  final ValueChanged<T?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final isSelected = value == groupValue;
-
-    return GestureDetector(
-      onTap: () => onChanged(value),
-      child: Row(
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isSelected ? AppColors.black : Colors.transparent,
-              border: Border.all(color: AppColors.black, width: 1.5),
-            ),
-            child: Icon(Icons.check_rounded, size: 14, color: isSelected ? Colors.white : Colors.transparent),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF000000)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// --- Reusable UI atoms ----------------------------------------------------
-class AppField extends StatelessWidget {
-  const AppField({
-    super.key,
-    required this.controller,
-    this.hintText,
-    this.obscureText = false,
-    this.suffix,
-    this.keyboardType,
-    this.maxLines = 1,
-    this.maxLength,
-    this.validator,
-    this.label,
-    this.requiredField = false,
-    this.trailingButton,
-  });
-
-  final TextEditingController controller;
-  final String? hintText;
-  final bool obscureText;
-  final Widget? suffix;
-  final TextInputType? keyboardType;
-  final int maxLines;
-  final int? maxLength;
-  final String? Function(String?)? validator;
-  final String? label;
-  final bool requiredField;
-  final Widget? trailingButton;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final labelWidget = label == null
-        ? null
-        : RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF000000)),
-              children: requiredField
-                  ? const [
-                      TextSpan(
-                        text: ' *',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ]
-                  : const [],
-            ),
-          );
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: ValueListenableBuilder<TextEditingValue>(
-        valueListenable: controller,
-        builder: (context, value, _) {
-          final List<Widget> suffixChildren = [];
-          if (suffix != null) suffixChildren.add(suffix!);
-          if (maxLength != null) {
-            suffixChildren.add(
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text('${value.text.length}/${maxLength}', style: theme.textTheme.bodySmall),
-              ),
-            );
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (labelWidget != null) ...[Padding(padding: const EdgeInsets.only(bottom: 6), child: labelWidget)],
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: controller,
-                      obscureText: obscureText,
-                      keyboardType: keyboardType,
-                      maxLines: maxLines,
-                      maxLength: maxLength,
-                      validator: validator,
-                      decoration: InputDecoration(
-                        hintText: hintText,
-                        hintStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF92929D)),
-                        // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
-                        counterText: '',
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(1),
-                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(1),
-                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(1),
-                          borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
-                        ),
-                        suffixIcon: suffixChildren.isEmpty ? null : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
-                      ),
-                    ),
-                  ),
-                  if (trailingButton != null) ...[const SizedBox(width: 8), trailingButton!],
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class AppButton extends StatelessWidget {
-  const AppButton._(this.label, this.onPressed, this.filled, {super.key, this.child});
-  final String label;
-  final VoidCallback? onPressed;
-  final bool filled;
-  final Widget? child;
-
-  factory AppButton.filled({Key? key, required String label, VoidCallback? onPressed, Widget? child}) =>
-      AppButton._(label, onPressed, true, key: key, child: child);
-  factory AppButton.outline({Key? key, required String label, VoidCallback? onPressed}) => AppButton._(label, onPressed, false, key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final buttonChild = child ?? Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500));
-
-    if (filled) {
-      return ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.blue005AA9,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          minimumSize: const Size(150, 48),
-          elevation: 0,
-        ),
-        child: buttonChild,
-      );
-    } else {
-      return OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.black,
-          side: const BorderSide(color: AppColors.greyC3D3D9, width: 1),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          minimumSize: const Size(150, 48),
-          backgroundColor: Colors.white,
-        ),
-        child: buttonChild,
-      );
-    }
   }
 }
