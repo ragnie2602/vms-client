@@ -8,13 +8,12 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 
 class ItemCameraWidget extends StatelessWidget {
-  const ItemCameraWidget({
-    super.key,
-    required this.itemCamera,
-    required this.index,
-  });
+  const ItemCameraWidget({super.key, required this.itemCamera, required this.index, this.onAdd, this.onEdit, this.onDelete});
   final CameraEntity itemCamera;
   final int index;
+  final VoidCallback? onAdd;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +26,7 @@ class ItemCameraWidget extends StatelessWidget {
             child: Center(
               child: Text(
                 '$index',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.black,
-                ),
+                style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
               ),
             ),
           ),
@@ -41,11 +36,7 @@ class ItemCameraWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 itemCamera.name,
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.black4A4A4A,
-                ),
+                style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black4A4A4A),
               ),
             ),
           ),
@@ -55,11 +46,7 @@ class ItemCameraWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 itemCamera.iPUrlStream,
-                style: AppTypography.style(
-                  13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.blue005BAA,
-                ),
+                style: AppTypography.style(13, fontWeight: FontWeight.w500, color: AppColors.blue005BAA),
               ),
             ),
           ),
@@ -70,11 +57,7 @@ class ItemCameraWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 TimeUtil.convertTime(itemCamera.timeAdded),
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.black171725,
-                ),
+                style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black171725),
               ),
             ),
           ),
@@ -83,14 +66,79 @@ class ItemCameraWidget extends StatelessWidget {
             flex: 130,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: CameraStatusWidget(cameraStatus: itemCamera.status),
+              child: Row(
+                children: [
+                  CameraStatusWidget(cameraStatus: itemCamera.status),
+                ],
+              ),
             ),
           ),
           Expanded(
             flex: 190,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Center(child: SvgPicture.asset(AppAssets.icAction)),
+            child: Center(
+              child: PopupMenuButton<String>(
+                icon: SvgPicture.asset(AppAssets.icAction),
+                padding: EdgeInsets.zero,
+                splashRadius: 20,
+                onSelected: (String value) {
+                  switch (value) {
+                    case 'add':
+                      onAdd?.call();
+                      break;
+                    case 'edit':
+                      onEdit?.call();
+                      break;
+                    case 'delete':
+                      onDelete?.call();
+                      break;
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'add',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add, size: 16, color: AppColors.black171725),
+                        SizedBox(width: 8),
+                        Text(
+                          'Thêm',
+                          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black171725),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+                  PopupMenuItem<String>(
+                    value: 'edit',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(AppAssets.icEdit),
+                        SizedBox(width: 8),
+                        Text(
+                          'Sửa',
+                          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black171725),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(AppAssets.icDelete),
+                        SizedBox(width: 8),
+                        Text('Xóa', style: AppTypography.style(14, fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                ],
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 8,
+              ),
             ),
           ),
         ],
@@ -106,10 +154,7 @@ class CameraStatusWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-      decoration: BoxDecoration(
-        color: cameraStatus.bgColor,
-        borderRadius: BorderRadius.circular(5),
-      ),
+      decoration: BoxDecoration(color: cameraStatus.bgColor, borderRadius: BorderRadius.circular(5)),
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -118,19 +163,11 @@ class CameraStatusWidget extends StatelessWidget {
               width: 6,
               height: 6,
               margin: EdgeInsets.only(right: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                color: cameraStatus.contentColor,
-              ),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: cameraStatus.contentColor),
             ),
             Text(
               cameraStatus.getName(),
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.2,
-                color: cameraStatus.contentColor,
-              ),
+              style: AppTypography.style(14, fontWeight: FontWeight.w500, letterSpacing: 0.2, color: cameraStatus.contentColor),
             ),
           ],
         ),

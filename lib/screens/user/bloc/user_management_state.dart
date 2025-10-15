@@ -1,5 +1,6 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/user/user.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
 class UserManagementState extends BaseState {
   const UserManagementState();
@@ -11,7 +12,7 @@ class UserManagementLoadingState extends UserManagementState {
 }
 
 class GetListUserState extends UserManagementState {
-  final List<User>? users;
+  final List<UserEntity>? users;
   const GetListUserState({required this.users});
 
   @override
@@ -48,7 +49,7 @@ class AddUserLoadingState extends UserManagementState {
 }
 
 class AddUserSuccess extends UserManagementState {
-  final User? user;
+  final UserEntity? user;
   const AddUserSuccess({required this.user});
 
   @override
