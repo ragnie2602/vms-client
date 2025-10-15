@@ -154,7 +154,7 @@ class AppRouter {
             path: Routes.addGroupCamera.path,
             name: Routes.addGroupCamera.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: GroupCameraScreen());
+              return fadeTransition(context: context, state: state, child: ControlCameraScreen());
             },
           ),
           GoRoute(

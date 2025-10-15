@@ -36,3 +36,10 @@ class UpdateGroupCameraEvent extends GroupCameraEvent {
   @override
   List<Object?> get props => [groupId, groupName, parentGroupId];
 }
+
+class SearchGroupEvent extends GroupCameraEvent {
+  final String keyword;
+  const SearchGroupEvent({required this.keyword});
+  @override
+  List<Object?> get props => [keyword];
+}

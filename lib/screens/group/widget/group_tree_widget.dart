@@ -18,6 +18,9 @@ class TreeGroupWidget extends StatelessWidget {
     this.onClickAllGroup,
     this.isShowNoGroup,
     this.onClickNoGroup,
+    this.enableAddGroup,
+    this.onSearchGroup,
+    this.searchController,
   });
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controller;
   final TreeNode<DeviceGroup> tree;
@@ -26,6 +29,9 @@ class TreeGroupWidget extends StatelessWidget {
   final VoidCallback? onClickAllGroup;
   final bool? isShowNoGroup;
   final VoidCallback? onClickNoGroup;
+  final bool? enableAddGroup;
+  final Function({String? keySearchGroup})? onSearchGroup;
+  final TextEditingController? searchController;
   @override
   Widget build(BuildContext context) {
     //  thêm group tất cả
@@ -34,6 +40,86 @@ class TreeGroupWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        enableAddGroup == true
+            ? Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          fillColor: AppColors.greyE2E8F0,
+                          prefixIcon: Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 12,
+                            ),
+                            child: SvgPicture.asset(AppAssets.icSearch),
+                          ),
+                          hintText: 'Nhập tên nhóm',
+                          hintStyle: TextStyle(
+                            color: AppColors.grey64748B,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.greyE2E8F0,
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.greyE2E8F0,
+                              width: 1,
+                            ),
+                          ),
+                          border: UnderlineInputBorder(),
+                        ),
+                        onChanged: (value) {
+                          onSearchGroup?.call(keySearchGroup: value);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Tạo nhóm Camera',
+                              style: AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: SvgPicture.asset(
+                              AppAssets.icExpand,
+                              width: 24,
+                              height: 24,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(top: 8),
+                        width: double.infinity,
+                        height: 1,
+                        color: AppColors.greyE2E8F0,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : const SizedBox(),
         LayoutBuilder(
           builder: (context, constraints) => Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),

@@ -13,6 +13,7 @@ import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
+import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
@@ -27,15 +28,34 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   CameraStatus? cameraStatus;
 
   void _onGetListCamera({List<int>? cameraId, int? status, int? ivaType}) {
-    context.read<ControlCameraBloc>().add(GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType));
+    context.read<ControlCameraBloc>().add(
+      GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType),
+    );
   }
 
-  void _onCheckOnvif({required String xaddrs, required String userName, required String password, List<int>? boxId}) {
-    context.read<ControlCameraBloc>().add(CheckOnvifEvent(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId));
+  void _onCheckOnvif({
+    required String xaddrs,
+    required String userName,
+    required String password,
+    List<int>? boxId,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      CheckOnvifEvent(
+        xaddrs: xaddrs,
+        userName: userName,
+        password: password,
+        boxId: boxId,
+      ),
+    );
   }
 
   void _onSearch() {
-    context.read<ControlCameraBloc>().add(FilterCameraEvent(cameraName: cameraNameController.text, cameraStatus: cameraStatus));
+    context.read<ControlCameraBloc>().add(
+      FilterCameraEvent(
+        cameraName: cameraNameController.text,
+        cameraStatus: cameraStatus,
+      ),
+    );
   }
 
   void _onAddCameraRTSP({
@@ -134,127 +154,194 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   }
 
   void _handleAddCameraError(String errorMessage) {
-    showAppMessageDialog(context, message: 'Lỗi khi thêm camera: $errorMessage', type: AppMessageType.error);
+    showAppMessageDialog(
+      context,
+      message: 'Lỗi khi thêm camera: $errorMessage',
+      type: AppMessageType.error,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
-            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            margin: EdgeInsets.only(bottom: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(flex: 2, child: GroupCameraScreen()),
+        Flexible(
+          flex: 7,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Flexible(
-                  flex: 2,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.white,
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  margin: EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Tên nhóm camera', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: cameraNameController,
-                        decoration: InputDecoration(
-                          prefixIcon: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                            child: SvgPicture.asset(AppAssets.icSearch),
-                          ),
-                          hintText: 'Nhập tên camera',
-                          hintStyle: TextStyle(color: AppColors.grey64748B, fontSize: 14, fontWeight: FontWeight.w400),
-                          enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1)),
-                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1)),
-                          border: UnderlineInputBorder(),
+                      Flexible(
+                        flex: 2,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tên nhóm camera',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextField(
+                              controller: cameraNameController,
+                              decoration: InputDecoration(
+                                prefixIcon: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 12,
+                                  ),
+                                  child: SvgPicture.asset(AppAssets.icSearch),
+                                ),
+                                hintText: 'Nhập tên camera',
+                                hintStyle: TextStyle(
+                                  color: AppColors.grey64748B,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AppColors.greyE2E8F0,
+                                    width: 1,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: AppColors.greyE2E8F0,
+                                    width: 1,
+                                  ),
+                                ),
+                                border: UnderlineInputBorder(),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 15),
-                Flexible(
-                  flex: 1,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Trạng thái', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400)),
-                      const SizedBox(height: 10),
-                      CustomCommonDropdown<CameraStatus>(
-                        items: CameraStatus.values,
-                        value: cameraStatus,
-                        onChanged: (p0) {
-                          setState(() {
-                            cameraStatus = p0;
-                          });
+                      const SizedBox(width: 15),
+                      Flexible(
+                        flex: 1,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Trạng thái',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            CustomCommonDropdown<CameraStatus>(
+                              items: CameraStatus.values,
+                              value: cameraStatus,
+                              onChanged: (p0) {
+                                setState(() {
+                                  cameraStatus = p0;
+                                });
+                              },
+                              itemAsString: (p0) => p0.getName(),
+                              contentTextStyle: AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.grey64748B,
+                              ),
+                              hint: Text(
+                                'Tất cả',
+                                style: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.grey64748B,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          _onSearch();
                         },
-                        itemAsString: (p0) => p0.getName(),
-                        contentTextStyle: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.grey64748B),
-                        hint: Text(
-                          'Tất cả',
-                          style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.grey64748B),
+                        splashColor: Colors.transparent,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            color: AppColors.secondary,
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 18,
+                          ),
+                          margin: EdgeInsets.only(left: 15),
+                          child: Center(
+                            child: SvgPicture.asset(
+                              AppAssets.icSearch,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    _onSearch();
-                  },
-                  splashColor: Colors.transparent,
-                  child: Container(
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: AppColors.secondary),
-                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 18),
-                    margin: EdgeInsets.only(left: 15),
-                    child: Center(child: SvgPicture.asset(AppAssets.icSearch, color: Colors.white)),
-                  ),
-                ),
-                const SizedBox(width: 25),
-                InkWell(
-                  onTap: () {
-                    showAddCameraRtspDialog(
-                      context,
-                      onSubmit: (payload) async {
-                        if (payload.method == 'RTSP') {
-                          _onAddCameraRTSP(
-                            name: payload.name,
-                            username: payload.username,
-                            password: payload.password,
-                            rtspUrl: payload.rtsp,
-                            location: payload.location,
-                            boxId: const [],
-                            groupId: const [],
-                            subStreamUrls: payload.subStreamUrls,
+                      const SizedBox(width: 25),
+                      InkWell(
+                        onTap: () {
+                          showAddCameraRtspDialog(
+                            context,
+                            onSubmit: (payload) async {
+                              if (payload.method == 'RTSP') {
+                                _onAddCameraRTSP(
+                                  name: payload.name,
+                                  username: payload.username,
+                                  password: payload.password,
+                                  rtspUrl: payload.rtsp,
+                                  location: payload.location,
+                                  boxId: const [],
+                                  groupId: const [],
+                                  subStreamUrls: payload.subStreamUrls,
+                                );
+                              } else {
+                                _onAddCameraOnvif(
+                                  name: payload.name,
+                                  username: payload.username,
+                                  password: payload.password,
+                                  onvifDeviceIp: payload.onifDeviceIp,
+                                  rtspUrl: payload.rtsp,
+                                  serialNumber: '',
+                                  location: payload.location,
+                                  boxId: const [],
+                                  groupId: const [],
+                                  urn: '',
+                                  subStreamUrls: payload.subStreamUrls,
+                                );
+                              }
+                            },
+                            onCheck: (xaddrs, userName, password, boxId) {
+                              _onCheckOnvif(
+                                xaddrs: xaddrs,
+                                userName: userName,
+                                password: password,
+                                boxId: boxId,
+                              );
+                            },
                           );
-                        } else {
-                          _onAddCameraOnvif(
-                            name: payload.name,
-                            username: payload.username,
-                            password: payload.password,
-                            onvifDeviceIp: payload.onifDeviceIp,
-                            rtspUrl: payload.rtsp,
-                            serialNumber: '',
-                            location: payload.location,
-                            boxId: const [],
-                            groupId: const [],
-                            urn: '',
-                            subStreamUrls: payload.subStreamUrls,
-                          );
-                        }
-                      },
-                      onCheck: (xaddrs, userName, password, boxId) {
-                        _onCheckOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId);
-                      },
-                    );
-                  },
-                  splashColor: Colors.transparent,
+                        },
+                        splashColor: Colors.transparent,
 
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
@@ -342,6 +429,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           ),
         ],
       ),
-    );
+    ))]);
   }
 }

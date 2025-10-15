@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_group_repository.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
@@ -15,7 +16,10 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     on<AddGroupCameraEvent>(_onAddGroupCamera);
     on<RemoveGroupCameraEvent>(_onRemoveGroupCamera);
     on<UpdateGroupCameraEvent>(_onUpdateGroupCamera);
+    // on<SearchGroupEvent>()
   }
+   // list group origin
+  List<DeviceGroup> listGroup = [];
 
   FutureOr<void> _onGetAllGroupCamera(
     GetAllGroupCameraEvent event,
@@ -24,12 +28,17 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     emit(GroupCameraLoadingState());
     final groups = await groupCameraRepository.getAllGroup();
     groups.fold(
-      (onFailure) => emit(GetAllGroupCameraFailState(groups.left.toString())),
+      (onFailure) {
+        listGroup =[];
+         emit(GetAllGroupCameraFailState(groups.left.toString()));
+      },
       (onSuccess) {
+        listGroup = onSuccess;
         emit(GetAllGroupCameraSuccessState(groups: groups.right));
       },
     );
   }
+  // void _onSearch
 
   FutureOr<void> _onAddGroupCamera(
     AddGroupCameraEvent event,
