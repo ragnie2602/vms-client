@@ -19,6 +19,7 @@ class GetAllGroupCameraSuccessState extends GroupCameraState {
     for (var group in groups ?? <DeviceGroup>[]) {
       tree.add(group.toTreeNode());
     }
+    print('log data');
   }
 
   @override

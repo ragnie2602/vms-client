@@ -4,21 +4,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_group_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/group/search_group_input.dart';
+import 'package:vms_flutter_client/domain/usecases/group/search_group_output.dart';
+import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 
 class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
   final IGroupRepository groupCameraRepository;
-
-  GroupCameraBloc({required this.groupCameraRepository})
-    : super(const GroupCameraState()) {
+  final SearchGroupUseCase searchGroupUseCase;
+  GroupCameraBloc({
+    required this.groupCameraRepository,
+    required this.searchGroupUseCase,
+  }) : super(const GroupCameraState()) {
     on<GetAllGroupCameraEvent>(_onGetAllGroupCamera);
     on<AddGroupCameraEvent>(_onAddGroupCamera);
     on<RemoveGroupCameraEvent>(_onRemoveGroupCamera);
     on<UpdateGroupCameraEvent>(_onUpdateGroupCamera);
-    // on<SearchGroupEvent>()
+    on<SearchGroupEvent>(_onSearch);
   }
-   // list group origin
+  // list group origin
   List<DeviceGroup> listGroup = [];
 
   FutureOr<void> _onGetAllGroupCamera(
@@ -29,8 +34,8 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     final groups = await groupCameraRepository.getAllGroup();
     groups.fold(
       (onFailure) {
-        listGroup =[];
-         emit(GetAllGroupCameraFailState(groups.left.toString()));
+        listGroup = [];
+        emit(GetAllGroupCameraFailState(groups.left.toString()));
       },
       (onSuccess) {
         listGroup = onSuccess;
@@ -38,7 +43,15 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       },
     );
   }
-  // void _onSearch
+
+  void _onSearch(SearchGroupEvent event, Emitter<GroupCameraState> emit) {
+    final SearchGroupInput input = SearchGroupInput(
+      nameGroup: event.keyword,
+      listGroupOrigin: listGroup,
+    );
+    final SearchGroupOutput output = searchGroupUseCase.execute(input);
+    emit(GetAllGroupCameraSuccessState(groups: output.listGroupResult ?? []));
+  }
 
   FutureOr<void> _onAddGroupCamera(
     AddGroupCameraEvent event,

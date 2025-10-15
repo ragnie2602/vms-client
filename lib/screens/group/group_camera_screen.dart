@@ -37,7 +37,11 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
     context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
   }
 
-  void _onSearchGroup() {}
+  void _onSearchGroup() {
+    context.read<GroupCameraBloc>().add(
+      SearchGroupEvent(keyword: searchGroupNameController.text.trim()),
+    );
+  }
 
   void _onAddGroupCamera() {
     // chưa lấy được parent group id => bổ sung sau
@@ -68,55 +72,51 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
           return Center(child: Text(newState.errorMsg));
         } else if (newState.type.isSuccess &&
             newState is GetAllGroupCameraSuccessState) {
-          if ((newState.groups ?? []).isEmpty) {
-            return Center(child: Text('Chưa có dữ liệu.'));
-          } else {
-            return Container(
-              margin: EdgeInsets.only(left: 1),
-              padding: EdgeInsets.symmetric(vertical: 20),
-              decoration: BoxDecoration(color: Colors.white),
-              child: Column(
-                children: [
-                  TreeGroupWidget(
-                    enableAddGroup: true,
-                    controller: controllerTree,
-                    searchController: searchGroupNameController,
-                    onSearchGroup: ({keySearchGroup}) {
-                      _onSearchGroup();
+          return Container(
+            margin: EdgeInsets.only(left: 1),
+            padding: EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(color: Colors.white),
+            child: Column(
+              children: [
+                TreeGroupWidget(
+                  enableAddGroup: true,
+                  controller: controllerTree,
+                  searchController: searchGroupNameController,
+                  onSearchGroup: ({keySearchGroup}) {
+                    _onSearchGroup();
+                  },
+                  tree: newState.tree,
+                  isShowGroupAll: true,
+                  isShowNoGroup: true,
+                  action: PopupMenuButton<ItemGroupAction>(
+                    padding: EdgeInsets.zero,
+                    splashRadius: 20,
+                    menuPadding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadiusGeometry.circular(8),
+                    ),
+                    elevation: 8,
+                    onSelected: (value) {},
+                    itemBuilder: (BuildContext context) {
+                      final listAction = ItemGroupAction.values;
+                      return listAction
+                          .map(
+                            (e) => PopupMenuItem<ItemGroupAction>(
+                              value: e,
+                              child: ItemActionWidget(item: e),
+                            ),
+                          )
+                          .toList();
                     },
-                    tree: newState.tree,
-                    isShowGroupAll: true,
-                    isShowNoGroup: true,
-                    action: PopupMenuButton<ItemGroupAction>(
-                      padding: EdgeInsets.zero,
-                      splashRadius: 20,
-                      menuPadding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(8),
-                      ),
-                      elevation: 8,
-                      onSelected: (value) {},
-                      itemBuilder: (BuildContext context) {
-                        final listAction = ItemGroupAction.values;
-                        return listAction
-                            .map(
-                              (e) => PopupMenuItem<ItemGroupAction>(
-                                value: e,
-                                child: ItemActionWidget(item: e),
-                              ),
-                            )
-                            .toList();
-                      },
-                      child: SvgPicture.asset(
-                        AppAssets.icAction,
-                        color: Colors.black,
-                      ),
+                    child: SvgPicture.asset(
+                      AppAssets.icAction,
+                      color: Colors.black,
                     ),
                   ),
-                ],
-              ),
-            );
-          }
+                ),
+              ],
+            ),
+          );
         }
         return SizedBox();
       },

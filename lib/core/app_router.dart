@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
@@ -85,7 +86,7 @@ class AppRouter {
             ),
             BlocProvider(
               create: (context) =>
-                  GroupCameraBloc(groupCameraRepository: context.read())
+                  GroupCameraBloc(groupCameraRepository: context.read(), searchGroupUseCase: context.read<SearchGroupUseCase>())
                     ..add(GetAllGroupCameraEvent()),
               lazy: false,
             ),

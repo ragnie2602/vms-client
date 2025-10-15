@@ -1,8 +1,16 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:vms_flutter_client/data/datasources/custom_live_view_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
+import 'package:vms_flutter_client/data/datasources/user_service.dart';
+import 'package:vms_flutter_client/data/repositories/control_group_repository.dart';
+import 'package:vms_flutter_client/data/repositories/custom_live_view_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/data/repositories/user_management_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_custom_live_view_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 
 class DependencyInjection {
@@ -36,6 +44,7 @@ class DependencyInjection {
     Provider<IGroupRepository>(
       create: (context) => GroupRepository(context.read()),
     ),
+     Provider<SearchGroupUseCase>(create: (context) => SearchGroupUseCase()),
     Provider<IPlaybackRepository>(
       create: (context) => PlaybackRepository(context.read()),
     ),
