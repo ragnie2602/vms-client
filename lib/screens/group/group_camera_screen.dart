@@ -64,7 +64,15 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GroupCameraBloc, GroupCameraState>(
+    return BlocConsumer<GroupCameraBloc, GroupCameraState>(
+      listener: (context, state) {
+        // update lại tree view
+        if (state is GetAllGroupCameraSuccessState) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            controllerTree?.expandAllChildren(state.tree);
+          });
+        }
+      },
       builder: (context, newState) {
         if (newState is GroupCameraLoadingState) {
           return Center(child: CircularProgressIndicator());
