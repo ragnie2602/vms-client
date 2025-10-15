@@ -120,15 +120,16 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       location: event.location,
       subStreamUrls: event.subStreamUrls,
     );
-    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) => emit(ListCameraSuccessState(cameras: [onSuccess])));
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) => emit(UpdateCameraSuccessState(cameraEntity: onSuccess)));
   }
 
   FutureOr<void> _onDeleteCamera(DeleteCameraEvent event, Emitter<ControlCameraState> emit) async {
     final res = await controlGroupRepository.deleteCamera(cameraId: event.cameraId);
     res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) {
       // Xóa camera khỏi danh sách local
-      listCamera.removeWhere((camera) => camera.id == event.cameraId);
-      emit(ListCameraSuccessState(cameras: listCamera));
+      listCamera = listCamera.where((camera) => camera.id != event.cameraId).toList();
+      // Emit delete success state để hiển thị popup thông báo
+      emit(DeleteCameraSuccessState(deletedCameraId: event.cameraId));
     });
   }
 }
