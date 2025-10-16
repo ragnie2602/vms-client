@@ -7,12 +7,11 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/group_node.dart';
 
-// ignore: must_be_immutable
-class TreeGroupWidget extends StatelessWidget {
-  TreeGroupWidget({
+class TreeGroupWidget extends StatefulWidget {
+  const TreeGroupWidget({
     super.key,
     required this.tree,
-    required this.controller,
+    this.controller,
     this.action,
     this.isShowGroupAll,
     this.onClickAllGroup,
@@ -23,7 +22,7 @@ class TreeGroupWidget extends StatelessWidget {
     this.searchController,
     this.onClickAddGroup,
   });
-  TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controller;
+  final TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controller;
   final TreeNode<DeviceGroup> tree;
   final Widget? action;
   final bool? isShowGroupAll;
@@ -34,6 +33,24 @@ class TreeGroupWidget extends StatelessWidget {
   final bool? enableAddGroup;
   final Function({String? keySearchGroup})? onSearchGroup;
   final TextEditingController? searchController;
+
+  @override
+  State<TreeGroupWidget> createState() => _TreeGroupWidgetState();
+}
+
+class _TreeGroupWidgetState extends State<TreeGroupWidget> {
+  TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? _treeController;
+
+  @override
+  void didUpdateWidget(TreeGroupWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // if (oldWidget.tree.hashCode != widget.tree.hashCode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _treeController?.expandAllChildren(widget.tree);
+      });
+    // }
+  }
+
   @override
   Widget build(BuildContext context) {
     //  thêm group tất cả
@@ -42,7 +59,7 @@ class TreeGroupWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        enableAddGroup == true
+        widget.enableAddGroup == true
             ? Flexible(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -54,7 +71,7 @@ class TreeGroupWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextField(
-                        controller: searchController,
+                        controller: widget.searchController,
                         decoration: InputDecoration(
                           fillColor: AppColors.greyE2E8F0,
                           prefixIcon: Container(
@@ -85,13 +102,13 @@ class TreeGroupWidget extends StatelessWidget {
                           border: UnderlineInputBorder(),
                         ),
                         onChanged: (value) {
-                          onSearchGroup?.call(keySearchGroup: value);
+                          widget.onSearchGroup?.call(keySearchGroup: value);
                         },
                       ),
                       const SizedBox(height: 12),
                       InkWell(
                         onTap: () {
-                          onClickAddGroup?.call();
+                          widget.onClickAddGroup?.call();
                         },
                         splashColor: Colors.transparent,
                         child: Row(
@@ -133,10 +150,10 @@ class TreeGroupWidget extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                isShowGroupAll == true
+                widget.isShowGroupAll == true
                     ? InkWell(
                         onTap: () {
-                          onClickAllGroup?.call();
+                          widget.onClickAllGroup?.call();
                         },
                         splashColor: Colors.transparent,
                         child: Container(
@@ -169,10 +186,10 @@ class TreeGroupWidget extends StatelessWidget {
                         ),
                       )
                     : const SizedBox(),
-                isShowNoGroup == true
+                widget.isShowNoGroup == true
                     ? InkWell(
                         onTap: () {
-                          onClickNoGroup?.call();
+                          widget.onClickNoGroup?.call();
                         },
                         splashColor: Colors.transparent,
                         child: Container(
@@ -211,23 +228,26 @@ class TreeGroupWidget extends StatelessWidget {
         ),
         Flexible(
           child: TreeView.simple(
+            key: ValueKey(widget.tree.hashCode),
             shrinkWrap: true,
             padding: EdgeInsets.symmetric(horizontal: 24),
             showRootNode: false,
-            tree: tree,
+            tree: widget.tree,
             expansionBehavior: ExpansionBehavior.scrollToLastChild,
             indentation: const Indentation(),
             expansionIndicatorBuilder: (context, node) =>
                 NoExpansionIndicator(tree: node),
             builder: (context, node) => GroupNode(
               group: node.data!,
-              onToggleExpansion: () => controller?.toggleExpansion(node),
+              onToggleExpansion: () => _treeController?.toggleExpansion(node),
               isExpand: node.isExpanded,
-              actions: action,
+              actions: widget.action,
             ),
             onTreeReady: (treeViewController) {
-              controller = treeViewController;
-              treeViewController.expandAllChildren(treeViewController.tree);
+              _treeController = treeViewController;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                treeViewController.expandAllChildren(widget.tree);
+              });
             },
           ),
         ),
