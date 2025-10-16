@@ -4,8 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
-import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
-import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
@@ -14,7 +12,16 @@ import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/item_group_action.dart';
 
 class GroupCameraView extends StatefulWidget {
-  const GroupCameraView({super.key});
+  const GroupCameraView({
+    super.key,
+    required this.onGetCamerasInGroup,
+    required this.onGetAllGroupCamera,
+    required this.onGetNoGroupCamera,
+  });
+
+  final Function(BuildContext, List<int>)? onGetCamerasInGroup;
+  final Function(BuildContext)? onGetAllGroupCamera;
+  final Function(BuildContext)? onGetNoGroupCamera;
 
   @override
   State<GroupCameraView> createState() => _GroupCameraViewState();
@@ -88,22 +95,28 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             child: Column(
               children: [
                 TreeGroupWidget(
+                  onClickGroupNode: (c, groupId) {
+                    setState(() {
+                      isClickAllGroup = false;
+                      isClickNoGroup = false;
+                    });
+                    // rest api lấy camera theo group
+                    widget.onGetCamerasInGroup?.call(c, groupId);
+                  },
                   onClickAllGroup: () {
                     setState(() {
                       isClickAllGroup = true;
                       isClickNoGroup = false;
                     });
-                    context.read<ControlCameraBloc>().add(GetListCameraEvent());
+                    widget.onGetAllGroupCamera?.call(context);
                   },
-
                   onClickNoGroup: () {
                     setState(() {
                       isClickAllGroup = false;
                       isClickNoGroup = true;
                     });
-                    context.read<ControlCameraBloc>().add(
-                      GetListCameraNoGroupEvent(),
-                    );
+                    widget.onGetNoGroupCamera?.call(context);
+                
                   },
                   enableAddGroup: true,
                   controller: controllerTree,

@@ -29,9 +29,10 @@ class ControlCameraBloc
   }) : super(const ControlCameraState()) {
     on<ValidateCameraEvent>(_onValidateCamera);
     on<GetListCameraEvent>(_onGetListCamera);
+    on<GetListCameraNoGroupEvent>(_onGetListCameraNoGroup);
+    on<GetListCameraInGroupEvent>(_onGetCameraInGroup);
     on<CheckOnvifEvent>(_onCheckOnvif);
     on<FilterCameraEvent>(_onFilterCamera);
-    on<GetListCameraNoGroupEvent>(_onGetListCameraNoGroup);
     on<AddCameraRTSPEvent>(_onAddCameraRTSP);
     on<AddCameraOnvifEvent>(_onAddCameraOnvif);
     on<UpdateCameraEvent>(_onUpdateCamera);
@@ -77,6 +78,25 @@ class ControlCameraBloc
         final input = FilterCameraNoGroupInput(listCameraOrigin: onSuccess);
         final output = filterCameraNoGroupUseCase.execute(input);
         listCamera = output.listCamera ?? [];
+        emit(ListCameraSuccessState(cameras: listCamera));
+      },
+    );
+  }
+
+  FutureOr<void> _onGetCameraInGroup(
+    GetListCameraInGroupEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final groups = await controlGroupRepository.getCamerasInGroup(
+      groupId: event.groupId,
+    );
+    groups.fold(
+      (onFailure) {
+        listCamera = [];
+        emit(ListCameraFailState(groups.left.toString()));
+      },
+      (onSuccess) {
+        listCamera = onSuccess;
         emit(ListCameraSuccessState(cameras: listCamera));
       },
     );

@@ -27,9 +27,27 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final TextEditingController cameraNameController = TextEditingController();
   CameraStatus? cameraStatus;
 
-  void _onGetListCamera({List<int>? cameraId, int? status, int? ivaType}) {
-    context.read<ControlCameraBloc>().add(
+  void _onGetListCamera({
+    List<int>? cameraId,
+    int? status,
+    int? ivaType,
+    required BuildContext c,
+  }) {
+    c.read<ControlCameraBloc>().add(
       GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType),
+    );
+  }
+
+  void _onGetListCameraNoGroup({required BuildContext c}) {
+    c.read<ControlCameraBloc>().add(GetListCameraNoGroupEvent());
+  }
+
+  void _onGetCameraInGroup({
+    required List<int> groupId,
+    required BuildContext context,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      GetListCameraInGroupEvent(groupId: groupId),
     );
   }
 
@@ -144,7 +162,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
 
   @override
   void initState() {
-    _onGetListCamera();
+    _onGetListCamera(c: context);
     super.initState();
   }
 
@@ -155,7 +173,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           curr is DeleteCameraSuccessState || curr is ListCameraSuccessState,
       listener: (context, state) {
         if (state is DeleteCameraSuccessState) {
-          _onGetListCamera();
+          _onGetListCamera(c: context);
           showAppMessageDialog(
             context,
             message: 'Xóa camera thành công!',
@@ -169,7 +187,20 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Flexible(flex: 2, child: GroupCameraView()),
+          Flexible(
+            flex: 2,
+            child: GroupCameraView(
+              onGetAllGroupCamera: (c) {
+                _onGetListCamera(c: c);
+              },
+              onGetNoGroupCamera: (c) {
+                _onGetListCameraNoGroup(c: c);
+              },
+              onGetCamerasInGroup: (c, groupId) {
+                _onGetCameraInGroup(groupId: groupId, context: c);
+              },
+            ),
+          ),
           Flexible(
             flex: 7,
             child: Padding(
@@ -395,7 +426,14 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             final cameras = context
                                 .read<ControlCameraBloc>()
                                 .listCamera;
-                            if (cameras.isEmpty) return const SizedBox();
+                            if (cameras.isEmpty) {
+                              return Center(
+                                child: Text(
+                                  'Danh sách trống',
+                                  style: AppTypography.style(14),
+                                ),
+                              );
+                            }
                             return Flexible(
                               child: ListView.builder(
                                 shrinkWrap: true,

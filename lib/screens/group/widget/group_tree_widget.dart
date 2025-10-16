@@ -23,6 +23,7 @@ class TreeGroupWidget extends StatefulWidget {
     this.onClickAddGroup,
     this.isClickAllGroup,
     this.isClickNoGroup,
+    this.onClickGroupNode,
   });
   final TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controller;
   final TreeNode<DeviceGroup> tree;
@@ -32,6 +33,7 @@ class TreeGroupWidget extends StatefulWidget {
   final bool? isShowNoGroup;
   final VoidCallback? onClickNoGroup;
   final VoidCallback? onClickAddGroup;
+  final Function(BuildContext, List<int>)? onClickGroupNode;
   final bool? enableAddGroup;
   final Function({String? keySearchGroup})? onSearchGroup;
   final TextEditingController? searchController;
@@ -44,12 +46,29 @@ class TreeGroupWidget extends StatefulWidget {
 
 class _TreeGroupWidgetState extends State<TreeGroupWidget> {
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? _treeController;
+  TreeNode<DeviceGroup>? _selectedNode;
 
   @override
   void didUpdateWidget(TreeGroupWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _treeController?.expandAllChildren(widget.tree);
+    });
+  }
+
+  void _onNodeTap({
+    required TreeNode<DeviceGroup> node,
+    required BuildContext context,
+  }) {
+    setState(() {
+      _selectedNode = node;
+    });
+    widget.onClickGroupNode?.call(context, node.data?.groupId ?? []);
+  }
+
+  void _clearSelectedNode() {
+    setState(() {
+      _selectedNode = null;
     });
   }
 
@@ -155,6 +174,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                 widget.isShowGroupAll == true
                     ? InkWell(
                         onTap: () {
+                          _clearSelectedNode();
                           widget.onClickAllGroup?.call();
                         },
                         splashColor: Colors.transparent,
@@ -194,6 +214,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                 widget.isShowNoGroup == true
                     ? InkWell(
                         onTap: () {
+                          _clearSelectedNode();
                           widget.onClickNoGroup?.call();
                         },
                         splashColor: Colors.transparent,
@@ -250,6 +271,8 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
               onToggleExpansion: () => _treeController?.toggleExpansion(node),
               isExpand: node.isExpanded,
               actions: widget.action,
+              isSelected: _selectedNode == node,
+              onTap: () => _onNodeTap(node: node, context: context),
             ),
             onTreeReady: (treeViewController) {
               _treeController = treeViewController;
