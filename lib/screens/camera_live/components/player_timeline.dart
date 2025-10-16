@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 
-import '../bloc/playback_bloc.dart';
+import '../bloc/camera_live/camera_live_bloc.dart';
+import '../bloc/playback/playback_bloc.dart';
 import '../widgets/player_timeline_painter.dart';
 
 class PlayerTimeline extends StatefulWidget {
@@ -20,6 +21,10 @@ class PlayerTimeline extends StatefulWidget {
     this.startDate,
     this.endDate,
     this.size,
+    required this.normalStyle,
+    required this.highlightStyle,
+    this.playbackColor,
+    this.centralLineColor,
   });
 
   final double tickWidth;
@@ -32,15 +37,22 @@ class PlayerTimeline extends StatefulWidget {
   final DateTime? startDate;
   final DateTime? endDate;
   final Size? size;
+  final TextStyle normalStyle;
+  final TextStyle highlightStyle;
+  final Color? playbackColor;
+  final Color? centralLineColor;
 
   @override
   State<PlayerTimeline> createState() => _PlayerTimelineState();
 }
 
 class _PlayerTimelineState extends State<PlayerTimeline> {
-  late final _centralDate = ValueNotifier(DateTime.now().copyWith(microsecond: 0, millisecond: 0));
-  late Timer _timer;
+  late final ValueNotifier<DateTime> _centralDate = ValueNotifier(
+    DateTime.now().copyWith(microsecond: 0, millisecond: 0),
+  );
+  Timer? _debounce;
 
+  late final Completer<void> _initCompleter = Completer<void>();
   bool _isInteracting = false;
   double _centralOffset = 0;
   double _timelineWidth = 0;
@@ -53,20 +65,12 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
           _ => 100, // giây
         };
   });
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
-      if (_isInteracting || _centralDate.value.isAfter(DateTime.now())) return;
-
-      _centralDate.value = DateTime.now().copyWith(microsecond: 0, millisecond: 0);
-    });
-  }
+  PlaybackBloc get _playbackBloc => context.read<PlaybackBloc>();
+  CameraLiveBloc get _cameraLiveBloc => context.read<CameraLiveBloc>();
 
   @override
   void dispose() {
-    _timer.cancel();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -84,21 +88,56 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     _validateCentralDate(
       _centralDate.value.subtract(Duration(milliseconds: details.delta.dx.toInt() * _dragSpeed)),
+      needDebounce: true,
     );
   }
 
-  void _validateCentralDate(DateTime target) {
+  void _validateCentralDate(DateTime target, {bool needDebounce = false}) {
     if (widget.startDate != null && target.isBefore(widget.startDate!)) return;
     if (widget.endDate != null && target.isAfter(widget.endDate!)) return;
 
     _centralDate.value = target;
+
+    // Click thì set ngay
+    if (!needDebounce) return _playbackBloc.add(SetPlaybackAtTime(target));
+
+    // Case kéo thả --> debounce
+    _debounce?.cancel();
+    _debounce = Timer(
+      Duration(milliseconds: 500),
+      () => _playbackBloc.add(SetPlaybackAtTime(target)),
+    );
+  }
+
+  Future<void> _playPlayback(PlaybackSuccess state) async {
+    if (state.setStartTimeInstantly == true && state.currentPlayback != null) {
+      _centralDate.value = state.currentPlayback!.startTime;
+    }
+
+    if (_cameraLiveBloc.state.ref.currentState == null) {
+      await _initCompleter.future;
+    }
+
+    _cameraLiveBloc.add(
+      ChangePlayerSource(
+        state.currentPlayback!.urlPlayback,
+        position: state.currentDuration,
+        onDuration: (int milis) {
+          if (_isInteracting) return;
+          _centralDate.value = state.currentPlayback!.startTime.add(Duration(milliseconds: milis));
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        _timelineWidth = widget.size?.width ?? constraints.maxWidth;
+        _timelineWidth = constraints.maxWidth;
+        if (widget.size != null && !widget.size!.width.isInfinite) {
+          _timelineWidth = widget.size!.width;
+        }
 
         return GestureDetector(
           onTapDown: _onTapDown,
@@ -108,8 +147,24 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
           // Không bị vẽ ra ngoài
           child: ClipRRect(
             child: RepaintBoundary(
-              child: BlocBuilder<PlaybackBloc, PlaybackState>(
+              child: BlocConsumer<PlaybackBloc, PlaybackState>(
+                listener: (context, state) {
+                  if (state is PlaybackSuccess && state.currentPlayback != null) {
+                    _playPlayback(state);
+                  }
+                },
+                buildWhen: (previous, current) {
+                  if (previous is PlaybackSuccess && current is PlaybackSuccess) {
+                    return previous.playbacks.length != current.playbacks.length;
+                  }
+                  return true;
+                },
                 builder: (context, state) {
+                  // Khởi tạo lần đầu tiên
+                  if (state is PlaybackSuccess && !_initCompleter.isCompleted) {
+                    Future.delayed(Duration.zero, () => _initCompleter.complete());
+                  }
+
                   return CustomPaint(
                     size: Size(_timelineWidth, widget.size?.height ?? widget.majorTickHeight),
                     isComplex: true,
@@ -127,16 +182,10 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                       endDate: widget.endDate,
                       interval: widget.interval,
                       formatPattern: widget.formatPattern,
-                      normalStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      highlightStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      normalStyle: widget.normalStyle,
+                      highlightStyle: widget.highlightStyle,
+                      playbackColor: widget.playbackColor,
+                      centralLineColor: widget.centralLineColor,
                     ),
                   );
                 },

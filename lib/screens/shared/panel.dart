@@ -5,66 +5,77 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
-class MonitorPanel extends StatefulWidget {
-  const MonitorPanel({super.key, required this.width});
-  final double width;
+class PanelController {
+  late Future<void> Function(Widget content, {int? id, Function(int?)? onPanelIndexChanged})
+  togglePanel;
+  late void Function() closePanel;
 
-  @override
-  State<MonitorPanel> createState() => MonitorPanelState();
+  late double expandedWidth;
 }
 
-class MonitorPanelState extends State<MonitorPanel> {
-  late final ValueNotifier<double> _panelWidth = ValueNotifier(0);
+class Panel extends StatefulWidget {
+  final double expandedWidth;
+  final PanelController? controller;
+  const Panel({super.key, required this.expandedWidth, this.controller});
 
-  Completer<void> _completer = Completer<void>();
-  bool get isOpening => _panelWidth.value == widget.width;
-  double get maxWidth => widget.width;
+  @override
+  State<Panel> createState() => _PanelState();
+}
+
+class _PanelState extends State<Panel> {
+  late final ValueNotifier<double> _width = ValueNotifier(0);
 
   Widget? content;
   Function(int?)? onPanelIndexChanged;
+  bool get isOpening => _width.value == widget.expandedWidth;
+
+  @override
+  void initState() {
+    if (widget.controller != null) {
+      widget.controller!.expandedWidth = widget.expandedWidth;
+      widget.controller!.togglePanel = togglePanel;
+      widget.controller!.closePanel = closePanel;
+    }
+
+    super.initState();
+  }
 
   @override
   void dispose() {
-    _panelWidth.dispose();
+    _width.dispose();
     super.dispose();
   }
 
-  Future<void> togglePanel(
-    Widget content, {
-    int? id,
-    Function(int?)? onPanelIndexChanged,
-    bool closePrevious = false,
-  }) async {
+  Future<void> togglePanel(Widget content, {int? id, Function(int?)? onPanelIndexChanged}) async {
     this.onPanelIndexChanged = onPanelIndexChanged;
     this.onPanelIndexChanged?.call(id);
 
     if (isOpening && this.content != null && this.content!.key != content.key) {
-      if (closePrevious) {
-        _completer = Completer<void>();
-        _panelWidth.value = 0;
-        await _completer.future;
-      } else {
-        this.content = content;
-        setState(() {});
-        return;
-      }
+      this.content = content;
+      setState(() {});
+      return;
     }
 
     this.content = content;
-    _panelWidth.value = _panelWidth.value == 0 ? widget.width : 0;
+    _width.value = _width.value == 0 ? widget.expandedWidth : 0;
     if (!isOpening) this.onPanelIndexChanged?.call(null);
+  }
+
+  void closePanel() {
+    if (!isOpening) return;
+    _width.value = 0;
+    onPanelIndexChanged?.call(null);
   }
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: _panelWidth,
+      valueListenable: _width,
       builder: (context, width, child) => AnimatedContainer(
         duration: Durations.medium1,
         width: width,
         height: double.infinity,
         color: AppColors.contentBg,
-        onEnd: () => !_completer.isCompleted ? _completer.complete() : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
@@ -72,7 +83,7 @@ class MonitorPanelState extends State<MonitorPanel> {
               padding: EdgeInsets.fromLTRB(0, 4, 4, 12),
               child: InkWell(
                 onTap: () {
-                  _panelWidth.value = 0;
+                  _width.value = 0;
                   onPanelIndexChanged?.call(null);
                 },
                 child: SvgPicture.asset(AppAssets.icClose),

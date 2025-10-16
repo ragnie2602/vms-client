@@ -53,7 +53,7 @@ class UserService {
     addUserRequest.address = address ?? "";
     addUserRequest.isAdmin = isAmin ?? false;
     addUserRequest.changePassDenied = changePassDenied ?? false;
-     addUserRequest.addCamDenied = addCamDenied ?? false;
+    addUserRequest.addCamDenied = addCamDenied ?? false;
 
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
@@ -68,6 +68,31 @@ class UserService {
     return responseBuffer.fold(
       (failure) => throw failure.toMessageFailure(),
       (buffer) => AddUser_Reply.fromBuffer(buffer).user,
+    );
+  }
+
+  Future<List<int>> deleteUser({
+    required List<int> userId,
+    String? rtspUrl,
+  }) async {
+    final deleteUserRequest = DeleteUser_Request();
+    if (userId != null) {
+      deleteUserRequest.userId = userId;
+    }
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: deleteUserRequest.writeToBuffer(),
+          type: PacketType.deleteUser,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(DeleteUser_Error.valueOf),
+      (buffer) => DeleteUser_Reply.fromBuffer(buffer).userId,
     );
   }
 }
