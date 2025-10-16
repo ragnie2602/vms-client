@@ -7,13 +7,17 @@ import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_reposi
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_output.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_input.dart';
+import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 
 class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState> {
   final IControlCameraRepository controlGroupRepository;
   final FilterCameraUseCase filterCameraUseCase;
-  ControlCameraBloc({required this.controlGroupRepository, required this.filterCameraUseCase}) : super(const ControlCameraState()) {
+  final DeleteCameraUseCase deleteCameraUseCase;
+  ControlCameraBloc({required this.controlGroupRepository, required this.filterCameraUseCase, required this.deleteCameraUseCase})
+    : super(const ControlCameraState()) {
     on<ValidateCameraEvent>(_onValidateCamera);
     on<GetListCameraEvent>(_onGetListCamera);
     on<CheckOnvifEvent>(_onCheckOnvif);
@@ -124,12 +128,16 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
   }
 
   FutureOr<void> _onDeleteCamera(DeleteCameraEvent event, Emitter<ControlCameraState> emit) async {
-    final res = await controlGroupRepository.deleteCamera(cameraId: event.cameraId);
-    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) {
+    final input = DeleteCameraInput(cameraId: event.cameraId);
+    final output = await deleteCameraUseCase.execute(input);
+
+    if (output.isSuccess) {
       // Xóa camera khỏi danh sách local
-      listCamera = listCamera.where((camera) => camera.id != event.cameraId).toList();
+      listCamera = listCamera.where((camera) => !output.deletedCameraIds.contains(camera.id)).toList();
       // Emit delete success state để hiển thị popup thông báo
       emit(DeleteCameraSuccessState(deletedCameraId: event.cameraId));
-    });
+    } else {
+      emit(AddCameraFailState(output.errorMessage ?? 'Xóa camera thất bại'));
+    }
   }
 }
