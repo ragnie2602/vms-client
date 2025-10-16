@@ -1,5 +1,4 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/domain/entities/user/user.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
 class UserManagementState extends BaseState {
@@ -102,4 +101,30 @@ class ResetPassWordFail extends UserManagementState {
 
 class ResetPassWordSuccess extends UserManagementState {
   const ResetPassWordSuccess();
+}
+
+class EditUserFail extends UserManagementState {
+  final String message;
+
+  const EditUserFail(this.message);
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+}
+
+class EditUserLoadingState extends UserManagementState {
+  @override
+  StateType get type => StateType.loading;
+}
+
+class EditUserSuccess extends UserManagementState {
+  final UserEntity? user;
+  const EditUserSuccess({required this.user});
+
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [user];
 }

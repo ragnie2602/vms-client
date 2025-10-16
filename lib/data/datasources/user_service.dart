@@ -129,4 +129,52 @@ class UserService {
     // }
     // return true;
   }
+
+  Future<User> editUser({
+    required List<int> userId,
+    required String account,
+    required String password,
+    String? tel,
+    String? email,
+    String? address,
+    String? desc,
+    String? fullName,
+    bool? isAmin,
+    bool? changePassDenied,
+    bool? addCamDenied,
+  }) async {
+    final editUserRequest = EditUser_Request();
+    if (account != null) {
+      editUserRequest.account = account;
+    }
+    if (userId != null) {
+      editUserRequest.userId = userId;
+    }
+    if (password != null) {
+      editUserRequest.password = password;
+    }
+    editUserRequest.tel = tel ?? "";
+    editUserRequest.email = email ?? "";
+    editUserRequest.desc = desc ?? "";
+    editUserRequest.userName = fullName ?? "";
+    editUserRequest.address = address ?? "";
+    editUserRequest.isAdmin = isAmin ?? false;
+    editUserRequest.changePassDenied = changePassDenied ?? false;
+    editUserRequest.addCamDenied = addCamDenied ?? false;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: editUserRequest.writeToBuffer(),
+          type: PacketType.editUser,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(),
+      (buffer) => EditUser_Reply.fromBuffer(buffer).user,
+    );
+  }
 }

@@ -26,8 +26,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     context.read<UserManagementBloc>().add(GetListUserEvent());
   }
 
-  void _onAddUser() {}
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UserManagementBloc, UserManagementState>(

@@ -20,4 +20,17 @@ abstract class IUserManagementRepository {
     required List<int> userId,
     required String newPassword,
   });
+  Future<Either<Failure, UserEntity>> editUser({
+    required List<int> userId,
+    required String account,
+    required String password,
+    String? tel,
+    String? email,
+    String? address,
+    String? desc,
+    String? fullName,
+    bool? isAmin,
+    bool? changePassDenied,
+    bool? addCamDenied,
+  });
 }

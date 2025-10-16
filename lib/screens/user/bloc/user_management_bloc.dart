@@ -15,6 +15,7 @@ class UserManagementBloc
     on<AddUserEvent>(_onAddUser);
     on<DeleteUserEvent>(_onDeleteUser);
     on<ResetPassWordEvent>(_onResetPassWord);
+    on<EditUserEvent>(_onEditUser);
   }
 
   FutureOr<void> _onGetListUser(
@@ -85,5 +86,29 @@ class UserManagementBloc
         emit(ResetPassWordSuccess());
       },
     );
+  }
+
+  FutureOr<void> _onEditUser(
+    EditUserEvent event,
+    Emitter<UserManagementState> emit,
+  ) async {
+    emit(UserManagementLoadingState());
+    final groups = await userManagermentRepository.editUser(
+      userId: event.userId,
+      account: event.account,
+      password: event.password,
+      tel: event.tel,
+      email: event.email,
+      address: event.address,
+      desc: event.desc,
+      addCamDenied: event.addCamDenied,
+      isAmin: event.isAdmin,
+      changePassDenied: event.changePassDenied,
+    );
+    groups.fold((onFailure) => emit(EditUserFail(groups.left.toString())), (
+      onSuccess,
+    ) {
+      emit(EditUserSuccess(user: groups.right));
+    });
   }
 }
