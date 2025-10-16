@@ -26,6 +26,9 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     on<AddCameraOnvifEvent>(_onAddCameraOnvif);
     on<UpdateCameraEvent>(_onUpdateCamera);
     on<DeleteCameraEvent>(_onDeleteCamera);
+    on<ShareCameraEvent>(_onShareCamera);
+    on<CheckAccountShareEvent>(_onCheckAccountShare);
+    on<AddCameraToGroupEvent>(_onAddCameraToGroup);
   }
 
   // list camera
@@ -137,5 +140,25 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     } else {
       emit(AddCameraFailState(output.errorMessage ?? 'Xóa camera thất bại'));
     }
+  }
+
+  FutureOr<void> _onShareCamera(ShareCameraEvent event, Emitter<ControlCameraState> emit) async {
+    final res = await controlGroupRepository.shareCamera(cameraId: event.cameraId, role: event.role, accountInvite: event.accountInvite);
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) => emit(ControlCameraState()));
+  }
+
+  FutureOr<void> _onCheckAccountShare(CheckAccountShareEvent event, Emitter<ControlCameraState> emit) async {
+    final res = await controlGroupRepository.checkAccountShare(
+      cameraId: event.cameraId,
+      account: event.account,
+      shareType: event.shareType,
+      groupId: event.groupId,
+    );
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) => emit(ControlCameraState()));
+  }
+
+  FutureOr<void> _onAddCameraToGroup(AddCameraToGroupEvent event, Emitter<ControlCameraState> emit) async {
+    final res = await controlGroupRepository.addCameraToGroup(cameraIds: event.cameraIds, groupId: event.groupId);
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) => emit(ListCameraSuccessState(cameras: onSuccess)));
   }
 }

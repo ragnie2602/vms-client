@@ -174,4 +174,57 @@ class CameraService {
 
     return responseBuffer.fold((failure) => throw failure, (buffer) => DeleteCamera_Reply.fromBuffer(buffer).cameraId);
   }
+
+  Future<List<int>> shareCamera({required List<int> cameraId, required int role, required String accountInvite}) async {
+    final request = ShareCamera_Request()
+      ..cameraId = cameraId
+      ..role = ShareCamera_Role.valueOf(role)!
+      ..accountInvite = accountInvite;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.shareCamera)),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(ShareCamera_Error.valueOf),
+      (buffer) => ShareCamera_Reply.fromBuffer(buffer).cameraId,
+    );
+  }
+
+  Future<CheckAccountShare_Reply> checkAccountShare({
+    List<int>? cameraId,
+    required String account,
+    required int shareType,
+    List<int>? groupId,
+  }) async {
+    final request = CheckAccountShare_Request()
+      ..account = account
+      ..shareType = CheckAccountShare_ShareType.valueOf(shareType)!;
+    if (cameraId != null) request.cameraId = cameraId;
+    if (groupId != null) request.groupId = groupId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.checkAccountShare)),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(CheckAccountShare_Error.valueOf),
+      (buffer) => CheckAccountShare_Reply.fromBuffer(buffer),
+    );
+  }
+
+  Future<List<Camera>> addCameraToGroup({required List<List<int>> cameraIds, required List<int> groupId}) async {
+    final request = AddCameraToGroup_Request()
+      ..cameraId.addAll(cameraIds)
+      ..groupId = groupId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.addCameraToGroup)),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(AddCameraToGroup_Error.valueOf),
+      (buffer) => AddCameraToGroup_Reply.fromBuffer(buffer).camera,
+    );
+  }
 }
