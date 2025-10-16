@@ -13,7 +13,7 @@ import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
-import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
+import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
@@ -167,7 +167,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Flexible(flex: 2, child: GroupCameraScreen()),
+        Flexible(flex: 2, child: GroupCameraView()),
         Flexible(
           flex: 7,
           child: Padding(
@@ -350,21 +350,117 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                         },
                         splashColor: Colors.transparent,
 
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      border: Border.all(width: 1, color: AppColors.secondary),
-                    ),
-                    child: Center(
-                      child: Row(
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(
+                              width: 1,
+                              color: AppColors.secondary,
+                            ),
+                          ),
+                          child: Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SvgPicture.asset(AppAssets.icAdd),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Thêm camera',
+                                  style: TextStyle(
+                                    color: AppColors.secondary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                BlocListener<ControlCameraBloc, ControlCameraState>(
+                  listener: (context, state) {
+                    if (state is AddCameraSuccessState) {
+                      _handleAddCameraSuccess();
+                    } else if (state is AddCameraFailState) {
+                      _handleAddCameraError(state.errorMsg);
+                    }
+                  },
+                  child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
+                    builder: (context, state) => Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.white,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 15,
+                      ),
+                      child: Column(
                         mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SvgPicture.asset(AppAssets.icAdd),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Thêm camera',
-                            style: TextStyle(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.w500),
+                          TitleWidget(),
+                          Builder(
+                            builder: (context) {
+                              final cameras = state is ListCameraSuccessState
+                                  ? state.cameras
+                                  : context
+                                        .read<ControlCameraBloc>()
+                                        .listCamera;
+                              if (cameras.isEmpty) return const SizedBox();
+                              return Flexible(
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: cameras.length,
+                                  itemBuilder: (context, index) =>
+                                      ItemCameraWidget(
+                                        itemCamera: cameras[index],
+                                        index: index + 1,
+                                        onEdit: () {
+                                          showAddCameraRtspDialog(
+                                            context,
+                                            mode: CameraDialogMode.edit,
+                                            cameraData: cameras[index],
+                                            onEdit: (payload) async {
+                                              _onUpdateCamera(
+                                                cameraId: cameras[index].id,
+                                                name: payload.name,
+                                                rtspUrl: payload.rtsp,
+                                                userName: payload.username,
+
+                                                password: payload.password,
+                                                subStreamUrls:
+                                                    payload.subStreamUrls,
+                                                xaddr: payload.xaddr,
+                                              );
+                                            },
+                                            onCheck:
+                                                (
+                                                  xaddrs,
+                                                  userName,
+                                                  password,
+                                                  boxId,
+                                                ) {
+                                                  _onCheckOnvif(
+                                                    xaddrs: xaddrs,
+                                                    userName: userName,
+                                                    password: password,
+                                                    boxId: boxId,
+                                                  );
+                                                },
+                                          );
+                                        },
+                                      ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -374,68 +470,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
               ],
             ),
           ),
-          BlocListener<ControlCameraBloc, ControlCameraState>(
-            listener: (context, state) {
-              if (state is AddCameraSuccessState) {
-                _handleAddCameraSuccess();
-              } else if (state is AddCameraFailState) {
-                _handleAddCameraError(state.errorMsg);
-              }
-            },
-            child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
-              builder: (context, state) => Container(
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TitleWidget(),
-                    Builder(
-                      builder: (context) {
-                        final cameras = state is ListCameraSuccessState ? state.cameras : context.read<ControlCameraBloc>().listCamera;
-                        if (cameras.isEmpty) return const SizedBox();
-                        return Flexible(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: cameras.length,
-                            itemBuilder: (context, index) => ItemCameraWidget(
-                              itemCamera: cameras[index],
-                              index: index + 1,
-                              onEdit: () {
-                                showAddCameraRtspDialog(
-                                  context,
-                                  mode: CameraDialogMode.edit,
-                                  cameraData: cameras[index],
-                                  onEdit: (payload) async {
-                                    _onUpdateCamera(
-                                      cameraId: cameras[index].id,
-                                      name: payload.name,
-                                      rtspUrl: payload.rtsp,
-                                      userName: payload.username,
-
-                                      password: payload.password,
-                                      subStreamUrls: payload.subStreamUrls,
-                                      xaddr: payload.xaddr,
-                                    );
-                                  },
-                                  onCheck: (xaddrs, userName, password, boxId) {
-                                    _onCheckOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId);
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ))]);
+        ),
+      ],
+    );
   }
 }

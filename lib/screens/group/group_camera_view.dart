@@ -11,14 +11,14 @@ import 'package:vms_flutter_client/screens/group/widget/add_group_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/item_group_action.dart';
 
-class GroupCameraScreen extends StatefulWidget {
-  const GroupCameraScreen({super.key});
+class GroupCameraView extends StatefulWidget {
+  const GroupCameraView({super.key});
 
   @override
-  State<GroupCameraScreen> createState() => _GroupCameraScreenState();
+  State<GroupCameraView> createState() => _GroupCameraViewState();
 }
 
-class _GroupCameraScreenState extends State<GroupCameraScreen> {
+class _GroupCameraViewState extends State<GroupCameraView> {
   TextEditingController searchGroupNameController = TextEditingController();
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controllerTree;
   @override

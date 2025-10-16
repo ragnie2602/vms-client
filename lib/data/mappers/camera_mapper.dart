@@ -99,6 +99,7 @@ extension CameraMapper on pb.Camera {
     return CameraEntity(
       name: name,
       id: id,
+      groupOwnerId: groupOwnerId,
       camId: camId,
       username: username,
       password: password,
