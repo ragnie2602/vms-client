@@ -13,9 +13,10 @@ class DeleteCameraUseCase extends FutureUseCase<DeleteCameraInput, DeleteCameraO
   Future<DeleteCameraOutput> buildUseCase(DeleteCameraInput input) async {
     try {
       final deletedCameraIds = await cameraService.deleteCamera(cameraId: input.cameraId);
-      return DeleteCameraOutput(deletedCameraIds: deletedCameraIds, isSuccess: true);
+      final remaining = input.currentList.where((camera) => camera.id.toSet().intersection(deletedCameraIds.toSet()).isEmpty).toList();
+      return DeleteCameraOutput(deletedCameraIds: deletedCameraIds, isSuccess: true, listCamera: remaining);
     } catch (e) {
-      return DeleteCameraOutput(deletedCameraIds: [], isSuccess: false, errorMessage: e.toString());
+      return DeleteCameraOutput(deletedCameraIds: [], isSuccess: false, errorMessage: e.toString(), listCamera: input.currentList);
     }
   }
 }

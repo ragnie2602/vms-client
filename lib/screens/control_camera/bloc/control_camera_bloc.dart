@@ -128,13 +128,11 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
   }
 
   FutureOr<void> _onDeleteCamera(DeleteCameraEvent event, Emitter<ControlCameraState> emit) async {
-    final input = DeleteCameraInput(cameraId: event.cameraId);
+    final input = DeleteCameraInput(cameraId: event.cameraId, currentList: listCamera);
     final output = await deleteCameraUseCase.execute(input);
 
     if (output.isSuccess) {
-      // Xóa camera khỏi danh sách local
-      listCamera = listCamera.where((camera) => !output.deletedCameraIds.contains(camera.id)).toList();
-      // Emit delete success state để hiển thị popup thông báo
+      listCamera = output.listCamera;
       emit(DeleteCameraSuccessState(deletedCameraId: event.cameraId));
     } else {
       emit(AddCameraFailState(output.errorMessage ?? 'Xóa camera thất bại'));
