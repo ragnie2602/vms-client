@@ -59,7 +59,7 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
                           name: camera.name,
                           key: ValueKey("player($index)___${camera.camId}"),
                           mode: PlayerMode.monitoring,
-                          builder: (context, player) => _buildCameraView(context, player, camera),
+                          builder: (player, _) => _buildCameraView(context, player, camera),
                         ),
                       );
                     }).toList(),

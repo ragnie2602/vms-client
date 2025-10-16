@@ -57,7 +57,14 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
 
     final playback = (state as PlaybackSuccess).binarySearch(event.time);
     final duration = playback?.startTime.difference(event.time).inMilliseconds.abs();
-    emit((state as PlaybackSuccess).copyWith(currentPlayback: playback, currentDuration: duration));
+
+    emit(
+      (state as PlaybackSuccess).copyWith(
+        currentPlayback: playback,
+        currentDuration: duration,
+        currentPlaybackCanNull: true,
+      ),
+    );
   }
 
   FutureOr<void> _onChangePlayback(ChangePlayback event, Emitter<PlaybackState> emit) async {

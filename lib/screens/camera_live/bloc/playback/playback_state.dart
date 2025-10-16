@@ -51,10 +51,11 @@ class PlaybackSuccess extends PlaybackState {
     PlaybackVideo? currentPlayback,
     int? currentDuration,
     bool? setStartTimeInstantly,
+    bool currentPlaybackCanNull = false,
   }) {
     return PlaybackSuccess(
       playbacks: playbacks ?? this.playbacks,
-      currentPlayback: currentPlayback ?? this.currentPlayback,
+      currentPlayback: currentPlayback ?? (currentPlaybackCanNull ? null : this.currentPlayback),
       currentDuration: currentDuration ?? this.currentDuration,
       setStartTimeInstantly: setStartTimeInstantly,
     );
