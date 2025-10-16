@@ -10,6 +10,7 @@ import 'package:vms_flutter_client/data/repositories/user_management_repository.
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_custom_live_view_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 
@@ -39,6 +40,7 @@ class DependencyInjection {
       create: (context) => CameraRepository(context.read()),
     ),
     Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
+    Provider<FilterCameraNoGroupUseCase>(create: (context) => FilterCameraNoGroupUseCase()),
     Provider<IControlCameraRepository>(
       create: (context) => ControlCameraRepository(context.read()),
     ),

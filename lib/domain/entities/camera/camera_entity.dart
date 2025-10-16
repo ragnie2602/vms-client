@@ -8,7 +8,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 class CameraEntity {
   final String name;
   final List<int> id;
-  final List<int> groupOwnerId;
+  final List<int>? groupOwnerId;
   final String camId;
   final String username;
   final String password;

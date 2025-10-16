@@ -33,6 +33,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
+  void _onGetListCameraNoGroup() {
+    context.read<ControlCameraBloc>().add(GetListCameraNoGroupEvent());
+  }
+
   void _onCheckOnvif({
     required String xaddrs,
     required String userName,
@@ -167,7 +171,18 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Flexible(flex: 2, child: GroupCameraView()),
+        Flexible(
+          flex: 2,
+          child: GroupCameraView(
+            onGetAllCamera: () {
+              _onGetListCamera();
+            },
+            onGetCameraInGroup: () {
+              _onGetListCameraNoGroup();
+            },
+            onGetCameraNoGroup: () {},
+          ),
+        ),
         Flexible(
           flex: 7,
           child: Padding(

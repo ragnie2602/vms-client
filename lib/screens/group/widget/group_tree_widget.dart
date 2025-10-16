@@ -21,6 +21,8 @@ class TreeGroupWidget extends StatefulWidget {
     this.onSearchGroup,
     this.searchController,
     this.onClickAddGroup,
+    this.isClickAllGroup,
+    this.isClickNoGroup,
   });
   final TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controller;
   final TreeNode<DeviceGroup> tree;
@@ -33,6 +35,8 @@ class TreeGroupWidget extends StatefulWidget {
   final bool? enableAddGroup;
   final Function({String? keySearchGroup})? onSearchGroup;
   final TextEditingController? searchController;
+  final bool? isClickAllGroup;
+  final bool? isClickNoGroup;
 
   @override
   State<TreeGroupWidget> createState() => _TreeGroupWidgetState();
@@ -156,6 +160,9 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                         splashColor: Colors.transparent,
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 8),
+                          color: widget.isClickAllGroup == true
+                              ? AppColors.greyF2F4FA
+                              : Colors.transparent,
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -192,6 +199,9 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                         splashColor: Colors.transparent,
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 8),
+                          color: widget.isClickNoGroup == true
+                              ? AppColors.greyF2F4FA
+                              : Colors.transparent,
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [

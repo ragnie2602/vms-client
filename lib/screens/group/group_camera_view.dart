@@ -12,7 +12,16 @@ import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/item_group_action.dart';
 
 class GroupCameraView extends StatefulWidget {
-  const GroupCameraView({super.key});
+  const GroupCameraView({
+    super.key,
+    required this.onGetAllCamera,
+    required this.onGetCameraNoGroup,
+    required this.onGetCameraInGroup,
+  });
+
+  final Function() onGetAllCamera;
+  final Function() onGetCameraNoGroup;
+  final Function() onGetCameraInGroup;
 
   @override
   State<GroupCameraView> createState() => _GroupCameraViewState();
@@ -21,6 +30,9 @@ class GroupCameraView extends StatefulWidget {
 class _GroupCameraViewState extends State<GroupCameraView> {
   TextEditingController searchGroupNameController = TextEditingController();
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controllerTree;
+  bool isClickAllGroup = true;
+  bool isClickNoGroup = false;
+
   @override
   void dispose() {
     searchGroupNameController.dispose();
@@ -83,6 +95,20 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             child: Column(
               children: [
                 TreeGroupWidget(
+                  onClickAllGroup: () {
+                    setState(() {
+                      isClickAllGroup = true;
+                      isClickNoGroup = false;
+                    });
+                    widget.onGetAllCamera.call();
+                  },
+                  onClickNoGroup: () {
+                    setState(() {
+                      isClickAllGroup = false;
+                      isClickNoGroup = true;
+                    });
+                    widget.onGetCameraNoGroup.call();
+                  },
                   enableAddGroup: true,
                   controller: controllerTree,
                   searchController: searchGroupNameController,
