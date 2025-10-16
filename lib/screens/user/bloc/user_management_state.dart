@@ -88,3 +88,18 @@ class ReSetPassWordLoadingState extends UserManagementState {
   @override
   StateType get type => StateType.loading;
 }
+
+class ResetPassWordFail extends UserManagementState {
+  final String message;
+
+  const ResetPassWordFail(this.message);
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+}
+
+class ResetPassWordSuccess extends UserManagementState {
+  const ResetPassWordSuccess();
+}

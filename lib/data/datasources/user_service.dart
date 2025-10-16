@@ -95,4 +95,38 @@ class UserService {
       (buffer) => DeleteUser_Reply.fromBuffer(buffer).userId,
     );
   }
+
+  Future<bool> resetPassword({
+    required List<int> userId,
+    String? newPassword,
+  }) async {
+    final resetPasswordRequest = ResetPassword_Request();
+    if (userId != null) {
+      resetPasswordRequest.userId = userId;
+    }
+    if (newPassword != null) {
+      resetPasswordRequest.newPassword = newPassword;
+    }
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: resetPasswordRequest.writeToBuffer(),
+          type: PacketType.resetPassword,
+        ),
+      ),
+    );
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(ResetPassword_Error.valueOf),
+      (buffer) {
+        return true;
+      },
+    );
+    // if (responseBuffer.isLeft) {
+    //   return false;
+    //   // throw responseBuffer.left!.toString();
+    // }
+    // return true;
+  }
 }

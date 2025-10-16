@@ -16,4 +16,8 @@ abstract class IUserManagementRepository {
     bool? addCamDenied,
   });
   Future<Either<Failure, List<int>>> deleteUser({required List<int> userId});
+  Future<Either<Failure, bool>> resetPassword({
+    required List<int> userId,
+    required String newPassword,
+  });
 }

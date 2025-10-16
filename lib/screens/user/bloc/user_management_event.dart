@@ -48,3 +48,11 @@ class DeleteUserEvent extends UserManagementEvent {
   @override
   List<Object> get props => [userId, uidStr];
 }
+
+class ResetPassWordEvent extends UserManagementEvent {
+  final List<int> userId;
+  final String newPassword;
+  const ResetPassWordEvent({required this.userId, required this.newPassword});
+  @override
+  List<Object> get props => [userId, newPassword];
+}

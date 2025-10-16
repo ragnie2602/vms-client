@@ -61,4 +61,15 @@ class UserManagementRepository extends BaseRepository
       return Right(groups.toList());
     });
   }
+
+  @override
+  Future<Either<Failure, bool>> resetPassword({
+    required List<int> userId,
+    required String newPassword,
+  }) async {
+    return await catchError<bool>(() async {
+      final value = await service.resetPassword(userId: userId);
+      return Right(value);
+    });
+  }
 }

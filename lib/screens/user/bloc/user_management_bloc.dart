@@ -14,6 +14,7 @@ class UserManagementBloc
     on<GetListUserEvent>(_onGetListUser);
     on<AddUserEvent>(_onAddUser);
     on<DeleteUserEvent>(_onDeleteUser);
+    on<ResetPassWordEvent>(_onResetPassWord);
   }
 
   FutureOr<void> _onGetListUser(
@@ -67,5 +68,22 @@ class UserManagementBloc
     ) {
       emit(DeleteUserSuccess(userId: groups.right));
     });
+  }
+
+  FutureOr<void> _onResetPassWord(
+    ResetPassWordEvent event,
+    Emitter<UserManagementState> emit,
+  ) async {
+    emit(UserManagementLoadingState());
+    final groups = await userManagermentRepository.resetPassword(
+      newPassword: event.newPassword,
+      userId: event.userId,
+    );
+    groups.fold(
+      (onFailure) => emit(ResetPassWordFail(groups.left.toString())),
+      (onSuccess) {
+        emit(ResetPassWordSuccess());
+      },
+    );
   }
 }
