@@ -22,32 +22,17 @@ class DependencyInjection {
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
 
     // Repositories
-    Provider<IAuthRepository>(
-      create: (context) => AuthRepository(
-        authenticateService: context.read<AuthenticateService>(),
-      ),
-    ),
-    Provider<ICameraRepository>(
-      create: (context) => CameraRepository(context.read()),
-    ),
+    Provider<IAuthRepository>(create: (context) => AuthRepository(authenticateService: context.read<AuthenticateService>())),
+    Provider<ICameraRepository>(create: (context) => CameraRepository(context.read())),
     Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
-    Provider<IControlCameraRepository>(
-      create: (context) => ControlCameraRepository(context.read()),
-    ),
-    Provider<IGroupRepository>(
-      create: (context) => GroupRepository(context.read()),
-    ),
-    Provider<IPlaybackRepository>(
-      create: (context) => PlaybackRepository(context.read()),
-    ),
-    Provider<IUserManagementRepository>(
-      create: (context) => UserManagementRepository(context.read()),
-    ),
-    Provider<ICustomLiveViewRepository>(
-      create: (context) => CustomLiveViewRepository(context.read()),
-    ),
+    Provider<IControlCameraRepository>(create: (context) => ControlCameraRepository(context.read())),
+    Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
+    Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
+    Provider<IUserManagementRepository>(create: (context) => UserManagementRepository(context.read())),
+    Provider<ICustomLiveViewRepository>(create: (context) => CustomLiveViewRepository(context.read())),
 
     // Use Cases
     Provider<LoginUseCase>(create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>())),
+    Provider<DeleteCameraUseCase>(create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>())),
   ];
 }
