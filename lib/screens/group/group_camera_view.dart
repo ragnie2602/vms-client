@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
@@ -12,16 +14,7 @@ import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/item_group_action.dart';
 
 class GroupCameraView extends StatefulWidget {
-  const GroupCameraView({
-    super.key,
-    required this.onGetAllCamera,
-    required this.onGetCameraNoGroup,
-    required this.onGetCameraInGroup,
-  });
-
-  final Function() onGetAllCamera;
-  final Function() onGetCameraNoGroup;
-  final Function() onGetCameraInGroup;
+  const GroupCameraView({super.key});
 
   @override
   State<GroupCameraView> createState() => _GroupCameraViewState();
@@ -100,14 +93,17 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                       isClickAllGroup = true;
                       isClickNoGroup = false;
                     });
-                    widget.onGetAllCamera.call();
+                    context.read<ControlCameraBloc>().add(GetListCameraEvent());
                   },
+
                   onClickNoGroup: () {
                     setState(() {
                       isClickAllGroup = false;
                       isClickNoGroup = true;
                     });
-                    widget.onGetCameraNoGroup.call();
+                    context.read<ControlCameraBloc>().add(
+                      GetListCameraNoGroupEvent(),
+                    );
                   },
                   enableAddGroup: true,
                   controller: controllerTree,
@@ -134,6 +130,8 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                   tree: newState.tree,
                   isShowGroupAll: true,
                   isShowNoGroup: true,
+                  isClickAllGroup: isClickAllGroup,
+                  isClickNoGroup: isClickNoGroup,
                   action: PopupMenuButton<ItemGroupAction>(
                     padding: EdgeInsets.zero,
                     splashRadius: 20,
