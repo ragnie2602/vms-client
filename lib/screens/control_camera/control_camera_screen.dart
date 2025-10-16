@@ -92,6 +92,30 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
+  void _onUpdateCamera({
+    required List<int> cameraId,
+    required String name,
+    required String rtspUrl,
+    required String userName,
+    required String password,
+    CameraMap? location,
+    required List<String> subStreamUrls,
+    required String xaddr,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      UpdateCameraEvent(
+        cameraId: cameraId,
+        name: name,
+        rtspUrl: rtspUrl,
+        userName: userName,
+        password: password,
+        location: location,
+        subStreamUrls: subStreamUrls,
+        xaddr: xaddr,
+      ),
+    );
+  }
+
   @override
   void initState() {
     _onGetListCamera();
@@ -116,7 +140,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -281,7 +305,32 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                           child: ListView.builder(
                             shrinkWrap: true,
                             itemCount: cameras.length,
-                            itemBuilder: (context, index) => ItemCameraWidget(itemCamera: cameras[index], index: index + 1),
+                            itemBuilder: (context, index) => ItemCameraWidget(
+                              itemCamera: cameras[index],
+                              index: index + 1,
+                              onEdit: () {
+                                showAddCameraRtspDialog(
+                                  context,
+                                  mode: CameraDialogMode.edit,
+                                  cameraData: cameras[index],
+                                  onEdit: (payload) async {
+                                    _onUpdateCamera(
+                                      cameraId: cameras[index].id,
+                                      name: payload.name,
+                                      rtspUrl: payload.rtsp,
+                                      userName: payload.username,
+
+                                      password: payload.password,
+                                      subStreamUrls: payload.subStreamUrls,
+                                      xaddr: payload.xaddr,
+                                    );
+                                  },
+                                  onCheck: (xaddrs, userName, password, boxId) {
+                                    _onCheckOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId);
+                                  },
+                                );
+                              },
+                            ),
                           ),
                         );
                       },

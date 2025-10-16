@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/screens/group/group_camera_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
+import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
 
@@ -31,12 +32,23 @@ enum Routes {
     name: 'addGroupCamera',
     path: '/addGroupCamera',
     title: 'Quản lý nhóm camera',
-    description: 'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
+    description:
+        'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
   ),
   login(name: 'login', path: '/login'),
-  monitoring(name: 'monitoring', path: '/monitoring', title: 'Liveview', description: 'Hiển thị các màn hình theo dõi theo thời gian thực'),
-  livecamera(name: 'livecamera', path: 'livecamera'),
-  playback(name: 'playback', path: '/playback'),
+  monitoring(
+    name: 'monitoring',
+    path: '/monitoring',
+    title: 'Liveview',
+    description: 'Hiển thị các màn hình theo dõi theo thời gian thực',
+  ),
+  livecamera(name: 'livecamera', path: '/livecamera'),
+  playback(
+    name: 'playback',
+    path: '/playback',
+    title: 'Playback',
+    description: 'Cho phép truy cập và xem lại các đoạn video đã được ghi',
+  ),
   users(name: 'users', path: '/users'),
   setting(name: 'setting', path: '/setting'),
   about(name: 'about', path: '/about');
@@ -61,6 +73,7 @@ abstract class BaseScreenArgs {
 
 class AppRouter {
   static final rootNavigatorKey = GlobalKey<NavigatorState>();
+  static final homeNavigatorKey = GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
     initialLocation: AppConfig.INITIAL_ROUTE.path,
@@ -75,6 +88,7 @@ class AppRouter {
         ),
       ),
       ShellRoute(
+        navigatorKey: homeNavigatorKey,
         builder: (context, state, child) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
@@ -109,19 +123,24 @@ class AppRouter {
             pageBuilder: (context, state) {
               return fadeTransition(context: context, state: state, child: MonitorScreen());
             },
-            routes: [
-              GoRoute(
-                path: Routes.livecamera.path,
-                name: Routes.livecamera.name,
-                pageBuilder: (context, state) {
-                  return fadeTransition(
-                    context: context,
-                    state: state,
-                    child: CameraLiveScreen(args: state.extra as CameraLiveScreenArgs),
-                  );
-                },
-              ),
-            ],
+          ),
+          GoRoute(
+            path: Routes.livecamera.path,
+            name: Routes.livecamera.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: CameraLiveScreen(args: state.extra as CameraLiveScreenArgs),
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.playback.path,
+            name: Routes.playback.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: PlaybackScreen());
+            },
           ),
           GoRoute(
             path: Routes.test11.path,
@@ -143,13 +162,13 @@ class AppRouter {
             name: Routes.about.name,
             builder: (context, state) => Center(child: Text('About')),
           ),
-          GoRoute(
-            path: Routes.controlCamera.path,
-            name: Routes.controlCamera.name,
-            pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: ControlCameraScreen());
-            },
-          ),
+          // GoRoute(
+          //   path: Routes.controlCamera.path,
+          //   name: Routes.controlCamera.name,
+          //   pageBuilder: (context, state) {
+          //     return fadeTransition(context: context, state: state, child: ControlCameraScreen());
+          //   },
+          // ),
           GoRoute(
             path: Routes.addGroupCamera.path,
             name: Routes.addGroupCamera.name,
@@ -170,7 +189,11 @@ class AppRouter {
   );
 }
 
-CustomTransitionPage fadeTransition<T>({required BuildContext context, required GoRouterState state, required Widget child}) {
+CustomTransitionPage fadeTransition<T>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
   return CustomTransitionPage<T>(
     key: state.pageKey,
     child: child,
@@ -207,7 +230,9 @@ CustomTransitionPage slideTransition<T>({
     reverseTransitionDuration: const Duration(milliseconds: 250),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return SlideTransition(
-        position: animation.drive(Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.ease))),
+        position: animation.drive(
+          Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.ease)),
+        ),
         child: child,
       );
     },

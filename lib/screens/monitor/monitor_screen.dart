@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 
 import '../camera_live/camera_live_screen.dart';
@@ -30,41 +31,41 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
     return Size(width, height);
   }
 
-  // ignore: unused_element
-  void _onChangeGridMode(BuildContext context, ViewMode mode) {
-    context.read<MonitorBloc>().add(ChangeGridMode(mode));
-  }
-
   @override
   Widget build(BuildContext context) {
-    return MonitorDesktopLayout(
-      content: BlocBuilder<MonitorBloc, MonitorState>(
-        builder: (context, blocState) => stateBuilder<MonitorSuccess>(
-          blocState,
-          onReload: () => context.read<MonitorBloc>().add(GetAllCamera()),
-          child: (state) => PlatformWidget.groupBuilder(
-            onMobile: (context) => Container(),
-            onDesktop: (context) => LayoutBuilder(
-              builder: (context, constraints) {
-                final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
+    return Container(
+      // Có Theme.of(context) --> build lại child khi đổi theme
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: MonitorDesktopLayout(
+        content: BlocBuilder<MonitorBloc, MonitorState>(
+          builder: (context, blocState) => stateBuilder<MonitorSuccess>(
+            blocState,
+            onReload: () => context.read<MonitorBloc>().add(GetAllCamera()),
+            child: (state) => PlatformWidget.groupBuilder(
+              onMobile: (context) => Container(),
+              onDesktop: (context) => LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
 
-                return Wrap(
-                  spacing: spacing,
-                  runSpacing: spacing,
-                  children: state.paginatedCameras.mapIndexed((index, camera) {
-                    return SizedBox.fromSize(
-                      size: size,
-                      child: CameraPlayer(
-                        size: state.mode.total == 1 ? null : size,
-                        data: camera,
-                        key: ValueKey("player($index)___${camera.camId}"),
-                        builder: _buildCameraView,
-                        borderRadius: 10,
-                      ),
-                    );
-                  }).toList(),
-                );
-              },
+                  return Wrap(
+                    spacing: spacing,
+                    runSpacing: spacing,
+                    children: state.paginatedCameras.mapIndexed((index, camera) {
+                      return SizedBox.fromSize(
+                        size: size,
+                        child: CameraPlayer(
+                          size: state.mode.total == 1 ? null : size,
+                          source: camera.subStreamUri.toString(),
+                          name: camera.name,
+                          key: ValueKey("player($index)___${camera.camId}"),
+                          mode: PlayerMode.monitoring,
+                          builder: (player, _) => _buildCameraView(context, player, camera),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -75,7 +76,7 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
     return GestureDetector(
       onTap: () {
-        context.goNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
+        context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
       },
       child: Stack(
         children: [
@@ -91,9 +92,15 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
                 boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
               ),
               padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-              child: Text(
-                data.name,
-                style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w600),
+              child: Row(
+                children: [
+                  SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
+                  SizedBox(width: 4),
+                  Text(
+                    data.name,
+                    style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w600),
+                  ),
+                ],
               ),
             ),
           ),

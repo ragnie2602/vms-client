@@ -1,5 +1,6 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
@@ -15,6 +16,7 @@ class CameraEntity {
   final CameraType type;
   final CameraStatus status;
   final CameraStream stream;
+  final CameraEntityOnvif onvif;
 
   /// streamHlsUrl: http://ipcam.vivas.vn:8080/record01/EfCSykeCNyi-VwJCrB4AAg/EfCSykeCNyi-VwJCrB4AAg.m3u8
   /// streamOriginUrl: rtsp://any:1@10.3.3.162:8081/mystream7
@@ -40,6 +42,7 @@ class CameraEntity {
     required this.type,
     required this.status,
     required this.stream,
+    required this.onvif,
   });
 
   Uri parseUri(String url) {

@@ -10,8 +10,10 @@ import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import '../bloc/monitor/monitor_bloc.dart';
 
 class MonitorCameras extends StatefulWidget {
-  const MonitorCameras({super.key, required this.maxWidth});
+  const MonitorCameras({super.key, required this.maxWidth, this.onTap, this.selectedCamera});
   final double maxWidth;
+  final Function(CameraEntity)? onTap;
+  final CameraEntity? selectedCamera;
 
   @override
   State<MonitorCameras> createState() => _MonitorCamerasState();
@@ -19,11 +21,27 @@ class MonitorCameras extends StatefulWidget {
 
 class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin {
   final _searchController = TextEditingController();
+  late Function(CameraEntity) onTap;
+  late CameraEntity? selectedCamera;
+
+  @override
+  void initState() {
+    onTap = widget.onTap ?? (_) {};
+    selectedCamera = widget.selectedCamera;
+    super.initState();
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant MonitorCameras oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    onTap = widget.onTap ?? (_) {};
+    selectedCamera = widget.selectedCamera;
   }
 
   bool _filterFunc(CameraEntity camera) {
@@ -113,9 +131,14 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
 
   Widget _cameraItem(CameraEntity camera) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        if (selectedCamera?.id == camera.id) return;
+        onTap(camera);
+        if (selectedCamera != null) setState(() => selectedCamera = camera);
+      },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        color: selectedCamera?.id == camera.id ? AppColors.greyF2F4FA : Colors.transparent,
         child: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [
@@ -123,7 +146,8 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 Container(
                   height: 35,
                   alignment: Alignment.topCenter,
-                  child: SvgPicture.asset(AppAssets.tabMonitor, width: 20, height: 20),),
+                  child: SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
+                ),
                 SizedBox(width: 16),
               ],
               if (constraints.maxWidth >= 20 + 16)

@@ -83,6 +83,37 @@ class CameraService {
     );
   }
 
+  Future<Camera> updateCamera({
+    required List<int> cameraId,
+    String? name,
+    String? rtspUrl,
+    String? userName,
+    String? password,
+    String? xaddr,
+    MapLocation? location,
+    List<String>? subStreamUrls,
+  }) async {
+    final request = UpdateCamera_Request()..cameraId = cameraId;
+    if (name != null) request.name = name;
+    if (rtspUrl != null) request.rtspUrl = rtspUrl;
+    if (userName != null) request.userName = userName;
+    if (password != null) request.password = password;
+    if (xaddr != null) request.xaddr = xaddr;
+    if (location != null) request.location = location;
+    if (subStreamUrls != null && subStreamUrls.isNotEmpty) {
+      request.subStreamUrls.addAll(subStreamUrls);
+    }
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.updateCamera)),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(UpdateCamera_Error.valueOf),
+      (buffer) => UpdateCamera_Reply.fromBuffer(buffer).camera,
+    );
+  }
+
   Future<CheckCameraOnvif_Reply> checkCameraOnvif({
     required String xaddrs,
     required String userName,

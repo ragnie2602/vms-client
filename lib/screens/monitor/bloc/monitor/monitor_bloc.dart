@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fvp/mdk.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
@@ -15,7 +13,6 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   MonitorBloc(this.cameraRepository) : super(MonitorInitial()) {
     on<GetAllCamera>(_onGetAllCamera);
     on<ChangeGridMode>(_onChangeGridMode);
-    on<DisposePlayer>(_onDisposePlayer, transformer: sequential());
   }
 
   final ICameraRepository cameraRepository;
@@ -36,14 +33,6 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         );
       },
     );
-  }
-
-  FutureOr<void> _onDisposePlayer(DisposePlayer event, Emitter<MonitorState> emit) async {
-    if (event.sequentialMode) {
-      await event.player.dispose();
-    } else {
-      event.player.dispose();
-    }
   }
 
   FutureOr<void> _onChangeGridMode(ChangeGridMode event, Emitter<MonitorState> emit) async {

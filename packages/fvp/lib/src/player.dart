@@ -25,6 +25,7 @@ class Player {
   /// for builder
   final ValueNotifier<int?> textureId = ValueNotifier<int?>(null);
   Completer<void>? _creatingCompleter;
+  bool _isDisposed = false;
 
   Player() {
     _pp.value = _player;
@@ -162,6 +163,8 @@ class Player {
 
   /// Release resources
   Future<void> dispose() async {
+    if (_isDisposed) return;
+
     if (_pp == nullptr) {
       textureId.dispose();
       return;
@@ -185,6 +188,7 @@ class Player {
       calloc.free(_pp);
       _pp = nullptr;
       textureId.dispose();
+      _isDisposed = true;
     }
   }
 

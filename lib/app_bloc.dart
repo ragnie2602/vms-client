@@ -1,12 +1,22 @@
 import 'dart:async';
 
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fvp/mdk.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
+
+
+class DisposePlayer extends AppEvent {
+  final Player player;
+  final bool sequentialMode;
+
+  const DisposePlayer(this.player, {this.sequentialMode = true});
+}
 
 class ChangeTheme extends AppEvent {
   final ThemeMode themeMode;
@@ -19,6 +29,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   AppBloc() : super(AppState()) {
     on<ChangeTheme>(_onChangeTheme);
     on<AppStarted>(_onAppStarted);
+    on<DisposePlayer>(_onDisposePlayer, transformer: sequential());
   }
 
   FutureOr<void> _onChangeTheme(ChangeTheme event, Emitter<AppState> emit) async {
@@ -36,6 +47,14 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         emit(state.copyWith(themeMode: ThemeMode.values.byName(userTheme)));
       }
     } catch (_) {}
+  }
+
+  FutureOr<void> _onDisposePlayer(DisposePlayer event, Emitter<AppState> emit) async {
+    if (event.sequentialMode) {
+      await event.player.dispose();
+    } else {
+      event.player.dispose();
+    }
   }
 }
 

@@ -43,16 +43,7 @@ class PlayerTimelinePainter extends CustomPainter {
   late final TextPainter _textPainter = TextPainter(textDirection: TextDirection.ltr);
   late TextSpan _textSpan;
   late final Path _path = Path();
-  late final bottomLinePaint = Paint()
-    ..color = Colors.indigoAccent
-    ..strokeCap = StrokeCap.round
-    ..strokeWidth = tickWidth * 1.5
-    ..style = PaintingStyle.stroke;
-  late final centralLinePaint = Paint()
-    ..color = Colors.indigoAccent
-    ..strokeCap = StrokeCap.round
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = tickWidth * 5;
+  late final Paint centralLinePaint;
   late final majorTickPaint = Paint()
     ..color = highlightStyle.color ?? Colors.white
     ..strokeCap = StrokeCap.round
@@ -63,9 +54,7 @@ class PlayerTimelinePainter extends CustomPainter {
     ..strokeCap = StrokeCap.round
     ..style = PaintingStyle.stroke
     ..strokeWidth = tickWidth;
-  final rectLinePaint = Paint()
-    ..color = AppColors.primary
-    ..style = PaintingStyle.fill;
+  late final Paint rectLinePaint;
 
   PlayerTimelinePainter({
     this.onCentralOffset,
@@ -82,8 +71,18 @@ class PlayerTimelinePainter extends CustomPainter {
     required this.normalStyle,
     required this.highlightStyle,
     this.playbacks = const [],
+    Color? playbackColor,
+    Color? centralLineColor,
   }) : _centralDate = centralDate,
        _textSpan = TextSpan(text: '', style: normalStyle),
+       rectLinePaint = Paint()
+         ..color = playbackColor ?? AppColors.primary
+         ..style = PaintingStyle.fill,
+       centralLinePaint = Paint()
+         ..color = centralLineColor ?? Colors.indigoAccent
+         ..strokeCap = StrokeCap.square
+         ..style = PaintingStyle.stroke
+         ..strokeWidth = tickWidth * 2,
        super(repaint: centralDate);
 
   @override
@@ -259,8 +258,8 @@ class PlayerTimelinePainter extends CustomPainter {
     canvas.drawPath(
       _path
         ..reset()
-        ..moveTo(offsetX, size.height - 1) // Xuống đáy dưới tại offsetX
-        ..lineTo(offsetX, 2), // Vẽ từ đáy dưới lên đáy trên
+        ..moveTo(offsetX, size.height) // Xuống đáy dưới tại offsetX
+        ..lineTo(offsetX, 0), // Vẽ từ đáy dưới lên đáy trên
       centralLinePaint,
     );
   }
@@ -287,7 +286,6 @@ class PlayerTimelinePainter extends CustomPainter {
       comparedTime = playback.startTime;
       currentOffset -= durationOffset;
 
-      print("Lát current Offset: $currentOffset -- ${playback.toString()}");
       if (currentOffset < 0) break;
     }
   }
