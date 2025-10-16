@@ -19,6 +19,7 @@ class DependencyInjection {
     Provider<GroupService>(create: (context) => GroupService(context.read())),
     Provider<UserService>(create: (context) => UserService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
+    Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
 
     // Repositories
     Provider<IAuthRepository>(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
+import '../../shared/panel.dart';
 import '../components/monitor_actions.dart';
-import '../widgets/monitor_panel.dart';
 
 class MonitorDesktopLayout extends StatefulWidget {
   const MonitorDesktopLayout({
@@ -20,26 +20,26 @@ class MonitorDesktopLayout extends StatefulWidget {
 }
 
 class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
-  late final GlobalKey<MonitorPanelState> _leftPanelKey = GlobalKey();
-  late final GlobalKey<MonitorPanelState> _rightPanelKey = GlobalKey();
+  late final PanelController _leftController = PanelController();
+  late final PanelController _rightController = PanelController();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        MonitorActions(leftPanelKey: _leftPanelKey, rightPanelKey: _rightPanelKey),
+        MonitorActions(leftController: _leftController, rightController: _rightController),
         Container(width: double.infinity, height: 1, color: AppColors.scaffoldBg),
         Expanded(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              MonitorPanel(width: widget.leftPanelWidth, key: _leftPanelKey),
+              Panel(expandedWidth: widget.leftPanelWidth, controller: _leftController),
 
               Expanded(
                 child: Padding(padding: const EdgeInsets.all(20), child: widget.content),
               ),
 
-              MonitorPanel(width: widget.rightPanelWidth, key: _rightPanelKey),
+              Panel(expandedWidth: widget.rightPanelWidth, controller: _rightController),
             ],
           ),
         ),
