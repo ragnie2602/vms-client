@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/widget/drop_down_search_widget.dart';
 import 'package:vms_flutter_client/screens/home/components/app_field.dart';
 
 import '../../../core/constants/colors.dart';
@@ -73,18 +74,95 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
             top: BorderSide(width: 1, color: AppColors.greyE2E8F0),
           ),
         ),
-        padding: EdgeInsets.symmetric(horizontal: 24),
+
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
-            AppField(
-              controller: _nameGroupController,
-              hintText: 'Nhập tên camera',
-              label: 'Tên nhóm camera',
-              requiredField: true,
-              maxLength: 50,
+            Flexible(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    AppField(
+                      controller: _nameGroupController,
+                      hintText: 'Nhập tên camera',
+                      label: 'Tên nhóm camera',
+                      requiredField: true,
+                      maxLength: 50,
+                    ),
+                    const SizedBox(height: 24),
+                    // drop down search
+                    AppDropdownSearch<DeviceGroup>(
+                      label: 'Nhóm cha',
+                      items: [],
+                      onChanged: (_) {},
+                      hintTextSearch: 'Nhập tên nhóm',
+                      itemAsString: (group) {
+                        return group.name;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+            Flexible(
+              child: Container(
+                width: double.infinity,
+                height: 1,
+                color: AppColors.greyE2E8F0,
+                margin: EdgeInsets.only(bottom: 24),
+              ),
+            ),
+            Row(
+              children: [
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    margin: EdgeInsets.only(left: 24),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(width: 1, color: AppColors.greyE2E8F0),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 13),
+                    child: Center(
+                      child: Text(
+                        'Hủy',
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.grey0F172A,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    margin: EdgeInsets.only(right: 24, left: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 13),
+                    child: Center(
+                      child: Text(
+                        'Xác nhận',
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
           ],

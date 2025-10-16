@@ -95,7 +95,15 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
                     _onSearchGroup();
                   },
                   onClickAddGroup: () {
-                    showDialogAddGroup(context);
+                    // convert list group => thành 1 list 1 cấp
+                    List<DeviceGroup> listGroupOneLevel = [];
+                    for (var e in newState.groups ?? []) {
+                      listGroupOneLevel.addAll(e.convertToOneLevel());
+                    }
+                    showDialogAddGroup(
+                      context,
+                      listGroupAvailable: listGroupOneLevel,
+                    );
                   },
                   tree: newState.tree,
                   isShowGroupAll: true,

@@ -53,4 +53,11 @@ class DeviceGroup {
     }
     return false;
   }
+  List<DeviceGroup> convertToOneLevel(){
+    List<DeviceGroup> ans = [this];
+    for(var e in groups){
+      ans.addAll(e.convertToOneLevel());
+    }
+    return ans;
+  }
 }
