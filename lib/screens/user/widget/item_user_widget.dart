@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
+import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
+import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 
 class ItemUserWidget extends StatelessWidget {
   const ItemUserWidget({
@@ -110,7 +112,15 @@ class ItemUserWidget extends StatelessWidget {
             flex: 190,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Center(child: SvgPicture.asset(AppAssets.icAction)),
+              child: InkWell(
+                onTap: () {
+                  print("delete user");
+                  context.read<UserManagementBloc>().add(
+                    DeleteUserEvent(userId: ItemUser.id, uidStr: ""),
+                  );
+                },
+                child: Center(child: SvgPicture.asset(AppAssets.icAction)),
+              ),
             ),
           ),
         ],
