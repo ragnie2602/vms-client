@@ -103,3 +103,29 @@ class UpdateCameraEvent extends ControlCameraEvent {
     this.subStreamUrls,
   });
 }
+
+class DeleteCameraEvent extends ControlCameraEvent {
+  final List<int> cameraId;
+  const DeleteCameraEvent({required this.cameraId});
+}
+
+class ShareCameraEvent extends ControlCameraEvent {
+  final List<int> cameraId;
+  final int role; // 0 VIEW, 1 FULL
+  final String accountInvite;
+  const ShareCameraEvent({required this.cameraId, required this.role, required this.accountInvite});
+}
+
+class CheckAccountShareEvent extends ControlCameraEvent {
+  final List<int>? cameraId;
+  final String account;
+  final int shareType; // 0 CAMERA, 1 GROUP_CAMERA
+  final List<int>? groupId;
+  const CheckAccountShareEvent({this.cameraId, required this.account, required this.shareType, this.groupId});
+}
+
+class AddCameraToGroupEvent extends ControlCameraEvent {
+  final List<List<int>> cameraIds;
+  final List<int> groupId;
+  const AddCameraToGroupEvent({required this.cameraIds, required this.groupId});
+}

@@ -114,10 +114,21 @@ class ItemUserWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: InkWell(
                 onTap: () {
-                  print("delete user");
                   context.read<UserManagementBloc>().add(
-                    DeleteUserEvent(userId: ItemUser.id, uidStr: ""),
+                    ResetPassWordEvent(
+                      userId: ItemUser.id,
+                      newPassword: '12345678',
+                    ),
                   );
+                  // showResetPasswordDialog(
+                  //   context,
+                  //   user: ItemUser,
+                  //   username: ItemUser.account,
+                  // );
+                  // print("delete user");
+                  // context.read<UserManagementBloc>().add(
+                  //   DeleteUserEvent(userId: ItemUser.id, uidStr: ""),
+                  // );
                 },
                 child: Center(child: SvgPicture.asset(AppAssets.icAction)),
               ),

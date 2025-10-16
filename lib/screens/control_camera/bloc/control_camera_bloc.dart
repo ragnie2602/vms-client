@@ -7,6 +7,8 @@ import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_reposi
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_output.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_input.dart';
+import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
@@ -17,10 +19,13 @@ class ControlCameraBloc
   final IControlCameraRepository controlGroupRepository;
   final FilterCameraUseCase filterCameraUseCase;
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
+
+  final DeleteCameraUseCase deleteCameraUseCase;
   ControlCameraBloc({
     required this.controlGroupRepository,
     required this.filterCameraUseCase,
     required this.filterCameraNoGroupUseCase,
+    required this.deleteCameraUseCase,
   }) : super(const ControlCameraState()) {
     on<ValidateCameraEvent>(_onValidateCamera);
     on<GetListCameraEvent>(_onGetListCamera);
@@ -30,6 +35,10 @@ class ControlCameraBloc
     on<AddCameraRTSPEvent>(_onAddCameraRTSP);
     on<AddCameraOnvifEvent>(_onAddCameraOnvif);
     on<UpdateCameraEvent>(_onUpdateCamera);
+    on<DeleteCameraEvent>(_onDeleteCamera);
+    on<ShareCameraEvent>(_onShareCamera);
+    on<CheckAccountShareEvent>(_onCheckAccountShare);
+    on<AddCameraToGroupEvent>(_onAddCameraToGroup);
   }
 
   // list camera
@@ -168,6 +177,7 @@ class ControlCameraBloc
     UpdateCameraEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
+    emit(const ControlCameraState());
     final res = await controlGroupRepository.updateCamera(
       cameraId: event.cameraId,
       name: event.name,
@@ -181,6 +191,73 @@ class ControlCameraBloc
     res.fold(
       (onFailure) => emit(AddCameraFailState(res.left.toString())),
       (onSuccess) => emit(ListCameraSuccessState(cameras: [onSuccess])),
+    );
+    res.fold(
+      (onFailure) => emit(AddCameraFailState(res.left.toString())),
+      (onSuccess) => emit(UpdateCameraSuccessState(cameraEntity: onSuccess)),
+    );
+  }
+
+  FutureOr<void> _onDeleteCamera(
+    DeleteCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final input = DeleteCameraInput(
+      cameraId: event.cameraId,
+      currentList: listCamera,
+    );
+    final output = await deleteCameraUseCase.execute(input);
+
+    if (output.isSuccess) {
+      listCamera = output.listCamera;
+      emit(DeleteCameraSuccessState(deletedCameraId: event.cameraId));
+    } else {
+      emit(AddCameraFailState(output.errorMessage ?? 'Xóa camera thất bại'));
+    }
+  }
+
+  FutureOr<void> _onShareCamera(
+    ShareCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final res = await controlGroupRepository.shareCamera(
+      cameraId: event.cameraId,
+      role: event.role,
+      accountInvite: event.accountInvite,
+    );
+    res.fold(
+      (onFailure) => emit(AddCameraFailState(res.left.toString())),
+      (onSuccess) => emit(ControlCameraState()),
+    );
+  }
+
+  FutureOr<void> _onCheckAccountShare(
+    CheckAccountShareEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final res = await controlGroupRepository.checkAccountShare(
+      cameraId: event.cameraId,
+      account: event.account,
+      shareType: event.shareType,
+      groupId: event.groupId,
+    );
+    res.fold(
+      (onFailure) => emit(AddCameraFailState(res.left.toString())),
+      (onSuccess) => emit(ControlCameraState()),
+    );
+  }
+
+  FutureOr<void> _onAddCameraToGroup(
+    AddCameraToGroupEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final res = await controlGroupRepository.addCameraToGroup(
+      cameraIds: event.cameraIds,
+      groupId: event.groupId,
+    );
+    res.fold(
+      (onFailure) => emit(AddCameraFailState(res.left.toString())),
+      (onSuccess) => emit(ListCameraSuccessState(cameras: onSuccess)),
     );
   }
 }
