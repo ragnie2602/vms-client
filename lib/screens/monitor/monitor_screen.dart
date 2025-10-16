@@ -54,6 +54,7 @@ class MonitorScreen extends StatelessWidget with StateBuilderMixin {
                       return SizedBox.fromSize(
                         size: size,
                         child: CameraPlayer(
+                          belongViewMode: state.mode,
                           size: state.mode.total == 1 ? null : size,
                           source: camera.subStreamUri.toString(),
                           name: camera.name,

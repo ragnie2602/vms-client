@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+
+import '../bloc/camera_live/camera_live_bloc.dart';
 
 class VolumeWithSlide extends StatefulWidget {
   const VolumeWithSlide({super.key});
@@ -11,7 +14,7 @@ class VolumeWithSlide extends StatefulWidget {
 
 class _VolumeWithSlideState extends State<VolumeWithSlide> {
   bool showSlider = false;
-  double volume = 50;
+  bool isMuted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -21,18 +24,25 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
       onExit: (event) => setState(() => showSlider = false),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: <Widget>[
-            SvgPicture.asset(AppAssets.icVolume, width: 28, height: 28),
+        child: BlocSelector<CameraLiveBloc, CameraLiveState, double>(
+          selector: (state) => state.volume,
+          builder: (context, volume) {
+            return Row(
+              children: <Widget>[
+                InkWell(
+                  onTap: () {
+                    isMuted = !isMuted;
+                    context.read<CameraLiveBloc>().add(ChangeVolume(volume, mute: isMuted));
+                  },
+                  child: SvgPicture.asset(AppAssets.icVolume, width: 28, height: 28),
+                ),
 
-            if (showSlider) SizedBox(width: 8),
-            AnimatedContainer(
-              duration: Durations.short4,
-              width: showSlider ? 88 : 0,
-              child: showSlider
-                  ? StatefulBuilder(
-                      builder: (context, setState) {
-                        return SizedBox(
+                if (showSlider) SizedBox(width: 8),
+                AnimatedContainer(
+                  duration: Durations.short4,
+                  width: showSlider ? 88 : 0,
+                  child: showSlider
+                      ? SizedBox(
                           width: double.infinity,
                           height: 10,
                           child: SliderTheme(
@@ -43,19 +53,20 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
                               padding: EdgeInsets.zero,
                               min: 0,
                               max: 100,
-                              // divisions: 10,
                               activeColor: Colors.black,
                               inactiveColor: Colors.grey,
                               value: volume,
-                              onChanged: (value) => setState(() => volume = value),
+                              onChanged: (value) {
+                                context.read<CameraLiveBloc>().add(ChangeVolume(value));
+                              },
                             ),
                           ),
-                        );
-                      },
-                    )
-                  : SizedBox(),
-            ),
-          ],
+                        )
+                      : SizedBox(),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

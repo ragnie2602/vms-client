@@ -14,6 +14,10 @@ class PlayerControls extends StatelessWidget {
   const PlayerControls({super.key, required this.mode});
   final LiveViewMode mode;
 
+  CameraPlayerState? player(BuildContext context) {
+    return context.read<CameraLiveBloc>().state.ref.currentState;
+  }
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
@@ -42,27 +46,35 @@ class PlayerControls extends StatelessWidget {
                   VolumeWithSlide(),
 
                   /* Backward */
-                  if (mode.isPlayback) _controlItem(AppAssets.icFastBackward, () {}),
+                  if (mode.isPlayback) _controlItem(AppAssets.icFastBackward, () {
+                    context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30), -1));
+                  }),
 
                   /* Pause/Play */
                   BlocSelector<CameraLiveBloc, CameraLiveState, PlayerStatus>(
                     selector: (state) => state.status,
                     builder: (context, status) => _controlItem(
                       status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
-                      () => context.read<CameraLiveBloc>().state.ref.currentState?.let(((state) {
+                      () => player(context)?.let(((state) {
                         status == PlayerStatus.playing ? state.pause() : state.play();
                       })),
                     ),
                   ),
 
-                  /* Backward */
-                  if (mode.isPlayback) _controlItem(AppAssets.icFastForward, () {}),
+                  /* Forward */
+                  if (mode.isPlayback) _controlItem(AppAssets.icFastForward, () {
+                    context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30), 1));
+                  }),
 
                   /* Record */
                   _controlItem(AppAssets.icRecord, () {}),
 
                   /* Camera */
-                  _controlItem(AppAssets.icCamera, () {}),
+                  _controlItem(AppAssets.icCamera, () async {
+                    final res = await player(context)?.player.snapshot();
+
+                    print(res);
+                  }),
 
                   /* Speed */
                   if (mode.isPlayback) _buildSpeed(),

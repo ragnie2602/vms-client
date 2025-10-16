@@ -15,27 +15,31 @@ class CameraLiveState extends BaseState {
     required this.mode,
     required this.camera,
     required this.ref,
+    this.volume = 100,
   });
 
   final LiveViewMode mode;
   final CameraEntity camera;
   final GlobalKey<CameraPlayerState> ref;
   final PlayerStatus status;
+  final double volume;
 
   @override
-  List<Object?> get props => [mode, camera, status];
+  List<Object?> get props => [mode, camera, status, volume];
 
   CameraLiveState copyWith({
     LiveViewMode? mode,
     CameraEntity? camera,
     GlobalKey<CameraPlayerState>? ref,
     PlayerStatus? status,
+    double? volume,
   }) {
     return CameraLiveState(
       mode: mode ?? this.mode,
       camera: camera ?? this.camera,
       ref: ref ?? this.ref,
       status: status ?? this.status,
+      volume: volume ?? this.volume,
     );
   }
 }

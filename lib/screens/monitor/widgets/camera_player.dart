@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fvp/mdk.dart';
@@ -8,6 +9,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 
 enum _PlayerState { initializing, initialized, error, none }
 
@@ -24,6 +26,7 @@ class CameraPlayer extends StatefulWidget {
     required this.source,
     required this.name,
     required this.mode,
+    this.belongViewMode,
   });
 
   final String source;
@@ -32,6 +35,7 @@ class CameraPlayer extends StatefulWidget {
   final Size? size;
   final double? borderRadius;
   final PlayerMode mode;
+  final ViewMode? belongViewMode;
 
   @override
   State<CameraPlayer> createState() => CameraPlayerState();
@@ -80,7 +84,11 @@ class CameraPlayerState extends State<CameraPlayer> {
     super.didUpdateWidget(oldWidget);
 
     // Thay đổi chế độ xem
-    if (widget.mode == PlayerMode.monitoring && oldWidget.size != widget.size) {
+    if (widget.mode == PlayerMode.monitoring &&
+        oldWidget.belongViewMode != null &&
+        widget.belongViewMode != null &&
+        widget.belongViewMode != oldWidget.belongViewMode &&
+        oldWidget.size != widget.size) {
       _debounceUpdateTexture?.cancel();
       _debounceUpdateTexture = Timer(const Duration(milliseconds: 300), () {
         final data = widget.size?.let(
@@ -162,8 +170,11 @@ class CameraPlayerState extends State<CameraPlayer> {
       if (!mounted) return _timer?.cancel();
 
       _player.position.let((pos) {
-        if (widget.mode == PlayerMode.playback && _player.mediaInfo.duration == pos) {
-          _status.value = PlayerStatus.finished;
+        if (widget.mode == PlayerMode.playback) {
+          if (_player.state == PlaybackState.stopped) _status.value = PlayerStatus.finished;
+          if (_status.value == PlayerStatus.finished && _player.state == PlaybackState.playing) {
+            _status.value = PlayerStatus.playing;
+          }
         }
 
         if (!_isUpdatingDuration) _onDuration?.call(pos);
@@ -218,22 +229,13 @@ class CameraPlayerState extends State<CameraPlayer> {
 
     // Trường hợp vẫn source đó nhưng seek
     if (source == _currentSource && _state.value == _PlayerState.initialized && position != null) {
-      _isUpdatingDuration = true;
-
-      if (_status.value == PlayerStatus.finished) {
-        _player.play();
-        _status.value = PlayerStatus.playing;
-      }
-      await _player.seek(position: position);
-
-      // Delay tẹo để tránh bị nhảy giữa vị trí cũ và mới
-      await Future.delayed(Duration(milliseconds: 250));
-      _isUpdatingDuration = false;
+      await seek(position, 0);
       return;
     }
 
     // Lỗi OR đổi source --> reset
     _currentSource = source;
+    _debounce?.cancel();
     _timer?.cancel();
     _initPlayer();
     await _onConnecting(isRetry: true, seek: position);
@@ -247,6 +249,30 @@ class CameraPlayerState extends State<CameraPlayer> {
   void pause() {
     _player.pause();
     _status.value = PlayerStatus.paused;
+  }
+
+  Future<void> seek(int position, int type) async {
+    if (_player.seekingCompleter?.isCompleted == false) {
+      await _player.seekingCompleter?.future;
+    }
+
+    _isUpdatingDuration = true;
+
+    int targetPosition = position;
+    if (type > 0) targetPosition = min(_player.position + position, _player.mediaInfo.duration);
+    if (type < 0) targetPosition = max(0, _player.position - position);
+
+    if (_status.value == PlayerStatus.finished && targetPosition < _player.mediaInfo.duration) {
+      _player.play();
+      _status.value = PlayerStatus.playing;
+    }
+
+    final res = await _player.seek(position: targetPosition);
+    if (res == -10 && targetPosition >= _player.mediaInfo.duration) {
+      _status.value = PlayerStatus.finished;
+    }
+
+    _isUpdatingDuration = false;
   }
 
   @override
@@ -298,7 +324,9 @@ class CameraPlayerState extends State<CameraPlayer> {
         Icon(Icons.videocam_off, color: Colors.red, size: 36),
         SizedBox(height: 6),
         Text(
-          'Camera ${widget.name} đang ngoại tuyến',
+          widget.mode != PlayerMode.playback
+              ? 'Camera ${widget.name} đang ngoại tuyến'
+              : 'Có lỗi xảy ra khi tải video',
           style: TextStyle(fontSize: 13, color: Colors.white),
         ),
       ],
