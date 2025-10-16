@@ -16,6 +16,7 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
     on<ChangeViewMode>(_onChaneViewMode);
     on<ChangeCamera>(_onChangeCamera);
     on<ChangePlayerSource>(_onChangePlayerSource, transformer: sequential());
+    on<ChangePlayerStatus>(_onChangePlayerStatus);
   }
 
   FutureOr<void> _onChaneViewMode(ChangeViewMode event, Emitter<CameraLiveState> emit) async {
@@ -39,5 +40,11 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
       position: event.position,
       onDuration: event.onDuration,
     );
+  }
+
+  FutureOr<void> _onChangePlayerStatus(ChangePlayerStatus event, Emitter<CameraLiveState> emit) {
+    if (state.status == event.status) return null;
+
+    emit(state.copyWith(status: event.status));
   }
 }

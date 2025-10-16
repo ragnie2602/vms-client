@@ -10,24 +10,32 @@ enum LiveViewMode {
 }
 
 class CameraLiveState extends BaseState {
-  const CameraLiveState({required this.mode, required this.camera, required this.ref});
+  const CameraLiveState({
+    this.status = PlayerStatus.playing,
+    required this.mode,
+    required this.camera,
+    required this.ref,
+  });
 
   final LiveViewMode mode;
   final CameraEntity camera;
   final GlobalKey<CameraPlayerState> ref;
+  final PlayerStatus status;
 
   @override
-  List<Object?> get props => [mode, camera];
+  List<Object?> get props => [mode, camera, status];
 
   CameraLiveState copyWith({
     LiveViewMode? mode,
     CameraEntity? camera,
     GlobalKey<CameraPlayerState>? ref,
+    PlayerStatus? status,
   }) {
     return CameraLiveState(
       mode: mode ?? this.mode,
       camera: camera ?? this.camera,
       ref: ref ?? this.ref,
+      status: status ?? this.status,
     );
   }
 }

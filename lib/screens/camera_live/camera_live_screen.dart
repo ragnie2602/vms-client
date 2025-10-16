@@ -81,7 +81,7 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
       source: overrideSource ?? state.camera.mainStreamUri.toString(),
       name: state.camera.name,
       mode: overrideSource == null ? PlayerMode.livestreaming : PlayerMode.playback,
-      builder: (context, playerWidget) => Stack(
+      builder: (playerWidget, status) => Stack(
         fit: StackFit.expand,
         children: [
           playerWidget,
@@ -110,6 +110,32 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
                 ],
               ),
             ),
+          ),
+
+          ValueListenableBuilder(
+            valueListenable: status,
+            builder: (context, value, child) {
+              context.read<CameraLiveBloc>().add(ChangePlayerStatus(value));
+
+              if (value == PlayerStatus.playing) return const SizedBox.shrink();
+              return Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.black.withValues(alpha: 0.5),
+                alignment: Alignment.center,
+                child: InkWell(
+                  onTap: () {
+                    context.read<CameraLiveBloc>().state.ref.currentState?.play();
+                  },
+                  child: SvgPicture.asset(
+                    AppAssets.icPlay,
+                    width: 80,
+                    height: 80,
+                    colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

@@ -120,7 +120,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
 
     _cameraLiveBloc.add(
       ChangePlayerSource(
-        state.currentPlayback!.urlPlayback,
+        state.currentPlayback?.urlPlayback,
         position: state.currentDuration,
         onDuration: (int milis) {
           if (_isInteracting) return;
@@ -143,15 +143,15 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
           onTapDown: _onTapDown,
           onHorizontalDragUpdate: _onHorizontalDragUpdate,
           onHorizontalDragStart: (_) => _isInteracting = true,
-          onHorizontalDragEnd: (_) => _isInteracting = false,
+          // Delay tẹo để tránh bị nhảy giữa vị trí cũ và mới
+          onHorizontalDragEnd: (_) =>
+              Future.delayed(Duration(milliseconds: 500), () => _isInteracting = false),
           // Không bị vẽ ra ngoài
           child: ClipRRect(
             child: RepaintBoundary(
               child: BlocConsumer<PlaybackBloc, PlaybackState>(
                 listener: (context, state) {
-                  if (state is PlaybackSuccess && state.currentPlayback != null) {
-                    _playPlayback(state);
-                  }
+                  if (state is PlaybackSuccess) _playPlayback(state);
                 },
                 buildWhen: (previous, current) {
                   if (previous is PlaybackSuccess && current is PlaybackSuccess) {

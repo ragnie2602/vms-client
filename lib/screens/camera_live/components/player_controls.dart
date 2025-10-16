@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
 import '../bloc/camera_live/camera_live_bloc.dart';
 import '../widgets/volume_with_slide.dart';
@@ -43,7 +45,15 @@ class PlayerControls extends StatelessWidget {
                   if (mode.isPlayback) _controlItem(AppAssets.icFastBackward, () {}),
 
                   /* Pause/Play */
-                  _controlItem(AppAssets.icPlay, () {}),
+                  BlocSelector<CameraLiveBloc, CameraLiveState, PlayerStatus>(
+                    selector: (state) => state.status,
+                    builder: (context, status) => _controlItem(
+                      status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
+                      () => context.read<CameraLiveBloc>().state.ref.currentState?.let(((state) {
+                        status == PlayerStatus.playing ? state.pause() : state.play();
+                      })),
+                    ),
+                  ),
 
                   /* Backward */
                   if (mode.isPlayback) _controlItem(AppAssets.icFastForward, () {}),
