@@ -68,7 +68,10 @@ class UserManagementRepository extends BaseRepository
     required String newPassword,
   }) async {
     return await catchError<bool>(() async {
-      final value = await service.resetPassword(userId: userId);
+      final value = await service.resetPassword(
+        userId: userId,
+        newPassword: newPassword,
+      );
       return Right(value);
     });
   }
