@@ -19,12 +19,11 @@ class GroupCameraScreen extends StatefulWidget {
 }
 
 class _GroupCameraScreenState extends State<GroupCameraScreen> {
-  TextEditingController groupNameController = TextEditingController();
   TextEditingController searchGroupNameController = TextEditingController();
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controllerTree;
   @override
   void dispose() {
-    groupNameController.dispose();
+    searchGroupNameController.dispose();
     super.dispose();
   }
 
@@ -44,12 +43,15 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
     );
   }
 
-  void _onAddGroupCamera() {
+  void _onAddGroupCamera({
+    required String groupName,
+    DeviceGroup? parentGroup,
+  }) {
     // chưa lấy được parent group id => bổ sung sau
     context.read<GroupCameraBloc>().add(
       AddGroupCameraEvent(
-        groupName: groupNameController.text,
-        parentGroupId: [],
+        groupName: groupName,
+        parentGroupId: parentGroup != null ? parentGroup.groupId : [],
       ),
     );
   }
@@ -66,8 +68,7 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<GroupCameraBloc, GroupCameraState>(
-      listener: (context, state) {
-      },
+      listener: (context, state) {},
       builder: (context, newState) {
         if (newState is GroupCameraLoadingState) {
           return Center(child: CircularProgressIndicator());
@@ -97,6 +98,11 @@ class _GroupCameraScreenState extends State<GroupCameraScreen> {
                     showDialogAddGroup(
                       context,
                       listGroupAvailable: listGroupOneLevel,
+                      onConfirm: ({nameNewGroup, parentGroup}) =>
+                          _onAddGroupCamera(
+                            groupName: nameNewGroup ?? '',
+                            parentGroup: parentGroup,
+                          ),
                     );
                   },
                   tree: newState.tree,

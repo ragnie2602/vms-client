@@ -57,7 +57,7 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     AddGroupCameraEvent event,
     Emitter<GroupCameraState> emit,
   ) async {
-    emit(AddGroupCameraLoadingState());
+    // emit(AddGroupCameraLoadingState());
     final groups = await groupCameraRepository.addGroupCamera(
       groupName: event.groupName,
       parentGroupId: event.parentGroupId,

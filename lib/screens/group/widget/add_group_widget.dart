@@ -10,7 +10,7 @@ import '../../../core/constants/colors.dart';
 
 Future<T?> showDialogAddGroup<T>(
   BuildContext context, {
-  Function()? onConfirm,
+  Function({String? nameNewGroup, DeviceGroup? parentGroup})? onConfirm,
   List<DeviceGroup>? listGroupAvailable,
 }) {
   final controlCameraBloc = context.read<GroupCameraBloc>();
@@ -19,14 +19,18 @@ Future<T?> showDialogAddGroup<T>(
     barrierDismissible: false,
     builder: (_) => BlocProvider.value(
       value: controlCameraBloc,
-      child: AddGroupWidget(listGroupAvailable: listGroupAvailable),
+      child: AddGroupWidget(
+        listGroupAvailable: listGroupAvailable,
+        onConfirm: onConfirm,
+      ),
     ),
   );
 }
 
 class AddGroupWidget extends StatefulWidget {
-  const AddGroupWidget({super.key, this.listGroupAvailable});
+  const AddGroupWidget({super.key, this.listGroupAvailable, this.onConfirm});
   final List<DeviceGroup>? listGroupAvailable;
+  final Function({String? nameNewGroup, DeviceGroup? parentGroup})? onConfirm;
 
   @override
   State<AddGroupWidget> createState() => _AddGroupWidgetState();
@@ -34,6 +38,7 @@ class AddGroupWidget extends StatefulWidget {
 
 class _AddGroupWidgetState extends State<AddGroupWidget> {
   final _nameGroupController = TextEditingController();
+  DeviceGroup? _selectedParentGroup;
 
   @override
   void dispose() {
@@ -98,8 +103,13 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                     // drop down search
                     AppDropdownSearch<DeviceGroup>(
                       label: 'Nhóm cha',
-                      items: [],
-                      onChanged: (_) {},
+                      items: widget.listGroupAvailable ?? [],
+                      onChanged: (value) {
+                        if (_selectedParentGroup?.groupId == value?.groupId) {
+                          return;
+                        }
+                        _selectedParentGroup = value;
+                      },
                       hintTextSearch: 'Nhập tên nhóm',
                       itemAsString: (group) {
                         return group.name;
@@ -122,20 +132,26 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
               children: [
                 Flexible(
                   flex: 1,
-                  child: Container(
-                    margin: EdgeInsets.only(left: 24),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(width: 1, color: AppColors.greyE2E8F0),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 13),
-                    child: Center(
-                      child: Text(
-                        'Hủy',
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.grey0F172A,
+                  child: InkWell(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      margin: EdgeInsets.only(left: 24),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          width: 1,
+                          color: AppColors.greyE2E8F0,
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 13),
+                      child: Center(
+                        child: Text(
+                          'Hủy',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.grey0F172A,
+                          ),
                         ),
                       ),
                     ),
@@ -143,20 +159,29 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                 ),
                 Flexible(
                   flex: 1,
-                  child: Container(
-                    margin: EdgeInsets.only(right: 24, left: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 13),
-                    child: Center(
-                      child: Text(
-                        'Xác nhận',
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                  child: InkWell(
+                    onTap: () {
+                      widget.onConfirm?.call(
+                        nameNewGroup: _nameGroupController.text.trim(),
+                        parentGroup: _selectedParentGroup,
+                      );
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(right: 24, left: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 13),
+                      child: Center(
+                        child: Text(
+                          'Xác nhận',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
