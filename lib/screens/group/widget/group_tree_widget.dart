@@ -44,11 +44,9 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
   @override
   void didUpdateWidget(TreeGroupWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // if (oldWidget.tree.hashCode != widget.tree.hashCode) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _treeController?.expandAllChildren(widget.tree);
-      });
-    // }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _treeController?.expandAllChildren(widget.tree);
+    });
   }
 
   @override
@@ -234,7 +232,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
             showRootNode: false,
             tree: widget.tree,
             expansionBehavior: ExpansionBehavior.scrollToLastChild,
-            indentation: const Indentation(),
+            indentation: Indentation(color: Colors.black),
             expansionIndicatorBuilder: (context, node) =>
                 NoExpansionIndicator(tree: node),
             builder: (context, node) => GroupNode(
