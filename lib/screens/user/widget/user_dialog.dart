@@ -177,13 +177,6 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Vui lòng nhập các thông tin tài khoản',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                      fontSize: 13,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -204,32 +197,88 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 children: [
                   const SizedBox(height: 16),
                   // Tài khoản
-                  AppField(
-                    controller: _username,
-                    hintText: 'Nhập tài khoản',
-                    label: 'Tài khoản',
-                    requiredField: true,
-                    validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: AppField(
+                          controller: _username,
+                          hintText: 'Nhập tài khoản',
+                          label: 'Tên đăng nhập',
+                          requiredField: true,
+                          validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: AppField(
+                          controller: _password,
+                          hintText: 'Nhập mật khẩu (*)',
+                          label: 'Mật khẩu',
+                          requiredField: true,
+                          obscureText: _obscurePassword,
+                          validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
+                          suffix: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
-                  // Mật khẩu
-                  AppField(
-                    controller: _password,
-                    hintText: 'Nhập mật khẩu (*)',
-                    label: 'Mật khẩu',
-                    requiredField: true,
-                    obscureText: _obscurePassword,
-                    validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
-                    suffix: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: AppField(
+                          controller: _email,
+                          hintText: 'Nhập email',
+                          label: 'Email',
+                          keyboardType: TextInputType.emailAddress,
+                        ),
                       ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: AppField(
+                          controller: _phoneNumber,
+                          hintText: 'Nhập số điện thoại',
+                          label: 'Số điện thoại',
+                          keyboardType: TextInputType.phone,
+                        ),
+                      ),
+                    ],
                   ),
+
+                  // Số điện thoại
+                  const SizedBox(height: 12),
+                  // Họ và tên
+                  AppField(
+                    controller: _fullName,
+                    hintText: 'Nhập họ và tên',
+                    label: 'Họ và tên',
+                  ),
+                  const SizedBox(height: 12),
+                  // Mô tả
+                  AppField(
+                    controller: _description,
+                    hintText: 'Nhập ghi chú',
+                    label: 'Ghi chú',
+                    maxLines: 4,
+                    maxLength: 250,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Mật khẩu
                   const SizedBox(height: 16),
                   // Tài khoản Admin toggle
                   _buildToggleRow(
@@ -253,38 +302,8 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                     onChanged: (value) => setState(() => _canAddCamera = value),
                   ),
                   const SizedBox(height: 16),
+
                   // Email
-                  AppField(
-                    controller: _email,
-                    hintText: 'Nhập email',
-                    label: 'Email',
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 12),
-                  // Số điện thoại
-                  AppField(
-                    controller: _phoneNumber,
-                    hintText: 'Nhập số điện thoại',
-                    label: 'Số điện thoại',
-                    keyboardType: TextInputType.phone,
-                  ),
-                  const SizedBox(height: 12),
-                  // Họ và tên
-                  AppField(
-                    controller: _fullName,
-                    hintText: 'Nhập họ và tên',
-                    label: 'Họ và tên',
-                  ),
-                  const SizedBox(height: 12),
-                  // Mô tả
-                  AppField(
-                    controller: _description,
-                    hintText: 'Mô tả (Tối đa 250 ký tự)',
-                    label: 'Mô tả',
-                    maxLines: 4,
-                    maxLength: 250,
-                  ),
-                  const SizedBox(height: 8),
                 ],
               ),
             ),
