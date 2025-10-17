@@ -7,9 +7,10 @@ import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
-import 'package:vms_flutter_client/screens/group/widget/add_group_widget.dart';
+import 'package:vms_flutter_client/screens/group/widget/add_edit_group_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/item_group_action.dart';
+import 'package:vms_flutter_client/screens/group/widget/remove_group_widget.dart';
 
 class GroupCameraView extends StatefulWidget {
   const GroupCameraView({
@@ -86,31 +87,46 @@ class _GroupCameraViewState extends State<GroupCameraView> {
       parentGroupId: parentGroupId,
       addEditType: addEditType ?? AddEditGroupType.add,
       currentGroup: currentGroup,
-      onConfirm: ({
-        String? nameNewGroup,
-        List<int>? parentGroupId,
-        DeviceGroup? currentGroup,
-      }) {
-        if (addEditType == AddEditGroupType.add) {
-          _onAddGroupCamera(
-            groupName: nameNewGroup ?? '',
-            parentGroupId: parentGroupId ?? [],
-          );
-        } else if (addEditType == AddEditGroupType.edit &&
-            currentGroup != null) {
-          _onEditGroupCamera(
-            groupName: nameNewGroup ?? '',
-            groupId: currentGroup.groupId,
-            parentGroupId: parentGroupId ?? [],
-          );
-        }
-      },
+      onConfirm:
+          ({
+            String? nameNewGroup,
+            List<int>? parentGroupId,
+            DeviceGroup? currentGroup,
+          }) {
+            if (addEditType == AddEditGroupType.add) {
+              _onAddGroupCamera(
+                groupName: nameNewGroup ?? '',
+                parentGroupId: parentGroupId ?? [],
+              );
+            } else if (addEditType == AddEditGroupType.edit &&
+                currentGroup != null) {
+              _onEditGroupCamera(
+                groupName: nameNewGroup ?? '',
+                groupId: currentGroup.groupId,
+                parentGroupId: parentGroupId ?? [],
+              );
+            }
+          },
     );
   }
 
   void _onRemoveGroupCamera({required List<int> groupId}) {
     context.read<GroupCameraBloc>().add(
       RemoveGroupCameraEvent(groupId: groupId),
+    );
+  }
+
+  void _onShowDialogRemoveGroup({
+    required BuildContext c,
+    DeviceGroup? currentGroup,
+  }) {
+    showDialogRemoveGroup(
+      c,
+      onConfirm: () {
+        _onRemoveGroupCamera(
+          groupId: currentGroup != null ? currentGroup.groupId : [],
+        );
+      },
     );
   }
 
@@ -180,6 +196,10 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                           case ItemGroupAction.share:
                             break;
                           case ItemGroupAction.remove:
+                            _onShowDialogRemoveGroup(
+                              c: context,
+                              currentGroup: node.data,
+                            );
                             break;
                           case ItemGroupAction.addCamera:
                             break;
