@@ -14,6 +14,8 @@ import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
+import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
@@ -44,6 +46,12 @@ enum Routes {
     path: '/monitoring',
     title: 'Liveview',
     description: 'Hiển thị các màn hình theo dõi theo thời gian thực',
+  ),
+  custom_live_view(
+    name: 'custom_live_view',
+    path: '/custom_live_view',
+    title: 'Custom Live View',
+    description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   livecamera(name: 'livecamera', path: '/livecamera'),
   playback(
@@ -96,8 +104,17 @@ class AppRouter {
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(create: (context) => MonitorBloc(context.read())..add(GetAllCamera())),
-            BlocProvider(create: (context) => CustomViewBloc(context.read())..add(GetListCustomViews()), lazy: false),
-            BlocProvider(create: (context) => GroupCameraBloc(groupCameraRepository: context.read(), searchGroupUseCase: context.read<SearchGroupUseCase>())..add(GetAllGroupCameraEvent()), lazy: false),
+            BlocProvider(
+              create: (context) => CustomViewBloc(context.read())..add(GetListCustomViews()),
+              lazy: false,
+            ),
+            BlocProvider(
+              create: (context) => GroupCameraBloc(
+                groupCameraRepository: context.read(),
+                searchGroupUseCase: context.read<SearchGroupUseCase>(),
+              )..add(GetAllGroupCameraEvent()),
+              lazy: false,
+            ),
             BlocProvider(
               create: (context) => ControlCameraBloc(
                 controlGroupRepository: context.read(),
@@ -107,18 +124,32 @@ class AppRouter {
               ),
             ),
 
-            BlocProvider(create: (context) => UserManagementBloc(userManagermentRepository: context.read())),
+            BlocProvider(
+              create: (context) => UserManagementBloc(userManagermentRepository: context.read()),
+            ),
           ],
           child: HomeScreen(body: child),
         ),
         routes: [
-          GoRoute(
-            path: Routes.monitoring.path,
-            name: Routes.monitoring.name,
-            pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: MonitorScreen());
-            },
+          ShellRoute(
+            builder: (context, state, child) => MonitorScreen(child: child),
+            routes: [
+              GoRoute(
+                path: Routes.monitoring.path,
+                name: Routes.monitoring.name,
+                pageBuilder: (context, state) =>
+                    fadeTransition(context: context, state: state, child: DefaultMonitorPane()),
+              ),
+              GoRoute(
+                path: Routes.custom_live_view.path,
+                name: Routes.custom_live_view.name,
+                pageBuilder: (context, state) {
+                  return fadeTransition(context: context, state: state, child: CustomMonitorPane());
+                },
+              ),
+            ],
           ),
+
           GoRoute(
             path: Routes.livecamera.path,
             name: Routes.livecamera.name,
