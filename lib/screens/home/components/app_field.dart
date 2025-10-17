@@ -14,6 +14,7 @@ class AppField extends StatelessWidget {
     this.maxLength,
     this.validator,
     this.label,
+    this.paddingBottomLabel = 6,
     this.requiredField = false,
     this.trailingButton,
   });
@@ -25,6 +26,7 @@ class AppField extends StatelessWidget {
   final TextInputType? keyboardType;
   final int maxLines;
   final int? maxLength;
+  final double paddingBottomLabel;
   final String? Function(String?)? validator;
   final String? label;
   final bool requiredField;
@@ -50,65 +52,62 @@ class AppField extends StatelessWidget {
             ),
           );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: ValueListenableBuilder<TextEditingValue>(
-        valueListenable: controller,
-        builder: (context, value, _) {
-          final List<Widget> suffixChildren = [];
-          if (suffix != null) suffixChildren.add(suffix!);
-          if (maxLength != null) {
-            suffixChildren.add(
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text('${value.text.length}/$maxLength', style: theme.textTheme.bodySmall),
-              ),
-            );
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (labelWidget != null) ...[Padding(padding: const EdgeInsets.only(bottom: 6), child: labelWidget)],
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: controller,
-                      obscureText: obscureText,
-                      keyboardType: keyboardType,
-                      maxLines: maxLines,
-                      maxLength: maxLength,
-                      validator: validator,
-                      decoration: InputDecoration(
-                        hintText: hintText,
-                        hintStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF92929D)),
-                        // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
-                        counterText: '',
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(1),
-                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(1),
-                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(1),
-                          borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
-                        ),
-                        suffixIcon: suffixChildren.isEmpty ? null : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, _) {
+        final List<Widget> suffixChildren = [];
+        if (suffix != null) suffixChildren.add(suffix!);
+        if (maxLength != null) {
+          suffixChildren.add(
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text('${value.text.length}/$maxLength', style: theme.textTheme.bodySmall),
+            ),
+          );
+        }
+    
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (labelWidget != null) ...[Padding(padding: EdgeInsets.only(bottom: paddingBottomLabel), child: labelWidget)],
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: controller,
+                    obscureText: obscureText,
+                    keyboardType: keyboardType,
+                    maxLines: maxLines,
+                    maxLength: maxLength,
+                    validator: validator,
+                    decoration: InputDecoration(
+                      hintText: hintText,
+                      hintStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF92929D)),
+                      // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
+                      counterText: '',
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(1),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(1),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(1),
+                        borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
+                      ),
+                      suffixIcon: suffixChildren.isEmpty ? null : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
                     ),
                   ),
-                  if (trailingButton != null) ...[const SizedBox(width: 8), trailingButton!],
-                ],
-              ),
-            ],
-          );
-        },
-      ),
+                ),
+                if (trailingButton != null) ...[const SizedBox(width: 8), trailingButton!],
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
