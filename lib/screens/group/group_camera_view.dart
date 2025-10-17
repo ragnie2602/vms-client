@@ -76,7 +76,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
     // convert list group => thành 1 list 1 cấp
     List<DeviceGroup> listGroupOneLevel = [];
     for (var e in listGroupInput) {
-      listGroupOneLevel.addAll(e.convertToOneLevel());
+      listGroupOneLevel.addAll(e.convertToOneLevel(hideFromLevel: 2));
     }
     showDialogAddGroup(
       c,
