@@ -14,7 +14,6 @@ import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 
 import '../bloc/custom_view/custom_view_bloc.dart';
 import '../bloc/monitor/monitor_bloc.dart';
-import '../widgets/group_node.dart';
 
 class MonitorMode extends StatefulWidget {
   const MonitorMode({super.key, required this.maxWidth});
@@ -25,121 +24,91 @@ class MonitorMode extends StatefulWidget {
 }
 
 class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
+  int viewMode = 0;
+  int currentTab = 0;
+
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? _controller;
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      initialIndex: 0,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          bool isExpanded = constraints.maxWidth >= widget.maxWidth - 24 * 2;
+    if (viewMode == 0) {
+      return DefaultTabController(
+        length: 2,
+        initialIndex: currentTab,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            bool isExpanded = constraints.maxWidth >= widget.maxWidth - 24 * 2;
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (constraints.maxWidth >= 24)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    'Chế độ xem',
-                    maxLines: 1,
-                    overflow: TextOverflow.visible,
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.blackOrWhite,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (constraints.maxWidth >= 24)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      'Chế độ xem',
+                      maxLines: 1,
+                      overflow: TextOverflow.visible,
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.blackOrWhite,
+                      ),
                     ),
                   ),
-                ),
-              SizedBox(height: 16, width: double.infinity),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(3),
-                  color: Color(0xFFF2F4FA),
-                ),
-                padding: EdgeInsets.all(4),
-                margin: EdgeInsets.symmetric(horizontal: 24),
-                height: 38,
-                child: isExpanded
-                    ? TabBar(
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        dividerColor: Colors.transparent,
-                        indicator: BoxDecoration(
-                          borderRadius: BorderRadius.circular(3),
-                          color: AppColors.blackOrWhiteReverse,
-                        ),
-                        labelColor: AppColors.blackOrWhite,
-                        unselectedLabelColor: Color(0xFF6F767E),
-                        labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
-                        unselectedLabelStyle: AppTypography.style(14, fontWeight: FontWeight.w500),
-                        tabs: [
-                          Tab(text: 'Mặc định'),
-                          Tab(text: 'Tùy biến'),
-                        ],
-                      )
-                    : null,
-              ),
-              SizedBox(height: 30),
-              if (constraints.maxWidth >= 24)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: ListenableBuilder(
-                    listenable: DefaultTabController.of(context),
-                    builder: (context, child) => switch (DefaultTabController.of(context).index) {
-                      0 => _buildDefaultMode(constraints.maxWidth),
-                      _ => _buildCustomMode(constraints.maxWidth, isExpanded),
-                    },
+                SizedBox(height: 16, width: double.infinity),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: Color(0xFFF2F4FA),
                   ),
+                  padding: EdgeInsets.all(4),
+                  margin: EdgeInsets.symmetric(horizontal: 24),
+                  height: 38,
+                  child: isExpanded
+                      ? TabBar(
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          dividerColor: Colors.transparent,
+                          indicator: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            color: AppColors.blackOrWhiteReverse,
+                          ),
+                          labelColor: AppColors.blackOrWhite,
+                          unselectedLabelColor: Color(0xFF6F767E),
+                          labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+                          unselectedLabelStyle: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          tabs: [
+                            Tab(text: 'Mặc định'),
+                            Tab(text: 'Tùy biến'),
+                          ],
+                        )
+                      : null,
                 ),
-
-              SizedBox(height: 32),
-              if (constraints.maxWidth >= 24)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    'Nhóm camera',
-                    maxLines: 1,
-                    overflow: TextOverflow.visible,
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.blackOrWhite,
+                SizedBox(height: 30),
+                if (constraints.maxWidth >= 24)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: ListenableBuilder(
+                      listenable: DefaultTabController.of(context),
+                      builder: (context, child) => switch (DefaultTabController.of(context).index) {
+                        0 => _buildDefaultMode(constraints.maxWidth),
+                        _ => _buildCustomMode(context, constraints.maxWidth, isExpanded),
+                      },
                     ),
                   ),
-                ),
-              SizedBox(height: 16 - 8),
-              Expanded(
-                child: BlocBuilder<GroupCameraBloc, GroupCameraState>(
-                  builder: (context, state) {
-                    if (state is! GetAllGroupCameraSuccessState) return SizedBox();
-                    return TreeGroupWidget(controller: _controller, tree: state.tree);
-                    // return TreeView.simple(
-                    //   padding: EdgeInsets.symmetric(horizontal: 24),
-                    //   showRootNode: false,
-                    //   tree: state.tree,
-                    //   expansionBehavior: ExpansionBehavior.scrollToLastChild,
-                    //   indentation: const Indentation(),
-                    //   expansionIndicatorBuilder: (context, node) =>
-                    //       NoExpansionIndicator(tree: node),
-                    //   builder: (context, node) => GroupNode(
-                    //     group: node.data!,
-                    //     onToggleExpansion: () => _controller?.toggleExpansion(node),
-                    //   ),
-                    //   onTreeReady: (controller) {
-                    //     _controller = controller;
-                    //     controller.expandAllChildren(controller.tree);
-                    //   },
-                    // );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
+              ],
+            );
+          },
+        ),
+      );
+    } else if (viewMode == 1) {
+      return AddCustomModePane(onBack: () => setState(() => viewMode = 0));
+    } else {
+      return Container();
+    }
   }
 
   Widget _buildDefaultMode(double currentWidth) {
@@ -184,11 +153,50 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             );
           },
         ),
+        SizedBox(height: 32),
+        if (currentWidth >= 24)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Nhóm camera',
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.blackOrWhite,
+              ),
+            ),
+          ),
+        SizedBox(height: 16 - 8),
+        BlocBuilder<GroupCameraBloc, GroupCameraState>(
+          builder: (context, state) {
+            if (state is! GetAllGroupCameraSuccessState) return SizedBox();
+            return TreeGroupWidget(controller: _controller, tree: state.tree);
+            // return TreeView.simple(
+            //   padding: EdgeInsets.symmetric(horizontal: 24),
+            //   showRootNode: false,
+            //   tree: state.tree,
+            //   expansionBehavior: ExpansionBehavior.scrollToLastChild,
+            //   indentation: const Indentation(),
+            //   expansionIndicatorBuilder: (context, node) =>
+            //       NoExpansionIndicator(tree: node),
+            //   builder: (context, node) => GroupNode(
+            //     group: node.data!,
+            //     onToggleExpansion: () => _controller?.toggleExpansion(node),
+            //   ),
+            //   onTreeReady: (controller) {
+            //     _controller = controller;
+            //     controller.expandAllChildren(controller.tree);
+            //   },
+            // );
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildCustomMode(double currentWidth, bool showing) {
+  Widget _buildCustomMode(BuildContext context, double currentWidth, bool showing) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -235,19 +243,28 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         ),
 
         InkWell(
-          onTap: () {},
+          onTap: () => setState(() {
+            currentTab = DefaultTabController.of(context).index;
+            viewMode = 1;
+          }),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: AppColors.blackOrWhite, width: 1),
+              borderRadius: BorderRadius.circular(3),
               color: AppColors.contentBg,
-              border: Border.all(color: Color(0xFF005AA9), width: 1),
             ),
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             alignment: Alignment.center,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (showing) SvgPicture.asset(AppAssets.icAdd, width: 20, height: 20),
+                if (showing)
+                  SvgPicture.asset(
+                    AppAssets.icAdd,
+                    width: 20,
+                    height: 20,
+                    colorFilter: ColorFilter.mode(AppColors.blackOrWhite, BlendMode.srcIn),
+                  ),
                 showing ? SizedBox(width: 8) : SizedBox(height: 20),
                 Flexible(
                   child: Text(
@@ -255,7 +272,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                     style: AppTypography.style(
                       13,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF005AA9),
+                      color: AppColors.blackOrWhite,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.visible,
@@ -266,6 +283,162 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
           ),
         ),
       ],
+    );
+  }
+}
+
+class AddCustomModePane extends StatefulWidget {
+  const AddCustomModePane({super.key, this.onBack});
+  final VoidCallback? onBack;
+
+  @override
+  State<AddCustomModePane> createState() => _AddCustomModePaneState();
+}
+
+class _AddCustomModePaneState extends State<AddCustomModePane> {
+  ViewMode _mode = ViewMode.v2x2;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: widget.onBack,
+                child: Padding(
+                  padding: EdgeInsets.all(2),
+                  child: Icon(Icons.arrow_back, size: 20, color: AppColors.blackOrWhite),
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Thêm chế độ tùy biến',
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.blackOrWhite,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Tên chế độ xem',
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.blackOrWhite,
+            ),
+          ),
+          SizedBox(height: 15),
+          TextField(
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 19),
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: BorderSide(color: AppColors.black, width: 1),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+              ),
+              hintText: 'Nhập tên chế độ xem',
+              hintStyle: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.grey64748B,
+              ),
+            ),
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.blackOrWhite,
+            ),
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Kiểu hiển thị',
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.blackOrWhite,
+            ),
+          ),
+          SizedBox(height: 15),
+          SizedBox(
+            height: 32,
+            child: Row(
+              spacing: 8,
+              children: [
+                for (var value in ViewMode.values)
+                  InkWell(
+                    onTap: () => setState(() => _mode = value),
+                    child: SvgPicture.asset(
+                      _mode == value ? value.iconActive : value.icon,
+                      width: 32,
+                      height: 32,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(height: 40),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: widget.onBack,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.blackOrWhiteReverse,
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(vertical: 22),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                    side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                  ),
+                  child: Text(
+                    'Hủy',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.blackOrWhite,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.blackOrWhite,
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(vertical: 22),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                  ),
+                  child: Text(
+                    'Lưu',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.blackOrWhiteReverse,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
