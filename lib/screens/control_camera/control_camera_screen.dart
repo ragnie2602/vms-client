@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_st
 import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
+import 'package:vms_flutter_client/screens/control_camera/widget/share_dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
@@ -26,6 +27,7 @@ class ControlCameraScreen extends StatefulWidget {
 class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final TextEditingController cameraNameController = TextEditingController();
   CameraStatus? cameraStatus;
+  final ScrollController _cameraListController = ScrollController();
 
   void _onGetListCamera({
     List<int>? cameraId,
@@ -167,6 +169,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   }
 
   @override
+  void dispose() {
+    _cameraListController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<ControlCameraBloc, ControlCameraState>(
       listenWhen: (prev, curr) =>
@@ -206,7 +214,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.max,
                 children: [
                   Container(
                     decoration: BoxDecoration(
@@ -410,80 +418,98 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                       ],
                     ),
                   ),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: Colors.white,
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TitleWidget(),
-                        Builder(
-                          builder: (context) {
-                            final cameras = context
-                                .read<ControlCameraBloc>()
-                                .listCamera;
-                            if (cameras.isEmpty) {
-                              return Center(
-                                child: Text(
-                                  'Danh sách trống',
-                                  style: AppTypography.style(14),
-                                ),
-                              );
-                            }
-                            return Flexible(
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: cameras.length,
-                                itemBuilder: (context, index) =>
-                                    ItemCameraWidget(
-                                      itemCamera: cameras[index],
-                                      index: index + 1,
-                                      onEdit: () {
-                                        showAddCameraRtspDialog(
-                                          context,
-                                          mode: CameraDialogMode.edit,
-                                          cameraData: cameras[index],
-                                          onEdit: (payload) async {
-                                            _onUpdateCamera(
-                                              cameraId: cameras[index].id,
-                                              name: payload.name,
-                                              rtspUrl: payload.rtsp,
-                                              userName: payload.username,
-                                              password: payload.password,
-                                              subStreamUrls:
-                                                  payload.subStreamUrls,
-                                              xaddr: payload.xaddr,
-                                            );
-                                          },
-                                          onCheck:
-                                              (
-                                                xaddrs,
-                                                userName,
-                                                password,
-                                                boxId,
-                                              ) {
-                                                _onCheckOnvif(
-                                                  xaddrs: xaddrs,
-                                                  userName: userName,
-                                                  password: password,
-                                                  boxId: boxId,
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.white,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 15,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TitleWidget(),
+                          Expanded(
+                            child: Builder(
+                              builder: (context) {
+                                final cameras = context
+                                    .read<ControlCameraBloc>()
+                                    .listCamera;
+                                if (cameras.isEmpty) {
+                                  return Center(
+                                    child: Text(
+                                      'Danh sách trống',
+                                      style: AppTypography.style(14),
+                                    ),
+                                  );
+                                }
+                                return Scrollbar(
+                                  controller: _cameraListController,
+                                  thumbVisibility: true,
+                                  child: ListView.builder(
+                                    controller: _cameraListController,
+                                    primary: false,
+                                    physics: const ClampingScrollPhysics(),
+                                    itemCount: cameras.length,
+                                    itemBuilder: (context, index) =>
+                                        ItemCameraWidget(
+                                          itemCamera: cameras[index],
+                                          index: index + 1,
+                                          onEdit: () {
+                                            showAddCameraRtspDialog(
+                                              context,
+                                              mode: CameraDialogMode.edit,
+                                              cameraData: cameras[index],
+                                              onEdit: (payload) async {
+                                                _onUpdateCamera(
+                                                  cameraId: cameras[index].id,
+                                                  name: payload.name,
+                                                  rtspUrl: payload.rtsp,
+                                                  userName: payload.username,
+                                                  password: payload.password,
+                                                  subStreamUrls:
+                                                      payload.subStreamUrls,
+                                                  xaddr: payload.xaddr,
                                                 );
                                               },
-                                        );
-                                      },
-                                      onDelete: () => _onDeleteCamera(
-                                        cameraId: cameras[index].id,
-                                      ),
-                                    ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                                              onCheck:
+                                                  (
+                                                    xaddrs,
+                                                    userName,
+                                                    password,
+                                                    boxId,
+                                                  ) {
+                                                    _onCheckOnvif(
+                                                      xaddrs: xaddrs,
+                                                      userName: userName,
+                                                      password: password,
+                                                      boxId: boxId,
+                                                    );
+                                                  },
+                                            );
+                                          },
+                                          onDelete: () => _onDeleteCamera(
+                                            cameraId: cameras[index].id,
+                                          ),
+                                          onShare: () {
+                                            showShareCameraDialog(
+                                              context,
+                                              groupName: cameras[index].name,
+                                              onSave: (selectedUsers) async {},
+                                            );
+                                          },
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

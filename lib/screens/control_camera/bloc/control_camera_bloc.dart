@@ -159,6 +159,8 @@ class ControlCameraBloc
     AddCameraRTSPEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
+    // Reset state trước khi check để đảm bảo listener luôn được trigger
+    emit(const ControlCameraState());
     final addCameraRTSP = await controlGroupRepository.addCameraRTSP(
       name: event.name,
       username: event.username,
@@ -179,6 +181,8 @@ class ControlCameraBloc
     AddCameraOnvifEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
+    // Reset state trước khi check để đảm bảo listener luôn được trigger
+    emit(const ControlCameraState());
     final addCameraOnvif = await controlGroupRepository.addCameraOnvif(
       name: event.name,
       username: event.username,

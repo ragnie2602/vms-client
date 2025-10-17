@@ -8,12 +8,21 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 
 class ItemCameraWidget extends StatelessWidget {
-  const ItemCameraWidget({super.key, required this.itemCamera, required this.index, this.onAdd, this.onEdit, this.onDelete});
+  const ItemCameraWidget({
+    super.key,
+    required this.itemCamera,
+    required this.index,
+    this.onAdd,
+    this.onEdit,
+    this.onDelete,
+    this.onShare,
+  });
   final CameraEntity itemCamera;
   final int index;
   final VoidCallback? onAdd;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +35,11 @@ class ItemCameraWidget extends StatelessWidget {
             child: Center(
               child: Text(
                 '$index',
-                style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.black,
+                ),
               ),
             ),
           ),
@@ -36,7 +49,11 @@ class ItemCameraWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 itemCamera.name,
-                style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black4A4A4A),
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.black4A4A4A,
+                ),
               ),
             ),
           ),
@@ -46,7 +63,11 @@ class ItemCameraWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 itemCamera.iPUrlStream,
-                style: AppTypography.style(13, fontWeight: FontWeight.w500, color: AppColors.blue005BAA),
+                style: AppTypography.style(
+                  13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.blue005BAA,
+                ),
               ),
             ),
           ),
@@ -57,7 +78,11 @@ class ItemCameraWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 TimeUtil.convertTime(itemCamera.timeAdded),
-                style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black171725),
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.black171725,
+                ),
               ),
             ),
           ),
@@ -67,9 +92,7 @@ class ItemCameraWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
-                children: [
-                  CameraStatusWidget(cameraStatus: itemCamera.status),
-                ],
+                children: [CameraStatusWidget(cameraStatus: itemCamera.status)],
               ),
             ),
           ),
@@ -91,6 +114,11 @@ class ItemCameraWidget extends StatelessWidget {
                     case 'delete':
                       onDelete?.call();
                       break;
+                    case 'share':
+                      onShare?.call();
+                      break;
+                    default:
+                      break;
                   }
                 },
                 itemBuilder: (BuildContext context) => [
@@ -103,7 +131,11 @@ class ItemCameraWidget extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           'Thêm',
-                          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black171725),
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.black171725,
+                          ),
                         ),
                       ],
                     ),
@@ -118,7 +150,29 @@ class ItemCameraWidget extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           'Sửa',
-                          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black171725),
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.black171725,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+                  PopupMenuItem<String>(
+                    value: 'share',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(AppAssets.iconShare),
+                        SizedBox(width: 8),
+                        Text(
+                          'Chia sẻ',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -131,12 +185,20 @@ class ItemCameraWidget extends StatelessWidget {
                       children: [
                         SvgPicture.asset(AppAssets.icDelete),
                         SizedBox(width: 8),
-                        Text('Xóa', style: AppTypography.style(14, fontWeight: FontWeight.w500)),
+                        Text(
+                          'Xóa',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ],
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 elevation: 8,
               ),
             ),
@@ -154,7 +216,10 @@ class CameraStatusWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-      decoration: BoxDecoration(color: cameraStatus.bgColor, borderRadius: BorderRadius.circular(5)),
+      decoration: BoxDecoration(
+        color: cameraStatus.bgColor,
+        borderRadius: BorderRadius.circular(5),
+      ),
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -163,11 +228,19 @@ class CameraStatusWidget extends StatelessWidget {
               width: 6,
               height: 6,
               margin: EdgeInsets.only(right: 4),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: cameraStatus.contentColor),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                color: cameraStatus.contentColor,
+              ),
             ),
             Text(
               cameraStatus.getName(),
-              style: AppTypography.style(14, fontWeight: FontWeight.w500, letterSpacing: 0.2, color: cameraStatus.contentColor),
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.2,
+                color: cameraStatus.contentColor,
+              ),
             ),
           ],
         ),

@@ -304,6 +304,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                     keyboardType: TextInputType.url,
                     label: 'Địa chỉ RTSP',
                     requiredField: true,
+                    validator: (v) =>
+                        v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
                   ),
                   SizedBox(height: 24),
                   AppField(
@@ -311,6 +313,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                     hintText: 'Nhập địa chỉ luồng phụ',
                     label: 'Địa chỉ luồng phụ',
                     requiredField: true,
+                    validator: (v) =>
+                        v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
                   ),
                   SizedBox(height: 24),
                   Text(
@@ -466,6 +470,12 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             hintText: 'Nhập địa chỉ ONVIF',
             label: 'Địa chỉ ONVIF',
             requiredField: true,
+            validator: (v) {
+              if (_method != 'RTSP' && (v == null || v.trim().isEmpty)) {
+                return 'Bắt buộc';
+              }
+              return null;
+            },
           ),
         ),
         const SizedBox(height: 24),
@@ -479,6 +489,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 hintText: 'Nhập tài khoản camera',
                 label: 'Tài khoản camera',
                 requiredField: true,
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
               ),
             ),
             const SizedBox(width: 12),
@@ -491,6 +503,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 requiredField: true,
                 maxLength: 50,
                 obscureText: _obscure,
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
                 suffix: IconButton(
                   icon: Icon(
                     _obscure ? Icons.visibility_off : Icons.visibility,
