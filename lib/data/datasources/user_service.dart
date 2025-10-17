@@ -95,4 +95,86 @@ class UserService {
       (buffer) => DeleteUser_Reply.fromBuffer(buffer).userId,
     );
   }
+
+  Future<bool> resetPassword({
+    required List<int> userId,
+    String? newPassword,
+  }) async {
+    final resetPasswordRequest = ResetPassword_Request();
+    if (userId != null) {
+      resetPasswordRequest.userId = userId;
+    }
+    if (newPassword != null) {
+      resetPasswordRequest.newPassword = newPassword;
+    }
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: resetPasswordRequest.writeToBuffer(),
+          type: PacketType.resetPassword,
+        ),
+      ),
+    );
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(ResetPassword_Error.valueOf),
+      (buffer) {
+        return true;
+      },
+    );
+    // if (responseBuffer.isLeft) {
+    //   return false;
+    //   // throw responseBuffer.left!.toString();
+    // }
+    // return true;
+  }
+
+  Future<User> editUser({
+    required List<int> userId,
+    required String account,
+    required String password,
+    String? tel,
+    String? email,
+    String? address,
+    String? desc,
+    String? fullName,
+    bool? isAmin,
+    bool? changePassDenied,
+    bool? addCamDenied,
+  }) async {
+    final editUserRequest = EditUser_Request();
+    if (account != null) {
+      editUserRequest.account = account;
+    }
+    if (userId != null) {
+      editUserRequest.userId = userId;
+    }
+    if (password != null) {
+      editUserRequest.password = password;
+    }
+    editUserRequest.tel = tel ?? "";
+    editUserRequest.email = email ?? "";
+    editUserRequest.desc = desc ?? "";
+    editUserRequest.userName = fullName ?? "";
+    editUserRequest.address = address ?? "";
+    editUserRequest.isAdmin = isAmin ?? false;
+    editUserRequest.changePassDenied = changePassDenied ?? false;
+    editUserRequest.addCamDenied = addCamDenied ?? false;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: editUserRequest.writeToBuffer(),
+          type: PacketType.editUser,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(),
+      (buffer) => EditUser_Reply.fromBuffer(buffer).user,
+    );
+  }
 }

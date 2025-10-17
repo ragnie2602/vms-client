@@ -7,7 +7,14 @@ import '../entities/camera/add_camera.dart';
 
 abstract class IControlCameraRepository {
   Future<Either<Failure, CameraOnvif?>> validateCamera({String? message});
-  Future<Either<Failure, List<CameraEntity>>> getAllCamera({List<int>? cameraId, int? status, int? ivaType});
+  Future<Either<Failure, List<CameraEntity>>> getAllCamera({
+    List<int>? cameraId,
+    int? status,
+    int? ivaType,
+  });
+  Future<Either<Failure, List<CameraEntity>>> getCamerasInGroup({
+    List<int>? groupId,
+  });
   Future<Either<Failure, CameraOnvif>> checkCameraOnvif({
     required String xaddrs,
     required String userName,
@@ -48,4 +55,17 @@ abstract class IControlCameraRepository {
     CameraMap? location,
     List<String>? subStreamUrls,
   });
+
+  Future<Either<Failure, List<int>>> deleteCamera({required List<int> cameraId});
+
+  Future<Either<Failure, List<int>>> shareCamera({required List<int> cameraId, required int role, required String accountInvite});
+
+  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>> checkAccountShare({
+    List<int>? cameraId,
+    required String account,
+    required int shareType,
+    List<int>? groupId,
+  });
+
+  Future<Either<Failure, List<CameraEntity>>> addCameraToGroup({required List<List<int>> cameraIds, required List<int> groupId});
 }

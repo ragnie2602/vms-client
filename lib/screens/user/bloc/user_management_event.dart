@@ -48,3 +48,49 @@ class DeleteUserEvent extends UserManagementEvent {
   @override
   List<Object> get props => [userId, uidStr];
 }
+
+class ResetPassWordEvent extends UserManagementEvent {
+  final List<int> userId;
+  final String newPassword;
+  const ResetPassWordEvent({required this.userId, required this.newPassword});
+  @override
+  List<Object> get props => [userId, newPassword];
+}
+
+class EditUserEvent extends UserManagementEvent {
+  final List<int>userId;
+  final String account;
+  final String email;
+  final String tel;
+  final String address;
+  final bool isAdmin;
+  final String desc;
+  final String password;
+  final bool changePassDenied;
+  final bool addCamDenied;
+  const EditUserEvent({
+    required this.userId,
+    required this.account,
+    required this.email,
+    required this.tel,
+    required this.address,
+    required this.isAdmin,
+    required this.desc,
+    required this.password,
+    required this.changePassDenied,
+    required this.addCamDenied,
+  });
+  @override
+  List<Object> get props => [
+    userId,
+    account,
+    email,
+    tel,
+    address,
+    isAdmin,
+    desc,
+    password,
+    changePassDenied,
+    addCamDenied,
+  ];
+}
