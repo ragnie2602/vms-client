@@ -57,35 +57,54 @@ class _GroupCameraViewState extends State<GroupCameraView> {
 
   void _onAddGroupCamera({
     required String groupName,
-    DeviceGroup? parentGroup,
+    List<int>? parentGroupId,
   }) {
     // chưa lấy được parent group id => bổ sung sau
     context.read<GroupCameraBloc>().add(
       AddGroupCameraEvent(
         groupName: groupName,
-        parentGroupId: parentGroup != null ? parentGroup.groupId : [],
+        parentGroupId: parentGroupId ?? [],
       ),
     );
   }
 
-  void _onShowDialogAddGroup({
+  void _onShowDialogAddEditGroup({
     required List<DeviceGroup> listGroupInput,
     required BuildContext c,
-    DeviceGroup? parentGroup,
+    List<int>? parentGroupId,
+    DeviceGroup? currentGroup,
+    AddEditGroupType? addEditType,
   }) {
     // convert list group => thành 1 list 1 cấp
     List<DeviceGroup> listGroupOneLevel = [];
     for (var e in listGroupInput) {
       listGroupOneLevel.addAll(e.convertToOneLevel(hideFromLevel: 2));
     }
-    showDialogAddGroup(
+    showDialogAddEditGroup(
       c,
       listGroupAvailable: listGroupOneLevel,
-      parentGroup: parentGroup,
-      onConfirm: ({nameNewGroup, parentGroup}) => _onAddGroupCamera(
-        groupName: nameNewGroup ?? '',
-        parentGroup: parentGroup,
-      ),
+      parentGroupId: parentGroupId,
+      addEditType: addEditType ?? AddEditGroupType.add,
+      currentGroup: currentGroup,
+      onConfirm: ({
+        String? nameNewGroup,
+        List<int>? parentGroupId,
+        DeviceGroup? currentGroup,
+      }) {
+        if (addEditType == AddEditGroupType.add) {
+          _onAddGroupCamera(
+            groupName: nameNewGroup ?? '',
+            parentGroupId: parentGroupId ?? [],
+          );
+        } else if (addEditType == AddEditGroupType.edit &&
+            currentGroup != null) {
+          _onEditGroupCamera(
+            groupName: nameNewGroup ?? '',
+            groupId: currentGroup.groupId,
+            parentGroupId: parentGroupId ?? [],
+          );
+        }
+      },
     );
   }
 
@@ -95,7 +114,20 @@ class _GroupCameraViewState extends State<GroupCameraView> {
     );
   }
 
-  void _onEditGroupCamera() {}
+  void _onEditGroupCamera({
+    required String groupName,
+    required List<int> groupId,
+    required List<int> parentGroupId,
+  }) {
+    context.read<GroupCameraBloc>().add(
+      UpdateGroupCameraEvent(
+        groupId: groupId,
+        groupName: groupName,
+        parentGroupId: parentGroupId,
+      ),
+    );
+  }
+
   void _onShareGroupCamera() {}
 
   @override
@@ -128,13 +160,22 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                       onSelected: (value) {
                         switch (value) {
                           case ItemGroupAction.add:
-                            _onShowDialogAddGroup(
+                            _onShowDialogAddEditGroup(
                               listGroupInput: newState.groups ?? [],
                               c: context,
-                              parentGroup: node.data,
+                              parentGroupId: node.data?.groupId,
+                              addEditType: AddEditGroupType.add,
+                              currentGroup: node.data,
                             );
                             break;
                           case ItemGroupAction.edit:
+                            _onShowDialogAddEditGroup(
+                              listGroupInput: newState.groups ?? [],
+                              c: context,
+                              parentGroupId: node.data?.parentGroupId,
+                              addEditType: AddEditGroupType.edit,
+                              currentGroup: node.data,
+                            );
                             break;
                           case ItemGroupAction.share:
                             break;
@@ -196,9 +237,10 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                     _onSearchGroup();
                   },
                   onClickAddGroup: () {
-                    _onShowDialogAddGroup(
+                    _onShowDialogAddEditGroup(
                       listGroupInput: newState.groups ?? [],
                       c: context,
+                      addEditType: AddEditGroupType.add,
                     );
                   },
                   tree: newState.tree,

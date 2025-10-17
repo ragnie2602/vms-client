@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
@@ -8,11 +10,20 @@ import 'package:vms_flutter_client/screens/home/components/app_field.dart';
 
 import '../../../core/constants/colors.dart';
 
-Future<T?> showDialogAddGroup<T>(
+enum AddEditGroupType { add, edit }
+
+Future<T?> showDialogAddEditGroup<T>(
   BuildContext context, {
-  Function({String? nameNewGroup, DeviceGroup? parentGroup})? onConfirm,
+  Function({
+    String? nameNewGroup,
+    List<int>? parentGroupId,
+    DeviceGroup? currentGroup,
+  })?
+  onConfirm,
   List<DeviceGroup>? listGroupAvailable,
-  DeviceGroup? parentGroup,
+  List<int>? parentGroupId,
+  DeviceGroup? currentGroup,
+  AddEditGroupType? addEditType,
 }) {
   final controlCameraBloc = context.read<GroupCameraBloc>();
   return showDialog<T>(
@@ -23,7 +34,9 @@ Future<T?> showDialogAddGroup<T>(
       child: AddGroupWidget(
         listGroupAvailable: listGroupAvailable,
         onConfirm: onConfirm,
-        parentGroup: parentGroup,
+        parentGroupId: parentGroupId,
+        currentGroup: currentGroup,
+        addEditType: addEditType,
       ),
     ),
   );
@@ -33,12 +46,21 @@ class AddGroupWidget extends StatefulWidget {
   const AddGroupWidget({
     super.key,
     this.listGroupAvailable,
-    this.parentGroup,
+    this.parentGroupId,
     this.onConfirm,
+    this.currentGroup,
+    this.addEditType,
   });
   final List<DeviceGroup>? listGroupAvailable;
-  final DeviceGroup? parentGroup;
-  final Function({String? nameNewGroup, DeviceGroup? parentGroup})? onConfirm;
+  final List<int>? parentGroupId;
+  final Function({
+    String? nameNewGroup,
+    List<int>? parentGroupId,
+    DeviceGroup? currentGroup,
+  })?
+  onConfirm;
+  final DeviceGroup? currentGroup;
+  final AddEditGroupType? addEditType;
 
   @override
   State<AddGroupWidget> createState() => _AddGroupWidgetState();
@@ -51,7 +73,16 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
   @override
   void initState() {
     super.initState();
-    _selectedParentGroup = widget.parentGroup;
+    _selectedParentGroup = widget.parentGroupId != null
+        ? widget.listGroupAvailable?.firstWhereOrNull(
+            (element) =>
+                listEquals(element.groupId, widget.parentGroupId ?? []),
+          )
+        : null;
+    if (widget.addEditType == AddEditGroupType.edit &&
+        widget.currentGroup != null) {
+      _nameGroupController.text = widget.currentGroup!.name;
+    }
   }
 
   @override
@@ -72,7 +103,9 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
         children: [
           Expanded(
             child: Text(
-              'Thêm nhóm camera',
+              widget.addEditType == AddEditGroupType.add
+                  ? 'Thêm nhóm camera'
+                  : 'Sửa nhóm camera',
               style: AppTypography.style(
                 20,
                 fontWeight: FontWeight.w600,
@@ -179,7 +212,8 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                     onTap: () {
                       widget.onConfirm?.call(
                         nameNewGroup: _nameGroupController.text.trim(),
-                        parentGroup: _selectedParentGroup,
+                        parentGroupId: _selectedParentGroup?.groupId,
+                        currentGroup: widget.currentGroup,
                       );
                       Navigator.pop(context);
                     },
