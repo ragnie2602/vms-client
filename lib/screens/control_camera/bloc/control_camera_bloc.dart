@@ -7,10 +7,10 @@ import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_reposi
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_output.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
-import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_input.dart';
-import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_input.dart';
+import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 
@@ -44,11 +44,13 @@ class ControlCameraBloc
 
   // list camera
   List<CameraEntity> listCamera = [];
+  List<int> currentGroupId = [];
 
   FutureOr<void> _onGetListCamera(
     GetListCameraEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
+    currentGroupId.clear();
     final groups = await controlGroupRepository.getAllCamera();
     groups.fold(
       (onFailure) {
@@ -67,6 +69,7 @@ class ControlCameraBloc
     GetListCameraNoGroupEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
+    currentGroupId.clear();
     final groups = await controlGroupRepository.getAllCamera();
     groups.fold(
       (onFailure) {
@@ -87,6 +90,8 @@ class ControlCameraBloc
     GetListCameraInGroupEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
+    currentGroupId.clear();
+    currentGroupId.addAll(event.groupId ?? []);
     final groups = await controlGroupRepository.getCamerasInGroup(
       groupId: event.groupId,
     );
@@ -161,7 +166,7 @@ class ControlCameraBloc
       rtspUrl: event.rtspUrl,
       location: event.location,
       boxId: event.boxId,
-      groupId: event.groupId,
+      groupId: currentGroupId,
       subStreamUrls: event.subStreamUrls,
     );
     addCameraRTSP.fold(
@@ -183,7 +188,7 @@ class ControlCameraBloc
       serialNumber: event.serialNumber,
       location: event.location,
       boxId: event.boxId,
-      groupId: event.groupId,
+      groupId: currentGroupId,
       urn: event.urn,
       subStreamUrls: event.subStreamUrls,
     );

@@ -116,7 +116,6 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                       isClickNoGroup = true;
                     });
                     widget.onGetNoGroupCamera?.call(context);
-                
                   },
                   enableAddGroup: true,
                   controller: controllerTree,
@@ -153,7 +152,19 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                       borderRadius: BorderRadiusGeometry.circular(8),
                     ),
                     elevation: 8,
-                    onSelected: (value) {},
+                    onSelected: (value) {
+                      switch (value) {
+                        case ItemGroupAction.add:
+                          print(value);
+                          break;
+                        case ItemGroupAction.edit:
+                          break;
+                        case ItemGroupAction.share:
+                          break;
+                        case ItemGroupAction.remove:
+                          break;
+                      }
+                    },
                     itemBuilder: (BuildContext context) {
                       final listAction = ItemGroupAction.values;
                       return listAction
