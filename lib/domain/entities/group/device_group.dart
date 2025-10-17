@@ -39,4 +39,25 @@ class DeviceGroup {
 
     return node;
   }
+
+  bool isContainGroupName({required String keywordGroupName}) {
+    if (name.toLowerCase().trim().contains(
+      keywordGroupName.toLowerCase().trim(),
+    )) {
+      return true;
+    }
+    for (var e in groups) {
+      if (e.isContainGroupName(keywordGroupName: keywordGroupName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  List<DeviceGroup> convertToOneLevel(){
+    List<DeviceGroup> ans = [this];
+    for(var e in groups){
+      ans.addAll(e.convertToOneLevel());
+    }
+    return ans;
+  }
 }

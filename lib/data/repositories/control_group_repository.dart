@@ -28,6 +28,19 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
     });
   }
 
+   @override
+  Future<Either<Failure, List<CameraEntity>>> getCamerasInGroup({
+    List<int>? groupId,
+  }) async {
+    return await catchError<List<CameraEntity>>(() async {
+      final cameras = await service.getAllCamerasInGroup(
+        groupId: groupId ?? [],
+      );
+
+      return Right(cameras.map((e) => e.toDomain()).toList());
+    });
+  }
+
   @override
   Future<Either<Failure, CameraOnvif>> checkCameraOnvif({
     required String xaddrs,

@@ -17,6 +17,13 @@ class GetListCameraEvent extends ControlCameraEvent {
   final int? ivaType;
   const GetListCameraEvent({this.cameraId, this.ivaType, this.status});
 }
+class GetListCameraNoGroupEvent extends ControlCameraEvent {
+  const GetListCameraNoGroupEvent();
+}
+class GetListCameraInGroupEvent extends ControlCameraEvent {
+  final List<int>? groupId;
+  const GetListCameraInGroupEvent({this.groupId});
+}
 
 class CheckOnvifEvent extends ControlCameraEvent {
   final String xaddrs;

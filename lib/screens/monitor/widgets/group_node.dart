@@ -31,6 +31,7 @@ class GroupNode extends StatelessWidget {
         onTap: onTap ?? () {},
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 8),
+          color: isSelected == true ? AppColors.greyF2F4FA : Colors.transparent,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -62,20 +63,15 @@ class GroupNode extends StatelessWidget {
               ],
               if (constraints.maxWidth >= 20 + 20 + 8) SizedBox(width: 8),
               Expanded(
-                child: ColoredBox(
-                  color: isSelected == true
-                      ? AppColors.greyF2F4FA
-                      : Colors.transparent,
-                  child: Text(
-                    group.name,
-                    style: AppTypography.style(
-                      13,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.blackOrWhite,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.visible,
+                child: Text(
+                  group.name,
+                  style: AppTypography.style(
+                    13,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.blackOrWhite,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.visible,
                 ),
               ),
 
