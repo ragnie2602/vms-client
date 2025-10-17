@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
-enum ItemGroupAction { add, edit, share, remove }
+enum ItemGroupAction { add, edit, share, remove, addCamera }
 
 extension ItemGroupActionExt on ItemGroupAction {
   String getName() {
@@ -16,6 +16,8 @@ extension ItemGroupActionExt on ItemGroupAction {
         return 'Chia sẻ';
       case ItemGroupAction.remove:
         return 'Xóa';
+      case ItemGroupAction.addCamera:
+        return 'Thêm camera';
     }
   }
 
@@ -29,6 +31,8 @@ extension ItemGroupActionExt on ItemGroupAction {
         return AppAssets.iconShare;
       case ItemGroupAction.remove:
         return AppAssets.iconRemove;
+      case ItemGroupAction.addCamera:
+        return AppAssets.iconAdd;
     }
   }
 }

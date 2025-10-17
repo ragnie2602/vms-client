@@ -68,6 +68,25 @@ class _GroupCameraViewState extends State<GroupCameraView> {
     );
   }
 
+  void _onShowDialogAddGroup({
+    required List<DeviceGroup> listGroupInput,
+    required BuildContext c,
+  }) {
+    // convert list group => thành 1 list 1 cấp
+    List<DeviceGroup> listGroupOneLevel = [];
+    for (var e in listGroupInput) {
+      listGroupOneLevel.addAll(e.convertToOneLevel());
+    }
+    showDialogAddGroup(
+      c,
+      listGroupAvailable: listGroupOneLevel,
+      onConfirm: ({nameNewGroup, parentGroup}) => _onAddGroupCamera(
+        groupName: nameNewGroup ?? '',
+        parentGroup: parentGroup,
+      ),
+    );
+  }
+
   void _onRemoveGroupCamera({required List<int> groupId}) {
     context.read<GroupCameraBloc>().add(
       RemoveGroupCameraEvent(groupId: groupId),
@@ -95,6 +114,56 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             child: Column(
               children: [
                 TreeGroupWidget(
+                  actionBuilder: (node) {
+                    return PopupMenuButton<ItemGroupAction>(
+                      padding: EdgeInsets.zero,
+                      splashRadius: 20,
+                      menuPadding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadiusGeometry.circular(8),
+                      ),
+                      elevation: 8,
+                      onSelected: (value) {
+                        switch (value) {
+                          case ItemGroupAction.add:
+                            _onShowDialogAddGroup(
+                              listGroupInput: newState.groups ?? [],
+                              c: context,
+                            );
+                            break;
+                          case ItemGroupAction.edit:
+                            break;
+                          case ItemGroupAction.share:
+                            break;
+                          case ItemGroupAction.remove:
+                            break;
+                          case ItemGroupAction.addCamera:
+                            break;
+                        }
+                      },
+                      itemBuilder: (BuildContext context) {
+                        List<ItemGroupAction> listAction = List.of(
+                          ItemGroupAction.values,
+                        );
+                        // nếu level >= 2 (thứ 3) thì ko còn action add group nữa
+                        if ((node.data?.level ?? 0) >= 2) {
+                          listAction.remove(ItemGroupAction.add);
+                        }
+                        return listAction
+                            .map(
+                              (e) => PopupMenuItem<ItemGroupAction>(
+                                value: e,
+                                child: ItemActionWidget(item: e),
+                              ),
+                            )
+                            .toList();
+                      },
+                      child: SvgPicture.asset(
+                        AppAssets.icAction,
+                        color: Colors.black,
+                      ),
+                    );
+                  },
                   onClickGroupNode: (c, groupId) {
                     setState(() {
                       isClickAllGroup = false;
@@ -116,7 +185,6 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                       isClickNoGroup = true;
                     });
                     widget.onGetNoGroupCamera?.call(context);
-                
                   },
                   enableAddGroup: true,
                   controller: controllerTree,
@@ -125,19 +193,9 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                     _onSearchGroup();
                   },
                   onClickAddGroup: () {
-                    // convert list group => thành 1 list 1 cấp
-                    List<DeviceGroup> listGroupOneLevel = [];
-                    for (var e in newState.groups ?? []) {
-                      listGroupOneLevel.addAll(e.convertToOneLevel());
-                    }
-                    showDialogAddGroup(
-                      context,
-                      listGroupAvailable: listGroupOneLevel,
-                      onConfirm: ({nameNewGroup, parentGroup}) =>
-                          _onAddGroupCamera(
-                            groupName: nameNewGroup ?? '',
-                            parentGroup: parentGroup,
-                          ),
+                    _onShowDialogAddGroup(
+                      listGroupInput: newState.groups ?? [],
+                      c: context,
                     );
                   },
                   tree: newState.tree,
@@ -145,31 +203,6 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                   isShowNoGroup: true,
                   isClickAllGroup: isClickAllGroup,
                   isClickNoGroup: isClickNoGroup,
-                  action: PopupMenuButton<ItemGroupAction>(
-                    padding: EdgeInsets.zero,
-                    splashRadius: 20,
-                    menuPadding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(8),
-                    ),
-                    elevation: 8,
-                    onSelected: (value) {},
-                    itemBuilder: (BuildContext context) {
-                      final listAction = ItemGroupAction.values;
-                      return listAction
-                          .map(
-                            (e) => PopupMenuItem<ItemGroupAction>(
-                              value: e,
-                              child: ItemActionWidget(item: e),
-                            ),
-                          )
-                          .toList();
-                    },
-                    child: SvgPicture.asset(
-                      AppAssets.icAction,
-                      color: Colors.black,
-                    ),
-                  ),
                 ),
               ],
             ),

@@ -13,6 +13,7 @@ class TreeGroupWidget extends StatefulWidget {
     required this.tree,
     this.controller,
     this.action,
+    this.actionBuilder,
     this.isShowGroupAll,
     this.onClickAllGroup,
     this.isShowNoGroup,
@@ -28,6 +29,7 @@ class TreeGroupWidget extends StatefulWidget {
   final TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controller;
   final TreeNode<DeviceGroup> tree;
   final Widget? action;
+  final Widget? Function(TreeNode<DeviceGroup> node)? actionBuilder;
   final bool? isShowGroupAll;
   final VoidCallback? onClickAllGroup;
   final bool? isShowNoGroup;
@@ -270,7 +272,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
               group: node.data!,
               onToggleExpansion: () => _treeController?.toggleExpansion(node),
               isExpand: node.isExpanded,
-              actions: widget.action,
+              actions: widget.actionBuilder?.call(node) ?? widget.action,
               isSelected: _selectedNode == node,
               onTap: () => _onNodeTap(node: node, context: context),
             ),
