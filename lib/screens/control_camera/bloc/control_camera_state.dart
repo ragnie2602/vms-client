@@ -5,7 +5,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 
 class ControlCameraState extends BaseState {
-   final CameraStatus? status;
+  final CameraStatus? status;
   const ControlCameraState({this.status});
 }
 
@@ -82,4 +82,22 @@ class CheckOnvifFailState extends ControlCameraState {
   StateType get type => StateType.failure;
   @override
   String get errorMsg => message;
+}
+
+class UpdateCameraSuccessState extends ControlCameraState {
+  final CameraEntity cameraEntity;
+  const UpdateCameraSuccessState({required this.cameraEntity});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [cameraEntity];
+}
+
+class DeleteCameraSuccessState extends ControlCameraState {
+  final List<int> deletedCameraId;
+  const DeleteCameraSuccessState({required this.deletedCameraId});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [deletedCameraId];
 }

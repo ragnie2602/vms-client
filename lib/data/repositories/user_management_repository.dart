@@ -61,4 +61,50 @@ class UserManagementRepository extends BaseRepository
       return Right(groups.toList());
     });
   }
+
+  @override
+  Future<Either<Failure, bool>> resetPassword({
+    required List<int> userId,
+    required String newPassword,
+  }) async {
+    return await catchError<bool>(() async {
+      final value = await service.resetPassword(
+        userId: userId,
+        newPassword: newPassword,
+      );
+      return Right(value);
+    });
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> editUser({
+    required List<int> userId,
+    required String account,
+    required String password,
+    String? tel,
+    String? email,
+    String? address,
+    String? desc,
+    String? fullName,
+    bool? isAmin,
+    bool? changePassDenied,
+    bool? addCamDenied,
+  }) async {
+    return await catchError<UserEntity>(() async {
+      final groups = await service.editUser(
+        userId: userId,
+        account: account,
+        password: password,
+        tel: tel,
+        address: address,
+        email: email,
+        desc: desc,
+        fullName: fullName,
+        isAmin: isAmin,
+        changePassDenied: changePassDenied,
+        addCamDenied: addCamDenied,
+      );
+      return Right(groups.toDomain());
+    });
+  }
 }

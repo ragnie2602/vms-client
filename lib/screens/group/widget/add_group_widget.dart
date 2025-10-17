@@ -1,0 +1,198 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/widget/drop_down_search_widget.dart';
+import 'package:vms_flutter_client/screens/home/components/app_field.dart';
+
+import '../../../core/constants/colors.dart';
+
+Future<T?> showDialogAddGroup<T>(
+  BuildContext context, {
+  Function({String? nameNewGroup, DeviceGroup? parentGroup})? onConfirm,
+  List<DeviceGroup>? listGroupAvailable,
+}) {
+  final controlCameraBloc = context.read<GroupCameraBloc>();
+  return showDialog<T>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => BlocProvider.value(
+      value: controlCameraBloc,
+      child: AddGroupWidget(
+        listGroupAvailable: listGroupAvailable,
+        onConfirm: onConfirm,
+      ),
+    ),
+  );
+}
+
+class AddGroupWidget extends StatefulWidget {
+  const AddGroupWidget({super.key, this.listGroupAvailable, this.onConfirm});
+  final List<DeviceGroup>? listGroupAvailable;
+  final Function({String? nameNewGroup, DeviceGroup? parentGroup})? onConfirm;
+
+  @override
+  State<AddGroupWidget> createState() => _AddGroupWidgetState();
+}
+
+class _AddGroupWidgetState extends State<AddGroupWidget> {
+  final _nameGroupController = TextEditingController();
+  DeviceGroup? _selectedParentGroup;
+
+  @override
+  void dispose() {
+    _nameGroupController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      titlePadding: EdgeInsets.only(top: 20, right: 24, left: 24, bottom: 10),
+      contentPadding: EdgeInsets.zero,
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Thêm nhóm camera',
+              style: AppTypography.style(
+                20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.grey0F172A,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+            tooltip: 'Đóng',
+          ),
+        ],
+      ),
+      content: Container(
+        width: MediaQuery.of(context).size.width * 0.4,
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(width: 1, color: AppColors.greyE2E8F0),
+          ),
+        ),
+
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Flexible(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    AppField(
+                      controller: _nameGroupController,
+                      hintText: 'Nhập tên camera',
+                      label: 'Tên nhóm camera',
+                      requiredField: true,
+                      maxLength: 50,
+                    ),
+                    const SizedBox(height: 24),
+                    // drop down search
+                    AppDropdownSearch<DeviceGroup>(
+                      label: 'Nhóm cha',
+                      items: widget.listGroupAvailable ?? [],
+                      onChanged: (value) {
+                        if (_selectedParentGroup?.groupId == value?.groupId) {
+                          return;
+                        }
+                        _selectedParentGroup = value;
+                      },
+                      hintTextSearch: 'Nhập tên nhóm',
+                      itemAsString: (group) {
+                        return group.name;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+            Flexible(
+              child: Container(
+                width: double.infinity,
+                height: 1,
+                color: AppColors.greyE2E8F0,
+                margin: EdgeInsets.only(bottom: 24),
+              ),
+            ),
+            Row(
+              children: [
+                Flexible(
+                  flex: 1,
+                  child: InkWell(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      margin: EdgeInsets.only(left: 24),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          width: 1,
+                          color: AppColors.greyE2E8F0,
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 13),
+                      child: Center(
+                        child: Text(
+                          'Hủy',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.grey0F172A,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: InkWell(
+                    onTap: () {
+                      widget.onConfirm?.call(
+                        nameNewGroup: _nameGroupController.text.trim(),
+                        parentGroup: _selectedParentGroup,
+                      );
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(right: 24, left: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 13),
+                      child: Center(
+                        child: Text(
+                          'Xác nhận',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}

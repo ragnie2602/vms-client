@@ -1,18 +1,21 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fvp/mdk.dart';
 import 'package:provider/provider.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 
-import '../bloc/monitor/monitor_bloc.dart';
-
-enum _PlayerState { initializing, initialized, error }
+enum _PlayerState { initializing, initialized, error, none }
 
 enum PlayerMode { monitoring, livestreaming, playback }
+
+enum PlayerStatus { playing, paused, finished }
 
 class CameraPlayer extends StatefulWidget {
   const CameraPlayer({
@@ -23,23 +26,26 @@ class CameraPlayer extends StatefulWidget {
     required this.source,
     required this.name,
     required this.mode,
+    this.belongViewMode,
   });
 
   final String source;
   final String name;
-  final Widget Function(BuildContext context, Widget playerWidget)? builder;
+  final Widget Function(Widget playerWidget, ValueNotifier<PlayerStatus> status)? builder;
   final Size? size;
   final double? borderRadius;
   final PlayerMode mode;
+  final ViewMode? belongViewMode;
 
   @override
   State<CameraPlayer> createState() => CameraPlayerState();
 }
 
 class CameraPlayerState extends State<CameraPlayer> {
-  late MonitorBloc blocRef;
+  late AppBloc blocRef;
 
   int _lastPosition = -1;
+  final _status = ValueNotifier<PlayerStatus>(PlayerStatus.playing);
   late Player _player;
   Player get player => _player;
 
@@ -57,7 +63,7 @@ class CameraPlayerState extends State<CameraPlayer> {
 
   @override
   void initState() {
-    blocRef = context.read<MonitorBloc>();
+    blocRef = context.read<AppBloc>();
     _currentSource = widget.source;
     super.initState();
     _initPlayer();
@@ -66,7 +72,7 @@ class CameraPlayerState extends State<CameraPlayer> {
 
   @override
   void dispose() {
-    blocRef.add(DisposePlayer(_player, sequentialMode: true));
+    _tryDisposePlayer();
     _timer?.cancel();
     _debounce?.cancel();
     _debounceUpdateTexture?.cancel();
@@ -78,7 +84,11 @@ class CameraPlayerState extends State<CameraPlayer> {
     super.didUpdateWidget(oldWidget);
 
     // Thay đổi chế độ xem
-    if (widget.mode == PlayerMode.monitoring && oldWidget.size != widget.size) {
+    if (widget.mode == PlayerMode.monitoring &&
+        oldWidget.belongViewMode != null &&
+        widget.belongViewMode != null &&
+        widget.belongViewMode != oldWidget.belongViewMode &&
+        oldWidget.size != widget.size) {
       _debounceUpdateTexture?.cancel();
       _debounceUpdateTexture = Timer(const Duration(milliseconds: 300), () {
         final data = widget.size?.let(
@@ -89,11 +99,14 @@ class CameraPlayerState extends State<CameraPlayer> {
     }
   }
 
-  void _initPlayer() {
+  void _tryDisposePlayer() {
     try {
-      // Dispose player trước khi tạo mới
       blocRef.add(DisposePlayer(_player, sequentialMode: true));
     } catch (_) {}
+  }
+
+  void _initPlayer() {
+    _tryDisposePlayer();
 
     _player = Player();
     // _player.onMediaStatus(_onStatusChanged);
@@ -127,6 +140,7 @@ class CameraPlayerState extends State<CameraPlayer> {
       _player
         ..media = _currentSource
         ..state = PlaybackState.playing;
+      _status.value = PlayerStatus.playing;
 
       final textureConstraints = widget.size?.let(
         (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
@@ -156,6 +170,13 @@ class CameraPlayerState extends State<CameraPlayer> {
       if (!mounted) return _timer?.cancel();
 
       _player.position.let((pos) {
+        if (widget.mode == PlayerMode.playback) {
+          if (_player.state == PlaybackState.stopped) _status.value = PlayerStatus.finished;
+          if (_status.value == PlayerStatus.finished && _player.state == PlaybackState.playing) {
+            _status.value = PlayerStatus.playing;
+          }
+        }
+
         if (!_isUpdatingDuration) _onDuration?.call(pos);
         if (_lastPosition != pos) _debounceConnectionLost();
         _lastPosition = pos;
@@ -180,12 +201,11 @@ class CameraPlayerState extends State<CameraPlayer> {
   }
 
   void _debounceConnectionLost() {
-    // Pause thì cancel debounce + không check disconnected
-    if (_player.state == PlaybackState.paused) return;
-
     _debounce?.cancel();
     _debounce = Timer(AppConfig.PLAYER_DISCONNECTION_THRESHOLD, () {
       if (!mounted) return;
+      // Dừng hoặc hết video
+      if (_status.value == PlayerStatus.finished || _status.value == PlayerStatus.paused) return;
 
       Logger.warn("Camera '${widget.name}' disconnected");
       _timer?.cancel();
@@ -194,22 +214,65 @@ class CameraPlayerState extends State<CameraPlayer> {
     });
   }
 
-  Future<void> switchSource(String source, {int? position, Function(int)? onDuration}) async {
+  Future<void> switchSource(String? source, {int? position, Function(int)? onDuration}) async {
+    // Ngoài list playbacks
+    if (source == null) {
+      _onDuration = null;
+      _timer?.cancel();
+      _state.value = _PlayerState.none;
+      _currentSource = '';
+      _tryDisposePlayer();
+      return;
+    }
+
     _onDuration = onDuration;
 
     // Trường hợp vẫn source đó nhưng seek
     if (source == _currentSource && _state.value == _PlayerState.initialized && position != null) {
-      _isUpdatingDuration = true;
-      await _player.seek(position: position);
-      _isUpdatingDuration = false;
+      await seek(position, 0);
       return;
     }
 
     // Lỗi OR đổi source --> reset
     _currentSource = source;
+    _debounce?.cancel();
     _timer?.cancel();
     _initPlayer();
     await _onConnecting(isRetry: true, seek: position);
+  }
+
+  void play() {
+    _player.play();
+    _status.value = PlayerStatus.playing;
+  }
+
+  void pause() {
+    _player.pause();
+    _status.value = PlayerStatus.paused;
+  }
+
+  Future<void> seek(int position, int type) async {
+    if (_player.seekingCompleter?.isCompleted == false) {
+      await _player.seekingCompleter?.future;
+    }
+
+    _isUpdatingDuration = true;
+
+    int targetPosition = position;
+    if (type > 0) targetPosition = min(_player.position + position, _player.mediaInfo.duration);
+    if (type < 0) targetPosition = max(0, _player.position - position);
+
+    if (_status.value == PlayerStatus.finished && targetPosition < _player.mediaInfo.duration) {
+      _player.play();
+      _status.value = PlayerStatus.playing;
+    }
+
+    final res = await _player.seek(position: targetPosition);
+    if (res == -10 && targetPosition >= _player.mediaInfo.duration) {
+      _status.value = PlayerStatus.finished;
+    }
+
+    _isUpdatingDuration = false;
   }
 
   @override
@@ -224,28 +287,29 @@ class CameraPlayerState extends State<CameraPlayer> {
               ? [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)]
               : null,
         ),
-        child: state == _PlayerState.error
-            ? _buildError()
-            : state == _PlayerState.initializing
-            ? const Center(child: CircularProgressIndicator.adaptive())
-            : AspectRatio(
-                aspectRatio: _aspectRatio,
-                child: ValueListenableBuilder(
-                  valueListenable: _player.textureId,
-                  builder: (context, id, _) {
-                    final player = id == null
-                        ? const SizedBox.shrink()
-                        : widget.borderRadius != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadiusGeometry.circular(widget.borderRadius!),
-                            child: Texture(textureId: id),
-                          )
-                        : Texture(textureId: id);
+        child: switch (state) {
+          _PlayerState.none => SizedBox.shrink(),
+          _PlayerState.error => _buildError(),
+          _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
+          _ => AspectRatio(
+            aspectRatio: _aspectRatio,
+            child: ValueListenableBuilder(
+              valueListenable: _player.textureId,
+              builder: (context, id, _) {
+                final player = id == null
+                    ? const SizedBox.shrink()
+                    : widget.borderRadius != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadiusGeometry.circular(widget.borderRadius!),
+                        child: Texture(textureId: id),
+                      )
+                    : Texture(textureId: id);
 
-                    return widget.builder?.call(context, player) ?? player;
-                  },
-                ),
-              ),
+                return widget.builder?.call(player, _status) ?? player;
+              },
+            ),
+          ),
+        },
       ),
     );
   }
@@ -260,7 +324,9 @@ class CameraPlayerState extends State<CameraPlayer> {
         Icon(Icons.videocam_off, color: Colors.red, size: 36),
         SizedBox(height: 6),
         Text(
-          'Camera ${widget.name} đang ngoại tuyến',
+          widget.mode != PlayerMode.playback
+              ? 'Camera ${widget.name} đang ngoại tuyến'
+              : 'Có lỗi xảy ra khi tải video',
           style: TextStyle(fontSize: 13, color: Colors.white),
         ),
       ],

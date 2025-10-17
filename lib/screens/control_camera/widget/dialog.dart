@@ -4,11 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import '../../home/components/components_src.dart';
 import '../bloc/control_camera_bloc.dart';
+import '../bloc/control_camera_event.dart';
 
 enum CameraDialogMode { add, edit }
 
@@ -107,13 +109,13 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     if (widget.mode == CameraDialogMode.edit && widget.cameraData != null) {
       final camera = widget.cameraData!;
       _name.text = camera.name;
-      _rtsp.text = camera.stream.streamOriginUrl;
+      _rtsp.text = camera.stream.userOriginAddedUrl;
       _onvifUserName.text = camera.username;
       _onvifPassword.text = camera.password;
       _onvifXaddrs.text = camera.onvif.xaddr;
 
       // Parse sub stream URL nếu có
-      final subStreamUrl = camera.stream.streamLinks.firstWhereOrNull((e) => e.nameOfStream == "SUB STREAM")?.urlOfStream ?? '';
+      final subStreamUrl = camera.stream.streamLinks.firstWhereOrNull((e) => e.isMainStream == false)?.originStream ?? '';
       _sub.text = subStreamUrl;
 
       // Parse location data nếu có (có thể cần thêm vào CameraEntity)
@@ -128,8 +130,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
   String _determineCameraMethod(CameraEntity camera) {
     // Logic để xác định method dựa trên camera data
-    // Có thể dựa vào type hoặc URL pattern
-    return 'RTSP'; // Default, có thể cải thiện logic này
+    return camera.type == CameraType.onvif ? 'ONVIF' : 'RTSP';
   }
 
   @override
@@ -152,26 +153,60 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     final theme = Theme.of(context);
     return BlocListener<ControlCameraBloc, ControlCameraState>(
       listenWhen: (prev, curr) =>
-          curr is CheckOnvifSuccessState || curr is CheckOnvifFailState || curr is AddCameraSuccessState || curr is AddCameraFailState,
+          curr is CheckOnvifSuccessState ||
+          curr is CheckOnvifFailState ||
+          curr is AddCameraSuccessState ||
+          curr is AddCameraFailState ||
+          curr is UpdateCameraSuccessState,
       listener: (context, state) {
         if (state is CheckOnvifSuccessState) {
           setState(() => _isChecking = false);
           _rtsp.text = state.cameraOnvif.rtspUrl;
           _sub.text = state.cameraOnvif.subStreamUrl.isNotEmpty ? state.cameraOnvif.subStreamUrl.first : '';
-          setState(() => _method = 'ONVIF');
         } else if (state is CheckOnvifFailState) {
           setState(() => _isChecking = false);
           showAppMessageDialog(context, type: AppMessageType.error, message: state.message);
         } else if (state is AddCameraSuccessState) {
           setState(() => _isSubmitting = false);
+          // Lưu reference đến bloc trước khi pop
+          final bloc = context.read<ControlCameraBloc>();
           // Pop dialog khi thành công
           if (mounted) {
             Navigator.pop(context);
+            // Hiển thị dialog thành công và reload danh sách
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showAppMessageDialog(
+                context,
+                message: 'Thêm camera thành công!',
+                type: AppMessageType.success,
+                onOk: () {
+                  // Reload danh sách camera
+                  bloc.add(const GetListCameraEvent());
+                },
+              );
+            });
           }
         } else if (state is AddCameraFailState) {
           setState(() => _isSubmitting = false);
-          // Hiển thị dialog lỗi khi thất bại, không pop dialog chính
+          // Hiển thị dialog lỗi trước khi pop
           showAppMessageDialog(context, type: AppMessageType.error, message: state.errorMsg);
+        } else if (state is UpdateCameraSuccessState) {
+          setState(() => _isSubmitting = false);
+          // Lưu reference đến bloc trước khi pop
+          final bloc = context.read<ControlCameraBloc>();
+          if (mounted) {
+            Navigator.pop(context);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showAppMessageDialog(
+                context,
+                message: 'Cập nhật camera thành công!',
+                type: AppMessageType.success,
+                onOk: () {
+                  bloc.add(const GetListCameraEvent());
+                },
+              );
+            });
+          }
         }
       },
       child: AlertDialog(

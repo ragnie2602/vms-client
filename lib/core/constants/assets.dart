@@ -67,7 +67,7 @@ class AppAssets {
   static const icFastBackward = '$_svgPath/fast_backward.svg';
   static const icFastForward = '$_svgPath/fast_forward.svg';
   static const icPlay = '$_svgPath/play.svg';
-  static const icPause = '$_svgPath/pause.svg';
+  static const icPause = '$_svgPath/pause_circle.svg';
   static const icArrowChevronDown = '$_svgPath/arrow_chevron_down.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';

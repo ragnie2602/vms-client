@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 
@@ -25,6 +26,149 @@ class AccountForm {
     this.fullName,
     this.note,
   });
+}
+
+/// Hiển thị dialog khôi phục mật khẩu.
+/// Trả về mật khẩu mới nếu người dùng xác nhận, ngược lại trả về null.
+Future<String?> showResetPasswordDialog(
+  BuildContext context, {
+  required String username,
+  required UserEntity user,
+}) {
+  final TextEditingController _controller = TextEditingController();
+  bool obscure = true;
+  String? error;
+
+  return showDialog<String?>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withOpacity(0.5),
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 24,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title
+                    const Text(
+                      'Khôi phục mật khẩu',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    // Subtitle
+                    Text(
+                      'Vui lòng nhập mật khẩu mới cho tài khoản:\n$username',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Password field
+                    TextField(
+                      controller: _controller,
+                      obscureText: obscure,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => {},
+                      decoration: InputDecoration(
+                        hintText: 'Nhập mật khẩu (*)',
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        suffixIcon: IconButton(
+                          tooltip: obscure ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                          icon: Icon(
+                            obscure ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () => setState(() => obscure = !obscure),
+                        ),
+                      ),
+                    ),
+
+                    if (error != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        error!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
+
+                    const SizedBox(height: 20),
+
+                    // Actions
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // HỦY
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(null),
+                            child: const Text('HỦY'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // KHÔI PHỤC
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                            onPressed: () {
+                              ctx.read<UserManagementBloc>().add(
+                                ResetPassWordEvent(
+                                  userId: user.id,
+                                  newPassword: '12345678',
+                                ),
+                              );
+                            },
+                            child: const Text('KHÔI PHỤC'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+
+          // helper để validate & trả kết quả
+        },
+      );
+    },
+  );
 }
 
 /// Gọi hàm này để mở dialog
