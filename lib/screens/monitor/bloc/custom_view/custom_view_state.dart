@@ -12,10 +12,10 @@ class CustomViewLoading extends CustomViewState {
   StateType get type => StateType.loading;
 }
 
-class CustomViewFailure extends CustomViewState {
+class ListCustomViewFailure extends CustomViewState {
   final String message;
 
-  const CustomViewFailure(this.message);
+  const ListCustomViewFailure(this.message);
 
   @override
   StateType get type => StateType.failure;
@@ -23,17 +23,29 @@ class CustomViewFailure extends CustomViewState {
   String get errorMsg => message;
 }
 
-class CustomViewSuccess extends CustomViewState {
+class ListCustomViewSuccess extends CustomViewState {
   final List<CustomLiveView> customViews;
 
-  const CustomViewSuccess({required this.customViews});
+  const ListCustomViewSuccess({required this.customViews});
 
   @override
   List<Object?> get props => [customViews];
   @override
   StateType get type => customViews.isEmpty ? StateType.empty : StateType.success;
 
-  CustomViewSuccess copyWith({List<CustomLiveView>? customViews}) {
-    return CustomViewSuccess(customViews: customViews ?? this.customViews);
+  ListCustomViewSuccess copyWith({List<CustomLiveView>? customViews}) {
+    return ListCustomViewSuccess(customViews: customViews ?? this.customViews);
   }
+}
+
+class CustomViewSuccess extends CustomViewState {
+  final CustomLiveView customView;
+
+  const CustomViewSuccess({required this.customView});
+
+  @override
+  StateType get type => StateType.success;
+
+  @override
+  List<Object?> get props => [customView];
 }

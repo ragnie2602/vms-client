@@ -5,3 +5,9 @@ sealed class CustomViewEvent extends BaseEvent {
 }
 
 class GetListCustomViews extends CustomViewEvent {}
+
+class AddingCustomView extends CustomViewEvent {
+  final ViewMode base;
+
+  const AddingCustomView(this.base);
+}

@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_custom_live_view_repo
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/monitor/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 
 class DependencyInjection {
@@ -45,5 +46,6 @@ class DependencyInjection {
     // Use Cases
     Provider<LoginUseCase>(create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>())),
     Provider<DeleteCameraUseCase>(create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>())),
+    Provider<CreateTempCustomLiveViewUseCase>(create: (context) => CreateTempCustomLiveViewUseCase()),
   ];
 }

@@ -2,6 +2,8 @@ import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -201,7 +203,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
       mainAxisSize: MainAxisSize.min,
       children: [
         BlocBuilder<CustomViewBloc, CustomViewState>(
-          builder: (context, state) => stateBuilder<CustomViewSuccess>(
+          builder: (context, state) => stateBuilder<ListCustomViewSuccess>(
             state,
             emptyBuilder: () => SizedBox(),
             child: (state) => ListView.builder(
@@ -241,11 +243,12 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             ),
           ),
         ),
-
         InkWell(
           onTap: () => setState(() {
             currentTab = DefaultTabController.of(context).index;
             viewMode = 1;
+
+            context.pushNamed(Routes.custom_live_view.name);
           }),
           child: Container(
             decoration: BoxDecoration(
@@ -296,7 +299,16 @@ class AddCustomModePane extends StatefulWidget {
 }
 
 class _AddCustomModePaneState extends State<AddCustomModePane> {
+  late final CustomViewBloc bloc;
+
   ViewMode _mode = ViewMode.v2x2;
+
+  @override
+  void initState() {
+    super.initState();
+
+    bloc = context.read<CustomViewBloc>()..add(AddingCustomView(ViewMode.v2x2));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,7 +321,10 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
             children: [
               InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap: widget.onBack,
+                onTap: () {
+                  bloc.add(GetListCustomViews());
+                  widget.onBack?.call();
+                },
                 child: Padding(
                   padding: EdgeInsets.all(2),
                   child: Icon(Icons.arrow_back, size: 20, color: AppColors.blackOrWhite),
@@ -382,7 +397,7 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
               children: [
                 for (var value in ViewMode.values)
                   InkWell(
-                    onTap: () => setState(() => _mode = value),
+                    onTap: () => setState(() => bloc.add(AddingCustomView(_mode = value))),
                     child: SvgPicture.asset(
                       _mode == value ? value.iconActive : value.icon,
                       width: 32,
