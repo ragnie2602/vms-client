@@ -71,6 +71,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
   void _onShowDialogAddGroup({
     required List<DeviceGroup> listGroupInput,
     required BuildContext c,
+    DeviceGroup? parentGroup,
   }) {
     // convert list group => thành 1 list 1 cấp
     List<DeviceGroup> listGroupOneLevel = [];
@@ -80,6 +81,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
     showDialogAddGroup(
       c,
       listGroupAvailable: listGroupOneLevel,
+      parentGroup: parentGroup,
       onConfirm: ({nameNewGroup, parentGroup}) => _onAddGroupCamera(
         groupName: nameNewGroup ?? '',
         parentGroup: parentGroup,
@@ -129,6 +131,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                             _onShowDialogAddGroup(
                               listGroupInput: newState.groups ?? [],
                               c: context,
+                              parentGroup: node.data,
                             );
                             break;
                           case ItemGroupAction.edit:

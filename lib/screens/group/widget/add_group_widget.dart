@@ -12,6 +12,7 @@ Future<T?> showDialogAddGroup<T>(
   BuildContext context, {
   Function({String? nameNewGroup, DeviceGroup? parentGroup})? onConfirm,
   List<DeviceGroup>? listGroupAvailable,
+  DeviceGroup? parentGroup,
 }) {
   final controlCameraBloc = context.read<GroupCameraBloc>();
   return showDialog<T>(
@@ -22,14 +23,21 @@ Future<T?> showDialogAddGroup<T>(
       child: AddGroupWidget(
         listGroupAvailable: listGroupAvailable,
         onConfirm: onConfirm,
+        parentGroup: parentGroup,
       ),
     ),
   );
 }
 
 class AddGroupWidget extends StatefulWidget {
-  const AddGroupWidget({super.key, this.listGroupAvailable, this.onConfirm});
+  const AddGroupWidget({
+    super.key,
+    this.listGroupAvailable,
+    this.parentGroup,
+    this.onConfirm,
+  });
   final List<DeviceGroup>? listGroupAvailable;
+  final DeviceGroup? parentGroup;
   final Function({String? nameNewGroup, DeviceGroup? parentGroup})? onConfirm;
 
   @override
@@ -41,8 +49,15 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
   DeviceGroup? _selectedParentGroup;
 
   @override
+  void initState() {
+    super.initState();
+    _selectedParentGroup = widget.parentGroup;
+  }
+
+  @override
   void dispose() {
     _nameGroupController.dispose();
+    _selectedParentGroup = null;
     super.dispose();
   }
 
@@ -104,6 +119,7 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                     AppDropdownSearch<DeviceGroup>(
                       label: 'Nhóm cha',
                       items: widget.listGroupAvailable ?? [],
+                      selectedItem: _selectedParentGroup,
                       onChanged: (value) {
                         if (_selectedParentGroup?.groupId == value?.groupId) {
                           return;
