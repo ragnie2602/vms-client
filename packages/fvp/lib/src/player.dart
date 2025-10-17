@@ -810,6 +810,7 @@ class Player {
   var _prepared = Completer<int>();
   Completer<Uint8List?>? _snapshot;
   Completer<int>? _seeked;
+  Completer<int>? get seekingCompleter => _seeked;
   final _receivePort = ReceivePort();
 
   final _eventCb = <Function(MediaEvent)>[];

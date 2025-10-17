@@ -25,3 +25,15 @@ class ChangePlayerStatus extends CameraLiveEvent {
   final PlayerStatus status;
   const ChangePlayerStatus(this.status);
 }
+
+class SeekPlayer extends CameraLiveEvent {
+  final Duration amount;
+  final int type;
+  const SeekPlayer(this.amount, this.type);
+}
+
+class ChangeVolume extends CameraLiveEvent {
+  final double volume;
+  final bool? mute;
+  const ChangeVolume(this.volume, {this.mute});
+}
