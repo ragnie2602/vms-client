@@ -207,6 +207,14 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
               onGetCamerasInGroup: (c, groupId) {
                 _onGetCameraInGroup(groupId: groupId, context: c);
               },
+              onAddCameraToGroup: ({required c, required cameraIds, required currentGroupId}) {
+                context.read<ControlCameraBloc>().add(
+                  AddCameraToGroupEvent(
+                    cameraIds: cameraIds,
+                    groupId: currentGroupId,
+                  ),
+                );
+              },
             ),
           ),
           Flexible(

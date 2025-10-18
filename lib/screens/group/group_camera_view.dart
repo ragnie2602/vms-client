@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
+import 'package:vms_flutter_client/screens/group/widget/add_camera_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/add_edit_group_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/item_group_action.dart';
@@ -18,11 +20,18 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetCamerasInGroup,
     required this.onGetAllGroupCamera,
     required this.onGetNoGroupCamera,
+    required this.onAddCameraToGroup,
   });
 
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
+  final Function({
+    required BuildContext c,
+    required List<int> currentGroupId,
+    required List<List<int>> cameraIds,
+  })?
+  onAddCameraToGroup;
 
   @override
   State<GroupCameraView> createState() => _GroupCameraViewState();
@@ -144,7 +153,29 @@ class _GroupCameraViewState extends State<GroupCameraView> {
     );
   }
 
-  void _onShareGroupCamera() {}
+  void _onShowDialogAddCamera({
+    required BuildContext c,
+    DeviceGroup? currentGroup,
+  }) async {
+    List<CameraEntity>? listCameraAvailable = await c
+        .read<GroupCameraBloc>()
+        .getAvailableCamerasForGroup(groupId: currentGroup?.groupId ?? []);
+    if (!c.mounted) {
+      return;
+    }
+    showDialogAddCamera(
+      c,
+      currentGroup: currentGroup,
+      listCameraAvailable: listCameraAvailable,
+      onConfirm: ({required listCameraSelected}) {
+        widget.onAddCameraToGroup?.call(
+          c: c,
+          currentGroupId: currentGroup?.groupId ?? [],
+          cameraIds: listCameraSelected.map((camera) => camera.id).toList(),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +233,10 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                             );
                             break;
                           case ItemGroupAction.addCamera:
+                            _onShowDialogAddCamera(
+                              c: context,
+                              currentGroup: node.data,
+                            );
                             break;
                         }
                       },
