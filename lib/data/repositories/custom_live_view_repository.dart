@@ -1,5 +1,6 @@
 import 'package:vms_flutter_client/data/mappers/live_view_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_custom_live_view_repository.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 
@@ -23,9 +24,14 @@ class CustomLiveViewRepository extends BaseRepository implements ICustomLiveView
   Future<Either<Failure, CustomLiveView>> addCustomLiveView({
     required String name,
     required int baseViewCode,
+    required List<LiveViewPosition> positions,
   }) async {
     return await catchError<CustomLiveView>(() async {
-      final liveView = await service.addCustomLiveView(name: name, baseViewCode: baseViewCode);
+      final liveView = await service.addCustomLiveView(
+        name: name,
+        baseViewCode: baseViewCode,
+        positions: positions.map((e) => e.toPB()).toList(),
+      );
 
       return Right(liveView.toDomain());
     });

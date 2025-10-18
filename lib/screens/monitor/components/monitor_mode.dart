@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
@@ -30,12 +31,6 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   int currentTab = 0;
 
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? _controller;
-
-  @override
-  initState() {
-    super.initState();
-    context.read<CustomViewBloc>().add(GetListCustomViews());
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -208,47 +203,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        BlocBuilder<CustomViewBloc, CustomViewState>(
-          builder: (context, state) => stateBuilder<ListCustomViewSuccess>(
-            state,
-            emptyBuilder: () => SizedBox(),
-            child: (state) => ListView.builder(
-              padding: EdgeInsets.only(bottom: 22),
-              shrinkWrap: true,
-              itemCount: state.customViews.length,
-              itemBuilder: (context, index) => InkWell(
-                onTap: () {},
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      if (currentWidth >= 40 + 48) ...[
-                        SvgPicture.asset(state.customViews[index].base.icon, width: 32, height: 32),
-                        SizedBox(width: 8),
-                      ],
-                      SizedBox(height: 32),
-                      Expanded(
-                        child: Text(
-                          state.customViews[index].name,
-                          style: AppTypography.style(
-                            13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.blackOrWhite,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.visible,
-                        ),
-                      ),
-
-                      if (currentWidth >= widget.maxWidth - 24 - 24)
-                        SvgPicture.asset(AppAssets.icDotHorizontal, width: 12, height: 12),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+        ListCustomViews(),
         InkWell(
           onTap: () => setState(() {
             currentTab = DefaultTabController.of(context).index;
@@ -296,6 +251,67 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   }
 }
 
+class ListCustomViews extends StatefulWidget {
+  const ListCustomViews({super.key});
+
+  @override
+  State<ListCustomViews> createState() => _ListCustomViewsState();
+}
+
+class _ListCustomViewsState extends State<ListCustomViews> {
+  final List<CustomLiveView> customViews = [];
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<CustomViewBloc>().add(GetListCustomViews());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<CustomViewBloc, CustomViewState>(
+      listener: (context, state) {
+        if (state is ListCustomViewSuccess) {
+          setState(() {
+            customViews.clear();
+            customViews.addAll(state.customViews);
+          });
+        }
+      },
+      child: ListView.builder(
+        padding: EdgeInsets.only(bottom: 22),
+        shrinkWrap: true,
+        itemCount: customViews.length,
+        itemBuilder: (context, index) => InkWell(
+          onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                SvgPicture.asset(customViews[index].base.icon, width: 32, height: 32),
+                SizedBox(height: 32),
+                Expanded(
+                  child: Text(
+                    customViews[index].name,
+                    style: AppTypography.style(
+                      13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.blackOrWhite,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.visible,
+                  ),
+                ),
+                SvgPicture.asset(AppAssets.icDotHorizontal, width: 12, height: 12),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class AddCustomModePane extends StatefulWidget {
   const AddCustomModePane({super.key, this.onBack});
   final VoidCallback? onBack;
@@ -306,6 +322,8 @@ class AddCustomModePane extends StatefulWidget {
 
 class _AddCustomModePaneState extends State<AddCustomModePane> {
   late final CustomViewBloc bloc;
+  final TextEditingController nameController = TextEditingController();
+  String? _errorMessage;
 
   ViewMode _mode = ViewMode.v2x2;
 
@@ -313,7 +331,20 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
   void initState() {
     super.initState();
 
-    bloc = context.read<CustomViewBloc>()..add(AddingCustomView(ViewMode.v2x2));
+    bloc = context.read<CustomViewBloc>()..add(ShowCustomView(ViewMode.v2x2));
+
+    // Listen to text changes to clear error message
+    nameController.addListener(() {
+      if (_errorMessage != null && nameController.text.isNotEmpty) {
+        setState(() => _errorMessage = null);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -328,7 +359,6 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
               InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: () {
-                  bloc.add(GetListCustomViews());
                   widget.onBack?.call();
                 },
                 child: Padding(
@@ -358,20 +388,38 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
           ),
           SizedBox(height: 15),
           TextField(
+            controller: nameController,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 19),
               isDense: true,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                borderSide: BorderSide(
+                  color: _errorMessage != null ? Colors.red : AppColors.greyE2E8F0,
+                  width: 1,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: AppColors.black, width: 1),
+                borderSide: BorderSide(
+                  color: _errorMessage != null ? Colors.red : AppColors.black,
+                  width: 1,
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                borderSide: BorderSide(
+                  color: _errorMessage != null ? Colors.red : AppColors.greyE2E8F0,
+                  width: 1,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: BorderSide(color: Colors.red, width: 1),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(4),
+                borderSide: BorderSide(color: Colors.red, width: 1),
               ),
               hintText: 'Nhập tên chế độ xem',
               hintStyle: AppTypography.style(
@@ -379,6 +427,8 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
                 fontWeight: FontWeight.w500,
                 color: AppColors.grey64748B,
               ),
+              errorText: _errorMessage,
+              errorStyle: AppTypography.style(12, fontWeight: FontWeight.w400, color: Colors.red),
             ),
             style: AppTypography.style(
               14,
@@ -403,7 +453,7 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
               children: [
                 for (var value in ViewMode.values)
                   InkWell(
-                    onTap: () => setState(() => bloc.add(AddingCustomView(_mode = value))),
+                    onTap: () => setState(() => bloc.add(ShowCustomView(_mode = value))),
                     child: SvgPicture.asset(
                       _mode == value ? value.iconActive : value.icon,
                       width: 32,
@@ -439,7 +489,18 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
               SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    if (nameController.text.isNotEmpty) {
+                      bloc.add(
+                        CreateCustomView(name: nameController.text, base: _mode, cameras: []),
+                      );
+                      widget.onBack?.call();
+                    } else {
+                      setState(() {
+                        _errorMessage = 'Vui lòng nhập tên chế độ xem';
+                      });
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.blackOrWhite,
                     elevation: 0,

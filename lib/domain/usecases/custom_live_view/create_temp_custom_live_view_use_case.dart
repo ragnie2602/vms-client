@@ -1,7 +1,7 @@
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.dart';
-import 'package:vms_flutter_client/domain/usecases/monitor/create_temp_custom_live_view_input.dart';
-import 'package:vms_flutter_client/domain/usecases/monitor/create_temp_custom_live_view_output.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_input.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_output.dart';
 import 'package:vms_flutter_client/domain/usecases/sync_use_case.dart';
 
 class CreateTempCustomLiveViewUseCase
@@ -10,7 +10,7 @@ class CreateTempCustomLiveViewUseCase
   CreateTempCustomLiveViewOutput buildUseCase(CreateTempCustomLiveViewInput input) {
     final positions = List.generate(
       input.base.total,
-      (index) => LiveViewPosition(index: index, cameraId: [], camera: null),
+      (index) => LiveViewPosition(index: index, cameraId: '', camera: null),
     );
     final customLiveView = CustomLiveView(id: [], base: input.base, positions: positions, name: '');
 

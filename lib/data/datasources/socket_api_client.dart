@@ -52,7 +52,10 @@ class SocketApiClient extends BaseApiClient {
       // Wait until a connection has been established.
       await _socket.connection
           .firstWhere((state) => state is Connected)
-          .timeout(Duration(seconds: params.timeout), onTimeout: () => throw TimeoutException('Connection timeout'));
+          .timeout(
+            Duration(seconds: params.timeout),
+            onTimeout: () => throw TimeoutException('Connection timeout'),
+          );
 
       _keepAliveTimer = Timer.periodic(const Duration(seconds: 30), _sendKeepAlive);
 
@@ -138,7 +141,11 @@ class SocketConnectionParams extends BaseConnectionParams {
   final int port;
   final int timeout;
 
-  SocketConnectionParams(this.host, this.port, {this.timeout = AppConfig.SOCKET_CONNECTION_TIMEOUT});
+  SocketConnectionParams(
+    this.host,
+    this.port, {
+    this.timeout = AppConfig.SOCKET_CONNECTION_TIMEOUT,
+  });
 }
 
 class SocketRequestPayload extends BaseRequestPayload {

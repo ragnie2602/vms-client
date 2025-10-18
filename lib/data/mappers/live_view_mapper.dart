@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart' as pb;
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
@@ -13,10 +16,27 @@ extension BaseViewMapper on pb.Base_View {
 
 extension LiveViewPositionMapper on pb.LiveViewPosition {
   LiveViewPosition toDomain() {
+    String decodedCameraId = '';
+    try {
+      if (cameraId.isNotEmpty) {
+        decodedCameraId = utf8.decode(Uint8List.fromList(cameraId), allowMalformed: true);
+      }
+    } catch (e) {}
+
     return LiveViewPosition(
       index: index,
-      cameraId: cameraId,
+      cameraId: decodedCameraId,
       camera: hasCamera() ? camera.toDomain() : null,
+    );
+  }
+}
+
+extension LiveViewPositionReverse on LiveViewPosition {
+  pb.LiveViewPosition toPB() {
+    return pb.LiveViewPosition(
+      index: index,
+      cameraId: utf8.encode(cameraId),
+      camera: null, // TODO: Convert camera to PB
     );
   }
 }
@@ -40,7 +60,7 @@ extension CustomLiveViewReverse on CustomLiveView {
       postision: positions.map(
         (e) => pb.LiveViewPosition(
           index: e.index,
-          cameraId: e.cameraId,
+          cameraId: utf8.encode(e.cameraId),
           camera: e.camera?.let(
             (cam) => pb.Camera(
               name: cam.name,

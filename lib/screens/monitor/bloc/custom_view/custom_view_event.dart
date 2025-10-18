@@ -6,10 +6,10 @@ sealed class CustomViewEvent extends BaseEvent {
 
 class GetListCustomViews extends CustomViewEvent {}
 
-class AddingCustomView extends CustomViewEvent {
+class ShowCustomView extends CustomViewEvent {
   final ViewMode base;
 
-  const AddingCustomView(this.base);
+  const ShowCustomView(this.base);
 }
 
 class AddingCameraToCustomView extends CustomViewEvent {
@@ -17,4 +17,12 @@ class AddingCameraToCustomView extends CustomViewEvent {
   final int index;
 
   const AddingCameraToCustomView(this.camera, this.index);
+}
+
+class CreateCustomView extends CustomViewEvent {
+  final String name;
+  final ViewMode base;
+  final List<CameraEntity?> cameras;
+
+  const CreateCustomView({required this.name, required this.base, required this.cameras});
 }

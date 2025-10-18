@@ -35,6 +35,8 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
             cameras.addAll(state.customView.positions.map((e) => e.camera).toList());
             mode = state.customView.base;
           });
+        } else if (state is CreateCustomViewSuccess) {
+          // TODO: add camera to custom view
         }
       },
       child: Column(
@@ -61,9 +63,8 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
           current is AddingCameraToCustomViewSuccess && current.index == index,
       builder: (context, state) {
         var camera = cameras.elementAtOrNull(index);
-        if (state is AddingCameraToCustomViewSuccess) {
-          camera = cameras[index] = state.camera;
-        }
+        if (state is AddingCameraToCustomViewSuccess) camera = cameras[index] = state.camera;
+
         return camera == null ? _buildEmptyCell(context, index) : _buildCameraView(context, camera);
       },
     );
