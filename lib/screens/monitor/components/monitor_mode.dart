@@ -32,6 +32,12 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? _controller;
 
   @override
+  initState() {
+    super.initState();
+    context.read<CustomViewBloc>().add(GetListCustomViews());
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (viewMode == 0) {
       return DefaultTabController(

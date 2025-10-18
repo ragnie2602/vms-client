@@ -11,7 +11,6 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bl
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
-import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';

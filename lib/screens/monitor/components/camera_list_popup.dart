@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 class CameraListPopup extends StatelessWidget {
   final TextEditingController searchController = TextEditingController();
+  final MonitorBloc bloc;
+  final Function(CameraEntity) onCameraSelected;
 
-  CameraListPopup({super.key});
+  CameraListPopup({super.key, required this.bloc, required this.onCameraSelected}) {
+    bloc.add(GetAllCamera());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +46,7 @@ class CameraListPopup extends StatelessWidget {
             ],
           ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
+            padding: EdgeInsets.only(left: 24, right: 24, bottom: 20),
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
@@ -81,8 +88,86 @@ class CameraListPopup extends StatelessWidget {
               textInputAction: TextInputAction.search,
             ),
           ),
-          Text('Camera List'),
+          BlocBuilder<MonitorBloc, MonitorState>(
+            bloc: bloc,
+            builder: (context, state) {
+              if (state is MonitorLoading) return Center(child: CircularProgressIndicator());
+              if (state is MonitorFailure) return Center(child: Text(state.message));
+              if (state is MonitorSuccess) {
+                return Expanded(
+                  child: ListView.builder(
+                    itemBuilder: (context, index) => _cameraItem(state.cameras[index]),
+                    itemCount: state.cameras.length,
+                  ),
+                );
+              }
+              return Container();
+            },
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _cameraItem(CameraEntity camera) {
+    return Material(
+      child: InkWell(
+        onTap: () => onCameraSelected(camera),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Row(
+              children: [
+                if (constraints.maxWidth >= 20 + 16) ...[
+                  Container(
+                    height: 35,
+                    alignment: Alignment.topCenter,
+                    child: SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
+                  ),
+                  SizedBox(width: 16),
+                ],
+                if (constraints.maxWidth >= 20 + 16)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          camera.name,
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhite,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          "Đang hoạt động",
+                          style: AppTypography.style(
+                            12,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF647488),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
+                        ),
+                      ],
+                    ),
+                  ),
+                if (constraints.maxWidth >= 24 - 24) ...[
+                  SizedBox(width: 8),
+                  SizedBox.square(
+                    dimension: 8,
+                    child: CircleAvatar(backgroundColor: Color(0xFF21CCC3)),
+                  ),
+                  SizedBox(width: 8),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

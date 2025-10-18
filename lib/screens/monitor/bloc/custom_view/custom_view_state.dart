@@ -49,3 +49,15 @@ class CustomViewSuccess extends CustomViewState {
   @override
   List<Object?> get props => [customView];
 }
+
+class AddingCameraToCustomViewSuccess extends CustomViewState {
+  final CameraEntity camera;
+  final int index;
+
+  const AddingCameraToCustomViewSuccess({required this.camera, required this.index});
+
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [camera, index];
+}

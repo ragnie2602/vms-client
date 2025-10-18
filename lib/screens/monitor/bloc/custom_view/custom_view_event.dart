@@ -11,3 +11,10 @@ class AddingCustomView extends CustomViewEvent {
 
   const AddingCustomView(this.base);
 }
+
+class AddingCameraToCustomView extends CustomViewEvent {
+  final CameraEntity camera;
+  final int index;
+
+  const AddingCameraToCustomView(this.camera, this.index);
+}
