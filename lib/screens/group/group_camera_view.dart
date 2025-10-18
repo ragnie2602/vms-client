@@ -194,115 +194,117 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             decoration: BoxDecoration(color: Colors.white),
             child: Column(
               children: [
-                TreeGroupWidget(
-                  actionBuilder: (node) {
-                    return PopupMenuButton<ItemGroupAction>(
-                      padding: EdgeInsets.zero,
-                      splashRadius: 20,
-                      menuPadding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(8),
-                      ),
-                      elevation: 8,
-                      onSelected: (value) {
-                        switch (value) {
-                          case ItemGroupAction.add:
-                            _onShowDialogAddEditGroup(
-                              listGroupInput: newState.groups ?? [],
-                              c: context,
-                              parentGroupId: node.data?.groupId,
-                              addEditType: AddEditGroupType.add,
-                              currentGroup: node.data,
-                            );
-                            break;
-                          case ItemGroupAction.edit:
-                            _onShowDialogAddEditGroup(
-                              listGroupInput: newState.groups ?? [],
-                              c: context,
-                              parentGroupId: node.data?.parentGroupId,
-                              addEditType: AddEditGroupType.edit,
-                              currentGroup: node.data,
-                            );
-                            break;
-                          case ItemGroupAction.share:
-                            break;
-                          case ItemGroupAction.remove:
-                            _onShowDialogRemoveGroup(
-                              c: context,
-                              currentGroup: node.data,
-                            );
-                            break;
-                          case ItemGroupAction.addCamera:
-                            _onShowDialogAddCamera(
-                              c: context,
-                              currentGroup: node.data,
-                            );
-                            break;
-                        }
-                      },
-                      itemBuilder: (BuildContext context) {
-                        List<ItemGroupAction> listAction = List.of(
-                          ItemGroupAction.values,
-                        );
-                        // nếu level >= 2 (thứ 3) thì ko còn action add group nữa
-                        if ((node.data?.level ?? 0) >= 2) {
-                          listAction.remove(ItemGroupAction.add);
-                        }
-                        return listAction
-                            .map(
-                              (e) => PopupMenuItem<ItemGroupAction>(
-                                value: e,
-                                child: ItemActionWidget(item: e),
-                              ),
-                            )
-                            .toList();
-                      },
-                      child: SvgPicture.asset(
-                        AppAssets.icAction,
-                        color: Colors.black,
-                      ),
-                    );
-                  },
-                  onClickGroupNode: (c, groupId) {
-                    setState(() {
-                      isClickAllGroup = false;
-                      isClickNoGroup = false;
-                    });
-                    // rest api lấy camera theo group
-                    widget.onGetCamerasInGroup?.call(c, groupId);
-                  },
-                  onClickAllGroup: () {
-                    setState(() {
-                      isClickAllGroup = true;
-                      isClickNoGroup = false;
-                    });
-                    widget.onGetAllGroupCamera?.call(context);
-                  },
-                  onClickNoGroup: () {
-                    setState(() {
-                      isClickAllGroup = false;
-                      isClickNoGroup = true;
-                    });
-                    widget.onGetNoGroupCamera?.call(context);
-                  },
-                  enableAddGroup: true,
-                  controller: controllerTree,
-                  searchController: searchGroupNameController,
-                  onSearchGroup: ({keySearchGroup}) {
-                    _onSearchGroup();
-                  },
-                  onClickAddGroup: () {
-                    _onShowDialogAddEditGroup(
-                      listGroupInput: newState.groups ?? [],
-                      c: context,
-                      addEditType: AddEditGroupType.add,
-                    );
-                  },
-                  tree: newState.tree,
-                  isShowGroupAll: true,
-                  isShowNoGroup: true,
-                  isClickAllGroup: isClickAllGroup,
-                  isClickNoGroup: isClickNoGroup,
+                Expanded(
+                  child: TreeGroupWidget(
+                    actionBuilder: (node) {
+                      return PopupMenuButton<ItemGroupAction>(
+                        padding: EdgeInsets.zero,
+                        splashRadius: 20,
+                        menuPadding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadiusGeometry.circular(8),
+                        ),
+                        elevation: 8,
+                        onSelected: (value) {
+                          switch (value) {
+                            case ItemGroupAction.add:
+                              _onShowDialogAddEditGroup(
+                                listGroupInput: newState.groups ?? [],
+                                c: context,
+                                parentGroupId: node.data?.groupId,
+                                addEditType: AddEditGroupType.add,
+                                currentGroup: node.data,
+                              );
+                              break;
+                            case ItemGroupAction.edit:
+                              _onShowDialogAddEditGroup(
+                                listGroupInput: newState.groups ?? [],
+                                c: context,
+                                parentGroupId: node.data?.parentGroupId,
+                                addEditType: AddEditGroupType.edit,
+                                currentGroup: node.data,
+                              );
+                              break;
+                            case ItemGroupAction.share:
+                              break;
+                            case ItemGroupAction.remove:
+                              _onShowDialogRemoveGroup(
+                                c: context,
+                                currentGroup: node.data,
+                              );
+                              break;
+                            case ItemGroupAction.addCamera:
+                              _onShowDialogAddCamera(
+                                c: context,
+                                currentGroup: node.data,
+                              );
+                              break;
+                          }
+                        },
+                        itemBuilder: (BuildContext context) {
+                          List<ItemGroupAction> listAction = List.of(
+                            ItemGroupAction.values,
+                          );
+                          // nếu level >= 2 (thứ 3) thì ko còn action add group nữa
+                          if ((node.data?.level ?? 0) >= 2) {
+                            listAction.remove(ItemGroupAction.add);
+                          }
+                          return listAction
+                              .map(
+                                (e) => PopupMenuItem<ItemGroupAction>(
+                                  value: e,
+                                  child: ItemActionWidget(item: e),
+                                ),
+                              )
+                              .toList();
+                        },
+                        child: SvgPicture.asset(
+                          AppAssets.icAction,
+                          color: Colors.black,
+                        ),
+                      );
+                    },
+                    onClickGroupNode: (c, groupId) {
+                      setState(() {
+                        isClickAllGroup = false;
+                        isClickNoGroup = false;
+                      });
+                      // rest api lấy camera theo group
+                      widget.onGetCamerasInGroup?.call(c, groupId);
+                    },
+                    onClickAllGroup: () {
+                      setState(() {
+                        isClickAllGroup = true;
+                        isClickNoGroup = false;
+                      });
+                      widget.onGetAllGroupCamera?.call(context);
+                    },
+                    onClickNoGroup: () {
+                      setState(() {
+                        isClickAllGroup = false;
+                        isClickNoGroup = true;
+                      });
+                      widget.onGetNoGroupCamera?.call(context);
+                    },
+                    enableAddGroup: true,
+                    controller: controllerTree,
+                    searchController: searchGroupNameController,
+                    onSearchGroup: ({keySearchGroup}) {
+                      _onSearchGroup();
+                    },
+                    onClickAddGroup: () {
+                      _onShowDialogAddEditGroup(
+                        listGroupInput: newState.groups ?? [],
+                        c: context,
+                        addEditType: AddEditGroupType.add,
+                      );
+                    },
+                    tree: newState.tree,
+                    isShowGroupAll: true,
+                    isShowNoGroup: true,
+                    isClickAllGroup: isClickAllGroup,
+                    isClickNoGroup: isClickNoGroup,
+                  ),
                 ),
               ],
             ),
