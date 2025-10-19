@@ -227,4 +227,18 @@ class CameraService {
       (buffer) => AddCameraToGroup_Reply.fromBuffer(buffer).camera,
     );
   }
+  Future<RemoveCameraFormGroup_Reply> removeCameraFromGroup({required List<int> cameraIds, required List<int> groupId}) async {
+    final request = RemoveCameraFormGroup_Request()
+      ..cameraId = cameraIds
+      ..groupId = groupId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.removeCameraFormGroup)),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(RemoveCameraFormGroup_Error.valueOf),
+      (buffer) => RemoveCameraFormGroup_Reply.fromBuffer(buffer),
+    );
+  }
 }

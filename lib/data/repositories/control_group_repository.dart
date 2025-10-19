@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
+import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 
 import 'base_repository.dart';
@@ -172,6 +173,20 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
     return await catchError<List<CameraEntity>>(() async {
       final cameras = await service.addCameraToGroup(cameraIds: cameraIds, groupId: groupId);
       return Right(cameras.map((e) => e.toDomain()).toList());
+    });
+  }
+
+  @override
+  Future<Either<Failure, RemoveCameraFromGroupEntity>> removeCameraFromGroup({
+    required List<int> cameraId,
+    required List<int> groupId,
+  }) async {
+    return await catchError<RemoveCameraFromGroupEntity>(() async {
+      final reply = await service.removeCameraFromGroup(
+        cameraIds: cameraId,
+        groupId: groupId,
+      );
+      return Right(reply.toDomain());
     });
   }
 }

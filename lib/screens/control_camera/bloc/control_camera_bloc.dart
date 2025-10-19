@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
@@ -40,6 +41,7 @@ class ControlCameraBloc
     on<ShareCameraEvent>(_onShareCamera);
     on<CheckAccountShareEvent>(_onCheckAccountShare);
     on<AddCameraToGroupEvent>(_onAddCameraToGroup);
+    on<RemoveCameraFromGroupEvent>(_onRemoveCameraFromGroup);
   }
 
   // list camera
@@ -221,10 +223,6 @@ class ControlCameraBloc
       (onFailure) => emit(AddCameraFailState(res.left.toString())),
       (onSuccess) => emit(ListCameraSuccessState(cameras: [onSuccess])),
     );
-    res.fold(
-      (onFailure) => emit(AddCameraFailState(res.left.toString())),
-      (onSuccess) => emit(UpdateCameraSuccessState(cameraEntity: onSuccess)),
-    );
   }
 
   FutureOr<void> _onDeleteCamera(
@@ -288,5 +286,22 @@ class ControlCameraBloc
       (onFailure) => emit(AddCameraFailState(res.left.toString())),
       (onSuccess) => emit(ListCameraSuccessState(cameras: onSuccess)),
     );
+  }
+
+  FutureOr<void> _onRemoveCameraFromGroup(
+    RemoveCameraFromGroupEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final res = await controlGroupRepository.removeCameraFromGroup(
+      cameraId: event.cameraId,
+      groupId: event.groupId ?? currentGroupId,
+    );
+    res.fold((onFailure) => emit(RemoveCameraFromGroupFailState(res.left.toString())), (
+      onSuccess,
+    ) {
+      // Cập nhật lại danh sách camera sau khi xóa khỏi nhóm
+      listCamera.removeWhere((camera) => listEquals(event.cameraId, camera.id));
+      emit(ListCameraSuccessState(cameras: listCamera));
+    });
   }
 }

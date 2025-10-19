@@ -101,3 +101,11 @@ class DeleteCameraSuccessState extends ControlCameraState {
   @override
   List<Object?> get props => [deletedCameraId];
 }
+class RemoveCameraFromGroupFailState extends ControlCameraState {
+  final String message;
+  const RemoveCameraFromGroupFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+}

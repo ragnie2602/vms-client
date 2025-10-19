@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
+import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
 
 extension CameraTypeMapper on pb.CameraType {
   CameraType toDomain() {
@@ -155,5 +156,15 @@ extension AddCameraRTSPMapper on AddCameraRTSP_Reply {
 extension AddCameraOnvifMapper on AddCameraOnVif_Reply {
   AddCameraEntity toDomain() {
     return AddCameraEntity(cameraId: cameraId, camera: camera.toDomain());
+  }
+}
+
+extension RemoveCameraFromGroupMapper on RemoveCameraFormGroup_Reply {
+  RemoveCameraFromGroupEntity toDomain() {
+    return RemoveCameraFromGroupEntity(
+      cameraId: cameraId,
+      groupId: groupId,
+      groupLevel: groupLevel,
+    );
   }
 }
