@@ -42,19 +42,6 @@ class _MonitorActionsState extends State<MonitorActions> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ActionItem(
-                    isSelected: value == 0,
-                    title: 'Danh sách camera',
-                    icon: AppAssets.icListCamera,
-                    onTap: () => widget.leftController.togglePanel(
-                      MonitorCameras(
-                        maxWidth: widget.leftController.expandedWidth,
-                        key: ValueKey('monitor_cameras'),
-                      ),
-                      id: 0,
-                      onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
-                    ),
-                  ),
-                  ActionItem(
                     isSelected: value == 1,
                     title: 'Chế độ xem',
                     icon: AppAssets.icViewMode,
@@ -87,6 +74,19 @@ class _MonitorActionsState extends State<MonitorActions> {
                         key: ValueKey('monitor_mode'),
                       ),
                       id: 1,
+                      onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
+                    ),
+                  ),
+                  ActionItem(
+                    isSelected: value == 0,
+                    title: 'Danh sách camera',
+                    icon: AppAssets.icListCamera,
+                    onTap: () => widget.leftController.togglePanel(
+                      MonitorCameras(
+                        maxWidth: widget.leftController.expandedWidth,
+                        key: ValueKey('monitor_cameras'),
+                      ),
+                      id: 0,
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
                   ),

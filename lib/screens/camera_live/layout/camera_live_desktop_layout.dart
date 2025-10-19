@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
-import 'package:vms_flutter_client/core/utils/date_util.dart';
 
 import '../../shared/panel.dart';
 import '../bloc/camera_live/camera_live_bloc.dart';
@@ -69,8 +68,6 @@ class _CameraLiveDesktopLayoutState extends State<CameraLiveDesktopLayout> {
                         Padding(
                           padding: const EdgeInsets.only(top: 3),
                           child: PlayerTimeline(
-                            startDate: DateUtil.startOfDay,
-                            endDate: DateUtil.startOfTomorrow,
                             size: Size(double.infinity, 60),
                             normalStyle: const TextStyle(
                               color: Color.fromRGBO(255, 255, 255, 0.2),

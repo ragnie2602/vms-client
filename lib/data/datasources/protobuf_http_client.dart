@@ -1,10 +1,10 @@
-import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vms_flutter_client/core/utils/pretty_dio_logger.dart';
 
 class ProtobufHttpClient {
   late final Dio _dio;
+  Dio get dio => _dio;
 
   ProtobufHttpClient() {
     _dio = Dio(

@@ -37,3 +37,13 @@ class ChangeVolume extends CameraLiveEvent {
   final bool? mute;
   const ChangeVolume(this.volume, {this.mute});
 }
+
+class ChangePlaybackDate extends CameraLiveEvent {
+  final DateTime date;
+  const ChangePlaybackDate(this.date);
+}
+
+class ChangeTimelineDisplayMode extends CameraLiveEvent {
+  final TimelineDisplayMode mode;
+  const ChangeTimelineDisplayMode(this.mode);
+}
