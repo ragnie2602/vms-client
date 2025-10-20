@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
@@ -28,10 +29,13 @@ class AccountForm {
   });
 }
 
+
+
 /// Hiển thị dialog khôi phục mật khẩu.
 /// Trả về mật khẩu mới nếu người dùng xác nhận, ngược lại trả về null.
 Future<String?> showResetPasswordDialog(
   BuildContext context, {
+  Future<void> Function(String newPassword)? onSubmit,
   required String username,
   required UserEntity user,
 }) {
@@ -146,12 +150,7 @@ Future<String?> showResetPasswordDialog(
                               ),
                             ),
                             onPressed: () {
-                              ctx.read<UserManagementBloc>().add(
-                                ResetPassWordEvent(
-                                  userId: user.id,
-                                  newPassword: '12345678',
-                                ),
-                              );
+                              //onSubmit.call(_controller.text.toString());
                             },
                             child: const Text('KHÔI PHỤC'),
                           ),

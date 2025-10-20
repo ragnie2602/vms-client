@@ -4,6 +4,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
+import 'package:vms_flutter_client/screens/user/widget/user_dialog.dart';
 import 'package:vms_flutter_client/screens/user/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/user/widget/item_user_widget.dart';
 import 'package:vms_flutter_client/screens/user/widget/title_widget.dart';
@@ -24,6 +25,47 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   void _onGetListUser() {
     context.read<UserManagementBloc>().add(GetListUserEvent());
+  }
+
+  void _onDeleteUser({required List<int> userId}) {
+    context.read<UserManagementBloc>().add(
+      DeleteUserEvent(userId: userId, uidStr: ''),
+    );
+  }
+
+  void _addUser({
+    required String account,
+    required String password,
+    String? email,
+    String? tel,
+    String? address,
+    required bool isAdmin,
+    String? desc,
+    required bool addCamDenied,
+    required bool changePassDenied,
+  }) {
+    context.read<UserManagementBloc>().add(
+      AddUserEvent(
+        account: account,
+        email: email,
+        tel: tel,
+        address: address,
+        isAdmin: isAdmin,
+        desc: desc,
+        password: password,
+        changePassDenied: changePassDenied,
+        addCamDenied: addCamDenied,
+      ),
+    );
+  }
+
+  void _onResetPassword({
+    required List<int> userId,
+    required String newPassword,
+  }) {
+    context.read<UserManagementBloc>().add(
+      ResetPassWordEvent(userId: userId, newPassword: newPassword),
+    );
   }
 
   @override
@@ -57,7 +99,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       ),
                       InkWell(
                         onTap: () async {
-                          await showAddAccountDialog(context);
+                          await showAddUserDialog(
+                            context,
+                            mode: UserDialogMode.add,
+                            onSubmit: (payload) async {
+                              // Xử lý thêm user
+                              _addUser(
+                                tel: payload.password,
+                                desc: payload.description,
+                                email: payload.email,
+                                account: payload.username,
+                                password: payload.password,
+                                isAdmin: payload.isAdmin,
+                                addCamDenied: payload.canAddCamera,
+                                changePassDenied: payload.canChangePassword,
+                              );
+                            },
+                          );
                         },
                         splashColor: Colors.transparent,
 
@@ -114,7 +172,35 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 shrinkWrap: true,
                                 itemCount: state.users!.length,
                                 itemBuilder: (context, index) => ItemUserWidget(
-                                  ItemUser: state.users![index],
+                                  onEdit: () async {
+                                    await showAddUserDialog(
+                                      context,
+                                      userEntity: state.users![index],
+                                      mode: UserDialogMode.edit,
+                                      onSubmit: (payload) async {
+                                        // Xử lý thêm user
+                                      },
+                                    );
+                                  },
+                                  onResetPassword: () {
+                                    showResetPasswordDialog(
+                                      context,
+                                      username: state.users![index].account,
+                                      user: state.users![index],
+                                      onSubmit: (newPassword) async {
+                                        _onResetPassword(
+                                          newPassword: newPassword,
+                                          userId: state.users![index].id,
+                                        );
+                                      },
+                                    );
+                                  },
+                                  onDelete: () {
+                                    _onDeleteUser(
+                                      userId: state.users![index].id,
+                                    );
+                                  },
+                                  itemUser: state.users![index],
                                   index: index + 1,
                                 ),
                               ),
