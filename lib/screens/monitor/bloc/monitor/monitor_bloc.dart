@@ -13,6 +13,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   MonitorBloc(this.cameraRepository) : super(MonitorInitial()) {
     on<GetAllCamera>(_onGetAllCamera);
     on<ChangeGridMode>(_onChangeGridMode);
+    on<GetCameraAtPage>(_onGetCameraAtPage);
   }
 
   final ICameraRepository cameraRepository;
@@ -33,6 +34,12 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         );
       },
     );
+  }
+
+  Future<void> _onGetCameraAtPage(GetCameraAtPage event, Emitter<MonitorState> emit) async {
+    emit(MonitorLoading());
+
+    // if (state)
   }
 
   FutureOr<void> _onChangeGridMode(ChangeGridMode event, Emitter<MonitorState> emit) async {
