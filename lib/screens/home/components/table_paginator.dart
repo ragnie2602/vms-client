@@ -5,11 +5,10 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
 class TablePaginator extends StatefulWidget {
-  int _numPages = 10;
+  final int _totalPages;
+  final Function(int pageNumber) onChangePage;
 
-  TablePaginator(int numPages, {super.key}) {
-    this._numPages = numPages;
-  }
+  TablePaginator(this._totalPages, this.onChangePage, {super.key});
 
   @override
   State<TablePaginator> createState() => _TablePaginatorState();
@@ -22,9 +21,9 @@ class _TablePaginatorState extends State<TablePaginator> {
   Widget build(BuildContext context) {
     return NumberPaginator(
       controller: _controller,
-      numberPages: widget._numPages,
+      numberPages: widget._totalPages,
       onPageChange: (int index) {
-      // handle page change...
+        widget.onChangePage(index);
       },
        child: SizedBox(
     height: 64,
@@ -32,11 +31,14 @@ class _TablePaginatorState extends State<TablePaginator> {
       padding: const EdgeInsets.all(4.0),
       child: Row(
         children: [
-          _CustomButton(
-            AppAssets.icArrowChevronLeft,
-            onTap: () => _controller.prev(),
-            text: '<',
-            isSelected: false,
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: _CustomButton(
+              AppAssets.icArrowChevronLeft,
+              onTap: () => _controller.prev(),
+              text: '<',
+              isSelected: false,
+            ),
           ),
           Expanded(
             child: ScrollableNumberContent(

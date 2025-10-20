@@ -19,6 +19,10 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
 
   double get spacing => AppConfig.MONITOR_GRID_SPACING;
 
+  void onChangePage(int page) {
+    print("Current Page $page");
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MonitorBloc, MonitorState>(
@@ -30,6 +34,8 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
           onDesktop: (context) => LayoutBuilder(
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
+
+              print("Sized Box $size");
 
               return Column(
                 children: [
@@ -76,7 +82,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
     final width = (constraints.maxWidth - spacing * (columns - 1)) / columns;
     final height = (constraints.maxHeight - spacing * (rows - 1)) / rows;
 
-    return Size(width, height);
+    return Size(width - 30, height - 30);
   }
 
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
