@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 
 class ControlCameraState extends BaseState {
   final CameraStatus? status;
@@ -32,6 +33,32 @@ class ListCameraFailState extends ControlCameraState {
 class ControlCameraLoadingState extends ControlCameraState {
   @override
   StateType get type => StateType.loading;
+}
+
+class ListShareCameraSuccessState extends ControlCameraState {
+  final List<int> cameraId;
+  final List<AccountSharedEntity> sharedUsers;
+  const ListShareCameraSuccessState({
+    required this.cameraId,
+    required this.sharedUsers,
+  });
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [cameraId, sharedUsers];
+}
+
+class ListShareInviteGroupSuccessState extends ControlCameraState {
+  final List<int> groupId;
+  final List<AccountSharedEntity> sharedUsers;
+  const ListShareInviteGroupSuccessState({
+    required this.groupId,
+    required this.sharedUsers,
+  });
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [groupId, sharedUsers];
 }
 
 class AddCameraSuccessState extends ControlCameraState {
@@ -101,6 +128,7 @@ class DeleteCameraSuccessState extends ControlCameraState {
   @override
   List<Object?> get props => [deletedCameraId];
 }
+
 class RemoveCameraFromGroupFailState extends ControlCameraState {
   final String message;
   const RemoveCameraFromGroupFailState(this.message);

@@ -1,11 +1,14 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/camera_service.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
+import 'package:vms_flutter_client/data/mappers/invite_message_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart'
+    show InviteMessageEntity;
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 
 import 'base_repository.dart';
@@ -228,6 +231,42 @@ class ControlCameraRepository extends BaseRepository
         groupId: groupId,
       );
       return Right(reply.toDomain());
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
+    required List<int> groupId,
+  }) async {
+    return await catchError<List<InviteMessageEntity>>(() async {
+      final invites = await service.listShareInviteGroup(groupId: groupId);
+      return Right(invites.map((e) => e.toEntity()).toList());
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<InviteMessageEntity>>> listShareCamera({
+    required List<int> cameraId,
+  }) async {
+    return await catchError<List<InviteMessageEntity>>(() async {
+      final sharingRecords = await service.listShareCamera(cameraId: cameraId);
+      return Right(sharingRecords.map((e) => e.toEntity()).toList());
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<int>>> deleteShareCamera({
+    required List<int> cameraId,
+    required String accountB,
+    required List<int> shareId,
+  }) async {
+    return await catchError<List<int>>(() async {
+      final reply = await service.deleteShareCamera(
+        cameraId: cameraId,
+        accountB: accountB,
+        shareId: shareId,
+      );
+      return Right(reply.shareId);
     });
   }
 }

@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/debouncer.dart';
 import 'package:vms_flutter_client/data/datasources/share_type_enum.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
+import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 /// Example usage:
 /// ```dart
@@ -50,7 +51,7 @@ Future<T?> showShareDialog<T>(
   CameraEntity? camera,
   List<String> sharedUsers = const [],
   Future<void> Function(List<String> selectedUsers)? onSave,
-  Future<void> Function(String query)? onSearchUser,
+  Future<SharedUser?> Function(String query)? onSearchUser,
   VoidCallback? onCancel,
 }) {
   return showDialog<T>(
@@ -68,15 +69,11 @@ Future<T?> showShareDialog<T>(
   );
 }
 
-/// Data model for shared user
+/// Data model for shared user (username only)
 class SharedUser {
   final String username;
-  final String? displayName;
-  final String? avatar;
 
-  const SharedUser({required this.username, this.displayName, this.avatar});
-
-  String get displayText => displayName ?? username;
+  const SharedUser({required this.username});
 }
 
 class _ShareDialog extends StatefulWidget {
@@ -95,7 +92,7 @@ class _ShareDialog extends StatefulWidget {
   final CameraEntity? camera;
   final List<String> sharedUsers;
   final Future<void> Function(List<String> selectedUsers)? onSave;
-  final Future<void> Function(String query)? onSearchUser;
+  final Future<SharedUser?> Function(String query)? onSearchUser;
   final VoidCallback? onCancel;
 
   @override
@@ -105,6 +102,7 @@ class _ShareDialog extends StatefulWidget {
 class _ShareDialogState extends State<_ShareDialog> {
   final _searchController = TextEditingController();
   final List<String> _selectedUsers = [];
+  final List<String> _combinationUsers = [];
   final List<SharedUser> _searchResults = [];
   bool _isSearching = false;
   bool _isSaving = false;
@@ -112,7 +110,8 @@ class _ShareDialogState extends State<_ShareDialog> {
   @override
   void initState() {
     super.initState();
-    _selectedUsers.addAll(widget.sharedUsers);
+    // combination = shared (from server) + newly selected (at runtime)
+    _combinationUsers.addAll(widget.sharedUsers);
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -163,39 +162,47 @@ class _ShareDialogState extends State<_ShareDialog> {
   }
 
   void _performSearch(String query) {
-    // Mock search results - in real app, this would call an API
-    final mockResults =
-        [
-              SharedUser(username: 'user1', displayName: 'Người dùng 1'),
-              SharedUser(username: 'user2', displayName: 'Người dùng 2'),
-              SharedUser(username: 'user3', displayName: 'Người dùng 3'),
-            ]
-            .where(
-              (user) =>
-                  user.username.toLowerCase().contains(query.toLowerCase()) ||
-                  (user.displayName?.toLowerCase().contains(
-                        query.toLowerCase(),
-                      ) ??
-                      false),
-            )
-            .toList();
-
-    setState(() {
-      _searchResults.clear();
-      _searchResults.addAll(mockResults);
-      _isSearching = false;
-    });
+    if (widget.onSearchUser == null) {
+      setState(() {
+        _searchResults.clear();
+        _isSearching = false;
+      });
+      return;
+    }
+    widget.onSearchUser!(query)
+        .then((result) {
+          if (!mounted) return;
+          setState(() {
+            _searchResults.clear();
+            if (result != null) {
+              _searchResults.add(result);
+            }
+            _isSearching = false;
+          });
+        })
+        .catchError((_) {
+          if (!mounted) return;
+          setState(() {
+            _searchResults.clear();
+            _isSearching = false;
+          });
+        });
   }
 
   void _addUser(SharedUser user) {
-    if (!_selectedUsers.contains(user.username)) {
-      setState(() {
-        _selectedUsers.add(user.username);
-      });
-    }
+    // allow only one new selection; don't add duplicates
+    if (_selectedUsers.isNotEmpty) return;
+    if (_selectedUsers.contains(user.username)) return;
+    setState(() {
+      _selectedUsers.add(user.username);
+      if (!_combinationUsers.contains(user.username)) {
+        _combinationUsers.add(user.username);
+      }
+    });
   }
 
   void _removeUser(String username) {
+    // Only remove from selected (for this session). Keep combination to reflect existing shared users.
     setState(() {
       _selectedUsers.remove(username);
     });
@@ -212,7 +219,15 @@ class _ShareDialogState extends State<_ShareDialog> {
 
       await widget.onSave?.call(_selectedUsers);
       if (mounted) {
-        Navigator.pop(context);
+        showAppMessageDialog(
+          context,
+          message: 'Chia sẻ camera thành công!',
+          type: AppMessageType.success,
+          onOk: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+        );
       }
     } catch (e) {
       // Handle error
@@ -493,6 +508,7 @@ class _ShareDialogState extends State<_ShareDialog> {
                 itemBuilder: (context, index) {
                   final user = _searchResults[index];
                   final isSelected = _selectedUsers.contains(user.username);
+                  final canSelect = _selectedUsers.isEmpty || isSelected;
 
                   return ListTile(
                     dense: true,
@@ -500,8 +516,8 @@ class _ShareDialogState extends State<_ShareDialog> {
                       radius: 16,
                       backgroundColor: AppColors.blue15ABFF,
                       child: Text(
-                        user.displayText.isNotEmpty
-                            ? user.displayText[0].toUpperCase()
+                        user.username.isNotEmpty
+                            ? user.username[0].toUpperCase()
                             : 'U',
                         style: const TextStyle(
                           color: Colors.white,
@@ -511,19 +527,13 @@ class _ShareDialogState extends State<_ShareDialog> {
                       ),
                     ),
                     title: Text(
-                      user.displayText,
+                      user.username,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    subtitle: Text(
-                      user.username,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF92929D),
-                      ),
-                    ),
+                    // subtitle: const SizedBox.shrink(),
                     trailing: isSelected
                         ? const Icon(
                             Icons.check_circle,
@@ -532,9 +542,11 @@ class _ShareDialogState extends State<_ShareDialog> {
                           )
                         : IconButton(
                             icon: const Icon(Icons.add_circle_outline),
-                            onPressed: () => _addUser(user),
+                            onPressed: canSelect ? () => _addUser(user) : null,
                           ),
-                    onTap: isSelected ? null : () => _addUser(user),
+                    onTap: canSelect && !isSelected
+                        ? () => _addUser(user)
+                        : null,
                   );
                 },
               ),
@@ -558,7 +570,7 @@ class _ShareDialogState extends State<_ShareDialog> {
         ),
         const SizedBox(height: 8),
 
-        if (_selectedUsers.isEmpty)
+        if (_combinationUsers.isEmpty)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -582,9 +594,9 @@ class _ShareDialogState extends State<_ShareDialog> {
             ),
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: _selectedUsers.length,
+              itemCount: _combinationUsers.length,
               itemBuilder: (context, index) {
-                final username = _selectedUsers[index];
+                final username = _combinationUsers[index];
 
                 return ListTile(
                   dense: true,

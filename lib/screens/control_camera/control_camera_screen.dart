@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -232,13 +233,52 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       listenWhen: (prev, curr) =>
           curr is DeleteCameraSuccessState ||
           curr is ListCameraSuccessState ||
-          curr is RemoveCameraFromGroupFailState,
+          curr is RemoveCameraFromGroupFailState ||
+          curr is ListShareCameraSuccessState,
       listener: (context, state) {
         if (state is RemoveCameraFromGroupFailState) {
           showAppMessageDialog(
             context,
             message: state.errorMsg,
             type: AppMessageType.error,
+          );
+        }
+        if (state is ListShareCameraSuccessState) {
+          final cam = context.read<ControlCameraBloc>().listCamera.firstWhere(
+            (c) => listEquals(c.id, state.cameraId),
+            orElse: () => context.read<ControlCameraBloc>().listCamera.first,
+          );
+          showShareDialog(
+            context,
+            shareType: ShareType.camera,
+            camera: cam,
+            sharedUsers: state.sharedUsers.map((e) => e.account).toList(),
+            
+            onSave: (selectedUsers) async {
+              _onShareCamera(
+                cameraId: cam.id,
+                role: ShareCameraRole.VIEW,
+                accountInvite: selectedUsers.first,
+              );
+            },
+            onSearchUser: (userName) async {
+              final repo = context
+                  .read<ControlCameraBloc>()
+                  .controlGroupRepository;
+              final res = await repo.checkAccountShare(
+                cameraId: cam.id,
+                account: userName,
+                shareType: ShareTypeExtension.getShareTypeValue(
+                  ShareType.camera,
+                ),
+                groupId: const [],
+              );
+              return res.fold(
+                (_) => null,
+                (reply) =>
+                    reply.isExists ? SharedUser(username: userName) : null,
+              );
+            },
           );
         }
         if (state is DeleteCameraSuccessState) {
@@ -566,27 +606,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                             cameraId: cameras[index].id,
                                           ),
                                           onShare: () {
-                                            showShareDialog(
-                                              context,
-                                              shareType: ShareType.camera,
-                                              camera: cameras[index],
-                                              onSave: (selectedUsers) async {
-                                                _onShareCamera(
-                                                  cameraId: cameras[index].id,
-                                                  role: ShareCameraRole.VIEW,
-                                                  accountInvite:
-                                                      selectedUsers.first,
+                                            context
+                                                .read<ControlCameraBloc>()
+                                                .add(
+                                                  ListShareCameraEvent(
+                                                    cameraId: cameras[index].id,
+                                                  ),
                                                 );
-                                              },
-                                              onSearchUser: (userName) async {
-                                                _onCheckAccountShare(
-                                                  account: userName,
-                                                  shareType: ShareType.camera,
-                                                  cameraId: cameras[index].id,
-                                                  groupId: [],
-                                                );
-                                              },
-                                            );
                                           },
                                           onRemoveFromGroup: () {
                                             _showDialogRemoveCameraFromGroup(
