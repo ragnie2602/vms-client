@@ -15,7 +15,6 @@ import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/camera_list_popup.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
-import 'package:vms_flutter_client/screens/shared/utils.dart';
 
 class CustomMonitorPane extends StatefulWidget {
   const CustomMonitorPane({super.key});
@@ -30,13 +29,22 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
   ViewMode get mode => customView?.base ?? ViewMode.v2x2;
 
   @override
+  initState() {
+    super.initState();
+
+    // Init customView from state when being navigated from before screen
+    final bloc = context.read<CustomViewBloc>();
+    if (bloc.state is ShowCustomViewSuccess) {
+      customView = (bloc.state as ShowCustomViewSuccess).customView;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<CustomViewBloc, CustomViewState>(
       listener: (context, state) {
         if (state is ShowCustomViewSuccess) {
-          setState(() {
-            customView = state.customView;
-          });
+          setState(() => customView = state.customView);
         } else if (state is CreateCustomViewSuccess) {
           context.read<CustomViewBloc>().add(
             UpdateCustomView(
@@ -74,7 +82,7 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
           if (customView?.positions != null && index < customView!.positions.length) {
             customView!.positions[index] = LiveViewPosition(
               index: index,
-              cameraId: Utils.decodeCameraId(camera.id),
+              cameraId: camera.id,
               camera: camera,
             );
           }

@@ -10,6 +10,8 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custo
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_input.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_input.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case_input.dart';
 
@@ -21,13 +23,14 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
 
   final CreateTempCustomLiveViewUseCase createTempCustomLiveViewUseCase;
   final CreateCustomLiveViewUseCase createCustomLiveViewUseCase;
-
+  final GetListCustomLiveViewUseCase getListCustomLiveViewUseCase;
   final UpdateCustomLiveViewUseCase updateCustomLiveViewUseCase;
 
   CustomViewBloc(
     this.customLiveViewRepository,
     this.createTempCustomLiveViewUseCase,
     this.createCustomLiveViewUseCase,
+    this.getListCustomLiveViewUseCase,
     this.updateCustomLiveViewUseCase,
   ) : super(CustomViewInitial()) {
     on<GetListCustomViews>(_onGetListCustomViews);
@@ -47,22 +50,27 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
   ) async {
     emit(CustomViewLoading());
 
-    (await customLiveViewRepository.getListCustomLiveView()).fold(
-      (failure) {
-        emit(ListCustomViewFailure(failure.toString()));
-      },
-      (views) {
-        emit(ListCustomViewSuccess(customViews: views));
-      },
-    );
+    final output = await getListCustomLiveViewUseCase.execute(GetListCustomLiveViewInput());
+
+    if (output.isSuccess) {
+      emit(ListCustomViewSuccess(customViews: output.customViews));
+    } else {
+      emit(ListCustomViewFailure(output.errorMessage!));
+    }
   }
 
   FutureOr<void> _onShowCustomView(ShowCustomView event, Emitter<CustomViewState> emit) {
-    final output = createTempCustomLiveViewUseCase.execute(
-      CreateTempCustomLiveViewInput(base: event.base),
-    );
+    CustomLiveView customView;
+    if (event.customView.id.isEmpty) {
+      final output = createTempCustomLiveViewUseCase.execute(
+        CreateTempCustomLiveViewInput(base: event.customView.base),
+      );
+      customView = output.customLiveView;
+    } else {
+      customView = event.customView;
+    }
 
-    emit(ShowCustomViewSuccess(customView: output.customLiveView));
+    emit(ShowCustomViewSuccess(customView: customView));
   }
 
   FutureOr<void> _onAddingCameraToCustomView(

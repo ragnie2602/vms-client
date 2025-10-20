@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_custom_live_view_repo
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
@@ -68,6 +69,9 @@ class DependencyInjection {
     ),
     Provider<CreateTempCustomLiveViewUseCase>(
       create: (context) => CreateTempCustomLiveViewUseCase(),
+    ),
+    Provider<GetListCustomLiveViewUseCase>(
+      create: (context) => GetListCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<UpdateCustomLiveViewUseCase>(
       create: (context) => UpdateCustomLiveViewUseCase(context.read<ICustomLiveViewRepository>()),

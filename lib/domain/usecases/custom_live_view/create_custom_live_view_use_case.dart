@@ -14,7 +14,7 @@ class CreateCustomLiveViewUseCase
   Future<CreateCustomLiveViewOutput> buildUseCase(CreateCustomLiveViewInput input) async {
     final positions = List.generate(
       input.base.total,
-      (index) => LiveViewPosition(index: index, cameraId: ''),
+      (index) => LiveViewPosition(index: index, cameraId: []),
     );
     final response = await customLiveViewRepository.addCustomLiveView(
       name: input.name,

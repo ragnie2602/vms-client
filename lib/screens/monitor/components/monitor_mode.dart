@@ -9,7 +9,6 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
-import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/monitor/add_custom_mode_pane.dart';
@@ -17,7 +16,6 @@ import 'package:vms_flutter_client/screens/monitor/components/list_custom_views.
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 
-import '../bloc/custom_view/custom_view_bloc.dart';
 import '../bloc/monitor/monitor_bloc.dart';
 
 class MonitorMode extends StatefulWidget {
@@ -206,7 +204,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   Widget _buildCustomMode(BuildContext context, double currentWidth, bool showing) {
     return Column(
       children: [
-        Expanded(child: ListCustomViews()),
+        Flexible(child: ListCustomViews()),
         InkWell(
           onTap: () => setState(() {
             currentTab = DefaultTabController.of(context).index;

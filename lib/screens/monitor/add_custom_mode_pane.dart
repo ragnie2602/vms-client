@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 
 class AddCustomModePane extends StatefulWidget {
@@ -25,7 +26,8 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
   void initState() {
     super.initState();
 
-    bloc = context.read<CustomViewBloc>()..add(ShowCustomView(ViewMode.v2x2));
+    bloc = context.read<CustomViewBloc>()
+      ..add(ShowCustomView(CustomLiveView(id: [], base: _mode, positions: [], name: '')));
 
     // Listen to text changes to clear error message
     nameController.addListener(() {
@@ -147,7 +149,13 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
               children: [
                 for (var value in ViewMode.values)
                   InkWell(
-                    onTap: () => setState(() => bloc.add(ShowCustomView(_mode = value))),
+                    onTap: () => setState(
+                      () => bloc.add(
+                        ShowCustomView(
+                          CustomLiveView(id: [], base: _mode = value, positions: [], name: ''),
+                        ),
+                      ),
+                    ),
                     child: SvgPicture.asset(
                       _mode == value ? value.iconActive : value.icon,
                       width: 32,

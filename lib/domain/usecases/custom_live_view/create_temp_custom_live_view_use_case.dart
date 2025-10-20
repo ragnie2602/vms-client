@@ -10,7 +10,7 @@ class CreateTempCustomLiveViewUseCase
   CreateTempCustomLiveViewOutput buildUseCase(CreateTempCustomLiveViewInput input) {
     final positions = List.generate(
       input.base.total,
-      (index) => LiveViewPosition(index: index, cameraId: '', camera: null),
+      (index) => LiveViewPosition(index: index, cameraId: [], camera: null),
     );
     final customLiveView = CustomLiveView(id: [], base: input.base, positions: positions, name: '');
 

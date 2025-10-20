@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:popover/popover.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -38,62 +40,58 @@ class _ListCustomViewsState extends State<ListCustomViews> {
             customViews.addAll(state.customViews);
           });
         } else if (state is DeleteCustomViewSuccess) {
-          setState(() {
-            customViews.removeWhere((cv) => Utils.isEqual(cv.id, state.id));
-          });
+          setState(() => customViews.removeWhere((cv) => Utils.isEqual(cv.id, state.id)));
         }
       },
       child: ListView.builder(
-        itemCount: customViews.length,
-        itemBuilder: (context, index) => InkWell(
-          onTap: () {},
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              children: [
-                SvgPicture.asset(customViews[index].base.icon, width: 32, height: 32),
-                SizedBox(height: 32),
-                Expanded(
-                  child: Text(
-                    customViews[index].name,
-                    style: AppTypography.style(
-                      13,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.blackOrWhite,
+        itemBuilder: (context, index) => Material(
+          child: InkWell(
+            onTap: () {
+              if (GoRouterState.of(context).name != Routes.custom_live_view.name) {
+                context.goNamed(Routes.custom_live_view.name);
+              }
+              bloc.add(ShowCustomView(customViews[index]));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  SizedBox(width: 24),
+                  SvgPicture.asset(customViews[index].base.icon, width: 32, height: 32),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      customViews[index].name,
+                      style: AppTypography.style(
+                        13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.blackOrWhite,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.visible,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.visible,
                   ),
-                ),
-                Builder(
-                  builder: (context) {
-                    return Material(
-                      borderRadius: BorderRadius.circular(32),
-                      clipBehavior: Clip.antiAlias,
-                      child: SizedBox(
-                        height: 32,
-                        width: 32,
-                        child: InkWell(
-                          onTapDown: (TapDownDetails details) =>
-                              showActionsPopup(context, customViews[index]),
-                          child: Center(
-                            child: SvgPicture.asset(
-                              AppAssets.icDotHorizontal,
-                              width: 12,
-                              height: 12,
-                            ),
-                          ),
+                  Builder(
+                    builder: (context) => SizedBox(
+                      height: 32,
+                      width: 32,
+                      child: InkWell(
+                        onTapDown: (TapDownDetails details) =>
+                            showActionsPopup(context, customViews[index]),
+                        child: Center(
+                          child: SvgPicture.asset(AppAssets.icDotHorizontal, width: 12, height: 12),
                         ),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(width: 24),
-              ],
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                ],
+              ),
             ),
           ),
         ),
-        padding: EdgeInsets.only(left: 24),
+        itemCount: customViews.length,
+        shrinkWrap: true,
       ),
     );
   }

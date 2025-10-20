@@ -7,9 +7,9 @@ sealed class CustomViewEvent extends BaseEvent {
 class GetListCustomViews extends CustomViewEvent {}
 
 class ShowCustomView extends CustomViewEvent {
-  final ViewMode base;
+  final CustomLiveView customView;
 
-  const ShowCustomView(this.base);
+  const ShowCustomView(this.customView);
 }
 
 class AddingCameraToCustomView extends CustomViewEvent {
