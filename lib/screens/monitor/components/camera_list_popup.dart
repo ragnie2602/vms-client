@@ -35,6 +35,7 @@ class CameraListPopup extends StatelessWidget {
         color: AppColors.blackOrWhiteReverse,
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -94,7 +95,7 @@ class CameraListPopup extends StatelessWidget {
               if (state is MonitorLoading) return Center(child: CircularProgressIndicator());
               if (state is MonitorFailure) return Center(child: Text(state.message));
               if (state is MonitorSuccess) {
-                return Expanded(
+                return Flexible(
                   child: ListView.builder(
                     itemBuilder: (context, index) => _cameraItem(state.cameras[index]),
                     itemCount: state.cameras.length,

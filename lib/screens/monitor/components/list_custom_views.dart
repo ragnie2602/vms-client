@@ -80,6 +80,8 @@ class _CustomViewItemState extends State<CustomViewItem> {
       child: Material(
         child: InkWell(
           onTap: () {
+            if (isSelecting) return;
+
             if (GoRouterState.of(context).name != Routes.custom_live_view.name) {
               context.goNamed(Routes.custom_live_view.name);
             }

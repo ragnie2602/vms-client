@@ -34,6 +34,7 @@ class DeleteCustomLiveView extends CustomViewEvent {
 
 class UpdateCustomView extends CustomViewEvent {
   final CustomLiveView customView;
+  final int? index;
 
-  const UpdateCustomView({required this.customView});
+  const UpdateCustomView({required this.customView, this.index});
 }

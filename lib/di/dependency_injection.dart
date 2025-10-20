@@ -74,7 +74,7 @@ class DependencyInjection {
       create: (context) => GetListCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<UpdateCustomLiveViewUseCase>(
-      create: (context) => UpdateCustomLiveViewUseCase(context.read<ICustomLiveViewRepository>()),
+      create: (context) => UpdateCustomLiveViewUseCase(context.read(), context.read()),
     ),
   ];
 }

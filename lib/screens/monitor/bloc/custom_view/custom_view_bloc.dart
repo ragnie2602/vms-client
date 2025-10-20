@@ -96,13 +96,17 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
   }
 
   FutureOr<void> _onUpdateCustomView(UpdateCustomView event, Emitter<CustomViewState> emit) async {
+    emit(UpdatingCustomView(index: event.index));
+
     final output = await updateCustomLiveViewUseCase.execute(
       UpdateCustomLiveViewUseCaseInput(customView: event.customView),
     );
 
     if (output.isSuccess) {
-      print(output.customView);
-    } else {}
+      emit(UpdateCustomViewSuccess(customView: output.customView!, index: event.index));
+    } else {
+      emit(UpdateCustomViewFailure(message: output.errorMessage!, index: event.index));
+    }
   }
 
   FutureOr<void> _onDeleteCustomLiveView(

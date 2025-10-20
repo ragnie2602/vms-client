@@ -101,3 +101,23 @@ class DeleteCustomViewFailed extends CustomViewState {
   @override
   String get errorMsg => message;
 }
+
+class UpdateCustomViewSuccess extends CustomViewState {
+  final CustomLiveView customView;
+  final int? index;
+
+  const UpdateCustomViewSuccess({required this.customView, this.index});
+}
+
+class UpdateCustomViewFailure extends CustomViewState {
+  final String message;
+  final int? index;
+
+  const UpdateCustomViewFailure({required this.message, this.index});
+}
+
+class UpdatingCustomView extends CustomViewState {
+  final int? index;
+
+  const UpdatingCustomView({this.index});
+}
