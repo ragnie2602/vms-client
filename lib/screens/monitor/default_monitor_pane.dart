@@ -61,7 +61,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Hiển thị 4 trên 36 camera"),
-                      SizedBox(width: 280, height: 32,child: TablePaginator(36)),
+                      SizedBox(width: 280, height: 32,child: TablePaginator(36, (page) => onChangePage(page))),
                     ],
                   ),
                 ],
