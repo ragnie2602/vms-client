@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
+import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
 import 'package:vms_flutter_client/screens/user/widget/user_dialog.dart';
-import 'package:vms_flutter_client/screens/user/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/user/widget/item_user_widget.dart';
 import 'package:vms_flutter_client/screens/user/widget/title_widget.dart';
 
@@ -42,6 +44,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     String? email,
     String? tel,
     String? address,
+    String? fullName,
     required bool isAdmin,
     String? desc,
     required bool addCamDenied,
@@ -58,6 +61,37 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         password: password,
         changePassDenied: changePassDenied,
         addCamDenied: addCamDenied,
+        fullName: fullName,
+      ),
+    );
+  }
+
+  void _editUser({
+    required List<int> userId,
+    required String account,
+    required String password,
+    String? email,
+    String? tel,
+    String? address,
+    String? fullName,
+    required bool isAdmin,
+    String? desc,
+    required bool addCamDenied,
+    required bool changePassDenied,
+  }) {
+    context.read<UserManagementBloc>().add(
+      EditUserEvent(
+        userId: userId,
+        account: account,
+        email: email,
+        tel: tel,
+        address: address,
+        isAdmin: isAdmin,
+        desc: desc,
+        password: password,
+        changePassDenied: changePassDenied,
+        addCamDenied: addCamDenied,
+        fullName: fullName,
       ),
     );
   }
@@ -148,7 +182,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             onSubmit: (payload) async {
                               // Xử lý thêm user
                               _addUser(
-                                tel: payload.password,
+                                fullName: payload.fullName,
+                                tel: payload.phoneNumber,
                                 desc: payload.description,
                                 email: payload.email,
                                 account: payload.username,
@@ -215,45 +250,78 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           ? Center(child: CircularProgressIndicator())
                           : state is GetListUserState
                           ? Flexible(
-                              child: ListView.separated(
-                                separatorBuilder: (_, __) => const Divider(
-                                  height: 1,
-                                  color: AppColors.greyF1F5F9,
-                                ),
-                                shrinkWrap: true,
-                                itemCount: state.users!.length,
-                                itemBuilder: (context, index) => ItemUserWidget(
-                                  onEdit: () async {
-                                    await showAddUserDialog(
-                                      context,
-                                      userEntity: state.users![index],
-                                      mode: UserDialogMode.edit,
-                                      onSubmit: (payload) async {
-                                        // Xử lý thêm user
-                                      },
+                              child: Builder(
+                                builder: (BuildContext context) {
+                                  final cameras = context
+                                      .read<UserManagementBloc>()
+                                      .listUser;
+                                  if (cameras.isEmpty) {
+                                    return Center(
+                                      child: Text(
+                                        'Danh sách trống',
+                                        style: AppTypography.style(14),
+                                      ),
                                     );
-                                  },
-                                  onResetPassword: () {
-                                    showResetPasswordDialog(
-                                      context,
-                                      username: state.users![index].account,
-                                      user: state.users![index],
-                                      onSubmit: (newPassword) async {
-                                        _onResetPassword(
-                                          newPassword: newPassword,
-                                          userId: state.users![index].id,
-                                        );
-                                      },
-                                    );
-                                  },
-                                  onDelete: () {
-                                    _onDeleteUser(
-                                      userId: state.users![index].id,
-                                    );
-                                  },
-                                  itemUser: state.users![index],
-                                  index: index + 1,
-                                ),
+                                  }
+                                  return ListView.separated(
+                                    separatorBuilder: (_, __) => const Divider(
+                                      height: 1,
+                                      color: AppColors.greyF1F5F9,
+                                    ),
+                                    shrinkWrap: true,
+                                    itemCount: state.users!.length,
+                                    itemBuilder: (context, index) =>
+                                        ItemUserWidget(
+                                          onEdit: () async {
+                                            await showAddUserDialog(
+                                              context,
+                                              userEntity: state.users![index],
+                                              mode: UserDialogMode.edit,
+                                              onEdit: (payload) async {
+                                                _editUser(
+                                                  email: payload.email,
+                                                  tel: payload.phoneNumber,
+                                                  desc: payload.description,
+                                                  fullName: payload.fullName,
+                                                  userId:
+                                                      state.users![index].id,
+                                                  account: payload.username,
+                                                  password: payload.password,
+                                                  isAdmin: payload.isAdmin,
+                                                  addCamDenied:
+                                                      payload.canAddCamera,
+                                                  changePassDenied:
+                                                      payload.canChangePassword,
+                                                );
+                                                // Xử lý thêm user
+                                              },
+                                            );
+                                          },
+                                          onResetPassword: () {
+                                            showResetPasswordDialog(
+                                              context,
+                                              username:
+                                                  state.users![index].account,
+                                              user: state.users![index],
+                                              onSubmit: (newPassword) async {
+                                                _onResetPassword(
+                                                  newPassword: newPassword,
+                                                  userId:
+                                                      state.users![index].id,
+                                                );
+                                              },
+                                            );
+                                          },
+                                          onDelete: () {
+                                            _onDeleteUser(
+                                              userId: state.users![index].id,
+                                            );
+                                          },
+                                          itemUser: state.users![index],
+                                          index: index + 1,
+                                        ),
+                                  );
+                                },
                               ),
                             )
                           : const SizedBox(),
@@ -261,47 +329,42 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   ),
                 ),
               ),
-              // child: BlocBuilder<UserManagementBloc, UserManagementState>(
-              //   builder: (context, newState) {
-              //     if (newState is UserManagementLoadingState) {
-              //       return Center(child: CircularProgressIndicator());
-              //     }
-              //     if (newState is GetListUserStateFail) {
-              //       return Center(child: Text(newState.errorMsg));
-              //     } else if (newState.type.isSuccess &&
-              //         newState is GetListUserState) {
-              //       if ((newState.props).isEmpty) {
-              //         return Center(child: Text('Chưa có dữ liệu.'));
-              //       } else {
-              //         return ListView.separated(
-              //           physics: NeverScrollableScrollPhysics(),
-              //           shrinkWrap: true,
-              //           itemCount: newState.props.length,
-              //           separatorBuilder: (_, __) => const Divider(height: 1),
-              //           itemBuilder: (context, i) {
-              //             final name = "Thuy";
-              //             return ListTile(
-              //               title: Text(name),
-              //               leading: CircleAvatar(
-              //                 child: Text(
-              //                   name.isNotEmpty ? name[0].toUpperCase() : '?',
-              //                   style: TextStyle(color: Colors.red),
-              //                 ),
-              //               ),
-              //               onTap: () {},
-              //             );
-              //           },
-              //         );
-              //       }
-              //     }
-              //     return SizedBox();
-              //   },
-              // ),
             ),
           ],
         );
       },
-      listener: (context, state) {},
+      listener: (context, state) {
+        if (state is DeleteUserSuccess) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: 'Xóa người dùng thành công !',
+            type: AppMessageType.success,
+          );
+        } else if (state is ListCameraSuccessState) {
+          _onGetListUser();
+          setState(() {});
+        } else if (state is EditUserSuccess) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: 'Cập nhật người dùng thành công !',
+            type: AppMessageType.success,
+          );
+        } else if (state is ResetPassWordFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
+        }
+      },
+      listenWhen: (previous, current) =>
+          current is DeleteUserSuccess ||
+          current is ListCameraSuccessState ||
+          current is EditUserSuccess ||
+          current is ResetPassWordFail,
     );
   }
 }

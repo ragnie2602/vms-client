@@ -2,12 +2,14 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
 
 class UserManagementBloc
     extends BaseBloc<UserManagementEvent, UserManagementState> {
+  List<UserEntity> listUser = [];
   final IUserManagementRepository userManagermentRepository;
   UserManagementBloc({required this.userManagermentRepository})
     : super(const UserManagementState()) {
@@ -25,8 +27,12 @@ class UserManagementBloc
     emit(UserManagementLoadingState());
     final groups = await userManagermentRepository.listUser();
     groups.fold(
-      (onFailure) => emit(GetListUserStateFail(groups.left.toString())),
+      (onFailure) {
+        listUser = [];
+        emit(GetListUserStateFail(groups.left.toString()));
+      },
       (onSuccess) {
+        listUser = onSuccess;
         emit(GetListUserState(users: groups.right));
       },
     );
@@ -47,6 +53,7 @@ class UserManagementBloc
       addCamDenied: event.addCamDenied,
       isAmin: event.isAdmin,
       changePassDenied: event.changePassDenied,
+      fullName: event.fullName,
     );
     groups.fold(
       (onFailure) => emit(GetListUserStateFail(groups.left.toString())),
@@ -104,6 +111,7 @@ class UserManagementBloc
       addCamDenied: event.addCamDenied,
       isAmin: event.isAdmin,
       changePassDenied: event.changePassDenied,
+      fullName: event.fullName,
     );
     groups.fold((onFailure) => emit(EditUserFail(groups.left.toString())), (
       onSuccess,
