@@ -491,9 +491,7 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (nameController.text.isNotEmpty) {
-                      bloc.add(
-                        CreateCustomView(name: nameController.text, base: _mode, cameras: []),
-                      );
+                      bloc.add(CreateCustomView(base: _mode, name: nameController.text));
                       widget.onBack?.call();
                     } else {
                       setState(() {

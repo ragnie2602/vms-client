@@ -38,10 +38,10 @@ class ListCustomViewSuccess extends CustomViewState {
   }
 }
 
-class CustomViewSuccess extends CustomViewState {
+class ShowCustomViewSuccess extends CustomViewState {
   final CustomLiveView customView;
 
-  const CustomViewSuccess({required this.customView});
+  const ShowCustomViewSuccess({required this.customView});
 
   @override
   StateType get type => StateType.success;

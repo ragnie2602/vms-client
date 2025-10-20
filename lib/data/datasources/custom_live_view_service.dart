@@ -72,11 +72,13 @@ class CustomLiveViewService {
   }
 
   Future<CustomLiveView> updateCustomLiveView(CustomLiveView newValue) async {
+    final request = UpdateCustomLiveView_Request(customs: newValue);
+
     final response = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
           id: DateTime.now().microsecondsSinceEpoch,
-          data: newValue.writeToBuffer(),
+          data: request.writeToBuffer(),
           type: PacketType.updateCustomLiveView,
         ),
       ),

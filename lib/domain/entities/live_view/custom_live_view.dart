@@ -13,4 +13,13 @@ class CustomLiveView {
     required this.positions,
     required this.name,
   });
+
+  CustomLiveView copyWith({List<LiveViewPosition>? positions, String? name, ViewMode? base}) {
+    return CustomLiveView(
+      id: id,
+      base: base ?? this.base,
+      positions: positions ?? this.positions,
+      name: name ?? this.name,
+    );
+  }
 }

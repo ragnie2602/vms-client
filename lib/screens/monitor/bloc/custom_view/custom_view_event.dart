@@ -22,7 +22,12 @@ class AddingCameraToCustomView extends CustomViewEvent {
 class CreateCustomView extends CustomViewEvent {
   final String name;
   final ViewMode base;
-  final List<CameraEntity?> cameras;
 
-  const CreateCustomView({required this.name, required this.base, required this.cameras});
+  const CreateCustomView({required this.name, required this.base});
+}
+
+class UpdateCustomView extends CustomViewEvent {
+  final CustomLiveView customView;
+
+  const UpdateCustomView({required this.customView});
 }

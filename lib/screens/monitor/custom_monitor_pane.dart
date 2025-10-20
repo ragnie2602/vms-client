@@ -8,11 +8,14 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/camera_list_popup.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
+import 'package:vms_flutter_client/screens/shared/utils.dart';
 
 class CustomMonitorPane extends StatefulWidget {
   const CustomMonitorPane({super.key});
@@ -22,21 +25,24 @@ class CustomMonitorPane extends StatefulWidget {
 }
 
 class _CustomMonitorPaneState extends State<CustomMonitorPane> {
-  final List<CameraEntity?> cameras = [];
-  ViewMode mode = ViewMode.v2x2;
+  CustomLiveView? customView;
+
+  ViewMode get mode => customView?.base ?? ViewMode.v2x2;
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<CustomViewBloc, CustomViewState>(
       listener: (context, state) {
-        if (state is CustomViewSuccess) {
+        if (state is ShowCustomViewSuccess) {
           setState(() {
-            cameras.clear();
-            cameras.addAll(state.customView.positions.map((e) => e.camera).toList());
-            mode = state.customView.base;
+            customView = state.customView;
           });
         } else if (state is CreateCustomViewSuccess) {
-          // TODO: add camera to custom view
+          context.read<CustomViewBloc>().add(
+            UpdateCustomView(
+              customView: state.customView.copyWith(positions: customView?.positions ?? []),
+            ),
+          );
         }
       },
       child: Column(
@@ -62,8 +68,17 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
       buildWhen: (previous, current) =>
           current is AddingCameraToCustomViewSuccess && current.index == index,
       builder: (context, state) {
-        var camera = cameras.elementAtOrNull(index);
-        if (state is AddingCameraToCustomViewSuccess) camera = cameras[index] = state.camera;
+        var camera = customView?.positions.elementAtOrNull(index)?.camera;
+        if (state is AddingCameraToCustomViewSuccess) {
+          camera = state.camera;
+          if (customView?.positions != null && index < customView!.positions.length) {
+            customView!.positions[index] = LiveViewPosition(
+              index: index,
+              cameraId: Utils.decodeCameraId(camera.id),
+              camera: camera,
+            );
+          }
+        }
 
         return camera == null ? _buildEmptyCell(context, index) : _buildCameraView(context, camera);
       },

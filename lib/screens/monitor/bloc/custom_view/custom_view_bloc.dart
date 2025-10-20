@@ -10,6 +10,8 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custo
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_input.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case_input.dart';
 
 part 'custom_view_event.dart';
 part 'custom_view_state.dart';
@@ -20,15 +22,21 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
   final CreateTempCustomLiveViewUseCase createTempCustomLiveViewUseCase;
   final CreateCustomLiveViewUseCase createCustomLiveViewUseCase;
 
+  final UpdateCustomLiveViewUseCase updateCustomLiveViewUseCase;
+
   CustomViewBloc(
     this.customLiveViewRepository,
     this.createTempCustomLiveViewUseCase,
     this.createCustomLiveViewUseCase,
+    this.updateCustomLiveViewUseCase,
   ) : super(CustomViewInitial()) {
     on<GetListCustomViews>(_onGetListCustomViews);
     on<ShowCustomView>(_onShowCustomView);
+
     on<AddingCameraToCustomView>(_onAddingCameraToCustomView);
     on<CreateCustomView>(_onCreateCustomView);
+
+    on<UpdateCustomView>(_onUpdateCustomView);
   }
 
   FutureOr<void> _onGetListCustomViews(
@@ -52,7 +60,7 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
       CreateTempCustomLiveViewInput(base: event.base),
     );
 
-    emit(CustomViewSuccess(customView: output.customLiveView));
+    emit(ShowCustomViewSuccess(customView: output.customLiveView));
   }
 
   FutureOr<void> _onAddingCameraToCustomView(
@@ -64,7 +72,7 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
 
   FutureOr<void> _onCreateCustomView(CreateCustomView event, Emitter<CustomViewState> emit) async {
     final output = await createCustomLiveViewUseCase.execute(
-      CreateCustomLiveViewInput(name: event.name, base: event.base, cameras: event.cameras),
+      CreateCustomLiveViewInput(name: event.name, base: event.base),
     );
 
     if (output.isSuccess) {
@@ -72,5 +80,15 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
     } else {
       emit(CreateCustomViewFailure(message: output.errorMessage!));
     }
+  }
+
+  FutureOr<void> _onUpdateCustomView(UpdateCustomView event, Emitter<CustomViewState> emit) async {
+    final output = await updateCustomLiveViewUseCase.execute(
+      UpdateCustomLiveViewUseCaseInput(customView: event.customView),
+    );
+
+    if (output.isSuccess) {
+      print(output.customView);
+    } else {}
   }
 }
