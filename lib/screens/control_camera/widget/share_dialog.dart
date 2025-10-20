@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/debouncer.dart';
 import 'package:vms_flutter_client/data/datasources/share_type_enum.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
@@ -49,9 +50,10 @@ Future<T?> showShareDialog<T>(
   required ShareType shareType,
   String? groupName,
   CameraEntity? camera,
-  List<String> sharedUsers = const [],
+  List<InviteMessageEntity> sharedUsers = const [],
   Future<void> Function(List<String> selectedUsers)? onSave,
   Future<SharedUser?> Function(String query)? onSearchUser,
+  Future<void> Function(InviteMessageEntity selectedUsers)? onDelete,
   VoidCallback? onCancel,
 }) {
   return showDialog<T>(
@@ -64,6 +66,7 @@ Future<T?> showShareDialog<T>(
       sharedUsers: sharedUsers,
       onSave: onSave,
       onSearchUser: onSearchUser,
+      onDelete: onDelete,
       onCancel: onCancel,
     ),
   );
@@ -84,15 +87,17 @@ class _ShareDialog extends StatefulWidget {
     required this.sharedUsers,
     this.onSave,
     this.onSearchUser,
+    this.onDelete,
     this.onCancel,
   });
 
   final ShareType shareType;
   final String? groupName;
   final CameraEntity? camera;
-  final List<String> sharedUsers;
+  final List<InviteMessageEntity> sharedUsers;
   final Future<void> Function(List<String> selectedUsers)? onSave;
   final Future<SharedUser?> Function(String query)? onSearchUser;
+  final Future<void> Function(InviteMessageEntity selectedUsers)? onDelete;
   final VoidCallback? onCancel;
 
   @override
@@ -111,7 +116,11 @@ class _ShareDialogState extends State<_ShareDialog> {
   void initState() {
     super.initState();
     // combination = shared (from server) + newly selected (at runtime)
-    _combinationUsers.addAll(widget.sharedUsers);
+    _combinationUsers.addAll(
+      widget.sharedUsers
+          .map((e) => e.accountShared?.account ?? '')
+          .where((e) => e.isNotEmpty),
+    );
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -201,11 +210,40 @@ class _ShareDialogState extends State<_ShareDialog> {
     });
   }
 
-  void _removeUser(String username) {
+  void _removeUser(InviteMessageEntity inviteMessage) {
+    widget.onDelete?.call(inviteMessage);
     // Only remove from selected (for this session). Keep combination to reflect existing shared users.
     setState(() {
-      _selectedUsers.remove(username);
+      _selectedUsers.remove(inviteMessage.accountShared?.account ?? '');
     });
+  }
+
+  Future<void> _confirmRemoveUser(InviteMessageEntity inviteMessage) async {
+    final title = widget.shareType == ShareType.camera
+        ? 'Bạn có chắc muốn hủy chia sẻ camera không ?'
+        : 'Bạn có chắc muốn hủy chia sẻ group không ?';
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(title),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _removeUser(inviteMessage);
+              },
+              child: const Text('Hủy Chia sẻ'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _handleSave() async {
@@ -219,12 +257,12 @@ class _ShareDialogState extends State<_ShareDialog> {
 
       await widget.onSave?.call(_selectedUsers);
       if (mounted) {
+        Navigator.pop(context);
         showAppMessageDialog(
           context,
           message: 'Chia sẻ camera thành công!',
           type: AppMessageType.success,
           onOk: () {
-            Navigator.pop(context);
             Navigator.pop(context);
           },
         );
@@ -641,7 +679,11 @@ class _ShareDialogState extends State<_ShareDialog> {
                       ),
                     ],
                   ),
-                  onTap: () => _removeUser(username),
+                  onTap: () => _confirmRemoveUser(
+                    widget.sharedUsers.firstWhere(
+                      (e) => e.accountShared?.account == username,
+                    ),
+                  ),
                 );
               },
             ),

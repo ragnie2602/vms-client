@@ -192,11 +192,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         accountInvite: accountInvite,
       ),
     );
-    showAppMessageDialog(
-      context,
-      message: 'Chia sẻ camera thành công!',
-      type: AppMessageType.success,
-    );
   }
 
   void _onCheckAccountShare({
@@ -211,6 +206,20 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         shareType: ShareTypeExtension.getShareTypeValue(shareType),
         cameraId: cameraId,
         groupId: groupId,
+      ),
+    );
+  }
+
+  void _onDeleteShareCamera({
+    required List<int> cameraId,
+    required String accountB,
+    required List<int> shareId,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      DeleteShareCameraEvent(
+        cameraId: cameraId,
+        accountB: accountB,
+        shareId: shareId,
       ),
     );
   }
@@ -248,17 +257,24 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
             (c) => listEquals(c.id, state.cameraId),
             orElse: () => context.read<ControlCameraBloc>().listCamera.first,
           );
+
           showShareDialog(
             context,
             shareType: ShareType.camera,
             camera: cam,
-            sharedUsers: state.sharedUsers.map((e) => e.account).toList(),
-            
+            sharedUsers: state.inviteMessages,
             onSave: (selectedUsers) async {
               _onShareCamera(
                 cameraId: cam.id,
                 role: ShareCameraRole.VIEW,
                 accountInvite: selectedUsers.first,
+              );
+            },
+            onDelete: (selectedUsers) async {
+              _onDeleteShareCamera(
+                cameraId: cam.id,
+                accountB: selectedUsers.accountShared?.account ?? '',
+                shareId: selectedUsers.accountShareId,
               );
             },
             onSearchUser: (userName) async {

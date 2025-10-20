@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_output.dart';
@@ -302,14 +301,10 @@ class ControlCameraBloc
     res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
       onSuccess,
     ) {
-      final shared = onSuccess
-          .map((msg) => msg.accountShared)
-          .whereType<AccountSharedEntity>()
-          .toList();
       emit(
         ListShareInviteGroupSuccessState(
           groupId: event.groupId,
-          sharedUsers: shared,
+          inviteMessages: onSuccess,
         ),
       );
     });
@@ -326,14 +321,11 @@ class ControlCameraBloc
       onSuccess,
     ) {
       // Map InviteMessage -> accountShared entity list
-      final shared = onSuccess
-          .map((msg) => msg.accountShared)
-          .whereType<AccountSharedEntity>()
-          .toList();
+
       emit(
         ListShareCameraSuccessState(
           cameraId: event.cameraId,
-          sharedUsers: shared,
+          inviteMessages: onSuccess,
         ),
       );
     });
