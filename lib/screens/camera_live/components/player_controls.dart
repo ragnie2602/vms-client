@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
 import '../bloc/camera_live/camera_live_bloc.dart';
@@ -46,9 +47,10 @@ class PlayerControls extends StatelessWidget {
                   VolumeWithSlide(),
 
                   /* Backward */
-                  if (mode.isPlayback) _controlItem(AppAssets.icFastBackward, () {
-                    context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30), -1));
-                  }),
+                  if (mode.isPlayback)
+                    _controlItem(AppAssets.icFastBackward, () {
+                      context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30), -1));
+                    }),
 
                   /* Pause/Play */
                   BlocSelector<CameraLiveBloc, CameraLiveState, PlayerStatus>(
@@ -62,18 +64,32 @@ class PlayerControls extends StatelessWidget {
                   ),
 
                   /* Forward */
-                  if (mode.isPlayback) _controlItem(AppAssets.icFastForward, () {
-                    context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30), 1));
-                  }),
+                  if (mode.isPlayback)
+                    _controlItem(AppAssets.icFastForward, () {
+                      context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30), 1));
+                    }),
 
                   /* Record */
                   _controlItem(AppAssets.icRecord, () {}),
 
                   /* Camera */
                   _controlItem(AppAssets.icCamera, () async {
-                    final res = await player(context)?.player.snapshot();
+                    final _player = player(context)!.player;
+                    final videoData = _player.mediaInfo.video?.firstOrNull;
+                    if (videoData == null) return;
 
-                    print(res);
+                    final res = await _player.snapshot(
+                      width: videoData.codec.width,
+                      height: videoData.codec.height,
+                    );
+
+                    if (res != null) {
+                      await FileUtil.saveRgbaDataToSelectedDirectory(
+                        res,
+                        width: videoData.codec.width,
+                        height: videoData.codec.height,
+                      );
+                    }
                   }),
 
                   /* Speed */

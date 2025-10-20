@@ -19,3 +19,7 @@ extension IterableExt<T> on Iterable<T> {
     return null;
   }
 }
+
+extension StringExt on String {
+  String get capitalizeFirstLetter => isNotEmpty ? '${this[0].toUpperCase()}${substring(1)}' : this;
+}

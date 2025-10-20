@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -173,6 +175,12 @@ class PlayerTimelinePainter extends CustomPainter {
     int index = minorTickCount;
     DateTime displayDate = startDate!;
     for (double j = 0, i = 0; j < size.width; j += minorIntervalWidth, i++, index++) {
+      if (startDate != null &&
+          endDate != null &&
+          startDate!.add(minorInterval * i).isAfter(endDate!)) {
+        break;
+      }
+
       final offsetX = i * minorIntervalWidth;
 
       bool isHighlighted = offsetX <= centralOffsetX;
@@ -187,14 +195,20 @@ class PlayerTimelinePainter extends CustomPainter {
       }
     }
 
-    // Vẽ central
-    _drawCurrentTick(canvas, size, centralOffsetX);
+    // Vẽ central --> offset convert về sát 0 do check = 0 thì tương ứng với center
+    _drawCurrentTick(canvas, size, max(centralOffsetX, 0.0000000001));
   }
 
   void _drawTimelineFromEnd(Canvas canvas, Size size, double centralOffsetX) {
     int index = minorTickCount;
     DateTime displayDate = endDate!;
     for (double j = size.width, i = 0; j >= 0; j -= minorIntervalWidth, i++, index++) {
+      if (endDate != null &&
+          startDate != null &&
+          endDate!.subtract(minorInterval * i).isBefore(startDate!)) {
+        break;
+      }
+
       // Với vạch cuối thì thêm 1 khoảng chênh lệch nhỏ để gần tới thì highlight luôn
       bool isHighlighted = j <= centralOffsetX + (j == size.width ? 5 : 0);
       bool isMajorTick = index == minorTickCount;

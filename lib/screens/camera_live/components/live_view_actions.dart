@@ -8,6 +8,7 @@ import '../../shared/action_item.dart';
 import '../../shared/panel.dart';
 import '../bloc/camera_live/camera_live_bloc.dart';
 import '../bloc/playback/playback_bloc.dart';
+import '../widgets/playback_date.dart';
 import 'panel_list_playbacks.dart';
 
 class LiveViewActions extends StatelessWidget {
@@ -29,74 +30,84 @@ class LiveViewActions extends StatelessWidget {
     return Container(
       color: AppColors.contentBg,
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          ValueListenableBuilder(
-            valueListenable: _leftPanelIndex,
-            builder: (context, index, child) => Row(
-              spacing: 28,
-              children: [
-                if (mode.isLive)
-                  ActionItem(
-                    title: 'Chế độ xem',
-                    icon: AppAssets.icViewMode,
-                    isSelected: index == 0,
-                  ),
+      child: Material(
+        color: Colors.transparent,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ValueListenableBuilder(
+              valueListenable: _leftPanelIndex,
+              builder: (context, index, child) => Row(
+                spacing: 28,
+                children: [
+                  if (mode.isPlayback) PlaybackDate(),
 
-                ActionItem(
-                  isSelected: index == 1,
-                  title: 'Danh sách camera',
-                  icon: AppAssets.icListCamera,
-                  onTap: () => leftController.togglePanel(
-                    MonitorCameras(
-                      maxWidth: leftController.expandedWidth,
-                      key: ValueKey('live_view_cameras'),
-                      selectedCamera: context.read<CameraLiveBloc>().state.camera,
-                      onTap: (camera) {
-                        context.read<PlaybackBloc>().add(GetVideoPlaybacks(camera.id));
-                        context.read<CameraLiveBloc>().add(ChangeCamera(camera));
-                      },
+                  if (mode.isLive)
+                    ActionItem(
+                      title: 'Chế độ xem',
+                      icon: AppAssets.icViewMode,
+                      isSelected: index == 0,
                     ),
-                    id: 1,
-                    onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
-                  ),
-                ),
-                if (mode.isPlayback)
+
                   ActionItem(
-                    title: 'Danh sách Playback',
-                    icon: AppAssets.icMenu,
-                    isSelected: index == 2,
+                    isSelected: index == 1,
+                    title: 'Danh sách camera',
+                    icon: AppAssets.icListCamera,
                     onTap: () => leftController.togglePanel(
-                      PanelListPlaybacks(
+                      MonitorCameras(
                         maxWidth: leftController.expandedWidth,
-                        key: ValueKey('live_view_playbacks'),
+                        key: ValueKey('live_view_cameras'),
+                        selectedCamera: context.read<CameraLiveBloc>().state.camera,
+                        onTap: (camera) {
+                          context.read<PlaybackBloc>().add(
+                            GetVideoPlaybacks(
+                              camera.id,
+                              context.read<CameraLiveBloc>().state.playbackDate,
+                            ),
+                          );
+                          context.read<CameraLiveBloc>().add(ChangeCamera(camera));
+                        },
                       ),
-                      id: 2,
+                      id: 1,
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
                   ),
-              ],
+                  if (mode.isPlayback)
+                    ActionItem(
+                      title: 'Danh sách Playback',
+                      icon: AppAssets.icMenu,
+                      isSelected: index == 2,
+                      onTap: () => leftController.togglePanel(
+                        PanelListPlaybacks(
+                          maxWidth: leftController.expandedWidth,
+                          key: ValueKey('live_view_playbacks'),
+                        ),
+                        id: 2,
+                        onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
 
-          /*  */
-          ValueListenableBuilder(
-            valueListenable: _rightPanelIndex,
-            builder: (context, index, child) => Row(
-              spacing: 28,
-              children: [
-                ActionItem.alert(
-                  isSelected: index == 0,
-                  id: 0,
-                  controller: rightController,
-                  onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
-                  count: '09',
-                ),
-              ],
+            /*  */
+            ValueListenableBuilder(
+              valueListenable: _rightPanelIndex,
+              builder: (context, index, child) => Row(
+                spacing: 28,
+                children: [
+                  ActionItem.alert(
+                    isSelected: index == 0,
+                    id: 0,
+                    controller: rightController,
+                    onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
+                    count: '09',
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

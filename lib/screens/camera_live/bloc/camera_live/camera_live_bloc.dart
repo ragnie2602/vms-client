@@ -7,24 +7,41 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
+import '../../components/player_timeline.dart';
+
 part 'camera_live_event.dart';
 part 'camera_live_state.dart';
 
 class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
   CameraLiveBloc({required LiveViewMode mode, required CameraEntity camera})
-    : super(CameraLiveState(mode: mode, camera: camera, ref: GlobalKey<CameraPlayerState>())) {
+    : super(
+        CameraLiveState(
+          mode: mode,
+          camera: camera,
+          ref: GlobalKey<CameraPlayerState>(),
+          playbackDate: DateTime.now(),
+        ),
+      ) {
     on<ChangeViewMode>(_onChaneViewMode);
     on<ChangeCamera>(_onChangeCamera);
     on<ChangePlayerSource>(_onChangePlayerSource, transformer: sequential());
     on<ChangePlayerStatus>(_onChangePlayerStatus);
     on<SeekPlayer>(_onSeekPlayer, transformer: sequential());
     on<ChangeVolume>(_onChangeVolume, transformer: sequential());
+    on<ChangePlaybackDate>(_onChangePlaybackDate);
+    on<ChangeTimelineDisplayMode>(_onChangeTimelineDisplayMode);
   }
 
   FutureOr<void> _onChaneViewMode(ChangeViewMode event, Emitter<CameraLiveState> emit) async {
     if (state.mode == event.mode) return;
 
-    emit(state.copyWith(mode: event.mode, ref: GlobalKey<CameraPlayerState>()));
+    emit(
+      state.copyWith(
+        mode: event.mode,
+        ref: GlobalKey<CameraPlayerState>(),
+        playbackDate: DateTime.now(),
+      ),
+    );
   }
 
   FutureOr<void> _onChangeCamera(ChangeCamera event, Emitter<CameraLiveState> emit) async {
@@ -62,5 +79,23 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
 
     state.ref.currentState?.player.volume = event.volume.clamp(0.0, 1.0);
     emit(state.copyWith(volume: event.volume));
+  }
+
+  FutureOr<void> _onChangePlaybackDate(
+    ChangePlaybackDate event,
+    Emitter<CameraLiveState> emit,
+  ) async {
+    if (state.playbackDate == event.date) return;
+
+    emit(state.copyWith(playbackDate: event.date));
+  }
+
+  FutureOr<void> _onChangeTimelineDisplayMode(
+    ChangeTimelineDisplayMode event,
+    Emitter<CameraLiveState> emit,
+  ) async {
+    if (state.timelineDisplayMode == event.mode) return;
+
+    emit(state.copyWith(timelineDisplayMode: event.mode));
   }
 }
