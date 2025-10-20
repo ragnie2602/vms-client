@@ -4,13 +4,10 @@ import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
-<<<<<<< HEAD
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
-=======
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
->>>>>>> fb18b6ab592009eaa9258c0614f0bef8bd2710ba
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
@@ -53,7 +50,6 @@ class DependencyInjection {
     ),
 
     // Use Cases
-<<<<<<< HEAD
     Provider<LoginUseCase>(
       create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>()),
     ),
@@ -72,12 +68,11 @@ class DependencyInjection {
     Provider<UpdateCustomLiveViewUseCase>(
       create: (context) => UpdateCustomLiveViewUseCase(context.read(), context.read()),
     ),
-=======
-    Provider<LoginUseCase>(create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>())),
-    Provider<DeleteCameraUseCase>(create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>())),
     Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
     Provider<FilterCameraNoGroupUseCase>(create: (context) => FilterCameraNoGroupUseCase()),
-    Provider<FilterCameraNotInGroupUsecase>(create: (context) => FilterCameraNotInGroupUsecase(cameraRepository: context.read<ICameraRepository>())),
->>>>>>> fb18b6ab592009eaa9258c0614f0bef8bd2710ba
+    Provider<FilterCameraNotInGroupUsecase>(
+      create: (context) =>
+          FilterCameraNotInGroupUsecase(cameraRepository: context.read<ICameraRepository>()),
+    ),
   ];
 }
