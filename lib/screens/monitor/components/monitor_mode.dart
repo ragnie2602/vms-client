@@ -92,14 +92,17 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                 ),
                 SizedBox(height: 30),
                 if (constraints.maxWidth >= 24)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: ListenableBuilder(
-                      listenable: DefaultTabController.of(context),
-                      builder: (context, child) => switch (DefaultTabController.of(context).index) {
-                        0 => _buildDefaultMode(constraints.maxWidth),
-                        _ => _buildCustomMode(context, constraints.maxWidth, isExpanded),
-                      },
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: ListenableBuilder(
+                        listenable: DefaultTabController.of(context),
+                        builder: (context, child) =>
+                            switch (DefaultTabController.of(context).index) {
+                              0 => _buildDefaultMode(constraints.maxWidth),
+                              _ => _buildCustomMode(context, constraints.maxWidth, isExpanded),
+                            },
+                      ),
                     ),
                   ),
               ],
@@ -201,9 +204,8 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
 
   Widget _buildCustomMode(BuildContext context, double currentWidth, bool showing) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        ListCustomViews(),
+        Expanded(child: ListCustomViews()),
         InkWell(
           onTap: () => setState(() {
             currentTab = DefaultTabController.of(context).index;
@@ -217,6 +219,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
               borderRadius: BorderRadius.circular(3),
               color: AppColors.contentBg,
             ),
+            margin: EdgeInsets.symmetric(vertical: 24),
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             alignment: Alignment.center,
             child: Row(
@@ -280,7 +283,6 @@ class _ListCustomViewsState extends State<ListCustomViews> {
       },
       child: ListView.builder(
         padding: EdgeInsets.only(bottom: 22),
-        shrinkWrap: true,
         itemCount: customViews.length,
         itemBuilder: (context, index) => InkWell(
           onTap: () {},
@@ -322,9 +324,9 @@ class AddCustomModePane extends StatefulWidget {
 
 class _AddCustomModePaneState extends State<AddCustomModePane> {
   late final CustomViewBloc bloc;
+
   final TextEditingController nameController = TextEditingController();
   String? _errorMessage;
-
   ViewMode _mode = ViewMode.v2x2;
 
   @override
