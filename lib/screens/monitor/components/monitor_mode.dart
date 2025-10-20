@@ -93,10 +93,18 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: ListenableBuilder(
                       listenable: DefaultTabController.of(context),
-                      builder: (context, child) => switch (DefaultTabController.of(context).index) {
-                        0 => _buildDefaultMode(constraints.maxWidth),
-                        _ => _buildCustomMode(context, constraints.maxWidth, isExpanded),
-                      },
+                      builder: (context, child) =>
+                          switch (DefaultTabController.of(context).index) {
+                            0 => _buildDefaultMode(
+                              constraints.maxWidth,
+                              constraints.maxHeight,
+                            ),
+                            _ => _buildCustomMode(
+                              context,
+                              constraints.maxWidth,
+                              isExpanded,
+                            ),
+                          },
                     ),
                   ),
               ],
@@ -111,7 +119,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
     }
   }
 
-  Widget _buildDefaultMode(double currentWidth) {
+  Widget _buildDefaultMode(double currentWidth, double availableHeight) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +149,9 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                   for (var (index, value) in ViewMode.values.indexed)
                     if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
                       InkWell(
-                        onTap: () => context.read<MonitorBloc>().add(ChangeGridMode(value)),
+                        onTap: () => context.read<MonitorBloc>().add(
+                          ChangeGridMode(value),
+                        ),
                         child: SvgPicture.asset(
                           state.mode == value ? value.iconActive : value.icon,
                           width: 32,
@@ -172,7 +182,18 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         BlocBuilder<GroupCameraBloc, GroupCameraState>(
           builder: (context, state) {
             if (state is! GetAllGroupCameraSuccessState) return SizedBox();
-            return SizedBox();
+            // TreeGroupWidget contains its own Expanded and scrollable TreeView.
+            // When embedding inside a Column we must give it a bounded height.
+            // Use availableHeight when it's finite, otherwise a reasonable fallback.
+            final double height =
+                availableHeight.isFinite && availableHeight > 0
+                ? availableHeight -
+                      220 // subtract approximate space used by siblings
+                : 300;
+            return SizedBox(
+              height: height.clamp(200, 800),
+              child: TreeGroupWidget(controller: _controller, tree: state.tree),
+            );
             // return TreeView.simple(
             //   padding: EdgeInsets.symmetric(horizontal: 24),
             //   showRootNode: false,
