@@ -37,15 +37,40 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   }
 
   Future<void> _onGetCameraAtPage(GetCameraAtPage event, Emitter<MonitorState> emit) async {
+    if (state is MonitorSuccess) {
+      final preState = state as MonitorSuccess;
+      emit(
+        MonitorSuccess(
+            cameras: preState.cameras,
+            mode: preState.mode,
+            page: event.page,
+          )
+      );
+      return;
+    }
+
     emit(MonitorLoading());
 
-    // if (state)
+    (await cameraRepository.getAllCamera()).fold(
+      (failure) {
+        emit(MonitorFailure(failure.toString()));
+      },
+      (cameras) {
+        emit(
+          MonitorSuccess(
+            cameras: cameras,
+            mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
+            page: event.page,
+          ),
+        );
+      },
+    );
   }
 
   FutureOr<void> _onChangeGridMode(ChangeGridMode event, Emitter<MonitorState> emit) async {
     if (state is! MonitorSuccess) return;
 
     final preState = state as MonitorSuccess;
-    if (preState.mode != event.mode) emit(preState.copyWith(mode: event.mode));
+    if (preState.mode != event.mode) emit(preState.copyWith(mode: event.mode, page: 1));
   }
 }

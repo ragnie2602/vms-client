@@ -19,8 +19,8 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
 
   double get spacing => AppConfig.MONITOR_GRID_SPACING;
 
-  void onChangePage(int page) {
-    print("Current Page $page");
+  void onChangePage(BuildContext context, int page) {
+    context.read<MonitorBloc>().add(GetCameraAtPage(page + 1));
   }
 
   @override
@@ -57,12 +57,20 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                     }).toList(),
                   ),
                   Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Hiển thị 4 trên 36 camera"),
-                      SizedBox(width: 280, height: 32,child: TablePaginator(36, (page) => onChangePage(page))),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 50),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Hiển thị ${state.paginatedCameras.length} trên ${state.cameras.length} camera"),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
+                          child: TablePaginator(
+                            (state.cameras.length / state.mode.total).ceil(), 
+                            (page) => onChangePage(context, page))
+                          ),
+                      ],
+                    ),
                   ),
                 ],
               );
@@ -82,7 +90,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
     final width = (constraints.maxWidth - spacing * (columns - 1)) / columns;
     final height = (constraints.maxHeight - spacing * (rows - 1)) / rows;
 
-    return Size(width - 30, height - 30);
+    return Size(width - 50, height - 50);
   }
 
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
