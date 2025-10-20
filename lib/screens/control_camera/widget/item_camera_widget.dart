@@ -16,6 +16,7 @@ class ItemCameraWidget extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onShare,
+    this.onRemoveFromGroup
   });
   final CameraEntity itemCamera;
   final int index;
@@ -23,6 +24,7 @@ class ItemCameraWidget extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onShare;
+  final VoidCallback? onRemoveFromGroup;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +119,9 @@ class ItemCameraWidget extends StatelessWidget {
                     case 'share':
                       onShare?.call();
                       break;
+                    case 'remove_from_group':
+                      onRemoveFromGroup?.call();
+                      break;
                     default:
                       break;
                   }
@@ -187,6 +192,24 @@ class ItemCameraWidget extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           'Xóa',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+                  PopupMenuItem<String>(
+                    value: 'remove_from_group',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(AppAssets.icDelete),
+                        SizedBox(width: 8),
+                        Text(
+                          'Xóa khỏi nhóm',
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,

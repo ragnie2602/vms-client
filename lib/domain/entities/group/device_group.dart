@@ -53,10 +53,13 @@ class DeviceGroup {
     }
     return false;
   }
-  List<DeviceGroup> convertToOneLevel(){
+  List<DeviceGroup> convertToOneLevel({int? hideFromLevel}){
+    if(hideFromLevel != null && level >= hideFromLevel){
+      return [];
+    }
     List<DeviceGroup> ans = [this];
     for(var e in groups){
-      ans.addAll(e.convertToOneLevel());
+      ans.addAll(e.convertToOneLevel(hideFromLevel: hideFromLevel));
     }
     return ans;
   }

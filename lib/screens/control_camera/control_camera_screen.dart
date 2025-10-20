@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_st
 import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
+import 'package:vms_flutter_client/screens/control_camera/widget/remove_camera_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/share_dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
@@ -162,6 +163,17 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
+  void _showDialogRemoveCameraFromGroup({
+    required BuildContext c,
+    required List<int> cameraId,
+  }) {
+    showDialogRemoveCameraFromGroup(c, onConfirm: () {
+      context.read<ControlCameraBloc>().add(
+        RemoveCameraFromGroupEvent(cameraId: cameraId),
+      );
+    });
+  }
+
   @override
   void initState() {
     _onGetListCamera(c: context);
@@ -178,8 +190,15 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   Widget build(BuildContext context) {
     return BlocListener<ControlCameraBloc, ControlCameraState>(
       listenWhen: (prev, curr) =>
-          curr is DeleteCameraSuccessState || curr is ListCameraSuccessState,
+          curr is DeleteCameraSuccessState || curr is ListCameraSuccessState || curr is RemoveCameraFromGroupFailState,
       listener: (context, state) {
+        if(state is RemoveCameraFromGroupFailState) {
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
+        }
         if (state is DeleteCameraSuccessState) {
           _onGetListCamera(c: context);
           showAppMessageDialog(
@@ -207,6 +226,19 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
               onGetCamerasInGroup: (c, groupId) {
                 _onGetCameraInGroup(groupId: groupId, context: c);
               },
+              onAddCameraToGroup:
+                  ({
+                    required c,
+                    required cameraIds,
+                    required currentGroupId,
+                  }) {
+                    context.read<ControlCameraBloc>().add(
+                      AddCameraToGroupEvent(
+                        cameraIds: cameraIds,
+                        groupId: currentGroupId,
+                      ),
+                    );
+                  },
             ),
           ),
           Flexible(
@@ -501,6 +533,9 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               groupName: cameras[index].name,
                                               onSave: (selectedUsers) async {},
                                             );
+                                          },
+                                          onRemoveFromGroup: () {
+                                           _showDialogRemoveCameraFromGroup(c: context, cameraId: cameras[index].id);
                                           },
                                         ),
                                   ),

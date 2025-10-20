@@ -1,16 +1,10 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-import 'package:vms_flutter_client/data/datasources/custom_live_view_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
-import 'package:vms_flutter_client/data/datasources/user_service.dart';
-import 'package:vms_flutter_client/data/repositories/control_group_repository.dart';
-import 'package:vms_flutter_client/data/repositories/custom_live_view_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
-import 'package:vms_flutter_client/data/repositories/user_management_repository.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_custom_live_view_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 
@@ -33,8 +27,6 @@ class DependencyInjection {
     // Repositories
     Provider<IAuthRepository>(create: (context) => AuthRepository(authenticateService: context.read<AuthenticateService>())),
     Provider<ICameraRepository>(create: (context) => CameraRepository(context.read())),
-    Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
-    Provider<FilterCameraNoGroupUseCase>(create: (context) => FilterCameraNoGroupUseCase()),
     Provider<SearchGroupUseCase>(create: (context) => SearchGroupUseCase()),
     Provider<IControlCameraRepository>(create: (context) => ControlCameraRepository(context.read())),
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
@@ -45,5 +37,8 @@ class DependencyInjection {
     // Use Cases
     Provider<LoginUseCase>(create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>())),
     Provider<DeleteCameraUseCase>(create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>())),
+    Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
+    Provider<FilterCameraNoGroupUseCase>(create: (context) => FilterCameraNoGroupUseCase()),
+    Provider<FilterCameraNotInGroupUsecase>(create: (context) => FilterCameraNotInGroupUsecase(cameraRepository: context.read<ICameraRepository>())),
   ];
 }

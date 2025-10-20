@@ -133,3 +133,8 @@ class AddCameraToGroupEvent extends ControlCameraEvent {
   final List<int> groupId;
   const AddCameraToGroupEvent({required this.cameraIds, required this.groupId});
 }
+class RemoveCameraFromGroupEvent extends ControlCameraEvent {
+  final List<int> cameraId;
+  final List<int>? groupId;
+  const RemoveCameraFromGroupEvent({required this.cameraId, this.groupId});
+}
