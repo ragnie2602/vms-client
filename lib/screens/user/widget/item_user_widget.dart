@@ -40,7 +40,7 @@ class ItemUserWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 348,
+            flex: 267,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -48,21 +48,7 @@ class ItemUserWidget extends StatelessWidget {
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.black4A4A4A,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 348,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                itemUser.fullName,
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.black4A4A4A,
+                  color: AppColors.black171725,
                 ),
               ),
             ),
@@ -72,25 +58,39 @@ class ItemUserWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
+                itemUser.fullName,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.black171725,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 190,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
                 itemUser.emailAddress,
                 style: AppTypography.style(
                   13,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.blue005BAA,
+                  color: AppColors.black171725,
                 ),
               ),
             ),
           ),
 
           Expanded(
-            flex: 151,
+            flex: 190,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 itemUser.telNumber,
                 style: AppTypography.style(
                   14,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.black171725,
                 ),
               ),
@@ -105,7 +105,7 @@ class ItemUserWidget extends StatelessWidget {
                 itemUser.type.name,
                 style: AppTypography.style(
                   14,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.black171725,
                 ),
               ),

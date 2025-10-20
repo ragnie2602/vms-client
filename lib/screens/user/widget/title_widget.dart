@@ -58,7 +58,7 @@ class TitleWidget extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 151,
+            flex: 190,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -72,7 +72,7 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 130,
+            flex: 190,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(

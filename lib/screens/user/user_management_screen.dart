@@ -168,7 +168,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           ? Center(child: CircularProgressIndicator())
                           : state is GetListUserState
                           ? Flexible(
-                              child: ListView.builder(
+                              child: ListView.separated(
+                                separatorBuilder: (_, __) => const Divider(
+                                  height: 1,
+                                  color: AppColors.greyF1F5F9,
+                                ),
                                 shrinkWrap: true,
                                 itemCount: state.users!.length,
                                 itemBuilder: (context, index) => ItemUserWidget(
