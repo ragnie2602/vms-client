@@ -57,7 +57,10 @@ class SocketApiClient extends BaseApiClient {
             onTimeout: () => throw TimeoutException('Connection timeout'),
           );
 
-      _keepAliveTimer = Timer.periodic(const Duration(seconds: 30), _sendKeepAlive);
+      _keepAliveTimer = Timer.periodic(
+        const Duration(seconds: 30),
+        _sendKeepAlive,
+      );
 
       return true;
     } catch (e) {
@@ -93,7 +96,9 @@ class SocketApiClient extends BaseApiClient {
   }
 
   void _sendKeepAlive(Timer _) {
-    _socket.send(Packet(id: 100, data: [], type: PacketType.keepAlive).writeToBuffer());
+    _socket.send(
+      Packet(id: 100, data: [], type: PacketType.keepAlive).writeToBuffer(),
+    );
   }
 
   void _handleMessages(dynamic message) {
@@ -110,7 +115,10 @@ class SocketApiClient extends BaseApiClient {
         result = Right(reply.reply.value);
       } else {
         final msg = ResultType.valueOf(reply.type).translate();
-        Logger.error("Request '${reply.reply.typeUrl}' failed: $msg", tag: 'SOCKET');
+        Logger.error(
+          "Request '${reply.reply.typeUrl}' failed: $msg",
+          tag: 'SOCKET',
+        );
         result = Left(Failure.code(reply.type));
       }
 
@@ -122,8 +130,12 @@ class SocketApiClient extends BaseApiClient {
     }
   }
 
-  void _disposeCompleter(int id, {dynamic value}) {
-    _requestCompleters[id]?.complete(value);
+  void _disposeCompleter(int id, {Either<Failure, List<int>>? value}) {
+    final completer =
+        _requestCompleters[id] as Completer<Either<Failure, List<int>>>?;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(value ?? Left(Failure.defaultError()));
+    }
     _requestCompleters.remove(id);
   }
 

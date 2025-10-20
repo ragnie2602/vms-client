@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
@@ -15,6 +16,7 @@ import 'package:fvp/fvp.dart' as fvp;
 
 void main() async {
   ErrorService.initGlobalErrorHandler(() async {
+    initializeDateFormatting('vi');
     // WidgetsFlutterBinding.ensureInitialized() --> Đã được gọi trước đó initGlobalErrorHandler
 
     // Fvp: Only for windows

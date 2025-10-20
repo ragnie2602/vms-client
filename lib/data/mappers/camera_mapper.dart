@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
+import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
 
 extension CameraTypeMapper on pb.CameraType {
   CameraType toDomain() {
@@ -30,7 +31,12 @@ extension CameraStreamResolutionMapper on pb.CameraStream_Resolution {
 
 extension CameraStreamEncoderMapper on pb.CameraStream_Encoder {
   CameraStreamEncoder toDomain() {
-    return CameraStreamEncoder(quality: quality, framerate: framerate, bitrate: bitrate, encoding: encoding);
+    return CameraStreamEncoder(
+      quality: quality,
+      framerate: framerate,
+      bitrate: bitrate,
+      encoding: encoding,
+    );
   }
 }
 
@@ -42,7 +48,11 @@ extension CameraStreamPtzRangeValueMapper on pb.CameraStream_PtzRange_range {
 
 extension CameraStreamPtzRangeMapper on pb.CameraStream_PtzRange {
   CameraStreamPtzRange toDomain() {
-    return CameraStreamPtzRange(x: x.toDomain(), y: y.toDomain(), z: z.toDomain());
+    return CameraStreamPtzRange(
+      x: x.toDomain(),
+      y: y.toDomain(),
+      z: z.toDomain(),
+    );
   }
 }
 
@@ -52,7 +62,8 @@ extension CameraStreamDefaultURLMapper on pb.CameraStream_DefaultURL {
   }
 }
 
-extension CameraStreamUrlStreamTypeMapper on pb.CameraStream_UrlStream_StreamType {
+extension CameraStreamUrlStreamTypeMapper
+    on pb.CameraStream_UrlStream_StreamType {
   CameraStreamUrlStreamType toDomain() {
     return CameraStreamUrlStreamType.fromValue(value);
   }
@@ -90,7 +101,14 @@ extension CameraStreamMapper on pb.CameraStream {
 
 extension CameraStreamOnvifMapper on pb.Onvif {
   CameraEntityOnvif toDomain() {
-    return CameraEntityOnvif(urn: urn, name: name, hardware: hardware, xaddr: xaddr, scopes: scopes, onvifRtspUrl: onvifRtspUrl);
+    return CameraEntityOnvif(
+      urn: urn,
+      name: name,
+      hardware: hardware,
+      xaddr: xaddr,
+      scopes: scopes,
+      onvifRtspUrl: onvifRtspUrl,
+    );
   }
 }
 
@@ -115,7 +133,11 @@ extension CameraMapper on pb.Camera {
 
 extension CameraOnvifMapper on CheckCameraOnvif_Reply {
   CameraOnvif toDomain() {
-    return CameraOnvif(rtspUrl: rtspUrl, serialNumber: serialNumber, subStreamUrl: subStreamUrl.toList());
+    return CameraOnvif(
+      rtspUrl: rtspUrl,
+      serialNumber: serialNumber,
+      subStreamUrl: subStreamUrl.toList(),
+    );
   }
 }
 
@@ -134,5 +156,15 @@ extension AddCameraRTSPMapper on AddCameraRTSP_Reply {
 extension AddCameraOnvifMapper on AddCameraOnVif_Reply {
   AddCameraEntity toDomain() {
     return AddCameraEntity(cameraId: cameraId, camera: camera.toDomain());
+  }
+}
+
+extension RemoveCameraFromGroupMapper on RemoveCameraFormGroup_Reply {
+  RemoveCameraFromGroupEntity toDomain() {
+    return RemoveCameraFromGroupEntity(
+      cameraId: cameraId,
+      groupId: groupId,
+      groupLevel: groupLevel,
+    );
   }
 }

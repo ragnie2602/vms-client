@@ -6,8 +6,9 @@ sealed class PlaybackEvent extends BaseEvent {
 
 final class GetVideoPlaybacks extends PlaybackEvent {
   final List<int> id;
+  final DateTime date;
 
-  const GetVideoPlaybacks(this.id);
+  const GetVideoPlaybacks(this.id, this.date);
 }
 
 class SetPlaybackAtTime extends PlaybackEvent {
@@ -20,4 +21,11 @@ class ChangePlayback extends PlaybackEvent {
   final PlaybackVideo playback;
 
   const ChangePlayback(this.playback);
+}
+
+class DownloadPlayback extends PlaybackEvent {
+  final PlaybackVideo playback;
+  final Function(double?)? onProgress;
+
+  const DownloadPlayback(this.playback, {this.onProgress});
 }

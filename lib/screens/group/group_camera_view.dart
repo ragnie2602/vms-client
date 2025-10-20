@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
-import 'package:vms_flutter_client/screens/group/widget/add_group_widget.dart';
+import 'package:vms_flutter_client/screens/group/widget/add_camera_widget.dart';
+import 'package:vms_flutter_client/screens/group/widget/add_edit_group_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 import 'package:vms_flutter_client/screens/group/widget/item_group_action.dart';
+import 'package:vms_flutter_client/screens/group/widget/remove_group_widget.dart';
 
 class GroupCameraView extends StatefulWidget {
   const GroupCameraView({
@@ -17,11 +20,18 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetCamerasInGroup,
     required this.onGetAllGroupCamera,
     required this.onGetNoGroupCamera,
+    required this.onAddCameraToGroup,
   });
 
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
+  final Function({
+    required BuildContext c,
+    required List<int> currentGroupId,
+    required List<List<int>> cameraIds,
+  })?
+  onAddCameraToGroup;
 
   @override
   State<GroupCameraView> createState() => _GroupCameraViewState();
@@ -57,14 +67,55 @@ class _GroupCameraViewState extends State<GroupCameraView> {
 
   void _onAddGroupCamera({
     required String groupName,
-    DeviceGroup? parentGroup,
+    List<int>? parentGroupId,
   }) {
     // chưa lấy được parent group id => bổ sung sau
     context.read<GroupCameraBloc>().add(
       AddGroupCameraEvent(
         groupName: groupName,
-        parentGroupId: parentGroup != null ? parentGroup.groupId : [],
+        parentGroupId: parentGroupId ?? [],
       ),
+    );
+  }
+
+  void _onShowDialogAddEditGroup({
+    required List<DeviceGroup> listGroupInput,
+    required BuildContext c,
+    List<int>? parentGroupId,
+    DeviceGroup? currentGroup,
+    AddEditGroupType? addEditType,
+  }) {
+    // convert list group => thành 1 list 1 cấp
+    List<DeviceGroup> listGroupOneLevel = [];
+    for (var e in listGroupInput) {
+      listGroupOneLevel.addAll(e.convertToOneLevel(hideFromLevel: 2));
+    }
+    showDialogAddEditGroup(
+      c,
+      listGroupAvailable: listGroupOneLevel,
+      parentGroupId: parentGroupId,
+      addEditType: addEditType ?? AddEditGroupType.add,
+      currentGroup: currentGroup,
+      onConfirm:
+          ({
+            String? nameNewGroup,
+            List<int>? parentGroupId,
+            DeviceGroup? currentGroup,
+          }) {
+            if (addEditType == AddEditGroupType.add) {
+              _onAddGroupCamera(
+                groupName: nameNewGroup ?? '',
+                parentGroupId: parentGroupId ?? [],
+              );
+            } else if (addEditType == AddEditGroupType.edit &&
+                currentGroup != null) {
+              _onEditGroupCamera(
+                groupName: nameNewGroup ?? '',
+                groupId: currentGroup.groupId,
+                parentGroupId: parentGroupId ?? [],
+              );
+            }
+          },
     );
   }
 
@@ -74,8 +125,57 @@ class _GroupCameraViewState extends State<GroupCameraView> {
     );
   }
 
-  void _onEditGroupCamera() {}
-  void _onShareGroupCamera() {}
+  void _onShowDialogRemoveGroup({
+    required BuildContext c,
+    DeviceGroup? currentGroup,
+  }) {
+    showDialogRemoveGroup(
+      c,
+      onConfirm: () {
+        _onRemoveGroupCamera(
+          groupId: currentGroup != null ? currentGroup.groupId : [],
+        );
+      },
+    );
+  }
+
+  void _onEditGroupCamera({
+    required String groupName,
+    required List<int> groupId,
+    required List<int> parentGroupId,
+  }) {
+    context.read<GroupCameraBloc>().add(
+      UpdateGroupCameraEvent(
+        groupId: groupId,
+        groupName: groupName,
+        parentGroupId: parentGroupId,
+      ),
+    );
+  }
+
+  void _onShowDialogAddCamera({
+    required BuildContext c,
+    DeviceGroup? currentGroup,
+  }) async {
+    List<CameraEntity>? listCameraAvailable = await c
+        .read<GroupCameraBloc>()
+        .getAvailableCamerasForGroup(groupId: currentGroup?.groupId ?? []);
+    if (!c.mounted) {
+      return;
+    }
+    showDialogAddCamera(
+      c,
+      currentGroup: currentGroup,
+      listCameraAvailable: listCameraAvailable,
+      onConfirm: ({required listCameraSelected}) {
+        widget.onAddCameraToGroup?.call(
+          c: c,
+          currentGroupId: currentGroup?.groupId ?? [],
+          cameraIds: listCameraSelected.map((camera) => camera.id).toList(),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,81 +194,116 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             decoration: BoxDecoration(color: Colors.white),
             child: Column(
               children: [
-                TreeGroupWidget(
-                  onClickGroupNode: (c, groupId) {
-                    setState(() {
-                      isClickAllGroup = false;
-                      isClickNoGroup = false;
-                    });
-                    // rest api lấy camera theo group
-                    widget.onGetCamerasInGroup?.call(c, groupId);
-                  },
-                  onClickAllGroup: () {
-                    setState(() {
-                      isClickAllGroup = true;
-                      isClickNoGroup = false;
-                    });
-                    widget.onGetAllGroupCamera?.call(context);
-                  },
-                  onClickNoGroup: () {
-                    setState(() {
-                      isClickAllGroup = false;
-                      isClickNoGroup = true;
-                    });
-                    widget.onGetNoGroupCamera?.call(context);
-                
-                  },
-                  enableAddGroup: true,
-                  controller: controllerTree,
-                  searchController: searchGroupNameController,
-                  onSearchGroup: ({keySearchGroup}) {
-                    _onSearchGroup();
-                  },
-                  onClickAddGroup: () {
-                    // convert list group => thành 1 list 1 cấp
-                    List<DeviceGroup> listGroupOneLevel = [];
-                    for (var e in newState.groups ?? []) {
-                      listGroupOneLevel.addAll(e.convertToOneLevel());
-                    }
-                    showDialogAddGroup(
-                      context,
-                      listGroupAvailable: listGroupOneLevel,
-                      onConfirm: ({nameNewGroup, parentGroup}) =>
-                          _onAddGroupCamera(
-                            groupName: nameNewGroup ?? '',
-                            parentGroup: parentGroup,
-                          ),
-                    );
-                  },
-                  tree: newState.tree,
-                  isShowGroupAll: true,
-                  isShowNoGroup: true,
-                  isClickAllGroup: isClickAllGroup,
-                  isClickNoGroup: isClickNoGroup,
-                  action: PopupMenuButton<ItemGroupAction>(
-                    padding: EdgeInsets.zero,
-                    splashRadius: 20,
-                    menuPadding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(8),
-                    ),
-                    elevation: 8,
-                    onSelected: (value) {},
-                    itemBuilder: (BuildContext context) {
-                      final listAction = ItemGroupAction.values;
-                      return listAction
-                          .map(
-                            (e) => PopupMenuItem<ItemGroupAction>(
-                              value: e,
-                              child: ItemActionWidget(item: e),
-                            ),
-                          )
-                          .toList();
+                Expanded(
+                  child: TreeGroupWidget(
+                    actionBuilder: (node) {
+                      return PopupMenuButton<ItemGroupAction>(
+                        padding: EdgeInsets.zero,
+                        splashRadius: 20,
+                        menuPadding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadiusGeometry.circular(8),
+                        ),
+                        elevation: 8,
+                        onSelected: (value) {
+                          switch (value) {
+                            case ItemGroupAction.add:
+                              _onShowDialogAddEditGroup(
+                                listGroupInput: newState.groups ?? [],
+                                c: context,
+                                parentGroupId: node.data?.groupId,
+                                addEditType: AddEditGroupType.add,
+                                currentGroup: node.data,
+                              );
+                              break;
+                            case ItemGroupAction.edit:
+                              _onShowDialogAddEditGroup(
+                                listGroupInput: newState.groups ?? [],
+                                c: context,
+                                parentGroupId: node.data?.parentGroupId,
+                                addEditType: AddEditGroupType.edit,
+                                currentGroup: node.data,
+                              );
+                              break;
+                            case ItemGroupAction.share:
+                              break;
+                            case ItemGroupAction.remove:
+                              _onShowDialogRemoveGroup(
+                                c: context,
+                                currentGroup: node.data,
+                              );
+                              break;
+                            case ItemGroupAction.addCamera:
+                              _onShowDialogAddCamera(
+                                c: context,
+                                currentGroup: node.data,
+                              );
+                              break;
+                          }
+                        },
+                        itemBuilder: (BuildContext context) {
+                          List<ItemGroupAction> listAction = List.of(
+                            ItemGroupAction.values,
+                          );
+                          // nếu level >= 2 (thứ 3) thì ko còn action add group nữa
+                          if ((node.data?.level ?? 0) >= 2) {
+                            listAction.remove(ItemGroupAction.add);
+                          }
+                          return listAction
+                              .map(
+                                (e) => PopupMenuItem<ItemGroupAction>(
+                                  value: e,
+                                  child: ItemActionWidget(item: e),
+                                ),
+                              )
+                              .toList();
+                        },
+                        child: SvgPicture.asset(
+                          AppAssets.icAction,
+                          color: Colors.black,
+                        ),
+                      );
                     },
-                    child: SvgPicture.asset(
-                      AppAssets.icAction,
-                      color: Colors.black,
-                    ),
+                    onClickGroupNode: (c, groupId) {
+                      setState(() {
+                        isClickAllGroup = false;
+                        isClickNoGroup = false;
+                      });
+                      // rest api lấy camera theo group
+                      widget.onGetCamerasInGroup?.call(c, groupId);
+                    },
+                    onClickAllGroup: () {
+                      setState(() {
+                        isClickAllGroup = true;
+                        isClickNoGroup = false;
+                      });
+                      widget.onGetAllGroupCamera?.call(context);
+                    },
+                    onClickNoGroup: () {
+                      setState(() {
+                        isClickAllGroup = false;
+                        isClickNoGroup = true;
+                      });
+                      widget.onGetNoGroupCamera?.call(context);
+                    },
+                    enableAddGroup: true,
+                    controller: controllerTree,
+                    searchController: searchGroupNameController,
+                    onSearchGroup: ({keySearchGroup}) {
+                      _onSearchGroup();
+                    },
+                    onClickAddGroup: () {
+                      _onShowDialogAddEditGroup(
+                        listGroupInput: newState.groups ?? [],
+                        c: context,
+                        addEditType: AddEditGroupType.add,
+                      );
+                    },
+                    tree: newState.tree,
+                    isShowGroupAll: true,
+                    isShowNoGroup: true,
+                    isClickAllGroup: isClickAllGroup,
+                    isClickNoGroup: isClickNoGroup,
                   ),
                 ),
               ],

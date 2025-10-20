@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_group_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_input.dart';
+import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_output.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
@@ -13,9 +16,11 @@ import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
   final IGroupRepository groupCameraRepository;
   final SearchGroupUseCase searchGroupUseCase;
+  final FilterCameraNotInGroupUsecase filterCameraNotInGroupUsecase;
   GroupCameraBloc({
     required this.groupCameraRepository,
     required this.searchGroupUseCase,
+    required this.filterCameraNotInGroupUsecase,
   }) : super(const GroupCameraState()) {
     on<GetAllGroupCameraEvent>(_onGetAllGroupCamera);
     on<AddGroupCameraEvent>(_onAddGroupCamera);
@@ -65,6 +70,7 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     groups.fold(
       (onFailure) => emit(AddGroupCameraFailState(groups.left.toString())),
       (onSuccess) {
+        listGroup = onSuccess ?? [];
         emit(GetAllGroupCameraSuccessState(groups: groups.right));
       },
     );
@@ -80,6 +86,7 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     groups.fold(
       (onFailure) => emit(RemoveGroupCameraFailState(groups.left.toString())),
       (onSuccess) {
+        listGroup = onSuccess ?? [];
         emit(GetAllGroupCameraSuccessState(groups: groups.right));
       },
     );
@@ -97,8 +104,17 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     groups.fold(
       (onFailure) => emit(UpdateGroupCameraFailState(groups.left.toString())),
       (onSuccess) {
+        listGroup = onSuccess ?? [];
         emit(GetAllGroupCameraSuccessState(groups: groups.right));
       },
     );
+  }
+
+  Future<List<CameraEntity>> getAvailableCamerasForGroup({
+    List<int>? groupId,
+  }) async {
+    final input = FilterCameraNotInGroupInput(groupId: groupId);
+    final output = await filterCameraNotInGroupUsecase.execute(input);
+    return output.listCamera ?? [];
   }
 }

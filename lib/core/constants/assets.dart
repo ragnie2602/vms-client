@@ -70,6 +70,10 @@ class AppAssets {
   static const icPlay = '$_svgPath/play.svg';
   static const icPause = '$_svgPath/pause_circle.svg';
   static const icArrowChevronDown = '$_svgPath/arrow_chevron_down.svg';
+  static const icArrowChevronUp = '$_svgPath/arrow_chevron_up.svg';
+  static const icArrowChevronLeft = '$_svgPath/arrow_chevron_left.svg';
+  static const icArrowChevronRight = '$_svgPath/arrow_chevron_right.svg';
+  static const icDownload = '$_svgPath/download.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
@@ -78,4 +82,5 @@ class AppAssets {
   static const iconEdit = '$_svgPath/icon_edit.svg';
   static const iconRemove = '$_svgPath/icon_remove.svg';
   static const iconShare = '$_svgPath/icon_share.svg';
+  static const icLocation = '$_svgPath/ic_location.svg';
 }

@@ -2,6 +2,7 @@ import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
+import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
 
 import '../entities/camera/add_camera.dart';
 
@@ -14,6 +15,10 @@ abstract class IControlCameraRepository {
   });
   Future<Either<Failure, List<CameraEntity>>> getCamerasInGroup({
     List<int>? groupId,
+  });
+  Future<Either<Failure, RemoveCameraFromGroupEntity>> removeCameraFromGroup({
+    required List<int> cameraId,
+    required List<int> groupId,
   });
   Future<Either<Failure, CameraOnvif>> checkCameraOnvif({
     required String xaddrs,

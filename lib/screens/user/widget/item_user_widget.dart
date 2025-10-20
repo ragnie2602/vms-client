@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
-import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
-import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 
 class ItemUserWidget extends StatelessWidget {
   const ItemUserWidget({
     super.key,
-    required this.ItemUser,
+    required this.itemUser,
     required this.index,
+    this.onResetPassword,
+    this.onEdit,
+    this.onDelete,
   });
-  final UserEntity ItemUser;
+  final UserEntity itemUser;
   final int index;
+  final VoidCallback? onResetPassword;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +44,7 @@ class ItemUserWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                ItemUser.account,
+                itemUser.account,
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
@@ -55,7 +58,7 @@ class ItemUserWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                ItemUser.fullName,
+                itemUser.fullName,
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
@@ -69,7 +72,7 @@ class ItemUserWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                ItemUser.emailAddress,
+                itemUser.emailAddress,
                 style: AppTypography.style(
                   13,
                   fontWeight: FontWeight.w500,
@@ -84,7 +87,7 @@ class ItemUserWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                ItemUser.telNumber,
+                itemUser.telNumber,
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w400,
@@ -99,7 +102,7 @@ class ItemUserWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                ItemUser.type.name,
+                itemUser.type.name,
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w400,
@@ -110,27 +113,85 @@ class ItemUserWidget extends StatelessWidget {
           ),
           Expanded(
             flex: 190,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: InkWell(
-                onTap: () {
-                  context.read<UserManagementBloc>().add(
-                    ResetPassWordEvent(
-                      userId: ItemUser.id,
-                      newPassword: '12345678',
-                    ),
-                  );
-                  // showResetPasswordDialog(
-                  //   context,
-                  //   user: ItemUser,
-                  //   username: ItemUser.account,
-                  // );
-                  // print("delete user");
-                  // context.read<UserManagementBloc>().add(
-                  //   DeleteUserEvent(userId: ItemUser.id, uidStr: ""),
-                  // );
+            child: Center(
+              child: PopupMenuButton<String>(
+                icon: SvgPicture.asset(AppAssets.icAction),
+                padding: EdgeInsets.zero,
+                splashRadius: 20,
+                onSelected: (String value) {
+                  switch (value) {
+                    case 'reset_password':
+                      onResetPassword?.call();
+                      break;
+                    case 'edit':
+                      onEdit?.call();
+                      break;
+                    case 'delete':
+                      onDelete?.call();
+                      break;
+                  }
                 },
-                child: Center(child: SvgPicture.asset(AppAssets.icAction)),
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'reset_password',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add, size: 16, color: AppColors.black171725),
+                        SizedBox(width: 8),
+                        Text(
+                          'Khôi phục mật khẩu',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.black171725,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+                  PopupMenuItem<String>(
+                    value: 'edit',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(AppAssets.icEdit),
+                        SizedBox(width: 8),
+                        Text(
+                          'Sửa',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.black171725,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(AppAssets.icDelete),
+                        SizedBox(width: 8),
+                        Text(
+                          'Xóa',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 8,
               ),
             ),
           ),
