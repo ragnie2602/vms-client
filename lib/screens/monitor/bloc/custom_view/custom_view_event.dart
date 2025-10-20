@@ -26,6 +26,12 @@ class CreateCustomView extends CustomViewEvent {
   const CreateCustomView({required this.name, required this.base});
 }
 
+class DeleteCustomLiveView extends CustomViewEvent {
+  final List<int> id;
+
+  const DeleteCustomLiveView(this.id);
+}
+
 class UpdateCustomView extends CustomViewEvent {
   final CustomLiveView customView;
 

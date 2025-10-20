@@ -82,3 +82,22 @@ class CreateCustomViewFailure extends CustomViewState {
   @override
   String get errorMsg => message;
 }
+
+class DeletingCustomView extends CustomViewState {}
+
+class DeleteCustomViewSuccess extends CustomViewState {
+  final List<int> id;
+
+  const DeleteCustomViewSuccess(this.id);
+}
+
+class DeleteCustomViewFailed extends CustomViewState {
+  final String message;
+
+  const DeleteCustomViewFailed(this.message);
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+}

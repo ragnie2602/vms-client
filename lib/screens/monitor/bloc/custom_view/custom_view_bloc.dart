@@ -36,6 +36,8 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
     on<AddingCameraToCustomView>(_onAddingCameraToCustomView);
     on<CreateCustomView>(_onCreateCustomView);
 
+    on<DeleteCustomLiveView>(_onDeleteCustomLiveView);
+
     on<UpdateCustomView>(_onUpdateCustomView);
   }
 
@@ -90,5 +92,19 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
     if (output.isSuccess) {
       print(output.customView);
     } else {}
+  }
+
+  FutureOr<void> _onDeleteCustomLiveView(
+    DeleteCustomLiveView event,
+    Emitter<CustomViewState> emit,
+  ) async {
+    emit(DeletingCustomView());
+
+    final response = await customLiveViewRepository.deleteCustomLiveView(event.id);
+
+    response.fold(
+      (failure) => emit(DeleteCustomViewFailed(failure.toString())),
+      (id) => emit(DeleteCustomViewSuccess(id)),
+    );
   }
 }
