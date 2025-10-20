@@ -72,6 +72,7 @@ dependencies:
   intl: ^0.20.2
   shared_preferences: ^2.5.3
   animated_tree_view: ^2.3.0
+  number_paginator: ^1.1.1
 
   # add group
   dropdown_search: ^6.0.2

@@ -172,7 +172,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         BlocBuilder<GroupCameraBloc, GroupCameraState>(
           builder: (context, state) {
             if (state is! GetAllGroupCameraSuccessState) return SizedBox();
-            return TreeGroupWidget(controller: _controller, tree: state.tree);
+            return SizedBox();
             // return TreeView.simple(
             //   padding: EdgeInsets.symmetric(horizontal: 24),
             //   showRootNode: false,

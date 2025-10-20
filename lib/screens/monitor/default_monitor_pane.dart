@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
@@ -30,22 +31,34 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
 
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: state.paginatedCameras.mapIndexed((index, camera) {
-                  return SizedBox.fromSize(
-                    size: size,
-                    child: CameraPlayer(
-                      size: state.mode.total == 1 ? null : size,
-                      source: camera.subStreamUri.toString(),
-                      name: camera.name,
-                      key: ValueKey("player($index)___${camera.camId}"),
-                      mode: PlayerMode.monitoring,
-                      builder: (player, status) => _buildCameraView(context, player, camera),
-                    ),
-                  );
-                }).toList(),
+              return Column(
+                children: [
+                  Wrap(
+                    spacing: spacing,
+                    runSpacing: spacing,
+                    children: state.paginatedCameras.mapIndexed((index, camera) {
+                      return SizedBox.fromSize(
+                        size: size,
+                        child: CameraPlayer(
+                          size: state.mode.total == 1 ? null : size,
+                          source: camera.subStreamUri.toString(),
+                          name: camera.name,
+                          key: ValueKey("player($index)___${camera.camId}"),
+                          mode: PlayerMode.monitoring,
+                          builder: (player, status) => _buildCameraView(context, player, camera),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Hiển thị 4 trên 36 camera"),
+                      SizedBox(width: 280, height: 32,child: TablePaginator(36)),
+                    ],
+                  ),
+                ],
               );
             },
           ),
