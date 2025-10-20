@@ -137,7 +137,7 @@ class ItemUserWidget extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Row(
                       children: [
-                        Icon(Icons.add, size: 16, color: AppColors.black171725),
+                        SvgPicture.asset(AppAssets.icReset),
                         SizedBox(width: 8),
                         Text(
                           'Khôi phục mật khẩu',

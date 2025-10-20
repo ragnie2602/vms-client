@@ -48,6 +48,7 @@ class AppAssets {
   static const icDotHorizontal = '$_svgPath/dot_horizontal.svg';
   static const icAction = '$_svgPath/ic_action.svg';
   static const icEdit = '$_svgPath/ic_edit.svg';
+  static const icReset = '$_svgPath/ic_reset.svg';
   static const icDelete = '$_svgPath/ic_delete.svg';
   static const icDropdown = '$_svgPath/ic_dropdown.svg';
   static const icMode1x1 = '$_svgPath/mode_1x1.svg';

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
@@ -17,6 +19,7 @@ class UserManagementScreen extends StatefulWidget {
 }
 
 class _UserManagementScreenState extends State<UserManagementScreen> {
+  final TextEditingController userNameController = TextEditingController();
   @override
   void initState() {
     _onGetListUser();
@@ -89,14 +92,54 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Quản lý người dùng',
-                        style: TextStyle(
-                          color: AppColors.black171725,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.3,
+                        height: 40,
+                        child: TextField(
+                          controller: userNameController,
+                          decoration: InputDecoration(
+                            prefixIcon: Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 12,
+                              ),
+                              child: SvgPicture.asset(AppAssets.icSearch),
+                            ),
+                            hintText: 'Nhập thông tin tìm kiếm',
+                            hintStyle: TextStyle(
+                              color: AppColors.grey64748B,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(4),
+                              borderSide: BorderSide(
+                                color: AppColors.greyE2E8F0,
+                                width: 1,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(4),
+                              borderSide: BorderSide(
+                                color: AppColors.greyE2E8F0,
+                                width: 1,
+                              ),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(4),
+                              borderSide: BorderSide(
+                                color: AppColors.greyE2E8F0,
+                                width: 1,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 16),
                       InkWell(
                         onTap: () async {
                           await showAddUserDialog(
@@ -131,18 +174,22 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               color: AppColors.secondary,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Thêm người dùng',
-                                style: TextStyle(
-                                  color: AppColors.secondary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                          child: Center(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SvgPicture.asset(AppAssets.icAdd),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Thêm người dùng',
+                                  style: TextStyle(
+                                    color: AppColors.secondary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
