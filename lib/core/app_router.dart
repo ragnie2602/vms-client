@@ -149,7 +149,13 @@ class AppRouter {
                 path: Routes.custom_live_view.path,
                 name: Routes.custom_live_view.name,
                 pageBuilder: (context, state) {
-                  return fadeTransition(context: context, state: state, child: CustomMonitorPane());
+                  final args = state.extra as CustomMonitorPaneArgs?;
+
+                  return fadeTransition(
+                    context: context,
+                    state: state,
+                    child: CustomMonitorPane(addMode: args?.addMode ?? false),
+                  );
                 },
               ),
             ],
@@ -268,4 +274,10 @@ CustomTransitionPage slideTransition<T>({
       );
     },
   );
+}
+
+class CustomMonitorPaneArgs {
+  final bool? addMode;
+
+  const CustomMonitorPaneArgs({this.addMode});
 }

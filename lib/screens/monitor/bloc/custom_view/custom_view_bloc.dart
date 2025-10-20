@@ -26,6 +26,9 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
   final GetListCustomLiveViewUseCase getListCustomLiveViewUseCase;
   final UpdateCustomLiveViewUseCase updateCustomLiveViewUseCase;
 
+  // Restore when cancel add new custom view
+  CustomLiveView? preCustomView;
+
   CustomViewBloc(
     this.customLiveViewRepository,
     this.createTempCustomLiveViewUseCase,
@@ -67,7 +70,7 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
       );
       customView = output.customLiveView;
     } else {
-      customView = event.customView;
+      preCustomView = customView = event.customView;
     }
 
     emit(ShowCustomViewSuccess(customView: customView));

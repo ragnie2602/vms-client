@@ -44,54 +44,88 @@ class _ListCustomViewsState extends State<ListCustomViews> {
         }
       },
       child: ListView.builder(
-        itemBuilder: (context, index) => Material(
-          child: InkWell(
-            onTap: () {
-              if (GoRouterState.of(context).name != Routes.custom_live_view.name) {
-                context.goNamed(Routes.custom_live_view.name);
-              }
-              bloc.add(ShowCustomView(customViews[index]));
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  SizedBox(width: 24),
-                  SvgPicture.asset(customViews[index].base.icon, width: 32, height: 32),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      customViews[index].name,
-                      style: AppTypography.style(
-                        13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.blackOrWhite,
+        itemBuilder: (context, index) => CustomViewItem(bloc: bloc, customView: customViews[index]),
+        itemCount: customViews.length,
+        shrinkWrap: true,
+      ),
+    );
+  }
+}
+
+class CustomViewItem extends StatefulWidget {
+  final CustomLiveView customView;
+  final CustomViewBloc bloc;
+
+  const CustomViewItem({super.key, required this.customView, required this.bloc});
+
+  @override
+  State<CustomViewItem> createState() => _CustomViewItemState();
+}
+
+class _CustomViewItemState extends State<CustomViewItem> {
+  bool isSelecting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<CustomViewBloc, CustomViewState>(
+      listener: (context, state) {
+        if (state is ShowCustomViewSuccess) {
+          if (!isSelecting && widget.customView.id == state.customView.id) {
+            setState(() => isSelecting = true);
+          } else if (isSelecting && widget.customView.id != state.customView.id) {
+            setState(() => isSelecting = false);
+          }
+        }
+      },
+      child: Material(
+        child: InkWell(
+          onTap: () {
+            if (GoRouterState.of(context).name != Routes.custom_live_view.name) {
+              context.goNamed(Routes.custom_live_view.name);
+            }
+            widget.bloc.add(ShowCustomView(widget.customView));
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                SizedBox(width: 24),
+                SvgPicture.asset(
+                  isSelecting ? widget.customView.base.iconActive : widget.customView.base.icon,
+                  width: 32,
+                  height: 32,
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.customView.name,
+                    style: AppTypography.style(
+                      13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.blackOrWhite,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.visible,
+                  ),
+                ),
+                Builder(
+                  builder: (context) => SizedBox(
+                    height: 32,
+                    width: 32,
+                    child: InkWell(
+                      onTapDown: (TapDownDetails details) =>
+                          showActionsPopup(context, widget.customView),
+                      child: Center(
+                        child: SvgPicture.asset(AppAssets.icDotHorizontal, width: 12, height: 12),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.visible,
                     ),
                   ),
-                  Builder(
-                    builder: (context) => SizedBox(
-                      height: 32,
-                      width: 32,
-                      child: InkWell(
-                        onTapDown: (TapDownDetails details) =>
-                            showActionsPopup(context, customViews[index]),
-                        child: Center(
-                          child: SvgPicture.asset(AppAssets.icDotHorizontal, width: 12, height: 12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                ],
-              ),
+                ),
+                const SizedBox(width: 24),
+              ],
             ),
           ),
         ),
-        itemCount: customViews.length,
-        shrinkWrap: true,
       ),
     );
   }
@@ -103,8 +137,16 @@ class _ListCustomViewsState extends State<ListCustomViews> {
       barrierColor: Colors.transparent,
       bodyBuilder: (context) => Container(
         decoration: BoxDecoration(
-          color: AppColors.blackOrWhiteReverse,
+          border: Border.all(color: AppColors.greyF2F4FA, width: 1),
           borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 30,
+              color: AppColors.blackOrWhite.withOpacity(0.1),
+              offset: Offset(0, 4),
+            ),
+          ],
+          color: AppColors.blackOrWhiteReverse,
         ),
         child: Material(
           color: Colors.transparent,
@@ -225,7 +267,7 @@ class _ListCustomViewsState extends State<ListCustomViews> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 130.5 / 1600,
                         child: ElevatedButton(
-                          onPressed: () => bloc.add(DeleteCustomLiveView(customView.id)),
+                          onPressed: () => widget.bloc.add(DeleteCustomLiveView(customView.id)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.blackOrWhite,
                             elevation: 0,
@@ -233,7 +275,7 @@ class _ListCustomViewsState extends State<ListCustomViews> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                           ),
                           child: BlocConsumer<CustomViewBloc, CustomViewState>(
-                            bloc: bloc,
+                            bloc: widget.bloc,
                             listener: (context, state) {
                               if (state is DeleteCustomViewSuccess) Navigator.pop(context);
                             },

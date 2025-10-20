@@ -146,7 +146,12 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                   for (var (index, value) in ViewMode.values.indexed)
                     if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
                       InkWell(
-                        onTap: () => context.read<MonitorBloc>().add(ChangeGridMode(value)),
+                        onTap: () {
+                          if (GoRouterState.of(context).name != Routes.monitoring.name) {
+                            context.goNamed(Routes.monitoring.name);
+                          }
+                          context.read<MonitorBloc>().add(ChangeGridMode(value));
+                        },
                         child: SvgPicture.asset(
                           state.mode == value ? value.iconActive : value.icon,
                           width: 32,
@@ -210,7 +215,10 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             currentTab = DefaultTabController.of(context).index;
             viewMode = 1;
 
-            context.pushNamed(Routes.custom_live_view.name);
+            context.pushNamed(
+              Routes.custom_live_view.name,
+              extra: CustomMonitorPaneArgs(addMode: true),
+            );
           }),
           child: Container(
             decoration: BoxDecoration(

@@ -56,6 +56,7 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () {
                   widget.onBack?.call();
+                  if (bloc.preCustomView != null) bloc.add(ShowCustomView(bloc.preCustomView!));
                 },
                 child: Padding(
                   padding: EdgeInsets.all(2),
@@ -170,7 +171,10 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: widget.onBack,
+                  onPressed: () {
+                    widget.onBack?.call();
+                    if (bloc.preCustomView != null) bloc.add(ShowCustomView(bloc.preCustomView!));
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.blackOrWhiteReverse,
                     elevation: 0,

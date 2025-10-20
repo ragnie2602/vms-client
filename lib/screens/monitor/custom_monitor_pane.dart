@@ -17,7 +17,9 @@ import 'package:vms_flutter_client/screens/monitor/components/camera_list_popup.
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
 class CustomMonitorPane extends StatefulWidget {
-  const CustomMonitorPane({super.key});
+  final bool addMode;
+
+  const CustomMonitorPane({super.key, this.addMode = false});
 
   @override
   State<CustomMonitorPane> createState() => _CustomMonitorPaneState();
@@ -32,10 +34,12 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
   initState() {
     super.initState();
 
-    // Init customView from state when being navigated from before screen
-    final bloc = context.read<CustomViewBloc>();
-    if (bloc.state is ShowCustomViewSuccess) {
-      customView = (bloc.state as ShowCustomViewSuccess).customView;
+    // Init customView from state when being navigated from before screen (addMode is false)
+    if (!widget.addMode) {
+      final bloc = context.read<CustomViewBloc>();
+      if (bloc.state is ShowCustomViewSuccess) {
+        customView = (bloc.state as ShowCustomViewSuccess).customView;
+      }
     }
   }
 
