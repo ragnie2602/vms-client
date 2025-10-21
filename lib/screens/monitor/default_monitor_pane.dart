@@ -58,7 +58,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                   ),
                   Spacer(),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 50),
+                    padding: const EdgeInsets.only(top: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -87,10 +87,25 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
     rows = AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? rows;
     columns = AppConfig.OVERRIDE_MONITOR_GRID_COLUMNS ?? columns;
 
-    final width = (constraints.maxWidth - spacing * (columns - 1)) / columns;
-    final height = (constraints.maxHeight - spacing * (rows - 1)) / rows;
+    final availableWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+    final availableHeight = ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (48 / rows);
 
-    return Size(width - 50, height - 50);
+    // Maintain 16:9 aspect ratio - use the constraining dimension
+    final aspectRatio = 16 / 9;
+    double width, height;
+
+    if (availableWidth / availableHeight > aspectRatio) {
+      // Height is the constraint
+      height = availableHeight;
+      width = height * aspectRatio;
+    } else {
+      // Width is the constraint
+      width = availableWidth;
+      height = width / aspectRatio;
+    }
+
+    print("WIDTH AND HEIGHT $width $height");
+    return Size(width, height);
   }
 
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
