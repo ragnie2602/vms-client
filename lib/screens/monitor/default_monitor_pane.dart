@@ -35,11 +35,16 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
               final wrapWidth = (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
+
+              print("SIZED BOX $size, wrapWidth: $wrapWidth, maxWidth: ${constraints.maxWidth}");
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Wrap(
-                    spacing: spacing,
-                    runSpacing: spacing,
+                  SizedBox(
+                    width: wrapWidth,
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
                     children: List.generate(
                       state.mode.total,
                       (index) {
@@ -69,6 +74,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                           );
                         }
                       },
+                    ),
                     ),
                   ),
                   Spacer(),
@@ -111,18 +117,17 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
     final availableWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
     final availableHeight = ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (48 / rows);
 
-    // Maintain 16:9 aspect ratio - use the constraining dimension
+    // Maintain 16:9 aspect ratio - always use width as the constraint
+    // This ensures players grow/shrink when drawer opens/closes
     final aspectRatio = 16 / 9;
-    double width, height;
+    final width = availableWidth;
+    final height = width / aspectRatio;
 
-    if (availableWidth / availableHeight > aspectRatio) {
-      // Height is the constraint
-      height = availableHeight;
-      width = height * aspectRatio;
-    } else {
-      // Width is the constraint
-      width = availableWidth;
-      height = width / aspectRatio;
+    // If height exceeds available space, scale down based on height
+    if (height > availableHeight) {
+      final scaledHeight = availableHeight;
+      final scaledWidth = scaledHeight * aspectRatio;
+      return Size(scaledWidth, scaledHeight);
     }
 
     return Size(width, height);
