@@ -62,7 +62,13 @@ enum Routes {
     title: 'Playback',
     description: 'Cho phép truy cập và xem lại các đoạn video đã được ghi',
   ),
-  users(name: 'users', path: '/users'),
+  users(
+    name: 'users',
+    path: '/users',
+    title: 'Quản lý tài khoản',
+    description:
+        'Cho phép quản trị viên kiểm soát ai có thể xem camera của mình và cách thức họ truy cập',
+  ),
   setting(name: 'setting', path: '/setting'),
   about(name: 'about', path: '/about');
 
