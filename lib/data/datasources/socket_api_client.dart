@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:web_socket_client/web_socket_client.dart';
 
 import '../models/packet.dart';
@@ -82,6 +83,7 @@ class SocketApiClient extends BaseApiClient {
     if (!isConnected) return Left(Failure.message(SOCKET_UNCONNECTED));
 
     final completer = Completer<Either<Failure, T>>();
+    print("PACKEEDDDDDDDA ${data.packet.id} ${data.packet.type} ");
     _requestCompleters[data.packet.id] = completer;
 
     _socket.send(data.packet.writeToBuffer());
