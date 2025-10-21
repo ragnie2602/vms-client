@@ -35,8 +35,6 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
               final wrapWidth = (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
-
-              print("SIZED BOX $size, wrapWidth: $wrapWidth, maxWidth: ${constraints.maxWidth}");
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
