@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/shared/utils.dart';
 
 class ListCustomViews extends StatefulWidget {
@@ -43,11 +44,22 @@ class _ListCustomViewsState extends State<ListCustomViews> {
           });
         } else if (state is DeleteCustomViewSuccess) {
           setState(() => customViews.removeWhere((cv) => Utils.isEqual(cv.id, state.id)));
+        } else if (state is CreateCustomViewSuccess) {
+          int idx = customViews.indexWhere((cv) => Utils.isEqual(cv.id, state.customView.id));
+          if (idx == -1) {
+            setState(() => customViews.add(state.customView));
+          } else {
+            setState(() => customViews[idx] = state.customView);
+          }
         }
       },
       child: ListView.builder(
-        itemBuilder: (context, index) =>
-            CustomViewItem(bloc: bloc, customView: customViews[index], onUpdate: widget.onUpdate),
+        itemBuilder: (context, index) => CustomViewItem(
+          key: ValueKey(customViews[index].id),
+          bloc: bloc,
+          customView: customViews[index],
+          onUpdate: widget.onUpdate,
+        ),
         itemCount: customViews.length,
         shrinkWrap: true,
       ),
@@ -87,9 +99,11 @@ class _CustomViewItemState extends State<CustomViewItem> {
             setState(() => isSelecting = false);
           }
         } else if (state is UpdateCustomViewSuccess) {
-          if (Utils.isEqual(state.customView.id, widget.customView.id)) {
-            setState(() => customView = state.customView);
-          }
+          setState(() {
+            if (isSelecting = Utils.isEqual(state.customView.id, customView.id)) {
+              customView = state.customView;
+            }
+          });
         }
       },
       child: Material(
@@ -98,9 +112,12 @@ class _CustomViewItemState extends State<CustomViewItem> {
             if (isSelecting) return;
 
             if (GoRouterState.of(context).name != Routes.custom_live_view.name) {
-              context.goNamed(Routes.custom_live_view.name);
+              context.goNamed(
+                Routes.custom_live_view.name,
+                extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.view),
+              );
             }
-            widget.bloc.add(ShowCustomView(widget.customView));
+            widget.bloc.add(ShowCustomView(widget.customView, CustomMonitorPaneMode.view));
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -171,10 +188,14 @@ class _CustomViewItemState extends State<CustomViewItem> {
             children: [
               InkWell(
                 onTap: () {
-                  widget.bloc.add(ShowCustomView(customView));
+                  widget.bloc.add(ShowCustomView(customView, CustomMonitorPaneMode.edit));
                   widget.onUpdate?.call(customView);
 
                   Navigator.pop(context);
+                  context.goNamed(
+                    Routes.custom_live_view.name,
+                    extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.edit),
+                  );
                 },
                 child: Container(
                   padding: EdgeInsets.only(bottom: 10, left: 12, right: 16, top: 10),

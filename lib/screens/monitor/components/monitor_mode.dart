@@ -15,6 +15,7 @@ import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/monitor/add_edit_custom_mode_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/list_custom_views.dart';
+import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 
@@ -109,13 +110,30 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         ),
       );
     } else if (viewMode == 1) {
-      return AddEditCustomModePane(onBack: () => setState(() => viewMode = 0));
+      return AddEditCustomModePane(
+        onBack: () {
+          setState(() => viewMode = 0);
+
+          final bloc = context.read<CustomViewBloc>();
+          if (bloc.preCustomView != null) {
+            bloc.add(ShowCustomView(bloc.preCustomView!, CustomMonitorPaneMode.view));
+            context.goNamed(
+              Routes.custom_live_view.name,
+              extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.view),
+            );
+          } else {
+            context.goNamed(Routes.monitoring.name);
+          }
+        },
+      );
     } else {
       return Container();
     }
   }
 
   Widget _buildDefaultMode(double currentWidth, double availableHeight) {
+    final cvBloc = context.read<CustomViewBloc>();
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,6 +164,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                     if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
                       InkWell(
                         onTap: () {
+                          cvBloc.preCustomView = null;
                           if (GoRouterState.of(context).name != Routes.monitoring.name) {
                             context.goNamed(Routes.monitoring.name);
                           }
@@ -225,8 +244,6 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             onUpdate: (customView) => setState(() {
               currentTab = DefaultTabController.of(context).index;
               viewMode = 1;
-
-              context.pushNamed(Routes.custom_live_view.name);
             }),
           ),
         ),
@@ -236,12 +253,15 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             viewMode = 1;
 
             bloc.add(
-              ShowCustomView(CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: '')),
+              ShowCustomView(
+                CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
+                CustomMonitorPaneMode.add,
+              ),
             );
 
-            context.pushNamed(
+            context.goNamed(
               Routes.custom_live_view.name,
-              extra: CustomMonitorPaneArgs(addMode: true),
+              extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.add),
             );
           }),
           child: Container(

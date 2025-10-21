@@ -6,10 +6,11 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 
 class AddEditCustomModePane extends StatefulWidget {
   const AddEditCustomModePane({super.key, this.onBack});
-  final VoidCallback? onBack;
+  final void Function()? onBack;
 
   @override
   State<AddEditCustomModePane> createState() => _AddEditCustomModePaneState();
@@ -24,7 +25,8 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
   String? _errorMessage;
   ViewMode _mode = ViewMode.v2x2;
 
-  bool get isAddMode => customView?.id.isEmpty ?? true;
+  CustomMonitorPaneMode get mode =>
+      customView?.id.isEmpty ?? true ? CustomMonitorPaneMode.add : CustomMonitorPaneMode.edit;
 
   @override
   void initState() {
@@ -62,9 +64,7 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
         children: [
           BlocListener<CustomViewBloc, CustomViewState>(
             listener: (context, state) {
-              if (state is ShowCustomViewSuccess) {
-                customView = state.customView;
-              }
+              if (state is ShowCustomViewSuccess) customView = state.customView;
             },
             child: Container(),
           ),
@@ -72,10 +72,7 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
             children: [
               InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap: () {
-                  widget.onBack?.call();
-                  if (bloc.preCustomView != null) bloc.add(ShowCustomView(bloc.preCustomView!));
-                },
+                onTap: () => widget.onBack?.call(),
                 child: Padding(
                   padding: EdgeInsets.all(2),
                   child: Icon(Icons.arrow_back, size: 20, color: AppColors.blackOrWhite),
@@ -83,7 +80,9 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
               ),
               SizedBox(width: 8),
               Text(
-                isAddMode ? 'Thêm chế độ tùy biến' : 'Chỉnh sửa chế độ tùy biến',
+                mode == CustomMonitorPaneMode.add
+                    ? 'Thêm chế độ tùy biến'
+                    : 'Chỉnh sửa chế độ tùy biến',
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
@@ -173,6 +172,7 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                         ShowCustomView(
                           customView?.copyWith(base: _mode = value) ??
                               CustomLiveView(id: [], base: _mode = value, positions: [], name: ''),
+                          mode,
                         ),
                       ),
                     ),
@@ -190,10 +190,7 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    widget.onBack?.call();
-                    if (bloc.preCustomView != null) bloc.add(ShowCustomView(bloc.preCustomView!));
-                  },
+                  onPressed: () => widget.onBack?.call(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.blackOrWhiteReverse,
                     elevation: 0,
@@ -216,8 +213,14 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (nameController.text.isNotEmpty) {
-                      if (isAddMode) {
-                        bloc.add(CreateCustomView(base: _mode, name: nameController.text));
+                      if (mode == CustomMonitorPaneMode.add) {
+                        bloc.add(
+                          CreateCustomView(
+                            base: _mode,
+                            name: nameController.text,
+                            positions: customView?.positions,
+                          ),
+                        );
                       } else {
                         bloc.add(
                           UpdateCustomView(
@@ -228,8 +231,6 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                           ),
                         );
                       }
-
-                      widget.onBack?.call();
                     } else {
                       setState(() => _errorMessage = 'Vui lòng nhập tên chế độ xem');
                     }
@@ -240,13 +241,26 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                     padding: EdgeInsets.symmetric(vertical: 22),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                   ),
-                  child: Text(
-                    'Lưu',
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.blackOrWhiteReverse,
-                    ),
+                  child: BlocConsumer<CustomViewBloc, CustomViewState>(
+                    listener: (context, state) {
+                      if (state is CreateCustomViewSuccess || state is UpdateCustomViewSuccess) {
+                        widget.onBack?.call();
+                      }
+                    },
+                    builder: (context, state) {
+                      if (state is CreatingCustomView || state is UpdatingCustomView) {
+                        return CircularProgressIndicator(color: AppColors.blackOrWhiteReverse);
+                      }
+
+                      return Text(
+                        'Lưu',
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.blackOrWhiteReverse,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
