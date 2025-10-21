@@ -35,9 +35,6 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
               final wrapWidth = (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
-
-              print("Sized Box $size");
-
               return Column(
                 children: [
                   Wrap(
@@ -90,7 +87,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                             maxHeight: 32,
                           ),
                           child: TablePaginator(
-                            (state.cameras.length / state.mode.total).ceil(),
+                            (state.cameras.length / state.mode.total).ceil(), state.page - 1,
                             (page) => onChangePage(context, page)),
                         ),
                       ],
@@ -128,7 +125,6 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
       height = width / aspectRatio;
     }
 
-    print("WIDTH AND HEIGHT $width $height");
     return Size(width, height);
   }
 

@@ -7,8 +7,9 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 class TablePaginator extends StatefulWidget {
   final int _totalPages;
   final Function(int pageNumber) onChangePage;
+  int currentPage;
 
-  TablePaginator(this._totalPages, this.onChangePage, {super.key});
+  TablePaginator(this._totalPages, this.currentPage, this.onChangePage, {super.key});
 
   @override
   State<TablePaginator> createState() => _TablePaginatorState();
@@ -19,8 +20,11 @@ class _TablePaginatorState extends State<TablePaginator> {
 
   @override
   Widget build(BuildContext context) {
+    _controller.currentPage = widget.currentPage;
+
     return NumberPaginator(
       controller: _controller,
+      initialPage: widget.currentPage,
       numberPages: widget._totalPages,
       onPageChange: (int index) {
         widget.onChangePage(index);
@@ -39,6 +43,7 @@ class _TablePaginatorState extends State<TablePaginator> {
               onTap: () => _controller.prev(),
               text: '<',
               isSelected: false,
+              disabled: widget.currentPage == 0,
             ),
           ),
           Flexible(
@@ -46,7 +51,10 @@ class _TablePaginatorState extends State<TablePaginator> {
               shrinkWrap: true,
               buttonBuilder: (context, index, isSelected) => _CustomButton(
                 null,
-                onTap: () => _controller.navigateToPage(index),
+                onTap: () {
+                  _controller.navigateToPage(index);
+                  widget.currentPage = index;
+                },
                 text: '${index + 1}',
                 isSelected: isSelected,
               ),
@@ -57,6 +65,7 @@ class _TablePaginatorState extends State<TablePaginator> {
             onTap: () => _controller.next(),
             text: '>',
             isSelected: false,
+            disabled: widget.currentPage == widget._totalPages - 1,
           ),
         ],
       ),
@@ -73,6 +82,7 @@ class _CustomButton extends StatelessWidget {
   final String text;
   final bool isSelected;
   final String? image;
+  final bool disabled;
 
   const _CustomButton(
     this.image, 
@@ -80,6 +90,7 @@ class _CustomButton extends StatelessWidget {
       required this.onTap,
       required this.text,
       this.isSelected = false,
+      this.disabled = false,
     }
   );
 
@@ -90,14 +101,14 @@ class _CustomButton extends StatelessWidget {
       child: AspectRatio(
         aspectRatio: 1,
         child: ElevatedButton(
-          onPressed: onTap,
+          onPressed: !disabled ? onTap : () => {},
           style: ElevatedButton.styleFrom(
             backgroundColor: isSelected ? Colors.black : Colors.white,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)),
             padding: EdgeInsets.zero,
           ),
-          child: image != null ? SvgPicture.asset(image!, color: AppColors.grey64748B,) :
+          child: image != null ? SvgPicture.asset(image!, color: disabled ? AppColors.grey94A3B8 : AppColors.grey64748B,) :
           Text(
             text, 
             style: TextStyle(

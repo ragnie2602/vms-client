@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 
 import '../bloc/monitor/monitor_bloc.dart';
@@ -116,7 +119,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                         padding: EdgeInsets.only(bottom: 20),
                         primary: true,
                         itemCount: cameras.length,
-                        itemBuilder: (context, index) => _cameraItem(cameras[index]),
+                        itemBuilder: (context, index) => _cameraItem(context ,cameras[index]),
                       );
                     },
                   ),
@@ -129,12 +132,10 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     );
   }
 
-  Widget _cameraItem(CameraEntity camera) {
+  Widget _cameraItem(BuildContext context, CameraEntity camera) {
     return InkWell(
       onTap: () {
-        if (selectedCamera?.id == camera.id) return;
-        onTap(camera);
-        if (selectedCamera != null) setState(() => selectedCamera = camera);
+        context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: camera));
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
