@@ -73,3 +73,10 @@ class EditUserEvent extends UserManagementEvent {
     this.fullName,
   });
 }
+
+class SearchUserEvent extends UserManagementEvent {
+  final String keyword;
+  const SearchUserEvent({required this.keyword});
+  @override
+  List<Object?> get props => [keyword];
+}

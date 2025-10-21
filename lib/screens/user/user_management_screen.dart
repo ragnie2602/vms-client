@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:meta/meta.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -26,6 +27,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   void initState() {
     _onGetListUser();
     super.initState();
+  }
+
+  void _onSearchUser({required String keyword}) {
+    context.read<UserManagementBloc>().add(
+      SearchUserEvent(keyword: keyword.trim().toString()),
+    );
   }
 
   void _onGetListUser() {
@@ -130,6 +137,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         width: MediaQuery.of(context).size.width * 0.3,
                         height: 40,
                         child: TextField(
+                          onChanged: (value) {
+                            _onSearchUser(keyword: value);
+                          },
                           controller: userNameController,
                           decoration: InputDecoration(
                             prefixIcon: Container(

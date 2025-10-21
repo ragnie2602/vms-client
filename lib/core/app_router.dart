@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_grou
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
@@ -145,8 +146,10 @@ class AppRouter {
             ),
 
             BlocProvider(
-              create: (context) =>
-                  UserManagementBloc(userManagermentRepository: context.read()),
+              create: (context) => UserManagementBloc(
+                userManagermentRepository: context.read(),
+                searchUserUseCase: context.read<SearchUserUseCase>(),
+              ),
             ),
           ],
           child: HomeScreen(body: child),
