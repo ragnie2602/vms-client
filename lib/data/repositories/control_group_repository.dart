@@ -1,16 +1,20 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/camera_service.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
+import 'package:vms_flutter_client/data/mappers/invite_message_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart'
+    show InviteMessageEntity;
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 
 import 'base_repository.dart';
 
-class ControlCameraRepository extends BaseRepository implements IControlCameraRepository {
+class ControlCameraRepository extends BaseRepository
+    implements IControlCameraRepository {
   final CameraService service;
 
   const ControlCameraRepository(this.service);
@@ -21,15 +25,23 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
   }
 
   @override
-  Future<Either<Failure, List<CameraEntity>>> getAllCamera({List<int>? cameraId, int? status, int? ivaType}) async {
+  Future<Either<Failure, List<CameraEntity>>> getAllCamera({
+    List<int>? cameraId,
+    int? status,
+    int? ivaType,
+  }) async {
     return await catchError<List<CameraEntity>>(() async {
-      final cameras = await service.getAllCamera(cameraId: cameraId, status: status, ivaType: ivaType);
+      final cameras = await service.getAllCamera(
+        cameraId: cameraId,
+        status: status,
+        ivaType: ivaType,
+      );
 
       return Right(cameras.map((e) => e.toDomain()).toList());
     });
   }
 
-   @override
+  @override
   Future<Either<Failure, List<CameraEntity>>> getCamerasInGroup({
     List<int>? groupId,
   }) async {
@@ -50,7 +62,12 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
     List<int>? boxId,
   }) async {
     return await catchError<CameraOnvif>(() async {
-      final checkCameraOnvif = await service.checkCameraOnvif(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId);
+      final checkCameraOnvif = await service.checkCameraOnvif(
+        xaddrs: xaddrs,
+        userName: userName,
+        password: password,
+        boxId: boxId,
+      );
       return Right(checkCameraOnvif.toDomain());
     });
   }
@@ -140,7 +157,9 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
   }
 
   @override
-  Future<Either<Failure, List<int>>> deleteCamera({required List<int> cameraId}) async {
+  Future<Either<Failure, List<int>>> deleteCamera({
+    required List<int> cameraId,
+  }) async {
     return await catchError<List<int>>(() async {
       final deletedCameraId = await service.deleteCamera(cameraId: cameraId);
       return Right(deletedCameraId);
@@ -148,30 +167,55 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
   }
 
   @override
-  Future<Either<Failure, List<int>>> shareCamera({required List<int> cameraId, required int role, required String accountInvite}) async {
+  Future<Either<Failure, List<int>>> shareCamera({
+    required List<int> cameraId,
+    required int role,
+    required String accountInvite,
+  }) async {
     return await catchError<List<int>>(() async {
-      final cameraIdRes = await service.shareCamera(cameraId: cameraId, role: role, accountInvite: accountInvite);
+      final cameraIdRes = await service.shareCamera(
+        cameraId: cameraId,
+        role: role,
+        accountInvite: accountInvite,
+      );
       return Right(cameraIdRes);
     });
   }
 
   @override
-  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>> checkAccountShare({
+  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>>
+  checkAccountShare({
     List<int>? cameraId,
     required String account,
     required int shareType,
     List<int>? groupId,
   }) async {
-    return await catchError<({bool isExists, List<int> accountInviteId})>(() async {
-      final reply = await service.checkAccountShare(cameraId: cameraId, account: account, shareType: shareType, groupId: groupId);
-      return Right((isExists: reply.isExists, accountInviteId: reply.accountInviteId));
-    });
+    return await catchError<({bool isExists, List<int> accountInviteId})>(
+      () async {
+        final reply = await service.checkAccountShare(
+          cameraId: cameraId,
+          account: account,
+          shareType: shareType,
+          groupId: groupId,
+        );
+        return Right((
+          isExists: reply.isExists,
+          accountInviteId: reply.accountInviteId,
+        ));
+      },
+    );
   }
 
   @override
-  Future<Either<Failure, List<CameraEntity>>> addCameraToGroup({required List<List<int>> cameraIds, required List<int> groupId}) async {
+  Future<Either<Failure, List<CameraEntity>>> addCameraToGroup({
+    required List<List<int>> cameraIds,
+    required List<int> groupId,
+  }) async {
     return await catchError<List<CameraEntity>>(() async {
-      final cameras = await service.addCameraToGroup(cameraIds: cameraIds, groupId: groupId);
+      final cameras = await service.addCameraToGroup(
+        cameraIds: cameraIds,
+        groupId: groupId,
+      );
       return Right(cameras.map((e) => e.toDomain()).toList());
     });
   }
@@ -187,6 +231,42 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
         groupId: groupId,
       );
       return Right(reply.toDomain());
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
+    required List<int> groupId,
+  }) async {
+    return await catchError<List<InviteMessageEntity>>(() async {
+      final invites = await service.listShareInviteGroup(groupId: groupId);
+      return Right(invites.map((e) => e.toEntity()).toList());
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<InviteMessageEntity>>> listShareCamera({
+    required List<int> cameraId,
+  }) async {
+    return await catchError<List<InviteMessageEntity>>(() async {
+      final sharingRecords = await service.listShareCamera(cameraId: cameraId);
+      return Right(sharingRecords.map((e) => e.toEntity()).toList());
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<int>>> deleteShareCamera({
+    required List<int> cameraId,
+    required String accountB,
+    required List<int> shareId,
+  }) async {
+    return await catchError<List<int>>(() async {
+      final reply = await service.deleteShareCamera(
+        cameraId: cameraId,
+        accountB: accountB,
+        shareId: shareId,
+      );
+      return Right(reply.shareId);
     });
   }
 }

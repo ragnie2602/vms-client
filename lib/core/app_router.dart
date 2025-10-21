@@ -105,7 +105,13 @@ class AppRouter {
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(create: (context) => MonitorBloc(context.read())..add(GetAllCamera())),
             BlocProvider(
-              create: (context) => CustomViewBloc(context.read())..add(GetListCustomViews()),
+              create: (context) => CustomViewBloc(
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+              )..add(GetListCustomViews()),
               lazy: false,
             ),
             BlocProvider(
@@ -145,7 +151,13 @@ class AppRouter {
                 path: Routes.custom_live_view.path,
                 name: Routes.custom_live_view.name,
                 pageBuilder: (context, state) {
-                  return fadeTransition(context: context, state: state, child: CustomMonitorPane());
+                  final args = state.extra as CustomMonitorPaneArgs?;
+
+                  return fadeTransition(
+                    context: context,
+                    state: state,
+                    child: CustomMonitorPane(addMode: args?.addMode ?? false),
+                  );
                 },
               ),
             ],
@@ -264,4 +276,10 @@ CustomTransitionPage slideTransition<T>({
       );
     },
   );
+}
+
+class CustomMonitorPaneArgs {
+  final bool? addMode;
+
+  const CustomMonitorPaneArgs({this.addMode});
 }
