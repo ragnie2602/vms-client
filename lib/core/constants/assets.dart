@@ -49,6 +49,7 @@ class AppAssets {
   static const icAction = '$_svgPath/ic_action.svg';
   static const icEdit = '$_svgPath/ic_edit.svg';
   static const icDelete = '$_svgPath/ic_delete.svg';
+  static const icDeleteLight = '$_svgPath/ic_delete_light.svg';
   static const icDropdown = '$_svgPath/ic_dropdown.svg';
   static const icMode1x1 = '$_svgPath/mode_1x1.svg';
   static const icMode1x1Active = '$_svgPath/mode_1x1_active.svg';
@@ -77,6 +78,7 @@ class AppAssets {
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
   static const iconAdd = '$_svgPath/icon_add.svg';
+  static const iconAddSlim = '$_svgPath/icon_add_slim.svg';
   static const iconEdit = '$_svgPath/icon_edit.svg';
   static const iconRemove = '$_svgPath/icon_remove.svg';
   static const iconShare = '$_svgPath/icon_share.svg';

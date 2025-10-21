@@ -21,6 +21,16 @@ extension LiveViewPositionMapper on pb.LiveViewPosition {
   }
 }
 
+extension LiveViewPositionReverse on LiveViewPosition {
+  pb.LiveViewPosition toPB() {
+    return pb.LiveViewPosition(
+      index: index,
+      cameraId: cameraId,
+      camera: null, // TODO: Convert camera to PB
+    );
+  }
+}
+
 extension CustomLiveViewMapper on pb.CustomLiveView {
   CustomLiveView toDomain() {
     return CustomLiveView(
