@@ -82,6 +82,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
   List<int>? _accIdShareGroup;
   String? _accShareCamera;
   List<String> listAccShared = [];
+  final List<String> _selectedUsers = [];
 
   @override
   void initState() {
@@ -152,6 +153,29 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
         });
       }
     });
+  }
+
+  void _onShare() async {
+    // rest api share
+    // 1. share cam
+    if (widget.shareType == ShareType.camera) {
+      return;
+    } else {
+      // 2. share group
+      final res = await widget.onShareGroup?.call(_accIdShareGroup);
+      if (!mounted) return;
+      if (res != null && res.isNotEmpty) {
+        // share thành công -> tự add vào group (local)
+        setState(() {
+          _selectedUsers.add(_searchController.text.trim());
+          if (!listAccShared.contains(_searchController.text.trim())) {
+            listAccShared.add(_searchController.text.trim());
+          }
+        });
+      } else {
+        // handle share group fail
+      }
+    }
   }
 
   @override
@@ -299,34 +323,20 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                               ),
                               IconButton(
                                 onPressed: () async {
-                                  // rest api share
-                                  if (widget.shareType == ShareType.camera) {
-                                    return;
+                                  // nếu đã share => tắt click
+                                  if (!_selectedUsers.contains(
+                                    _searchController.text.trim(),
+                                  )) {
+                                    _onShare();
                                   }
-
-                                  final res = await widget.onShareGroup?.call(
-                                    _accIdShareGroup,
-                                  );
-                                  if (!mounted) return;
-                                  if (res != null && res.isNotEmpty) {
-                                    // share thành công -> add tay vào group
-                                    setState(() {
-                                      listAccShared.add(
-                                        _searchController.text.trim(),
-                                      );
-                                    });
-                                  } else {
-                                    // // failure: show a simple SnackBar
-                                    // ScaffoldMessenger.of(context).showSnackBar(
-                                    //   const SnackBar(
-                                    //     content: Text('Chia sẻ thất bại'),
-                                    //   ),
-                                    // );
-                                  }
-
-                                  // listAccShared.add(_searchController.text);
                                 },
-                                icon: const Icon(Icons.add_circle_outline),
+                                icon: Icon(
+                                  _selectedUsers.contains(
+                                        _searchController.text.trim(),
+                                      )
+                                      ? Icons.check_circle
+                                      : Icons.add_circle,
+                                ),
                               ),
                             ],
                           ),
@@ -383,7 +393,6 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                       )
                     : Container(
                         constraints: const BoxConstraints(maxHeight: 200),
-
                         child: ListView.builder(
                           shrinkWrap: true,
                           itemCount: listAccShared.length,
