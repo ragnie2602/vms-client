@@ -3,6 +3,8 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart'
+    show InviteMessageEntity;
 
 import '../entities/camera/add_camera.dart';
 
@@ -61,16 +63,40 @@ abstract class IControlCameraRepository {
     List<String>? subStreamUrls,
   });
 
-  Future<Either<Failure, List<int>>> deleteCamera({required List<int> cameraId});
+  Future<Either<Failure, List<int>>> deleteCamera({
+    required List<int> cameraId,
+  });
 
-  Future<Either<Failure, List<int>>> shareCamera({required List<int> cameraId, required int role, required String accountInvite});
+  Future<Either<Failure, List<int>>> shareCamera({
+    required List<int> cameraId,
+    required int role,
+    required String accountInvite,
+  });
 
-  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>> checkAccountShare({
+  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>>
+  checkAccountShare({
     List<int>? cameraId,
     required String account,
     required int shareType,
     List<int>? groupId,
   });
 
-  Future<Either<Failure, List<CameraEntity>>> addCameraToGroup({required List<List<int>> cameraIds, required List<int> groupId});
+  Future<Either<Failure, List<CameraEntity>>> addCameraToGroup({
+    required List<List<int>> cameraIds,
+    required List<int> groupId,
+  });
+
+  Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
+    required List<int> groupId,
+  });
+
+  Future<Either<Failure, List<InviteMessageEntity>>> listShareCamera({
+    required List<int> cameraId,
+  });
+
+  Future<Either<Failure, List<int>>> deleteShareCamera({
+    required List<int> cameraId,
+    required String accountB,
+    required List<int> shareId,
+  });
 }
