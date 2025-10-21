@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/fi
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 
 class DependencyInjection {
   static List<SingleChildWidget> providers = [
@@ -28,20 +29,32 @@ class DependencyInjection {
     Provider<CameraService>(create: (context) => CameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
     Provider<UserService>(create: (context) => UserService(context.read())),
-    Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
-    Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
+    Provider<CustomLiveViewService>(
+      create: (context) => CustomLiveViewService(context.read()),
+    ),
+    Provider<PlaybackService>(
+      create: (context) => PlaybackService(context.read()),
+    ),
 
     // Repositories
     Provider<IAuthRepository>(
-      create: (context) => AuthRepository(authenticateService: context.read<AuthenticateService>()),
+      create: (context) => AuthRepository(
+        authenticateService: context.read<AuthenticateService>(),
+      ),
     ),
-    Provider<ICameraRepository>(create: (context) => CameraRepository(context.read())),
+    Provider<ICameraRepository>(
+      create: (context) => CameraRepository(context.read()),
+    ),
     Provider<SearchGroupUseCase>(create: (context) => SearchGroupUseCase()),
     Provider<IControlCameraRepository>(
       create: (context) => ControlCameraRepository(context.read()),
     ),
-    Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
-    Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
+    Provider<IGroupRepository>(
+      create: (context) => GroupRepository(context.read()),
+    ),
+    Provider<IPlaybackRepository>(
+      create: (context) => PlaybackRepository(context.read()),
+    ),
     Provider<IUserManagementRepository>(
       create: (context) => UserManagementRepository(context.read()),
     ),
@@ -51,28 +64,38 @@ class DependencyInjection {
 
     // Use Cases
     Provider<LoginUseCase>(
-      create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>()),
+      create: (context) =>
+          LoginUseCase(authRepository: context.read<IAuthRepository>()),
     ),
     Provider<DeleteCameraUseCase>(
-      create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>()),
+      create: (context) =>
+          DeleteCameraUseCase(cameraService: context.read<CameraService>()),
     ),
     Provider<CreateCustomLiveViewUseCase>(
-      create: (context) => CreateCustomLiveViewUseCase(context.read<ICustomLiveViewRepository>()),
+      create: (context) => CreateCustomLiveViewUseCase(
+        context.read<ICustomLiveViewRepository>(),
+      ),
     ),
     Provider<CreateTempCustomLiveViewUseCase>(
       create: (context) => CreateTempCustomLiveViewUseCase(),
     ),
     Provider<GetListCustomLiveViewUseCase>(
-      create: (context) => GetListCustomLiveViewUseCase(context.read(), context.read()),
+      create: (context) =>
+          GetListCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<UpdateCustomLiveViewUseCase>(
-      create: (context) => UpdateCustomLiveViewUseCase(context.read(), context.read()),
+      create: (context) =>
+          UpdateCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
-    Provider<FilterCameraNoGroupUseCase>(create: (context) => FilterCameraNoGroupUseCase()),
-    Provider<FilterCameraNotInGroupUsecase>(
-      create: (context) =>
-          FilterCameraNotInGroupUsecase(cameraRepository: context.read<ICameraRepository>()),
+    Provider<FilterCameraNoGroupUseCase>(
+      create: (context) => FilterCameraNoGroupUseCase(),
     ),
+    Provider<FilterCameraNotInGroupUsecase>(
+      create: (context) => FilterCameraNotInGroupUsecase(
+        cameraRepository: context.read<ICameraRepository>(),
+      ),
+    ),
+    Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
   ];
 }
