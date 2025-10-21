@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/base_response.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_group_repository.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/data/mappers/group_mapper.dart';
@@ -56,6 +57,22 @@ class GroupRepository extends BaseRepository implements IGroupRepository {
         parentGroupId: parentGroupId,
       );
       return Right(groups.map((e) => e.toDomain()).toList());
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<int>?>> shareGroupCamera({
+    List<int>? groupId,
+    DeviceGroupRole? role,
+    List<int>? accountInviteId,
+  }) async {
+    return await catchError<List<int>>(() async {
+      final sharedGroupIds = await service.shareGroup(
+        groupId: groupId,
+        role: role,
+        accountInviteId: accountInviteId,
+      );
+      return Right(sharedGroupIds);
     });
   }
 }

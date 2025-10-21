@@ -6,7 +6,6 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/data/datasources/share_camera_role_enum.dart';
-import 'package:vms_flutter_client/data/datasources/share_type_enum.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';

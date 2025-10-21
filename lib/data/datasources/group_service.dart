@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command2.pb.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
 
 import '../proto/models/comm.command1.pb.dart';
 import '../proto/models/comm.model.pb.dart';
@@ -106,6 +107,40 @@ class GroupService {
       (failure) =>
           throw failure.toMessageFailure(UpdateGroupDevice_Error.valueOf),
       (buffer) => UpdateGroupDevice_Reply.fromBuffer(buffer).groups,
+    );
+  }
+
+  // share group
+  Future<List<int>> shareGroup({
+    List<int>? groupId,
+    DeviceGroupRole? role,
+    List<int>? accountInviteId,
+  }) async {
+    final shareGroupRequest = ShareGroupCamera_Request();
+    if (groupId != null) {
+      shareGroupRequest.groupId = groupId;
+    }
+    if (role != null) {
+      shareGroupRequest.role =
+          ShareGroupCamera_GroupShareRole.valueOf(role.value) ??
+          ShareGroupCamera_GroupShareRole.VIEW;
+    }
+    if (accountInviteId != null) {
+      shareGroupRequest.accountInviteId = accountInviteId;
+    }
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: shareGroupRequest.writeToBuffer(),
+          type: PacketType.shareGroupCamera,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(ShareGroupCamera_Error.valueOf),
+      (buffer) => ShareGroupCamera_Reply.fromBuffer(buffer).groupId,
     );
   }
 }

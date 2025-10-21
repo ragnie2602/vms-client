@@ -198,6 +198,7 @@ class ControlCameraRepository extends BaseRepository
           shareType: shareType,
           groupId: groupId,
         );
+        print('reply account invite id: ${reply.accountInviteId}'); 
         return Right((
           isExists: reply.isExists,
           accountInviteId: reply.accountInviteId,
