@@ -85,11 +85,14 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                           style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13, color: Colors.black),
                         ),
                         ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
+                          constraints: BoxConstraints(
+                            maxWidth: 280,
+                            maxHeight: 32,
+                          ),
                           child: TablePaginator(
                             (state.cameras.length / state.mode.total).ceil(),
-                            (page) => onChangePage(context, page))
-                          ),
+                            (page) => onChangePage(context, page)),
+                        ),
                       ],
                     ),
                   ),

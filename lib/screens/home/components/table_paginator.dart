@@ -30,6 +30,7 @@ class _TablePaginatorState extends State<TablePaginator> {
     child: Padding(
       padding: const EdgeInsets.all(4.0),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: const EdgeInsets.only(right: 4),
@@ -40,8 +41,9 @@ class _TablePaginatorState extends State<TablePaginator> {
               isSelected: false,
             ),
           ),
-          Expanded(
+          Flexible(
             child: ScrollableNumberContent(
+              shrinkWrap: true,
               buttonBuilder: (context, index, isSelected) => _CustomButton(
                 null,
                 onTap: () => _controller.navigateToPage(index),
