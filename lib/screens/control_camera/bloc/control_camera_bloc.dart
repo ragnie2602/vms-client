@@ -287,7 +287,10 @@ class ControlCameraBloc
     );
     res.fold(
       (onFailure) => emit(AddCameraFailState(res.left.toString())),
-      (onSuccess) => emit(ListCameraSuccessState(cameras: onSuccess)),
+      (onSuccess) {
+        listCamera.addAll(onSuccess);
+        emit(ListCameraSuccessState(cameras: listCamera));
+      },
     );
   }
 

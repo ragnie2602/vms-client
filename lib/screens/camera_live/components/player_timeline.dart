@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -147,7 +148,9 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         bottom: MediaQuery.of(context).size.height - parentOffset.dy + 6,
-        left: isCenter ? (parentBox.size.width - _overlayWidth) / 2 + _centralOffset - 18 : dx,
+        left:
+            parentOffset.dx +
+            (isCenter ? parentBox.size.width / 2 - _overlayWidth - 16 + _centralOffset : dx - 22),
         child: SizeObserver(
           onChange: (size) => _overlayWidth = size.width,
           child: Container(
@@ -166,7 +169,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
         ),
       ),
     );
-    Overlay.of(context).insert(_overlayEntry!);
+    Overlay.of(context, rootOverlay: true).insert(_overlayEntry!);
   }
 
   @override
@@ -338,7 +341,8 @@ enum TimelineDisplayMode {
       TimelineDisplayMode.h8 => 8,
       TimelineDisplayMode.h1 => 1,
     };
-    return (width - size * 5) / (size * minorTicks);
+    
+    return max((width - size * 5) / (size * minorTicks), 10);
   }
 
   TimelineDisplayMode get next => switch (this) {
