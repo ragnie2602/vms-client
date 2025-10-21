@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -48,6 +49,7 @@ Future<T?> showShareGroupCameraDialog<T>(
         currentCamera: currentCamera,
         groupId: groupId,
         sharedUsers: sharedUsers,
+        onSave: onSave,
       ),
     ),
   );
@@ -299,11 +301,8 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                               IconButton(
                                 onPressed: () {
                                   // rest api share
-                                  if (widget.onSave != null) {
-                                    widget.onSave!(_accIdShareGroup).call();
-                                  }
-                                  // widget.onSave
-                                  //     (accountInviteId: _accIdShareGroup)?.call();
+                                 widget.onSave?.call(_accIdShareGroup);
+                                 
                                   // listAccShared.add(_searchController.text);
                                 },
                                 icon: Icon(Icons.add_circle_outline),

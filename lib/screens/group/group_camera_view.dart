@@ -7,7 +7,6 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
-import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
@@ -183,44 +182,46 @@ class _GroupCameraViewState extends State<GroupCameraView> {
     );
   }
 
-  void _onShowDialogShareGroup({
+  Future<void> _onShowDialogShareGroup({
     required BuildContext c,
     required List<int> groupId,
-    List<InviteMessageEntity>? listShared,
-  }) {
+  }) async {
+    // If listShared not provided, fetch from bloc/repository
+    List<InviteMessageEntity>? invites;
+
+    invites = await c.read<GroupCameraBloc>().getListSharedGroup(
+      groupId: groupId,
+    );
+    if (!c.mounted) return;
+
     showShareGroupCameraDialog(
       c,
       shareType: ShareType.groupCamera,
       groupId: groupId,
       onSave: (_inviteId) {
-        // rest api 
+        // rest api
+        context.read<GroupCameraBloc>().add(
+          ShareGroupEvent(groupId: groupId, accoungtInviteId: _inviteId ?? []),
+        );
       },
-      sharedUsers: listShared, // list data,
+      sharedUsers: invites, // list data,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<ControlCameraBloc, ControlCameraState>(
-      listener: (context, state) {
-        if (state is ListShareInviteGroupSuccessState) {
-          _onShowDialogShareGroup(
-            c: context,
-            groupId: state.groupId,
-            listShared: state.inviteMessages,
-          );
-          // showShareDialog(
-          //   context,
-          //   shareType: ShareType.groupCamera,
-          //   groupName: '',
-          //   // sharedUsers: state.sharedUsers,
-          //   onSave: (selectedUsers) async {},
-          //   onSearchUser: (userName) async {},
-          // );
-        }
-      },
+      listener: (context, state) {},
       child: BlocConsumer<GroupCameraBloc, GroupCameraState>(
-        listener: (context, state) {},
+        listener: (context, state) {
+          // if (state is ListShareInviteGroupSuccessState) {
+          //   _onShowDialogShareGroup(
+          //     c: context,
+          //     groupId: state.groupId,
+          //     listShared: state.inviteMessages,
+          //   );
+          // }
+        },
         builder: (context, newState) {
           if (newState is GroupCameraLoadingState) {
             return Center(child: CircularProgressIndicator());
@@ -245,15 +246,13 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                             borderRadius: BorderRadiusGeometry.circular(8),
                           ),
                           elevation: 8,
-                          onSelected: (value) {
+                          onSelected: (value) async {
                             switch (value) {
                               case ItemGroupAction.add:
                                 _onShowDialogAddEditGroup(
                                   listGroupInput: newState.groups ?? [],
                                   c: context,
-                                  parentGroupId: node.data?.groupId,
                                   addEditType: AddEditGroupType.add,
-                                  currentGroup: node.data,
                                 );
                                 break;
                               case ItemGroupAction.edit:
@@ -267,16 +266,9 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                 break;
                               case ItemGroupAction.share:
                                 if (node.data != null) {
-                                  // share group
-                                  //
-                                  // _onShowDialogShareGroup(
-                                  //   c: context,
-                                  //   currentGroup: node.data!,
-                                  // );
-                                  context.read<ControlCameraBloc>().add(
-                                    ListShareInviteGroupEvent(
-                                      groupId: node.data!.groupId,
-                                    ),
+                                  await _onShowDialogShareGroup(
+                                    c: context,
+                                    groupId: node.data!.groupId,
                                   );
                                 }
                                 break;

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_group_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
@@ -27,6 +28,8 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     on<RemoveGroupCameraEvent>(_onRemoveGroupCamera);
     on<UpdateGroupCameraEvent>(_onUpdateGroupCamera);
     on<SearchGroupEvent>(_onSearch);
+    // on<GetListShareGroupEvent>(_onListShareInviteGroup);
+    // on<ShareGroupEvent>(_onShare);
   }
   // list group origin
   List<DeviceGroup> listGroup = [];
@@ -116,5 +119,18 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     final input = FilterCameraNotInGroupInput(groupId: groupId);
     final output = await filterCameraNotInGroupUsecase.execute(input);
     return output.listCamera ?? [];
+  }
+
+  Future<List<InviteMessageEntity>> getListSharedGroup({
+    List<int>? groupId,
+  }) async {
+    final res = await groupCameraRepository.listShareInviteGroup(
+      groupId: groupId ?? [],
+    );
+    // return a non-null list (empty on failure)
+    return res.fold(
+      (onFailure) => <InviteMessageEntity>[],
+      (onSuccess) => onSuccess,
+    );
   }
 }

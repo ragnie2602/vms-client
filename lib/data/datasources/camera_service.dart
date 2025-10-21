@@ -336,27 +336,27 @@ class CameraService {
     );
   }
 
-  Future<List<InviteMessage>> listShareInviteGroup({
-    required List<int> groupId,
-  }) async {
-    final request = ListShareInviteGroup_Request()..groupId = groupId;
+  // Future<List<InviteMessage>> listShareInviteGroup({
+  //   required List<int> groupId,
+  // }) async {
+  //   final request = ListShareInviteGroup_Request()..groupId = groupId;
 
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: request.writeToBuffer(),
-          type: PacketType.listShareInviteGroup,
-        ),
-      ),
-    );
+  //   final responseBuffer = await socketClient.send<List<int>>(
+  //     SocketRequestPayload(
+  //       Packet(
+  //         id: DateTime.now().microsecondsSinceEpoch,
+  //         data: request.writeToBuffer(),
+  //         type: PacketType.listShareInviteGroup,
+  //       ),
+  //     ),
+  //   );
 
-    return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(ListShareInviteGroup_Error.valueOf),
-      (buffer) => ListShareInviteGroup_Reply.fromBuffer(buffer).invites,
-    );
-  }
+  //   return responseBuffer.fold(
+  //     (failure) =>
+  //         throw failure.toMessageFailure(ListShareInviteGroup_Error.valueOf),
+  //     (buffer) => ListShareInviteGroup_Reply.fromBuffer(buffer).invites,
+  //   );
+  // }
 
   Future<List<InviteMessage>> listShareCamera({
     required List<int> cameraId,

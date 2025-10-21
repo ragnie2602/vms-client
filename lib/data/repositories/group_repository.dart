@@ -1,5 +1,7 @@
 import 'package:vms_flutter_client/core/base_response.dart';
+import 'package:vms_flutter_client/data/mappers/invite_message_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_group_repository.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/data/mappers/group_mapper.dart';
@@ -73,6 +75,16 @@ class GroupRepository extends BaseRepository implements IGroupRepository {
         accountInviteId: accountInviteId,
       );
       return Right(sharedGroupIds);
+    });
+  }
+
+ @override
+  Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
+    required List<int> groupId,
+  }) async {
+    return await catchError<List<InviteMessageEntity>>(() async {
+      final invites = await service.listShareInviteGroup(groupId: groupId);
+      return Right(invites.map((e) => e.toEntity()).toList());
     });
   }
 }

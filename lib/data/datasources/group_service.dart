@@ -17,7 +17,7 @@ class GroupService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id:  UniqueId.getUniqueId(PacketType.getAllGroup.value),
+          id: UniqueId.getUniqueId(PacketType.getAllGroup.value),
           data: GetAllGroup_Request().writeToBuffer(),
           type: PacketType.getAllGroup,
         ),
@@ -140,8 +140,31 @@ class GroupService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(ShareGroupCamera_Error.valueOf),
+      (failure) =>
+          throw failure.toMessageFailure(ShareGroupCamera_Error.valueOf),
       (buffer) => ShareGroupCamera_Reply.fromBuffer(buffer).groupId,
+    );
+  }
+
+  Future<List<InviteMessage>> listShareInviteGroup({
+    required List<int> groupId,
+  }) async {
+    final request = ListShareInviteGroup_Request()..groupId = groupId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.listShareInviteGroup,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(ListShareInviteGroup_Error.valueOf),
+      (buffer) => ListShareInviteGroup_Reply.fromBuffer(buffer).invites,
     );
   }
 }

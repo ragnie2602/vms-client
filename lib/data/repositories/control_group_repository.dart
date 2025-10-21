@@ -235,15 +235,15 @@ class ControlCameraRepository extends BaseRepository
     });
   }
 
-  @override
-  Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
-    required List<int> groupId,
-  }) async {
-    return await catchError<List<InviteMessageEntity>>(() async {
-      final invites = await service.listShareInviteGroup(groupId: groupId);
-      return Right(invites.map((e) => e.toEntity()).toList());
-    });
-  }
+  // @override
+  // Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
+  //   required List<int> groupId,
+  // }) async {
+  //   return await catchError<List<InviteMessageEntity>>(() async {
+  //     final invites = await service.listShareInviteGroup(groupId: groupId);
+  //     return Right(invites.map((e) => e.toEntity()).toList());
+  //   });
+  // }
 
   @override
   Future<Either<Failure, List<InviteMessageEntity>>> listShareCamera({

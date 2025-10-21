@@ -41,7 +41,7 @@ class ControlCameraBloc
     on<ShareCameraEvent>(_onShareCamera);
     on<CheckAccountShareEvent>(_onCheckAccountShare);
     on<AddCameraToGroupEvent>(_onAddCameraToGroup);
-    on<ListShareInviteGroupEvent>(_onListShareInviteGroup);
+    // on<ListShareInviteGroupEvent>(_onListShareInviteGroup);
     on<ListShareCameraEvent>(_onListShareCamera);
     on<DeleteShareCameraEvent>(_onDeleteShareCamera);
     on<RemoveCameraFromGroupEvent>(_onRemoveCameraFromGroup);
@@ -294,24 +294,24 @@ class ControlCameraBloc
     );
   }
 
-  FutureOr<void> _onListShareInviteGroup(
-    ListShareInviteGroupEvent event,
-    Emitter<ControlCameraState> emit,
-  ) async {
-    final res = await controlGroupRepository.listShareInviteGroup(
-      groupId: event.groupId,
-    );
-    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
-      onSuccess,
-    ) {
-      emit(
-        ListShareInviteGroupSuccessState(
-          groupId: event.groupId,
-          inviteMessages: onSuccess,
-        ),
-      );
-    });
-  }
+  // FutureOr<void> _onListShareInviteGroup(
+  //   ListShareInviteGroupEvent event,
+  //   Emitter<ControlCameraState> emit,
+  // ) async {
+  //   final res = await controlGroupRepository.listShareInviteGroup(
+  //     groupId: event.groupId,
+  //   );
+  //   res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
+  //     onSuccess,
+  //   ) {
+  //     emit(
+  //       ListShareInviteGroupSuccessState(
+  //         groupId: event.groupId,
+  //         inviteMessages: onSuccess,
+  //       ),
+  //     );
+  //   });
+  // }
 
   FutureOr<void> _onListShareCamera(
     ListShareCameraEvent event,
