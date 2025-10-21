@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
+import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/monitor/add_custom_mode_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/components/list_custom_views.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
@@ -114,6 +115,11 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   }
 
   Widget _buildDefaultMode(double currentWidth, double availableHeight) {
+    final double heightGroupTree = availableHeight.isFinite && availableHeight > 0
+                ? availableHeight -
+                      220 // subtract approximate space used by siblings
+                : 300;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,39 +182,15 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             ),
           ),
         SizedBox(height: 16 - 8),
-        BlocBuilder<GroupCameraBloc, GroupCameraState>(
-          builder: (context, state) {
-            if (state is! GetAllGroupCameraSuccessState) return SizedBox();
-            // TreeGroupWidget contains its own Expanded and scrollable TreeView.
-            // When embedding inside a Column we must give it a bounded height.
-            // Use availableHeight when it's finite, otherwise a reasonable fallback.
-            final double height = availableHeight.isFinite && availableHeight > 0
-                ? availableHeight -
-                      220 // subtract approximate space used by siblings
-                : 300;
-            return SizedBox(
-              height: height.clamp(200, 800),
-              child: TreeGroupWidget(controller: _controller, tree: state.tree),
-            );
-            // return TreeView.simple(
-            //   padding: EdgeInsets.symmetric(horizontal: 24),
-            //   showRootNode: false,
-            //   tree: state.tree,
-            //   expansionBehavior: ExpansionBehavior.scrollToLastChild,
-            //   indentation: const Indentation(),
-            //   expansionIndicatorBuilder: (context, node) =>
-            //       NoExpansionIndicator(tree: node),
-            //   builder: (context, node) => GroupNode(
-            //     group: node.data!,
-            //     onToggleExpansion: () => _controller?.toggleExpansion(node),
-            //   ),
-            //   onTreeReady: (controller) {
-            //     _controller = controller;
-            //     controller.expandAllChildren(controller.tree);
-            //   },
-            // );
-          },
-        ),
+        SizedBox(
+          height: heightGroupTree.clamp(200, 800),
+          child: GroupCameraView(
+            onGetCamerasInGroup: (BuildContext p1, List<int> p2) {},
+            onGetAllGroupCamera: (BuildContext p1) {},
+            onGetNoGroupCamera: (BuildContext p1) {}, 
+            onAddCameraToGroup: ({required BuildContext c, required List<List<int>> cameraIds, required List<int> currentGroupId}) {},
+          ),
+        )
       ],
     );
   }
