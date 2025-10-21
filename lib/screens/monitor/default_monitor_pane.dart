@@ -42,19 +42,36 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                   Wrap(
                     spacing: spacing,
                     runSpacing: spacing,
-                    children: state.paginatedCameras.mapIndexed((index, camera) {
-                      return SizedBox.fromSize(
-                        size: size,
-                        child: CameraPlayer(
-                          size: state.mode.total == 1 ? null : size,
-                          source: camera.subStreamUri.toString(),
-                          name: camera.name,
-                          key: ValueKey("player($index)___${camera.camId}"),
-                          mode: PlayerMode.monitoring,
-                          builder: (player, status) => _buildCameraView(context, player, camera),
-                        ),
-                      );
-                    }).toList(),
+                    children: List.generate(
+                      state.mode.total,
+                      (index) {
+                        if (index < state.paginatedCameras.length) {
+                          final camera = state.paginatedCameras[index];
+                          return SizedBox.fromSize(
+                            size: size,
+                            child: CameraPlayer(
+                              size: state.mode.total == 1 ? null : size,
+                              source: camera.subStreamUri.toString(),
+                              name: camera.name,
+                              key: ValueKey("player($index)___${camera.camId}"),
+                              mode: PlayerMode.monitoring,
+                              builder: (player, status) => _buildCameraView(context, player, camera),
+                            ),
+                          );
+                        } else {
+                          // Empty placeholder for missing cameras
+                          return SizedBox.fromSize(
+                            size: size,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
                   ),
                   Spacer(),
                   Padding(
