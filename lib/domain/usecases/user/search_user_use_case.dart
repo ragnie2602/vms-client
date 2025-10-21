@@ -12,11 +12,20 @@ class SearchUserUseCase extends SyncUseCase<SearchUserInput, SearchUserOutput> {
     if ((input.nameUser ?? '').isEmpty) {
       return SearchUserOutput(listUserResult: listUserOrigin);
     }
+
+    final searchQuery = input.nameUser?.toLowerCase().trim() ?? "";
+
     listUserResult = listUserOrigin
         .where(
-          (e) => e.account.toLowerCase().trim().contains(
-            input.nameUser?.toLowerCase().trim() ?? "",
-          ),
+          (e) =>
+              // Tìm kiếm theo tài khoản
+              e.account.toLowerCase().trim().contains(searchQuery) ||
+              // Tìm kiếm theo họ tên
+              e.fullName.toLowerCase().trim().contains(searchQuery) ||
+              // Tìm kiếm theo số điện thoại
+              e.telNumber.toLowerCase().trim().contains(searchQuery) ||
+              // Tìm kiếm theo email
+              e.emailAddress.toLowerCase().trim().contains(searchQuery),
         )
         .toList();
     return SearchUserOutput(listUserResult: listUserResult);
