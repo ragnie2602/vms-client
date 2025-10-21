@@ -120,13 +120,16 @@ class CameraPlayerState extends State<CameraPlayer> {
     _player.setProperty('avformat.rtsp_transport', 'tcp');
     _player.setProperty('avformat.extension_picky', '0');
     _player.setProperty('avformat.allowed_segment_extensions', 'ALL');
-    // Reduce latency:
-    _player.setProperty('avformat.fflags', '+nobuffer');
-    _player.setProperty('avformat.fpsprobesize', '0');
-    _player.setProperty('avformat.analyzeduration', '100000');
     _player.videoDecoders = AppConfig.MDK_DECODERS;
 
-    if (widget.mode != PlayerMode.playback) _player.setBufferRange(min: 0, max: 1, drop: true);
+    if (widget.mode != PlayerMode.playback) {
+      // Reduce latency:
+      _player.setProperty('avformat.fflags', '+nobuffer');
+      _player.setProperty('avformat.fpsprobesize', '0');
+      _player.setProperty('avformat.analyzeduration', '100000');
+
+      _player.setBufferRange(min: 0, max: 1, drop: true);
+    }
     if (widget.mode == PlayerMode.monitoring) {
       _player.setFps(20);
       _player.activeAudioTracks = [];
@@ -219,6 +222,7 @@ class CameraPlayerState extends State<CameraPlayer> {
     if (source == null) {
       _onDuration = null;
       _timer?.cancel();
+      _debounce?.cancel();
       _state.value = _PlayerState.none;
       _currentSource = '';
       _tryDisposePlayer();
