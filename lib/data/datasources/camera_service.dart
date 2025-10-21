@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
@@ -36,7 +37,13 @@ class CameraService {
     }
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.addCameraRTSP)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.addCameraRTSP,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
@@ -74,7 +81,13 @@ class CameraService {
     }
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.addCameraOnVif)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.addCameraOnVif,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
@@ -105,7 +118,13 @@ class CameraService {
     }
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.updateCamera)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.updateCamera,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
@@ -127,23 +146,42 @@ class CameraService {
     if (boxId != null) request.boxId = boxId;
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.checkCameraOnvif)),
+      SocketRequestPayload(
+        Packet(
+          id: UniqueId.getUniqueId(PacketType.checkCameraOnvif.value),
+          data: request.writeToBuffer(),
+          type: PacketType.checkCameraOnvif,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(CheckCameraOnvif_Error.valueOf),
+      (failure) =>
+          throw failure.toMessageFailure(CheckCameraOnvif_Error.valueOf),
       (buffer) => CheckCameraOnvif_Reply.fromBuffer(buffer),
     );
   }
 
-  Future<List<Camera>> getAllCamera({List<int>? cameraId, int? status, int? ivaType}) async {
+  Future<List<Camera>> getAllCamera({
+    List<int>? cameraId,
+    int? status,
+    int? ivaType,
+  }) async {
     final request = GetAllCamera_Request();
     if (cameraId != null) request.cameraId = cameraId;
     if (status != null) request.status = GetAllCamera_Status.valueOf(status)!;
-    if (ivaType != null) request.ivaType = GetAllCamera_Iva_Type.valueOf(ivaType)!;
+    if (ivaType != null) {
+      request.ivaType = GetAllCamera_Iva_Type.valueOf(ivaType)!;
+    }
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.getAllCamera)),
+      SocketRequestPayload(
+        Packet(
+          id: UniqueId.getUniqueId(PacketType.getAllCamera.value),
+          data: request.writeToBuffer(),
+          type: PacketType.getAllCamera,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
@@ -152,15 +190,24 @@ class CameraService {
     );
   }
 
-  Future<List<Camera>> getAllCamerasInGroup({required List<int> groupId}) async {
+  Future<List<Camera>> getAllCamerasInGroup({
+    required List<int> groupId,
+  }) async {
     final request = GetCameraInGroup_Request(groupId: groupId);
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.getCameraInGroup)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.getCameraInGroup,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(GetCameraInGroup_Error.valueOf),
+      (failure) =>
+          throw failure.toMessageFailure(GetCameraInGroup_Error.valueOf),
       (buffer) => GetCameraInGroup_Reply.fromBuffer(buffer).cameras,
     );
   }
@@ -169,20 +216,39 @@ class CameraService {
     final request = DeleteCamera_Request()..cameraId = cameraId;
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.deleteCamera)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.deleteCamera,
+        ),
+      ),
     );
 
-    return responseBuffer.fold((failure) => throw failure, (buffer) => DeleteCamera_Reply.fromBuffer(buffer).cameraId);
+    return responseBuffer.fold(
+      (failure) => throw failure,
+      (buffer) => DeleteCamera_Reply.fromBuffer(buffer).cameraId,
+    );
   }
 
-  Future<List<int>> shareCamera({required List<int> cameraId, required int role, required String accountInvite}) async {
+  Future<List<int>> shareCamera({
+    required List<int> cameraId,
+    required int role,
+    required String accountInvite,
+  }) async {
     final request = ShareCamera_Request()
       ..cameraId = cameraId
       ..role = ShareCamera_Role.valueOf(role)!
       ..accountInvite = accountInvite;
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.shareCamera)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.shareCamera,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
@@ -204,41 +270,139 @@ class CameraService {
     if (groupId != null) request.groupId = groupId;
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.checkAccountShare)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.checkAccountShare,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(CheckAccountShare_Error.valueOf),
+      (failure) =>
+          throw failure.toMessageFailure(CheckAccountShare_Error.valueOf),
       (buffer) => CheckAccountShare_Reply.fromBuffer(buffer),
     );
   }
 
-  Future<List<Camera>> addCameraToGroup({required List<List<int>> cameraIds, required List<int> groupId}) async {
+  Future<List<Camera>> addCameraToGroup({
+    required List<List<int>> cameraIds,
+    required List<int> groupId,
+  }) async {
     final request = AddCameraToGroup_Request()
       ..cameraId.addAll(cameraIds)
       ..groupId = groupId;
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.addCameraToGroup)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.addCameraToGroup,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(AddCameraToGroup_Error.valueOf),
+      (failure) =>
+          throw failure.toMessageFailure(AddCameraToGroup_Error.valueOf),
       (buffer) => AddCameraToGroup_Reply.fromBuffer(buffer).camera,
     );
   }
-  Future<RemoveCameraFormGroup_Reply> removeCameraFromGroup({required List<int> cameraIds, required List<int> groupId}) async {
+
+  Future<RemoveCameraFormGroup_Reply> removeCameraFromGroup({
+    required List<int> cameraIds,
+    required List<int> groupId,
+  }) async {
     final request = RemoveCameraFormGroup_Request()
       ..cameraId = cameraIds
       ..groupId = groupId;
 
     final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(Packet(id: DateTime.now().microsecondsSinceEpoch, data: request.writeToBuffer(), type: PacketType.removeCameraFormGroup)),
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.removeCameraFormGroup,
+        ),
+      ),
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(RemoveCameraFormGroup_Error.valueOf),
+      (failure) =>
+          throw failure.toMessageFailure(RemoveCameraFormGroup_Error.valueOf),
       (buffer) => RemoveCameraFormGroup_Reply.fromBuffer(buffer),
+    );
+  }
+
+  Future<List<InviteMessage>> listShareInviteGroup({
+    required List<int> groupId,
+  }) async {
+    final request = ListShareInviteGroup_Request()..groupId = groupId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.listShareInviteGroup,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(ListShareInviteGroup_Error.valueOf),
+      (buffer) => ListShareInviteGroup_Reply.fromBuffer(buffer).invites,
+    );
+  }
+
+  Future<List<InviteMessage>> listShareCamera({
+    required List<int> cameraId,
+  }) async {
+    final request = ListShareCamera_Request()..cameraId = cameraId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.listShareCamera,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure,
+      (buffer) => ListShareCamera_Reply.fromBuffer(buffer).sharingRecords,
+    );
+  }
+
+  Future<DeleteShareCamera_Reply> deleteShareCamera({
+    required List<int> cameraId,
+    required String accountB,
+    required List<int> shareId,
+  }) async {
+    final request = DeleteShareCamera_Request()
+      ..cameraId = cameraId
+      ..accountB = accountB
+      ..shareId = shareId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.deleteShareCamera,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(DeleteShareCamera_Error.valueOf),
+      (buffer) => DeleteShareCamera_Reply.fromBuffer(buffer),
     );
   }
 }

@@ -17,7 +17,8 @@ class AppColors {
   static Color get contentBg => isDarkMode ? contentBgDark : contentBgLight;
 
   static Color get blackOrWhite => isDarkMode ? Colors.white : Colors.black;
-  static Color get blackOrWhiteReverse => isDarkMode ? Colors.black : Colors.white;
+  static Color get blackOrWhiteReverse =>
+      isDarkMode ? Colors.black : Colors.white;
 
   static const contentFgLight = Color(0xFF000000);
   static const contentFgDark = Color(0xFFC3D3D9);
@@ -28,6 +29,7 @@ class AppColors {
   static const black4A4A4A = Color(0xFF4A4A4A);
 
   static const greyC3D3D9 = Color(0xFFC3D3D9);
+  static const greyF1F5F9 = Color(0xFFF1F5F9);
 
   static const secondary = Color(0xFF005AA9);
   static const blue005AA9 = Color(0xFF005AA9);

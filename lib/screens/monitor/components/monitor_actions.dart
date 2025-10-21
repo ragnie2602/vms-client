@@ -90,7 +90,6 @@ class _MonitorActionsState extends State<MonitorActions> {
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
                   ),
-                  ActionItem(title: 'Xem toàn màn hình', icon: AppAssets.icTv),
                 ],
               ),
             ),

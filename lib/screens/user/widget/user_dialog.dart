@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
@@ -9,6 +10,144 @@ import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart'
 import '../../home/components/components_src.dart';
 
 enum UserDialogMode { add, edit }
+/// Hiển thị dialog khôi phục mật khẩu.
+/// Trả về mật khẩu mới nếu người dùng xác nhận, ngược lại trả về null.
+Future<String?> showResetPasswordDialog(
+  BuildContext context, {
+  Future<void> Function(String newPassword)? onSubmit,
+  required String username,
+  required UserEntity user,
+}) {
+  final TextEditingController _controller = TextEditingController();
+  bool obscure = true;
+  String? error;
+
+  return showDialog<String?>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withOpacity(0.5),
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 24,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title
+                    const Text(
+                      'Khôi phục mật khẩu',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    // Subtitle
+                    Text(
+                      'Vui lòng nhập mật khẩu mới cho tài khoản:\n$username',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Password field
+                    TextField(
+                      controller: _controller,
+                      obscureText: obscure,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => {},
+                      decoration: InputDecoration(
+                        hintText: 'Nhập mật khẩu (*)',
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        suffixIcon: IconButton(
+                          tooltip: obscure ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                          icon: Icon(
+                            obscure ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () => setState(() => obscure = !obscure),
+                        ),
+                      ),
+                    ),
+
+                    if (error != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        error!,
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ],
+
+                    const SizedBox(height: 20),
+
+                    // Actions
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // HỦY
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(null),
+                            child: const Text('HỦY'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // KHÔI PHỤC
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                            onPressed: () {
+                              onSubmit!.call(_controller.text.toString());
+                            },
+                            child: const Text('KHÔI PHỤC'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+
+          // helper để validate & trả kết quả
+        },
+      );
+    },
+  );
+}
 
 /// Entry point to show the dialog
 Future<T?> showAddUserDialog<T>(
@@ -85,9 +224,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
   final _description = TextEditingController();
 
   bool _obscurePassword = true;
-  bool _isAdmin = false;
-  bool _canChangePassword = false;
-  bool _canAddCamera = false;
+  bool _isAdmin = true;
+  bool _canChangePassword = true;
+  bool _canAddCamera = true;
   bool _isSubmitting = false;
 
   @override
@@ -101,10 +240,13 @@ class _AddUserDialogState extends State<_AddUserDialog> {
       final user = widget.userEntity!;
       _username.text = user.account;
       _email.text = user.emailAddress;
+      _password.text = user.password;
 
       _phoneNumber.text = user.telNumber;
       _fullName.text = user.fullName;
       _description.text = user.desc;
+      _canAddCamera = user.addCamDenied;
+      _canChangePassword = user.changePassDenied;
     }
   }
 
@@ -322,7 +464,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 ),
                 const SizedBox(width: 12),
                 AppButton.filled(
-                  label: _isSubmitting ? '' : 'THÊM',
+                  label: widget.mode == UserDialogMode.add
+                      ? 'THÊM'
+                      : 'CẬP NHẬT',
                   onPressed: _isSubmitting ? null : _handleSubmit,
                   child: _isSubmitting
                       ? const SizedBox(
@@ -373,7 +517,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 height: 28,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
-                  color: value ? const Color(0xFF21CCC3) : Colors.grey[300],
+                  color: value ? AppColors.blue005AA9 : Colors.grey[300],
                 ),
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 200),
@@ -425,14 +569,8 @@ class _AddUserDialogState extends State<_AddUserDialog> {
         } else {
           await widget.onEdit?.call(payload);
         }
-
         if (mounted) {
           Navigator.pop(context);
-          showAppMessageDialog(
-            context,
-            message: 'Thêm tài khoản thành công!',
-            type: AppMessageType.success,
-          );
         }
       } catch (e) {
         if (mounted) {
