@@ -148,7 +148,7 @@ class CameraService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().millisecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.checkCameraOnvif.value),
           data: request.writeToBuffer(),
           type: PacketType.checkCameraOnvif,
         ),
