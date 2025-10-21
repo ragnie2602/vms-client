@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command2.pb.dart';
 
@@ -15,7 +16,7 @@ class GroupService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id:  UniqueId.getUniqueId(PacketType.getAllGroup.value),
           data: GetAllGroup_Request().writeToBuffer(),
           type: PacketType.getAllGroup,
         ),

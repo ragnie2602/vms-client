@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
@@ -147,7 +148,7 @@ class CameraService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: DateTime.now().millisecondsSinceEpoch,
           data: request.writeToBuffer(),
           type: PacketType.checkCameraOnvif,
         ),
@@ -176,7 +177,7 @@ class CameraService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.getAllCamera.value),
           data: request.writeToBuffer(),
           type: PacketType.getAllCamera,
         ),
