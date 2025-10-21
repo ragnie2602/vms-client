@@ -156,7 +156,7 @@ class AppRouter {
                   return fadeTransition(
                     context: context,
                     state: state,
-                    child: CustomMonitorPane(addMode: args?.addMode ?? false),
+                    child: CustomMonitorPane(mode: args?.mode ?? CustomMonitorPaneMode.view),
                   );
                 },
               ),
@@ -279,7 +279,7 @@ CustomTransitionPage slideTransition<T>({
 }
 
 class CustomMonitorPaneArgs {
-  final bool? addMode;
+  final CustomMonitorPaneMode? mode;
 
-  const CustomMonitorPaneArgs({this.addMode});
+  const CustomMonitorPaneArgs({this.mode = CustomMonitorPaneMode.view});
 }

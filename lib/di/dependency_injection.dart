@@ -57,7 +57,7 @@ class DependencyInjection {
       create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>()),
     ),
     Provider<CreateCustomLiveViewUseCase>(
-      create: (context) => CreateCustomLiveViewUseCase(context.read<ICustomLiveViewRepository>()),
+      create: (context) => CreateCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<CreateTempCustomLiveViewUseCase>(
       create: (context) => CreateTempCustomLiveViewUseCase(),
