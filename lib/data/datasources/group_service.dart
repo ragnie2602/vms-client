@@ -16,7 +16,7 @@ class GroupService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: DateTime.now().millisecond,
           data: GetAllGroup_Request().writeToBuffer(),
           type: PacketType.getAllGroup,
         ),

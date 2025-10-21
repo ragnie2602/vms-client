@@ -5,11 +5,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
-import 'package:vms_flutter_client/screens/control_camera/widget/share_dialog.dart'
-    hide ShareType;
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
@@ -38,6 +37,7 @@ class GroupCameraView extends StatefulWidget {
     required List<List<int>> cameraIds,
   })?
   onAddCameraToGroup;
+  // final Function() onShareGetList
 
   @override
   State<GroupCameraView> createState() => _GroupCameraViewState();
@@ -185,12 +185,17 @@ class _GroupCameraViewState extends State<GroupCameraView> {
 
   void _onShowDialogShareGroup({
     required BuildContext c,
-    required DeviceGroup currentGroup,
+    required List<int> groupId,
+    List<InviteMessageEntity>? listShared,
   }) {
     showShareGroupCameraDialog(
       c,
       shareType: ShareType.groupCamera,
-      currentGroup: currentGroup,
+      groupId: groupId,
+      onSave: (_inviteId) {
+        // rest api 
+      },
+      sharedUsers: listShared, // list data,
     );
   }
 
@@ -198,16 +203,21 @@ class _GroupCameraViewState extends State<GroupCameraView> {
   Widget build(BuildContext context) {
     return BlocListener<ControlCameraBloc, ControlCameraState>(
       listener: (context, state) {
-        // if (state is ListShareInviteGroupSuccessState) {
-        //   showShareDialog(
-        //     context,
-        //     shareType: ShareType.groupCamera,
-        //     groupName: '',
-        //     // sharedUsers: state.sharedUsers,
-        //     onSave: (selectedUsers) async {},
-        //     onSearchUser: (userName) async {},
-        //   );
-        // }
+        if (state is ListShareInviteGroupSuccessState) {
+          _onShowDialogShareGroup(
+            c: context,
+            groupId: state.groupId,
+            listShared: state.inviteMessages,
+          );
+          // showShareDialog(
+          //   context,
+          //   shareType: ShareType.groupCamera,
+          //   groupName: '',
+          //   // sharedUsers: state.sharedUsers,
+          //   onSave: (selectedUsers) async {},
+          //   onSearchUser: (userName) async {},
+          // );
+        }
       },
       child: BlocConsumer<GroupCameraBloc, GroupCameraState>(
         listener: (context, state) {},
@@ -259,15 +269,15 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                 if (node.data != null) {
                                   // share group
                                   //
-                                  _onShowDialogShareGroup(
-                                    c: context,
-                                    currentGroup: node.data!,
-                                  );
-                                  // context.read<ControlCameraBloc>().add(
-                                  //   ListShareInviteGroupEvent(
-                                  //     groupId: node.data!.groupId,
-                                  //   ),
+                                  // _onShowDialogShareGroup(
+                                  //   c: context,
+                                  //   currentGroup: node.data!,
                                   // );
+                                  context.read<ControlCameraBloc>().add(
+                                    ListShareInviteGroupEvent(
+                                      groupId: node.data!.groupId,
+                                    ),
+                                  );
                                 }
                                 break;
                               case ItemGroupAction.remove:
