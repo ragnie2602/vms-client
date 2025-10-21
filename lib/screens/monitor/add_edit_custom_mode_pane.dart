@@ -7,34 +7,44 @@ import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 
-class AddCustomModePane extends StatefulWidget {
-  const AddCustomModePane({super.key, this.onBack});
+class AddEditCustomModePane extends StatefulWidget {
+  const AddEditCustomModePane({super.key, this.onBack});
   final VoidCallback? onBack;
 
   @override
-  State<AddCustomModePane> createState() => _AddCustomModePaneState();
+  State<AddEditCustomModePane> createState() => _AddEditCustomModePaneState();
 }
 
-class _AddCustomModePaneState extends State<AddCustomModePane> {
+class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
   late final CustomViewBloc bloc;
 
   final TextEditingController nameController = TextEditingController();
+  CustomLiveView? customView;
+
   String? _errorMessage;
   ViewMode _mode = ViewMode.v2x2;
+
+  bool get isAddMode => customView?.id.isEmpty ?? true;
 
   @override
   void initState() {
     super.initState();
 
-    bloc = context.read<CustomViewBloc>()
-      ..add(ShowCustomView(CustomLiveView(id: [], base: _mode, positions: [], name: '')));
+    bloc = context.read<CustomViewBloc>();
+
+    if (bloc.state is ShowCustomViewSuccess) {
+      customView = (bloc.state as ShowCustomViewSuccess).customView;
+    }
 
     // Listen to text changes to clear error message
+    nameController.text = customView?.name ?? '';
     nameController.addListener(() {
       if (_errorMessage != null && nameController.text.isNotEmpty) {
         setState(() => _errorMessage = null);
       }
     });
+
+    _mode = customView?.base ?? ViewMode.v2x2;
   }
 
   @override
@@ -50,6 +60,14 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          BlocListener<CustomViewBloc, CustomViewState>(
+            listener: (context, state) {
+              if (state is ShowCustomViewSuccess) {
+                customView = state.customView;
+              }
+            },
+            child: Container(),
+          ),
           Row(
             children: [
               InkWell(
@@ -65,7 +83,7 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
               ),
               SizedBox(width: 8),
               Text(
-                'Thêm chế độ tùy biến',
+                isAddMode ? 'Thêm chế độ tùy biến' : 'Chỉnh sửa chế độ tùy biến',
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
@@ -153,7 +171,8 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
                     onTap: () => setState(
                       () => bloc.add(
                         ShowCustomView(
-                          CustomLiveView(id: [], base: _mode = value, positions: [], name: ''),
+                          customView?.copyWith(base: _mode = value) ??
+                              CustomLiveView(id: [], base: _mode = value, positions: [], name: ''),
                         ),
                       ),
                     ),
@@ -197,12 +216,22 @@ class _AddCustomModePaneState extends State<AddCustomModePane> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (nameController.text.isNotEmpty) {
-                      bloc.add(CreateCustomView(base: _mode, name: nameController.text));
+                      if (isAddMode) {
+                        bloc.add(CreateCustomView(base: _mode, name: nameController.text));
+                      } else {
+                        bloc.add(
+                          UpdateCustomView(
+                            customView: customView!.copyWith(
+                              name: nameController.text,
+                              base: _mode,
+                            ),
+                          ),
+                        );
+                      }
+
                       widget.onBack?.call();
                     } else {
-                      setState(() {
-                        _errorMessage = 'Vui lòng nhập tên chế độ xem';
-                      });
+                      setState(() => _errorMessage = 'Vui lòng nhập tên chế độ xem');
                     }
                   },
                   style: ElevatedButton.styleFrom(

@@ -12,7 +12,9 @@ import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_
 import 'package:vms_flutter_client/screens/shared/utils.dart';
 
 class ListCustomViews extends StatefulWidget {
-  const ListCustomViews({super.key});
+  final Function(CustomLiveView)? onUpdate;
+
+  const ListCustomViews({super.key, this.onUpdate});
 
   @override
   State<ListCustomViews> createState() => _ListCustomViewsState();
@@ -44,7 +46,8 @@ class _ListCustomViewsState extends State<ListCustomViews> {
         }
       },
       child: ListView.builder(
-        itemBuilder: (context, index) => CustomViewItem(bloc: bloc, customView: customViews[index]),
+        itemBuilder: (context, index) =>
+            CustomViewItem(bloc: bloc, customView: customViews[index], onUpdate: widget.onUpdate),
         itemCount: customViews.length,
         shrinkWrap: true,
       ),
@@ -55,15 +58,23 @@ class _ListCustomViewsState extends State<ListCustomViews> {
 class CustomViewItem extends StatefulWidget {
   final CustomLiveView customView;
   final CustomViewBloc bloc;
+  final Function(CustomLiveView)? onUpdate;
 
-  const CustomViewItem({super.key, required this.customView, required this.bloc});
+  const CustomViewItem({super.key, required this.customView, required this.bloc, this.onUpdate});
 
   @override
   State<CustomViewItem> createState() => _CustomViewItemState();
 }
 
 class _CustomViewItemState extends State<CustomViewItem> {
+  late CustomLiveView customView;
   bool isSelecting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    customView = widget.customView;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +85,10 @@ class _CustomViewItemState extends State<CustomViewItem> {
             setState(() => isSelecting = true);
           } else if (isSelecting && widget.customView.id != state.customView.id) {
             setState(() => isSelecting = false);
+          }
+        } else if (state is UpdateCustomViewSuccess) {
+          if (Utils.isEqual(state.customView.id, widget.customView.id)) {
+            setState(() => customView = state.customView);
           }
         }
       },
@@ -93,14 +108,14 @@ class _CustomViewItemState extends State<CustomViewItem> {
               children: [
                 SizedBox(width: 24),
                 SvgPicture.asset(
-                  isSelecting ? widget.customView.base.iconActive : widget.customView.base.icon,
+                  isSelecting ? customView.base.iconActive : customView.base.icon,
                   width: 32,
                   height: 32,
                 ),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    widget.customView.name,
+                    customView.name,
                     style: AppTypography.style(
                       13,
                       fontWeight: FontWeight.w500,
@@ -115,8 +130,7 @@ class _CustomViewItemState extends State<CustomViewItem> {
                     height: 32,
                     width: 32,
                     child: InkWell(
-                      onTapDown: (TapDownDetails details) =>
-                          showActionsPopup(context, widget.customView),
+                      onTapDown: (TapDownDetails details) => showActionsPopup(context, customView),
                       child: Center(
                         child: SvgPicture.asset(AppAssets.icDotHorizontal, width: 12, height: 12),
                       ),
@@ -156,7 +170,12 @@ class _CustomViewItemState extends State<CustomViewItem> {
             mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  widget.bloc.add(ShowCustomView(customView));
+                  widget.onUpdate?.call(customView);
+
+                  Navigator.pop(context);
+                },
                 child: Container(
                   padding: EdgeInsets.only(bottom: 10, left: 12, right: 16, top: 10),
                   child: Row(

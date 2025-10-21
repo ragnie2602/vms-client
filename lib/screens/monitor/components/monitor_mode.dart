@@ -9,9 +9,11 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
-import 'package:vms_flutter_client/screens/monitor/add_custom_mode_pane.dart';
+import 'package:vms_flutter_client/screens/monitor/add_edit_custom_mode_pane.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/list_custom_views.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
@@ -107,7 +109,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         ),
       );
     } else if (viewMode == 1) {
-      return AddCustomModePane(onBack: () => setState(() => viewMode = 0));
+      return AddEditCustomModePane(onBack: () => setState(() => viewMode = 0));
     } else {
       return Container();
     }
@@ -214,13 +216,28 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   }
 
   Widget _buildCustomMode(BuildContext context, double currentWidth, bool showing) {
+    final bloc = context.read<CustomViewBloc>();
+
     return Column(
       children: [
-        Flexible(child: ListCustomViews()),
+        Flexible(
+          child: ListCustomViews(
+            onUpdate: (customView) => setState(() {
+              currentTab = DefaultTabController.of(context).index;
+              viewMode = 1;
+
+              context.pushNamed(Routes.custom_live_view.name);
+            }),
+          ),
+        ),
         InkWell(
           onTap: () => setState(() {
             currentTab = DefaultTabController.of(context).index;
             viewMode = 1;
+
+            bloc.add(
+              ShowCustomView(CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: '')),
+            );
 
             context.pushNamed(
               Routes.custom_live_view.name,

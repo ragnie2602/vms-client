@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_custom_live_view_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_input.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
@@ -71,6 +72,22 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
       customView = output.customLiveView;
     } else {
       preCustomView = customView = event.customView;
+
+      if (customView.base.total < customView.positions.length) {
+        customView = customView.copyWith(
+          positions: customView.positions.sublist(0, customView.base.total),
+        );
+      } else if (customView.base.total > customView.positions.length) {
+        customView = customView.copyWith(
+          positions:
+              customView.positions +
+              List.generate(
+                customView.base.total - customView.positions.length,
+                (index) =>
+                    LiveViewPosition(index: index + customView.positions.length, cameraId: []),
+              ),
+        );
+      }
     }
 
     emit(ShowCustomViewSuccess(customView: customView));
