@@ -34,6 +34,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
           onDesktop: (context) => LayoutBuilder(
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
+              final wrapWidth = (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
 
               print("Sized Box $size");
 
@@ -74,16 +75,19 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                     ),
                   ),
                   Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
+                  SizedBox(
+                    width: wrapWidth,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Hiển thị ${state.paginatedCameras.length} trên ${state.cameras.length} camera"),
+                        Text(
+                          "Hiển thị ${state.paginatedCameras.length} trong số ${state.cameras.length} camera",
+                          style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13, color: Colors.black),
+                        ),
                         ConstrainedBox(
                           constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
                           child: TablePaginator(
-                            (state.cameras.length / state.mode.total).ceil(), 
+                            (state.cameras.length / state.mode.total).ceil(),
                             (page) => onChangePage(context, page))
                           ),
                       ],
