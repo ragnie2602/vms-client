@@ -146,6 +146,29 @@ class GroupService {
     );
   }
 
+  // delete share group
+  Future<List<int>> deleteShareGroup({List<int>? shareInviteId}) async {
+    final shareGroupRequest = DeleteShareGroup_Request();
+    if (shareInviteId != null) {
+      shareGroupRequest.shareInviteId = shareInviteId;
+    }
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().millisecond,
+          data: shareGroupRequest.writeToBuffer(),
+          type: PacketType.deleteShareGroup,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(DeleteShareGroup_Error.valueOf),
+      (buffer) => DeleteShareGroup_Reply.fromBuffer(buffer).shareInviteId,
+    );
+  }
+
   Future<List<InviteMessage>> listShareInviteGroup({
     required List<int> groupId,
   }) async {

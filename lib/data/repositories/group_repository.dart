@@ -78,13 +78,25 @@ class GroupRepository extends BaseRepository implements IGroupRepository {
     });
   }
 
- @override
+  @override
   Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
     required List<int> groupId,
   }) async {
     return await catchError<List<InviteMessageEntity>>(() async {
       final invites = await service.listShareInviteGroup(groupId: groupId);
       return Right(invites.map((e) => e.toEntity()).toList());
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<int>?>> deleteShareGroupCamera({
+    List<int>? shareInviteId,
+  }) async {
+    return await catchError<List<int>>(() async {
+      final invites = await service.deleteShareGroup(
+        shareInviteId: shareInviteId,
+      );
+      return Right(invites);
     });
   }
 }

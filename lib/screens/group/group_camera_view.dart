@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -198,10 +199,12 @@ class _GroupCameraViewState extends State<GroupCameraView> {
       c,
       shareType: ShareType.groupCamera,
       groupId: groupId,
-      onSave: (_inviteId) {
-        // rest api
-        context.read<GroupCameraBloc>().add(
-          ShareGroupEvent(groupId: groupId, accoungtInviteId: _inviteId ?? []),
+      // ondelete
+      onShareGroup: (_inviteId) {
+        return context.read<GroupCameraBloc>().shareGroup(
+          groupId: groupId,
+          accoungtInviteId: _inviteId,
+          role: DeviceGroupRole.gview,
         );
       },
       sharedUsers: invites, // list data,

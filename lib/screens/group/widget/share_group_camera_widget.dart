@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -34,7 +33,7 @@ Future<T?> showShareGroupCameraDialog<T>(
   VoidCallback? onCancel,
   // dành cho share group
   List<int>? groupId,
-  Function(List<int>?)? onSave,
+  Future<List<int>?> Function(List<int>?)? onShareGroup,
   // dành cho share camera
   CameraEntity? currentCamera,
 }) {
@@ -49,7 +48,7 @@ Future<T?> showShareGroupCameraDialog<T>(
         currentCamera: currentCamera,
         groupId: groupId,
         sharedUsers: sharedUsers,
-        onSave: onSave,
+        onShareGroup: onShareGroup,
       ),
     ),
   );
@@ -57,16 +56,16 @@ Future<T?> showShareGroupCameraDialog<T>(
 
 class _ShareGroupCameraWidget extends StatefulWidget {
   const _ShareGroupCameraWidget({
-    super.key,
+    Key? key,
     required this.shareType,
     this.groupId,
     this.currentCamera,
-    this.onSave,
+    this.onShareGroup,
     this.sharedUsers,
-  });
+  }) : super(key: key);
   final ShareType shareType;
   final List<InviteMessageEntity>? sharedUsers;
-  final Function(List<int>?)? onSave;
+  final Future<List<int>?> Function(List<int>?)? onShareGroup;
   // dành cho share group
   final List<int>? groupId;
   // dành cho share camera
@@ -299,13 +298,35 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                                 ),
                               ),
                               IconButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   // rest api share
-                                 widget.onSave?.call(_accIdShareGroup);
-                                 
+                                  if (widget.shareType == ShareType.camera) {
+                                    return;
+                                  }
+
+                                  final res = await widget.onShareGroup?.call(
+                                    _accIdShareGroup,
+                                  );
+                                  if (!mounted) return;
+                                  if (res != null && res.isNotEmpty) {
+                                    // share thành công -> add tay vào group
+                                    setState(() {
+                                      listAccShared.add(
+                                        _searchController.text.trim(),
+                                      );
+                                    });
+                                  } else {
+                                    // // failure: show a simple SnackBar
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //   const SnackBar(
+                                    //     content: Text('Chia sẻ thất bại'),
+                                    //   ),
+                                    // );
+                                  }
+
                                   // listAccShared.add(_searchController.text);
                                 },
-                                icon: Icon(Icons.add_circle_outline),
+                                icon: const Icon(Icons.add_circle_outline),
                               ),
                             ],
                           ),

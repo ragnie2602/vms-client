@@ -22,8 +22,10 @@ abstract class IGroupRepository {
     DeviceGroupRole? role,
     List<int>? accountInviteId,
   });
+  Future<Either<Failure, List<int>?>> deleteShareGroupCamera({
+    List<int>? shareInviteId,
+  });
   Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
     required List<int> groupId,
   });
-
 }
