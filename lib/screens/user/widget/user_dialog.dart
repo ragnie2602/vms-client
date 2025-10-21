@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
@@ -20,7 +21,6 @@ Future<String?> showResetPasswordDialog(
 }) {
   final TextEditingController _controller = TextEditingController();
   bool obscure = true;
-  String? error;
 
   return showDialog<String?>(
     context: context,
@@ -90,14 +90,6 @@ Future<String?> showResetPasswordDialog(
                         ),
                       ),
                     ),
-
-                    if (error != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        error!,
-                        style: const TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ],
 
                     const SizedBox(height: 20),
 
@@ -171,6 +163,46 @@ Future<T?> showAddUserDialog<T>(
       ),
     ),
   );
+}
+
+/// Entry point to show the edit user dialog
+Future<T?> showEditUserDialog<T>(
+  BuildContext context, {
+  required UserEntity userEntity,
+  Future<void> Function(EditUserPayload value)? onSubmit,
+}) {
+  final userManagementBloc = context.read<UserManagementBloc>();
+  return showDialog<T>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => BlocProvider.value(
+      value: userManagementBloc,
+      child: _EditUserDialog(userEntity: userEntity, onSubmit: onSubmit),
+    ),
+  );
+}
+
+/// Data model for edit user dialog
+class EditUserPayload {
+  final String username;
+  final String email;
+  final String phoneNumber;
+  final String fullName;
+  final String description;
+  final String accountType; // 'admin' hoặc 'normal'
+  final bool canChangePassword;
+  final bool canAddCamera;
+
+  const EditUserPayload({
+    required this.username,
+    required this.email,
+    required this.phoneNumber,
+    required this.fullName,
+    required this.description,
+    required this.accountType,
+    required this.canChangePassword,
+    required this.canAddCamera,
+  });
 }
 
 /// Data model to return from the dialog
@@ -502,7 +534,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF000000),
+              color: AppColors.black,
             ),
           ),
         ),
@@ -571,6 +603,412 @@ class _AddUserDialogState extends State<_AddUserDialog> {
         }
         if (mounted) {
           Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+          showAppMessageDialog(
+            context,
+            type: AppMessageType.error,
+            message: e.toString(),
+          );
+        }
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Edit User Dialog Widget
+// ============================================================================
+
+class _EditUserDialog extends StatefulWidget {
+  const _EditUserDialog({required this.userEntity, this.onSubmit});
+
+  final UserEntity userEntity;
+  final Future<void> Function(EditUserPayload value)? onSubmit;
+
+  @override
+  State<_EditUserDialog> createState() => _EditUserDialogState();
+}
+
+class _EditUserDialogState extends State<_EditUserDialog> {
+  final _form = GlobalKey<FormState>();
+  final _username = TextEditingController();
+  final _email = TextEditingController();
+  final _phoneNumber = TextEditingController();
+  final _fullName = TextEditingController();
+  final _description = TextEditingController();
+
+  String _accountType = 'normal'; // 'admin' hoặc 'normal'
+  bool _canChangePassword = false;
+  bool _canAddCamera = false;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  void _initializeData() {
+    final user = widget.userEntity;
+    _username.text = user.account;
+    _email.text = user.emailAddress;
+    _phoneNumber.text = user.telNumber;
+    _fullName.text = user.fullName;
+    _description.text = user.desc;
+
+    // Xác định account type từ UserType
+    _accountType = user.type == UserType.admin ? 'admin' : 'normal';
+
+    // Permissions
+    _canChangePassword = !user.changePassDenied;
+    _canAddCamera = !user.addCamDenied;
+  }
+
+  @override
+  void dispose() {
+    _username.dispose();
+    _email.dispose();
+    _phoneNumber.dispose();
+    _fullName.dispose();
+    _description.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bool isAdminAccount = _accountType == 'admin';
+
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              'Cập nhật tài khoản',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+            tooltip: 'Đóng',
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.35,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _form,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 16),
+
+                // Row: Tên đăng nhập và Họ và tên
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: const TextSpan(
+                              text: 'Tên đăng nhập',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.black,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          TextFormField(
+                            controller: _username,
+                            enabled: false,
+                            style: const TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Nhập tài khoản',
+                              hintStyle: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.greyE2E8F0,
+                              ),
+                              filled: true,
+                              fillColor: AppColors.greyF2F4FA,
+                              counterText: '',
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 14,
+                              ),
+                              disabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(1),
+                                borderSide: BorderSide(
+                                  color: AppColors.greyE2E8F0,
+                                  width: 1,
+                                ),
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(1),
+                                borderSide: BorderSide(
+                                  color: AppColors.greyE2E8F0,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppField(
+                        controller: _fullName,
+                        hintText: 'Nhập họ và tên',
+                        label: 'Họ và tên',
+                        maxLength: 50,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Row: Email và Số điện thoại
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppField(
+                        controller: _email,
+                        hintText: 'Nhập email',
+                        label: 'Email',
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppField(
+                        controller: _phoneNumber,
+                        hintText: 'Nhập số điện thoại',
+                        label: 'Số điện thoại',
+                        keyboardType: TextInputType.phone,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Loại tài khoản
+                _buildDropdownField(
+                  label: 'Loại tài khoản',
+                  value: _accountType,
+                  items: const [
+                    {'value': 'admin', 'label': 'Tài khoản Admin'},
+                    {'value': 'normal', 'label': 'Tài khoản thường'},
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _accountType = value!;
+                      // Reset permissions khi chuyển sang admin
+                      if (_accountType == 'admin') {
+                        _canChangePassword = false;
+                        _canAddCamera = false;
+                      }
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Checkboxes - chỉ hiện với tài khoản thường
+                if (!isAdminAccount) ...[
+                  _buildCheckboxRow(
+                    label: 'Cho phép đổi mật khẩu',
+                    value: _canChangePassword,
+                    onChanged: (value) {
+                      setState(() => _canChangePassword = value ?? false);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _buildCheckboxRow(
+                    label: 'Cho phép thêm camera',
+                    value: _canAddCamera,
+                    onChanged: (value) {
+                      setState(() => _canAddCamera = value ?? false);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // Ghi chú
+                AppField(
+                  controller: _description,
+                  hintText: 'Lorem Ipsum is simply dummy text...',
+                  label: 'Ghi chú',
+                  maxLines: 4,
+                  maxLength: 250,
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppButton.outline(
+                label: 'Hủy',
+                onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+              ),
+              const SizedBox(width: 12),
+              AppButton.filled(
+                label: _isSubmitting ? '' : 'Cập nhật',
+                onPressed: _isSubmitting ? null : _handleSubmit,
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<Map<String, String>> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.black,
+          ),
+        ),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: value,
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(4),
+              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+            ),
+          ),
+          items: items.map((item) {
+            return DropdownMenuItem<String>(
+              value: item['value'],
+              child: Text(
+                item['label']!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCheckboxRow({
+    required String label,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: Checkbox(
+            activeColor: AppColors.blue005AA9,
+            value: value,
+            onChanged: onChanged,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.black,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleSubmit() async {
+    if (_form.currentState?.validate() ?? false) {
+      setState(() => _isSubmitting = true);
+
+      final payload = EditUserPayload(
+        username: _username.text.trim(),
+        email: _email.text.trim(),
+        phoneNumber: _phoneNumber.text.trim(),
+        fullName: _fullName.text.trim(),
+        description: _description.text.trim(),
+        accountType: _accountType,
+        canChangePassword: _canChangePassword,
+        canAddCamera: _canAddCamera,
+      );
+
+      try {
+        await widget.onSubmit?.call(payload);
+
+        if (mounted) {
+          Navigator.pop(context);
+          setState(() => _isSubmitting = false);
         }
       } catch (e) {
         if (mounted) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:meta/meta.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -283,12 +282,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     itemBuilder: (context, index) =>
                                         ItemUserWidget(
                                           onEdit: () async {
-                                            await showAddUserDialog(
+                                            await showEditUserDialog(
                                               context,
                                               userEntity: state.users![index],
-                                              mode: UserDialogMode.edit,
-                                              onEdit: (payload) async {
+                                              onSubmit: (payload) async {
                                                 _editUser(
+                                                  isAdmin:
+                                                      payload.accountType ==
+                                                          'admin'
+                                                      ? true
+                                                      : false,
+                                                  changePassDenied:
+                                                      payload.canChangePassword,
+                                                  addCamDenied:
+                                                      payload.canAddCamera,
+                                                  password: state
+                                                      .users![index]
+                                                      .password,
                                                   email: payload.email,
                                                   tel: payload.phoneNumber,
                                                   desc: payload.description,
@@ -296,14 +306,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                                   userId:
                                                       state.users![index].id,
                                                   account: payload.username,
-                                                  password: payload.password,
-                                                  isAdmin: payload.isAdmin,
-                                                  addCamDenied:
-                                                      payload.canAddCamera,
-                                                  changePassDenied:
-                                                      payload.canChangePassword,
                                                 );
-                                                // Xử lý thêm user
                                               },
                                             );
                                           },
