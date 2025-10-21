@@ -5,3 +5,36 @@ sealed class CustomViewEvent extends BaseEvent {
 }
 
 class GetListCustomViews extends CustomViewEvent {}
+
+class ShowCustomView extends CustomViewEvent {
+  final CustomLiveView customView;
+
+  const ShowCustomView(this.customView);
+}
+
+class AddingCameraToCustomView extends CustomViewEvent {
+  final CameraEntity camera;
+  final int index;
+
+  const AddingCameraToCustomView(this.camera, this.index);
+}
+
+class CreateCustomView extends CustomViewEvent {
+  final String name;
+  final ViewMode base;
+
+  const CreateCustomView({required this.name, required this.base});
+}
+
+class DeleteCustomLiveView extends CustomViewEvent {
+  final List<int> id;
+
+  const DeleteCustomLiveView(this.id);
+}
+
+class UpdateCustomView extends CustomViewEvent {
+  final CustomLiveView customView;
+  final int? index;
+
+  const UpdateCustomView({required this.customView, this.index});
+}

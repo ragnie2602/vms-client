@@ -30,10 +30,12 @@ class CustomLiveViewService {
   Future<CustomLiveView> addCustomLiveView({
     required String name,
     required int baseViewCode,
+    required List<LiveViewPosition> positions,
   }) async {
     final request = AddCustomLiveView_Request(
       name: name,
       baseView: Base_View.valueOf(baseViewCode),
+      position: positions,
     );
 
     final response = await socketClient.send<List<int>>(
@@ -70,11 +72,13 @@ class CustomLiveViewService {
   }
 
   Future<CustomLiveView> updateCustomLiveView(CustomLiveView newValue) async {
+    final request = UpdateCustomLiveView_Request(customs: newValue);
+
     final response = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
           id: DateTime.now().microsecondsSinceEpoch,
-          data: newValue.writeToBuffer(),
+          data: request.writeToBuffer(),
           type: PacketType.updateCustomLiveView,
         ),
       ),

@@ -62,13 +62,7 @@ enum Routes {
     title: 'Playback',
     description: 'Cho phép truy cập và xem lại các đoạn video đã được ghi',
   ),
-  users(
-    name: 'users',
-    path: '/users',
-    title: 'Quản lý tài khoản',
-    description:
-        'Cho phép quản trị viên kiểm soát ai có thể xem camera của mình và cách thức họ truy cập',
-  ),
+  users(name: 'users', path: '/users'),
   setting(name: 'setting', path: '/setting'),
   about(name: 'about', path: '/about');
 
@@ -122,8 +116,13 @@ class AppRouter {
                   MonitorBloc(context.read())..add(GetAllCamera()),
             ),
             BlocProvider(
-              create: (context) =>
-                  CustomViewBloc(context.read())..add(GetListCustomViews()),
+              create: (context) => CustomViewBloc(
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+              )..add(GetListCustomViews()),
               lazy: false,
             ),
             BlocProvider(
@@ -171,10 +170,12 @@ class AppRouter {
                 path: Routes.custom_live_view.path,
                 name: Routes.custom_live_view.name,
                 pageBuilder: (context, state) {
+                  final args = state.extra as CustomMonitorPaneArgs?;
+
                   return fadeTransition(
                     context: context,
                     state: state,
-                    child: CustomMonitorPane(),
+                    child: CustomMonitorPane(addMode: args?.addMode ?? false),
                   );
                 },
               ),
@@ -309,4 +310,10 @@ CustomTransitionPage slideTransition<T>({
       );
     },
   );
+}
+
+class CustomMonitorPaneArgs {
+  final bool? addMode;
+
+  const CustomMonitorPaneArgs({this.addMode});
 }

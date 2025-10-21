@@ -41,6 +41,9 @@ class ControlCameraBloc
     on<ShareCameraEvent>(_onShareCamera);
     on<CheckAccountShareEvent>(_onCheckAccountShare);
     on<AddCameraToGroupEvent>(_onAddCameraToGroup);
+    on<ListShareInviteGroupEvent>(_onListShareInviteGroup);
+    on<ListShareCameraEvent>(_onListShareCamera);
+    on<DeleteShareCameraEvent>(_onDeleteShareCamera);
     on<RemoveCameraFromGroupEvent>(_onRemoveCameraFromGroup);
   }
 
@@ -284,8 +287,51 @@ class ControlCameraBloc
     );
     res.fold(
       (onFailure) => emit(AddCameraFailState(res.left.toString())),
-      (onSuccess) => emit(ListCameraSuccessState(cameras: onSuccess)),
+      (onSuccess) {
+        listCamera.addAll(onSuccess);
+        emit(ListCameraSuccessState(cameras: listCamera));
+      },
     );
+  }
+
+  FutureOr<void> _onListShareInviteGroup(
+    ListShareInviteGroupEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final res = await controlGroupRepository.listShareInviteGroup(
+      groupId: event.groupId,
+    );
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
+      onSuccess,
+    ) {
+      emit(
+        ListShareInviteGroupSuccessState(
+          groupId: event.groupId,
+          inviteMessages: onSuccess,
+        ),
+      );
+    });
+  }
+
+  FutureOr<void> _onListShareCamera(
+    ListShareCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final res = await controlGroupRepository.listShareCamera(
+      cameraId: event.cameraId,
+    );
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
+      onSuccess,
+    ) {
+      // Map InviteMessage -> accountShared entity list
+
+      emit(
+        ListShareCameraSuccessState(
+          cameraId: event.cameraId,
+          inviteMessages: onSuccess,
+        ),
+      );
+    });
   }
 
   FutureOr<void> _onRemoveCameraFromGroup(
@@ -296,12 +342,30 @@ class ControlCameraBloc
       cameraId: event.cameraId,
       groupId: event.groupId ?? currentGroupId,
     );
-    res.fold((onFailure) => emit(RemoveCameraFromGroupFailState(res.left.toString())), (
-      onSuccess,
-    ) {
-      // Cập nhật lại danh sách camera sau khi xóa khỏi nhóm
-      listCamera.removeWhere((camera) => listEquals(event.cameraId, camera.id));
-      emit(ListCameraSuccessState(cameras: listCamera));
-    });
+    res.fold(
+      (onFailure) => emit(RemoveCameraFromGroupFailState(res.left.toString())),
+      (onSuccess) {
+        // Cập nhật lại danh sách camera sau khi xóa khỏi nhóm
+        listCamera.removeWhere(
+          (camera) => listEquals(event.cameraId, camera.id),
+        );
+        emit(ListCameraSuccessState(cameras: listCamera));
+      },
+    );
+  }
+
+  FutureOr<void> _onDeleteShareCamera(
+    DeleteShareCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final res = await controlGroupRepository.deleteShareCamera(
+      cameraId: event.cameraId,
+      accountB: event.accountB,
+      shareId: event.shareId,
+    );
+    res.fold(
+      (onFailure) => emit(AddCameraFailState(res.left.toString())),
+      (onSuccess) => emit(ControlCameraState()),
+    );
   }
 }

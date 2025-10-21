@@ -4,8 +4,12 @@ import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 
@@ -66,6 +70,22 @@ class DependencyInjection {
     Provider<DeleteCameraUseCase>(
       create: (context) =>
           DeleteCameraUseCase(cameraService: context.read<CameraService>()),
+    ),
+    Provider<CreateCustomLiveViewUseCase>(
+      create: (context) => CreateCustomLiveViewUseCase(
+        context.read<ICustomLiveViewRepository>(),
+      ),
+    ),
+    Provider<CreateTempCustomLiveViewUseCase>(
+      create: (context) => CreateTempCustomLiveViewUseCase(),
+    ),
+    Provider<GetListCustomLiveViewUseCase>(
+      create: (context) =>
+          GetListCustomLiveViewUseCase(context.read(), context.read()),
+    ),
+    Provider<UpdateCustomLiveViewUseCase>(
+      create: (context) =>
+          UpdateCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
     Provider<FilterCameraNoGroupUseCase>(
