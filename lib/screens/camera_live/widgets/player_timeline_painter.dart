@@ -100,7 +100,7 @@ class PlayerTimelinePainter extends CustomPainter {
       return offset <= size.width / 2 ? offset : null;
     });
     if (leftCentralOffset != null) {
-      _drawPlaybacks(canvas, size, size.width / 2 - leftCentralOffset);
+      _drawPlaybacks(canvas, size, leftCentralOffset);
       return _drawTimelineFromStart(canvas, size, leftCentralOffset);
     }
 
