@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart'
 import '../../home/components/components_src.dart';
 
 enum UserDialogMode { add, edit }
+
 /// Hiển thị dialog khôi phục mật khẩu.
 /// Trả về mật khẩu mới nếu người dùng xác nhận, ngược lại trả về null.
 Future<String?> showResetPasswordDialog(
@@ -144,7 +145,6 @@ Future<String?> showResetPasswordDialog(
 /// Entry point to show the dialog
 Future<T?> showAddUserDialog<T>(
   BuildContext context, {
-  UserDialogMode mode = UserDialogMode.add,
   UserEntity? userEntity,
   Future<void> Function(AddUserPayload value)? onSubmit,
   Future<void> Function(AddUserPayload value)? onEdit,
@@ -156,7 +156,6 @@ Future<T?> showAddUserDialog<T>(
     builder: (_) => BlocProvider.value(
       value: userManagementBloc,
       child: _AddUserDialog(
-        mode: mode,
         onSubmit: onSubmit,
         onEdit: onEdit,
         userEntity: userEntity,
@@ -231,14 +230,8 @@ class AddUserPayload {
 }
 
 class _AddUserDialog extends StatefulWidget {
-  const _AddUserDialog({
-    required this.mode,
-    this.onSubmit,
-    this.onEdit,
-    this.userEntity,
-  });
+  const _AddUserDialog({this.onSubmit, this.onEdit, this.userEntity});
   final UserEntity? userEntity;
-  final UserDialogMode mode;
   final Future<void> Function(AddUserPayload value)? onSubmit;
   final Future<void> Function(AddUserPayload value)? onEdit;
 
@@ -247,6 +240,7 @@ class _AddUserDialog extends StatefulWidget {
 }
 
 class _AddUserDialogState extends State<_AddUserDialog> {
+  String _accountType = 'normal';
   final _form = GlobalKey<FormState>();
   final _username = TextEditingController();
   final _password = TextEditingController();
@@ -256,7 +250,6 @@ class _AddUserDialogState extends State<_AddUserDialog> {
   final _description = TextEditingController();
 
   bool _obscurePassword = true;
-  bool _isAdmin = true;
   bool _canChangePassword = true;
   bool _canAddCamera = true;
   bool _isSubmitting = false;
@@ -264,22 +257,6 @@ class _AddUserDialogState extends State<_AddUserDialog> {
   @override
   void initState() {
     super.initState();
-    _initializeData();
-  }
-
-  void _initializeData() {
-    if (widget.mode == UserDialogMode.edit && widget.userEntity != null) {
-      final user = widget.userEntity!;
-      _username.text = user.account;
-      _email.text = user.emailAddress;
-      _password.text = user.password;
-
-      _phoneNumber.text = user.telNumber;
-      _fullName.text = user.fullName;
-      _description.text = user.desc;
-      _canAddCamera = user.addCamDenied;
-      _canChangePassword = user.changePassDenied;
-    }
   }
 
   @override
@@ -295,9 +272,10 @@ class _AddUserDialogState extends State<_AddUserDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isAdminAccount = _accountType == 'admin';
     final theme = Theme.of(context);
     return BlocListener<UserManagementBloc, UserManagementState>(
-      listenWhen: (prev, curr) => curr is AddUserSuccess || curr is AddUserFail,
+      listenWhen: (prev, curr) => curr is AddUserSuccess,
       listener: (context, state) {
         if (state is AddUserSuccess) {
           setState(() => _isSubmitting = false);
@@ -305,7 +283,8 @@ class _AddUserDialogState extends State<_AddUserDialog> {
           final bloc = context.read<UserManagementBloc>();
           // Pop dialog khi thành công
           if (mounted) {
-            Navigator.pop(context);
+            //   Navigator.pop(context);
+            bloc.add(GetListUserEvent());
             // Hiển thị dialog thành công và reload danh sách
             WidgetsBinding.instance.addPostFrameCallback((_) {
               showAppMessageDialog(
@@ -314,20 +293,10 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 type: AppMessageType.success,
                 onOk: () {
                   // Reload danh sách camera
-                  bloc.add(GetListUserEvent());
                 },
               );
             });
           }
-        }
-        if (state is AddUserFail) {
-          setState(() => _isSubmitting = false);
-          // Hiển thị dialog lỗi trước khi pop
-          showAppMessageDialog(
-            context,
-            type: AppMessageType.error,
-            message: state.errorMsg,
-          );
         }
       },
       child: AlertDialog(
@@ -343,9 +312,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.mode == UserDialogMode.add
-                        ? 'Thêm tài khoản'
-                        : 'Cập nhật tài khoản',
+                    'Thêm tài khoản',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -441,7 +408,47 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                     hintText: 'Nhập họ và tên',
                     label: 'Họ và tên',
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
+                  // Loại tài khoản
+                  _buildDropdownField(
+                    label: 'Loại tài khoản',
+                    value: _accountType,
+                    items: const [
+                      {'value': 'admin', 'label': 'Tài khoản Admin'},
+                      {'value': 'normal', 'label': 'Tài khoản thường'},
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _accountType = value!;
+                        // Reset permissions khi chuyển sang admin
+                        if (_accountType == 'admin') {
+                          _canChangePassword = false;
+                          _canAddCamera = false;
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Checkboxes - chỉ hiện với tài khoản thường
+                  if (!isAdminAccount) ...[
+                    _buildCheckboxRow(
+                      label: 'Cho phép đổi mật khẩu',
+                      value: _canChangePassword,
+                      onChanged: (value) {
+                        setState(() => _canChangePassword = value ?? false);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildCheckboxRow(
+                      label: 'Cho phép thêm camera',
+                      value: _canAddCamera,
+                      onChanged: (value) {
+                        setState(() => _canAddCamera = value ?? false);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   // Mô tả
                   AppField(
                     controller: _description,
@@ -453,28 +460,28 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                   const SizedBox(height: 8),
 
                   // Mật khẩu
-                  const SizedBox(height: 16),
+
                   // Tài khoản Admin toggle
-                  _buildToggleRow(
-                    label: 'Tài khoản Admin:',
-                    value: _isAdmin,
-                    onChanged: (value) => setState(() => _isAdmin = value),
-                  ),
-                  const SizedBox(height: 12),
-                  // Đổi mật khẩu toggle
-                  _buildToggleRow(
-                    label: 'Đổi mật khẩu:',
-                    value: _canChangePassword,
-                    onChanged: (value) =>
-                        setState(() => _canChangePassword = value),
-                  ),
-                  const SizedBox(height: 12),
-                  // Thêm camera toggle
-                  _buildToggleRow(
-                    label: 'Thêm camera:',
-                    value: _canAddCamera,
-                    onChanged: (value) => setState(() => _canAddCamera = value),
-                  ),
+                  // _buildToggleRow(
+                  //   label: 'Tài khoản Admin:',
+                  //   value: _isAdmin,
+                  //   onChanged: (value) => setState(() => _isAdmin = value),
+                  // ),
+                  // const SizedBox(height: 12),
+                  // // Đổi mật khẩu toggle
+                  // _buildToggleRow(
+                  //   label: 'Đổi mật khẩu:',
+                  //   value: _canChangePassword,
+                  //   onChanged: (value) =>
+                  //       setState(() => _canChangePassword = value),
+                  // ),
+                  // const SizedBox(height: 12),
+                  // // Thêm camera toggle
+                  // _buildToggleRow(
+                  //   label: 'Thêm camera:',
+                  //   value: _canAddCamera,
+                  //   onChanged: (value) => setState(() => _canAddCamera = value),
+                  // ),
                   const SizedBox(height: 16),
 
                   // Email
@@ -489,16 +496,14 @@ class _AddUserDialogState extends State<_AddUserDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 AppButton.outline(
-                  label: 'HỦY',
+                  label: 'Hủy',
                   onPressed: _isSubmitting
                       ? null
                       : () => Navigator.pop(context),
                 ),
                 const SizedBox(width: 12),
                 AppButton.filled(
-                  label: widget.mode == UserDialogMode.add
-                      ? 'THÊM'
-                      : 'CẬP NHẬT',
+                  label: 'Xác nhận',
                   onPressed: _isSubmitting ? null : _handleSubmit,
                   child: _isSubmitting
                       ? const SizedBox(
@@ -586,7 +591,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
       final payload = AddUserPayload(
         username: _username.text.trim(),
         password: _password.text.trim(),
-        isAdmin: _isAdmin,
+        isAdmin: _accountType == 'admin' ? true : false,
         canChangePassword: _canChangePassword,
         canAddCamera: _canAddCamera,
         email: _email.text.trim(),
@@ -596,11 +601,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
       );
 
       try {
-        if (widget.mode == UserDialogMode.add) {
-          await widget.onSubmit?.call(payload);
-        } else {
-          await widget.onEdit?.call(payload);
-        }
+        await widget.onSubmit?.call(payload);
         if (mounted) {
           Navigator.pop(context);
         }
@@ -645,10 +646,20 @@ class _EditUserDialogState extends State<_EditUserDialog> {
   bool _canAddCamera = false;
   bool _isSubmitting = false;
 
+  // Lưu giá trị ban đầu để so sánh
+  late String _initialEmail;
+  late String _initialPhoneNumber;
+  late String _initialFullName;
+  late String _initialDescription;
+  late String _initialAccountType;
+  late bool _initialCanChangePassword;
+  late bool _initialCanAddCamera;
+
   @override
   void initState() {
     super.initState();
     _initializeData();
+    _setupListeners();
   }
 
   void _initializeData() {
@@ -665,6 +676,32 @@ class _EditUserDialogState extends State<_EditUserDialog> {
     // Permissions
     _canChangePassword = !user.changePassDenied;
     _canAddCamera = !user.addCamDenied;
+
+    // Lưu giá trị ban đầu
+    _initialEmail = _email.text;
+    _initialPhoneNumber = _phoneNumber.text;
+    _initialFullName = _fullName.text;
+    _initialDescription = _description.text;
+    _initialAccountType = _accountType;
+    _initialCanChangePassword = _canChangePassword;
+    _initialCanAddCamera = _canAddCamera;
+  }
+
+  void _setupListeners() {
+    _email.addListener(() => setState(() {}));
+    _phoneNumber.addListener(() => setState(() {}));
+    _fullName.addListener(() => setState(() {}));
+    _description.addListener(() => setState(() {}));
+  }
+
+  bool get _hasChanges {
+    return _email.text != _initialEmail ||
+        _phoneNumber.text != _initialPhoneNumber ||
+        _fullName.text != _initialFullName ||
+        _description.text != _initialDescription ||
+        _accountType != _initialAccountType ||
+        _canChangePassword != _initialCanChangePassword ||
+        _canAddCamera != _initialCanAddCamera;
   }
 
   @override
@@ -841,7 +878,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                       setState(() => _canChangePassword = value ?? false);
                     },
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   _buildCheckboxRow(
                     label: 'Cho phép thêm camera',
                     value: _canAddCamera,
@@ -849,7 +886,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                       setState(() => _canAddCamera = value ?? false);
                     },
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                 ],
 
                 // Ghi chú
@@ -876,112 +913,45 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                 onPressed: _isSubmitting ? null : () => Navigator.pop(context),
               ),
               const SizedBox(width: 12),
-              AppButton.filled(
-                label: _isSubmitting ? '' : 'Cập nhật',
-                onPressed: _isSubmitting ? null : _handleSubmit,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
-                    : null,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDropdownField({
-    required String label,
-    required String value,
-    required List<Map<String, String>> items,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppColors.black,
-          ),
-        ),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          value: value,
-          decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 14,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-            ),
-          ),
-          items: items.map((item) {
-            return DropdownMenuItem<String>(
-              value: item['value'],
-              child: Text(
-                item['label']!,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
+              Container(
+                decoration: BoxDecoration(
+                  color: _hasChanges && !_isSubmitting
+                      ? AppColors.blue005AA9
+                      : AppColors.grey64748B,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _hasChanges && !_isSubmitting ? _handleSubmit : null,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 34,
+                        vertical: 10,
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              'Cập nhật',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
+                  ),
                 ),
               ),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCheckboxRow({
-    required String label,
-    required bool value,
-    required ValueChanged<bool?> onChanged,
-  }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 24,
-          height: 24,
-          child: Checkbox(
-            activeColor: AppColors.blue005AA9,
-            value: value,
-            onChanged: onChanged,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            visualDensity: VisualDensity.compact,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.black,
-            ),
+            ],
           ),
         ),
       ],
@@ -1022,4 +992,94 @@ class _EditUserDialogState extends State<_EditUserDialog> {
       }
     }
   }
+}
+
+Widget _buildCheckboxRow({
+  required String label,
+  required bool value,
+  required ValueChanged<bool?> onChanged,
+}) {
+  return Row(
+    children: [
+      SizedBox(
+        width: 24,
+        height: 24,
+        child: Checkbox(
+          side: BorderSide(
+            color: AppColors.greyE2E8F0, // Set your desired border color here
+            width: 1.0, // Optional: Adjust border width
+          ),
+          activeColor: AppColors.blue005AA9,
+          value: value,
+          onChanged: onChanged,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.black,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildDropdownField({
+  required String label,
+  required String value,
+  required List<Map<String, String>> items,
+  required ValueChanged<String?> onChanged,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.black,
+        ),
+      ),
+      const SizedBox(height: 6),
+      DropdownButtonFormField<String>(
+        value: value,
+        decoration: InputDecoration(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+          ),
+        ),
+        items: items.map((item) {
+          return DropdownMenuItem<String>(
+            value: item['value'],
+            child: Text(
+              item['label']!,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+            ),
+          );
+        }).toList(),
+        onChanged: onChanged,
+      ),
+    ],
+  );
 }

@@ -187,7 +187,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         onTap: () async {
                           await showAddUserDialog(
                             context,
-                            mode: UserDialogMode.add,
                             onSubmit: (payload) async {
                               // Xử lý thêm user
                               _addUser(
@@ -354,6 +353,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             message: 'Xóa người dùng thành công !',
             type: AppMessageType.success,
           );
+        } else if (state is DeleteUserFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
         } else if (state is ListCameraSuccessState) {
           _onGetListUser();
           setState(() {});
@@ -364,7 +370,37 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             message: 'Cập nhật người dùng thành công !',
             type: AppMessageType.success,
           );
+        } else if (state is EditUserFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
+        } else if (state is ResetPassWordSuccess) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: 'Cập nhật mật khẩu thành công !',
+            type: AppMessageType.success,
+          );
         } else if (state is ResetPassWordFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
+        } else if (state is AddUserSuccess) {
+          _onGetListUser();
+        } else if (state is AddUserFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
+        } else if (state is AddUserFail) {
           _onGetListUser();
           showAppMessageDialog(
             context,
@@ -375,9 +411,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       },
       listenWhen: (previous, current) =>
           current is DeleteUserSuccess ||
+          current is DeleteUserFail ||
           current is ListCameraSuccessState ||
           current is EditUserSuccess ||
-          current is ResetPassWordFail,
+          current is EditUserFail ||
+          current is ResetPassWordFail ||
+          current is ResetPassWordSuccess ||
+          current is AddUserSuccess ||
+          current is AddUserFail,
     );
   }
 }
