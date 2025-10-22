@@ -205,9 +205,15 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         SizedBox(
           height: heightGroupTree.clamp(200, 800),
           child: GroupCameraView(
-            onGetCamerasInGroup: (BuildContext p1, List<int> p2) {},
-            onGetAllGroupCamera: (BuildContext p1) {},
-            onGetNoGroupCamera: (BuildContext p1) {}, 
+            onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
+              context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
+            },
+            onGetAllGroupCamera: (BuildContext contextTreeGroup) {
+              context.read<MonitorBloc>().add(GetAllCamera());
+            },
+            onGetNoGroupCamera: (BuildContext contextTreeGroup) {
+              context.read<MonitorBloc>().add(GetAllCameraNoGroup());
+            }, 
             onAddCameraToGroup: ({required BuildContext c, required List<List<int>> cameraIds, required List<int> currentGroupId}) {},
           ),
         )

@@ -26,8 +26,10 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetAllGroupCamera,
     required this.onGetNoGroupCamera,
     required this.onAddCameraToGroup,
+    this.enableAddGroup
   });
 
+  final bool? enableAddGroup;
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
@@ -311,7 +313,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                         });
                         widget.onGetNoGroupCamera?.call(context);
                       },
-                      enableAddGroup: true,
+                      enableAddGroup: widget.enableAddGroup,
                       controller: controllerTree,
                       searchController: searchGroupNameController,
                       onSearchGroup: ({keySearchGroup}) {
