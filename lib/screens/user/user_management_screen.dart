@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:meta/meta.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -188,7 +187,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         onTap: () async {
                           await showAddUserDialog(
                             context,
-                            mode: UserDialogMode.add,
                             onSubmit: (payload) async {
                               // Xử lý thêm user
                               _addUser(
@@ -283,12 +281,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     itemBuilder: (context, index) =>
                                         ItemUserWidget(
                                           onEdit: () async {
-                                            await showAddUserDialog(
+                                            await showEditUserDialog(
                                               context,
                                               userEntity: state.users![index],
-                                              mode: UserDialogMode.edit,
-                                              onEdit: (payload) async {
+                                              onSubmit: (payload) async {
                                                 _editUser(
+                                                  isAdmin:
+                                                      payload.accountType ==
+                                                          'admin'
+                                                      ? true
+                                                      : false,
+                                                  changePassDenied:
+                                                      payload.canChangePassword,
+                                                  addCamDenied:
+                                                      payload.canAddCamera,
+                                                  password: state
+                                                      .users![index]
+                                                      .password,
                                                   email: payload.email,
                                                   tel: payload.phoneNumber,
                                                   desc: payload.description,
@@ -296,14 +305,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                                   userId:
                                                       state.users![index].id,
                                                   account: payload.username,
-                                                  password: payload.password,
-                                                  isAdmin: payload.isAdmin,
-                                                  addCamDenied:
-                                                      payload.canAddCamera,
-                                                  changePassDenied:
-                                                      payload.canChangePassword,
                                                 );
-                                                // Xử lý thêm user
                                               },
                                             );
                                           },
@@ -351,6 +353,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             message: 'Xóa người dùng thành công !',
             type: AppMessageType.success,
           );
+        } else if (state is DeleteUserFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
         } else if (state is ListCameraSuccessState) {
           _onGetListUser();
           setState(() {});
@@ -361,7 +370,37 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             message: 'Cập nhật người dùng thành công !',
             type: AppMessageType.success,
           );
+        } else if (state is EditUserFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
+        } else if (state is ResetPassWordSuccess) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: 'Cập nhật mật khẩu thành công !',
+            type: AppMessageType.success,
+          );
         } else if (state is ResetPassWordFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
+        } else if (state is AddUserSuccess) {
+          _onGetListUser();
+        } else if (state is AddUserFail) {
+          _onGetListUser();
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
+        } else if (state is AddUserFail) {
           _onGetListUser();
           showAppMessageDialog(
             context,
@@ -372,9 +411,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       },
       listenWhen: (previous, current) =>
           current is DeleteUserSuccess ||
+          current is DeleteUserFail ||
           current is ListCameraSuccessState ||
           current is EditUserSuccess ||
-          current is ResetPassWordFail,
+          current is EditUserFail ||
+          current is ResetPassWordFail ||
+          current is ResetPassWordSuccess ||
+          current is AddUserSuccess ||
+          current is AddUserFail,
     );
   }
 }
