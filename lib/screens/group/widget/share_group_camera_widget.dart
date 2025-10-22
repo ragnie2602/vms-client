@@ -38,6 +38,9 @@ Future<T?> showShareGroupCameraDialog<T>(
   final Future<List<int>?> Function(List<int>?)? onDeleteShareGroup,
   // dành cho share camera
   CameraEntity? currentCamera,
+  Future<List<int>?> Function(String?)? onShareCamera,
+  final Future<List<int>?> Function(List<int>?, String? accname)?
+  onDeleteShareCamera,
 }) {
   final controlCameraBloc = context.read<ControlCameraBloc>();
   return showDialog<T>(
@@ -53,6 +56,8 @@ Future<T?> showShareGroupCameraDialog<T>(
         onShareGroup: onShareGroup,
         onDeleteShareGroup: onDeleteShareGroup,
         onReloadData: onReloadData,
+        onDeleteShareCamera: onDeleteShareCamera,
+        onShareCamera: onShareCamera,
       ),
     ),
   );
@@ -68,6 +73,8 @@ class _ShareGroupCameraWidget extends StatefulWidget {
     this.sharedUsers,
     this.onDeleteShareGroup,
     required this.onReloadData,
+    this.onDeleteShareCamera,
+    this.onShareCamera,
   });
   final ShareType shareType;
   final List<InviteMessageEntity>? sharedUsers;
@@ -78,6 +85,10 @@ class _ShareGroupCameraWidget extends StatefulWidget {
   final Future<List<int>?> Function(List<int>?)? onDeleteShareGroup;
   // dành cho share camera
   final CameraEntity? currentCamera;
+  final Future<List<int>?> Function(String?)? onShareCamera;
+  final Future<List<int>?> Function(List<int>?, String? accname)?
+  onDeleteShareCamera;
+
   @override
   State<_ShareGroupCameraWidget> createState() =>
       __ShareGroupCameraWidgetState();
@@ -169,8 +180,14 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
     // rest api share
     // 1. share cam
     if (widget.shareType == ShareType.camera) {
-      // handle share cam ở đây
-      return;
+      final res = await widget.onShareCamera?.call(_accShareCamera);
+      if (!mounted) return;
+      if (res != null && res.isNotEmpty) {
+        await _onReload();
+        _searchController.clear();
+      } else {
+        // handle share cam fail
+      }
     } else {
       // 2. share group
       final res = await widget.onShareGroup?.call(_accIdShareGroup);
@@ -189,7 +206,15 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
     // 1. delete share cam
     if (widget.shareType == ShareType.camera) {
       // handle remove cam ở đây
-      return;
+      final res = await widget.onDeleteShareCamera?.call(
+        invitedGroupId,
+        accNameRemove,
+      );
+      if (!mounted) return;
+      if (res != null && res.isNotEmpty) {
+        await _onReload();
+      }
+      // return;
     } else {
       // 2. delete share group
       final res = await widget.onDeleteShareGroup?.call(invitedGroupId);
@@ -202,13 +227,15 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
 
   void _onShowDialogRemoveShareGroup(
     BuildContext c, {
-    List<int>? invitedGroupId,
+    List<int>? invitedId,
     String? accNameRemove,
   }) {
     showConfirmRemoveDialog(
       c,
       contentWidget: Text(
-        'chia sẻ nhóm camera cho tài khoản này',
+        widget.shareType == ShareType.groupCamera
+            ? 'chia sẻ nhóm camera cho tài khoản này'
+            : 'chia sẻ camera cho tài khoản này',
         style: AppTypography.style(
           14,
           color: AppColors.blackOrWhite,
@@ -219,7 +246,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
         // close confirm dialog
         Navigator.of(c).pop();
         // gọi hàm xóa
-        _onRemove(invitedGroupId: invitedGroupId, accNameRemove: accNameRemove);
+        _onRemove(invitedGroupId: invitedId, accNameRemove: accNameRemove);
       },
     );
   }
@@ -476,7 +503,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                                         if (_accRemoveId == null) return;
                                         _onShowDialogRemoveShareGroup(
                                           context,
-                                          invitedGroupId: _accRemoveId,
+                                          invitedId: _accRemoveId,
                                           accNameRemove: username,
                                         );
                                       },

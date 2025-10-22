@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -6,8 +5,10 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/data/datasources/share_camera_role_enum.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -15,9 +16,9 @@ import 'package:vms_flutter_client/screens/control_camera/widget/dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/remove_camera_widget.dart';
-import 'package:vms_flutter_client/screens/control_camera/widget/share_dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
+import 'package:vms_flutter_client/screens/group/widget/share_group_camera_widget.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
@@ -179,19 +180,19 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
-  void _onShareCamera({
-    required List<int> cameraId,
-    required ShareCameraRole role,
-    required String accountInvite,
-  }) {
-    context.read<ControlCameraBloc>().add(
-      ShareCameraEvent(
-        cameraId: cameraId,
-        role: ShareCameraRoleExtension.getShareCameraRoleValue(role),
-        accountInvite: accountInvite,
-      ),
-    );
-  }
+  // void _onShareCamera({
+  //   required List<int> cameraId,
+  //   required ShareCameraRole role,
+  //   required String accountInvite,
+  // }) {
+  //   context.read<ControlCameraBloc>().add(
+  //     ShareCameraEvent(
+  //       cameraId: cameraId,
+  //       role: ShareCameraRoleExtension.getShareCameraRoleValue(role),
+  //       accountInvite: accountInvite,
+  //     ),
+  //   );
+  // }
 
   void _onCheckAccountShare({
     required String account,
@@ -235,6 +236,45 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     super.dispose();
   }
 
+  Future<void> _onShowDialogShareCamera({
+    required BuildContext c,
+    required CameraEntity camera,
+  }) async {
+    List<InviteMessageEntity>? invites;
+    invites = await c.read<ControlCameraBloc>().getListShareCamera(
+      camId: camera.id,
+    );
+    if (!c.mounted) return;
+
+    showShareGroupCameraDialog(
+      c,
+      shareType: ShareType.camera,
+      currentCamera: camera,
+      onReloadData: () async {
+        return await c.read<ControlCameraBloc>().getListShareCamera(
+          camId: camera.id,
+        );
+      },
+      onDeleteShareCamera: (_inviteId, _accName) {
+        return context.read<ControlCameraBloc>().deleteShareCamera(
+          camId: camera.id,
+          accountB: _accName,
+          shareId: _inviteId,
+        );
+      },
+      onShareCamera: (_accountNameInvite) {
+        return context.read<ControlCameraBloc>().shareCamera(
+          camId: camera.id,
+          role: ShareCameraRoleExtension.getShareCameraRoleValue(
+            ShareCameraRole.VIEW,
+          ),
+          accountInvite: _accountNameInvite,
+        );
+      },
+      sharedUsers: invites, // list data,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<ControlCameraBloc, ControlCameraState>(
@@ -249,51 +289,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
             context,
             message: state.errorMsg,
             type: AppMessageType.error,
-          );
-        }
-        if (state is ListShareCameraSuccessState) {
-          final cam = context.read<ControlCameraBloc>().listCamera.firstWhere(
-            (c) => listEquals(c.id, state.cameraId),
-            orElse: () => context.read<ControlCameraBloc>().listCamera.first,
-          );
-
-          showShareDialog(
-            context,
-            shareType: ShareType.camera,
-            camera: cam,
-            sharedUsers: state.inviteMessages,
-            onSave: (selectedUsers) async {
-              _onShareCamera(
-                cameraId: cam.id,
-                role: ShareCameraRole.VIEW,
-                accountInvite: selectedUsers.first,
-              );
-            },
-            onDelete: (selectedUsers) async {
-              _onDeleteShareCamera(
-                cameraId: cam.id,
-                accountB: selectedUsers.accountShared?.account ?? '',
-                shareId: selectedUsers.accountShareId,
-              );
-            },
-            onSearchUser: (userName) async {
-              final repo = context
-                  .read<ControlCameraBloc>()
-                  .controlGroupRepository;
-              final res = await repo.checkAccountShare(
-                cameraId: cam.id,
-                account: userName,
-                shareType: ShareTypeExtension.getShareTypeValue(
-                  ShareType.camera,
-                ),
-                groupId: const [],
-              );
-              return res.fold(
-                (_) => null,
-                (reply) =>
-                    reply.isExists ? SharedUser(username: userName) : null,
-              );
-            },
           );
         }
         if (state is DeleteCameraSuccessState) {
@@ -604,7 +599,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                         ),
                                       );
                                     }
-
                                     return Scrollbar(
                                       controller: _cameraListController,
                                       thumbVisibility: true,
@@ -656,15 +650,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               onDelete: () => _onDeleteCamera(
                                                 cameraId: cameras[index].id,
                                               ),
-                                              onShare: () {
-                                                context
-                                                    .read<ControlCameraBloc>()
-                                                    .add(
-                                                      ListShareCameraEvent(
-                                                        cameraId:
-                                                            cameras[index].id,
-                                                      ),
-                                                    );
+                                              onShare: () async {
+                                                await _onShowDialogShareCamera(
+                                                  c: context,
+                                                  camera: cameras[index],
+                                                );
                                               },
                                               onRemoveFromGroup: () {
                                                 _showDialogRemoveCameraFromGroup(
