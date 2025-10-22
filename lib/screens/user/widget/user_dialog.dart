@@ -398,6 +398,19 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                           hintText: 'Nhập email',
                           label: 'Email',
                           keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return null; // Email không bắt buộc
+                            }
+                            // Regex kiểm tra định dạng email
+                            final emailRegex = RegExp(
+                              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                            );
+                            if (!emailRegex.hasMatch(v)) {
+                              return 'Email không đúng định dạng';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -408,6 +421,20 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                           hintText: 'Nhập số điện thoại',
                           label: 'Số điện thoại',
                           keyboardType: TextInputType.phone,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return null; // Số điện thoại không bắt buộc
+                            }
+                            // Regex kiểm tra định dạng số điện thoại Việt Nam
+                            // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
+                            final phoneRegex = RegExp(
+                              r'^(84|0)(3|5|7|8|9)\d{8,9}$',
+                            );
+                            if (!phoneRegex.hasMatch(v)) {
+                              return 'Số điện thoại không đúng định dạng';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],
@@ -846,6 +873,19 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                         hintText: 'Nhập email',
                         label: 'Email',
                         keyboardType: TextInputType.emailAddress,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return null; // Email không bắt buộc
+                          }
+                          // Regex kiểm tra định dạng email
+                          final emailRegex = RegExp(
+                            r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                          );
+                          if (!emailRegex.hasMatch(v)) {
+                            return 'Email không hợp lệ';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -855,6 +895,20 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                         hintText: 'Nhập số điện thoại',
                         label: 'Số điện thoại',
                         keyboardType: TextInputType.phone,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return null; // Số điện thoại không bắt buộc
+                          }
+                          // Regex kiểm tra định dạng số điện thoại Việt Nam
+                          // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
+                          final phoneRegex = RegExp(
+                            r'^(84|0)(3|5|7|8|9)\d{8,9}$',
+                          );
+                          if (!phoneRegex.hasMatch(v)) {
+                            return 'Số điện thoại không hợp lệ';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                   ],
