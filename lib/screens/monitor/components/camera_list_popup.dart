@@ -96,9 +96,21 @@ class CameraListPopup extends StatelessWidget {
               if (state is MonitorFailure) return Center(child: Text(state.message));
               if (state is MonitorSuccess) {
                 return Flexible(
-                  child: ListView.builder(
-                    itemBuilder: (context, index) => _cameraItem(state.cameras[index]),
-                    itemCount: state.cameras.length,
+                  child: ValueListenableBuilder(
+                    valueListenable: searchController,
+                    builder: (context, value, child) {
+                      final cameras = state.cameras
+                          .where(
+                            (camera) =>
+                                camera.name.toLowerCase().contains(value.text.toLowerCase()),
+                          )
+                          .toList();
+
+                      return ListView.builder(
+                        itemBuilder: (context, index) => _cameraItem(cameras[index]),
+                        itemCount: cameras.length,
+                      );
+                    },
                   ),
                 );
               }
