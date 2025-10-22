@@ -296,25 +296,6 @@ class ControlCameraBloc
     });
   }
 
-  // FutureOr<void> _onListShareInviteGroup(
-  //   ListShareInviteGroupEvent event,
-  //   Emitter<ControlCameraState> emit,
-  // ) async {
-  //   final res = await controlGroupRepository.listShareInviteGroup(
-  //     groupId: event.groupId,
-  //   );
-  //   res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
-  //     onSuccess,
-  //   ) {
-  //     emit(
-  //       ListShareInviteGroupSuccessState(
-  //         groupId: event.groupId,
-  //         inviteMessages: onSuccess,
-  //       ),
-  //     );
-  //   });
-  // }
-
   FutureOr<void> _onListShareCamera(
     ListShareCameraEvent event,
     Emitter<ControlCameraState> emit,
@@ -340,6 +321,7 @@ class ControlCameraBloc
     RemoveCameraFromGroupEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
+    emit(ControlCameraLoadingState());
     final res = await controlGroupRepository.removeCameraFromGroup(
       cameraId: event.cameraId,
       groupId: event.groupId ?? currentGroupId,
@@ -347,11 +329,11 @@ class ControlCameraBloc
     res.fold(
       (onFailure) => emit(RemoveCameraFromGroupFailState(res.left.toString())),
       (onSuccess) {
-        // Cập nhật lại danh sách camera sau khi xóa khỏi nhóm
-        listCamera.removeWhere(
-          (camera) => listEquals(event.cameraId, camera.id),
-        );
-        emit(ListCameraSuccessState(cameras: listCamera));
+        // Cập nhật lại danh sách camera sau khi xóa khỏi nhóm.
+        final updated = List<CameraEntity>.from(listCamera)
+          ..removeWhere((camera) => listEquals(event.cameraId, camera.id));
+        listCamera = updated;
+        emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(updated)));
       },
     );
   }
