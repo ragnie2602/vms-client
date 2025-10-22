@@ -2,13 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/debouncer.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
+import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 /// Example usage:
 /// ```dart
-/// showShareCameraDialog(
+/// // Chia sẻ group
+/// showShareDialog(
 ///   context,
+///   shareType: ShareType.group,
 ///   groupName: 'Group_1',
+///   sharedUsers: ['user1', 'user2'],
+///   onSave: (selectedUsers) async {
+///     // Handle save logic
+///     print('Selected users: $selectedUsers');
+///   },
+///   onCancel: () {
+///     // Handle cancel logic
+///     print('Dialog cancelled');
+///   },
+/// );
+///
+/// // Chia sẻ camera
+/// showShareDialog(
+///   context,
+///   shareType: ShareType.camera,
+///   camera: cameraEntity,
 ///   sharedUsers: ['user1', 'user2'],
 ///   onSave: (selectedUsers) async {
 ///     // Handle save logic
@@ -22,65 +44,119 @@ import 'package:vms_flutter_client/screens/home/components/components_src.dart';
 /// ```
 
 /// Entry point to show the share dialog
-Future<T?> showShareCameraDialog<T>(
+/// 
+enum ShareType {
+  camera(0),
+  groupCamera(1);
+
+  final int value;
+
+  const ShareType(this.value);
+}
+
+extension ShareTypeExtension on ShareType {
+  static int getShareTypeValue(ShareType shareType) {
+    return shareType.value;
+  }
+}
+
+Future<T?> showShareDialog<T>(
   BuildContext context, {
-  required String groupName,
-  List<String> sharedUsers = const [],
+  required ShareType shareType,
+  String? groupName,
+  CameraEntity? camera,
+  List<InviteMessageEntity> sharedUsers = const [],
   Future<void> Function(List<String> selectedUsers)? onSave,
+  Future<SharedUser?> Function(String query)? onSearchUser,
+  Future<void> Function(InviteMessageEntity selectedUsers)? onDelete,
   VoidCallback? onCancel,
 }) {
   return showDialog<T>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => _ShareCameraDialog(
+    builder: (_) => _ShareDialog(
+      shareType: shareType,
       groupName: groupName,
+      camera: camera,
       sharedUsers: sharedUsers,
       onSave: onSave,
+      onSearchUser: onSearchUser,
+      onDelete: onDelete,
       onCancel: onCancel,
     ),
   );
 }
 
-/// Data model for shared user
+/// Data model for shared user (username only)
 class SharedUser {
   final String username;
-  final String? displayName;
-  final String? avatar;
 
-  const SharedUser({required this.username, this.displayName, this.avatar});
-
-  String get displayText => displayName ?? username;
+  const SharedUser({required this.username});
 }
 
-class _ShareCameraDialog extends StatefulWidget {
-  const _ShareCameraDialog({
-    required this.groupName,
+class _ShareDialog extends StatefulWidget {
+  const _ShareDialog({
+    required this.shareType,
+    this.groupName,
+    this.camera,
     required this.sharedUsers,
     this.onSave,
+    this.onSearchUser,
+    this.onDelete,
     this.onCancel,
   });
 
-  final String groupName;
-  final List<String> sharedUsers;
+  final ShareType shareType;
+  final String? groupName;
+  final CameraEntity? camera;
+  final List<InviteMessageEntity> sharedUsers;
   final Future<void> Function(List<String> selectedUsers)? onSave;
+  final Future<SharedUser?> Function(String query)? onSearchUser;
+  final Future<void> Function(InviteMessageEntity selectedUsers)? onDelete;
   final VoidCallback? onCancel;
 
   @override
-  State<_ShareCameraDialog> createState() => _ShareCameraDialogState();
+  State<_ShareDialog> createState() => _ShareDialogState();
 }
 
-class _ShareCameraDialogState extends State<_ShareCameraDialog> {
+class _ShareDialogState extends State<_ShareDialog> {
   final _searchController = TextEditingController();
   final List<String> _selectedUsers = [];
+  final List<String> _combinationUsers = [];
   final List<SharedUser> _searchResults = [];
   bool _isSearching = false;
   bool _isSaving = false;
-
+  final Debouncer debouncer = Debouncer(milliseconds: 500);
   @override
   void initState() {
     super.initState();
-    _selectedUsers.addAll(widget.sharedUsers);
+    // combination = shared (from server) + newly selected (at runtime)
+    _combinationUsers.addAll(
+      widget.sharedUsers
+          .map((e) => e.accountShared?.account ?? '')
+          .where((e) => e.isNotEmpty),
+    );
     _searchController.addListener(_onSearchChanged);
+  }
+
+  /// Lấy tên hiển thị dựa trên loại chia sẻ
+  String get _displayName {
+    switch (widget.shareType) {
+      case ShareType.groupCamera:
+        return widget.groupName ?? 'Nhóm';
+      case ShareType.camera:
+        return widget.camera?.name ?? 'Camera';
+    }
+  }
+
+  /// Lấy mô tả dựa trên loại chia sẻ
+  String get _description {
+    switch (widget.shareType) {
+      case ShareType.groupCamera:
+        return 'Chia sẻ nhóm camera';
+      case ShareType.camera:
+        return 'Chia sẻ camera';
+    }
   }
 
   @override
@@ -110,42 +186,79 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
   }
 
   void _performSearch(String query) {
-    // Mock search results - in real app, this would call an API
-    final mockResults =
-        [
-              SharedUser(username: 'user1', displayName: 'Người dùng 1'),
-              SharedUser(username: 'user2', displayName: 'Người dùng 2'),
-              SharedUser(username: 'user3', displayName: 'Người dùng 3'),
-            ]
-            .where(
-              (user) =>
-                  user.username.toLowerCase().contains(query.toLowerCase()) ||
-                  (user.displayName?.toLowerCase().contains(
-                        query.toLowerCase(),
-                      ) ??
-                      false),
-            )
-            .toList();
-
-    setState(() {
-      _searchResults.clear();
-      _searchResults.addAll(mockResults);
-      _isSearching = false;
-    });
+    if (widget.onSearchUser == null) {
+      setState(() {
+        _searchResults.clear();
+        _isSearching = false;
+      });
+      return;
+    }
+    widget.onSearchUser!(query)
+        .then((result) {
+          if (!mounted) return;
+          setState(() {
+            _searchResults.clear();
+            if (result != null) {
+              _searchResults.add(result);
+            }
+            _isSearching = false;
+          });
+        })
+        .catchError((_) {
+          if (!mounted) return;
+          setState(() {
+            _searchResults.clear();
+            _isSearching = false;
+          });
+        });
   }
 
   void _addUser(SharedUser user) {
-    if (!_selectedUsers.contains(user.username)) {
-      setState(() {
-        _selectedUsers.add(user.username);
-      });
-    }
+    // allow only one new selection; don't add duplicates
+    if (_selectedUsers.isNotEmpty) return;
+    if (_selectedUsers.contains(user.username)) return;
+    setState(() {
+      _selectedUsers.add(user.username);
+      if (!_combinationUsers.contains(user.username)) {
+        _combinationUsers.add(user.username);
+      }
+    });
   }
 
-  void _removeUser(String username) {
+  void _removeUser(InviteMessageEntity inviteMessage) {
+    widget.onDelete?.call(inviteMessage);
+    // Only remove from selected (for this session). Keep combination to reflect existing shared users.
     setState(() {
-      _selectedUsers.remove(username);
+      _selectedUsers.remove(inviteMessage.accountShared?.account ?? '');
     });
+  }
+
+  Future<void> _confirmRemoveUser(InviteMessageEntity inviteMessage) async {
+    final title = widget.shareType == ShareType.camera
+        ? 'Bạn có chắc muốn hủy chia sẻ camera không ?'
+        : 'Bạn có chắc muốn hủy chia sẻ nhóm không ?';
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(title),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                _removeUser(inviteMessage);
+              },
+              child: const Text('Hủy Chia sẻ'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _handleSave() async {
@@ -154,9 +267,20 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
     setState(() => _isSaving = true);
 
     try {
+      // Log share info for debugging
+      print('Sharing info: $_shareInfo');
+
       await widget.onSave?.call(_selectedUsers);
       if (mounted) {
         Navigator.pop(context);
+        showAppMessageDialog(
+          context,
+          message: 'Chia sẻ camera thành công!',
+          type: AppMessageType.success,
+          onOk: () {
+            Navigator.pop(context);
+          },
+        );
       }
     } catch (e) {
       // Handle error
@@ -170,6 +294,19 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
         setState(() => _isSaving = false);
       }
     }
+  }
+
+  /// Lấy thông tin chia sẻ để hiển thị trong log hoặc debug
+  Map<String, dynamic> get _shareInfo {
+    return {
+      'shareType': widget.shareType.name,
+      'targetName': _displayName,
+      'selectedUsers': _selectedUsers,
+      if (widget.shareType == ShareType.camera && widget.camera != null)
+        'cameraId': widget.camera!.camId,
+      if (widget.shareType == ShareType.groupCamera && widget.groupName != null)
+        'groupName': widget.groupName,
+    };
   }
 
   @override
@@ -186,7 +323,7 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
         children: [
           Expanded(
             child: Text(
-              'Chia sẻ nhóm ${widget.groupName}',
+              '$_description $_displayName',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -206,6 +343,13 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
+
+              // Camera Info Section (only for camera sharing)
+              if (widget.shareType == ShareType.camera && widget.camera != null)
+                _buildCameraInfoSection(),
+
+              if (widget.shareType == ShareType.camera && widget.camera != null)
+                const SizedBox(height: 16),
 
               // Search Section
               _buildSearchSection(),
@@ -262,13 +406,78 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
     );
   }
 
+  Widget _buildCameraInfoSection() {
+    final camera = widget.camera!;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        border: Border.all(color: AppColors.greyE2E8F0),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          // Camera icon
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.blue15ABFF,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.videocam, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 12),
+
+          // Camera info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  camera.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF000000),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'ID: ${camera.camId}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF92929D),
+                  ),
+                ),
+                if (camera.iPUrlStream.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'IP: ${camera.iPUrlStream}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF92929D),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSearchSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Tài khoản muốn chia sẻ nhóm camera',
-          style: TextStyle(
+        Text(
+          widget.shareType == ShareType.groupCamera
+              ? 'Tài khoản muốn chia sẻ nhóm camera'
+              : 'Tài khoản muốn chia sẻ camera',
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Color(0xFF000000),
@@ -284,6 +493,11 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
           ),
           child: TextFormField(
             controller: _searchController,
+            onChanged: (value) {
+              debouncer.run(() {
+                widget.onSearchUser?.call(value);
+              });
+            },
             decoration: InputDecoration(
               hintText: 'Tìm kiếm và chọn người dùng',
               hintStyle: const TextStyle(
@@ -307,6 +521,7 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
                 horizontal: 14,
                 vertical: 14,
               ),
+
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -346,6 +561,7 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
                 itemBuilder: (context, index) {
                   final user = _searchResults[index];
                   final isSelected = _selectedUsers.contains(user.username);
+                  final canSelect = _selectedUsers.isEmpty || isSelected;
 
                   return ListTile(
                     dense: true,
@@ -353,8 +569,8 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
                       radius: 16,
                       backgroundColor: AppColors.blue15ABFF,
                       child: Text(
-                        user.displayText.isNotEmpty
-                            ? user.displayText[0].toUpperCase()
+                        user.username.isNotEmpty
+                            ? user.username[0].toUpperCase()
                             : 'U',
                         style: const TextStyle(
                           color: Colors.white,
@@ -364,19 +580,13 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
                       ),
                     ),
                     title: Text(
-                      user.displayText,
+                      user.username,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    subtitle: Text(
-                      user.username,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF92929D),
-                      ),
-                    ),
+                    // subtitle: const SizedBox.shrink(),
                     trailing: isSelected
                         ? const Icon(
                             Icons.check_circle,
@@ -385,9 +595,11 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
                           )
                         : IconButton(
                             icon: const Icon(Icons.add_circle_outline),
-                            onPressed: () => _addUser(user),
+                            onPressed: canSelect ? () => _addUser(user) : null,
                           ),
-                    onTap: isSelected ? null : () => _addUser(user),
+                    onTap: canSelect && !isSelected
+                        ? () => _addUser(user)
+                        : null,
                   );
                 },
               ),
@@ -411,7 +623,7 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
         ),
         const SizedBox(height: 8),
 
-        if (_selectedUsers.isEmpty)
+        if (_combinationUsers.isEmpty)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -435,9 +647,9 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
             ),
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: _selectedUsers.length,
+              itemCount: _combinationUsers.length,
               itemBuilder: (context, index) {
-                final username = _selectedUsers[index];
+                final username = _combinationUsers[index];
 
                 return ListTile(
                   dense: true,
@@ -482,7 +694,11 @@ class _ShareCameraDialogState extends State<_ShareCameraDialog> {
                       ),
                     ],
                   ),
-                  onTap: () => _removeUser(username),
+                  onTap: () => _confirmRemoveUser(
+                    widget.sharedUsers.firstWhere(
+                      (e) => e.accountShared?.account == username,
+                    ),
+                  ),
                 );
               },
             ),

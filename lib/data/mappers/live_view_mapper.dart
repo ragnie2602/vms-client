@@ -21,6 +21,16 @@ extension LiveViewPositionMapper on pb.LiveViewPosition {
   }
 }
 
+extension LiveViewPositionReverse on LiveViewPosition {
+  pb.LiveViewPosition toPB() {
+    return pb.LiveViewPosition(
+      index: index,
+      cameraId: cameraId,
+      camera: null, // TODO: Convert camera to PB
+    );
+  }
+}
+
 extension CustomLiveViewMapper on pb.CustomLiveView {
   CustomLiveView toDomain() {
     return CustomLiveView(
@@ -41,18 +51,18 @@ extension CustomLiveViewReverse on CustomLiveView {
         (e) => pb.LiveViewPosition(
           index: e.index,
           cameraId: e.cameraId,
-          camera: e.camera?.let(
-            (cam) => pb.Camera(
-              name: cam.name,
-              id: cam.id,
-              camId: cam.camId,
-              username: cam.username,
-              password: cam.password,
-              type: pb.Camera_Type.valueOf(cam.type.value),
-              status: pb.Camera_Status.valueOf(cam.status.value),
-              // streamUrl: cam.stream,
-            ),
-          ),
+          // camera: e.camera?.let(
+          //   (cam) => pb.Camera(
+          //     name: cam.name,
+          //     id: cam.id,
+          //     camId: cam.camId,
+          //     username: cam.username,
+          //     password: cam.password,
+          //     type: pb.Camera_Type.valueOf(cam.type.value),
+          //     status: pb.Camera_Status.valueOf(cam.status.value),
+          //     // streamUrl: cam.stream,
+          //   ),
+          // ),
         ),
       ),
       name: name,
