@@ -348,7 +348,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                           hintText: 'Nhập tài khoản',
                           label: 'Tên đăng nhập',
                           requiredField: true,
-                          validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
+                          validator: (v) => v!.isEmpty
+                              ? 'Tên đăng nhập không được để trống!'
+                              : null,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -360,7 +362,18 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                           label: 'Mật khẩu',
                           requiredField: true,
                           obscureText: _obscurePassword,
-                          validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return 'Mật khẩu không được để trống!';
+                            }
+                            if (v.contains(' ')) {
+                              return 'Mật khẩu từ 8 – 16 ký tự, không chứa ký tự khoảng trống';
+                            }
+                            if (v.length < 8 || v.length > 16) {
+                              return 'Mật khẩu từ 8 – 16 ký tự, không chứa ký tự khoảng trống';
+                            }
+                            return null;
+                          },
                           suffix: IconButton(
                             icon: Icon(
                               _obscurePassword
