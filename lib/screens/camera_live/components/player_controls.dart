@@ -70,7 +70,7 @@ class PlayerControls extends StatelessWidget {
                     }),
 
                   /* Record */
-                  _controlItem(AppAssets.icRecord, () {}),
+                  // _controlItem(AppAssets.icRecord, () {}),
 
                   /* Camera */
                   _controlItem(AppAssets.icCamera, () async {
@@ -93,14 +93,14 @@ class PlayerControls extends StatelessWidget {
                   }),
 
                   /* Speed */
-                  if (mode.isPlayback) _buildSpeed(),
+                  // if (mode.isPlayback) buildSpeedDropdown(),
 
                   /* Zoom */
-                  _controlItem(AppAssets.icZoomIn, () {}),
-                  _controlItem(AppAssets.icZoomOut, () {}),
+                  // _controlItem(AppAssets.icZoomIn, () {}),
+                  // _controlItem(AppAssets.icZoomOut, () {}),
 
                   /* Fullscreen */
-                  _controlItem(AppAssets.icFullscreen, () {}),
+                  // _controlItem(AppAssets.icFullscreen, () {}),
                 ],
               ),
             ),
@@ -118,7 +118,7 @@ class PlayerControls extends StatelessWidget {
     );
   }
 
-  Widget _buildSpeed() {
+  Widget buildSpeedDropdown() {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Color(0xFFE2E8F0)),

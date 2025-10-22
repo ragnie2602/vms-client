@@ -89,13 +89,13 @@ class LiveViewActions extends StatelessWidget {
               builder: (context, index, child) => Row(
                 spacing: 28,
                 children: [
-                  ActionItem.alert(
-                    isSelected: index == 0,
-                    id: 0,
-                    controller: rightController,
-                    onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
-                    count: '09',
-                  ),
+                  // ActionItem.alert(
+                  //   isSelected: index == 0,
+                  //   id: 0,
+                  //   controller: rightController,
+                  //   onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
+                  //   count: '09',
+                  // ),
                 ],
               ),
             ),

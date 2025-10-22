@@ -1,5 +1,6 @@
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -14,6 +15,7 @@ class TreeGroupWidget extends StatefulWidget {
     this.controller,
     this.action,
     this.actionBuilder,
+    this.selectedGroupId,
     this.isShowGroupAll,
     this.onClickAllGroup,
     this.isShowNoGroup,
@@ -31,6 +33,7 @@ class TreeGroupWidget extends StatefulWidget {
   final TreeNode<DeviceGroup> tree;
   final Widget? action;
   final Widget? Function(TreeNode<DeviceGroup> node)? actionBuilder;
+  final List<int>? selectedGroupId;
   final bool? isShowGroupAll;
   final VoidCallback? onClickAllGroup;
   final bool? isShowNoGroup;
@@ -52,10 +55,49 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
   TreeNode<DeviceGroup>? _selectedNode;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncSelectedNodeFromProp();
+  }
+
+  @override
   void didUpdateWidget(TreeGroupWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _treeController?.expandAllChildren(widget.tree);
+    });
+    if (oldWidget.selectedGroupId != widget.selectedGroupId) {
+      _syncSelectedNodeFromProp();
+    }
+  }
+
+  // dùng để tìm node trong tree 
+  // khi đang ở node khác mà mở action của node X cần tìm 
+  // để focus và update list cam (update dữ liệu)
+  void _syncSelectedNodeFromProp() {
+    if (widget.selectedGroupId == null) return;
+    TreeNode<DeviceGroup>? foundNodeOnTree;
+    void searchOnTree(TreeNode<DeviceGroup> node) {
+      if (foundNodeOnTree != null) return;
+      if (listEquals(node.data?.groupId ?? [], widget.selectedGroupId)) {
+        foundNodeOnTree = node;
+        return;
+      }
+      final dynamic children = node.children;
+      if (children is Iterable) {
+        for (var c in children) {
+          searchOnTree(c as TreeNode<DeviceGroup>);
+        }
+      } else if (children is Map) {
+        for (var c in children.values) {
+          searchOnTree(c as TreeNode<DeviceGroup>);
+        }
+      }
+    }
+
+    searchOnTree(widget.tree);
+    setState(() {
+      _selectedNode = foundNodeOnTree;
     });
   }
 
