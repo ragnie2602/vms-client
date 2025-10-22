@@ -104,21 +104,22 @@ class _MonitorActionsState extends State<MonitorActions> {
             ),
 
             /*  */
-            ValueListenableBuilder(
-              valueListenable: _rightPanelIndex,
-              builder: (context, value, child) => Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ActionItem.alert(
-                    isSelected: value == 0,
-                    id: 0,
-                    controller: widget.rightController,
-                    onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
-                    count: '09',
-                  ),
-                ],
-              ),
-            ),
+            // TODO: Do in the future
+            // ValueListenableBuilder(
+            //   valueListenable: _rightPanelIndex,
+            //   builder: (context, value, child) => Row(
+            //     mainAxisSize: MainAxisSize.min,
+            //     children: [
+            //       ActionItem.alert(
+            //         isSelected: value == 0,
+            //         id: 0,
+            //         controller: widget.rightController,
+            //         onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
+            //         count: '09',
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
