@@ -133,10 +133,6 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   }
 
   Widget _buildDefaultMode(double currentWidth, double availableHeight) {
-    final double heightGroupTree = availableHeight.isFinite && availableHeight > 0
-                ? availableHeight -
-                      220 // subtract approximate space used by siblings
-                : 300;
     final cvBloc = context.read<CustomViewBloc>();
 
     return Column(
@@ -159,34 +155,39 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
           ),
         SizedBox(height: 16),
 
-        BlocBuilder<MonitorBloc, MonitorState>(
-          builder: (context, state) {
-            if (state is! MonitorSuccess) return SizedBox();
+        BlocSelector<MonitorBloc, MonitorState, ViewMode?>(
+          selector: (state) => state is MonitorSuccess ? state.mode : null,
+          builder: (context, selectedMode) {
+            if (selectedMode == null) return SizedBox(height: 32);
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
                 height: 32,
-                child: Row(
-                  spacing: 8,
-                  children: [
-                    for (var (index, value) in ViewMode.values.indexed)
-                      if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
-                        InkWell(
-                          onTap: () {
-                            cvBloc.preCustomView = null;
-                            if (GoRouterState.of(context).name != Routes.monitoring.name) {
-                              context.goNamed(Routes.monitoring.name);
-                            }
-                            context.read<MonitorBloc>().add(ChangeGridMode(value));
-                          },
-                          child: SvgPicture.asset(
-                            state.mode == value ? value.iconActive : value.icon,
-                            width: 32,
-                            height: 32,
-                          ),
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: ViewMode.values.length,
+                  separatorBuilder: (context, index) => SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final value = ViewMode.values[index];
+                    if (currentWidth - 48 >= 32 * (index + 1) + 8 * index) {
+                      return InkWell(
+                        onTap: () {
+                          cvBloc.preCustomView = null;
+                          if (GoRouterState.of(context).name != Routes.monitoring.name) {
+                            context.goNamed(Routes.monitoring.name);
+                          }
+                          context.read<MonitorBloc>().add(ChangeGridMode(value));
+                        },
+                        child: SvgPicture.asset(
+                          selectedMode == value ? value.iconActive : value.icon,
+                          width: 32,
+                          height: 32,
                         ),
-                  ],
+                      );
+                    }
+                    return SizedBox.shrink();
+                  },
                 ),
               ),
             );
@@ -207,10 +208,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
               ),
             ),
           ),
-        // TODO: Add comment instead
-        SizedBox(height: 16 - 8),
-        SizedBox(
-          height: heightGroupTree.clamp(200, 800),
+        Expanded(
           child: GroupCameraView(
             onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
               context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
@@ -220,7 +218,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             },
             onGetNoGroupCamera: (BuildContext contextTreeGroup) {
               context.read<MonitorBloc>().add(GetAllCameraNoGroup());
-            }, 
+            },
             onAddCameraToGroup: ({required BuildContext c, required List<List<int>> cameraIds, required List<int> currentGroupId}) {},
           ),
         )
