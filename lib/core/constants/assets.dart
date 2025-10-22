@@ -83,5 +83,6 @@ class AppAssets {
   static const iconEdit = '$_svgPath/icon_edit.svg';
   static const iconRemove = '$_svgPath/icon_remove.svg';
   static const iconShare = '$_svgPath/icon_share.svg';
+  static const iconAddCamToGroup = '$_svgPath/ic_add_camera_group.svg';
   static const icLocation = '$_svgPath/ic_location.svg';
 }

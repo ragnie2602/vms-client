@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
@@ -259,90 +260,107 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                 children: [
                   Expanded(
                     child: TreeGroupWidget(
-                      actionBuilder: widget.enableNodeAction == true ? (node) {
-                        return PopupMenuButton<ItemGroupAction>(
-                          padding: EdgeInsets.zero,
-                          splashRadius: 20,
-                          menuPadding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(8),
-                          ),
-                          elevation: 8,
-                          onSelected: (value) async {
-                            setState(() {
-                              isClickAllGroup = false;
-                              isClickNoGroup = false;
-                              // đánh dấu node đang select action
-                              selectedGroupId = node.data?.groupId;
-                            });
-                            // update lại list cam theo node mới
-                            widget.onGetCamerasInGroup?.call(
-                              context,
-                              node.data?.groupId ?? [],
-                            );
-
-                            switch (value) {
-                              case ItemGroupAction.add:
-                                _onShowDialogAddEditGroup(
-                                  listGroupInput: newState.groups ?? [],
-                                  c: context,
-                                  addEditType: AddEditGroupType.add,
-                                );
-                                break;
-                              case ItemGroupAction.edit:
-                                _onShowDialogAddEditGroup(
-                                  listGroupInput: newState.groups ?? [],
-                                  c: context,
-                                  parentGroupId: node.data?.parentGroupId,
-                                  addEditType: AddEditGroupType.edit,
-                                  currentGroup: node.data,
-                                );
-                                break;
-                              case ItemGroupAction.share:
-                                if (node.data != null) {
-                                  await _onShowDialogShareGroup(
-                                    c: context,
-                                    groupId: node.data!.groupId,
-                                  );
-                                }
-                                break;
-                              case ItemGroupAction.remove:
-                                _onShowDialogRemoveGroup(
-                                  c: context,
-                                  currentGroup: node.data,
-                                );
-                                break;
-                              case ItemGroupAction.addCamera:
-                                _onShowDialogAddCamera(
-                                  c: context,
-                                  currentGroup: node.data,
-                                );
-                                break;
-                            }
-                          },
-                          itemBuilder: (BuildContext context) {
-                            List<ItemGroupAction> listAction = List.of(
-                              ItemGroupAction.values,
-                            );
-                            // nếu level >= 2 (thứ 3) thì ko còn action add group nữa
-                            if ((node.data?.level ?? 0) >= 2) {
-                              listAction.remove(ItemGroupAction.add);
-                            }
-                            return listAction
-                                .map(
-                                  (e) => PopupMenuItem<ItemGroupAction>(
-                                    value: e,
-                                    child: ItemActionWidget(item: e),
+                      actionBuilder: widget.enableNodeAction == true
+                          ? (node) {
+                              return PopupMenuButton<ItemGroupAction>(
+                                padding: EdgeInsets.zero,
+                                splashRadius: 20,
+                                menuPadding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadiusGeometry.circular(
+                                    8,
                                   ),
-                                )
-                                .toList();
-                          },
-                          child: SvgPicture.asset(
-                            AppAssets.icAction,
-                            color: Colors.black,
-                          ),
-                        );
-                      } : null,
+                                ),
+                                elevation: 8,
+                                onSelected: (value) async {
+                                  setState(() {
+                                    isClickAllGroup = false;
+                                    isClickNoGroup = false;
+                                    // đánh dấu node đang select action
+                                    selectedGroupId = node.data?.groupId;
+                                  });
+                                  // update lại list cam theo node mới
+                                  widget.onGetCamerasInGroup?.call(
+                                    context,
+                                    node.data?.groupId ?? [],
+                                  );
+
+                                  switch (value) {
+                                    case ItemGroupAction.add:
+                                      _onShowDialogAddEditGroup(
+                                        listGroupInput: newState.groups ?? [],
+                                        c: context,
+                                        addEditType: AddEditGroupType.add,
+                                      );
+                                      break;
+                                    case ItemGroupAction.edit:
+                                      _onShowDialogAddEditGroup(
+                                        listGroupInput: newState.groups ?? [],
+                                        c: context,
+                                        parentGroupId: node.data?.parentGroupId,
+                                        addEditType: AddEditGroupType.edit,
+                                        currentGroup: node.data,
+                                      );
+                                      break;
+                                    case ItemGroupAction.share:
+                                      if (node.data != null) {
+                                        await _onShowDialogShareGroup(
+                                          c: context,
+                                          groupId: node.data!.groupId,
+                                        );
+                                      }
+                                      break;
+                                    case ItemGroupAction.remove:
+                                      _onShowDialogRemoveGroup(
+                                        c: context,
+                                        currentGroup: node.data,
+                                      );
+                                      break;
+                                    case ItemGroupAction.addCamera:
+                                      _onShowDialogAddCamera(
+                                        c: context,
+                                        currentGroup: node.data,
+                                      );
+                                      break;
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) {
+                                  List<ItemGroupAction> listAction = List.of(
+                                    ItemGroupAction.values,
+                                  );
+                                  // nếu level >= 2 (thứ 3) thì ko còn action add group nữa
+                                  if ((node.data?.level ?? 0) >= 2) {
+                                    listAction.remove(ItemGroupAction.add);
+                                  }
+                                  final List<PopupMenuEntry<ItemGroupAction>>
+                                  entries = [];
+                                  for (int i = 0; i < listAction.length; i++) {
+                                    final e = listAction[i];
+                                    entries.add(
+                                      PopupMenuItem<ItemGroupAction>(
+                                        value: e,
+                                        child: ItemActionWidget(item: e),
+                                      ),
+                                    );
+                                    // thêm divider
+                                    if (i != listAction.length - 1) {
+                                      entries.add(
+                                        const PopupMenuDivider(
+                                          height: 1,
+                                          color: AppColors.greyF2F4FA,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  return entries;
+                                },
+                                child: SvgPicture.asset(
+                                  AppAssets.icAction,
+                                  color: Colors.black,
+                                ),
+                              );
+                            }
+                          : null,
                       onClickGroupNode: (c, groupId) {
                         setState(() {
                           isClickAllGroup = false;
