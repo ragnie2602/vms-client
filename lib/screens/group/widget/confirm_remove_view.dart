@@ -73,6 +73,7 @@ showConfirmRemoveDialog(
                       child: ElevatedButton(
                         onPressed: () {
                         //
+                        onClickRemove?.call();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.blackOrWhite,

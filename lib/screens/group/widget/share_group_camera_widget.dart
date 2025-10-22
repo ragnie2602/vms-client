@@ -200,22 +200,29 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
     }
   }
 
-  // void _onShowDialogRemoveShareGroup(BuildContext c) {
-  //   showConfirmRemoveDialog(
-  //     c,
-  //     contentWidget: Text(
-  //       'chia sẻ nhóm camera cho tài khoản này',
-  //       style: AppTypography.style(
-  //         14,
-  //         color: AppColors.blackOrWhite,
-  //         fontWeight: FontWeight.w700,
-  //       ),
-  //     ),
-  //     onClickRemove: () {
-        
-  //     },
-  //   );
-  // }
+  void _onShowDialogRemoveShareGroup(
+    BuildContext c, {
+    List<int>? invitedGroupId,
+    String? accNameRemove,
+  }) {
+    showConfirmRemoveDialog(
+      c,
+      contentWidget: Text(
+        'chia sẻ nhóm camera cho tài khoản này',
+        style: AppTypography.style(
+          14,
+          color: AppColors.blackOrWhite,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      onClickRemove: () {
+        // close confirm dialog
+        Navigator.of(c).pop();
+        // gọi hàm xóa
+        _onRemove(invitedGroupId: invitedGroupId, accNameRemove: accNameRemove);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -466,9 +473,9 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                                     ),
                                     InkWell(
                                       onTap: () {
-                                        // xóa
                                         if (_accRemoveId == null) return;
-                                        _onRemove(
+                                        _onShowDialogRemoveShareGroup(
+                                          context,
                                           invitedGroupId: _accRemoveId,
                                           accNameRemove: username,
                                         );
