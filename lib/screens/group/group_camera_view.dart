@@ -199,7 +199,16 @@ class _GroupCameraViewState extends State<GroupCameraView> {
       c,
       shareType: ShareType.groupCamera,
       groupId: groupId,
-      // ondelete
+      onReloadData: () async {
+        return await c.read<GroupCameraBloc>().getListSharedGroup(
+          groupId: groupId,
+        );
+      },
+      onDeleteShareGroup: (_inviteId) {
+        return context.read<GroupCameraBloc>().deleteShareGroup(
+          shareInviteId: _inviteId,
+        );
+      },
       onShareGroup: (_inviteId) {
         return context.read<GroupCameraBloc>().shareGroup(
           groupId: groupId,

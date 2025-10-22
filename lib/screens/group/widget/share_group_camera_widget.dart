@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/debouncer.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/widget/confirm_remove_view.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 
 enum ShareType {
@@ -30,10 +31,11 @@ Future<T?> showShareGroupCameraDialog<T>(
   // các thuộc tính chung
   required ShareType shareType,
   List<InviteMessageEntity>? sharedUsers,
-  VoidCallback? onCancel,
+  required Future<List<InviteMessageEntity>> Function() onReloadData,
   // dành cho share group
   List<int>? groupId,
   Future<List<int>?> Function(List<int>?)? onShareGroup,
+  final Future<List<int>?> Function(List<int>?)? onDeleteShareGroup,
   // dành cho share camera
   CameraEntity? currentCamera,
 }) {
@@ -49,6 +51,8 @@ Future<T?> showShareGroupCameraDialog<T>(
         groupId: groupId,
         sharedUsers: sharedUsers,
         onShareGroup: onShareGroup,
+        onDeleteShareGroup: onDeleteShareGroup,
+        onReloadData: onReloadData,
       ),
     ),
   );
@@ -56,18 +60,22 @@ Future<T?> showShareGroupCameraDialog<T>(
 
 class _ShareGroupCameraWidget extends StatefulWidget {
   const _ShareGroupCameraWidget({
-    Key? key,
+    super.key,
     required this.shareType,
     this.groupId,
     this.currentCamera,
     this.onShareGroup,
     this.sharedUsers,
-  }) : super(key: key);
+    this.onDeleteShareGroup,
+    required this.onReloadData,
+  });
   final ShareType shareType;
   final List<InviteMessageEntity>? sharedUsers;
-  final Future<List<int>?> Function(List<int>?)? onShareGroup;
+  final Future<List<InviteMessageEntity>> Function() onReloadData;
   // dành cho share group
   final List<int>? groupId;
+  final Future<List<int>?> Function(List<int>?)? onShareGroup;
+  final Future<List<int>?> Function(List<int>?)? onDeleteShareGroup;
   // dành cho share camera
   final CameraEntity? currentCamera;
   @override
@@ -82,18 +90,36 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
   List<int>? _accIdShareGroup;
   String? _accShareCamera;
   List<String> listAccShared = [];
-  final List<String> _selectedUsers = [];
+  final List<String> _selectedAccName = [];
+  final List<List<int>> _listInviteId = [];
 
   @override
   void initState() {
     super.initState();
     // get danh sách đã chia sẻ
     // initListShared();
+    listAccShared.clear();
+    _listInviteId.clear();
+    _initData(listInvite: widget.sharedUsers);
+  }
+
+  void _initData({required List<InviteMessageEntity>? listInvite}) {
     listAccShared.addAll(
-      (widget.sharedUsers ?? [])
+      (listInvite ?? [])
           .map((e) => e.accountShared?.account ?? '')
           .where((e) => e.isNotEmpty),
     );
+    _listInviteId.addAll((listInvite ?? []).map((e) => e.inviteMsgId));
+  }
+
+  Future<void> _onReload() async {
+    listAccShared.clear();
+    _listInviteId.clear();
+    List<InviteMessageEntity>? _invites;
+    _invites = await widget.onReloadData();
+    setState(() {
+      _initData(listInvite: _invites);
+    });
   }
 
   @override
@@ -101,22 +127,6 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
     _searchController.dispose();
     super.dispose();
   }
-
-  // initData ListInvite
-  // void initListShared() async {
-  //   listShared?.clear();
-  //   final repo = context.read<ControlCameraBloc>().controlGroupRepository;
-  //   final res = widget.shareType == ShareType.groupCamera
-  //       ? await repo.listShareInviteGroup(
-  //           groupId: widget.currentGroup?.groupId ?? [],
-  //         )
-  //       : await repo.listShareCamera(cameraId: widget.currentCamera?.id ?? []);
-  //   res.fold((_) {}, (onSuccess) {
-  //     setState(() {
-  //       listShared = onSuccess;
-  //     });
-  //   });
-  // }
 
   // onCheckAccountShare
   void _clearData() {
@@ -159,24 +169,53 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
     // rest api share
     // 1. share cam
     if (widget.shareType == ShareType.camera) {
+      // handle share cam ở đây
       return;
     } else {
       // 2. share group
       final res = await widget.onShareGroup?.call(_accIdShareGroup);
       if (!mounted) return;
       if (res != null && res.isNotEmpty) {
-        // share thành công -> tự add vào group (local)
-        setState(() {
-          _selectedUsers.add(_searchController.text.trim());
-          if (!listAccShared.contains(_searchController.text.trim())) {
-            listAccShared.add(_searchController.text.trim());
-          }
-        });
+        await _onReload();
+        _searchController.clear();
       } else {
         // handle share group fail
       }
     }
   }
+
+  void _onRemove({List<int>? invitedGroupId, String? accNameRemove}) async {
+    // rest api delete share
+    // 1. delete share cam
+    if (widget.shareType == ShareType.camera) {
+      // handle remove cam ở đây
+      return;
+    } else {
+      // 2. delete share group
+      final res = await widget.onDeleteShareGroup?.call(invitedGroupId);
+      if (!mounted) return;
+      if (res != null && res.isNotEmpty) {
+        await _onReload();
+      }
+    }
+  }
+
+  // void _onShowDialogRemoveShareGroup(BuildContext c) {
+  //   showConfirmRemoveDialog(
+  //     c,
+  //     contentWidget: Text(
+  //       'chia sẻ nhóm camera cho tài khoản này',
+  //       style: AppTypography.style(
+  //         14,
+  //         color: AppColors.blackOrWhite,
+  //         fontWeight: FontWeight.w700,
+  //       ),
+  //     ),
+  //     onClickRemove: () {
+        
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -324,14 +363,14 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                               IconButton(
                                 onPressed: () async {
                                   // nếu đã share => tắt click
-                                  if (!_selectedUsers.contains(
+                                  if (!_selectedAccName.contains(
                                     _searchController.text.trim(),
                                   )) {
                                     _onShare();
                                   }
                                 },
                                 icon: Icon(
-                                  _selectedUsers.contains(
+                                  _selectedAccName.contains(
                                         _searchController.text.trim(),
                                       )
                                       ? Icons.check_circle
@@ -398,6 +437,11 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                           itemCount: listAccShared.length,
                           itemBuilder: (context, index) {
                             final username = listAccShared[index];
+                            // final
+                            List<int>? _accRemoveId;
+                            if (_listInviteId.length > index) {
+                              _accRemoveId = _listInviteId[index];
+                            }
                             return ColoredBox(
                               color: index % 2 != 0
                                   ? AppColors.greyF1F5F9
@@ -423,6 +467,11 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                                     InkWell(
                                       onTap: () {
                                         // xóa
+                                        if (_accRemoveId == null) return;
+                                        _onRemove(
+                                          invitedGroupId: _accRemoveId,
+                                          accNameRemove: username,
+                                        );
                                       },
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
