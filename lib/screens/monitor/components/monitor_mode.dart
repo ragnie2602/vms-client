@@ -9,11 +9,14 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
-import 'package:vms_flutter_client/screens/monitor/add_custom_mode_pane.dart';
+import 'package:vms_flutter_client/screens/monitor/add_edit_custom_mode_pane.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/list_custom_views.dart';
+import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 
@@ -108,7 +111,22 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         ),
       );
     } else if (viewMode == 1) {
-      return AddCustomModePane(onBack: () => setState(() => viewMode = 0));
+      return AddEditCustomModePane(
+        onBack: () {
+          setState(() => viewMode = 0);
+
+          final bloc = context.read<CustomViewBloc>();
+          if (bloc.preCustomView != null) {
+            bloc.add(ShowCustomView(bloc.preCustomView!, CustomMonitorPaneMode.view));
+            context.goNamed(
+              Routes.custom_live_view.name,
+              extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.view),
+            );
+          } else {
+            context.goNamed(Routes.monitoring.name);
+          }
+        },
+      );
     } else {
       return Container();
     }
@@ -119,6 +137,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                 ? availableHeight -
                       220 // subtract approximate space used by siblings
                 : 300;
+    final cvBloc = context.read<CustomViewBloc>();
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -150,6 +169,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                     if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
                       InkWell(
                         onTap: () {
+                          cvBloc.preCustomView = null;
                           if (GoRouterState.of(context).name != Routes.monitoring.name) {
                             context.goNamed(Routes.monitoring.name);
                           }
@@ -196,17 +216,33 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   }
 
   Widget _buildCustomMode(BuildContext context, double currentWidth, bool showing) {
+    final bloc = context.read<CustomViewBloc>();
+
     return Column(
       children: [
-        Flexible(child: ListCustomViews()),
+        Flexible(
+          child: ListCustomViews(
+            onUpdate: (customView) => setState(() {
+              currentTab = DefaultTabController.of(context).index;
+              viewMode = 1;
+            }),
+          ),
+        ),
         InkWell(
           onTap: () => setState(() {
             currentTab = DefaultTabController.of(context).index;
             viewMode = 1;
 
-            context.pushNamed(
+            bloc.add(
+              ShowCustomView(
+                CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
+                CustomMonitorPaneMode.add,
+              ),
+            );
+
+            context.goNamed(
               Routes.custom_live_view.name,
-              extra: CustomMonitorPaneArgs(addMode: true),
+              extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.add),
             );
           }),
           child: Container(

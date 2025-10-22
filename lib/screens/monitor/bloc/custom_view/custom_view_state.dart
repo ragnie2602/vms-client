@@ -62,6 +62,17 @@ class AddingCameraToCustomViewSuccess extends CustomViewState {
   List<Object?> get props => [camera, index];
 }
 
+class RemovingCameraFromCustomViewSuccess extends CustomViewState {
+  final int index;
+
+  const RemovingCameraFromCustomViewSuccess({required this.index});
+
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [index];
+}
+
 class CreateCustomViewSuccess extends CustomViewState {
   final CustomLiveView customView;
 
@@ -82,6 +93,8 @@ class CreateCustomViewFailure extends CustomViewState {
   @override
   String get errorMsg => message;
 }
+
+class CreatingCustomView extends CustomViewState {}
 
 class DeletingCustomView extends CustomViewState {}
 
