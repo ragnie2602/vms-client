@@ -180,62 +180,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
-  // void _onShareCamera({
-  //   required List<int> cameraId,
-  //   required ShareCameraRole role,
-  //   required String accountInvite,
-  // }) {
-  //   context.read<ControlCameraBloc>().add(
-  //     ShareCameraEvent(
-  //       cameraId: cameraId,
-  //       role: ShareCameraRoleExtension.getShareCameraRoleValue(role),
-  //       accountInvite: accountInvite,
-  //     ),
-  //   );
-  // }
-
-  void _onCheckAccountShare({
-    required String account,
-    required ShareType shareType,
-    required List<int> cameraId,
-    required List<int> groupId,
-  }) {
-    context.read<ControlCameraBloc>().add(
-      CheckAccountShareEvent(
-        account: account,
-        shareType: ShareTypeExtension.getShareTypeValue(shareType),
-        cameraId: cameraId,
-        groupId: groupId,
-      ),
-    );
-  }
-
-  void _onDeleteShareCamera({
-    required List<int> cameraId,
-    required String accountB,
-    required List<int> shareId,
-  }) {
-    context.read<ControlCameraBloc>().add(
-      DeleteShareCameraEvent(
-        cameraId: cameraId,
-        accountB: accountB,
-        shareId: shareId,
-      ),
-    );
-  }
-
-  @override
-  void initState() {
-    _onGetListCamera(c: context);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _cameraListController.dispose();
-    super.dispose();
-  }
-
   Future<void> _onShowDialogShareCamera({
     required BuildContext c,
     required CameraEntity camera,
@@ -273,6 +217,18 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       },
       sharedUsers: invites, // list data,
     );
+  }
+
+  @override
+  void initState() {
+    _onGetListCamera(c: context);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _cameraListController.dispose();
+    super.dispose();
   }
 
   @override
@@ -421,7 +377,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 value: cameraStatus,
                                 onChanged: (p0) {
                                   setState(() {
-                                    cameraStatus = p0;
+                                    if (cameraStatus == p0 ||
+                                        p0 == CameraStatus.all) {
+                                      cameraStatus = null;
+                                    } else {
+                                      cameraStatus = p0;
+                                    }
                                     _onSearch();
                                   });
                                 },
