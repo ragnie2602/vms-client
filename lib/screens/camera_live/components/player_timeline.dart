@@ -53,7 +53,6 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
   final GlobalKey _globalKey = GlobalKey();
   DateTime? _hoverDate;
 
-  late final Completer<void> _initCompleter = Completer<void>();
   bool _isInteracting = false;
   bool _isInteractingWithDelay = false;
   double _centralOffset = 0;
@@ -133,25 +132,33 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
       _centralDate.value = state.currentPlayback!.startTime;
     }
 
-    if (_cameraLiveBloc.state.ref.currentState == null) {
-      await _initCompleter.future;
-      _cameraLiveBloc.state.ref.currentState!.onFinished = _onFinished;
-      _cameraLiveBloc.state.ref.currentState!.onDurationChanged = _onDurationChanged;
-    }
-
     _cameraLiveBloc.add(
       ChangePlayerSource(state.currentPlayback?.urlPlayback, position: state.currentDuration),
     );
   }
 
-  bool _onFinished() {
-    if (_playbackBloc.state is! PlaybackSuccess) return true;
+  bool _onFinished([int? milis]) {
+    if (_playbackBloc.state is! PlaybackSuccess) return false;
 
     final nextPlayback = (_playbackBloc.state as PlaybackSuccess).nextPlayback;
-    if (nextPlayback == null) return true;
+    if (nextPlayback == null) return false;
 
-    _playbackBloc.add(ChangePlayback(nextPlayback));
-    return false;
+    _playbackBloc.add(ChangePlayback(nextPlayback, currentDuration: milis));
+    return true;
+  }
+
+  bool _onPrevious([int? milis]) {
+    if (_playbackBloc.state is! PlaybackSuccess) return false;
+
+    final previousPlayback = (_playbackBloc.state as PlaybackSuccess).previousPlayback;
+    if (previousPlayback == null) return false;
+
+    final time =
+        previousPlayback.endTime.difference(previousPlayback.startTime).inMilliseconds -
+        (milis ?? 0).abs();
+
+    _playbackBloc.add(ChangePlayback(previousPlayback, currentDuration: time));
+    return true;
   }
 
   void _onDurationChanged(int milis) {
@@ -255,9 +262,15 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                             if (state is PlaybackSuccess) _playPlayback(state);
                           },
                           builder: (context, state) {
-                            // Khởi tạo lần đầu tiên
-                            if (state is PlaybackSuccess && !_initCompleter.isCompleted) {
-                              Future.delayed(Duration.zero, () => _initCompleter.complete());
+                            // Gán hàm callback cho player
+                            if (state is PlaybackSuccess) {
+                              Future.delayed(
+                                Duration.zero,
+                                () => _cameraLiveBloc.state.ref.currentState
+                                  ?..onDurationChanged = _onDurationChanged
+                                  ..onFinished = _onFinished
+                                  ..onPrevious = _onPrevious,
+                              );
                             }
 
                             return CustomPaint(

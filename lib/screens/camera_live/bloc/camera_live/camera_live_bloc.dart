@@ -47,7 +47,7 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
   FutureOr<void> _onChangeCamera(ChangeCamera event, Emitter<CameraLiveState> emit) async {
     if (state.camera.id == event.camera.id) return;
 
-    emit(state.copyWith(camera: event.camera, ref: GlobalKey<CameraPlayerState>()));
+    emit(state.copyWith(camera: event.camera));
   }
 
   FutureOr<void> _onChangePlayerSource(

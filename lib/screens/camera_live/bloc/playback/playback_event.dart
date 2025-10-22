@@ -19,8 +19,9 @@ class SetPlaybackAtTime extends PlaybackEvent {
 
 class ChangePlayback extends PlaybackEvent {
   final PlaybackVideo playback;
+  final int? currentDuration;
 
-  const ChangePlayback(this.playback);
+  const ChangePlayback(this.playback, {this.currentDuration});
 }
 
 class DownloadPlayback extends PlaybackEvent {
