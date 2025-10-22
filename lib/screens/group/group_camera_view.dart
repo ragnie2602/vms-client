@@ -26,10 +26,12 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetAllGroupCamera,
     required this.onGetNoGroupCamera,
     required this.onAddCameraToGroup,
-    this.enableAddGroup
+    this.enableAddGroup,
+    this.enableNodeAction, 
   });
 
   final bool? enableAddGroup;
+  final bool? enableNodeAction;
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
@@ -251,7 +253,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                 children: [
                   Expanded(
                     child: TreeGroupWidget(
-                      actionBuilder: (node) {
+                      actionBuilder: widget.enableNodeAction == true ? (node) {
                         return PopupMenuButton<ItemGroupAction>(
                           padding: EdgeInsets.zero,
                           splashRadius: 20,
@@ -322,7 +324,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                             color: Colors.black,
                           ),
                         );
-                      },
+                      } : null,
                       onClickGroupNode: (c, groupId) {
                         setState(() {
                           isClickAllGroup = false;

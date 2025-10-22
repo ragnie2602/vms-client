@@ -144,14 +144,17 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (currentWidth >= 24)
-          Text(
-            'Kiểu hiển thị',
-            maxLines: 1,
-            overflow: TextOverflow.visible,
-            style: AppTypography.style(
-              14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.blackOrWhite,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Kiểu hiển thị',
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.blackOrWhite,
+              ),
             ),
           ),
         SizedBox(height: 16),
@@ -160,28 +163,31 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
           builder: (context, state) {
             if (state is! MonitorSuccess) return SizedBox();
 
-            return SizedBox(
-              height: 32,
-              child: Row(
-                spacing: 8,
-                children: [
-                  for (var (index, value) in ViewMode.values.indexed)
-                    if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
-                      InkWell(
-                        onTap: () {
-                          cvBloc.preCustomView = null;
-                          if (GoRouterState.of(context).name != Routes.monitoring.name) {
-                            context.goNamed(Routes.monitoring.name);
-                          }
-                          context.read<MonitorBloc>().add(ChangeGridMode(value));
-                        },
-                        child: SvgPicture.asset(
-                          state.mode == value ? value.iconActive : value.icon,
-                          width: 32,
-                          height: 32,
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                height: 32,
+                child: Row(
+                  spacing: 8,
+                  children: [
+                    for (var (index, value) in ViewMode.values.indexed)
+                      if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
+                        InkWell(
+                          onTap: () {
+                            cvBloc.preCustomView = null;
+                            if (GoRouterState.of(context).name != Routes.monitoring.name) {
+                              context.goNamed(Routes.monitoring.name);
+                            }
+                            context.read<MonitorBloc>().add(ChangeGridMode(value));
+                          },
+                          child: SvgPicture.asset(
+                            state.mode == value ? value.iconActive : value.icon,
+                            width: 32,
+                            height: 32,
+                          ),
                         ),
-                      ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -201,6 +207,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
               ),
             ),
           ),
+        // TODO: Add comment instead
         SizedBox(height: 16 - 8),
         SizedBox(
           height: heightGroupTree.clamp(200, 800),
