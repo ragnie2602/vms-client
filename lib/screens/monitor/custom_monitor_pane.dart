@@ -67,12 +67,34 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
           ? Column(
               children: List.generate(
                 _viewMode.rows,
-                (row) => Expanded(
-                  child: Row(
-                    children: List.generate(
-                      _viewMode.columns,
-                      (column) => Expanded(child: buildItem(context, column, row)),
-                    ),
+                (row) => Flexible(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final mH = constraints.maxHeight;
+                      final mW = constraints.maxWidth;
+
+                      double itemHeight = 0, itemWidth = 0;
+                      if (mW >= mH * 16 / 9 * _viewMode.columns) {
+                        itemHeight = mH;
+                        itemWidth = mH * 16 / 9;
+                      } else {
+                        itemWidth = mW / _viewMode.columns;
+                        itemHeight = itemWidth * 9 / 16;
+                      }
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(
+                          _viewMode.columns,
+                          (column) => SizedBox(
+                            height: itemHeight,
+                            width: itemWidth,
+                            child: buildItem(context, column, row),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
