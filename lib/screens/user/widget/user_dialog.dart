@@ -339,7 +339,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                   const SizedBox(height: 16),
                   // Tài khoản
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         flex: 2,
@@ -349,7 +349,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                           label: 'Tên đăng nhập',
                           requiredField: true,
                           validator: (v) => v!.isEmpty
-                              ? 'Tên đăng nhập không được để trống!'
+                              ? 'Tên đăng nhập không được để trống'
                               : null,
                         ),
                       ),
@@ -364,13 +364,13 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                           obscureText: _obscurePassword,
                           validator: (v) {
                             if (v == null || v.isEmpty) {
-                              return 'Mật khẩu không được để trống!';
+                              return 'Mật khẩu không được để trống';
                             }
                             if (v.contains(' ')) {
-                              return 'Mật khẩu từ 8 – 16 ký tự, không chứa ký tự khoảng trống';
+                              return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
                             }
                             if (v.length < 8 || v.length > 16) {
-                              return 'Mật khẩu từ 8 – 16 ký tự, không chứa ký tự khoảng trống';
+                              return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
                             }
                             return null;
                           },
