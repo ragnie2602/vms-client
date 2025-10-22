@@ -84,7 +84,7 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
     emit(
       success.copyWith(
         currentPlayback: event.playback,
-        currentDuration: null,
+        currentDuration: event.currentDuration,
         setStartTimeInstantly: true,
       ),
     );

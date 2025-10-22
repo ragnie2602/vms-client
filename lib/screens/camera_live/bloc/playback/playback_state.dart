@@ -63,13 +63,21 @@ class PlaybackSuccess extends PlaybackState {
   }
 
   PlaybackVideo? get nextPlayback {
-    final current = currentPlayback;
-    if (current == null) return null;
+    if (currentPlayback == null) return null;
 
-    final index = mapper[current.playbackId];
+    final index = mapper[currentPlayback!.playbackId];
     if (index == null || index == 0) return null; // Do danh sách time giảm dần từ 24h về 0h
 
     return playbacks[index - 1];
+  }
+
+  PlaybackVideo? get previousPlayback {
+    if (currentPlayback == null) return null;
+
+    final index = mapper[currentPlayback!.playbackId];
+    if (index == null || index == playbacks.length - 1) return null; // Do danh sách time giảm dần từ 24h về 0h
+
+    return playbacks[index + 1];
   }
 
   PlaybackVideo? binarySearch(DateTime target) {
