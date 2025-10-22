@@ -66,7 +66,7 @@ class UserService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(),
+      (failure) => throw failure.toMessageFailure(AddUser_Error.valueOf),
       (buffer) => AddUser_Reply.fromBuffer(buffer).user,
     );
   }
@@ -173,7 +173,7 @@ class UserService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(),
+      (failure) => throw failure.toMessageFailure(EditUser_Error.valueOf),
       (buffer) => EditUser_Reply.fromBuffer(buffer).user,
     );
   }
