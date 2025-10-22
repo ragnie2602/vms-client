@@ -571,6 +571,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   ControlCameraBloc,
                                   ControlCameraState
                                 >(
+                                  buildWhen: (previous, current) =>
+                                      current is ListCameraSuccessState ||
+                                      current is ControlCameraLoadingState ||
+                                      current is ListCameraFailState,
                                   builder: (context, state) {
                                     if (state is ControlCameraLoadingState) {
                                       return Center(
@@ -654,12 +658,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               ),
                                               onShare: () {
                                                 context
-                                                .read<ControlCameraBloc>()
-                                                .add(
-                                                  ListShareCameraEvent(
-                                                    cameraId: cameras[index].id,
-                                                  ),
-                                                );
+                                                    .read<ControlCameraBloc>()
+                                                    .add(
+                                                      ListShareCameraEvent(
+                                                        cameraId:
+                                                            cameras[index].id,
+                                                      ),
+                                                    );
                                               },
                                               onRemoveFromGroup: () {
                                                 _showDialogRemoveCameraFromGroup(

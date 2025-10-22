@@ -281,17 +281,19 @@ class ControlCameraBloc
     AddCameraToGroupEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
+    emit(ControlCameraLoadingState());
     final res = await controlGroupRepository.addCameraToGroup(
       cameraIds: event.cameraIds,
       groupId: event.groupId,
     );
-    res.fold(
-      (onFailure) => emit(AddCameraFailState(res.left.toString())),
-      (onSuccess) {
-        listCamera.addAll(onSuccess);
-        emit(ListCameraSuccessState(cameras: listCamera));
-      },
-    );
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
+      onSuccess,
+    ) {
+      listCamera = List<CameraEntity>.from(listCamera)..addAll(onSuccess);
+      emit(
+        ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)),
+      );
+    });
   }
 
   // FutureOr<void> _onListShareInviteGroup(
