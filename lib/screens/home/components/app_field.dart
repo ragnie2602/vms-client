@@ -174,7 +174,6 @@ class _AppFieldState extends State<AppField> {
             ),
             // Custom error message với icon
             if (_errorText != null) ...[
-              const SizedBox(height: 6),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -184,7 +183,8 @@ class _AppFieldState extends State<AppField> {
                     child: Text(
                       _errorText!,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: AppColors.redFF0004,
+                        fontWeight: FontWeight.w500,
                         fontSize: 12,
                         height: 1.3,
                       ),

@@ -390,6 +390,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                   ),
                   const SizedBox(height: 12),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         flex: 2,
@@ -866,6 +867,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
 
                 // Row: Email và Số điện thoại
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: AppField(
@@ -882,7 +884,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                             r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
                           );
                           if (!emailRegex.hasMatch(v)) {
-                            return 'Email không hợp lệ';
+                            return 'Email không đúng định dạng';
                           }
                           return null;
                         },
@@ -905,7 +907,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                             r'^(84|0)(3|5|7|8|9)\d{8,9}$',
                           );
                           if (!phoneRegex.hasMatch(v)) {
-                            return 'Số điện thoại không hợp lệ';
+                            return 'Số điện thoại không đúng định dạng';
                           }
                           return null;
                         },
