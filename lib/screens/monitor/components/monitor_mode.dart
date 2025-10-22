@@ -132,14 +132,8 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                         return IndexedStack(
                           index: tabIndex,
                           children: [
-                            KeyedSubtree(
-                              key: _defaultModeKey,
-                              child: _buildDefaultMode(constraints.maxWidth, constraints.maxHeight),
-                            ),
-                            KeyedSubtree(
-                              key: _customModeKey,
-                              child: _buildCustomMode(context, constraints.maxWidth, isExpanded),
-                            ),
+                            _buildDefaultMode(constraints.maxWidth, constraints.maxHeight),
+                            _buildCustomMode(context, constraints.maxWidth, isExpanded),
                           ],
                         );
                       },
