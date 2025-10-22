@@ -21,7 +21,7 @@ Future<String?> showResetPasswordDialog(
   required UserEntity user,
 }) {
   final TextEditingController _controller = TextEditingController();
-  bool obscure = true;
+  bool _obscurePassword = true;
 
   return showDialog<String?>(
     context: context,
@@ -65,67 +65,59 @@ Future<String?> showResetPasswordDialog(
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
-
-                    // Password field
-                    TextField(
+                    AppField(
                       controller: _controller,
-                      obscureText: obscure,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => {},
-                      decoration: InputDecoration(
-                        hintText: 'Nhập mật khẩu (*)',
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
+                      hintText: 'Nhập mật khẩu (*)',
+                      label: '',
+                      requiredField: false,
+                      obscureText: _obscurePassword,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Mật khẩu không được để trống';
+                        }
+                        if (v.contains(' ')) {
+                          return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                        }
+                        if (v.length < 8 || v.length > 16) {
+                          return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                        }
+                        return null;
+                      },
+                      suffix: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        suffixIcon: IconButton(
-                          tooltip: obscure ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
-                          icon: Icon(
-                            obscure ? Icons.visibility_off : Icons.visibility,
-                          ),
-                          onPressed: () => setState(() => obscure = !obscure),
+                        iconSize: 20,
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
                         ),
                       ),
                     ),
-
+                    const SizedBox(height: 8),
+                    Text(
+                      "Mật khẩu 8-16 ký tự, bao gồm ký tự đặc biệt, in hoa và in thường",
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 12,
+                        color: AppColors.grey6F767E,
+                      ),
+                    ),
                     const SizedBox(height: 20),
-
                     // Actions
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // HỦY
-                        Expanded(
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                            ),
-                            onPressed: () => Navigator.of(context).pop(null),
-                            child: const Text('HỦY'),
-                          ),
+                        AppButton.outline(
+                          label: 'Hủy',
+                          onPressed: () => Navigator.pop(context),
                         ),
                         const SizedBox(width: 12),
-                        // KHÔI PHỤC
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                            ),
-                            onPressed: () {
-                              onSubmit!.call(_controller.text.toString());
-                            },
-                            child: const Text('KHÔI PHỤC'),
-                          ),
+                        AppButton.filled(
+                          label: 'Khôi phục',
+                          onPressed: () =>
+                              onSubmit!.call(_controller.text.toString()),
                         ),
                       ],
                     ),
@@ -380,6 +372,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                                   ? Icons.visibility_off
                                   : Icons.visibility,
                             ),
+                            iconSize: 20,
                             onPressed: () => setState(
                               () => _obscurePassword = !_obscurePassword,
                             ),
@@ -498,31 +491,6 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                     maxLines: 4,
                     maxLength: 250,
                   ),
-                  const SizedBox(height: 8),
-
-                  // Mật khẩu
-
-                  // Tài khoản Admin toggle
-                  // _buildToggleRow(
-                  //   label: 'Tài khoản Admin:',
-                  //   value: _isAdmin,
-                  //   onChanged: (value) => setState(() => _isAdmin = value),
-                  // ),
-                  // const SizedBox(height: 12),
-                  // // Đổi mật khẩu toggle
-                  // _buildToggleRow(
-                  //   label: 'Đổi mật khẩu:',
-                  //   value: _canChangePassword,
-                  //   onChanged: (value) =>
-                  //       setState(() => _canChangePassword = value),
-                  // ),
-                  // const SizedBox(height: 12),
-                  // // Thêm camera toggle
-                  // _buildToggleRow(
-                  //   label: 'Thêm camera:',
-                  //   value: _canAddCamera,
-                  //   onChanged: (value) => setState(() => _canAddCamera = value),
-                  // ),
                   const SizedBox(height: 16),
 
                   // Email

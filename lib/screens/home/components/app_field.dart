@@ -52,22 +52,25 @@ class _AppFieldState extends State<AppField> {
     final theme = Theme.of(context);
     final labelWidget = widget.label == null
         ? null
-        : RichText(
-            text: TextSpan(
-              text: widget.label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF000000),
+        : Visibility(
+            visible: widget.label!.isNotEmpty,
+            child: RichText(
+              text: TextSpan(
+                text: widget.label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF000000),
+                ),
+                children: widget.requiredField
+                    ? const [
+                        TextSpan(
+                          text: ' *',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ]
+                    : const [],
               ),
-              children: widget.requiredField
-                  ? const [
-                      TextSpan(
-                        text: ' *',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ]
-                  : const [],
             ),
           );
 
