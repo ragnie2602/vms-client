@@ -6,7 +6,7 @@ mixin StateBuilderMixin {
     return Center(child: CircularProgressIndicator.adaptive());
   }
 
-  Widget buildEmpty([String text = 'No Data']) {
+  Widget buildEmpty([String text = 'Không có dữ liệu']) {
     return Container(
       width: double.infinity,
       height: double.infinity,

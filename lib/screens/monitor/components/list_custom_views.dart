@@ -14,8 +14,9 @@ import 'package:vms_flutter_client/screens/shared/utils.dart';
 
 class ListCustomViews extends StatefulWidget {
   final Function(CustomLiveView)? onUpdate;
+  final VoidCallback? onSelectCustomView;
 
-  const ListCustomViews({super.key, this.onUpdate});
+  const ListCustomViews({super.key, this.onUpdate, this.onSelectCustomView});
 
   @override
   State<ListCustomViews> createState() => _ListCustomViewsState();
@@ -59,6 +60,7 @@ class _ListCustomViewsState extends State<ListCustomViews> {
           bloc: bloc,
           customView: customViews[index],
           onUpdate: widget.onUpdate,
+          onSelectCustomView: widget.onSelectCustomView,
         ),
         itemCount: customViews.length,
         shrinkWrap: true,
@@ -71,8 +73,9 @@ class CustomViewItem extends StatefulWidget {
   final CustomLiveView customView;
   final CustomViewBloc bloc;
   final Function(CustomLiveView)? onUpdate;
+  final VoidCallback? onSelectCustomView;
 
-  const CustomViewItem({super.key, required this.customView, required this.bloc, this.onUpdate});
+  const CustomViewItem({super.key, required this.customView, required this.bloc, this.onUpdate, this.onSelectCustomView});
 
   @override
   State<CustomViewItem> createState() => _CustomViewItemState();
@@ -111,6 +114,7 @@ class _CustomViewItemState extends State<CustomViewItem> {
           onTap: () {
             if (isSelecting) return;
 
+            widget.onSelectCustomView?.call();
             if (GoRouterState.of(context).name != Routes.custom_live_view.name) {
               context.goNamed(
                 Routes.custom_live_view.name,
