@@ -39,6 +39,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   // Keys to force rebuild of tab content
   Key _defaultModeKey = UniqueKey();
   Key _customModeKey = UniqueKey();
+  bool _shouldSelectAllGroup = true;
 
   void _onClearFilterCustomMode() {
     setState(() {
@@ -49,7 +50,18 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   void _onClearFilterDefaultMode() {
     setState(() {
       _defaultModeKey = UniqueKey();
+       _shouldSelectAllGroup = false;
     });
+  }
+
+   void _onDefaultModeFilterSelected() {
+    _onClearFilterCustomMode();
+    setState(() {
+      _shouldSelectAllGroup = true;
+    });
+    if (GoRouterState.of(context).name != Routes.monitoring.name) {
+      context.goNamed(Routes.monitoring.name);
+    }
   }
 
   @override
@@ -239,25 +251,17 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
           ),
         Expanded(
           child: GroupCameraView(
+            initiallySelectAllGroup: _shouldSelectAllGroup,
             onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
-              _onClearFilterCustomMode();
-              if (GoRouterState.of(context).name != Routes.monitoring.name) {
-                  context.goNamed(Routes.monitoring.name);
-              }
+              _onDefaultModeFilterSelected();
               context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
             },
             onGetAllGroupCamera: (BuildContext contextTreeGroup) {
-              _onClearFilterCustomMode();
-              if (GoRouterState.of(context).name != Routes.monitoring.name) {
-                  context.goNamed(Routes.monitoring.name);
-              }
+              _onDefaultModeFilterSelected();
               context.read<MonitorBloc>().add(GetAllCamera());
             },
             onGetNoGroupCamera: (BuildContext contextTreeGroup) {
-              _onClearFilterCustomMode();
-              if (GoRouterState.of(context).name != Routes.monitoring.name) {
-                  context.goNamed(Routes.monitoring.name);
-              }
+              _onDefaultModeFilterSelected();
               context.read<MonitorBloc>().add(GetAllCameraNoGroup());
             },
             onAddCameraToGroup: ({required BuildContext c, required List<List<int>> cameraIds, required List<int> currentGroupId}) {},

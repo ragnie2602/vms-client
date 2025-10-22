@@ -27,11 +27,13 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetNoGroupCamera,
     required this.onAddCameraToGroup,
     this.enableAddGroup,
-    this.enableNodeAction, 
+    this.enableNodeAction,
+    this.initiallySelectAllGroup = true,
   });
 
   final bool? enableAddGroup;
   final bool? enableNodeAction;
+  final bool initiallySelectAllGroup;
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
@@ -50,7 +52,7 @@ class GroupCameraView extends StatefulWidget {
 class _GroupCameraViewState extends State<GroupCameraView> {
   TextEditingController searchGroupNameController = TextEditingController();
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controllerTree;
-  bool isClickAllGroup = true;
+  late bool isClickAllGroup;
   bool isClickNoGroup = false;
 
   @override
@@ -61,8 +63,11 @@ class _GroupCameraViewState extends State<GroupCameraView> {
 
   @override
   void initState() {
-    _onGetAllGroupCamera();
     super.initState();
+    isClickAllGroup = widget.initiallySelectAllGroup;
+    if (widget.initiallySelectAllGroup) {
+      _onGetAllGroupCamera();
+    }
   }
 
   void _onGetAllGroupCamera() {
