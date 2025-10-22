@@ -48,18 +48,18 @@ class ListShareCameraSuccessState extends ControlCameraState {
   List<Object?> get props => [cameraId, inviteMessages];
 }
 
-class ListShareInviteGroupSuccessState extends ControlCameraState {
-  final List<int> groupId;
-  final List<InviteMessageEntity> inviteMessages;
-  const ListShareInviteGroupSuccessState({
-    required this.groupId,
-    required this.inviteMessages,
-  });
-  @override
-  StateType get type => StateType.success;
-  @override
-  List<Object?> get props => [groupId, inviteMessages];
-}
+// class ListShareInviteGroupSuccessState extends ControlCameraState {
+//   final List<int> groupId;
+//   final List<InviteMessageEntity> inviteMessages;
+//   const ListShareInviteGroupSuccessState({
+//     required this.groupId,
+//     required this.inviteMessages,
+//   });
+//   @override
+//   StateType get type => StateType.success;
+//   @override
+//   List<Object?> get props => [groupId, inviteMessages];
+// }
 
 class AddCameraSuccessState extends ControlCameraState {
   final AddCameraEntity cameraEntity;

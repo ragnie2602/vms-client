@@ -1,4 +1,6 @@
+import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart' as pb;
+import 'package:vms_flutter_client/domain/entities/group/check_account_share_entity.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_status.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_type.dart';
@@ -36,6 +38,15 @@ extension DeviceGroupMapper on pb.DeviceGroup {
       groupId: groupId,
       groupType: groupType.toDomain(),
       groupRole: groupRole.toDomain(),
+    );
+  }
+}
+
+extension CheckAccountShareMapper on CheckAccountShare_Reply {
+  CheckAccountShareEntity toDomain() {
+    return CheckAccountShareEntity(
+      isExists: isExists,
+      accountInviteId: accountInviteId,
     );
   }
 }
