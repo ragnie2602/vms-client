@@ -68,11 +68,6 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
   }
 
   Widget _waitingPlayback(CameraLiveState data, BuildContext context) {
-    // Trường hợp mở màn playback thì listener chưa gọi
-    context.read<PlaybackBloc>().add(
-      GetVideoPlaybacks(data.camera.id, context.read<CameraLiveBloc>().state.playbackDate),
-    );
-
     return BlocBuilder<PlaybackBloc, PlaybackState>(
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,

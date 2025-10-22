@@ -7,7 +7,6 @@ import 'package:vms_flutter_client/screens/monitor/components/monitor_cameras.da
 import '../../shared/action_item.dart';
 import '../../shared/panel.dart';
 import '../bloc/camera_live/camera_live_bloc.dart';
-import '../bloc/playback/playback_bloc.dart';
 import '../widgets/playback_date.dart';
 import 'panel_list_playbacks.dart';
 
@@ -59,12 +58,6 @@ class LiveViewActions extends StatelessWidget {
                         key: ValueKey('live_view_cameras'),
                         selectedCamera: context.read<CameraLiveBloc>().state.camera,
                         onTap: (camera) {
-                          context.read<PlaybackBloc>().add(
-                            GetVideoPlaybacks(
-                              camera.id,
-                              context.read<CameraLiveBloc>().state.playbackDate,
-                            ),
-                          );
                           context.read<CameraLiveBloc>().add(ChangeCamera(camera));
                         },
                       ),
