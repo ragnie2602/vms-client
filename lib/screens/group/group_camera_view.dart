@@ -26,8 +26,14 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetAllGroupCamera,
     required this.onGetNoGroupCamera,
     required this.onAddCameraToGroup,
+    this.enableAddGroup,
+    this.enableNodeAction,
+    this.initiallySelectAllGroup = true,
   });
 
+  final bool? enableAddGroup;
+  final bool? enableNodeAction;
+  final bool initiallySelectAllGroup;
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
@@ -46,7 +52,7 @@ class GroupCameraView extends StatefulWidget {
 class _GroupCameraViewState extends State<GroupCameraView> {
   TextEditingController searchGroupNameController = TextEditingController();
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controllerTree;
-  bool isClickAllGroup = true;
+  late bool isClickAllGroup;
   bool isClickNoGroup = false;
   List<int>? selectedGroupId;
 
@@ -58,8 +64,11 @@ class _GroupCameraViewState extends State<GroupCameraView> {
 
   @override
   void initState() {
-    _onGetAllGroupCamera();
     super.initState();
+    isClickAllGroup = widget.initiallySelectAllGroup;
+    if (widget.initiallySelectAllGroup) {
+      _onGetAllGroupCamera();
+    }
   }
 
   void _onGetAllGroupCamera() {
@@ -250,7 +259,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                 children: [
                   Expanded(
                     child: TreeGroupWidget(
-                      actionBuilder: (node) {
+                      actionBuilder: widget.enableNodeAction == true ? (node) {
                         return PopupMenuButton<ItemGroupAction>(
                           padding: EdgeInsets.zero,
                           splashRadius: 20,
@@ -333,7 +342,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                             color: Colors.black,
                           ),
                         );
-                      },
+                      } : null,
                       onClickGroupNode: (c, groupId) {
                         setState(() {
                           isClickAllGroup = false;
@@ -359,7 +368,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                         });
                         widget.onGetNoGroupCamera?.call(context);
                       },
-                      enableAddGroup: true,
+                      enableAddGroup: widget.enableAddGroup,
                       controller: controllerTree,
                       searchController: searchGroupNameController,
                       onSearchGroup: ({keySearchGroup}) {
