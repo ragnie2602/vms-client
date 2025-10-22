@@ -57,7 +57,6 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
     await state.ref.currentState?.switchSource(
       event.source,
       position: event.position,
-      onDuration: event.onDuration,
     );
   }
 

@@ -89,7 +89,9 @@ class PlayerTimelinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant PlayerTimelinePainter oldDelegate) {
-    return oldDelegate.playbacks != playbacks;
+    return oldDelegate.playbacks != playbacks ||
+        oldDelegate.interval != interval ||
+        oldDelegate.tickGap != tickGap;
   }
 
   @override
