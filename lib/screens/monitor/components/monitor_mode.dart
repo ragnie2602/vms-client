@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
+import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/monitor/add_edit_custom_mode_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/list_custom_views.dart';
@@ -132,6 +133,10 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   }
 
   Widget _buildDefaultMode(double currentWidth, double availableHeight) {
+    final double heightGroupTree = availableHeight.isFinite && availableHeight > 0
+                ? availableHeight -
+                      220 // subtract approximate space used by siblings
+                : 300;
     final cvBloc = context.read<CustomViewBloc>();
 
     return Column(
@@ -139,14 +144,17 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (currentWidth >= 24)
-          Text(
-            'Kiểu hiển thị',
-            maxLines: 1,
-            overflow: TextOverflow.visible,
-            style: AppTypography.style(
-              14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.blackOrWhite,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Kiểu hiển thị',
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.blackOrWhite,
+              ),
             ),
           ),
         SizedBox(height: 16),
@@ -155,28 +163,31 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
           builder: (context, state) {
             if (state is! MonitorSuccess) return SizedBox();
 
-            return SizedBox(
-              height: 32,
-              child: Row(
-                spacing: 8,
-                children: [
-                  for (var (index, value) in ViewMode.values.indexed)
-                    if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
-                      InkWell(
-                        onTap: () {
-                          cvBloc.preCustomView = null;
-                          if (GoRouterState.of(context).name != Routes.monitoring.name) {
-                            context.goNamed(Routes.monitoring.name);
-                          }
-                          context.read<MonitorBloc>().add(ChangeGridMode(value));
-                        },
-                        child: SvgPicture.asset(
-                          state.mode == value ? value.iconActive : value.icon,
-                          width: 32,
-                          height: 32,
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                height: 32,
+                child: Row(
+                  spacing: 8,
+                  children: [
+                    for (var (index, value) in ViewMode.values.indexed)
+                      if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
+                        InkWell(
+                          onTap: () {
+                            cvBloc.preCustomView = null;
+                            if (GoRouterState.of(context).name != Routes.monitoring.name) {
+                              context.goNamed(Routes.monitoring.name);
+                            }
+                            context.read<MonitorBloc>().add(ChangeGridMode(value));
+                          },
+                          child: SvgPicture.asset(
+                            state.mode == value ? value.iconActive : value.icon,
+                            width: 32,
+                            height: 32,
+                          ),
                         ),
-                      ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -196,40 +207,23 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
               ),
             ),
           ),
+        // TODO: Add comment instead
         SizedBox(height: 16 - 8),
-        BlocBuilder<GroupCameraBloc, GroupCameraState>(
-          builder: (context, state) {
-            if (state is! GetAllGroupCameraSuccessState) return SizedBox();
-            // TreeGroupWidget contains its own Expanded and scrollable TreeView.
-            // When embedding inside a Column we must give it a bounded height.
-            // Use availableHeight when it's finite, otherwise a reasonable fallback.
-            final double height = availableHeight.isFinite && availableHeight > 0
-                ? availableHeight -
-                      220 // subtract approximate space used by siblings
-                : 300;
-            return SizedBox(
-              height: height.clamp(200, 800),
-              child: TreeGroupWidget(controller: _controller, tree: state.tree),
-            );
-            // return TreeView.simple(
-            //   padding: EdgeInsets.symmetric(horizontal: 24),
-            //   showRootNode: false,
-            //   tree: state.tree,
-            //   expansionBehavior: ExpansionBehavior.scrollToLastChild,
-            //   indentation: const Indentation(),
-            //   expansionIndicatorBuilder: (context, node) =>
-            //       NoExpansionIndicator(tree: node),
-            //   builder: (context, node) => GroupNode(
-            //     group: node.data!,
-            //     onToggleExpansion: () => _controller?.toggleExpansion(node),
-            //   ),
-            //   onTreeReady: (controller) {
-            //     _controller = controller;
-            //     controller.expandAllChildren(controller.tree);
-            //   },
-            // );
-          },
-        ),
+        SizedBox(
+          height: heightGroupTree.clamp(200, 800),
+          child: GroupCameraView(
+            onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
+              context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
+            },
+            onGetAllGroupCamera: (BuildContext contextTreeGroup) {
+              context.read<MonitorBloc>().add(GetAllCamera());
+            },
+            onGetNoGroupCamera: (BuildContext contextTreeGroup) {
+              context.read<MonitorBloc>().add(GetAllCameraNoGroup());
+            }, 
+            onAddCameraToGroup: ({required BuildContext c, required List<List<int>> cameraIds, required List<int> currentGroupId}) {},
+          ),
+        )
       ],
     );
   }

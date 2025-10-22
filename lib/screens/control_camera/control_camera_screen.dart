@@ -314,6 +314,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           Flexible(
             flex: 2,
             child: GroupCameraView(
+              enableAddGroup: true,
+              enableNodeAction: true,
               onGetAllGroupCamera: (c) {
                 _onGetListCamera(c: c);
               },
