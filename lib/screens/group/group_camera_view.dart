@@ -48,6 +48,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? controllerTree;
   bool isClickAllGroup = true;
   bool isClickNoGroup = false;
+  List<int>? selectedGroupId;
 
   @override
   void dispose() {
@@ -259,6 +260,18 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                           ),
                           elevation: 8,
                           onSelected: (value) async {
+                            setState(() {
+                              isClickAllGroup = false;
+                              isClickNoGroup = false;
+                              // đánh dấu node đang select action
+                              selectedGroupId = node.data?.groupId;
+                            });
+                            // update lại list cam theo node mới
+                            widget.onGetCamerasInGroup?.call(
+                              context,
+                              node.data?.groupId ?? [],
+                            );
+
                             switch (value) {
                               case ItemGroupAction.add:
                                 _onShowDialogAddEditGroup(
@@ -325,6 +338,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                         setState(() {
                           isClickAllGroup = false;
                           isClickNoGroup = false;
+                          selectedGroupId = groupId;
                         });
                         // rest api lấy camera theo group
                         widget.onGetCamerasInGroup?.call(c, groupId);
@@ -333,6 +347,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                         setState(() {
                           isClickAllGroup = true;
                           isClickNoGroup = false;
+                          selectedGroupId = null;
                         });
                         widget.onGetAllGroupCamera?.call(context);
                       },
@@ -340,6 +355,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                         setState(() {
                           isClickAllGroup = false;
                           isClickNoGroup = true;
+                          selectedGroupId = null;
                         });
                         widget.onGetNoGroupCamera?.call(context);
                       },
@@ -361,6 +377,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                       isShowNoGroup: true,
                       isClickAllGroup: isClickAllGroup,
                       isClickNoGroup: isClickNoGroup,
+                      selectedGroupId: selectedGroupId,
                     ),
                   ),
                 ],
