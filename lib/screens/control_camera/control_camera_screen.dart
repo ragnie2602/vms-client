@@ -33,6 +33,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   CameraStatus? cameraStatus;
   final ScrollController _cameraListController = ScrollController();
 
+  void _onClearSearch() {
+    cameraNameController.clear();
+    cameraStatus = null;
+  }
+
   void _onGetListCamera({
     List<int>? cameraId,
     int? status,
@@ -266,12 +271,15 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
             flex: 2,
             child: GroupCameraView(
               onGetAllGroupCamera: (c) {
+                _onClearSearch();
                 _onGetListCamera(c: c);
               },
               onGetNoGroupCamera: (c) {
+                _onClearSearch();
                 _onGetListCameraNoGroup(c: c);
               },
               onGetCamerasInGroup: (c, groupId) {
+                _onClearSearch();
                 _onGetCameraInGroup(groupId: groupId, context: c);
               },
               onAddCameraToGroup:
