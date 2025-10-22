@@ -6,7 +6,6 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/data/datasources/share_camera_role_enum.dart';
-import 'package:vms_flutter_client/data/datasources/share_type_enum.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
@@ -315,6 +314,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           Flexible(
             flex: 2,
             child: GroupCameraView(
+              enableAddGroup: true,
+              enableNodeAction: true,
               onGetAllGroupCamera: (c) {
                 _onGetListCamera(c: c);
               },
@@ -572,6 +573,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   ControlCameraBloc,
                                   ControlCameraState
                                 >(
+                                  buildWhen: (previous, current) =>
+                                      current is ListCameraSuccessState ||
+                                      current is ControlCameraLoadingState ||
+                                      current is ListCameraFailState,
                                   builder: (context, state) {
                                     if (state is ControlCameraLoadingState) {
                                       return Center(
@@ -655,12 +660,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               ),
                                               onShare: () {
                                                 context
-                                                .read<ControlCameraBloc>()
-                                                .add(
-                                                  ListShareCameraEvent(
-                                                    cameraId: cameras[index].id,
-                                                  ),
-                                                );
+                                                    .read<ControlCameraBloc>()
+                                                    .add(
+                                                      ListShareCameraEvent(
+                                                        cameraId:
+                                                            cameras[index].id,
+                                                      ),
+                                                    );
                                               },
                                               onRemoveFromGroup: () {
                                                 _showDialogRemoveCameraFromGroup(
