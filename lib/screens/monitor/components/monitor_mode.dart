@@ -36,6 +36,22 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
 
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? _controller;
 
+  // Keys to force rebuild of tab content
+  Key _defaultModeKey = UniqueKey();
+  Key _customModeKey = UniqueKey();
+
+  void _onClearFilterCustomMode() {
+    setState(() {
+      _customModeKey = UniqueKey();
+    });
+  }
+
+  void _onClearFilterDefaultMode() {
+    setState(() {
+      _defaultModeKey = UniqueKey();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (viewMode == 0) {
@@ -99,9 +115,21 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                   Expanded(
                     child: ListenableBuilder(
                       listenable: DefaultTabController.of(context),
-                      builder: (context, child) => switch (DefaultTabController.of(context).index) {
-                        0 => _buildDefaultMode(constraints.maxWidth, constraints.maxHeight),
-                        _ => _buildCustomMode(context, constraints.maxWidth, isExpanded),
+                      builder: (context, child) {
+                        final tabIndex = DefaultTabController.of(context).index;
+                        return IndexedStack(
+                          index: tabIndex,
+                          children: [
+                            KeyedSubtree(
+                              key: _defaultModeKey,
+                              child: _buildDefaultMode(constraints.maxWidth, constraints.maxHeight),
+                            ),
+                            KeyedSubtree(
+                              key: _customModeKey,
+                              child: _buildCustomMode(context, constraints.maxWidth, isExpanded),
+                            ),
+                          ],
+                        );
                       },
                     ),
                   ),
@@ -158,7 +186,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         BlocSelector<MonitorBloc, MonitorState, ViewMode?>(
           selector: (state) => state is MonitorSuccess ? state.mode : null,
           builder: (context, selectedMode) {
-            if (selectedMode == null) return SizedBox(height: 32);
+            // if (selectedMode == null) return SizedBox(height: 32);
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -173,6 +201,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                     if (currentWidth - 48 >= 32 * (index + 1) + 8 * index) {
                       return InkWell(
                         onTap: () {
+                          _onClearFilterCustomMode();
                           cvBloc.preCustomView = null;
                           if (GoRouterState.of(context).name != Routes.monitoring.name) {
                             context.goNamed(Routes.monitoring.name);
@@ -211,12 +240,24 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         Expanded(
           child: GroupCameraView(
             onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
+              _onClearFilterCustomMode();
+              if (GoRouterState.of(context).name != Routes.monitoring.name) {
+                  context.goNamed(Routes.monitoring.name);
+              }
               context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
             },
             onGetAllGroupCamera: (BuildContext contextTreeGroup) {
+              _onClearFilterCustomMode();
+              if (GoRouterState.of(context).name != Routes.monitoring.name) {
+                  context.goNamed(Routes.monitoring.name);
+              }
               context.read<MonitorBloc>().add(GetAllCamera());
             },
             onGetNoGroupCamera: (BuildContext contextTreeGroup) {
+              _onClearFilterCustomMode();
+              if (GoRouterState.of(context).name != Routes.monitoring.name) {
+                  context.goNamed(Routes.monitoring.name);
+              }
               context.read<MonitorBloc>().add(GetAllCameraNoGroup());
             },
             onAddCameraToGroup: ({required BuildContext c, required List<List<int>> cameraIds, required List<int> currentGroupId}) {},
@@ -237,25 +278,29 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
               currentTab = DefaultTabController.of(context).index;
               viewMode = 1;
             }),
+            onSelectCustomView: _onClearFilterDefaultMode,
           ),
         ),
         InkWell(
-          onTap: () => setState(() {
-            currentTab = DefaultTabController.of(context).index;
-            viewMode = 1;
+          onTap: () {
+            _onClearFilterDefaultMode();
+            setState(() {
+              currentTab = DefaultTabController.of(context).index;
+              viewMode = 1;
 
-            bloc.add(
-              ShowCustomView(
-                CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
-                CustomMonitorPaneMode.add,
-              ),
-            );
+              bloc.add(
+                ShowCustomView(
+                  CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
+                  CustomMonitorPaneMode.add,
+                ),
+              );
 
-            context.goNamed(
-              Routes.custom_live_view.name,
-              extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.add),
-            );
-          }),
+              context.goNamed(
+                Routes.custom_live_view.name,
+                extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.add),
+              );
+            });
+          },
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.blackOrWhite, width: 1),
