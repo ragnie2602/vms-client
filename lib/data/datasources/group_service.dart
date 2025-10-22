@@ -2,6 +2,7 @@ import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command2.pb.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
 
 import '../proto/models/comm.command1.pb.dart';
 import '../proto/models/comm.model.pb.dart';
@@ -16,7 +17,7 @@ class GroupService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id:  UniqueId.getUniqueId(PacketType.getAllGroup.value),
+          id: UniqueId.getUniqueId(PacketType.getAllGroup.value),
           data: GetAllGroup_Request().writeToBuffer(),
           type: PacketType.getAllGroup,
         ),
@@ -107,6 +108,86 @@ class GroupService {
       (failure) =>
           throw failure.toMessageFailure(UpdateGroupDevice_Error.valueOf),
       (buffer) => UpdateGroupDevice_Reply.fromBuffer(buffer).groups,
+    );
+  }
+
+  // share group
+  Future<List<int>> shareGroup({
+    List<int>? groupId,
+    DeviceGroupRole? role,
+    List<int>? accountInviteId,
+  }) async {
+    final shareGroupRequest = ShareGroupCamera_Request();
+    if (groupId != null) {
+      shareGroupRequest.groupId = groupId;
+    }
+    if (role != null) {
+      shareGroupRequest.role =
+          ShareGroupCamera_GroupShareRole.valueOf(role.value) ??
+          ShareGroupCamera_GroupShareRole.VIEW;
+    }
+    if (accountInviteId != null) {
+      shareGroupRequest.accountInviteId = accountInviteId;
+    }
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: shareGroupRequest.writeToBuffer(),
+          type: PacketType.shareGroupCamera,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(ShareGroupCamera_Error.valueOf),
+      (buffer) => ShareGroupCamera_Reply.fromBuffer(buffer).groupId,
+    );
+  }
+
+  // delete share group
+  Future<List<int>> deleteShareGroup({List<int>? shareInviteId}) async {
+    final shareGroupRequest = DeleteShareGroup_Request();
+    if (shareInviteId != null) {
+      shareGroupRequest.shareInviteId = shareInviteId;
+    }
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().millisecond,
+          data: shareGroupRequest.writeToBuffer(),
+          type: PacketType.deleteShareGroup,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(DeleteShareGroup_Error.valueOf),
+      (buffer) => DeleteShareGroup_Reply.fromBuffer(buffer).shareInviteId,
+    );
+  }
+
+  Future<List<InviteMessage>> listShareInviteGroup({
+    required List<int> groupId,
+  }) async {
+    final request = ListShareInviteGroup_Request()..groupId = groupId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.listShareInviteGroup,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) =>
+          throw failure.toMessageFailure(ListShareInviteGroup_Error.valueOf),
+      (buffer) => ListShareInviteGroup_Reply.fromBuffer(buffer).invites,
     );
   }
 }
