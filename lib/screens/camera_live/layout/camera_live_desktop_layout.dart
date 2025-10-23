@@ -14,11 +14,13 @@ class CameraLiveDesktopLayout extends StatefulWidget {
     this.leftPanelWidth = 281,
     this.rightPanelWidth = 280,
     required this.mode,
+    this.openCamerasPanelImmediately = false,
   });
   final Widget content;
   final double leftPanelWidth;
   final double rightPanelWidth;
   final LiveViewMode mode;
+  final bool openCamerasPanelImmediately;
 
   @override
   State<CameraLiveDesktopLayout> createState() => _CameraLiveDesktopLayoutState();
@@ -46,6 +48,7 @@ class _CameraLiveDesktopLayoutState extends State<CameraLiveDesktopLayout> {
           leftController: _leftController,
           rightController: _rightController,
           mode: widget.mode,
+          openCamerasPanelImmediately: widget.openCamerasPanelImmediately,
         ),
         Container(width: double.infinity, height: 1, color: AppColors.scaffoldBg),
         Expanded(
