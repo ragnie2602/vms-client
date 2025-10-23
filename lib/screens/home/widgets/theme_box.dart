@@ -39,58 +39,59 @@ class ThemeBox extends StatelessWidget {
             ),
 
             /*  */
-            if (isExpanded) ...[
-              const SizedBox(height: 12),
-              Padding(
-                padding: expandedPadding,
-                child: Text(
-                  'Giao diện',
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.blackOrWhite,
-                  ),
-                ),
-              ),
-            ],
+            // if (isExpanded) ...[
+            //   const SizedBox(height: 12),
+            //   Padding(
+            //     padding: expandedPadding,
+            //     child: Text(
+            //       'Giao diện',
+            //       style: AppTypography.style(
+            //         14,
+            //         fontWeight: FontWeight.w500,
+            //         color: AppColors.blackOrWhite,
+            //       ),
+            //     ),
+            //   ),
+            // ],
 
-            /*  */
-            const SizedBox(height: 12),
-            Container(
-              height: 36,
-              margin: isExpanded ? expandedPadding : collapsedPadding,
-              padding: EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: AppColors.scaffoldBg,
-                borderRadius: BorderRadius.circular(40),
-              ),
-              child: isExpanded
-                  ? DefaultTabController(
-                      length: 2,
-                      initialIndex: context.isDarkMode ? 1 : 0,
-                      child: TabBar(
-                        onTap: (value) => context.read<AppBloc>().add(
-                          ChangeTheme(value == 0 ? ThemeMode.light : ThemeMode.dark),
-                        ),
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        dividerColor: Colors.transparent,
-                        indicator: BoxDecoration(
-                          borderRadius: BorderRadius.circular(32),
-                          color: AppColors.blackOrWhiteReverse,
-                        ),
-                        labelPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                        labelColor: AppColors.blackOrWhite,
-                        unselectedLabelColor: Color(0xFF6F767E),
-                        labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
-                        unselectedLabelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
-                        tabs: [
-                          _buildThemeItem(title: 'Sáng', svg: AppAssets.icLightMode),
-                          _buildThemeItem(title: 'Tối', svg: AppAssets.icDarkMode),
-                        ],
-                      ),
-                    )
-                  : _buildAdaptiveTheme(context),
-            ),
+            // /*  */
+            // const SizedBox(height: 12),
+            //TODO: Add later when apply the dark mode
+            // Container(
+            //   height: 36,
+            //   margin: isExpanded ? expandedPadding : collapsedPadding,
+            //   padding: EdgeInsets.all(4),
+            //   decoration: BoxDecoration(
+            //     color: AppColors.scaffoldBg,
+            //     borderRadius: BorderRadius.circular(40),
+            //   ),
+            //   child: isExpanded
+            //       ? DefaultTabController(
+            //           length: 2,
+            //           initialIndex: context.isDarkMode ? 1 : 0,
+            //           child: TabBar(
+            //             onTap: (value) => context.read<AppBloc>().add(
+            //               ChangeTheme(value == 0 ? ThemeMode.light : ThemeMode.dark),
+            //             ),
+            //             indicatorSize: TabBarIndicatorSize.tab,
+            //             dividerColor: Colors.transparent,
+            //             indicator: BoxDecoration(
+            //               borderRadius: BorderRadius.circular(32),
+            //               color: AppColors.blackOrWhiteReverse,
+            //             ),
+            //             labelPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+            //             labelColor: AppColors.blackOrWhite,
+            //             unselectedLabelColor: Color(0xFF6F767E),
+            //             labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+            //             unselectedLabelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+            //             tabs: [
+            //               _buildThemeItem(title: 'Sáng', svg: AppAssets.icLightMode),
+            //               _buildThemeItem(title: 'Tối', svg: AppAssets.icDarkMode),
+            //             ],
+            //           ),
+            //         )
+            //       : _buildAdaptiveTheme(context),
+            // ),
 
             const SizedBox(height: 43),
           ],
