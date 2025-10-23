@@ -29,7 +29,7 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 348,
+            flex: 400,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -43,7 +43,7 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 267,
+            flex: 360,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -57,20 +57,20 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
 
-          Expanded(
-            flex: 151,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                'Thời gian thêm',
-                style: AppTypography.style(
-                  13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.black4A4A4A,
-                ),
-              ),
-            ),
-          ),
+          // Expanded(
+          //   flex: 151,
+          //   child: Padding(
+          //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          //     child: Text(
+          //       'Thời gian thêm',
+          //       style: AppTypography.style(
+          //         13,
+          //         fontWeight: FontWeight.w500,
+          //         color: AppColors.black4A4A4A,
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Expanded(
             flex: 130,
             child: Padding(
