@@ -292,6 +292,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                         listGroupInput: newState.groups ?? [],
                                         c: context,
                                         addEditType: AddEditGroupType.add,
+                                        parentGroupId: node.data?.groupId,
                                       );
                                       break;
                                     case ItemGroupAction.edit:
