@@ -30,5 +30,8 @@ const Map<String?, String> vi = {
   'ALREADY_INVITE': 'Đã chia sẻ cho tài khoản trước đó',
   'ALREADY_SHARE': 'Tài khoản đã được chia sẻ',
   'ACCOUNT_IVALID': 'Không tồn tại tài khoản',
-  'SHARE_YOURSELF': 'Không thể chia sẻ cho chính mình'
+  'SHARE_YOURSELF': 'Không thể chia sẻ cho chính mình',
+  'SHARE_TO_ADMIN': 'Không thể chia sẻ cho chính admin',
+  'SHARE_TO_OWNER': 'Không thể chia sẻ cho chính chủ sở hữu',
+  'OVER_SHARED_USER_NUMBER': 'Vượt quá số người được chia sẻ',
 };
