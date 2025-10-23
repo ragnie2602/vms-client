@@ -29,10 +29,6 @@ import '../screens/login/bloc/login_bloc.dart';
 import '../screens/login/login_screen.dart';
 
 enum Routes {
-  test11(name: 'test11', path: '/test11'),
-  test12(name: 'test12', path: '/test12'),
-  test2(name: 'test2', path: '/test2'),
-
   controlCamera(name: 'controlCamera', path: '/controlCamera'),
   addGroupCamera(
     name: 'addGroupCamera',
@@ -205,27 +201,8 @@ class AppRouter {
             path: Routes.playback.path,
             name: Routes.playback.name,
             pageBuilder: (context, state) {
-              return fadeTransition(
-                context: context,
-                state: state,
-                child: PlaybackScreen(),
-              );
+              return fadeTransition(context: context, state: state, child: PlaybackScreen());
             },
-          ),
-          GoRoute(
-            path: Routes.test11.path,
-            name: Routes.test11.name,
-            builder: (context, state) => Center(child: Text('Test 11')),
-          ),
-          GoRoute(
-            path: Routes.test12.path,
-            name: Routes.test12.name,
-            builder: (context, state) => Center(child: Text('Test 12')),
-          ),
-          GoRoute(
-            path: Routes.test2.path,
-            name: Routes.test2.name,
-            builder: (context, state) => Center(child: Text('Test 2')),
           ),
           GoRoute(
             path: Routes.about.path,
@@ -277,11 +254,10 @@ CustomTransitionPage fadeTransition<T>({
     child: child,
     transitionDuration: const Duration(milliseconds: 250),
     reverseTransitionDuration: const Duration(milliseconds: 250),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-        FadeTransition(
-          opacity: CurveTween(curve: Curves.easeIn).animate(animation),
-          child: child,
-        ),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
+      opacity: CurveTween(curve: Curves.easeIn).animate(animation),
+      child: child,
+    ),
   );
 }
 
