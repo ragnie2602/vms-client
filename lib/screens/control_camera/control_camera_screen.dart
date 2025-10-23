@@ -243,7 +243,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           curr is DeleteCameraSuccessState ||
           curr is ListCameraSuccessState ||
           curr is RemoveCameraFromGroupFailState ||
-          curr is ListShareCameraSuccessState,
+          curr is ListShareCameraSuccessState ||
+          curr is UpdateCameraSuccessState,
       listener: (context, state) {
         if (state is RemoveCameraFromGroupFailState) {
           showAppMessageDialog(
@@ -297,6 +298,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
             },
           );
         }
+
         if (state is DeleteCameraSuccessState) {
           _onGetListCamera(c: context);
           showAppMessageDialog(
@@ -655,12 +657,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               ),
                                               onShare: () {
                                                 context
-                                                .read<ControlCameraBloc>()
-                                                .add(
-                                                  ListShareCameraEvent(
-                                                    cameraId: cameras[index].id,
-                                                  ),
-                                                );
+                                                    .read<ControlCameraBloc>()
+                                                    .add(
+                                                      ListShareCameraEvent(
+                                                        cameraId:
+                                                            cameras[index].id,
+                                                      ),
+                                                    );
                                               },
                                               onRemoveFromGroup: () {
                                                 _showDialogRemoveCameraFromGroup(
