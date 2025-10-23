@@ -73,7 +73,6 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
   FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraLiveState> emit) async {
     if (event.mute != null) {
       state.ref.currentState?.player.mute = event.mute!;
-      return;
     }
 
     state.ref.currentState?.player.volume = event.volume.clamp(0.0, 1.0);

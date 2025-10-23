@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
-import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
@@ -34,7 +33,8 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
           onDesktop: (context) => LayoutBuilder(
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
-              final wrapWidth = (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
+              final wrapWidth =
+                  (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -43,9 +43,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                     child: Wrap(
                       spacing: spacing,
                       runSpacing: spacing,
-                    children: List.generate(
-                      state.mode.total,
-                      (index) {
+                      children: List.generate(state.mode.total, (index) {
                         if (index < state.paginatedCameras.length) {
                           final camera = state.paginatedCameras[index];
                           return SizedBox.fromSize(
@@ -56,7 +54,8 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                               name: camera.name,
                               key: ValueKey("player($index)___${camera.camId}"),
                               mode: PlayerMode.monitoring,
-                              builder: (player, status) => _buildCameraView(context, player, camera),
+                              builder: (player, status) =>
+                                  _buildCameraView(context, player, camera),
                             ),
                           );
                         } else {
@@ -71,8 +70,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                             ),
                           );
                         }
-                      },
-                    ),
+                      }),
                     ),
                   ),
                   Spacer(),
@@ -83,16 +81,19 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                       children: [
                         Text(
                           "Hiển thị ${state.paginatedCameras.length} trong số ${state.cameras.length} camera",
-                          style: TextStyle(fontWeight: FontWeight.w400, fontSize: 13, color: Colors.black),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 13,
+                            color: Colors.black,
+                          ),
                         ),
                         ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: 280,
-                            maxHeight: 32,
-                          ),
+                          constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
                           child: TablePaginator(
-                            (state.cameras.length / state.mode.total).ceil(), state.page - 1,
-                            (page) => onChangePage(context, page)),
+                            (state.cameras.length / state.mode.total).ceil(),
+                            state.page - 1,
+                            (page) => onChangePage(context, page),
+                          ),
                         ),
                       ],
                     ),
@@ -132,7 +133,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   }
 
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
       },
