@@ -22,30 +22,32 @@ class AboutScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 32),
-
-            // App Name
-            const Text(
-              'VNPT Secure Vision',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 16),
-
             // Version
             const Text(
-              'Version 1.0.0',
+              'Phiên bản: 1.0.1 | Build 1',
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
               ),
               textAlign: TextAlign.center,
             ),
 
-            const Spacer(flex: 3),
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: SizedBox(
+                width: 700,
+                child: const Text(
+                  'VNPT Secure Vision là giải pháp phần mềm giám sát tập trung và toàn diện, cho phép quan sát nhiều camera đồng thời, lưu trữ tập trung tại server trung tâm, sử dụng trí tuệ nhân tạo để phân tích và xử lý hình ảnh thu được từ hệ thống các camera kết nối qua mạng internet (IP Camera).',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+
+              const Spacer(flex: 3),
 
             // Footer
             Padding(
