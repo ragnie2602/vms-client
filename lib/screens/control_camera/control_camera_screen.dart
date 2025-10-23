@@ -243,7 +243,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           curr is DeleteCameraSuccessState ||
           curr is ListCameraSuccessState ||
           curr is RemoveCameraFromGroupFailState ||
-          curr is ListShareCameraSuccessState,
+          curr is ListShareCameraSuccessState ||
+          curr is UpdateCameraSuccessState,
       listener: (context, state) {
         if (state is RemoveCameraFromGroupFailState) {
           showAppMessageDialog(

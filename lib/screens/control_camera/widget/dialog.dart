@@ -237,15 +237,21 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
           // Lưu reference đến bloc trước khi pop
           final bloc = context.read<ControlCameraBloc>();
           if (mounted) {
-            Navigator.pop(context);
             WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pop(context);
+              final index = context
+                  .read<ControlCameraBloc>()
+                  .listCamera
+                  .indexWhere((element) => element.id == state.cameraEntity.id);
+              if (index != -1) {
+                context.read<ControlCameraBloc>().listCamera[index] =
+                    state.cameraEntity;
+              }
+              bloc.add(const GetListCameraEvent());
               showAppMessageDialog(
                 context,
                 message: 'Cập nhật camera thành công!',
                 type: AppMessageType.success,
-                onOk: () {
-                  bloc.add(const GetListCameraEvent());
-                },
               );
             });
           }

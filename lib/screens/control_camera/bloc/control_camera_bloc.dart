@@ -223,10 +223,11 @@ class ControlCameraBloc
       location: event.location,
       subStreamUrls: event.subStreamUrls,
     );
-    res.fold(
-      (onFailure) => emit(AddCameraFailState(res.left.toString())),
-      (onSuccess) => emit(ListCameraSuccessState(cameras: [onSuccess])),
-    );
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
+      onSuccess,
+    ) {
+      emit(UpdateCameraSuccessState(cameraEntity: onSuccess));
+    });
   }
 
   FutureOr<void> _onDeleteCamera(
