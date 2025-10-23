@@ -30,6 +30,7 @@ class LoginBloc extends BaseBloc<LoginEvent, LoginState> {
           isLoading: false,
           account: loginOutput.account,
           isSuccess: true,
+          errorMessage: null
         ));
       } else {
         emit(state.copyWith(

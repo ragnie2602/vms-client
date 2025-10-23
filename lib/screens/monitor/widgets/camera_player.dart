@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fvp/mdk.dart';
@@ -51,7 +50,8 @@ class CameraPlayerState extends State<CameraPlayer> {
 
   late String _currentSource;
   Function(int)? onDurationChanged; // Hàm gán để cập nhập time dựa theo player
-  bool Function()? onFinished; // Hàm gán để xử lý trường hợp hết video (playback đã kết thúc)
+  bool Function([int])? onFinished; // Hàm gán để xử lý trường hợp hết video (playback đã kết thúc)
+  bool Function([int])? onPrevious; // Hàm gán để xử lý trường hợp seek video
   bool _isUpdatingDuration = false;
 
   Timer? _timer;
@@ -175,7 +175,10 @@ class CameraPlayerState extends State<CameraPlayer> {
 
       _player.position.let((pos) {
         if (widget.mode == PlayerMode.playback) {
-          if (_player.state == PlaybackState.stopped && (onFinished?.call() ?? true)) {
+          // Kết thúc playback hiện tại
+          if (_player.state == PlaybackState.stopped &&
+              _player.position + 1000 >= _player.mediaInfo.duration &&
+              (onFinished?.call() ?? false) == false) {
             _status.value = PlayerStatus.finished;
           }
 
@@ -266,15 +269,30 @@ class CameraPlayerState extends State<CameraPlayer> {
       await _player.seekingCompleter?.future;
     }
 
-    _isUpdatingDuration = true;
-
     int targetPosition = position;
-    if (type > 0) targetPosition = min(_player.position + position, _player.mediaInfo.duration);
-    if (type < 0) targetPosition = max(0, _player.position - position);
+    if (type > 0) targetPosition = _player.position + position;
+    if (type < 0) targetPosition = _player.position - position;
+
+    // Tua về phía sau vượt qua playback hiện tại
+    if (targetPosition >= _player.mediaInfo.duration &&
+        onFinished?.call(targetPosition - _player.mediaInfo.duration) == true) {
+      return;
+    }
+    // Tua về phía trước vượt qua playback hiện tại
+    if (targetPosition <= 0 && onPrevious?.call(targetPosition) == true) return;
+
+    _isUpdatingDuration = true;
 
     if (_status.value == PlayerStatus.finished && targetPosition < _player.mediaInfo.duration) {
       _player.play();
       _status.value = PlayerStatus.playing;
+    }
+
+    // tua từ 6:43:45 --> 6:44:15 (end time là 6:44:17) --> Bị lỗi đứng hình
+    // tua từ 6:43:44 --> 6:44:14 (end time là 6:44:17) --> Bị lỗi đứng hình
+    // --> target time phải nhỏ hơn >2.2s so với end time
+    if (_player.mediaInfo.duration - targetPosition <= 3000) {
+      targetPosition = _player.mediaInfo.duration - 3000;
     }
 
     final res = await _player.seek(position: targetPosition);

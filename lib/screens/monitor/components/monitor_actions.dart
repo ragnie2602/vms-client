@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 
 import '../../shared/action_item.dart';
 import '../../shared/panel.dart';
@@ -85,6 +88,12 @@ class _MonitorActionsState extends State<MonitorActions> {
                       MonitorCameras(
                         maxWidth: widget.leftController.expandedWidth,
                         key: ValueKey('monitor_cameras'),
+                        onTap: (data) {
+                          context.pushNamed(
+                            Routes.livecamera.name,
+                            extra: CameraLiveScreenArgs(data: data),
+                          );
+                        },
                       ),
                       id: 0,
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
@@ -95,21 +104,22 @@ class _MonitorActionsState extends State<MonitorActions> {
             ),
 
             /*  */
-            ValueListenableBuilder(
-              valueListenable: _rightPanelIndex,
-              builder: (context, value, child) => Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ActionItem.alert(
-                    isSelected: value == 0,
-                    id: 0,
-                    controller: widget.rightController,
-                    onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
-                    count: '09',
-                  ),
-                ],
-              ),
-            ),
+            // TODO: Do in the future
+            // ValueListenableBuilder(
+            //   valueListenable: _rightPanelIndex,
+            //   builder: (context, value, child) => Row(
+            //     mainAxisSize: MainAxisSize.min,
+            //     children: [
+            //       ActionItem.alert(
+            //         isSelected: value == 0,
+            //         id: 0,
+            //         controller: widget.rightController,
+            //         onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
+            //         count: '09',
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),

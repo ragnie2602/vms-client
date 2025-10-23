@@ -13,6 +13,7 @@ import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_field.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_event.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_state.dart';
+import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import 'bloc/login_bloc.dart';
 
@@ -71,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login() {
-    if (serverController.text != '' && usernameController.text != '' && passwordController.text != '') {
+    if (formKey.currentState?.validate() ?? false) {
       loginStatus.text += loginStatus.text.isNotEmpty ? "\n" : "";
 
       context.read<LoginBloc>().add(
@@ -94,16 +95,19 @@ class _LoginScreenState extends State<LoginScreen> {
             child: BlocListener<LoginBloc, LoginState>(
               listener: (context, state) {
                 if (state.isSuccess) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Welcome ${state.account ?? 'User'}!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   SnackBar(
+                  //     content: Text('Welcome ${state.account ?? 'User'}!'),
+                  //     backgroundColor: Colors.green,
+                  //   ),
+                  // );
                   context.goNamed(Routes.monitoring.name);
-                } else if (state.errorMessage != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.errorMessage!), backgroundColor: Colors.red),
+                } 
+                else if (state.isLoading == false && state.errorMessage != null) {
+                  showAppMessageDialog(
+                    context,
+                    message: state.errorMessage ?? 'Kết nối không thành công! Vui lòng kiểm tra lại địa chỉ máy chủ!',
+                    type: AppMessageType.error,
                   );
                 }
               },
@@ -114,8 +118,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Center(
                       child: ConstrainedBox(
                         constraints: BoxConstraints(maxWidth: 500),
-                        child: Column( 
-                          children: [
+                        child: Form(
+                          key: formKey,
+                          child: Column(
+                            children: [
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 80),
                               child: SvgPicture.asset(
@@ -138,10 +144,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: AppField(
                                 controller: serverController,
                                 label: 'Địa chỉ máy chủ',
-                                hintText: 'http://10.3.3.162:8787',
+                                hintText: 'Nhập địa chỉ máy chủ',
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Máy chủ không được để trống';
+                                    return 'Máy chủ không được để trống.';
                                   }
                                   return null;
                                 },
@@ -153,10 +159,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: AppField(
                                 controller: usernameController,
                                 label: 'Tên đăng nhập',
-                                hintText: 'Nhập tài khoản, email hoặc số điện thoại',
+                                hintText: 'Nhập tên đăng nhập',
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Tài khoản không được để trống';
+                                    return 'Tên đăng nhập không được để trống.';
                                   }
                                   return null;
                                 },
@@ -179,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
-                                      return 'Mật khẩu không được để trống';
+                                      return 'Mật khẩu không được để trống.';
                                     }
                                     if (value.length < 6) {
                                       return 'Mật khẩu phải có ít nhất 6 ký tự';
@@ -198,7 +204,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                             ),
                             Spacer(),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

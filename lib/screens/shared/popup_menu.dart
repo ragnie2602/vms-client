@@ -156,9 +156,9 @@ class _CustomPopupMenuState extends State<CustomPopupMenu> with SingleTickerProv
     }
   }
 
-  _hideMenu() async {
+  _hideMenu({bool instantly = false}) async {
     if (_overlayEntry != null) {
-      await _animController.reverse();
+      if (!instantly) await _animController.reverse();
       _overlayEntry?.remove();
       _overlayEntry = null;
     }
@@ -196,9 +196,15 @@ class _CustomPopupMenuState extends State<CustomPopupMenu> with SingleTickerProv
   }
 
   @override
-  void dispose() {
-    _hideMenu();
+  deactivate() {
+    _hideMenu(instantly: true);
     _controller?.removeListener(_updateView);
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
     super.dispose();
   }
 

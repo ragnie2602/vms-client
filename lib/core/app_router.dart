@@ -23,6 +23,7 @@ import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
+import '../screens/about/about_screen.dart';
 import '../screens/home/home_bloc.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/login/bloc/login_bloc.dart';
@@ -230,7 +231,13 @@ class AppRouter {
           GoRoute(
             path: Routes.about.path,
             name: Routes.about.name,
-            builder: (context, state) => Center(child: Text('About')),
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: AboutScreen(),
+              );
+            },
           ),
           // GoRoute(
           //   path: Routes.controlCamera.path,
