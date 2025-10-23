@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -153,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       hintText: 'Nhập địa chỉ máy chủ',
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return 'Máy chủ không được để trống.';
+                                          return 'Địa chỉ máy chủ không được để trống.';
                                         }
                                         return null;
                                       },
@@ -165,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       label: 'Tên đăng nhập',
                                       hintText: 'Nhập tên đăng nhập',
                                       validator: (value) {
-                                        if (value == null || value.isEmpty) {
+                                        if (value == null || value.trim().isEmpty) {
                                           return 'Tên đăng nhập không được để trống.';
                                         }
                                         return null;
@@ -179,6 +180,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         label: 'Mật khẩu',
                                         hintText: 'Nhập mật khẩu',
                                         obscureText: obscure,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                                        ],
                                         suffix: IconButton(
                                           onPressed: () => setState(() => obscure = !obscure),
                                           icon: Icon(

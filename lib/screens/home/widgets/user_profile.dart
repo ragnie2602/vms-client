@@ -115,8 +115,9 @@ class _UserProfileState extends State<UserProfile> {
             Divider(height: 0.5, color: Colors.grey.shade300),
             _buildMenuItem(
               onTap: () {
-                context.read<SocketApiClient>().disconnect();
-                context.goNamed(Routes.login.name);
+                // context.read<SocketApiClient>().disconnect();
+                // context.goNamed(Routes.login.name);
+                showSignOutConfirmationPopup();
               },
               icon: Icons.logout,
               title: 'Đăng xuất',
@@ -143,6 +144,105 @@ class _UserProfileState extends State<UserProfile> {
       contentPadding: EdgeInsets.fromLTRB(24, 12, 24, 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
+      ),
+    );
+  }
+
+  showSignOutConfirmationPopup() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(36),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Đăng xuất',
+                    style: AppTypography.style(
+                      30,
+                      color: AppColors.blackOrWhite,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Bạn có muốn thoát khỏi ứng dụng?',
+                    style: AppTypography.style(
+                      14,
+                      color: AppColors.blackOrWhite,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blackOrWhiteReverse,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                          ),
+                          child: Text(
+                            'Hủy',
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.blackOrWhite,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            context.read<SocketApiClient>().disconnect();
+                            context.goNamed(Routes.login.name);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blackOrWhite,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                          ),
+                          child: Text(
+                            'Đăng xuất',
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.blackOrWhiteReverse,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

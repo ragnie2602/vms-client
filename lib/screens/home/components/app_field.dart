@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
 /// --- Reusable UI atoms ----------------------------------------------------
@@ -17,6 +18,7 @@ class AppField extends StatefulWidget {
     this.paddingBottomLabel = 6,
     this.requiredField = false,
     this.trailingButton,
+    this.inputFormatters,
   });
 
   final TextEditingController controller;
@@ -31,6 +33,7 @@ class AppField extends StatefulWidget {
   final String? label;
   final bool requiredField;
   final Widget? trailingButton;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -110,6 +113,7 @@ class _AppFieldState extends State<AppField> {
                     maxLines: widget.maxLines,
                     maxLength: widget.maxLength,
                     validator: _customValidator,
+                    inputFormatters: widget.inputFormatters,
                     decoration: InputDecoration(
                       hintText: widget.hintText,
                       hintStyle: const TextStyle(
@@ -123,49 +127,28 @@ class _AppFieldState extends State<AppField> {
                       errorStyle: const TextStyle(fontSize: 0, height: 0),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: const BorderSide(
-                          color: Colors.red,
-                          width: 1,
-                        ),
+                        borderSide: const BorderSide(color: Colors.red, width: 1),
                       ),
                       focusedErrorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: const BorderSide(
-                          color: Colors.red,
-                          width: 1,
-                        ),
+                        borderSide: const BorderSide(color: Colors.red, width: 1),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(
-                          color: AppColors.greyE2E8F0,
-                          width: 1,
-                        ),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(
-                          color: AppColors.greyE2E8F0,
-                          width: 1,
-                        ),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
-                          width: 1,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
                       ),
                       suffixIcon: suffixChildren.isEmpty
                           ? null
-                          : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: suffixChildren,
-                            ),
+                          : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
                     ),
                   ),
                 ),
