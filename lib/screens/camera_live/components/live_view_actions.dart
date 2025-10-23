@@ -10,19 +10,48 @@ import '../bloc/camera_live/camera_live_bloc.dart';
 import '../widgets/playback_date.dart';
 import 'panel_list_playbacks.dart';
 
-class LiveViewActions extends StatelessWidget {
-  LiveViewActions({
+class LiveViewActions extends StatefulWidget {
+  const LiveViewActions({
     super.key,
     required this.leftController,
     required this.rightController,
     required this.mode,
+    this.openCamerasPanelImmediately = false,
   });
   final PanelController leftController;
   final PanelController rightController;
   final LiveViewMode mode;
+  final bool openCamerasPanelImmediately;
 
+  @override
+  State<LiveViewActions> createState() => _LiveViewActionsState();
+}
+
+class _LiveViewActionsState extends State<LiveViewActions> {
   late final ValueNotifier<int?> _leftPanelIndex = ValueNotifier(null);
   late final ValueNotifier<int?> _rightPanelIndex = ValueNotifier(null);
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (widget.openCamerasPanelImmediately) {
+        widget.leftController.togglePanel(
+          MonitorCameras(
+            maxWidth: widget.leftController.expandedWidth,
+            key: ValueKey('live_view_cameras'),
+            selectedCamera: context.read<CameraLiveBloc>().state.camera,
+            onTap: (camera) {
+              context.read<CameraLiveBloc>().add(ChangeCamera(camera));
+            },
+          ),
+          id: 1,
+          onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +68,9 @@ class LiveViewActions extends StatelessWidget {
               builder: (context, index, child) => Row(
                 spacing: 28,
                 children: [
-                  if (mode.isPlayback) PlaybackDate(),
+                  if (widget.mode.isPlayback) PlaybackDate(),
 
-                  if (mode.isLive)
+                  if (widget.mode.isLive)
                     ActionItem(
                       title: 'Chế độ xem',
                       icon: AppAssets.icViewMode,
@@ -52,9 +81,9 @@ class LiveViewActions extends StatelessWidget {
                     isSelected: index == 1,
                     title: 'Danh sách camera',
                     icon: AppAssets.icListCamera,
-                    onTap: () => leftController.togglePanel(
+                    onTap: () => widget.leftController.togglePanel(
                       MonitorCameras(
-                        maxWidth: leftController.expandedWidth,
+                        maxWidth: widget.leftController.expandedWidth,
                         key: ValueKey('live_view_cameras'),
                         selectedCamera: context.read<CameraLiveBloc>().state.camera,
                         onTap: (camera) {
@@ -65,14 +94,14 @@ class LiveViewActions extends StatelessWidget {
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
                   ),
-                  if (mode.isPlayback)
+                  if (widget.mode.isPlayback)
                     ActionItem(
                       title: 'Danh sách Playback',
                       icon: AppAssets.icMenu,
                       isSelected: index == 2,
-                      onTap: () => leftController.togglePanel(
+                      onTap: () => widget.leftController.togglePanel(
                         PanelListPlaybacks(
-                          maxWidth: leftController.expandedWidth,
+                          maxWidth: widget.leftController.expandedWidth,
                           key: ValueKey('live_view_playbacks'),
                         ),
                         id: 2,

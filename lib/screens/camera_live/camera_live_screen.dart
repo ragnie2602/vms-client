@@ -60,6 +60,7 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: CameraLiveDesktopLayout(
+              openCamerasPanelImmediately: isPlayback,
               content: state.mode.isPlayback
                   ? _waitingPlayback(state, context)
                   : _buildPlayer(state),
