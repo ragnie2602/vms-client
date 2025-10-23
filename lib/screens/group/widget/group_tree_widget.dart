@@ -234,7 +234,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                               'Tất cả',
                               style: AppTypography.style(
                                 13,
-                                fontWeight: FontWeight.w400,
+                                fontWeight: FontWeight.w500,
                                 color: AppColors.blackOrWhite,
                               ),
                               maxLines: 1,
@@ -274,7 +274,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                               'Chưa gán nhóm',
                               style: AppTypography.style(
                                 13,
-                                fontWeight: FontWeight.w400,
+                                fontWeight: FontWeight.w500,
                                 color: AppColors.blackOrWhite,
                               ),
                               maxLines: 1,

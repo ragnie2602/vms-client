@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 import '../home_bloc.dart';
 import 'tile_expansion.dart';
@@ -100,6 +103,22 @@ class DrawerTile extends StatelessWidget {
     required this.maxWidth,
   });
 
+  void _handleTap(BuildContext context) {
+    Routes? _route;
+    Object? _extra;
+
+    if (tab.route == Routes.playback &&
+        context.read<MonitorBloc>().state is MonitorSuccess &&
+        (context.read<MonitorBloc>().state as MonitorSuccess).cameras.isNotEmpty) {
+      final cam = (context.read<MonitorBloc>().state as MonitorSuccess).cameras.first;
+
+      _route = Routes.livecamera;
+      _extra = CameraLiveScreenArgs(data: cam, isPlayback: true, title: 'Playback ${cam.name}');
+    }
+
+    context.read<HomeBloc>().add(ChangeTab(tab, route: _route, extra: _extra));
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isSelected = tab == selectedTab;
@@ -123,11 +142,7 @@ class DrawerTile extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return tab.nested.isEmpty
-              ? _buildTitle(
-                  context,
-                  isSelected,
-                  onTap: () => context.read<HomeBloc>().add(ChangeTab(tab)),
-                )
+              ? _buildTitle(context, isSelected, onTap: () => _handleTap(context))
               : TileExpansion(
                   body: Column(
                     mainAxisSize: MainAxisSize.min,

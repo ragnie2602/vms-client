@@ -16,6 +16,8 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
   bool showSlider = false;
   bool isMuted = false;
 
+  double _volumeBeforeMuted = 0;
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -32,7 +34,10 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
                 InkWell(
                   onTap: () {
                     isMuted = !isMuted;
-                    context.read<CameraLiveBloc>().add(ChangeVolume(volume, mute: isMuted));
+                    if (isMuted) _volumeBeforeMuted = volume;
+                    context.read<CameraLiveBloc>().add(
+                      ChangeVolume(isMuted ? 0 : _volumeBeforeMuted, mute: isMuted),
+                    );
                   },
                   child: SvgPicture.asset(AppAssets.icVolume, width: 28, height: 28),
                 ),
