@@ -86,6 +86,9 @@ class _GroupCameraViewState extends State<GroupCameraView> {
     required String groupName,
     List<int>? parentGroupId,
   }) {
+    if(groupName.isEmpty){
+      return;
+    }
     // chưa lấy được parent group id => bổ sung sau
     context.read<GroupCameraBloc>().add(
       AddGroupCameraEvent(
