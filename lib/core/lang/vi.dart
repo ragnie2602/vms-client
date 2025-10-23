@@ -25,4 +25,10 @@ const Map<String?, String> vi = {
   // Login_Error
   'SESSION_EXPIRED': "Phiên đăng nhập đã hết hạn",
   'USER_INVALID': "Người dùng không hợp lệ",
+
+  // CheckAccount_err
+  'ALREADY_INVITE': 'Đã chia sẻ cho tài khoản trước đó',
+  'ALREADY_SHARE': 'Tài khoản đã được chia sẻ',
+  'ACCOUNT_IVALID': 'Không tồn tại tài khoản',
+  'SHARE_YOURSELF': 'Không thể chia sẻ cho chính mình'
 };
