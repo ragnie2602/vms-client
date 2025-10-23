@@ -66,7 +66,7 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
   }
 
   FutureOr<void> _onShowCustomView(ShowCustomView event, Emitter<CustomViewState> emit) {
-    if (event.mode == CustomMonitorPaneMode.edit) {
+    if (event.mode != CustomMonitorPaneMode.add) {
       preCustomView = event.customView;
     } else if (state is ShowCustomViewSuccess) {
       preCustomView = (state as ShowCustomViewSuccess).customView;

@@ -36,7 +36,7 @@ class _ListCustomViewsState extends State<ListCustomViews> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CustomViewBloc, CustomViewState>(
+    return BlocConsumer<CustomViewBloc, CustomViewState>(
       listener: (context, state) {
         if (state is ListCustomViewSuccess) {
           setState(() {
@@ -54,17 +54,20 @@ class _ListCustomViewsState extends State<ListCustomViews> {
           }
         }
       },
-      child: ListView.builder(
-        itemBuilder: (context, index) => CustomViewItem(
-          key: ValueKey(customViews[index].id),
-          bloc: bloc,
-          customView: customViews[index],
-          onUpdate: widget.onUpdate,
-          onSelectCustomView: widget.onSelectCustomView,
-        ),
-        itemCount: customViews.length,
-        shrinkWrap: true,
-      ),
+      buildWhen: (previous, current) =>
+          current is ListCustomViewSuccess || current is CustomViewLoading,
+      builder: (context, state) => state is CustomViewLoading
+          ? CircularProgressIndicator(color: AppColors.blackOrWhite)
+          : ListView.builder(
+              itemBuilder: (context, index) => CustomViewItem(
+                key: ValueKey(customViews[index].id),
+                bloc: bloc,
+                customView: customViews[index],
+                onUpdate: widget.onUpdate,
+              ),
+              itemCount: customViews.length,
+              shrinkWrap: true,
+            ),
     );
   }
 }
@@ -75,7 +78,13 @@ class CustomViewItem extends StatefulWidget {
   final Function(CustomLiveView)? onUpdate;
   final VoidCallback? onSelectCustomView;
 
-  const CustomViewItem({super.key, required this.customView, required this.bloc, this.onUpdate, this.onSelectCustomView});
+  const CustomViewItem({
+    super.key,
+    required this.customView,
+    required this.bloc,
+    this.onUpdate,
+    this.onSelectCustomView,
+  });
 
   @override
   State<CustomViewItem> createState() => _CustomViewItemState();
@@ -89,6 +98,12 @@ class _CustomViewItemState extends State<CustomViewItem> {
   void initState() {
     super.initState();
     customView = widget.customView;
+
+    // Restore when whole the tab was re-render due to change tab default-custom
+    final bloc = context.read<CustomViewBloc>();
+    if (bloc.preCustomView != null) {
+      isSelecting = Utils.isEqual(bloc.preCustomView!.id, customView.id);
+    }
   }
 
   @override
