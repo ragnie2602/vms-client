@@ -148,6 +148,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
   }) {
     showDialogRemoveGroup(
       c,
+      currentGroup: currentGroup,
       onConfirm: () {
         _onRemoveGroupCamera(
           groupId: currentGroup != null ? currentGroup.groupId : [],
