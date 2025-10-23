@@ -1,10 +1,10 @@
 [Setup]
 AppName=VNPT Secure Vision
-AppVersion=1.0.0
+AppVersion=1.0.1
 DefaultDirName={pf}\VNPT Secure Vision
 DefaultGroupName=VNPT Secure Vision
 OutputDir=output
-OutputBaseFilename=VNPTSecureVisionInstaller
+OutputBaseFilename=VNPTSecureVisionInstaller_1.0.1_1
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
