@@ -16,7 +16,7 @@ class ItemCameraWidget extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onShare,
-    this.onRemoveFromGroup
+    this.onRemoveFromGroup,
   });
   final CameraEntity itemCamera;
   final int index;
@@ -46,7 +46,7 @@ class ItemCameraWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 348,
+            flex: 400,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -60,7 +60,7 @@ class ItemCameraWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 267,
+            flex: 360,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -74,21 +74,20 @@ class ItemCameraWidget extends StatelessWidget {
             ),
           ),
 
-          Expanded(
-            flex: 151,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                TimeUtil.convertTime(itemCamera.timeAdded),
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.black171725,
-                ),
-              ),
-            ),
-          ),
-
+          // Expanded(
+          //   flex: 151,
+          //   child: Padding(
+          //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          //     child: Text(
+          //       TimeUtil.convertTime(itemCamera.timeAdded),
+          //       style: AppTypography.style(
+          //         14,
+          //         fontWeight: FontWeight.w400,
+          //         color: AppColors.black171725,
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Expanded(
             flex: 130,
             child: Padding(
@@ -184,24 +183,6 @@ class ItemCameraWidget extends StatelessWidget {
                   ),
                   PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                   PopupMenuItem<String>(
-                    value: 'delete',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(AppAssets.icDelete),
-                        SizedBox(width: 8),
-                        Text(
-                          'Xóa',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
-                  PopupMenuItem<String>(
                     value: 'remove_from_group',
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Row(
@@ -213,6 +194,28 @@ class ItemCameraWidget extends StatelessWidget {
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          AppAssets.icDelete,
+                          color: AppColors.redFF0004,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Xóa khỏi hệ thống',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.redFF0004,
                           ),
                         ),
                       ],
