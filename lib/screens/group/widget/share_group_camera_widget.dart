@@ -100,6 +100,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
   bool _isSearching = false;
   List<int>? _accIdShareGroup;
   String? _accShareCamera;
+  String? _errorCheckAccMessage;
   List<String> listAccShared = [];
   final List<String> _selectedAccName = [];
   final List<List<int>> _listInviteId = [];
@@ -109,6 +110,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
     super.initState();
     // get danh sách đã chia sẻ
     // initListShared();
+    _errorCheckAccMessage = null;
     listAccShared.clear();
     _listInviteId.clear();
     _initData(listInvite: widget.sharedUsers);
@@ -164,16 +166,23 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
     setState(() {
       _isSearching = false;
     });
-    return res.fold((_) => null, (reply) {
-      // nếu tồn tại tài khoản
-      // vì share group cần id mà share cam cần tên accname
-      if (reply.isExists) {
-        setState(() {
-          _accIdShareGroup = reply.accountInviteId;
-          _accShareCamera = _searchController.text.trim();
-        });
-      }
-    });
+    return res.fold(
+      (fail) {
+        //
+        _errorCheckAccMessage = fail.toString();
+      },
+      (reply) {
+        _errorCheckAccMessage = null;
+        // nếu tồn tại tài khoản
+        // vì share group cần id mà share cam cần tên accname
+        if (reply.isExists) {
+          setState(() {
+            _accIdShareGroup = reply.accountInviteId;
+            _accShareCamera = _searchController.text.trim();
+          });
+        }
+      },
+    );
   }
 
   void _onShare() async {
@@ -426,7 +435,8 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                           ),
                           child: Center(
                             child: Text(
-                              'Không tìm thấy người dùng hoặc nhóm',
+                              _errorCheckAccMessage ??
+                                  'Không tìm thấy người dùng hoặc nhóm',
                               style: AppTypography.style(
                                 14,
                                 fontWeight: FontWeight.w400,
