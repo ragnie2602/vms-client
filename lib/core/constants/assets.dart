@@ -85,4 +85,5 @@ class AppAssets {
   static const iconShare = '$_svgPath/icon_share.svg';
   static const iconAddCamToGroup = '$_svgPath/ic_add_camera_group.svg';
   static const icLocation = '$_svgPath/ic_location.svg';
+  static const icAllCamera = '$_svgPath/ic_all_camera.svg';
 }
