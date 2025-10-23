@@ -13,19 +13,36 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
 
   @override
   Future<LoginOutput> buildUseCase(LoginInput input) async {
-    final authentication = await authRepository.authenticate(
-      input.server,
-      input.username,
-      input.password,
-    );
-    final status = await authRepository.login(authentication);
+    try {
+      final authentication = await authRepository.authenticate(
+        input.server,
+        input.username,
+        input.password,
+      );
+      final status = await authRepository.login(authentication);
 
-    if (status) {
-      await AppData.instance.save<String>(AppKeys.SP_USERNAME_KEY, input.username);
-      await AppData.instance.save<String>(AppKeys.SP_PASSWORD_KEY, input.password);
-      await AppData.instance.save<String>(AppKeys.SP_SERVER_KEY, input.server);
+      if (status) {
+        await AppData.instance.save<String>(AppKeys.SP_USERNAME_KEY, input.username);
+        await AppData.instance.save<String>(AppKeys.SP_PASSWORD_KEY, input.password);
+        await AppData.instance.save<String>(AppKeys.SP_SERVER_KEY, input.server);
+        return LoginOutput(account: input.username, isSuccess: true);
+      } else {
+        return LoginOutput(
+          account: input.username,
+          isSuccess: false,
+          errorMessage: 'Đăng nhập thất bại',
+        );
+      }
+    } catch (e) {
+      String errorMessage = e.toString().replaceFirst('Exception: ', '');
+      if (errorMessage == 'Network error: null') {
+        errorMessage = 'Kết nối không thành công! Vui lòng kiểm tra lại địa chỉ máy chủ!';
+      }
+      return LoginOutput(
+        account: input.username,
+        isSuccess: false,
+        errorMessage: errorMessage,
+      );
     }
-
-    return LoginOutput(account: input.username, isSuccess: status);
   }
 }

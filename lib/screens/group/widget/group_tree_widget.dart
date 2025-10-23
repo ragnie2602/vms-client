@@ -223,7 +223,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                         children: [
                           (constraints.maxWidth >= 40)
                               ? SvgPicture.asset(
-                                  AppAssets.icRootFolder,
+                                  AppAssets.icAllCamera,
                                   width: 20,
                                   height: 20,
                                 )
@@ -263,7 +263,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                         children: [
                           (constraints.maxWidth >= 40)
                               ? SvgPicture.asset(
-                                  AppAssets.icRootFolder,
+                                  AppAssets.icAllCamera,
                                   width: 20,
                                   height: 20,
                                 )
