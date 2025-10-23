@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/debouncer.dart';
-import 'package:vms_flutter_client/data/datasources/share_type_enum.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
@@ -45,6 +44,22 @@ import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 /// ```
 
 /// Entry point to show the share dialog
+/// 
+enum ShareType {
+  camera(0),
+  groupCamera(1);
+
+  final int value;
+
+  const ShareType(this.value);
+}
+
+extension ShareTypeExtension on ShareType {
+  static int getShareTypeValue(ShareType shareType) {
+    return shareType.value;
+  }
+}
+
 Future<T?> showShareDialog<T>(
   BuildContext context, {
   required ShareType shareType,
@@ -221,7 +236,7 @@ class _ShareDialogState extends State<_ShareDialog> {
   Future<void> _confirmRemoveUser(InviteMessageEntity inviteMessage) async {
     final title = widget.shareType == ShareType.camera
         ? 'Bạn có chắc muốn hủy chia sẻ camera không ?'
-        : 'Bạn có chắc muốn hủy chia sẻ group không ?';
+        : 'Bạn có chắc muốn hủy chia sẻ nhóm không ?';
     await showDialog<void>(
       context: context,
       barrierDismissible: false,

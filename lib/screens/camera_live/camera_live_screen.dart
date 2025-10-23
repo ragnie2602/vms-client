@@ -46,6 +46,10 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
         BlocProvider(create: (_) => PlaybackBloc(context.read(), context.read())),
       ],
       child: BlocConsumer<CameraLiveBloc, CameraLiveState>(
+        listenWhen: (previous, current) {
+          return previous.camera.id != current.camera.id ||
+              previous.playbackDate != current.playbackDate;
+        },
         listener: (context, state) {
           context.read<PlaybackBloc>().add(GetVideoPlaybacks(state.camera.id, state.playbackDate));
         },
@@ -56,6 +60,7 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: CameraLiveDesktopLayout(
+              openCamerasPanelImmediately: isPlayback,
               content: state.mode.isPlayback
                   ? _waitingPlayback(state, context)
                   : _buildPlayer(state),
@@ -68,11 +73,6 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
   }
 
   Widget _waitingPlayback(CameraLiveState data, BuildContext context) {
-    // Trường hợp mở màn playback thì listener chưa gọi
-    context.read<PlaybackBloc>().add(
-      GetVideoPlaybacks(data.camera.id, context.read<CameraLiveBloc>().state.playbackDate),
-    );
-
     return BlocBuilder<PlaybackBloc, PlaybackState>(
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,

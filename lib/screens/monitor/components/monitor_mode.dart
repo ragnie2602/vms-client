@@ -9,10 +9,14 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
-import 'package:vms_flutter_client/screens/monitor/add_custom_mode_pane.dart';
+import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
+import 'package:vms_flutter_client/screens/monitor/add_edit_custom_mode_pane.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/list_custom_views.dart';
+import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import 'package:vms_flutter_client/screens/group/widget/group_tree_widget.dart';
 
@@ -31,6 +35,34 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   int currentTab = 0;
 
   TreeViewController<DeviceGroup, TreeNode<DeviceGroup>>? _controller;
+
+  // Keys to force rebuild of tab content
+  Key _defaultModeKey = UniqueKey();
+  Key _customModeKey = UniqueKey();
+  bool _shouldSelectAllGroup = true;
+
+  void _onClearFilterCustomMode() {
+    setState(() {
+      _customModeKey = UniqueKey();
+    });
+  }
+
+  void _onClearFilterDefaultMode() {
+    setState(() {
+      _defaultModeKey = UniqueKey();
+       _shouldSelectAllGroup = false;
+    });
+  }
+
+   void _onDefaultModeFilterSelected() {
+    _onClearFilterCustomMode();
+    setState(() {
+      _shouldSelectAllGroup = true;
+    });
+    if (GoRouterState.of(context).name != Routes.monitoring.name) {
+      context.goNamed(Routes.monitoring.name);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,9 +127,15 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                   Expanded(
                     child: ListenableBuilder(
                       listenable: DefaultTabController.of(context),
-                      builder: (context, child) => switch (DefaultTabController.of(context).index) {
-                        0 => _buildDefaultMode(constraints.maxWidth, constraints.maxHeight),
-                        _ => _buildCustomMode(context, constraints.maxWidth, isExpanded),
+                      builder: (context, child) {
+                        final tabIndex = DefaultTabController.of(context).index;
+                        return IndexedStack(
+                          index: tabIndex,
+                          children: [
+                            _buildDefaultMode(constraints.maxWidth, constraints.maxHeight),
+                            _buildCustomMode(context, constraints.maxWidth, isExpanded),
+                          ],
+                        );
                       },
                     ),
                   ),
@@ -107,55 +145,85 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         ),
       );
     } else if (viewMode == 1) {
-      return AddCustomModePane(onBack: () => setState(() => viewMode = 0));
+      return AddEditCustomModePane(
+        onBack: () {
+          setState(() => viewMode = 0);
+
+          final bloc = context.read<CustomViewBloc>();
+          if (bloc.preCustomView != null) {
+            bloc.add(ShowCustomView(bloc.preCustomView!, CustomMonitorPaneMode.view));
+            context.goNamed(
+              Routes.custom_live_view.name,
+              extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.view),
+            );
+          } else {
+            context.goNamed(Routes.monitoring.name);
+          }
+        },
+      );
     } else {
       return Container();
     }
   }
 
   Widget _buildDefaultMode(double currentWidth, double availableHeight) {
+    final cvBloc = context.read<CustomViewBloc>();
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (currentWidth >= 24)
-          Text(
-            'Kiểu hiển thị',
-            maxLines: 1,
-            overflow: TextOverflow.visible,
-            style: AppTypography.style(
-              14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.blackOrWhite,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Kiểu hiển thị',
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.blackOrWhite,
+              ),
             ),
           ),
         SizedBox(height: 16),
 
-        BlocBuilder<MonitorBloc, MonitorState>(
-          builder: (context, state) {
-            if (state is! MonitorSuccess) return SizedBox();
+        BlocSelector<MonitorBloc, MonitorState, ViewMode?>(
+          selector: (state) => state is MonitorSuccess ? state.mode : null,
+          builder: (context, selectedMode) {
+            // if (selectedMode == null) return SizedBox(height: 32);
 
-            return SizedBox(
-              height: 32,
-              child: Row(
-                spacing: 8,
-                children: [
-                  for (var (index, value) in ViewMode.values.indexed)
-                    if (currentWidth - 48 >= 32 * (index + 1) + 8 * index)
-                      InkWell(
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                height: 32,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: ViewMode.values.length,
+                  separatorBuilder: (context, index) => SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final value = ViewMode.values[index];
+                    if (currentWidth - 48 >= 32 * (index + 1) + 8 * index) {
+                      return InkWell(
                         onTap: () {
+                          _onClearFilterCustomMode();
+                          cvBloc.preCustomView = null;
                           if (GoRouterState.of(context).name != Routes.monitoring.name) {
                             context.goNamed(Routes.monitoring.name);
                           }
                           context.read<MonitorBloc>().add(ChangeGridMode(value));
                         },
                         child: SvgPicture.asset(
-                          state.mode == value ? value.iconActive : value.icon,
+                          selectedMode == value ? value.iconActive : value.icon,
                           width: 32,
                           height: 32,
                         ),
-                      ),
-                ],
+                      );
+                    }
+                    return SizedBox.shrink();
+                  },
+                ),
               ),
             );
           },
@@ -175,58 +243,62 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
               ),
             ),
           ),
-        SizedBox(height: 16 - 8),
-        BlocBuilder<GroupCameraBloc, GroupCameraState>(
-          builder: (context, state) {
-            if (state is! GetAllGroupCameraSuccessState) return SizedBox();
-            // TreeGroupWidget contains its own Expanded and scrollable TreeView.
-            // When embedding inside a Column we must give it a bounded height.
-            // Use availableHeight when it's finite, otherwise a reasonable fallback.
-            final double height = availableHeight.isFinite && availableHeight > 0
-                ? availableHeight -
-                      220 // subtract approximate space used by siblings
-                : 300;
-            return SizedBox(
-              height: height.clamp(200, 800),
-              child: TreeGroupWidget(controller: _controller, tree: state.tree),
-            );
-            // return TreeView.simple(
-            //   padding: EdgeInsets.symmetric(horizontal: 24),
-            //   showRootNode: false,
-            //   tree: state.tree,
-            //   expansionBehavior: ExpansionBehavior.scrollToLastChild,
-            //   indentation: const Indentation(),
-            //   expansionIndicatorBuilder: (context, node) =>
-            //       NoExpansionIndicator(tree: node),
-            //   builder: (context, node) => GroupNode(
-            //     group: node.data!,
-            //     onToggleExpansion: () => _controller?.toggleExpansion(node),
-            //   ),
-            //   onTreeReady: (controller) {
-            //     _controller = controller;
-            //     controller.expandAllChildren(controller.tree);
-            //   },
-            // );
-          },
-        ),
+        Expanded(
+          child: GroupCameraView(
+            initiallySelectAllGroup: _shouldSelectAllGroup,
+            onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
+              _onDefaultModeFilterSelected();
+              context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
+            },
+            onGetAllGroupCamera: (BuildContext contextTreeGroup) {
+              _onDefaultModeFilterSelected();
+              context.read<MonitorBloc>().add(GetAllCamera());
+            },
+            onGetNoGroupCamera: (BuildContext contextTreeGroup) {
+              _onDefaultModeFilterSelected();
+              context.read<MonitorBloc>().add(GetAllCameraNoGroup());
+            },
+            onAddCameraToGroup: ({required BuildContext c, required List<List<int>> cameraIds, required List<int> currentGroupId}) {},
+          ),
+        )
       ],
     );
   }
 
   Widget _buildCustomMode(BuildContext context, double currentWidth, bool showing) {
+    final bloc = context.read<CustomViewBloc>();
+
     return Column(
       children: [
-        Flexible(child: ListCustomViews()),
+        Flexible(
+          child: ListCustomViews(
+            onUpdate: (customView) => setState(() {
+              currentTab = DefaultTabController.of(context).index;
+              viewMode = 1;
+            }),
+            onSelectCustomView: _onClearFilterDefaultMode,
+          ),
+        ),
         InkWell(
-          onTap: () => setState(() {
-            currentTab = DefaultTabController.of(context).index;
-            viewMode = 1;
+          onTap: () {
+            _onClearFilterDefaultMode();
+            setState(() {
+              currentTab = DefaultTabController.of(context).index;
+              viewMode = 1;
 
-            context.pushNamed(
-              Routes.custom_live_view.name,
-              extra: CustomMonitorPaneArgs(addMode: true),
-            );
-          }),
+              bloc.add(
+                ShowCustomView(
+                  CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
+                  CustomMonitorPaneMode.add,
+                ),
+              );
+
+              context.goNamed(
+                Routes.custom_live_view.name,
+                extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.add),
+              );
+            });
+          },
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.blackOrWhite, width: 1),

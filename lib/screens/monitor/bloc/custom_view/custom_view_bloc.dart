@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_custom_live_view_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_input.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
@@ -14,6 +15,7 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_cus
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case_input.dart';
+import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 
 part 'custom_view_event.dart';
 part 'custom_view_state.dart';
@@ -40,6 +42,7 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
     on<ShowCustomView>(_onShowCustomView);
 
     on<AddingCameraToCustomView>(_onAddingCameraToCustomView);
+    on<RemovingCameraFromCustomView>(_onRemovingCameraFromCustomView);
     on<CreateCustomView>(_onCreateCustomView);
 
     on<DeleteCustomLiveView>(_onDeleteCustomLiveView);
@@ -63,14 +66,35 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
   }
 
   FutureOr<void> _onShowCustomView(ShowCustomView event, Emitter<CustomViewState> emit) {
-    CustomLiveView customView;
-    if (event.customView.id.isEmpty) {
+    if (event.mode != CustomMonitorPaneMode.add) {
+      preCustomView = event.customView;
+    } else if (state is ShowCustomViewSuccess) {
+      preCustomView = (state as ShowCustomViewSuccess).customView;
+    }
+
+    CustomLiveView customView = event.customView;
+    if (event.mode == CustomMonitorPaneMode.add) {
+      // id.isEmpty --> new custom view
       final output = createTempCustomLiveViewUseCase.execute(
-        CreateTempCustomLiveViewInput(base: event.customView.base),
+        CreateTempCustomLiveViewInput(newBase: event.customView.base, oldCv: event.customView),
       );
       customView = output.customLiveView;
-    } else {
-      preCustomView = customView = event.customView;
+    } else if (event.mode == CustomMonitorPaneMode.edit) {
+      if (customView.base.total < customView.positions.length) {
+        customView = customView.copyWith(
+          positions: customView.positions.sublist(0, customView.base.total),
+        );
+      } else if (customView.base.total > customView.positions.length) {
+        customView = customView.copyWith(
+          positions:
+              customView.positions +
+              List.generate(
+                customView.base.total - customView.positions.length,
+                (index) =>
+                    LiveViewPosition(index: index + customView.positions.length, cameraId: []),
+              ),
+        );
+      }
     }
 
     emit(ShowCustomViewSuccess(customView: customView));
@@ -84,12 +108,18 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
   }
 
   FutureOr<void> _onCreateCustomView(CreateCustomView event, Emitter<CustomViewState> emit) async {
+    emit(CreatingCustomView());
+
     final output = await createCustomLiveViewUseCase.execute(
-      CreateCustomLiveViewInput(name: event.name, base: event.base),
+      CreateCustomLiveViewInput(
+        name: event.name,
+        base: event.base,
+        positions: event.positions ?? [],
+      ),
     );
 
     if (output.isSuccess) {
-      emit(CreateCustomViewSuccess(customView: output.customLiveView!));
+      emit(CreateCustomViewSuccess(customView: preCustomView = output.customLiveView!));
     } else {
       emit(CreateCustomViewFailure(message: output.errorMessage!));
     }
@@ -103,7 +133,9 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
     );
 
     if (output.isSuccess) {
-      emit(UpdateCustomViewSuccess(customView: output.customView!, index: event.index));
+      emit(
+        UpdateCustomViewSuccess(customView: preCustomView = output.customView!, index: event.index),
+      );
     } else {
       emit(UpdateCustomViewFailure(message: output.errorMessage!, index: event.index));
     }
@@ -121,5 +153,12 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
       (failure) => emit(DeleteCustomViewFailed(failure.toString())),
       (id) => emit(DeleteCustomViewSuccess(id)),
     );
+  }
+
+  FutureOr<void> _onRemovingCameraFromCustomView(
+    RemovingCameraFromCustomView event,
+    Emitter<CustomViewState> emit,
+  ) {
+    emit(RemovingCameraFromCustomViewSuccess(index: event.index));
   }
 }

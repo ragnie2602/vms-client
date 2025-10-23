@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
 enum CameraStatus {
+  all(-1),
   inactive(0),
   active(1);
 
@@ -11,7 +12,10 @@ enum CameraStatus {
   const CameraStatus(this.value);
 
   static CameraStatus fromValue(int value) {
-    return CameraStatus.values.firstWhere((status) => status.value == value, orElse: () => CameraStatus.inactive);
+    return CameraStatus.values.firstWhere(
+      (status) => status.value == value,
+      orElse: () => CameraStatus.inactive,
+    );
   }
 }
 
@@ -20,8 +24,10 @@ extension CameraStatusExt on CameraStatus {
     switch (this) {
       case CameraStatus.active:
         return 'Online';
-      default:
+      case CameraStatus.inactive:
         return 'Offline';
+      default:
+        return 'Tất cả';
     }
   }
 

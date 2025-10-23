@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fvp/mdk.dart';
@@ -50,7 +49,9 @@ class CameraPlayerState extends State<CameraPlayer> {
   Player get player => _player;
 
   late String _currentSource;
-  Function(int)? _onDuration;
+  Function(int)? onDurationChanged; // Hàm gán để cập nhập time dựa theo player
+  bool Function([int])? onFinished; // Hàm gán để xử lý trường hợp hết video (playback đã kết thúc)
+  bool Function([int])? onPrevious; // Hàm gán để xử lý trường hợp seek video
   bool _isUpdatingDuration = false;
 
   Timer? _timer;
@@ -174,13 +175,19 @@ class CameraPlayerState extends State<CameraPlayer> {
 
       _player.position.let((pos) {
         if (widget.mode == PlayerMode.playback) {
-          if (_player.state == PlaybackState.stopped) _status.value = PlayerStatus.finished;
+          // Kết thúc playback hiện tại
+          if (_player.state == PlaybackState.stopped &&
+              _player.position + 1000 >= _player.mediaInfo.duration &&
+              (onFinished?.call() ?? false) == false) {
+            _status.value = PlayerStatus.finished;
+          }
+
           if (_status.value == PlayerStatus.finished && _player.state == PlaybackState.playing) {
             _status.value = PlayerStatus.playing;
           }
         }
 
-        if (!_isUpdatingDuration) _onDuration?.call(pos);
+        if (!_isUpdatingDuration) onDurationChanged?.call(pos);
         if (_lastPosition != pos) _debounceConnectionLost();
         _lastPosition = pos;
       });
@@ -217,19 +224,19 @@ class CameraPlayerState extends State<CameraPlayer> {
     });
   }
 
-  Future<void> switchSource(String? source, {int? position, Function(int)? onDuration}) async {
+  Future<void> switchSource(String? source, {int? position}) async {
+    // Trường hợp vừa init widget và gọi switch source ngay sau đó
+    if (source == _currentSource && _state.value == _PlayerState.initializing) return;
+
     // Ngoài list playbacks
     if (source == null) {
-      _onDuration = null;
       _timer?.cancel();
       _debounce?.cancel();
       _state.value = _PlayerState.none;
       _currentSource = '';
-      _tryDisposePlayer();
+      await _player.dispose();
       return;
     }
-
-    _onDuration = onDuration;
 
     // Trường hợp vẫn source đó nhưng seek
     if (source == _currentSource && _state.value == _PlayerState.initialized && position != null) {
@@ -241,6 +248,8 @@ class CameraPlayerState extends State<CameraPlayer> {
     _currentSource = source;
     _debounce?.cancel();
     _timer?.cancel();
+
+    await _player.dispose();
     _initPlayer();
     await _onConnecting(isRetry: true, seek: position);
   }
@@ -260,15 +269,30 @@ class CameraPlayerState extends State<CameraPlayer> {
       await _player.seekingCompleter?.future;
     }
 
-    _isUpdatingDuration = true;
-
     int targetPosition = position;
-    if (type > 0) targetPosition = min(_player.position + position, _player.mediaInfo.duration);
-    if (type < 0) targetPosition = max(0, _player.position - position);
+    if (type > 0) targetPosition = _player.position + position;
+    if (type < 0) targetPosition = _player.position - position;
+
+    // Tua về phía sau vượt qua playback hiện tại
+    if (targetPosition >= _player.mediaInfo.duration &&
+        onFinished?.call(targetPosition - _player.mediaInfo.duration) == true) {
+      return;
+    }
+    // Tua về phía trước vượt qua playback hiện tại
+    if (targetPosition <= 0 && onPrevious?.call(targetPosition) == true) return;
+
+    _isUpdatingDuration = true;
 
     if (_status.value == PlayerStatus.finished && targetPosition < _player.mediaInfo.duration) {
       _player.play();
       _status.value = PlayerStatus.playing;
+    }
+
+    // tua từ 6:43:45 --> 6:44:15 (end time là 6:44:17) --> Bị lỗi đứng hình
+    // tua từ 6:43:44 --> 6:44:14 (end time là 6:44:17) --> Bị lỗi đứng hình
+    // --> target time phải nhỏ hơn >2.2s so với end time
+    if (_player.mediaInfo.duration - targetPosition <= 3000) {
+      targetPosition = _player.mediaInfo.duration - 3000;
     }
 
     final res = await _player.seek(position: targetPosition);
@@ -281,18 +305,20 @@ class CameraPlayerState extends State<CameraPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<_PlayerState>(
-      valueListenable: _state,
-      builder: (context, state, _) => DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadiusGeometry.circular(widget.borderRadius ?? 0),
-          color: Colors.black,
-          boxShadow: state == _PlayerState.initialized
-              ? [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)]
-              : null,
-        ),
-        child: switch (state) {
-          _PlayerState.none => SizedBox.shrink(),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadiusGeometry.circular(widget.borderRadius ?? 0),
+        color: Colors.black,
+        // boxShadow: state == _PlayerState.initialized
+        //     ? [BoxShadow(color: Colors.grey.shade100, spreadRadius: 1, blurRadius: 1)]
+        //     : null,
+      ),
+      child: ValueListenableBuilder<_PlayerState>(
+        valueListenable: _state,
+        builder: (context, state, _) => switch (state) {
+          _PlayerState.none => Center(
+            child: Text('Không có dữ liệu!', style: TextStyle(fontSize: 13, color: Colors.white)),
+          ),
           _PlayerState.error => _buildError(),
           _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
           _ => AspectRatio(

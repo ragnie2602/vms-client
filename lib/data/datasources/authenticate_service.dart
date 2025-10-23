@@ -56,14 +56,32 @@ class AuthenticateService {
 
         return authenticateReply;
       } else {
-        final msg = Authenticate_Error.valueOf(reply.type).translate();
-        Logger.error('Authenticate failed: $msg');
-        loginStatus.text += "Xác thực thất bại ($msg)\n";
-        return Authenticate_Reply();
+        final authenticateError = Authenticate_Error.valueOf(reply.type);
+        final errorMessage = _getAuthenticateErrorMessage(authenticateError);
+        loginStatus.text += "Xác thực thất bại: $errorMessage\n";
+        throw Exception(errorMessage);
       }
     } catch (e) {
-      loginStatus.text += "Xác thực thất bại (${e.toString()})\n";
       rethrow;
+    }
+  }
+
+  String _getAuthenticateErrorMessage(Authenticate_Error? error) {
+    switch (error) {
+      case Authenticate_Error.ACCOUNT_INVALID:
+        return 'Tên đăng nhập hoặc mật khẩu không đúng.';
+      case Authenticate_Error.PASSWORD_INVALID:
+        return 'Tên đăng nhập hoặc mật khẩu không đúng.';
+      case Authenticate_Error.PLATFORM_INVALID:
+        return 'Nền tảng không hợp lệ';
+      case Authenticate_Error.TOKEN_INVALID:
+        return 'Token không hợp lệ';
+      case Authenticate_Error.ACCOUNT_NOT_ACTIVE:
+        return 'Tài khoản chưa được kích hoạt';
+      case Authenticate_Error.LICENSE_EXPIRED:
+        return 'Giấy phép đã hết hạn';
+      default:
+        return 'Xác thực thất bại';
     }
   }
 

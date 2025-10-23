@@ -47,7 +47,7 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
   FutureOr<void> _onChangeCamera(ChangeCamera event, Emitter<CameraLiveState> emit) async {
     if (state.camera.id == event.camera.id) return;
 
-    emit(state.copyWith(camera: event.camera, ref: GlobalKey<CameraPlayerState>()));
+    emit(state.copyWith(camera: event.camera));
   }
 
   FutureOr<void> _onChangePlayerSource(
@@ -57,7 +57,6 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
     await state.ref.currentState?.switchSource(
       event.source,
       position: event.position,
-      onDuration: event.onDuration,
     );
   }
 
@@ -74,7 +73,6 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
   FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraLiveState> emit) async {
     if (event.mute != null) {
       state.ref.currentState?.player.mute = event.mute!;
-      return;
     }
 
     state.ref.currentState?.player.volume = event.volume.clamp(0.0, 1.0);

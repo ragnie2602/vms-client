@@ -68,6 +68,7 @@ class AddGroupWidget extends StatefulWidget {
 
 class _AddGroupWidgetState extends State<AddGroupWidget> {
   final _nameGroupController = TextEditingController();
+  final formAddEditKey = GlobalKey<FormState>();
   DeviceGroup? _selectedParentGroup;
 
   @override
@@ -140,12 +141,21 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    AppField(
-                      controller: _nameGroupController,
-                      hintText: 'Nhập tên camera',
-                      label: 'Tên nhóm camera',
-                      requiredField: true,
-                      maxLength: 50,
+                    Form(
+                      key: formAddEditKey,
+                      child: AppField(
+                        controller: _nameGroupController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Vui lòng nhập tên nhóm';
+                          }
+                          return null;
+                        },
+                        hintText: 'Nhập tên camera',
+                        label: 'Tên nhóm camera',
+                        requiredField: true,
+                        maxLength: 50,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     // drop down search
@@ -210,12 +220,17 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                   flex: 1,
                   child: InkWell(
                     onTap: () {
-                      widget.onConfirm?.call(
-                        nameNewGroup: _nameGroupController.text.trim(),
-                        parentGroupId: _selectedParentGroup?.groupId,
-                        currentGroup: widget.currentGroup,
-                      );
-                      Navigator.pop(context);
+                      // tên trống => báo lỗi
+                      if (_nameGroupController.text.trim().isEmpty) {
+                        formAddEditKey.currentState?.validate();
+                      } else {
+                        widget.onConfirm?.call(
+                          nameNewGroup: _nameGroupController.text.trim(),
+                          parentGroupId: _selectedParentGroup?.groupId,
+                          currentGroup: widget.currentGroup,
+                        );
+                        Navigator.pop(context);
+                      }
                     },
                     child: Container(
                       margin: EdgeInsets.only(right: 24, left: 16),

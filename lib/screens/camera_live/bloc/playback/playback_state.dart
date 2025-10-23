@@ -33,13 +33,14 @@ class PlaybackSuccess extends PlaybackState {
 
   /// Gán centralDate = currentPlayback.startTime ngay lập tức thay vì đợi 1s sau mới update
   final bool? setStartTimeInstantly;
+  final Map<List<int>, int> mapper;
 
-  const PlaybackSuccess({
+  PlaybackSuccess({
     required this.playbacks,
     required this.currentPlayback,
     this.currentDuration,
     this.setStartTimeInstantly,
-  });
+  }) : mapper = {for (var (index, playback) in playbacks.indexed) playback.playbackId: index};
 
   @override
   StateType get type => playbacks.isNotEmpty ? StateType.success : StateType.empty;
@@ -56,9 +57,27 @@ class PlaybackSuccess extends PlaybackState {
     return PlaybackSuccess(
       playbacks: playbacks ?? this.playbacks,
       currentPlayback: currentPlayback ?? (currentPlaybackCanNull ? null : this.currentPlayback),
-      currentDuration: currentDuration ?? this.currentDuration,
+      currentDuration: currentDuration,
       setStartTimeInstantly: setStartTimeInstantly,
     );
+  }
+
+  PlaybackVideo? get nextPlayback {
+    if (currentPlayback == null) return null;
+
+    final index = mapper[currentPlayback!.playbackId];
+    if (index == null || index == 0) return null; // Do danh sách time giảm dần từ 24h về 0h
+
+    return playbacks[index - 1];
+  }
+
+  PlaybackVideo? get previousPlayback {
+    if (currentPlayback == null) return null;
+
+    final index = mapper[currentPlayback!.playbackId];
+    if (index == null || index == playbacks.length - 1) return null; // Do danh sách time giảm dần từ 24h về 0h
+
+    return playbacks[index + 1];
   }
 
   PlaybackVideo? binarySearch(DateTime target) {

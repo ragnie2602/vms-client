@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
@@ -25,116 +27,110 @@ class RemoveCameraFromGroupWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titlePadding: EdgeInsets.only(top: 20, right: 24, left: 24, bottom: 10),
-      contentPadding: EdgeInsets.zero,
-      title: Row(
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Expanded(
-            child: Text(
-              'Xóa camera khỏi nhóm',
-              style: AppTypography.style(
-                20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.grey0F172A,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
-            tooltip: 'Đóng',
-          ),
-        ],
-      ),
-      content: Container(
-        width: MediaQuery.of(context).size.width * 0.3,
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(width: 1, color: AppColors.greyE2E8F0),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Flexible(
-              child: Center(
-                child: Text(
-                  'Bạn có chắc chắn muốn xóa camera khỏi nhóm này không?',
-                  style: AppTypography.style(13, color: Colors.black),
-                ),
-              ),
-            ),
-            Flexible(
-              child: Container(
-                width: double.infinity,
-                height: 1,
-                color: AppColors.greyE2E8F0,
-                margin: EdgeInsets.only(bottom: 24),
-              ),
-            ),
-            Row(
+          Padding(
+            padding: EdgeInsets.all(36),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Flexible(
-                  child: InkWell(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      margin: EdgeInsets.only(left: 24),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          width: 1,
-                          color: AppColors.greyE2E8F0,
-                        ),
-                      ),
-                      child: Text(
-                        'Hủy',
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.grey0F172A,
-                        ),
-                      ),
-                    ),
+                SvgPicture.asset(
+                  AppAssets.icDeleteLight,
+                  height: 60,
+                  width: 60,
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  'Bạn chắc chắn muốn xoá',
+                  style: AppTypography.style(
+                    14,
+                    color: AppColors.blackOrWhite,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                Flexible(
-                  flex: 1,
-                  child: InkWell(
-                    onTap: () {
-                      onConfirm?.call();
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      margin: EdgeInsets.only(right: 24, left: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.secondary,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      padding: EdgeInsets.symmetric(vertical: 13),
-                      child: Center(
+                const SizedBox(height: 4),
+                Text(
+                  'camera khỏi nhóm',
+                  style: AppTypography.style(
+                    14,
+                    color: AppColors.blackOrWhite,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blackOrWhiteReverse,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          side: BorderSide(
+                            color: AppColors.greyE2E8F0,
+                            width: 1,
+                          ),
+                        ),
                         child: Text(
-                          'Xác nhận',
+                          'Hủy',
                           style: AppTypography.style(
                             14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhite,
                           ),
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          //
+                          Navigator.pop(context);
+                          onConfirm?.call();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blackOrWhite,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        child: Text(
+                          'Xóa',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhiteReverse,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.close, size: 20),
+            ),
+          ),
+        ],
       ),
     );
   }

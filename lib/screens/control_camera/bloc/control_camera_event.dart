@@ -152,10 +152,10 @@ class AddCameraToGroupEvent extends ControlCameraEvent {
   const AddCameraToGroupEvent({required this.cameraIds, required this.groupId});
 }
 
-class ListShareInviteGroupEvent extends ControlCameraEvent {
-  final List<int> groupId;
-  const ListShareInviteGroupEvent({required this.groupId});
-}
+// class ListShareInviteGroupEvent extends ControlCameraEvent {
+//   final List<int> groupId;
+//   const ListShareInviteGroupEvent({required this.groupId});
+// }
 
 class ListShareCameraEvent extends ControlCameraEvent {
   final List<int> cameraId;

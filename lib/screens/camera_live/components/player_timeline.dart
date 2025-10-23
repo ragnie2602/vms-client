@@ -53,7 +53,6 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
   final GlobalKey _globalKey = GlobalKey();
   DateTime? _hoverDate;
 
-  late final Completer<void> _initCompleter = Completer<void>();
   bool _isInteracting = false;
   bool _isInteractingWithDelay = false;
   double _centralOffset = 0;
@@ -74,6 +73,17 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
   CameraLiveBloc get _cameraLiveBloc => context.read<CameraLiveBloc>();
   DateTime get _startDate => _cameraLiveBloc.state.playbackDate.startOfDay;
   DateTime get _endDate => _cameraLiveBloc.state.playbackDate.startOfNextDay;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (_playbackBloc.state is PlaybackInitial) {
+      _playbackBloc.add(
+        GetVideoPlaybacks(_cameraLiveBloc.state.camera.id, _cameraLiveBloc.state.playbackDate),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -122,20 +132,39 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
       _centralDate.value = state.currentPlayback!.startTime;
     }
 
-    if (_cameraLiveBloc.state.ref.currentState == null) {
-      await _initCompleter.future;
-    }
-
     _cameraLiveBloc.add(
-      ChangePlayerSource(
-        state.currentPlayback?.urlPlayback,
-        position: state.currentDuration,
-        onDuration: (int milis) {
-          if (_isInteractingWithDelay) return;
-          _centralDate.value = state.currentPlayback!.startTime.add(Duration(milliseconds: milis));
-        },
-      ),
+      ChangePlayerSource(state.currentPlayback?.urlPlayback, position: state.currentDuration),
     );
+  }
+
+  bool _onFinished([int? milis]) {
+    if (_playbackBloc.state is! PlaybackSuccess) return false;
+
+    final nextPlayback = (_playbackBloc.state as PlaybackSuccess).nextPlayback;
+    if (nextPlayback == null) return false;
+
+    _playbackBloc.add(ChangePlayback(nextPlayback, currentDuration: milis));
+    return true;
+  }
+
+  bool _onPrevious([int? milis]) {
+    if (_playbackBloc.state is! PlaybackSuccess) return false;
+
+    final previousPlayback = (_playbackBloc.state as PlaybackSuccess).previousPlayback;
+    if (previousPlayback == null) return false;
+
+    final time =
+        previousPlayback.endTime.difference(previousPlayback.startTime).inMilliseconds -
+        (milis ?? 0).abs();
+
+    _playbackBloc.add(ChangePlayback(previousPlayback, currentDuration: time));
+    return true;
+  }
+
+  void _onDurationChanged(int milis) {
+    if (_isInteractingWithDelay || _playbackBloc.state is! PlaybackSuccess) return;
+    final state = _playbackBloc.state as PlaybackSuccess;
+    _centralDate.value = state.currentPlayback!.startTime.add(Duration(milliseconds: milis));
   }
 
   void _showOverlay(double dx, {DateTime? date, bool isCenter = false}) {
@@ -143,6 +172,10 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
     final parentOffset = parentBox.localToGlobal(Offset.zero);
 
     _hoverDate = date ?? _calculateDateFromOffset(dx);
+    _hoverDate = _hoverDate!.addIf(
+      _cameraLiveBloc.state.timelineDisplayMode.timeOffset,
+      _hoverDate!.isBetween(_startDate, _endDate, equal: false),
+    );
 
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(
@@ -151,19 +184,17 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
         left:
             parentOffset.dx +
             (isCenter ? parentBox.size.width / 2 - _overlayWidth - 16 + _centralOffset : dx - 22),
-        child: SizeObserver(
-          onChange: (size) => _overlayWidth = size.width,
-          child: Container(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
-            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-            child: Text(
-              _hoverDate!
-                  .addIf(
-                    _cameraLiveBloc.state.timelineDisplayMode.timeOffset,
-                    _hoverDate!.isBetween(_startDate, _endDate, equal: false),
-                  )
-                  .format(widget.formatPattern),
-              style: AppTypography.style(13, fontWeight: FontWeight.w500, color: Colors.black),
+        child: Material(
+          borderRadius: BorderRadius.circular(3),
+          color: Colors.white,
+          child: SizeObserver(
+            onChange: (size) => _overlayWidth = size.width,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              child: Text(
+                _hoverDate!.format(widget.formatPattern),
+                style: AppTypography.style(13, fontWeight: FontWeight.w500, color: Colors.black),
+              ),
             ),
           ),
         ),
@@ -231,9 +262,15 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                             if (state is PlaybackSuccess) _playPlayback(state);
                           },
                           builder: (context, state) {
-                            // Khởi tạo lần đầu tiên
-                            if (state is PlaybackSuccess && !_initCompleter.isCompleted) {
-                              Future.delayed(Duration.zero, () => _initCompleter.complete());
+                            // Gán hàm callback cho player
+                            if (state is PlaybackSuccess) {
+                              Future.delayed(
+                                Duration.zero,
+                                () => _cameraLiveBloc.state.ref.currentState
+                                  ?..onDurationChanged = _onDurationChanged
+                                  ..onFinished = _onFinished
+                                  ..onPrevious = _onPrevious,
+                              );
                             }
 
                             return CustomPaint(
@@ -341,7 +378,7 @@ enum TimelineDisplayMode {
       TimelineDisplayMode.h8 => 8,
       TimelineDisplayMode.h1 => 1,
     };
-    
+
     return max((width - size * 5) / (size * minorTicks), 10);
   }
 

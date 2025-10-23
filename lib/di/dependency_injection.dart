@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/fi
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 
 class DependencyInjection {
   static List<SingleChildWidget> providers = [
@@ -57,7 +58,7 @@ class DependencyInjection {
       create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>()),
     ),
     Provider<CreateCustomLiveViewUseCase>(
-      create: (context) => CreateCustomLiveViewUseCase(context.read<ICustomLiveViewRepository>()),
+      create: (context) => CreateCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<CreateTempCustomLiveViewUseCase>(
       create: (context) => CreateTempCustomLiveViewUseCase(),
@@ -74,5 +75,6 @@ class DependencyInjection {
       create: (context) =>
           FilterCameraNotInGroupUsecase(cameraRepository: context.read<ICameraRepository>()),
     ),
+    Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
   ];
 }

@@ -116,7 +116,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                         padding: EdgeInsets.only(bottom: 20),
                         primary: true,
                         itemCount: cameras.length,
-                        itemBuilder: (context, index) => _cameraItem(cameras[index]),
+                        itemBuilder: (context, index) => _cameraItem(context ,cameras[index]),
                       );
                     },
                   ),
@@ -129,7 +129,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     );
   }
 
-  Widget _cameraItem(CameraEntity camera) {
+  Widget _cameraItem(BuildContext context, CameraEntity camera) {
     return InkWell(
       onTap: () {
         if (selectedCamera?.id == camera.id) return;

@@ -48,6 +48,7 @@ class AppAssets {
   static const icDotHorizontal = '$_svgPath/dot_horizontal.svg';
   static const icAction = '$_svgPath/ic_action.svg';
   static const icEdit = '$_svgPath/ic_edit.svg';
+  static const icReset = '$_svgPath/ic_reset.svg';
   static const icDelete = '$_svgPath/ic_delete.svg';
   static const icDeleteLight = '$_svgPath/ic_delete_light.svg';
   static const icDropdown = '$_svgPath/ic_dropdown.svg';
@@ -82,5 +83,7 @@ class AppAssets {
   static const iconEdit = '$_svgPath/icon_edit.svg';
   static const iconRemove = '$_svgPath/icon_remove.svg';
   static const iconShare = '$_svgPath/icon_share.svg';
+  static const iconAddCamToGroup = '$_svgPath/ic_add_camera_group.svg';
   static const icLocation = '$_svgPath/ic_location.svg';
+  static const icAllCamera = '$_svgPath/ic_all_camera.svg';
 }

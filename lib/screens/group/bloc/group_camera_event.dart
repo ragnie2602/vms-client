@@ -43,6 +43,7 @@ class SearchGroupEvent extends GroupCameraEvent {
   @override
   List<Object?> get props => [keyword];
 }
+
 class AddCameraToGroupEvent extends GroupCameraEvent {
   final List<int> groupId;
   final List<List<int>> listCameraId;
@@ -52,4 +53,20 @@ class AddCameraToGroupEvent extends GroupCameraEvent {
   });
   @override
   List<Object?> get props => [groupId, listCameraId];
+}
+
+class ShareGroupEvent extends GroupCameraEvent {
+  final List<int> groupId;
+  final List<int> accoungtInviteId;
+  const ShareGroupEvent({
+    required this.groupId,
+    required this.accoungtInviteId,
+  });
+  @override
+  List<Object?> get props => [groupId, accoungtInviteId];
+}
+
+class GetListShareGroupEvent extends GroupCameraEvent {
+  final List<int> groupId;
+  const GetListShareGroupEvent({required this.groupId});
 }

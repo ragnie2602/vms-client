@@ -19,30 +19,31 @@ import 'package:vms_flutter_client/screens/monitor/components/camera_list_popup.
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import 'package:vms_flutter_client/screens/shared/utils.dart';
 
-class CustomMonitorPane extends StatefulWidget {
-  final bool addMode;
+enum CustomMonitorPaneMode { add, edit, view }
 
-  const CustomMonitorPane({super.key, this.addMode = false});
+class CustomMonitorPane extends StatefulWidget {
+  final CustomMonitorPaneMode mode;
+
+  const CustomMonitorPane({super.key, required this.mode});
 
   @override
   State<CustomMonitorPane> createState() => _CustomMonitorPaneState();
 }
 
 class _CustomMonitorPaneState extends State<CustomMonitorPane> {
+  late final CustomViewBloc bloc;
+
   CustomLiveView? customView;
 
-  ViewMode get mode => customView?.base ?? ViewMode.v2x2;
+  ViewMode get _viewMode => customView?.base ?? ViewMode.v2x2;
 
   @override
   initState() {
     super.initState();
+    bloc = context.read<CustomViewBloc>();
 
-    // Init customView from state when being navigated from before screen (addMode is false)
-    if (!widget.addMode) {
-      final bloc = context.read<CustomViewBloc>();
-      if (bloc.state is ShowCustomViewSuccess) {
-        customView = (bloc.state as ShowCustomViewSuccess).customView;
-      }
+    if (bloc.state is ShowCustomViewSuccess) {
+      customView = (bloc.state as ShowCustomViewSuccess).customView;
     }
   }
 
@@ -52,46 +53,70 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
       listener: (context, state) {
         if (state is ShowCustomViewSuccess) {
           setState(() => customView = state.customView);
-        } else if (state is CreateCustomViewSuccess) {
-          context.read<CustomViewBloc>().add(
-            UpdateCustomView(
-              customView: state.customView.copyWith(positions: customView?.positions ?? []),
-            ),
-          );
         } else if (state is UpdateCustomViewSuccess) {
           if (Utils.isEqual(state.customView.id, customView?.id ?? [])) {
             customView = state.customView;
           }
+        } else if (state is DeleteCustomViewSuccess) {
+          if (Utils.isEqual(state.id, customView?.id ?? [])) {
+            setState(() => customView = null);
+          }
         }
       },
-      child: Column(
-        children: List.generate(
-          mode.rows,
-          (row) => Expanded(
-            child: Row(
+      child: customView != null
+          ? Column(
               children: List.generate(
-                mode.columns,
-                (column) => Expanded(child: buildItem(context, column, row)),
+                _viewMode.rows,
+                (row) => Flexible(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final mH = constraints.maxHeight;
+                      final mW = constraints.maxWidth;
+
+                      double itemHeight = 0, itemWidth = 0;
+                      if (mW >= mH * 16 / 9 * _viewMode.columns) {
+                        itemHeight = mH;
+                        itemWidth = mH * 16 / 9;
+                      } else {
+                        itemWidth = mW / _viewMode.columns;
+                        itemHeight = itemWidth * 9 / 16;
+                      }
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(
+                          _viewMode.columns,
+                          (column) => SizedBox(
+                            height: itemHeight,
+                            width: itemWidth,
+                            child: buildItem(context, column, row),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
-      ),
+            )
+          : Container(),
     );
   }
 
   Widget buildItem(BuildContext context, int column, int row) {
-    final index = row * mode.columns + column;
+    final index = row * _viewMode.columns + column;
 
     return BlocBuilder<CustomViewBloc, CustomViewState>(
       buildWhen: (previous, current) =>
+          current is ShowCustomViewSuccess ||
           (current is AddingCameraToCustomViewSuccess && current.index == index) ||
+          (current is RemovingCameraFromCustomViewSuccess && current.index == index) ||
           (current is UpdatingCustomView && current.index == index) ||
           (current is UpdateCustomViewSuccess && current.index == index),
       builder: (context, state) {
-        var camera = customView?.positions.elementAtOrNull(index)?.camera;
+        CameraEntity? camera;
+
         if (state is AddingCameraToCustomViewSuccess && state.index == index) {
-          camera = state.camera;
           if (customView?.positions != null && index < customView!.positions.length) {
             customView!.positions[index] = LiveViewPosition(
               index: index,
@@ -101,16 +126,27 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
           }
         } else if (state is UpdateCustomViewSuccess && state.index == index) {
           camera = state.customView.positions.elementAtOrNull(index)?.camera;
+        } else if (state is RemovingCameraFromCustomViewSuccess && state.index == index) {
+          if (customView?.positions != null && index < customView!.positions.length) {
+            customView!.positions[index] = LiveViewPosition(
+              index: index,
+              cameraId: [],
+              camera: null,
+            );
+          }
         } else if (state is UpdatingCustomView && state.index == index) {
           return _buildEmptyCell(context, index, isUpdating: true);
         }
 
-        return camera == null ? _buildEmptyCell(context, index) : _buildCameraView(context, camera);
+        camera = customView?.positions.elementAtOrNull(index)?.camera;
+        return camera == null
+            ? _buildEmptyCell(context, index)
+            : _buildCameraView(context, camera, index);
       },
     );
   }
 
-  Widget _buildCameraView(BuildContext context, CameraEntity camera) {
+  Widget _buildCameraView(BuildContext context, CameraEntity camera, int index) {
     return Padding(
       padding: const EdgeInsets.all(AppConfig.MONITOR_GRID_SPACING),
       child: CameraPlayer(
@@ -123,7 +159,6 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
           child: Stack(
             children: [
               player,
-
               Positioned(
                 bottom: 10,
                 right: 10,
@@ -149,6 +184,23 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 10,
+                top: 10,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white, size: 20),
+                  onPressed: () => removeCamera(index),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withOpacity(0.6),
+                    maximumSize: Size(20, 20),
+                    minimumSize: Size(20, 20),
+                    padding: EdgeInsets.all(0),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
                   ),
                 ),
               ),
@@ -191,7 +243,6 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
 
   showCameraListPopup(BuildContext context, Offset position, int index) {
     final monitorBloc = context.read<MonitorBloc>();
-    final customViewBloc = context.read<CustomViewBloc>();
 
     showDialog(
       barrierColor: Colors.transparent,
@@ -212,8 +263,8 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
               child: CameraListPopup(
                 bloc: monitorBloc,
                 onCameraSelected: (camera) {
-                  if (widget.addMode) {
-                    customViewBloc.add(AddingCameraToCustomView(camera, index));
+                  if (widget.mode != CustomMonitorPaneMode.view) {
+                    bloc.add(AddingCameraToCustomView(camera, index));
                   } else {
                     final cv = customView!.copyWith();
                     cv.positions[index] = LiveViewPosition(
@@ -222,7 +273,7 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
                       camera: camera,
                     );
 
-                    customViewBloc.add(UpdateCustomView(customView: cv, index: index));
+                    bloc.add(UpdateCustomView(customView: cv, index: index));
                   }
 
                   Navigator.of(context).pop();
@@ -233,5 +284,15 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
         ],
       ),
     );
+  }
+
+  removeCamera(int index) {
+    if (widget.mode != CustomMonitorPaneMode.view) {
+      bloc.add(RemovingCameraFromCustomView(index));
+    } else {
+      final cv = customView!.copyWith();
+      cv.positions[index] = LiveViewPosition(index: index, cameraId: [], camera: null);
+      bloc.add(UpdateCustomView(customView: cv, index: index));
+    }
   }
 }

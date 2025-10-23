@@ -19,24 +19,8 @@ class HomeTab {
     HomeTab(Routes.playback, title: 'Playback', svg: AppAssets.tabPlayback),
     HomeTab(Routes.addGroupCamera, title: 'Quản lý nhóm camera', svg: AppAssets.tabCameraGroups),
     HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
-    HomeTab(Routes.setting, title: 'Cấu hình hệ thống', svg: AppAssets.tabSettings),
+    // HomeTab(Routes.setting, title: 'Cấu hình hệ thống', svg: AppAssets.tabSettings),
     HomeTab(Routes.about, title: 'Thông tin ứng dụng', svg: AppAssets.tabInfo),
-    HomeTab(
-      null,
-      title: 'Test group tab',
-      svg: AppAssets.tabMonitor,
-      nested: [
-        HomeTab(
-          null,
-          title: 'Nested 1',
-          svg: AppAssets.tabMonitor,
-          nested: [
-            HomeTab(Routes.test11, title: 'Nested child 1-1', svg: AppAssets.tabMonitor),
-            HomeTab(Routes.test12, title: 'Nested child 1-2', svg: AppAssets.tabMonitor),
-          ],
-        ),
-      ],
-    ),
   ];
 }
 
@@ -59,7 +43,9 @@ class HomeEvent extends BaseEvent {
 
 class ChangeTab extends HomeEvent {
   final HomeTab tab;
-  const ChangeTab(this.tab);
+  final Routes? route;
+  final Object? extra;
+  const ChangeTab(this.tab, {this.route, this.extra});
 }
 
 class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
@@ -71,6 +57,8 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
     if (state.selectedTab == event.tab) return;
 
     emit(state.copyWith(selectedTab: event.tab));
-    if (event.tab.route != null) AppRouter.router.goNamed(event.tab.route!.name);
+    if (event.tab.route != null || event.route != null) {
+      AppRouter.router.goNamed(event.route?.name ?? event.tab.route!.name, extra: event.extra);
+    }
   }
 }

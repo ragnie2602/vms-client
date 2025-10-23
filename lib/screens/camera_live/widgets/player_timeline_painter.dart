@@ -89,7 +89,9 @@ class PlayerTimelinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant PlayerTimelinePainter oldDelegate) {
-    return oldDelegate.playbacks != playbacks;
+    return oldDelegate.playbacks != playbacks ||
+        oldDelegate.interval != interval ||
+        oldDelegate.tickGap != tickGap;
   }
 
   @override
@@ -100,7 +102,7 @@ class PlayerTimelinePainter extends CustomPainter {
       return offset <= size.width / 2 ? offset : null;
     });
     if (leftCentralOffset != null) {
-      _drawPlaybacks(canvas, size, size.width / 2 - leftCentralOffset);
+      _drawPlaybacks(canvas, size, leftCentralOffset);
       return _drawTimelineFromStart(canvas, size, leftCentralOffset);
     }
 

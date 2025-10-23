@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
-import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
@@ -17,6 +17,10 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   const DefaultMonitorPane({super.key});
 
   double get spacing => AppConfig.MONITOR_GRID_SPACING;
+
+  void onChangePage(BuildContext context, int page) {
+    context.read<MonitorBloc>().add(GetCameraAtPage(page + 1));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,23 +33,72 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
           onDesktop: (context) => LayoutBuilder(
             builder: (context, constraints) {
               final size = _initPlayerSize(constraints, state.mode.rows, state.mode.columns);
-
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: state.paginatedCameras.mapIndexed((index, camera) {
-                  return SizedBox.fromSize(
-                    size: size,
-                    child: CameraPlayer(
-                      size: state.mode.total == 1 ? null : size,
-                      source: camera.subStreamUri.toString(),
-                      name: camera.name,
-                      key: ValueKey("player($index)___${camera.camId}"),
-                      mode: PlayerMode.monitoring,
-                      builder: (player, status) => _buildCameraView(context, player, camera),
+              final wrapWidth =
+                  (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: wrapWidth,
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: List.generate(state.mode.total, (index) {
+                        if (index < state.paginatedCameras.length) {
+                          final camera = state.paginatedCameras[index];
+                          return SizedBox.fromSize(
+                            size: size,
+                            child: CameraPlayer(
+                              size: state.mode.total == 1 ? null : size,
+                              source: camera.subStreamUri.toString(),
+                              name: camera.name,
+                              key: ValueKey("player($index)___${camera.camId}"),
+                              mode: PlayerMode.monitoring,
+                              builder: (player, status) =>
+                                  _buildCameraView(context, player, camera),
+                            ),
+                          );
+                        } else {
+                          // Empty placeholder for missing cameras
+                          return SizedBox.fromSize(
+                            size: size,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          );
+                        }
+                      }),
                     ),
-                  );
-                }).toList(),
+                  ),
+                  Spacer(),
+                  SizedBox(
+                    width: wrapWidth,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Hiển thị ${state.paginatedCameras.length} trong số ${state.cameras.length} camera",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 13,
+                            color: Colors.black,
+                          ),
+                        ),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
+                          child: TablePaginator(
+                            (state.cameras.length / state.mode.total).ceil(),
+                            state.page - 1,
+                            (page) => onChangePage(context, page),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               );
             },
           ),
@@ -60,14 +113,27 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
     rows = AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? rows;
     columns = AppConfig.OVERRIDE_MONITOR_GRID_COLUMNS ?? columns;
 
-    final width = (constraints.maxWidth - spacing * (columns - 1)) / columns;
-    final height = (constraints.maxHeight - spacing * (rows - 1)) / rows;
+    final availableWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+    final availableHeight = ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (48 / rows);
+
+    // Maintain 16:9 aspect ratio - always use width as the constraint
+    // This ensures players grow/shrink when drawer opens/closes
+    final aspectRatio = 16 / 9;
+    final width = availableWidth;
+    final height = width / aspectRatio;
+
+    // If height exceeds available space, scale down based on height
+    if (height > availableHeight) {
+      final scaledHeight = availableHeight;
+      final scaledWidth = scaledHeight * aspectRatio;
+      return Size(scaledWidth, scaledHeight);
+    }
 
     return Size(width, height);
   }
 
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
       },

@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
@@ -147,7 +148,7 @@ class CameraService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.checkCameraOnvif.value),
           data: request.writeToBuffer(),
           type: PacketType.checkCameraOnvif,
         ),
@@ -176,7 +177,7 @@ class CameraService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.getAllCamera.value),
           data: request.writeToBuffer(),
           type: PacketType.getAllCamera,
         ),
@@ -335,27 +336,27 @@ class CameraService {
     );
   }
 
-  Future<List<InviteMessage>> listShareInviteGroup({
-    required List<int> groupId,
-  }) async {
-    final request = ListShareInviteGroup_Request()..groupId = groupId;
+  // Future<List<InviteMessage>> listShareInviteGroup({
+  //   required List<int> groupId,
+  // }) async {
+  //   final request = ListShareInviteGroup_Request()..groupId = groupId;
 
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: request.writeToBuffer(),
-          type: PacketType.listShareInviteGroup,
-        ),
-      ),
-    );
+  //   final responseBuffer = await socketClient.send<List<int>>(
+  //     SocketRequestPayload(
+  //       Packet(
+  //         id: DateTime.now().microsecondsSinceEpoch,
+  //         data: request.writeToBuffer(),
+  //         type: PacketType.listShareInviteGroup,
+  //       ),
+  //     ),
+  //   );
 
-    return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(ListShareInviteGroup_Error.valueOf),
-      (buffer) => ListShareInviteGroup_Reply.fromBuffer(buffer).invites,
-    );
-  }
+  //   return responseBuffer.fold(
+  //     (failure) =>
+  //         throw failure.toMessageFailure(ListShareInviteGroup_Error.valueOf),
+  //     (buffer) => ListShareInviteGroup_Reply.fromBuffer(buffer).invites,
+  //   );
+  // }
 
   Future<List<InviteMessage>> listShareCamera({
     required List<int> cameraId,

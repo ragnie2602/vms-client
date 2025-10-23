@@ -86,9 +86,9 @@ abstract class IControlCameraRepository {
     required List<int> groupId,
   });
 
-  Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
-    required List<int> groupId,
-  });
+  // Future<Either<Failure, List<InviteMessageEntity>>> listShareInviteGroup({
+  //   required List<int> groupId,
+  // });
 
   Future<Either<Failure, List<InviteMessageEntity>>> listShareCamera({
     required List<int> cameraId,

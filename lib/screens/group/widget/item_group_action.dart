@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
-enum ItemGroupAction { add, edit, share, remove, addCamera }
+enum ItemGroupAction { add, addCamera, edit, share, remove }
 
 extension ItemGroupActionExt on ItemGroupAction {
   String getName() {
@@ -32,7 +32,7 @@ extension ItemGroupActionExt on ItemGroupAction {
       case ItemGroupAction.remove:
         return AppAssets.iconRemove;
       case ItemGroupAction.addCamera:
-        return AppAssets.iconAdd;
+        return AppAssets.iconAddCamToGroup;
     }
   }
 }
