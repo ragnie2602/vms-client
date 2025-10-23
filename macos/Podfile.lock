@@ -1,10 +1,12 @@
 PODS:
+  - file_selector_macos (0.0.1):
+    - FlutterMacOS
   - FlutterMacOS (1.0.0)
-  - fvp (0.34.0):
+  - fvp (0.35.0):
     - Flutter
     - FlutterMacOS
-    - mdk (~> 0.34.0)
-  - mdk (0.34.0)
+    - mdk (~> 0.35.0)
+  - mdk (0.35.0)
   - package_info_plus (0.0.1):
     - FlutterMacOS
   - path_provider_foundation (0.0.1):
@@ -23,6 +25,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - fvp (from `Flutter/ephemeral/.symlinks/plugins/fvp/darwin`)
   - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
@@ -37,6 +40,8 @@ SPEC REPOS:
     - Sentry
 
 EXTERNAL SOURCES:
+  file_selector_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   fvp:
@@ -53,9 +58,10 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/video_player_avfoundation/darwin
 
 SPEC CHECKSUMS:
+  file_selector_macos: 9e9e068e90ebee155097d00e89ae91edb2374db7
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
-  fvp: 48709d265d435e8b2989e07aeb253989514d03e3
-  mdk: c54ab482a3457f754b2bf6b4b615c117379f5885
+  fvp: ecee65308dd86ae46e3c6d5d42cd2aad48095ef5
+  mdk: baa616b93f696c7066df0e5ebe057badfa9c462b
   package_info_plus: f0052d280d17aa382b932f399edf32507174e870
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   Sentry: da60d980b197a46db0b35ea12cb8f39af48d8854

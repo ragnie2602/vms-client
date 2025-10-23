@@ -294,7 +294,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                   AppField(
                     controller: _name,
                     hintText: 'Nhập tên camera',
-                    validator: (v) => v!.isEmpty ? 'Bắt buộc' : null,
+                    validator: (v) => v!.isEmpty ? 'Tên camera không được để trống' : null,
                     label: 'Tên camera',
                     requiredField: true,
                     maxLength: 50,
@@ -311,7 +311,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                     label: 'Địa chỉ RTSP',
                     requiredField: true,
                     validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
+                        v == null || v.trim().isEmpty ? 'Địa chỉ RTSP không được để trống' : null,
                   ),
                   SizedBox(height: 24),
                   AppField(
@@ -320,7 +320,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                     label: 'Địa chỉ luồng phụ',
                     requiredField: true,
                     validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
+                        v == null || v.trim().isEmpty ? 'Địa chỉ luồng phụ không được để trống' : null,
                   ),
                   SizedBox(height: 24),
                   Text(
@@ -478,7 +478,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             requiredField: true,
             validator: (v) {
               if (_method != 'RTSP' && (v == null || v.trim().isEmpty)) {
-                return 'Bắt buộc';
+                return 'Địa chỉ ONVIF không được để trống';
               }
               return null;
             },
@@ -496,7 +496,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 label: 'Tài khoản camera',
                 requiredField: true,
                 validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
+                    v == null || v.trim().isEmpty ? 'Tài khoản camera không được để trống' : null,
               ),
             ),
             const SizedBox(width: 12),
@@ -510,7 +510,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 maxLength: 50,
                 obscureText: _obscure,
                 validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Bắt buộc' : null,
+                    v == null || v.trim().isEmpty ? 'Mật khẩu camera không được để trống' : null,
                 suffix: IconButton(
                   icon: Icon(
                     _obscure ? Icons.visibility_off : Icons.visibility,
