@@ -929,7 +929,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                 // Ghi chú
                 AppField(
                   controller: _description,
-                  hintText: 'Lorem Ipsum is simply dummy text...',
+                  hintText: 'Nhập ghi chú',
                   label: 'Ghi chú',
                   maxLines: 4,
                   maxLength: 250,
