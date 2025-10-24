@@ -560,7 +560,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
             children: [
               Expanded(
                 child: AppButton.outline(
-                  label: 'HỦY',
+                  label: 'ĐÓNG',
                   onPressed: () {
                     Navigator.pop(context);
                   },
