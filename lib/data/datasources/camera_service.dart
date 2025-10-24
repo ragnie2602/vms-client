@@ -198,7 +198,8 @@ class CameraService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.getCameraInGroup.value),
+          // id: DateTime.now().microsecondsSinceEpoch,
           data: request.writeToBuffer(),
           type: PacketType.getCameraInGroup,
         ),

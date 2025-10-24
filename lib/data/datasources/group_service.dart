@@ -177,7 +177,7 @@ class GroupService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.listShareInviteGroup.value),
           data: request.writeToBuffer(),
           type: PacketType.listShareInviteGroup,
         ),
