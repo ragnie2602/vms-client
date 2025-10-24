@@ -51,7 +51,10 @@ class GroupService {
       ),
     );
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(AddGroupCamera_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        AddGroupCamera_Error.valueOf,
+        PacketType.addGroupCamera.value,
+      ),
       (buffer) => AddGroupCamera_Reply.fromBuffer(buffer).groups,
     );
   }
@@ -73,8 +76,10 @@ class GroupService {
       ),
     );
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(RemoveGroupCamera_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        RemoveGroupCamera_Error.valueOf,
+        PacketType.removeGroupCamera.value,
+      ),
       (buffer) => RemoveGroupCamera_Reply.fromBuffer(buffer).groups,
     );
   }
@@ -105,8 +110,10 @@ class GroupService {
       ),
     );
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(UpdateGroupDevice_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        UpdateGroupDevice_Error.valueOf,
+        PacketType.updateGroupDevice.value,
+      ),
       (buffer) => UpdateGroupDevice_Reply.fromBuffer(buffer).groups,
     );
   }
@@ -140,8 +147,10 @@ class GroupService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(ShareGroupCamera_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        ShareGroupCamera_Error.valueOf,
+        PacketType.shareGroupCamera.value,
+      ),
       (buffer) => ShareGroupCamera_Reply.fromBuffer(buffer).groupId,
     );
   }
@@ -163,8 +172,10 @@ class GroupService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(DeleteShareGroup_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        DeleteShareGroup_Error.valueOf,
+        PacketType.deleteShareGroup.value,
+      ),
       (buffer) => DeleteShareGroup_Reply.fromBuffer(buffer).shareInviteId,
     );
   }
@@ -185,8 +196,10 @@ class GroupService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(ListShareInviteGroup_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        ListShareInviteGroup_Error.valueOf,
+        PacketType.listShareInviteGroup.value,
+      ),
       (buffer) => ListShareInviteGroup_Reply.fromBuffer(buffer).invites,
     );
   }
