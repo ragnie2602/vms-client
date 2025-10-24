@@ -50,11 +50,11 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   void _onClearFilterDefaultMode() {
     setState(() {
       _defaultModeKey = UniqueKey();
-       _shouldSelectAllGroup = false;
+      _shouldSelectAllGroup = false;
     });
   }
 
-   void _onDefaultModeFilterSelected() {
+  void _onDefaultModeFilterSelected() {
     _onClearFilterCustomMode();
     setState(() {
       _shouldSelectAllGroup = true;
@@ -258,9 +258,14 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
               _onDefaultModeFilterSelected();
               context.read<MonitorBloc>().add(GetAllCameraNoGroup());
             },
-            onAddCameraToGroup: ({required BuildContext c, required List<List<int>> cameraIds, required List<int> currentGroupId}) {},
+            onAddCameraToGroup:
+                ({
+                  required BuildContext c,
+                  required List<List<int>> cameraIds,
+                  required List<int> currentGroupId,
+                }) {},
           ),
-        )
+        ),
       ],
     );
   }
