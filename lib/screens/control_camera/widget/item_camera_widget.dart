@@ -28,6 +28,7 @@ class ItemCameraWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isHaveGroupOwner = (itemCamera.groupOwnerId ?? []).isNotEmpty;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 15),
       child: Row(
@@ -182,24 +183,29 @@ class ItemCameraWidget extends StatelessWidget {
                     ),
                   ),
                   PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
-                  PopupMenuItem<String>(
-                    value: 'remove_from_group',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(AppAssets.icDelete),
-                        SizedBox(width: 8),
-                        Text(
-                          'Xóa khỏi nhóm',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
+                  if (isHaveGroupOwner)
+                    PopupMenuItem<String>(
+                      value: 'remove_from_group',
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(AppAssets.icDelete),
+                          SizedBox(width: 8),
+                          Text(
+                            'Xóa khỏi nhóm',
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+                  if (isHaveGroupOwner)
+                    PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                   PopupMenuItem<String>(
                     value: 'delete',
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
