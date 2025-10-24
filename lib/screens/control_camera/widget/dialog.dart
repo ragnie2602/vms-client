@@ -1,8 +1,8 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
@@ -126,6 +126,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   String _method = 'RTSP'; // 'RTSP' hoặc 'ONVIF'
   bool _isChecking = false;
   bool _isSubmitting = false;
+  Timer? _passwordVisibilityTimer;
 
   @override
   void initState() {
@@ -165,6 +166,27 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     return camera.type == CameraType.onvif ? 'ONVIF' : 'RTSP';
   }
 
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscure = !_obscure;
+    });
+
+    // Nếu đang hiển thị mật khẩu, hủy timer cũ và tạo timer mới
+    if (!_obscure) {
+      _passwordVisibilityTimer?.cancel();
+      _passwordVisibilityTimer = Timer(const Duration(seconds: 5), () {
+        if (mounted) {
+          setState(() {
+            _obscure = true;
+          });
+        }
+      });
+    } else {
+      // Nếu đang ẩn mật khẩu, hủy timer
+      _passwordVisibilityTimer?.cancel();
+    }
+  }
+
   @override
   void dispose() {
     _name.dispose();
@@ -176,6 +198,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     _onvifXaddrs.dispose();
     _onvifUserName.dispose();
     _onvifPassword.dispose();
+    _passwordVisibilityTimer?.cancel();
 
     super.dispose();
   }
@@ -294,7 +317,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                   AppField(
                     controller: _name,
                     hintText: 'Nhập tên camera',
-                    validator: (v) => v!.isEmpty ? 'Tên camera không được để trống' : null,
+                    validator: (v) =>
+                        v!.isEmpty ? 'Tên camera không được để trống' : null,
                     label: 'Tên camera',
                     requiredField: true,
                     maxLength: 50,
@@ -310,8 +334,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                     keyboardType: TextInputType.url,
                     label: 'Địa chỉ RTSP',
                     requiredField: true,
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Địa chỉ RTSP không được để trống' : null,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Địa chỉ RTSP không được để trống'
+                        : null,
                   ),
                   SizedBox(height: 24),
                   AppField(
@@ -319,56 +344,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                     hintText: 'Nhập địa chỉ luồng phụ',
                     label: 'Địa chỉ luồng phụ',
                     requiredField: true,
-                    validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Địa chỉ luồng phụ không được để trống' : null,
-                  ),
-                  SizedBox(height: 24),
-                  Text(
-                    'Tọa độ vị trí',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF000000),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppField(
-                          controller: _lon,
-                          label: 'Kinh độ',
-                          hintText: 'Nhập kinh độ',
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                            signed: true,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AppField(
-                          controller: _lat,
-                          label: 'Vĩ độ',
-                          hintText: 'Nhập vĩ độ',
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                            signed: true,
-                          ),
-                          trailingButton: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(5),
-                              ),
-                              color: AppColors.blue15ABFF,
-                            ),
-                            padding: const EdgeInsets.all(12),
-                            child: SvgPicture.asset(AppAssets.icLocation),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? 'Địa chỉ luồng phụ không được để trống'
+                        : null,
                   ),
                   const SizedBox(height: 24),
                   AppField(
@@ -390,7 +368,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
               children: [
                 Expanded(
                   child: AppButton.outline(
-                    label: 'HỦY',
+                    label: 'Hủy',
                     onPressed: (_isChecking || _isSubmitting)
                         ? null
                         : () => Navigator.pop(context),
@@ -399,7 +377,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: AppButton.filled(
-                    label: _isSubmitting ? '' : 'XÁC NHẬN',
+                    label: _isSubmitting ? '' : 'Xác nhận',
                     onPressed: _isSubmitting
                         ? null
                         : () async {
@@ -495,8 +473,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 hintText: 'Nhập tài khoản camera',
                 label: 'Tài khoản camera',
                 requiredField: true,
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Tài khoản camera không được để trống' : null,
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'Tài khoản camera không được để trống'
+                    : null,
               ),
             ),
             const SizedBox(width: 12),
@@ -509,13 +488,14 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 requiredField: true,
                 maxLength: 50,
                 obscureText: _obscure,
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Mật khẩu camera không được để trống' : null,
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'Mật khẩu camera không được để trống'
+                    : null,
                 suffix: IconButton(
                   icon: Icon(
                     _obscure ? Icons.visibility_off : Icons.visibility,
                   ),
-                  onPressed: () => setState(() => _obscure = !_obscure),
+                  onPressed: _togglePasswordVisibility,
                 ),
                 trailingButton: Visibility(
                   visible: _method != 'RTSP',

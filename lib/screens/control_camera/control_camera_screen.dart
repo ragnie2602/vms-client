@@ -165,9 +165,18 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
-  void _onDeleteCamera({required List<int> cameraId}) {
-    context.read<ControlCameraBloc>().add(
-      DeleteCameraEvent(cameraId: cameraId),
+  void _onDeleteCamera({
+    required List<int> cameraId,
+    required String cameraName,
+  }) {
+    showDialogRemoveCameraFromGroup(
+      context,
+      title: cameraName,
+      onConfirm: () {
+        context.read<ControlCameraBloc>().add(
+          DeleteCameraEvent(cameraId: cameraId),
+        );
+      },
     );
   }
 
@@ -621,6 +630,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               },
                                               onDelete: () => _onDeleteCamera(
                                                 cameraId: cameras[index].id,
+                                                cameraName: cameras[index].name,
                                               ),
                                               onShare: () async {
                                                 await _onShowDialogShareCamera(
