@@ -234,16 +234,18 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
           // Pop dialog khi thành công
           if (mounted) {
             Navigator.pop(context);
+            if (bloc.currentGroupId.isEmpty) {
+              // Reload danh sách camera
+              bloc.add(const GetListCameraEvent());
+            } else {
+              bloc.add(GetListCameraInGroupEvent(groupId: bloc.currentGroupId));
+            }
             // Hiển thị dialog thành công và reload danh sách
             WidgetsBinding.instance.addPostFrameCallback((_) {
               showAppMessageDialog(
                 context,
                 message: 'Thêm camera thành công!',
                 type: AppMessageType.success,
-                onOk: () {
-                  // Reload danh sách camera
-                  bloc.add(const GetListCameraEvent());
-                },
               );
             });
           }
