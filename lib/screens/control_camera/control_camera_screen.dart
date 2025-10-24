@@ -183,12 +183,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   void _showDialogRemoveCameraFromGroup({
     required BuildContext c,
     required List<int> cameraId,
+    required List<int> groupOwnerId,
   }) {
     showDialogRemoveCameraFromGroup(
       c,
       onConfirm: () {
         context.read<ControlCameraBloc>().add(
-          RemoveCameraFromGroupEvent(cameraId: cameraId),
+          RemoveCameraFromGroupEvent(cameraId: cameraId, groupId: groupOwnerId),
         );
       },
     );
@@ -642,6 +643,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                                 _showDialogRemoveCameraFromGroup(
                                                   c: context,
                                                   cameraId: cameras[index].id,
+                                                  groupOwnerId:
+                                                      cameras[index]
+                                                          .groupOwnerId ??
+                                                      [],
                                                 );
                                               },
                                             ),

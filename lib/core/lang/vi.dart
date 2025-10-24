@@ -14,9 +14,17 @@ const Map<String?, String> vi = {
   'NO_CHANGED': "Không thay đổi",
   'NETWORK_ERROR': "Lỗi mạng",
   'DATA_ERROR': "Dữ liệu lỗi",
-
+  //user
+  'ACCOUNT_EXIST': "Tên tài khoản đã tồn tại",
+  'TEL_EXIST': 'Số điện thoại đã tồn tại',
+  'EMAIL_EXIST': "Email đã tồn tại trên hệ thống. Vui lòng thử lại",
+  // 'EMAIL_INVALID': 'Email không đúng định dạng',
+  'USER_NOT_FOUND': 'Không tìm thấy người dùng',
+  'PERMISSION_DENIED': 'Bạn không có quyền được sử dụng chức năng này.',
+  'USER_EMPTY': 'Tên đăng nhập trống',
+  'USER_TYPE_EMPTY': 'Loại  tài khoản không được để trống',
   // Authenticate_Error
-  'ACCOUNT_INVALID': "Tài khoản không hợp lệ",
+  'ACCOUNT_INVALID': "Thông tin Email/số điện thoại không hợp lệ",
   'PASSWORD_INVALID': "Mật khẩu không hợp lệ",
   'PLATFORM_INVALID': "Loại thiết bị không hợp lệ",
   'TOKEN_INVALID': "Token không hợp lệ",
@@ -57,7 +65,7 @@ const Map<String?, String> vi = {
   'ALREADY_SHARE': "Đã được chia sẻ",
   'ALREADY_INVITE': "Đã được mời",
   'SHARE_YOURSELF': "Không thể chia sẻ cho chính mình",
-  'PERMISSION_DENIED': "Không có quyền",
+  // 'PERMISSION_DENIED': "Không có quyền",
   'ACCOUNT_IVALID': "Tài khoản không hợp lệ",
   'SHARE_TO_ADMIN': "Không thể chia sẻ cho admin",
   'SHARE_TO_OWNER': "Không thể chia sẻ cho chủ sở hữu camera",
