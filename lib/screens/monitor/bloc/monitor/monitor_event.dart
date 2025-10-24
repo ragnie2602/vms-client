@@ -2,7 +2,11 @@ part of 'monitor_bloc.dart';
 
 class MonitorEvent extends BaseEvent {}
 
-class GetAllCamera extends MonitorEvent {}
+class GetAllCamera extends MonitorEvent {
+  final ViewMode? mode;
+
+  GetAllCamera({this.mode});
+}
 
 class GetAllCameraInGroup extends MonitorEvent {
   final List<int> groupId;
@@ -23,3 +27,5 @@ class ChangeGridMode extends MonitorEvent {
 
   ChangeGridMode(this.mode);
 }
+
+class ResetFilter extends MonitorEvent {}

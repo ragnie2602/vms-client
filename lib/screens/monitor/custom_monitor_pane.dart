@@ -242,7 +242,7 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
   }
 
   showCameraListPopup(BuildContext context, Offset position, int index) {
-    final monitorBloc = context.read<MonitorBloc>();
+    final monitorBloc = MonitorBloc(context.read(), context.read());
 
     showDialog(
       barrierColor: Colors.transparent,

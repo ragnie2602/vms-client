@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 
 class AddEditCustomModePane extends StatefulWidget {
@@ -47,12 +48,6 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
     });
 
     _mode = customView?.base ?? ViewMode.v2x2;
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    super.dispose();
   }
 
   @override
@@ -190,6 +185,7 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
           BlocConsumer<CustomViewBloc, CustomViewState>(
             listener: (context, state) {
               if (state is CreateCustomViewSuccess || state is UpdateCustomViewSuccess) {
+                context.read<MonitorBloc>().add(ResetFilter());
                 widget.onBack?.call();
               }
             },
@@ -227,7 +223,8 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        if (nameController.text.isNotEmpty && nameController.text.length <= 64) {
+                        if (nameController.text.trim().isNotEmpty &&
+                            nameController.text.length <= 64) {
                           if (mode == CustomMonitorPaneMode.add) {
                             bloc.add(
                               CreateCustomView(
@@ -246,7 +243,7 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                               ),
                             );
                           }
-                        } else if (nameController.text.isNotEmpty) {
+                        } else if (nameController.text.trim().isNotEmpty) {
                           setState(
                             () =>
                                 _errorMessage = 'Vui lòng nhập tên chế độ xem không quá 64 ký tự!',
@@ -278,5 +275,11 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
   }
 }

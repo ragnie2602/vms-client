@@ -24,7 +24,6 @@ class MonitorActions extends StatefulWidget {
 
 class _MonitorActionsState extends State<MonitorActions> {
   final ValueNotifier<int?> _leftPanelIndex = ValueNotifier(null);
-  final ValueNotifier<int?> _rightPanelIndex = ValueNotifier(null);
 
   @override
   Widget build(BuildContext context) {
@@ -48,18 +47,17 @@ class _MonitorActionsState extends State<MonitorActions> {
                     isSelected: value == 1,
                     title: 'Chế độ xem',
                     icon: AppAssets.icViewMode,
-                    suffix: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.blackOrWhite,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      constraints: BoxConstraints(minWidth: 26),
-                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                      child: BlocBuilder<MonitorBloc, MonitorState>(
-                        builder: (context, state) {
-                          if (state is! MonitorSuccess) return SizedBox();
-
-                          return Text(
+                    suffix: BlocBuilder<MonitorBloc, MonitorState>(
+                      builder: (context, state) {
+                        if (state is! MonitorSuccess) return SizedBox();
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.blackOrWhite,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          constraints: BoxConstraints(minWidth: 26),
+                          padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                          child: Text(
                             '${state.mode.rows}x${state.mode.columns}',
                             style: AppTypography.style(
                               9,
@@ -67,9 +65,9 @@ class _MonitorActionsState extends State<MonitorActions> {
                               color: AppColors.blackOrWhiteReverse,
                             ),
                             textAlign: TextAlign.center,
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
                     onTap: () => widget.leftController.togglePanel(
                       MonitorMode(
