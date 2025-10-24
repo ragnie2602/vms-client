@@ -113,6 +113,11 @@ class _AppFieldState extends State<AppField> {
                     maxLines: widget.maxLines,
                     maxLength: widget.maxLength,
                     validator: _customValidator,
+                    onChanged: (value) {
+                      setState(() {
+                        _errorText = null;
+                      });
+                    },
                     inputFormatters: widget.inputFormatters,
                     decoration: InputDecoration(
                       hintText: widget.hintText,
@@ -127,28 +132,53 @@ class _AppFieldState extends State<AppField> {
                       errorStyle: const TextStyle(fontSize: 0, height: 0),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: const BorderSide(color: Colors.red, width: 1),
+                        borderSide: BorderSide(
+                          color: _errorText == null
+                              ? AppColors.greyE2E8F0
+                              : Colors.red,
+                          width: 1,
+                        ),
                       ),
                       focusedErrorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: const BorderSide(color: Colors.red, width: 1),
+                        borderSide: BorderSide(
+                          color: _errorText == null
+                              ? AppColors.greyE2E8F0
+                              : Colors.red,
+                          width: 1,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                        borderSide: BorderSide(
+                          color: AppColors.greyE2E8F0,
+                          width: 1,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                        borderSide: BorderSide(
+                          color: AppColors.greyE2E8F0,
+                          width: 1,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 1,
+                        ),
                       ),
                       suffixIcon: suffixChildren.isEmpty
                           ? null
-                          : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: suffixChildren,
+                            ),
                     ),
                   ),
                 ),
