@@ -35,14 +35,10 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
       }
     } catch (e) {
       String errorMessage = e.toString().replaceFirst('Exception: ', '');
-      if (errorMessage == 'Network error: null') {
+      if (errorMessage.startsWith('Network error:')) {
         errorMessage = 'Kết nối không thành công! Vui lòng kiểm tra lại địa chỉ máy chủ!';
       }
-      return LoginOutput(
-        account: input.username,
-        isSuccess: false,
-        errorMessage: errorMessage,
-      );
+      return LoginOutput(account: input.username, isSuccess: false, errorMessage: errorMessage);
     }
   }
 }
