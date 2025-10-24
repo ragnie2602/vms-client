@@ -19,8 +19,8 @@ class PlayerTimeline extends StatefulWidget {
     super.key,
     this.tickWidth = 1,
     this.minorTickCount = 5, // 10
-    this.majorTickHeight = 90,
-    this.minorTickHeight = 36,
+    this.majorTickHeight = 30,
+    this.minorTickHeight = 18,
     this.formatPattern = 'HH:mm',
     this.size,
     required this.normalStyle,

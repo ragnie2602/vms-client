@@ -143,13 +143,14 @@ class PlayerTimelinePainter extends CustomPainter {
       final offsetX = -1 * i * minorIntervalWidth - diffFromCentralToNearestTick;
       bool isMajorTick = index == 0;
 
-      _drawTick(canvas, size, offsetX, isMajorTick, true);
-
+      Size textSize = Size.zero;
       if (isMajorTick) {
-        _drawTime(canvas, size, offsetX, displayDate, true);
+        textSize = _drawTime(canvas, size, offsetX, displayDate, true);
         index = minorTickCount;
         displayDate = displayDate.subtract(interval);
       }
+
+      _drawTick(canvas, size, offsetX, isMajorTick, true, textSize);
     }
 
     // Vẽ bên phải central
@@ -159,14 +160,15 @@ class PlayerTimelinePainter extends CustomPainter {
       final offsetX = i * minorIntervalWidth - diffFromCentralToNearestTick;
       bool isMajorTick = index == minorTickCount;
 
-      // Vẽ bên trái central
-      _drawTick(canvas, size, offsetX, isMajorTick, false);
-
+      Size textSize = Size.zero;
       if (isMajorTick) {
         index = 0;
-        _drawTime(canvas, size, offsetX, displayDate, false);
+        textSize = _drawTime(canvas, size, offsetX, displayDate, false);
         displayDate = displayDate.add(interval);
       }
+
+      // Vẽ bên trái central
+      _drawTick(canvas, size, offsetX, isMajorTick, false, textSize);
     }
 
     // Vẽ central
@@ -188,13 +190,14 @@ class PlayerTimelinePainter extends CustomPainter {
       bool isHighlighted = offsetX <= centralOffsetX;
       bool isMajorTick = index == minorTickCount;
 
-      _drawTick(canvas, size, offsetX, isMajorTick, isHighlighted);
-
+      Size textSize = Size.zero;
       if (isMajorTick) {
-        _drawTime(canvas, size, offsetX, displayDate, isHighlighted);
+        textSize = _drawTime(canvas, size, offsetX, displayDate, isHighlighted, isFirst: i == 0);
         index = 0;
         displayDate = displayDate.add(interval);
       }
+
+      _drawTick(canvas, size, offsetX, isMajorTick, isHighlighted, textSize);
     }
 
     // Vẽ central --> offset convert về sát 0 do check = 0 thì tương ứng với center
@@ -215,13 +218,14 @@ class PlayerTimelinePainter extends CustomPainter {
       bool isHighlighted = j <= centralOffsetX + (j == size.width ? 5 : 0);
       bool isMajorTick = index == minorTickCount;
 
-      _drawTick(canvas, size, j, isMajorTick, isHighlighted);
-
+      Size textSize = Size.zero;
       if (isMajorTick) {
-        _drawTime(canvas, size, j, displayDate, isHighlighted, isReverse: j == size.width);
+        textSize = _drawTime(canvas, size, j, displayDate, isHighlighted, isLast: i == 0);
         index = 0;
         displayDate = displayDate.subtract(interval);
       }
+
+      _drawTick(canvas, size, j, isMajorTick, isHighlighted, textSize);
     }
 
     // Vẽ central
@@ -229,13 +233,14 @@ class PlayerTimelinePainter extends CustomPainter {
   }
 
   /*  */
-  void _drawTime(
+  Size _drawTime(
     Canvas canvas,
     Size size,
     double offsetX,
     DateTime currentTime,
     bool isHighlighted, {
-    bool isReverse = false,
+    bool isFirst = false,
+    bool isLast = false,
   }) {
     _textSpan = TextSpan(
       text: DateFormat(formatPattern).format(currentTime),
@@ -245,23 +250,48 @@ class PlayerTimelinePainter extends CustomPainter {
 
     _textPainter.layout(minWidth: 0, maxWidth: size.width);
 
-    if (isReverse) {
-      _textPainter.paint(canvas, Offset(offsetX - 4 - _textPainter.width, 2));
-    } else {
-      _textPainter.paint(canvas, Offset(offsetX + 4, 2));
-    }
+    double _offsetX = offsetX - _textPainter.width / 2;
+    if (isFirst) _offsetX = offsetX + 2;
+    if (isLast) _offsetX = offsetX - _textPainter.width - 2;
+
+    _textPainter.paint(canvas, Offset(_offsetX, size.height - _textPainter.height - 2));
+    return _textPainter.size;
   }
 
-  void _drawTick(Canvas canvas, Size size, double offsetX, bool isMajorTick, bool isHighlighted) {
-    final height =
-        size.height -
-        (isMajorTick ? majorTickHeight ?? size.height : minorTickHeight ?? size.height / 2);
+  double? _cachedTextHeight;
+  void _drawTick(
+    Canvas canvas,
+    Size size,
+    double offsetX,
+    bool isMajorTick,
+    bool isHighlighted,
+    Size textSize,
+  ) {
+    double lineStartPoint = 0;
+    double lineEndPoint = 0;
+
+    if (isMajorTick) {
+      lineStartPoint = size.height - textSize.height - 4;
+      lineEndPoint = majorTickHeight != null ? lineStartPoint - majorTickHeight! - 4 : 4;
+    } else if (!isMajorTick) {
+      _cachedTextHeight ??= (TextPainter(
+        text: TextSpan(text: '00:00', style: normalStyle),
+        textDirection: TextDirection.ltr,
+      )..layout(minWidth: 0, maxWidth: size.width)).height;
+
+      double spaceAround = minorTickHeight != null
+          ? (size.height - _cachedTextHeight! - 4 - minorTickHeight!) / 2
+          : (size.height - _cachedTextHeight! - 4) / 4;
+
+      lineStartPoint = size.height - _cachedTextHeight! - 4 - spaceAround;
+      lineEndPoint = 4 + spaceAround;
+    }
 
     canvas.drawPath(
       _path
         ..reset()
-        ..moveTo(offsetX, size.height - 1) // Xuống đáy
-        ..lineTo(offsetX, height + 1), // Lên trên
+        ..moveTo(offsetX, lineStartPoint) // Xuống gần text
+        ..lineTo(offsetX, lineEndPoint), // Lên trên
       isHighlighted ? majorTickPaint : minorTickPaint,
     );
   }
