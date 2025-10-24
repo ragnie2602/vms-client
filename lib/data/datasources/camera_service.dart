@@ -282,7 +282,7 @@ class CameraService {
 
     return responseBuffer.fold(
       (failure) =>
-          throw failure.toMessageFailure(CheckAccountShare_Error.valueOf),
+          throw failure.toMessageFailure(CheckAccountShare_Error.valueOf, PacketType.checkAccountShare.value),
       (buffer) => CheckAccountShare_Reply.fromBuffer(buffer),
     );
   }
