@@ -8,10 +8,17 @@ extension ReplyExts on Reply {
 }
 
 extension PbEnumExt on ProtobufEnum? {
-  String translate() {
+  String translate(int packetTypeValue) {
     if (this == null) return DEFAULT_ERROR_MESSAGE;
 
-    return vi[this!.name] ?? (kReleaseMode ? DEFAULT_ERROR_MESSAGE : this!.name);
+    // Access nested map: vi[packetTypeValue][errorCode]
+    final errorMap = vi[packetTypeValue];
+    if (errorMap == null) {
+      return kReleaseMode ? DEFAULT_ERROR_MESSAGE : this!.name;
+    }
+
+    final errorCode = this!.name;
+    return errorMap[errorCode] ?? (kReleaseMode ? DEFAULT_ERROR_MESSAGE : errorCode);
   }
 }
 

@@ -114,7 +114,7 @@ class SocketApiClient extends BaseApiClient {
         Logger.log("Request '${reply.reply.typeUrl}' success!", tag: 'SOCKET');
         result = Right(reply.reply.value);
       } else {
-        final msg = ResultType.valueOf(reply.type).translate();
+        final msg = ResultType.valueOf(reply.type).translate(packet.id);
         Logger.error(
           "Request '${reply.reply.typeUrl}' failed: $msg",
           tag: 'SOCKET',

@@ -39,16 +39,16 @@ sealed class Failure {
   factory Failure.code(int code) => CodeFailure(code);
   factory Failure.message(String message) => MessageFailure(message);
 
-  MessageFailure toMessageFailure<T extends ProtobufEnum>([T? Function(int)? valueOf]) =>
-      MessageFailure(parseMessage(valueOf));
+  MessageFailure toMessageFailure<T extends ProtobufEnum>([T? Function(int)? valueOf, int? packetType]) =>
+      MessageFailure(parseMessage(valueOf, packetType));
 
-  String parseMessage<T extends ProtobufEnum>([T? Function(int)? valueOf]) {
+  String parseMessage<T extends ProtobufEnum>([T? Function(int)? valueOf, int? packetType]) {
     switch (this) {
       case MessageFailure(:final message):
         return message;
       case CodeFailure(:final code):
         try {
-          return valueOf?.call(code)?.translate() ?? code.toString();
+          return valueOf?.call(code)?.translate(packetType ?? 0) ?? code.toString();
         } catch (e) {
           Logger.error(e);
           return code.toString();
