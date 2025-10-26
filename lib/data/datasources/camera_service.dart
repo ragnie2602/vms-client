@@ -47,7 +47,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(AddCameraRTSP_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        AddCameraRTSP_Error.valueOf,
+        PacketType.addCameraRTSP.value,
+      ),
       (buffer) => AddCameraRTSP_Reply.fromBuffer(buffer).toDomain(),
     );
   }
@@ -91,7 +94,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(AddCameraOnVif_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        AddCameraOnVif_Error.valueOf,
+        PacketType.addCameraOnVif.value,
+      ),
       (buffer) => AddCameraOnVif_Reply.fromBuffer(buffer).toDomain(),
     );
   }
@@ -128,7 +134,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(UpdateCamera_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        UpdateCamera_Error.valueOf,
+        PacketType.updateCamera.value,
+      ),
       (buffer) => UpdateCamera_Reply.fromBuffer(buffer).camera,
     );
   }
@@ -156,8 +165,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(CheckCameraOnvif_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        CheckCameraOnvif_Error.valueOf,
+        PacketType.checkCameraOnvif.value,
+      ),
       (buffer) => CheckCameraOnvif_Reply.fromBuffer(buffer),
     );
   }
@@ -185,7 +196,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(GetAllCamera_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        GetAllCamera_Error.valueOf,
+        PacketType.getAllCamera.value,
+      ),
       (buffer) => GetAllCamera_Reply.fromBuffer(buffer).cameras,
     );
   }
@@ -207,8 +221,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(GetCameraInGroup_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        GetCameraInGroup_Error.valueOf,
+        PacketType.getCameraInGroup.value,
+      ),
       (buffer) => GetCameraInGroup_Reply.fromBuffer(buffer).cameras,
     );
   }
@@ -253,7 +269,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(ShareCamera_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        ShareCamera_Error.valueOf,
+        PacketType.shareCamera.value,
+      ),
       (buffer) => ShareCamera_Reply.fromBuffer(buffer).cameraId,
     );
   }
@@ -281,8 +300,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(CheckAccountShare_Error.valueOf, PacketType.checkAccountShare.value),
+      (failure) => throw failure.toMessageFailure(
+        CheckAccountShare_Error.valueOf,
+        PacketType.checkAccountShare.value,
+      ),
       (buffer) => CheckAccountShare_Reply.fromBuffer(buffer),
     );
   }
@@ -306,8 +327,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(AddCameraToGroup_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        AddCameraToGroup_Error.valueOf,
+        PacketType.addCameraToGroup.value,
+      ),
       (buffer) => AddCameraToGroup_Reply.fromBuffer(buffer).camera,
     );
   }
@@ -331,8 +354,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(RemoveCameraFormGroup_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        RemoveCameraFormGroup_Error.valueOf,
+        PacketType.removeCameraFormGroup.value,
+      ),
       (buffer) => RemoveCameraFormGroup_Reply.fromBuffer(buffer),
     );
   }
@@ -401,8 +426,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(DeleteShareCamera_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        DeleteShareCamera_Error.valueOf,
+        PacketType.deleteShareCamera.value,
+      ),
       (buffer) => DeleteShareCamera_Reply.fromBuffer(buffer),
     );
   }
