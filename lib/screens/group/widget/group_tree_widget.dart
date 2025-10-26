@@ -75,7 +75,10 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
   // khi đang ở node khác mà mở action của node X cần tìm
   // để focus và update list cam (update dữ liệu)
   void _syncSelectedNodeFromProp() {
-    if (widget.selectedGroupId == null) return;
+    if (widget.selectedGroupId == null) {
+      setState(() => _selectedNode = null);
+      return;
+    }
     TreeNode<DeviceGroup>? foundNodeOnTree;
     void searchOnTree(TreeNode<DeviceGroup> node) {
       if (foundNodeOnTree != null) return;
