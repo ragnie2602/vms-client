@@ -1,30 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
+import 'package:vms_flutter_client/screens/home/bloc/my_account_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import 'components/components_src.dart';
 
 /// Hiển thị dialog khôi phục mật khẩu.
 /// Trả về mật khẩu mới nếu người dùng xác nhận, ngược lại trả về null.
-Future<String?> showChangeMyPasswordDialog(
-  BuildContext context, {
-  Future<void> Function(String newPassword)? onSubmit
-}) {
-  final TextEditingController _controller = TextEditingController();
-  bool _obscurePassword = true;
+Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
+  final repository = context.read<IUserManagementRepository>();
+  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
   final theme = Theme.of(context);
 
-  return showDialog<String?>(
+  return showDialog<bool?>(
     context: context,
     barrierDismissible: false,
     barrierColor: Colors.black.withOpacity(0.5),
     builder: (ctx) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return Dialog(
+      return BlocProvider(
+        create: (context) => MyAccountBloc(repository),
+        child: BlocConsumer<MyAccountBloc, MyAccountState>(
+          listener: (context, state) {
+            if (state.isSuccess) {
+              Navigator.pop(context, true);
+              showAppMessageDialog(context, message: 'Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!');
+              context.read<SocketApiClient>().disconnect();
+              context.goNamed(Routes.login.name);
+
+            } else if (state.errorMessage != null) {
+              showAppMessageDialog(context, message: state.errorMessage!, type: AppMessageType.error);
+            }
+          },
+          builder: (context, state) {
+          return StatefulBuilder(
+            builder: (builderContext, setState) {
+              return Dialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -60,101 +84,87 @@ Future<String?> showChangeMyPasswordDialog(
                     thickness: 1,
                   ),
                   Form(
+                    key: _formKey,
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(
                         children: [
                           AppField(
-                            controller: _controller,
-                            hintText: 'Mật khẩu cũ',
+                            controller: _currentPasswordController,
+                            hintText: 'Nhập mật khẩu cũ',
                             label: 'Mật khẩu cũ',
                             requiredField: false,
-                            obscureText: _obscurePassword,
+                            obscureText: _obscureCurrentPassword,
                             validator: (v) {
                               if (v == null || v.isEmpty) {
-                                return 'Mật khẩu không được để trống';
-                              }
-                              if (v.contains(' ')) {
-                                return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
-                              }
-                              if (v.length < 8 || v.length > 16) {
-                                return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                                return 'Mật khẩu cũ không được để trống';
                               }
                               return null;
                             },
                             suffix: IconButton(
                               icon: Icon(
-                                _obscurePassword
+                                _obscureCurrentPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
                               ),
                               iconSize: 20,
                               onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
+                                () => _obscureCurrentPassword = !_obscureCurrentPassword,
                               ),
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 24),
                             child: AppField(
-                              controller: _controller,
-                              hintText: 'Mật khẩu mới',
+                              controller: _newPasswordController,
+                              hintText: 'Nhập mật khẩu mới',
                               label: 'Mật khẩu mới',
                               requiredField: false,
-                              obscureText: _obscurePassword,
+                              obscureText: _obscureNewPassword,
                               paddingBottomLabel: 16,
                               validator: (v) {
                                 if (v == null || v.isEmpty) {
-                                  return 'Mật khẩu không được để trống';
-                                }
-                                if (v.contains(' ')) {
-                                  return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
-                                }
-                                if (v.length < 8 || v.length > 16) {
-                                  return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                                  return 'Mật khẩu mới không được để trống';
                                 }
                                 return null;
                               },
                               suffix: IconButton(
                                 icon: Icon(
-                                  _obscurePassword
+                                  _obscureNewPassword
                                       ? Icons.visibility_off
                                       : Icons.visibility,
                                 ),
                                 iconSize: 20,
                                 onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword,
+                                  () => _obscureNewPassword = !_obscureNewPassword,
                                 ),
                               ),
                             ),
                           ),
                           AppField(
-                            controller: _controller,
+                            controller: _confirmPasswordController,
                             hintText: 'Nhập lại mật khẩu mới',
-                            label: 'Nhập lại mật khẩu mới',
+                            label: 'Xác nhận mật khẩu mới',
                             requiredField: false,
-                            obscureText: _obscurePassword,
+                            obscureText: _obscureConfirmPassword,
                             validator: (v) {
                               if (v == null || v.isEmpty) {
-                                return 'Mật khẩu không được để trống';
+                                return 'Xác nhận mật khẩu mới không được để trống';
                               }
-                              if (v.contains(' ')) {
-                                return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
-                              }
-                              if (v.length < 8 || v.length > 16) {
-                                return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                              if (v != _newPasswordController.text) {
+                                return 'Xác nhận mật khẩu không đúng!';
                               }
                               return null;
                             },
                             suffix: IconButton(
                               icon: Icon(
-                                _obscurePassword
+                                _obscureConfirmPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
                               ),
                               iconSize: 20,
                               onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
+                                () => _obscureConfirmPassword = !_obscureConfirmPassword,
                               ),
                             ),
                           ),
@@ -175,15 +185,27 @@ Future<String?> showChangeMyPasswordDialog(
                         Expanded(
                           child: AppButton.outline(
                             label: 'Hủy',
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () => Navigator.pop(context, false),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: AppButton.filled(
                             label: 'Cập nhật',
-                            onPressed: () =>
-                                onSubmit!.call(_controller.text.toString()),
+                            // isLoading: state.isLoading,
+                            onPressed: state.isLoading
+                                ? null
+                                : () {
+                                    if (_formKey.currentState!.validate()) {
+                                      context.read<MyAccountBloc>().add(
+                                            ChangeMyPasswordEvent(
+                                              currentPassword: _currentPasswordController.text,
+                                              newPassword: _newPasswordController.text,
+                                              kickOthers: false,
+                                            ),
+                                          );
+                                    }
+                                  },
                           ),
                         ),
                       ],
@@ -193,9 +215,10 @@ Future<String?> showChangeMyPasswordDialog(
               ),
             ),
           );
-
-          // helper để validate & trả kết quả
         },
+          );
+          },
+        ),
       );
     },
   );
