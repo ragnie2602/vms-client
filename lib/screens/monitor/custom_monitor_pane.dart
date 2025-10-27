@@ -149,64 +149,72 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
   Widget _buildCameraView(BuildContext context, CameraEntity camera, int index) {
     return Padding(
       padding: const EdgeInsets.all(AppConfig.MONITOR_GRID_SPACING),
-      child: CameraPlayer(
-        mode: PlayerMode.monitoring,
-        name: camera.name,
-        source: camera.subStreamUri.toString(),
-        builder: (player, status) => GestureDetector(
-          onTap: () =>
-              context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: camera)),
-          child: Stack(
-            children: [
-              player,
-              Positioned(
-                bottom: 10,
-                right: 10,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(3),
-                    boxShadow: [
-                      BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6)),
-                    ],
-                  ),
-                  padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                  child: Row(
-                    children: [
-                      SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
-                      SizedBox(width: 4),
-                      Text(
-                        camera.name,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CameraPlayer(
+              mode: PlayerMode.monitoring,
+              name: camera.name,
+              source: camera.subStreamUri.toString(),
+              builder: (player, status) => GestureDetector(
+                onTap: () => context.pushNamed(
+                  Routes.livecamera.name,
+                  extra: CameraLiveScreenArgs(data: camera),
+                ),
+                child: Stack(
+                  children: [
+                    player,
+                    Positioned(
+                      bottom: 10,
+                      right: 10,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6)),
+                          ],
+                        ),
+                        padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
+                            SizedBox(width: 4),
+                            Text(
+                              camera.name,
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              Positioned(
-                right: 10,
-                top: 10,
-                child: IconButton(
-                  icon: Icon(Icons.close, color: Colors.white, size: 20),
-                  onPressed: () => removeCamera(index),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black.withOpacity(0.6),
-                    maximumSize: Size(20, 20),
-                    minimumSize: Size(20, 20),
-                    padding: EdgeInsets.all(0),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            right: 10,
+            top: 10,
+            child: IconButton(
+              icon: Icon(Icons.close, color: Colors.white, size: 20),
+              onPressed: () => removeCamera(index),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.black.withOpacity(0.6),
+                maximumSize: Size(20, 20),
+                minimumSize: Size(20, 20),
+                padding: EdgeInsets.all(0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

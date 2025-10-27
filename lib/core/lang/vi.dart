@@ -43,6 +43,14 @@ const Map<int, Map<String, String>> vi = {
     'USER_TYPE_EMPTY': 'Loại  tài khoản không được để trống',
   },
 
+  // change_password (106)
+  106: {
+    ..._commonErrors,
+    'PASSWORD_INVALID': 'Mật khẩu cũ không đúng!',
+		'PASSWORD_WEAKNESS': 'Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!',
+		'PASSWORD_NOT_SAME': 'Mật khẩu mới phải khác mật khẩu cũ!',
+  },
+
   // checkCameraOnvif (247)
   247: {
     'IP_OR_DOMAIN_ERROR': "Lỗi IP hoặc domain",

@@ -1,5 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_selector/file_selector.dart';
@@ -29,22 +30,20 @@ class FileUtil {
     );
   }
 
-  static Future<void> saveRgbaDataToSelectedDirectory(
+  static Future<void> saveImageToSelectedLocation(
     Uint8List data, {
-    required int width,
-    required int height,
     String fileName = 'image',
+    String extension = 'JPG',
   }) async {
     final result = await getSaveLocation(
-      acceptedTypeGroups: [_typeGroupMapper['JPG']!, _typeGroupMapper['PNG']!],
+      acceptedTypeGroups: [_typeGroupMapper[extension.toUpperCase()] ?? _typeGroupMapper['JPG']!],
       suggestedName: fileName,
     );
     if (result == null) return;
 
-    await img.encodeImageFile(
-      '${result.path}.${result.activeFilter?.extensions?.firstOrNull ?? 'png'}',
-      rgbaToImage(data, width, height),
-    );
+    await File(
+      '${result.path}.${result.activeFilter?.extensions?.firstOrNull ?? 'jpg'}',
+    ).writeAsBytes(data);
   }
 
   static Future<String?> selectSaveLocation(String fileName, String extension) async {

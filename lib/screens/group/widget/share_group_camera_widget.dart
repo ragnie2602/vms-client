@@ -34,6 +34,7 @@ Future<T?> showShareGroupCameraDialog<T>(
   required Future<List<InviteMessageEntity>> Function() onReloadData,
   // dành cho share group
   List<int>? groupId,
+  String? groupName,
   Future<List<int>?> Function(List<int>?)? onShareGroup,
   final Future<List<int>?> Function(List<int>?)? onDeleteShareGroup,
   // dành cho share camera
@@ -52,6 +53,7 @@ Future<T?> showShareGroupCameraDialog<T>(
         shareType: shareType,
         currentCamera: currentCamera,
         groupId: groupId,
+        groupName: groupName,
         sharedUsers: sharedUsers,
         onShareGroup: onShareGroup,
         onDeleteShareGroup: onDeleteShareGroup,
@@ -68,6 +70,7 @@ class _ShareGroupCameraWidget extends StatefulWidget {
     super.key,
     required this.shareType,
     this.groupId,
+    this.groupName,
     this.currentCamera,
     this.onShareGroup,
     this.sharedUsers,
@@ -81,6 +84,7 @@ class _ShareGroupCameraWidget extends StatefulWidget {
   final Future<List<InviteMessageEntity>> Function() onReloadData;
   // dành cho share group
   final List<int>? groupId;
+  final String? groupName;
   final Future<List<int>?> Function(List<int>?)? onShareGroup;
   final Future<List<int>?> Function(List<int>?)? onDeleteShareGroup;
   // dành cho share camera
@@ -248,7 +252,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
         style: AppTypography.style(
           14,
           color: AppColors.blackOrWhite,
-          // fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
         ),
       ),
       onClickRemove: () {
@@ -271,7 +275,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
         children: [
           Expanded(
             child: Text(
-              'Chia sẻ ${widget.shareType == ShareType.camera ? 'camera ${widget.currentCamera?.name}' : 'nhóm'}',
+              'Chia sẻ ${widget.shareType == ShareType.camera ? 'camera' : 'nhóm ${widget.groupName}'}',
               style: AppTypography.style(
                 20,
                 fontWeight: FontWeight.w600,
@@ -301,23 +305,14 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 12),
-                widget.shareType == ShareType.groupCamera
-                    ? Text(
-                        'Tài khoản muốn chia sẻ nhóm camera',
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        ),
-                      )
-                    : Text(
-                        'Tài khoản muốn chia sẻ camera',
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        ),
-                      ),
+                Text(
+                  'Tài khoản muốn chia sẻ',
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 // Search Field
                 Container(
@@ -412,13 +407,53 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                                     _onShare();
                                   }
                                 },
-                                icon: Icon(
-                                  _selectedAccName.contains(
-                                        _searchController.text.trim(),
+                                icon:
+                                    !(_selectedAccName.contains(
+                                      _searchController.text.trim(),
+                                    ))
+                                    ? Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            5,
+                                          ),
+                                          border: Border.all(
+                                            width: 1,
+                                            color: AppColors.blue005AA9,
+                                          ),
+                                        ),
+                                        padding: EdgeInsets.only(
+                                          top: 2.5,
+                                          bottom: 2.5,
+                                          left: 4,
+                                          right: 8,
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SvgPicture.asset(
+                                              AppAssets.iconShare,
+                                              colorFilter: ColorFilter.mode(
+                                                AppColors.blue005AA9,
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'Chia sẻ',
+                                              style: AppTypography.style(
+                                                12,
+                                                fontWeight: FontWeight.w500,
+                                                color: AppColors.blue005AA9,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       )
-                                      ? Icons.check_circle
-                                      : Icons.add_circle,
-                                ),
+                                    : SizedBox(),
+                                splashColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
                               ),
                             ],
                           ),

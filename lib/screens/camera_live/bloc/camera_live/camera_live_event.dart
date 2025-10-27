@@ -14,12 +14,6 @@ class ChangeCamera extends CameraLiveEvent {
   const ChangeCamera(this.camera);
 }
 
-class ChangePlayerSource extends CameraLiveEvent {
-  final String? source;
-  final int? position;
-  const ChangePlayerSource(this.source, {this.position});
-}
-
 class ChangePlayerStatus extends CameraLiveEvent {
   final PlayerStatus status;
   const ChangePlayerStatus(this.status);
@@ -27,8 +21,7 @@ class ChangePlayerStatus extends CameraLiveEvent {
 
 class SeekPlayer extends CameraLiveEvent {
   final Duration amount;
-  final int type;
-  const SeekPlayer(this.amount, this.type);
+  const SeekPlayer(this.amount);
 }
 
 class ChangeVolume extends CameraLiveEvent {

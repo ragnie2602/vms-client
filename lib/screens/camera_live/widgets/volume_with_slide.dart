@@ -25,6 +25,7 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
       onHover: (event) => setState(() => showSlider = true),
       onExit: (event) => setState(() => showSlider = false),
       child: Container(
+        height: 60,
         padding: EdgeInsets.symmetric(horizontal: 16),
         child: BlocSelector<CameraLiveBloc, CameraLiveState, double>(
           selector: (state) => state.volume,
@@ -39,7 +40,19 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
                       ChangeVolume(isMuted ? 0 : _volumeBeforeMuted, mute: isMuted),
                     );
                   },
-                  child: SvgPicture.asset(AppAssets.icVolume, width: 28, height: 28),
+                  child: SvgPicture.asset(
+                    volume == 100
+                        ? AppAssets.icVolumeFull
+                        : volume == 0
+                        ? AppAssets.icVolumeMuted
+                        : AppAssets.icVolumeHalf,
+                    width: 28,
+                    height: 28,
+                    colorFilter: ColorFilter.mode(
+                      Colors.black,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
 
                 if (showSlider) SizedBox(width: 8),

@@ -33,13 +33,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         emit(MonitorFailure(failure.toString()));
       },
       (cameras) {
-        emit(
-          MonitorSuccess(
-            cameras: cameras,
-            mode: event.mode ?? ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
-            groupId: null,
-          ),
-        );
+        emit(MonitorSuccess(cameras: cameras, mode: ViewMode.v2x2));
       },
     );
   }
