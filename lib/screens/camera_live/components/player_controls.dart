@@ -3,10 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
-import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/file_util.dart';
-import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
 import '../bloc/camera_live/camera_live_bloc.dart';
 import '../widgets/volume_with_slide.dart';
@@ -14,10 +11,6 @@ import '../widgets/volume_with_slide.dart';
 class PlayerControls extends StatelessWidget {
   const PlayerControls({super.key, required this.mode});
   final LiveViewMode mode;
-
-  CameraPlayerState? player(BuildContext context) {
-    return context.read<CameraLiveBloc>().state.ref.currentState;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,48 +42,40 @@ class PlayerControls extends StatelessWidget {
                   /* Backward */
                   if (mode.isPlayback)
                     _controlItem(AppAssets.icFastBackward, () {
-                      context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30), -1));
+                      context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: -30)));
                     }),
 
                   /* Pause/Play */
-                  BlocSelector<CameraLiveBloc, CameraLiveState, PlayerStatus>(
-                    selector: (state) => state.status,
-                    builder: (context, status) => _controlItem(
-                      status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
-                      () => player(context)?.let(((state) {
-                        status == PlayerStatus.playing ? state.pause() : state.play();
-                      })),
-                    ),
-                  ),
+                  // BlocSelector<CameraLiveBloc, CameraLiveState, PlayerStatus>(
+                  //   selector: (state) => state.status,
+                  //   builder: (context, status) => _controlItem(
+                  //     status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
+                  //     () => player(context)?.let(((state) {
+                  //       status == PlayerStatus.playing ? state.pause() : state.play();
+                  //     })),
+                  //   ),
+                  // ),
 
                   /* Forward */
                   if (mode.isPlayback)
                     _controlItem(AppAssets.icFastForward, () {
-                      context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30), 1));
+                      context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30)));
                     }),
 
                   /* Record */
                   // _controlItem(AppAssets.icRecord, () {}),
 
                   /* Camera */
-                  _controlItem(AppAssets.icCamera, () async {
-                    final _player = player(context)!.player;
-                    final videoData = _player.mediaInfo.video?.firstOrNull;
-                    if (videoData == null) return;
-
-                    final res = await _player.snapshot(
-                      width: videoData.codec.width,
-                      height: videoData.codec.height,
-                    );
-
-                    if (res != null) {
-                      await FileUtil.saveRgbaDataToSelectedDirectory(
-                        res,
-                        width: videoData.codec.width,
-                        height: videoData.codec.height,
-                      );
-                    }
-                  }),
+                  _controlItem(
+                    AppAssets.icCamera,
+                    () => context
+                        .read<CameraLiveBloc>()
+                        .state
+                        .playbackController
+                        .ref
+                        .currentState
+                        ?.snapshot(),
+                  ),
 
                   /* Speed */
                   // if (mode.isPlayback) buildSpeedDropdown(),

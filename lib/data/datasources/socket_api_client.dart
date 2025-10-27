@@ -35,35 +35,36 @@ class SocketApiClient extends BaseApiClient {
     _stateController = StreamController.broadcast();
 
     try {
+      // WebSocket sử dụng tham số timeout:
+      //   + Khi mở kết nối
+      //   + Auto Reconnecting sau khi Disconnected (backoff tăng dần tới khi nào vượt qua timeout thì Disconnected hẳn, không tự Reconnecting nữa)
+      // Nên
+      // --> timeout truyền vào WebSocket --> CỰC TO --> không bị ngắt Auto Reconnecting
+      // --> timeout khi mở kết nối --> tự xử lý ở bên dưới (thông qua _socket.connection.timeout)
       _socket = WebSocket(
         Uri.parse(serverUrl),
         binaryType: 'arraybuffer',
-        timeout: Duration(seconds: params.timeout),
+        timeout: Duration(days: 106751), // +2s dần tới (~292 năm) thì ngừng thử kết nối lại
         backoff: ConstantBackoff(Duration(seconds: 2)),
       );
 
       _socket.messages.listen(_handleMessages);
       _socket.connection.listen((state) {
-        Logger.log("Connection status: ${state.runtimeType}", tag: 'SOCKET');
+        Logger.log("Connection status: ${state.runtimeType}", tag: 'SOCKET', writeLog: true);
         if (_stateController.isClosed) return;
         _stateController.add(state);
       });
 
       // Wait until a connection has been established.
-      await _socket.connection
-          .firstWhere((state) => state is Connected)
-          .timeout(
-            Duration(seconds: params.timeout),
-            onTimeout: () => throw TimeoutException('Connection timeout'),
-          );
+      if (!await _waitForConnected(Duration(seconds: params.timeout))) {
+        throw TimeoutException('Connection timeout');
+      }
 
-      _keepAliveTimer = Timer.periodic(
-        const Duration(seconds: 30),
-        _sendKeepAlive,
-      );
+      _keepAliveTimer = Timer.periodic(const Duration(seconds: 30), _sendKeepAlive);
 
       return true;
     } catch (e) {
+      _socket.close();
       Logger.error(e, tag: 'SOCKET');
       return false;
     }
@@ -79,7 +80,10 @@ class SocketApiClient extends BaseApiClient {
 
   @override
   Future<Either<Failure, T>> send<T>(SocketRequestPayload data) async {
-    if (!isConnected) return Left(Failure.message(SOCKET_UNCONNECTED));
+    if (!isConnected &&
+        !await _waitForConnected(Duration(seconds: AppConfig.SOCKET_CONNECTION_TIMEOUT))) {
+      return Left(Failure.message(SOCKET_UNCONNECTED));
+    }
 
     final completer = Completer<Either<Failure, T>>();
     _requestCompleters[data.packet.id] = completer;
@@ -96,9 +100,7 @@ class SocketApiClient extends BaseApiClient {
   }
 
   void _sendKeepAlive(Timer _) {
-    _socket.send(
-      Packet(id: 100, data: [], type: PacketType.keepAlive).writeToBuffer(),
-    );
+    _socket.send(Packet(id: 100, data: [], type: PacketType.keepAlive).writeToBuffer());
   }
 
   void _handleMessages(dynamic message) {
@@ -131,12 +133,20 @@ class SocketApiClient extends BaseApiClient {
   }
 
   void _disposeCompleter(int id, {Either<Failure, List<int>>? value}) {
-    final completer =
-        _requestCompleters[id] as Completer<Either<Failure, List<int>>>?;
+    final completer = _requestCompleters[id] as Completer<Either<Failure, List<int>>>?;
     if (completer != null && !completer.isCompleted) {
       completer.complete(value ?? Left(Failure.defaultError()));
     }
     _requestCompleters.remove(id);
+  }
+
+  Future<bool> _waitForConnected(Duration timeout) async {
+    try {
+      await _socket.connection.firstWhere((state) => state is Connected).timeout(timeout);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   @override

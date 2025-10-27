@@ -1,5 +1,6 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.profile.pb.dart';
 
 import '../proto/models/comm.command1.pb.dart';
 import '../proto/models/comm.model.pb.dart';
@@ -187,6 +188,32 @@ class UserService {
         PacketType.editUser.value,
       ),
       (buffer) => EditUser_Reply.fromBuffer(buffer).user,
+    );
+  }
+
+  Future<bool> changeMyPassword({
+    required String current,
+    required String password,
+    bool? kickOthers,
+  }) async {
+    final changePasswordRequest = ChangePassword_Request();
+    changePasswordRequest.current = current;
+    changePasswordRequest.password = password;
+    changePasswordRequest.kickOthers = kickOthers ?? false;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: changePasswordRequest.writeToBuffer(),
+          type: PacketType.changePassword,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(ChangePassword_Error.valueOf, PacketType.changePassword.value),
+      (buffer) => true,
     );
   }
 }

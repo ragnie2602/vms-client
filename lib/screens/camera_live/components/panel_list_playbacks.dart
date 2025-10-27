@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 
 import '../../shared/state_builder_mixin.dart';
+import '../bloc/camera_live/camera_live_bloc.dart';
 import '../bloc/playback/playback_bloc.dart';
 import '../widgets/playback_painter.dart';
 
@@ -29,11 +30,17 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
               final playback = state.playbacks[index];
 
               return InkWell(
-                onTap: () => context.read<PlaybackBloc>().add(ChangePlayback(playback)),
+                onTap: () => context
+                    .read<CameraLiveBloc>()
+                    .state
+                    .playbackController
+                    .ref
+                    .currentState
+                    ?.jumpToDate(playback.startTime),
                 child: PlaybackItem(
                   maxWidth: maxWidth,
                   playback: playback,
-                  backgroundColor: state.currentPlayback == playback
+                  backgroundColor: state.currentIndex == index
                       ? AppColors.primary.withValues(alpha: 0.25)
                       : index % 2 == 0
                       ? null

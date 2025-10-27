@@ -27,7 +27,9 @@ class AppAssets {
   static const icRecord = '$_svgPath/record.svg';
   static const icSort = '$_svgPath/sort.svg';
   static const icStream = '$_svgPath/stream.svg';
-  static const icVolume = '$_svgPath/volume.svg';
+  static const icVolumeHalf = '$_svgPath/volume_half.svg';
+  static const icVolumeFull = '$_svgPath/volume_full.svg';
+  static const icVolumeMuted = '$_svgPath/volume_muted.svg';
   static const icZoomIn = '$_svgPath/zoom_in.svg';
   static const icZoomOut = '$_svgPath/zoom_out.svg';
   static const icArrowSquareLeft = '$_svgPath/arrow_square_left.svg';
@@ -69,7 +71,7 @@ class AppAssets {
   static const icFastBackward = '$_svgPath/fast_backward.svg';
   static const icFastForward = '$_svgPath/fast_forward.svg';
   static const icPlay = '$_svgPath/play.svg';
-  static const icPause = '$_svgPath/pause_circle.svg';
+  static const icPause = '$_svgPath/pause.svg';
   static const icArrowChevronDown = '$_svgPath/arrow_chevron_down.svg';
   static const icArrowChevronUp = '$_svgPath/arrow_chevron_up.svg';
   static const icArrowChevronLeft = '$_svgPath/arrow_chevron_left.svg';

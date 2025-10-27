@@ -9,7 +9,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
-import '../home_bloc.dart';
+import '../bloc/home_bloc.dart';
 import 'tile_expansion.dart';
 
 class HomeDrawer extends StatelessWidget {
@@ -110,7 +110,7 @@ class DrawerTile extends StatelessWidget {
     if (tab.route == Routes.playback &&
         context.read<MonitorBloc>().state is MonitorSuccess &&
         (context.read<MonitorBloc>().state as MonitorSuccess).cameras.isNotEmpty) {
-      final cam = (context.read<MonitorBloc>().state as MonitorSuccess).cameras.first;
+      final cam = (context.read<MonitorBloc>().state as MonitorSuccess).cameras.last;
 
       _route = Routes.livecamera;
       _extra = CameraLiveScreenArgs(data: cam, isPlayback: true, title: 'Playback ${cam.name}');

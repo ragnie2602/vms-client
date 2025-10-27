@@ -28,79 +28,67 @@ final class PlaybackFailure extends PlaybackState {
 
 class PlaybackSuccess extends PlaybackState {
   final List<PlaybackVideo> playbacks;
-  final PlaybackVideo? currentPlayback;
-  final int? currentDuration;
+  final int currentIndex;
+  final int initialIndex;
 
-  /// Gán centralDate = currentPlayback.startTime ngay lập tức thay vì đợi 1s sau mới update
-  final bool? setStartTimeInstantly;
-  final Map<List<int>, int> mapper;
-
-  PlaybackSuccess({
+  const PlaybackSuccess({
+    required this.initialIndex,
     required this.playbacks,
-    required this.currentPlayback,
-    this.currentDuration,
-    this.setStartTimeInstantly,
-  }) : mapper = {for (var (index, playback) in playbacks.indexed) playback.playbackId: index};
+    required this.currentIndex,
+  });
 
   @override
   StateType get type => playbacks.isNotEmpty ? StateType.success : StateType.empty;
   @override
-  List<Object?> get props => [playbacks, currentPlayback, currentDuration, setStartTimeInstantly];
+  List<Object?> get props => [playbacks, initialIndex, currentIndex];
 
-  PlaybackSuccess copyWith({
-    List<PlaybackVideo>? playbacks,
-    PlaybackVideo? currentPlayback,
-    int? currentDuration,
-    bool? setStartTimeInstantly,
-    bool currentPlaybackCanNull = false,
-  }) {
+  PlaybackSuccess copyWith({List<PlaybackVideo>? playbacks, int? currentIndex, int? initialIndex}) {
     return PlaybackSuccess(
       playbacks: playbacks ?? this.playbacks,
-      currentPlayback: currentPlayback ?? (currentPlaybackCanNull ? null : this.currentPlayback),
-      currentDuration: currentDuration,
-      setStartTimeInstantly: setStartTimeInstantly,
+      currentIndex: currentIndex ?? this.currentIndex,
+      initialIndex: initialIndex ?? this.initialIndex,
     );
   }
 
-  PlaybackVideo? get nextPlayback {
-    if (currentPlayback == null) return null;
+  // PlaybackVideo? get nextPlayback {
+  //   if (currentPlayback == null) return null;
 
-    final index = mapper[currentPlayback!.playbackId];
-    if (index == null || index == 0) return null; // Do danh sách time giảm dần từ 24h về 0h
+  //   final index = mapper[currentPlayback!.playbackId];
+  //   if (index == null || index == 0) return null; // Do danh sách time giảm dần từ 24h về 0h
 
-    return playbacks[index - 1];
-  }
+  //   return playbacks[index - 1];
+  // }
 
-  PlaybackVideo? get previousPlayback {
-    if (currentPlayback == null) return null;
+  // PlaybackVideo? get previousPlayback {
+  //   if (currentPlayback == null) return null;
 
-    final index = mapper[currentPlayback!.playbackId];
-    if (index == null || index == playbacks.length - 1) return null; // Do danh sách time giảm dần từ 24h về 0h
+  //   final index = mapper[currentPlayback!.playbackId];
+  //   if (index == null || index == playbacks.length - 1) return null; // Do danh sách time giảm dần từ 24h về 0h
 
-    return playbacks[index + 1];
-  }
+  //   return playbacks[index + 1];
+  // }
 
-  PlaybackVideo? binarySearch(DateTime target) {
-    if (playbacks.isEmpty) return null;
-    if (target.isAfter(playbacks.first.endTime)) return null;
-    if (target.isBefore(playbacks.last.startTime)) return null;
+  // PlaybackVideo? binarySearch(DateTime target) {
+  //   if (playbacks.isEmpty) return null;
+  //   if (target.isAfter(playbacks.first.endTime)) return null;
+  //   if (target.isBefore(playbacks.last.startTime)) return null;
 
-    int low = 0;
-    int high = playbacks.length - 1;
+  //   int low = 0;
+  //   int high = playbacks.length - 1;
 
-    while (low <= high) {
-      final mid = (low + high) >> 1;
-      final midItem = playbacks[mid];
+  //   while (low <= high) {
+  //     final mid = (low + high) >> 1;
+  //     final midItem = playbacks[mid];
 
-      if (target.isAfter(midItem.endTime)) {
-        high = mid - 1;
-      } else if (target.isBefore(midItem.startTime)) {
-        low = mid + 1;
-      } else {
-        return midItem;
-      }
-    }
+  //     if (target.isAfter(midItem.endTime)) {
+  //       high = mid - 1;
+  //     } else if (target.isBefore(midItem.startTime)) {
+  //       low = mid + 1;
+  //     } else {
+  //       return midItem;
+  //     }
+  //   }
 
-    return null;
-  }
+  //   return null;
+  // }
 }

@@ -107,4 +107,20 @@ class UserManagementRepository extends BaseRepository
       return Right(groups.toDomain());
     });
   }
+
+  @override
+  Future<Either<Failure, bool>> changeMyPassword({
+    required String current,
+    required String password,
+    bool? kickOthers,
+  }) async {
+    return await catchError<bool>(() async {
+      final value = await service.changeMyPassword(
+        current: current,
+        password: password,
+        kickOthers: kickOthers,
+      );
+      return Right(value);
+    });
+  }
 }

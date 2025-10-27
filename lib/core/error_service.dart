@@ -68,7 +68,7 @@ class ErrorService {
   static Future<void> record(
     String type,
     Object error,
-    StackTrace stack, {
+    StackTrace? stack, {
     String level = 'ERROR',
   }) async {
     if (_excludedErrors.contains(error.toString())) return;
@@ -78,7 +78,9 @@ class ErrorService {
 
     String message = "\n\n═══╡ [${level.toUpperCase()}] $timestamp ╞═══════════════";
     message += '\n[$type] ${Logger.stringifyObject(error)}\n';
-    message += stack.toString().split('\n').take(AppConfig.LOG_FILE_MAX_TRACE_LINES).join('\n');
+    if (stack != null) {
+      message += stack.toString().split('\n').take(AppConfig.LOG_FILE_MAX_TRACE_LINES).join('\n');
+    }
 
     await _logFile!.writeAsString(message, mode: FileMode.append);
   }

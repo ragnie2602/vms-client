@@ -8,6 +8,8 @@ extension DateUtilExtension on DateTime {
   bool get isToday =>
       DateTime.now().let((today) => year == today.year && month == today.month && day == today.day);
 
+  DateTime get roundToSecond => DateTime(year, month, day, hour, minute, second);
+
   String format(String pattern, {String? locale}) {
     return DateFormat(pattern, locale).format(this);
   }
