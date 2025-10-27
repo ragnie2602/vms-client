@@ -59,7 +59,7 @@ class RemoveCameraFromGroupWidget extends StatelessWidget {
                   style: AppTypography.style(
                     14,
                     color: AppColors.blackOrWhite,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 40),

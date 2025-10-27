@@ -91,15 +91,15 @@ class RemoveGroupCameraFailState extends GroupCameraState {
   String get errorMsg => message;
 }
 
-// class UpdateGroupCameraSuccessState extends GroupCameraState {
-//   final List<DeviceGroup>? groups;
-//   const UpdateGroupCameraSuccessState({required this.groups});
+class UpdateGroupCameraSuccessState extends GroupCameraState {
+  final List<DeviceGroup>? groups;
+  const UpdateGroupCameraSuccessState({required this.groups});
 
-//   @override
-//   StateType get type => StateType.success;
-//   @override
-//   List<Object?> get props => [groups];
-// }
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [groups];
+}
 
 class UpdateGroupCameraFailState extends GroupCameraState {
   final String message;

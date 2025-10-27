@@ -210,7 +210,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
   Future<void> _onShowDialogShareGroup({
     required BuildContext c,
     required List<int> groupId,
-    required String nameGroup
+    required String nameGroup,
   }) async {
     // If listShared not provided, fetch from bloc/repository
     List<InviteMessageEntity>? invites;
@@ -224,6 +224,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
       c,
       shareType: ShareType.groupCamera,
       groupId: groupId,
+      groupName: nameGroup,
       onReloadData: () async {
         return await c.read<GroupCameraBloc>().getListSharedGroup(
           groupId: groupId,
@@ -264,17 +265,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
           } else if (newState is GetAllGroupCameraFailState) {
             return Center(child: Text(newState.errorMsg));
           } else if (newState.type.isSuccess &&
-              (newState is GetAllGroupCameraSuccessState ||
-                  newState is AddGroupCameraSuccessState)) {
-            List<DeviceGroup> _listGroup = context
-                .watch<GroupCameraBloc>()
-                .listGroup;
-            // newState is GetAllGroupCameraSuccessState
-            // ? newState.groups ?? []
-            // : newState is AddGroupCameraSuccessState
-            // ? newState.groups ?? []
-            // : [];
-            TreeNode<DeviceGroup> _tree = _listGroup.convertTree;
+              newState is GetAllGroupCameraSuccessState) {
             return Container(
               margin: EdgeInsets.only(left: 1),
               padding: EdgeInsets.symmetric(vertical: 20),
@@ -312,8 +303,8 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                   switch (value) {
                                     case ItemGroupAction.add:
                                       _onShowDialogAddEditGroup(
-                                        listGroupInput: _listGroup,
-                                        // listGroupInput: newState.groups ?? [],
+                                        // listGroupInput: _listGroup,
+                                        listGroupInput: newState.groups ?? [],
                                         c: context,
                                         addEditType: AddEditGroupType.add,
                                         parentGroupId: node.data?.groupId,
@@ -321,8 +312,8 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                       break;
                                     case ItemGroupAction.edit:
                                       _onShowDialogAddEditGroup(
-                                        listGroupInput: _listGroup,
-                                        // listGroupInput: newState.groups ?? [],
+                                        // listGroupInput: _listGroup,
+                                        listGroupInput: newState.groups ?? [],
                                         c: context,
                                         parentGroupId: node.data?.parentGroupId,
                                         addEditType: AddEditGroupType.edit,
@@ -422,14 +413,14 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                       },
                       onClickAddGroup: () {
                         _onShowDialogAddEditGroup(
-                          listGroupInput: _listGroup,
-                          // listGroupInput: newState.groups ?? [],
+                          // listGroupInput: _listGroup,
+                          listGroupInput: newState.groups ?? [],
                           c: context,
                           addEditType: AddEditGroupType.add,
                         );
                       },
-                      tree: _tree,
-                      // tree: newState.tree,
+                      // tree: _tree,
+                      tree: newState.tree,
                       isShowGroupAll: true,
                       isShowNoGroup: true,
                       isClickAllGroup: isClickAllGroup,
