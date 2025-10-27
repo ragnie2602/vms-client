@@ -248,7 +248,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
         style: AppTypography.style(
           14,
           color: AppColors.blackOrWhite,
-          fontWeight: FontWeight.w700,
+          // fontWeight: FontWeight.w700,
         ),
       ),
       onClickRemove: () {
