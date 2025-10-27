@@ -451,17 +451,23 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       children: [
         Visibility(
           visible: _method != 'RTSP',
-          child: AppField(
-            controller: _onvifXaddrs,
-            hintText: 'Nhập địa chỉ ONVIF',
-            label: 'Địa chỉ ONVIF',
-            requiredField: true,
-            validator: (v) {
-              if (_method != 'RTSP' && (v == null || v.trim().isEmpty)) {
-                return 'Địa chỉ ONVIF không được để trống';
-              }
-              return null;
-            },
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              AppField(
+                controller: _onvifXaddrs,
+                hintText: 'Nhập địa chỉ ONVIF',
+                label: 'Địa chỉ ONVIF',
+                requiredField: true,
+                readOnly: widget.mode == CameraDialogMode.edit,
+                validator: (v) {
+                  if (_method != 'RTSP' && (v == null || v.trim().isEmpty)) {
+                    return 'Địa chỉ ONVIF không được để trống';
+                  }
+                  return null;
+                },
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
@@ -579,6 +585,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             CustomRadioButton(
               title: 'RTSP',
               value: 'RTSP',
+              readonly: widget.mode == CameraDialogMode.edit,
               groupValue: _method,
               onChanged: (value) {
                 if (value == null) return;
@@ -589,6 +596,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             CustomRadioButton(
               title: 'ONVIF',
               value: 'ONVIF',
+              readonly: widget.mode == CameraDialogMode.edit,
               groupValue: _method,
               onChanged: (value) {
                 if (value == null) return;
