@@ -18,6 +18,8 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     on<GetCameraAtPage>(_onGetCameraAtPage);
     on<GetAllCameraInGroup>(_onGetAllCameraInGroup);
     on<GetAllCameraNoGroup>(_onGetAllCameraNoGroup);
+
+    on<ResetFilter>(_onResetFilter);
   }
 
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
@@ -51,6 +53,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
           MonitorSuccess(
             cameras: cameras,
             mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
+            groupId: event.groupId,
           ),
         );
       },
@@ -77,6 +80,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
           MonitorSuccess(
             cameras: filteredCameras,
             mode: ViewMode.fitWithLength(filteredCameras.length, min: ViewMode.v2x2),
+            groupId: [],
           ),
         );
       },
@@ -86,7 +90,14 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   Future<void> _onGetCameraAtPage(GetCameraAtPage event, Emitter<MonitorState> emit) async {
     if (state is MonitorSuccess) {
       final preState = state as MonitorSuccess;
-      emit(MonitorSuccess(cameras: preState.cameras, mode: preState.mode, page: event.page));
+      emit(
+        MonitorSuccess(
+          cameras: preState.cameras,
+          mode: preState.mode,
+          page: event.page,
+          groupId: preState.groupId,
+        ),
+      );
       return;
     }
 
@@ -102,6 +113,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
             cameras: cameras,
             mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
             page: event.page,
+            groupId: null,
           ),
         );
       },
@@ -109,9 +121,16 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   }
 
   FutureOr<void> _onChangeGridMode(ChangeGridMode event, Emitter<MonitorState> emit) async {
-    if (state is! MonitorSuccess) return;
+    if (state is! MonitorSuccess) {
+      await _onGetAllCamera(GetAllCamera(mode: event.mode), emit);
+      return;
+    }
 
     final preState = state as MonitorSuccess;
     if (preState.mode != event.mode) emit(preState.copyWith(mode: event.mode, page: 1));
+  }
+
+  FutureOr<void> _onResetFilter(ResetFilter event, Emitter<MonitorState> emit) {
+    emit(MonitorInitial());
   }
 }

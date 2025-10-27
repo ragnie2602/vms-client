@@ -26,11 +26,12 @@ class MonitorSuccess extends MonitorState {
   final List<CameraEntity> cameras;
   final ViewMode mode;
   final int page;
+  final List<int>? groupId; // []: no grouped camera; null: all camera; other: grouped camera
 
-  const MonitorSuccess({required this.cameras, required this.mode, this.page = 1});
+  const MonitorSuccess({required this.cameras, required this.mode, this.page = 1, this.groupId});
 
   @override
-  List<Object?> get props => [cameras, mode, page];
+  List<Object?> get props => [cameras, mode, page, groupId];
   @override
   StateType get type => isEmpty ? StateType.empty : StateType.success;
   bool get isEmpty => cameras.isEmpty;
@@ -38,11 +39,17 @@ class MonitorSuccess extends MonitorState {
   List<CameraEntity> get paginatedCameras =>
       cameras.skip((page - 1) * mode.total).take(mode.total).toList();
 
-  MonitorSuccess copyWith({ViewMode? mode, List<CameraEntity>? cameras, int? page}) {
+  MonitorSuccess copyWith({
+    ViewMode? mode,
+    List<CameraEntity>? cameras,
+    int? page,
+    List<int>? groupId,
+  }) {
     return MonitorSuccess(
       cameras: cameras ?? this.cameras,
       mode: mode ?? this.mode,
       page: page ?? this.page,
+      groupId: groupId ?? this.groupId,
     );
   }
 }

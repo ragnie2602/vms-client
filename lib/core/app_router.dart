@@ -24,7 +24,7 @@ import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
 import '../screens/about/about_screen.dart';
-import '../screens/home/home_bloc.dart';
+import '../screens/home/bloc/home_bloc.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/login/bloc/login_bloc.dart';
 import '../screens/login/login_screen.dart';
@@ -115,8 +115,7 @@ class AppRouter {
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(
-              create: (context) =>
-                  MonitorBloc(context.read() ,context.read())..add(GetAllCamera()),
+              create: (context) => MonitorBloc(context.read() ,context.read()),
             ),
             BlocProvider(
               create: (context) => CustomViewBloc(

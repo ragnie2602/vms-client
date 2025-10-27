@@ -1,3 +1,4 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -68,8 +69,15 @@ class _AddCameraWidgetState extends State<AddCameraWidget> {
     if (_nameCameraController.text.isEmpty) {
       return widget.listCameraAvailable;
     } else {
+      String _key = removeDiacritics(
+        _nameCameraController.text.trim().toLowerCase(),
+      );
       return widget.listCameraAvailable
-          ?.where((camera) => camera.name.contains(_nameCameraController.text))
+          ?.where(
+            (camera) => removeDiacritics(
+              camera.name.trim().toLowerCase(),
+            ).contains(_key),
+          )
           .toList();
     }
   }
@@ -165,7 +173,9 @@ class _AddCameraWidgetState extends State<AddCameraWidget> {
                       child: (_listCameraAvailable ?? []).isEmpty
                           ? Center(
                               child: Text(
-                                'Không có kết quả phù hợp',
+                                _nameCameraController.text.isEmpty
+                                    ? 'Không có camera khả dụng để thêm vào nhóm'
+                                    : 'Không tìm thấy kết quả phù hợp',
                                 style: AppTypography.style(
                                   14,
                                   fontWeight: FontWeight.w400,

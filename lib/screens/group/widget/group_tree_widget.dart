@@ -75,7 +75,10 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
   // khi đang ở node khác mà mở action của node X cần tìm
   // để focus và update list cam (update dữ liệu)
   void _syncSelectedNodeFromProp() {
-    if (widget.selectedGroupId == null) return;
+    if (widget.selectedGroupId == null) {
+      setState(() => _selectedNode = null);
+      return;
+    }
     TreeNode<DeviceGroup>? foundNodeOnTree;
     void searchOnTree(TreeNode<DeviceGroup> node) {
       if (foundNodeOnTree != null) return;
@@ -214,10 +217,14 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                     },
                     splashColor: Colors.transparent,
                     child: Container(
+                      decoration: BoxDecoration(
+                        color: widget.isClickAllGroup == true
+                            ? AppColors.greyF2F4FA
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                       padding: EdgeInsets.symmetric(vertical: 8),
-                      color: widget.isClickAllGroup == true
-                          ? AppColors.greyF2F4FA
-                          : Colors.transparent,
+
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -255,9 +262,12 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                     splashColor: Colors.transparent,
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8),
-                      color: widget.isClickNoGroup == true
-                          ? AppColors.greyF2F4FA
-                          : Colors.transparent,
+                      decoration: BoxDecoration(
+                        color: widget.isClickNoGroup == true
+                            ? AppColors.greyF2F4FA
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

@@ -31,7 +31,12 @@ class GroupNode extends StatelessWidget {
         onTap: onTap ?? () {},
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 8),
-          color: isSelected == true ? AppColors.greyF2F4FA : Colors.transparent,
+          decoration: BoxDecoration(
+            color: isSelected == true
+                ? AppColors.greyF2F4FA
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(5),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

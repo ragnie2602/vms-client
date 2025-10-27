@@ -9,14 +9,14 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/shared/utils.dart';
 
 class ListCustomViews extends StatefulWidget {
   final Function(CustomLiveView)? onUpdate;
-  final VoidCallback? onSelectCustomView;
 
-  const ListCustomViews({super.key, this.onUpdate, this.onSelectCustomView});
+  const ListCustomViews({super.key, this.onUpdate});
 
   @override
   State<ListCustomViews> createState() => _ListCustomViewsState();
@@ -24,6 +24,7 @@ class ListCustomViews extends StatefulWidget {
 
 class _ListCustomViewsState extends State<ListCustomViews> {
   late final CustomViewBloc bloc;
+  late final MonitorBloc monitorBloc;
 
   final List<CustomLiveView> customViews = [];
 
@@ -32,6 +33,7 @@ class _ListCustomViewsState extends State<ListCustomViews> {
     super.initState();
 
     bloc = context.read<CustomViewBloc>()..add(GetListCustomViews());
+    monitorBloc = context.read<MonitorBloc>();
   }
 
   @override
@@ -62,6 +64,7 @@ class _ListCustomViewsState extends State<ListCustomViews> {
               itemBuilder: (context, index) => CustomViewItem(
                 key: ValueKey(customViews[index].id),
                 bloc: bloc,
+                monitorBloc: monitorBloc,
                 customView: customViews[index],
                 onUpdate: widget.onUpdate,
               ),
@@ -75,15 +78,15 @@ class _ListCustomViewsState extends State<ListCustomViews> {
 class CustomViewItem extends StatefulWidget {
   final CustomLiveView customView;
   final CustomViewBloc bloc;
+  final MonitorBloc? monitorBloc;
   final Function(CustomLiveView)? onUpdate;
-  final VoidCallback? onSelectCustomView;
 
   const CustomViewItem({
     super.key,
     required this.customView,
     required this.bloc,
+    this.monitorBloc,
     this.onUpdate,
-    this.onSelectCustomView,
   });
 
   @override
@@ -129,7 +132,6 @@ class _CustomViewItemState extends State<CustomViewItem> {
           onTap: () {
             if (isSelecting) return;
 
-            widget.onSelectCustomView?.call();
             if (GoRouterState.of(context).name != Routes.custom_live_view.name) {
               context.goNamed(
                 Routes.custom_live_view.name,
@@ -137,6 +139,7 @@ class _CustomViewItemState extends State<CustomViewItem> {
               );
             }
             widget.bloc.add(ShowCustomView(widget.customView, CustomMonitorPaneMode.view));
+            widget.monitorBloc?.add(ResetFilter());
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -300,61 +303,71 @@ class _CustomViewItemState extends State<CustomViewItem> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.blackOrWhiteReverse,
-                            elevation: 0,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                          ),
-                          child: Text(
-                            'Hủy',
-                            style: AppTypography.style(
-                              14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.blackOrWhite,
+                  BlocConsumer<CustomViewBloc, CustomViewState>(
+                    bloc: widget.bloc,
+                    listener: (context, state) {
+                      if (state is DeleteCustomViewSuccess) Navigator.pop(context);
+                    },
+                    builder: (context, state) {
+                      if (state is DeletingCustomView) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [CircularProgressIndicator(color: AppColors.blackOrWhite)],
+                        );
+                      }
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.blackOrWhiteReverse,
+                                elevation: 0,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                              ),
+                              child: Text(
+                                'Hủy',
+                                style: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.blackOrWhite,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
-                        child: ElevatedButton(
-                          onPressed: () => widget.bloc.add(DeleteCustomLiveView(customView.id)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.blackOrWhite,
-                            elevation: 0,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                          ),
-                          child: BlocConsumer<CustomViewBloc, CustomViewState>(
-                            bloc: widget.bloc,
-                            listener: (context, state) {
-                              if (state is DeleteCustomViewSuccess) Navigator.pop(context);
-                            },
-                            builder: (context, state) {
-                              if (state is DeletingCustomView) return CircularProgressIndicator();
-                              return Text(
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                            child: ElevatedButton(
+                              onPressed: () => widget.bloc.add(DeleteCustomLiveView(customView.id)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.blackOrWhite,
+                                elevation: 0,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                              child: Text(
                                 'Xóa',
                                 style: AppTypography.style(
                                   14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.blackOrWhiteReverse,
                                 ),
-                              );
-                            },
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),

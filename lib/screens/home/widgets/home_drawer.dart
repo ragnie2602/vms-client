@@ -9,7 +9,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
-import '../home_bloc.dart';
+import '../bloc/home_bloc.dart';
 import 'tile_expansion.dart';
 
 class HomeDrawer extends StatelessWidget {

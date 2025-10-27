@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 
 class AddEditCustomModePane extends StatefulWidget {
@@ -47,12 +48,6 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
     });
 
     _mode = customView?.base ?? ViewMode.v2x2;
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    super.dispose();
   }
 
   @override
@@ -131,18 +126,19 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                 borderRadius: BorderRadius.circular(4),
                 borderSide: BorderSide(color: Colors.red, width: 1),
               ),
+              errorMaxLines: 3,
+              errorStyle: AppTypography.style(12, fontWeight: FontWeight.w400, color: Colors.red),
+              errorText: _errorMessage,
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
                 borderSide: BorderSide(color: Colors.red, width: 1),
               ),
-              hintText: 'Nhập tên chế độ xem',
               hintStyle: AppTypography.style(
                 14,
                 fontWeight: FontWeight.w500,
                 color: AppColors.grey64748B,
               ),
-              errorText: _errorMessage,
-              errorStyle: AppTypography.style(12, fontWeight: FontWeight.w400, color: Colors.red),
+              hintText: 'Nhập tên chế độ xem',
             ),
             style: AppTypography.style(
               14,
@@ -186,88 +182,104 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
             ),
           ),
           SizedBox(height: 40),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => widget.onBack?.call(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blackOrWhiteReverse,
-                    elevation: 0,
-                    padding: EdgeInsets.symmetric(vertical: 22),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                    side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                  ),
-                  child: Text(
-                    'Hủy',
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.blackOrWhite,
+          BlocConsumer<CustomViewBloc, CustomViewState>(
+            listener: (context, state) {
+              if (state is CreateCustomViewSuccess || state is UpdateCustomViewSuccess) {
+                context.read<MonitorBloc>().add(ResetFilter());
+                widget.onBack?.call();
+              }
+            },
+            builder: (context, state) {
+              if (state is CreatingCustomView || state is UpdatingCustomView) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [CircularProgressIndicator(color: AppColors.blackOrWhite)],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => widget.onBack?.call(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.blackOrWhiteReverse,
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(vertical: 22),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                        side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                      ),
+                      child: Text(
+                        'Hủy',
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.blackOrWhite,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (nameController.text.isNotEmpty) {
-                      if (mode == CustomMonitorPaneMode.add) {
-                        bloc.add(
-                          CreateCustomView(
-                            base: _mode,
-                            name: nameController.text,
-                            positions: customView?.positions,
-                          ),
-                        );
-                      } else {
-                        bloc.add(
-                          UpdateCustomView(
-                            customView: customView!.copyWith(
-                              name: nameController.text,
-                              base: _mode,
-                            ),
-                          ),
-                        );
-                      }
-                    } else {
-                      setState(() => _errorMessage = 'Vui lòng nhập tên chế độ xem');
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blackOrWhite,
-                    elevation: 0,
-                    padding: EdgeInsets.symmetric(vertical: 22),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                  ),
-                  child: BlocConsumer<CustomViewBloc, CustomViewState>(
-                    listener: (context, state) {
-                      if (state is CreateCustomViewSuccess || state is UpdateCustomViewSuccess) {
-                        widget.onBack?.call();
-                      }
-                    },
-                    builder: (context, state) {
-                      if (state is CreatingCustomView || state is UpdatingCustomView) {
-                        return CircularProgressIndicator(color: AppColors.blackOrWhiteReverse);
-                      }
-
-                      return Text(
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (nameController.text.trim().isNotEmpty &&
+                            nameController.text.length <= 64) {
+                          if (mode == CustomMonitorPaneMode.add) {
+                            bloc.add(
+                              CreateCustomView(
+                                base: _mode,
+                                name: nameController.text,
+                                positions: customView?.positions,
+                              ),
+                            );
+                          } else {
+                            bloc.add(
+                              UpdateCustomView(
+                                customView: customView!.copyWith(
+                                  name: nameController.text,
+                                  base: _mode,
+                                ),
+                              ),
+                            );
+                          }
+                        } else if (nameController.text.trim().isNotEmpty) {
+                          setState(
+                            () =>
+                                _errorMessage = 'Vui lòng nhập tên chế độ xem không quá 64 ký tự!',
+                          );
+                        } else {
+                          setState(() => _errorMessage = 'Vui lòng nhập tên chế độ xem');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.blackOrWhite,
+                        elevation: 0,
+                        padding: EdgeInsets.symmetric(vertical: 22),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                      ),
+                      child: Text(
                         'Lưu',
                         style: AppTypography.style(
                           14,
                           fontWeight: FontWeight.w500,
                           color: AppColors.blackOrWhiteReverse,
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
   }
 }

@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_role.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
@@ -20,6 +21,11 @@ extension CameraTypeMapper on pb.CameraType {
 extension CameraStatusMapper on pb.Camera_Status {
   CameraStatus toDomain() {
     return CameraStatus.fromValue(value);
+  }
+}
+extension CameraRoleMapper on pb.Camera_Role{
+  CameraRole toDomain(){
+    return CameraRole.fromValue(value);
   }
 }
 
@@ -127,6 +133,7 @@ extension CameraMapper on pb.Camera {
       status: status.toDomain(),
       stream: streamUrl.toDomain(),
       onvif: onvif.toDomain(),
+      cameraRole: role.toDomain()
     );
   }
 }

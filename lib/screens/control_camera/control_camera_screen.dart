@@ -165,21 +165,31 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
-  void _onDeleteCamera({required List<int> cameraId}) {
-    context.read<ControlCameraBloc>().add(
-      DeleteCameraEvent(cameraId: cameraId),
+  void _onDeleteCamera({
+    required List<int> cameraId,
+    required String cameraName,
+  }) {
+    showDialogRemoveCameraFromGroup(
+      context,
+      title: cameraName,
+      onConfirm: () {
+        context.read<ControlCameraBloc>().add(
+          DeleteCameraEvent(cameraId: cameraId),
+        );
+      },
     );
   }
 
   void _showDialogRemoveCameraFromGroup({
     required BuildContext c,
     required List<int> cameraId,
+    required List<int> groupOwnerId,
   }) {
     showDialogRemoveCameraFromGroup(
       c,
       onConfirm: () {
         context.read<ControlCameraBloc>().add(
-          RemoveCameraFromGroupEvent(cameraId: cameraId),
+          RemoveCameraFromGroupEvent(cameraId: cameraId, groupId: groupOwnerId),
         );
       },
     );
@@ -621,6 +631,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               },
                                               onDelete: () => _onDeleteCamera(
                                                 cameraId: cameras[index].id,
+                                                cameraName: cameras[index].name,
                                               ),
                                               onShare: () async {
                                                 await _onShowDialogShareCamera(
@@ -632,6 +643,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                                 _showDialogRemoveCameraFromGroup(
                                                   c: context,
                                                   cameraId: cameras[index].id,
+                                                  groupOwnerId:
+                                                      cameras[index]
+                                                          .groupOwnerId ??
+                                                      [],
                                                 );
                                               },
                                             ),
