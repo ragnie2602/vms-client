@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
+import 'package:vms_flutter_client/screens/home/change_my_password_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/popup_menu.dart';
 
 class UserProfile extends StatefulWidget {
@@ -111,6 +112,12 @@ class _UserProfileState extends State<UserProfile> {
               onTap: () => ErrorService.openLogFile(),
               icon: Icons.article,
               title: 'Mở log file',
+            ),
+            Divider(height: 0.5, color: Colors.grey.shade300),
+             _buildMenuItem(
+              onTap: () => showChangeMyPasswordDialog(context),
+              icon: Icons.key,
+              title: 'Đổi mật khẩu',
             ),
             Divider(height: 0.5, color: Colors.grey.shade300),
             _buildMenuItem(

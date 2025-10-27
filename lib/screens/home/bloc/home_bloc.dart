@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 
-import '../../core/base_bloc.dart';
+import '../../../core/base_bloc.dart';
 
 class HomeTab {
   final Routes? route;
