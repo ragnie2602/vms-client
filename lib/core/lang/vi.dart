@@ -87,7 +87,7 @@ const Map<int, Map<String, String>> vi = {
   // checkAccountShare (502)
   502: {
     ..._commonErrors,
-    'ALREADY_INVITE': "Đã được mời",
+    'ALREADY_INVITE': "Tài khoản đã được chia sẻ",
     'TEL_INVALID': "Số điện thoại không hợp lệ",
     'EMAIL_INVALID': "Email không hợp lệ",
     'TEL_NOT_IN_USE': "Số điện thoại chưa được sử dụng",
