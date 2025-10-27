@@ -270,7 +270,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
-        contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+        contentPadding: const EdgeInsets.fromLTRB(24, 8, 8, 0),
         actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         title: Row(
           children: [
@@ -296,164 +296,170 @@ class _AddUserDialogState extends State<_AddUserDialog> {
         content: SizedBox(
           width: MediaQuery.of(context).size.width * 0.35,
           child: SingleChildScrollView(
-            child: Form(
-              key: _form,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  // Tài khoản
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: AppField(
-                          controller: _username,
-                          hintText: 'Nhập tài khoản',
-                          label: 'Tên đăng nhập',
-                          requiredField: true,
-                          validator: (v) => v!.isEmpty ? 'Tên đăng nhập không được để trống' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: AppField(
-                          controller: _password,
-                          hintText: 'Nhập mật khẩu (*)',
-                          label: 'Mật khẩu',
-                          requiredField: true,
-                          obscureText: _obscurePassword,
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Mật khẩu không được để trống';
-                            }
-                            if (v.contains(' ')) {
-                              return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
-                            }
-                            if (v.length < 8 || v.length > 16) {
-                              return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
-                            }
-                            return null;
-                          },
-                          suffix: IconButton(
-                            icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                            iconSize: 20,
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Form(
+                key: _form,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
+                    // Tài khoản
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: AppField(
+                            controller: _username,
+                            hintText: 'Nhập tài khoản',
+                            label: 'Tên đăng nhập',
+                            requiredField: true,
+                            validator: (v) =>
+                                v!.isEmpty ? 'Tên đăng nhập không được để trống' : null,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: AppField(
-                          controller: _email,
-                          hintText: 'Nhập email',
-                          label: 'Email',
-                          keyboardType: TextInputType.emailAddress,
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return null; // Email không bắt buộc
-                            }
-                            // Regex kiểm tra định dạng email
-                            final emailRegex = RegExp(
-                              r'^(?=^.{1,64}@)[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*@(?=.{2,255}$)[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$',
-                            );
-                            if (!emailRegex.hasMatch(v)) {
-                              return 'Email không đúng định dạng';
-                            }
-                            return null;
-                          },
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: AppField(
+                            controller: _password,
+                            hintText: 'Nhập mật khẩu (*)',
+                            label: 'Mật khẩu',
+                            requiredField: true,
+                            obscureText: _obscurePassword,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return 'Mật khẩu không được để trống';
+                              }
+                              if (v.contains(' ')) {
+                                return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                              }
+                              if (v.length < 8 || v.length > 16) {
+                                return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                              }
+                              return null;
+                            },
+                            suffix: IconButton(
+                              icon: Icon(
+                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              ),
+                              iconSize: 20,
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: AppField(
-                          controller: _phoneNumber,
-                          hintText: 'Nhập số điện thoại',
-                          label: 'Số điện thoại',
-                          keyboardType: TextInputType.phone,
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return null; // Số điện thoại không bắt buộc
-                            }
-                            // Regex kiểm tra định dạng số điện thoại Việt Nam
-                            // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
-                            final phoneRegex = RegExp(r'^(84|0)(3|5|7|8|9)\d{8,9}$');
-                            if (!phoneRegex.hasMatch(v)) {
-                              return 'Số điện thoại không đúng định dạng';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Số điện thoại
-                  const SizedBox(height: 12),
-                  // Họ và tên
-                  AppField(controller: _fullName, hintText: 'Nhập họ và tên', label: 'Họ và tên'),
-                  const SizedBox(height: 16),
-                  // Loại tài khoản
-                  _buildDropdownField(
-                    label: 'Loại tài khoản',
-                    value: _accountType,
-                    items: const [
-                      {'value': 'admin', 'label': 'Tài khoản Admin'},
-                      {'value': 'normal', 'label': 'Tài khoản thường'},
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _accountType = value!;
-                        // Reset permissions khi chuyển sang admin
-                        if (_accountType == 'admin') {
-                          _canChangePassword = false;
-                          _canAddCamera = false;
-                        }
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Checkboxes - chỉ hiện với tài khoản thường
-                  if (!isAdminAccount) ...[
-                    _buildCheckboxRow(
-                      label: 'Cho phép đổi mật khẩu',
-                      value: _canChangePassword,
-                      onChanged: (value) {
-                        setState(() => _canChangePassword = value ?? false);
-                      },
+                      ],
                     ),
                     const SizedBox(height: 12),
-                    _buildCheckboxRow(
-                      label: 'Cho phép thêm camera',
-                      value: _canAddCamera,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: AppField(
+                            controller: _email,
+                            hintText: 'Nhập email',
+                            label: 'Email',
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return null; // Email không bắt buộc
+                              }
+                              // Regex kiểm tra định dạng email
+                              final emailRegex = RegExp(
+                                r'^(?=^.{1,64}@)[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*@(?=.{2,255}$)[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$',
+                              );
+                              if (!emailRegex.hasMatch(v)) {
+                                return 'Email không đúng định dạng';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: AppField(
+                            controller: _phoneNumber,
+                            hintText: 'Nhập số điện thoại',
+                            label: 'Số điện thoại',
+                            keyboardType: TextInputType.phone,
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
+                                return null; // Số điện thoại không bắt buộc
+                              }
+                              // Regex kiểm tra định dạng số điện thoại Việt Nam
+                              // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
+                              final phoneRegex = RegExp(r'^(84|0)(3|5|7|8|9)\d{8,9}$');
+                              if (!phoneRegex.hasMatch(v)) {
+                                return 'Số điện thoại không đúng định dạng';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Số điện thoại
+                    const SizedBox(height: 12),
+                    // Họ và tên
+                    AppField(controller: _fullName, hintText: 'Nhập họ và tên', label: 'Họ và tên'),
+                    const SizedBox(height: 16),
+                    // Loại tài khoản
+                    _buildDropdownField(
+                      label: 'Loại tài khoản',
+                      value: _accountType,
+                      items: const [
+                        {'value': 'admin', 'label': 'Tài khoản Admin'},
+                        {'value': 'normal', 'label': 'Tài khoản thường'},
+                      ],
                       onChanged: (value) {
-                        setState(() => _canAddCamera = value ?? false);
+                        setState(() {
+                          _accountType = value!;
+                          // Reset permissions khi chuyển sang admin
+                          if (_accountType == 'admin') {
+                            _canChangePassword = false;
+                            _canAddCamera = false;
+                          }
+                        });
                       },
                     ),
                     const SizedBox(height: 16),
-                  ],
-                  // Mô tả
-                  AppField(
-                    controller: _description,
-                    hintText: 'Nhập ghi chú',
-                    label: 'Ghi chú',
-                    maxLines: 4,
-                    maxLength: 250,
-                  ),
-                  const SizedBox(height: 16),
 
-                  // Email
-                ],
+                    // Checkboxes - chỉ hiện với tài khoản thường
+                    if (!isAdminAccount) ...[
+                      _buildCheckboxRow(
+                        label: 'Cho phép đổi mật khẩu',
+                        value: _canChangePassword,
+                        onChanged: (value) {
+                          setState(() => _canChangePassword = value ?? false);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      _buildCheckboxRow(
+                        label: 'Cho phép thêm camera',
+                        value: _canAddCamera,
+                        onChanged: (value) {
+                          setState(() => _canAddCamera = value ?? false);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    // Mô tả
+                    AppField(
+                      controller: _description,
+                      hintText: 'Nhập ghi chú',
+                      label: 'Ghi chú',
+                      maxLines: 4,
+                      maxLength: 250,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Email
+                  ],
+                ),
               ),
             ),
           ),
