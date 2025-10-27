@@ -65,3 +65,13 @@ class DeviceGroup {
     return ans;
   }
 }
+
+extension TreeGroupExt on List<DeviceGroup> {
+  TreeNode<DeviceGroup> get convertTree {
+    TreeNode<DeviceGroup> tree = TreeNode.root();
+    for (var group in this) {
+      tree.add(group.toTreeNode());
+    }
+    return tree;
+  }
+}
