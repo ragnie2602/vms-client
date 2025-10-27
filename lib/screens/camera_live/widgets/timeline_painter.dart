@@ -6,10 +6,11 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 
-class PlayerTimelinePainter extends CustomPainter {
+class TimelinePainter extends CustomPainter {
   final DateTime? startDate;
   final DateTime? endDate;
   final ValueNotifier<DateTime> _centralDate;
+  final DateTime currentTime;
   final List<PlaybackVideo> playbacks;
 
   final void Function(double offset)? onCentralOffset;
@@ -18,6 +19,7 @@ class PlayerTimelinePainter extends CustomPainter {
   final TextStyle normalStyle;
   final TextStyle highlightStyle;
   final String formatPattern;
+  final bool showMinorTickTime;
 
   /// Chiều cao của vạch chính (vạch cao, hiển thị thời gian)
   final double? majorTickHeight;
@@ -58,7 +60,7 @@ class PlayerTimelinePainter extends CustomPainter {
     ..strokeWidth = tickWidth;
   late final Paint rectLinePaint;
 
-  PlayerTimelinePainter({
+  TimelinePainter({
     this.onCentralOffset,
     this.majorTickHeight,
     this.minorTickHeight,
@@ -66,9 +68,11 @@ class PlayerTimelinePainter extends CustomPainter {
     required this.tickGap,
     required this.tickWidth,
     required this.interval,
+    this.showMinorTickTime = false,
     this.startDate,
     this.endDate,
     required ValueNotifier<DateTime> centralDate,
+    required this.currentTime,
     required this.formatPattern,
     required this.normalStyle,
     required this.highlightStyle,
@@ -88,8 +92,9 @@ class PlayerTimelinePainter extends CustomPainter {
        super(repaint: centralDate);
 
   @override
-  bool shouldRepaint(covariant PlayerTimelinePainter oldDelegate) {
+  bool shouldRepaint(covariant TimelinePainter oldDelegate) {
     return oldDelegate.playbacks != playbacks ||
+        oldDelegate.currentTime != currentTime ||
         oldDelegate.interval != interval ||
         oldDelegate.tickGap != tickGap;
   }
@@ -148,6 +153,9 @@ class PlayerTimelinePainter extends CustomPainter {
         textSize = _drawTime(canvas, size, offsetX, displayDate, true);
         index = minorTickCount;
         displayDate = displayDate.subtract(interval);
+      } else if (showMinorTickTime) {
+        // Vẽ major cuối cùng trước --> displayDate đã bị trừ interval rồi --> add
+        textSize = _drawTime(canvas, size, offsetX, displayDate.add(minorInterval * index), true);
       }
 
       _drawTick(canvas, size, offsetX, isMajorTick, true, textSize);
@@ -165,6 +173,15 @@ class PlayerTimelinePainter extends CustomPainter {
         index = 0;
         textSize = _drawTime(canvas, size, offsetX, displayDate, false);
         displayDate = displayDate.add(interval);
+      } else if (showMinorTickTime) {
+        // Vẽ major đầu tiên trước --> displayDate đã được add interval rồi --> trừ
+        textSize = _drawTime(
+          canvas,
+          size,
+          offsetX,
+          displayDate.subtract(minorInterval * (minorTickCount - index)),
+          true,
+        );
       }
 
       // Vẽ bên trái central
@@ -172,7 +189,8 @@ class PlayerTimelinePainter extends CustomPainter {
     }
 
     // Vẽ central
-    _drawCurrentTick(canvas, size, 0);
+    _drawCurrentTick(canvas, size, _getOffset(currentTime, central));
+    onCentralOffset?.call(0);
   }
 
   void _drawTimelineFromStart(Canvas canvas, Size size, double centralOffsetX) {
@@ -192,16 +210,34 @@ class PlayerTimelinePainter extends CustomPainter {
 
       Size textSize = Size.zero;
       if (isMajorTick) {
-        textSize = _drawTime(canvas, size, offsetX, displayDate, isHighlighted, isFirst: i == 0);
+        textSize = _drawTime(
+          canvas,
+          size,
+          offsetX,
+          displayDate,
+          isHighlighted,
+          isFirst: i == 0,
+          isLast: displayDate == endDate,
+        );
         index = 0;
         displayDate = displayDate.add(interval);
+      } else if (showMinorTickTime) {
+        // Vẽ major đầu tiên trước --> displayDate đã được add interval rồi --> trừ
+        textSize = _drawTime(
+          canvas,
+          size,
+          offsetX,
+          displayDate.subtract(minorInterval * (minorTickCount - index)),
+          true,
+        );
       }
 
       _drawTick(canvas, size, offsetX, isMajorTick, isHighlighted, textSize);
     }
 
     // Vẽ central --> offset convert về sát 0 do check = 0 thì tương ứng với center
-    _drawCurrentTick(canvas, size, max(centralOffsetX, 0.0000000001));
+    _drawCurrentTick(canvas, size, _getOffset(currentTime, startDate!));
+    onCentralOffset?.call(max(centralOffsetX, 0.0000000001) - size.width / 2);
   }
 
   void _drawTimelineFromEnd(Canvas canvas, Size size, double centralOffsetX) {
@@ -223,13 +259,17 @@ class PlayerTimelinePainter extends CustomPainter {
         textSize = _drawTime(canvas, size, j, displayDate, isHighlighted, isLast: i == 0);
         index = 0;
         displayDate = displayDate.subtract(interval);
+      } else if (showMinorTickTime) {
+        // Vẽ major cuối cùng trước --> displayDate đã bị trừ interval rồi --> add
+        textSize = _drawTime(canvas, size, j, displayDate.add(minorInterval * index), true);
       }
 
       _drawTick(canvas, size, j, isMajorTick, isHighlighted, textSize);
     }
 
     // Vẽ central
-    _drawCurrentTick(canvas, size, centralOffsetX);
+    _drawCurrentTick(canvas, size, size.width - _getOffset(currentTime, endDate!).abs());
+    onCentralOffset?.call(centralOffsetX - size.width / 2);
   }
 
   /*  */
@@ -297,10 +337,6 @@ class PlayerTimelinePainter extends CustomPainter {
   }
 
   void _drawCurrentTick(Canvas canvas, Size size, double offsetX) {
-    // Vẽ từ giữa thì offset tính từ giữa luôn -- size.width sẽ là 1/2 timelineWidth
-    // Vẽ từ trái/phải thì offset tính từ trái/phải -- size.width sẽ là timelineWidth
-    onCentralOffset?.call(offsetX == 0 ? 0 : offsetX - size.width / 2);
-
     canvas.drawPath(
       _path
         ..reset()
@@ -315,7 +351,7 @@ class PlayerTimelinePainter extends CustomPainter {
 
     double currentOffset = centralOffsetX;
     DateTime comparedTime = central;
-    for (final playback in playbacks) {
+    for (final playback in playbacks.reversed) {
       final endOffset = _getOffset(playback.endTime, comparedTime);
       final durationOffset = _getOffset(playback.endTime, playback.startTime);
 

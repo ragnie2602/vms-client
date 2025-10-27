@@ -12,7 +12,7 @@ part 'monitor_event.dart';
 part 'monitor_state.dart';
 
 class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
-  MonitorBloc(this.filterCameraNoGroupUseCase ,this.cameraRepository) : super(MonitorInitial()) {
+  MonitorBloc(this.filterCameraNoGroupUseCase, this.cameraRepository) : super(MonitorInitial()) {
     on<GetAllCamera>(_onGetAllCamera);
     on<ChangeGridMode>(_onChangeGridMode);
     on<GetCameraAtPage>(_onGetCameraAtPage);
@@ -31,17 +31,15 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         emit(MonitorFailure(failure.toString()));
       },
       (cameras) {
-        emit(
-          MonitorSuccess(
-            cameras: cameras,
-            mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
-          ),
-        );
+        emit(MonitorSuccess(cameras: cameras, mode: ViewMode.v2x2));
       },
     );
   }
 
-  FutureOr<void> _onGetAllCameraInGroup(GetAllCameraInGroup event, Emitter<MonitorState> emit) async {
+  FutureOr<void> _onGetAllCameraInGroup(
+    GetAllCameraInGroup event,
+    Emitter<MonitorState> emit,
+  ) async {
     emit(MonitorLoading());
 
     (await cameraRepository.getAllCamerasInGroup(groupId: event.groupId)).fold(
@@ -88,13 +86,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   Future<void> _onGetCameraAtPage(GetCameraAtPage event, Emitter<MonitorState> emit) async {
     if (state is MonitorSuccess) {
       final preState = state as MonitorSuccess;
-      emit(
-        MonitorSuccess(
-            cameras: preState.cameras,
-            mode: preState.mode,
-            page: event.page,
-          )
-      );
+      emit(MonitorSuccess(cameras: preState.cameras, mode: preState.mode, page: event.page));
       return;
     }
 

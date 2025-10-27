@@ -11,17 +11,10 @@ final class GetVideoPlaybacks extends PlaybackEvent {
   const GetVideoPlaybacks(this.id, this.date);
 }
 
-class SetPlaybackAtTime extends PlaybackEvent {
-  final DateTime time;
-
-  const SetPlaybackAtTime(this.time);
-}
-
 class ChangePlayback extends PlaybackEvent {
-  final PlaybackVideo playback;
-  final int? currentDuration;
+  final int index;
 
-  const ChangePlayback(this.playback, {this.currentDuration});
+  const ChangePlayback(this.index);
 }
 
 class DownloadPlayback extends PlaybackEvent {

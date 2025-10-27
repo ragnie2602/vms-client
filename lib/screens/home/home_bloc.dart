@@ -17,7 +17,7 @@ class HomeTab {
   static final tabs = [
     HomeTab(Routes.monitoring, title: 'Liveview', svg: AppAssets.tabMonitor),
     HomeTab(Routes.playback, title: 'Playback', svg: AppAssets.tabPlayback),
-    HomeTab(Routes.addGroupCamera, title: 'Quản lý nhóm camera', svg: AppAssets.tabCameraGroups),
+    HomeTab(Routes.addGroupCamera, title: 'Quản lý camera', svg: AppAssets.tabCameraGroups),
     HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
     // HomeTab(Routes.setting, title: 'Cấu hình hệ thống', svg: AppAssets.tabSettings),
     HomeTab(Routes.about, title: 'Thông tin ứng dụng', svg: AppAssets.tabInfo),

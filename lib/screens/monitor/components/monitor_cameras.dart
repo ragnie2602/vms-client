@@ -112,11 +112,15 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                     builder: (context, value, child) {
                       final cameras = state.cameras.where(_filterFunc).toList();
 
+                      if (cameras.isEmpty && value.text.isNotEmpty) {
+                        return _buildSearchEmpty();
+                      }
+
                       return ListView.builder(
                         padding: EdgeInsets.only(bottom: 20),
                         primary: true,
                         itemCount: cameras.length,
-                        itemBuilder: (context, index) => _cameraItem(context ,cameras[index]),
+                        itemBuilder: (context, index) => _cameraItem(context, cameras[index]),
                       );
                     },
                   ),
@@ -125,6 +129,15 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSearchEmpty() {
+    return Center(
+      child: Text(
+        'Không có dữ liệu hiển thị',
+        style: AppTypography.style(14, fontWeight: FontWeight.w600, color: AppColors.blackOrWhite),
       ),
     );
   }
