@@ -173,7 +173,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   }) {
     showDialogRemoveCameraFromGroup(
       context,
-      title: cameraName,
+      title: 'xóa camera này khỏi hệ thống?',
       onConfirm: () {
         context.read<ControlCameraBloc>().add(
           DeleteCameraEvent(cameraId: cameraId),
@@ -255,6 +255,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           curr is DeleteCameraSuccessState ||
           curr is ListCameraSuccessState ||
           curr is RemoveCameraFromGroupFailState ||
+          curr is RemoveCameraFromGroupSuccessState ||
           curr is ListShareCameraSuccessState ||
           curr is UpdateCameraSuccessState,
       listener: (context, state) {
@@ -263,6 +264,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
             context,
             message: state.errorMsg,
             type: AppMessageType.error,
+          );
+        }
+        if (state is RemoveCameraFromGroupSuccessState) {
+          ToastUtil.toastSuccess(
+            context: context,
+            title: Text('Xóa thành công'),
           );
         }
         if (state is DeleteCameraSuccessState) {

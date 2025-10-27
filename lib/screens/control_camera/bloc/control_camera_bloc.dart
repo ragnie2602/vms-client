@@ -352,6 +352,8 @@ class ControlCameraBloc
         final updated = List<CameraEntity>.from(listCamera)
           ..removeWhere((camera) => listEquals(event.cameraId, camera.id));
         listCamera = updated;
+        //
+        emit (RemoveCameraFromGroupSuccessState(updated));
         emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(updated)));
       },
     );

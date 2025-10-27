@@ -55,7 +55,7 @@ class RemoveCameraFromGroupWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  title ?? 'camera khỏi nhóm',
+                  title ?? 'camera này khỏi nhóm?',
                   style: AppTypography.style(
                     14,
                     color: AppColors.blackOrWhite,

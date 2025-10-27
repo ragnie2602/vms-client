@@ -137,3 +137,11 @@ class RemoveCameraFromGroupFailState extends ControlCameraState {
   @override
   String get errorMsg => message;
 }
+class RemoveCameraFromGroupSuccessState extends ControlCameraState {
+ final List<CameraEntity> cameras;
+  const RemoveCameraFromGroupSuccessState(this.cameras);
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [cameras];
+}
