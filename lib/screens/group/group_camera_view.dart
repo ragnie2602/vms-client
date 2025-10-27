@@ -210,6 +210,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
   Future<void> _onShowDialogShareGroup({
     required BuildContext c,
     required List<int> groupId,
+    required String nameGroup
   }) async {
     // If listShared not provided, fetch from bloc/repository
     List<InviteMessageEntity>? invites;
@@ -333,6 +334,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                         await _onShowDialogShareGroup(
                                           c: context,
                                           groupId: node.data!.groupId,
+                                          nameGroup: node.data!.name
                                         );
                                       }
                                       break;
