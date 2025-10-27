@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
@@ -37,7 +38,10 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
           listener: (context, state) {
             if (state.isSuccess) {
               Navigator.pop(context, true);
-              showAppMessageDialog(context, message: 'Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!');
+              ToastUtil.toastSuccess(
+                context: context,
+                title: Text('Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!', maxLines: 5,),
+              );
               context.read<SocketApiClient>().disconnect();
               context.goNamed(Routes.login.name);
 
