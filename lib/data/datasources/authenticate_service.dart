@@ -119,6 +119,8 @@ class AuthenticateService {
           AppData.instance.profile = MyProfile(
             avatar: loginReply.baseImageUrl,
             displayName: loginReply.profile.displayName,
+            addCamDenied: loginReply.profile.addCamDenied,
+            changePassDenied: loginReply.profile.changePassDenied,
           );
 
           return true;

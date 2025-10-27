@@ -13,11 +13,15 @@ import 'core/app_router.dart';
 import 'core/env_service.dart';
 import 'di/dependency_injection.dart';
 import 'package:fvp/fvp.dart' as fvp;
+import 'package:media_kit/media_kit.dart';
 
 void main() async {
   ErrorService.initGlobalErrorHandler(() async {
-    initializeDateFormatting('vi');
     // WidgetsFlutterBinding.ensureInitialized() --> Đã được gọi trước đó initGlobalErrorHandler
+    initializeDateFormatting('vi');
+
+    // Initialize media_kit for video playback
+    MediaKit.ensureInitialized();
 
     // Fvp: Only for windows
     fvp.registerWith(

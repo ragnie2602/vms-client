@@ -33,4 +33,9 @@ abstract class IUserManagementRepository {
     bool? changePassDenied,
     bool? addCamDenied,
   });
+  Future<Either<Failure, bool>> changeMyPassword({
+    required String current,
+    required String password,
+    bool? kickOthers,
+  });
 }

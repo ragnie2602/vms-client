@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
 import '../../components/player_timeline.dart';
+import '../../widgets/playback_player.dart';
 
 part 'camera_live_event.dart';
 part 'camera_live_state.dart';
@@ -18,13 +18,12 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
         CameraLiveState(
           mode: mode,
           camera: camera,
-          ref: GlobalKey<CameraPlayerState>(),
           playbackDate: DateTime.now(),
+          playbackController: PlaybackController(),
         ),
       ) {
     on<ChangeViewMode>(_onChaneViewMode);
     on<ChangeCamera>(_onChangeCamera);
-    on<ChangePlayerSource>(_onChangePlayerSource, transformer: sequential());
     on<ChangePlayerStatus>(_onChangePlayerStatus);
     on<SeekPlayer>(_onSeekPlayer, transformer: sequential());
     on<ChangeVolume>(_onChangeVolume, transformer: sequential());
@@ -38,8 +37,8 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
     emit(
       state.copyWith(
         mode: event.mode,
-        ref: GlobalKey<CameraPlayerState>(),
         playbackDate: DateTime.now(),
+        playbackController: PlaybackController(), // Instance mới
       ),
     );
   }
@@ -50,16 +49,6 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
     emit(state.copyWith(camera: event.camera));
   }
 
-  FutureOr<void> _onChangePlayerSource(
-    ChangePlayerSource event,
-    Emitter<CameraLiveState> emit,
-  ) async {
-    await state.ref.currentState?.switchSource(
-      event.source,
-      position: event.position,
-    );
-  }
-
   FutureOr<void> _onChangePlayerStatus(ChangePlayerStatus event, Emitter<CameraLiveState> emit) {
     if (state.status == event.status) return null;
 
@@ -67,16 +56,16 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
   }
 
   FutureOr<void> _onSeekPlayer(SeekPlayer event, Emitter<CameraLiveState> emit) async {
-    await state.ref.currentState?.seek(event.amount.inMilliseconds, event.type);
+    await state.playbackController.ref.currentState?.seek(event.amount);
   }
 
   FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraLiveState> emit) async {
-    if (event.mute != null) {
-      state.ref.currentState?.player.mute = event.mute!;
-    }
+    // if (event.mute != null) {
+    //   state.ref.currentState?.player.mute = event.mute!;
+    // }
 
-    state.ref.currentState?.player.volume = event.volume.clamp(0.0, 1.0);
-    emit(state.copyWith(volume: event.volume));
+    // state.ref.currentState?.player.volume = event.volume.clamp(0.0, 1.0);
+    // emit(state.copyWith(volume: event.volume));
   }
 
   FutureOr<void> _onChangePlaybackDate(

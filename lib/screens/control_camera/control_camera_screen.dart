@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/share_camera_role_enum.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
@@ -451,6 +453,17 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                         const SizedBox(width: 25),
                         InkWell(
                           onTap: () {
+                            if (AppData.instance.profile?.addCamDenied ??
+                                false) {
+                              ToastUtil.toastFail(
+                                context: context,
+                                title: Text(
+                                  'Bạn không có quyền sử dụng chức năng này!',
+                                  maxLines: 5,
+                                ),
+                              );
+                              return;
+                            }
                             showAddCameraRtspDialog(
                               context,
                               onSubmit: (payload) async {
