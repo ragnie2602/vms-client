@@ -4,6 +4,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 
 class ItemUserWidget extends StatelessWidget {
   const ItemUserWidget({
@@ -31,11 +32,7 @@ class ItemUserWidget extends StatelessWidget {
             child: Center(
               child: Text(
                 '$index',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.black,
-                ),
+                style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
               ),
             ),
           ),
@@ -102,7 +99,9 @@ class ItemUserWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                itemUser.type.name,
+                itemUser.type == UserType.admin || itemUser.type == UserType.admin_client
+                    ? 'Tài khoản admin'
+                    : 'Tài khoản thường',
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
@@ -177,20 +176,12 @@ class ItemUserWidget extends StatelessWidget {
                       children: [
                         SvgPicture.asset(AppAssets.icDelete),
                         SizedBox(width: 8),
-                        Text(
-                          'Xóa',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        Text('Xóa', style: AppTypography.style(14, fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
                 ],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 elevation: 8,
               ),
             ),
