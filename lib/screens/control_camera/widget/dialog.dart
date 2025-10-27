@@ -319,8 +319,12 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                   AppField(
                     controller: _name,
                     hintText: 'Nhập tên camera',
-                    validator: (v) =>
-                        v!.isEmpty ? 'Tên camera không được để trống' : null,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Tên camera không được để trống';
+                      }
+                      return null;
+                    },
                     label: 'Tên camera',
                     requiredField: true,
                     maxLength: 50,
@@ -502,6 +506,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 suffix: IconButton(
                   icon: Icon(
                     _obscure ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.black,
                   ),
                   onPressed: _togglePasswordVisibility,
                 ),
@@ -583,8 +588,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         Row(
           children: [
             CustomRadioButton(
-              title: 'RTSP',
-              value: 'RTSP',
+              title: 'ONVIF',
+              value: 'ONVIF',
               readonly: widget.mode == CameraDialogMode.edit,
               groupValue: _method,
               onChanged: (value) {
@@ -594,8 +599,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             ),
             const SizedBox(width: 24),
             CustomRadioButton(
-              title: 'ONVIF',
-              value: 'ONVIF',
+              title: 'RTSP',
+              value: 'RTSP',
               readonly: widget.mode == CameraDialogMode.edit,
               groupValue: _method,
               onChanged: (value) {
