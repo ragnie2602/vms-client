@@ -247,8 +247,8 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
       c,
       contentWidget: Text(
         widget.shareType == ShareType.groupCamera
-            ? 'chia sẻ nhóm camera cho tài khoản này'
-            : 'chia sẻ camera cho tài khoản này',
+            ? 'chia sẻ nhóm camera cho tài khoản này?'
+            : 'chia sẻ camera cho tài khoản này?',
         style: AppTypography.style(
           14,
           color: AppColors.blackOrWhite,

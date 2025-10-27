@@ -26,8 +26,12 @@ class SeekPlayer extends CameraLiveEvent {
 
 class ChangeVolume extends CameraLiveEvent {
   final double volume;
-  final bool? mute;
-  const ChangeVolume(this.volume, {this.mute});
+  const ChangeVolume(this.volume);
+}
+
+class ChangeSpeed extends CameraLiveEvent {
+  final double speed;
+  const ChangeSpeed(this.speed);
 }
 
 class ChangePlaybackDate extends CameraLiveEvent {

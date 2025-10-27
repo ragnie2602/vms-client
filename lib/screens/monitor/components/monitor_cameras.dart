@@ -176,7 +176,6 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                           fontWeight: FontWeight.w600,
                           color: AppColors.blackOrWhite,
                         ),
-                        maxLines: 1,
                         overflow: TextOverflow.visible,
                       ),
                       SizedBox(height: 6),

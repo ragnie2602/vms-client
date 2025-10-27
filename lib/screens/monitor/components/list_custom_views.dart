@@ -160,7 +160,6 @@ class _CustomViewItemState extends State<CustomViewItem> {
                       fontWeight: FontWeight.w500,
                       color: AppColors.blackOrWhite,
                     ),
-                    maxLines: 1,
                     overflow: TextOverflow.visible,
                   ),
                 ),

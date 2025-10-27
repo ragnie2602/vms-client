@@ -72,13 +72,13 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       parentGroupId: event.parentGroupId,
     );
     groups.fold(
-      (onFailure) =>{
+      (onFailure) => {
         //  emit(AddGroupCameraFailState(groups.left.toString()))
       },
       (onSuccess) {
         listGroup = onSuccess ?? [];
-        // emit(GetAllGroupCameraSuccessState(groups: groups.right));
         emit(AddGroupCameraSuccessState(groups: listGroup));
+        emit(GetAllGroupCameraSuccessState(groups: groups.right));
       },
     );
   }
@@ -94,6 +94,7 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       (onFailure) => emit(RemoveGroupCameraFailState(groups.left.toString())),
       (onSuccess) {
         listGroup = onSuccess ?? [];
+        emit(RemoveGroupCameraSuccessState(groups: listGroup));
         emit(GetAllGroupCameraSuccessState(groups: groups.right));
       },
     );
@@ -112,6 +113,7 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       (onFailure) => emit(UpdateGroupCameraFailState(groups.left.toString())),
       (onSuccess) {
         listGroup = onSuccess ?? [];
+        emit(UpdateGroupCameraSuccessState(groups: listGroup));
         emit(GetAllGroupCameraSuccessState(groups: groups.right));
       },
     );
