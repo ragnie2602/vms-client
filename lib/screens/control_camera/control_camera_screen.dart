@@ -216,7 +216,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         return context.read<ControlCameraBloc>().shareCamera(
           camId: camera.id,
           role: ShareCameraRoleExtension.getShareCameraRoleValue(
-            ShareCameraRole.FULL,
+            ShareCameraRole.VIEW,
           ),
           accountInvite: _accountNameInvite,
         );
