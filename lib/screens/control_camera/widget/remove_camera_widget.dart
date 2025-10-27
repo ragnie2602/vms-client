@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bl
 Future<T?> showDialogRemoveCameraFromGroup<T>(
   BuildContext context, {
   required Function() onConfirm,
+  String? title,
 }) {
   final controlCameraBloc = context.read<ControlCameraBloc>();
   return showDialog<T>(
@@ -16,14 +17,15 @@ Future<T?> showDialogRemoveCameraFromGroup<T>(
     barrierDismissible: false,
     builder: (_) => BlocProvider.value(
       value: controlCameraBloc,
-      child: RemoveCameraFromGroupWidget(onConfirm: onConfirm),
+      child: RemoveCameraFromGroupWidget(onConfirm: onConfirm, title: title),
     ),
   );
 }
 
 class RemoveCameraFromGroupWidget extends StatelessWidget {
-  const RemoveCameraFromGroupWidget({super.key, this.onConfirm});
+  const RemoveCameraFromGroupWidget({super.key, this.onConfirm, this.title});
   final Function()? onConfirm;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +55,7 @@ class RemoveCameraFromGroupWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'camera khỏi nhóm',
+                  title ?? 'camera khỏi nhóm',
                   style: AppTypography.style(
                     14,
                     color: AppColors.blackOrWhite,

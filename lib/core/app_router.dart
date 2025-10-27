@@ -115,8 +115,7 @@ class AppRouter {
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(
-              create: (context) =>
-                  MonitorBloc(context.read() ,context.read())..add(GetAllCamera()),
+              create: (context) => MonitorBloc(context.read() ,context.read()),
             ),
             BlocProvider(
               create: (context) => CustomViewBloc(

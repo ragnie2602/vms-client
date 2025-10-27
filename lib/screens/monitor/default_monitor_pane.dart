@@ -24,6 +24,9 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Vì là stateless nên buộc phải viết vào đây, hy vọng nó không bị gọi lung tung :*(
+    context.read<MonitorBloc>().add(GetAllCamera());
+    
     return BlocBuilder<MonitorBloc, MonitorState>(
       builder: (context, blocState) => stateBuilder<MonitorSuccess>(
         blocState,
