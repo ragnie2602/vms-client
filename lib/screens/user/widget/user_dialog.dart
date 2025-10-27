@@ -45,6 +45,7 @@ Future<String?> showResetPasswordDialog(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: Form(
                   key: _form,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -334,6 +335,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
               padding: const EdgeInsets.only(right: 16),
               child: Form(
                 key: _form,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -766,6 +768,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
         child: SingleChildScrollView(
           child: Form(
             key: _form,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
