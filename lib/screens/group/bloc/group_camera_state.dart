@@ -49,15 +49,15 @@ class AddGroupCameraLoadingState extends GroupCameraState {
   StateType get type => StateType.loading;
 }
 
-// class AddGroupCameraSuccessState extends GroupCameraState {
-//   final List<DeviceGroup>? groups;
-//   const AddGroupCameraSuccessState({required this.groups});
+class AddGroupCameraSuccessState extends GroupCameraState {
+  final List<DeviceGroup>? groups;
+  const AddGroupCameraSuccessState({required this.groups});
 
-//   @override
-//   StateType get type => StateType.success;
-//   @override
-//   List<Object?> get props => [groups];
-// }
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [groups];
+}
 
 class AddGroupCameraFailState extends GroupCameraState {
   final String message;
