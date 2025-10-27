@@ -95,12 +95,10 @@ class ItemCameraWidget extends StatelessWidget {
 
   Widget _buildStatusColumn() {
     return Expanded(
-      flex: 130,
+      flex: 180,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Row(
-          children: [CameraStatusWidget(cameraStatus: itemCamera.status)],
-        ),
+        child: CameraStatusWidget(cameraStatus: itemCamera.status),
       ),
     );
   }

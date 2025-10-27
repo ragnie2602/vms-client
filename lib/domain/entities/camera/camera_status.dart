@@ -23,9 +23,9 @@ extension CameraStatusExt on CameraStatus {
   String getName() {
     switch (this) {
       case CameraStatus.active:
-        return 'Online';
+        return 'Đang hoạt động';
       case CameraStatus.inactive:
-        return 'Offline';
+        return 'Mất kết nối';
       default:
         return 'Tất cả';
     }
