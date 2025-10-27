@@ -274,42 +274,54 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     ),
                                     shrinkWrap: true,
                                     itemCount: state.users!.length,
-                                    itemBuilder: (context, index) => ItemUserWidget(
-                                      onEdit: () async {
-                                        await showEditUserDialog(
-                                          context,
-                                          userEntity: state.users![index],
-                                          onSubmit: (payload) async {
-                                            _editUser(
-                                              isAdmin: payload.accountType == 'admin'
-                                                  ? true
-                                                  : false,
-                                              changePassDenied: payload.canChangePassword,
-                                              addCamDenied: payload.canAddCamera,
-                                              password: state.users![index].password,
-                                              email: payload.email,
-                                              tel: payload.phoneNumber,
-                                              desc: payload.description,
-                                              fullName: payload.fullName,
-                                              userId: state.users![index].id,
-                                              account: payload.username,
-                                            );
-                                          },
-                                        );
-                                      },
-                                      onResetPassword: () {
-                                        showResetPasswordDialog(
-                                          context,
-                                          username: state.users![index].account,
-                                          user: state.users![index],
-                                          onSubmit: (newPassword) async {
-                                            _onResetPassword(
-                                              newPassword: newPassword,
-                                              userId: state.users![index].id,
-                                            );
-                                          },
+                                    itemBuilder: (context, index) =>
+                                        ItemUserWidget(
                                           itemUser: state.users![index],
                                           index: index + 1,
+                                          onEdit: () async {
+                                            await showEditUserDialog(
+                                              context,
+                                              userEntity: state.users![index],
+                                              onSubmit: (payload) async {
+                                                _editUser(
+                                                  isAdmin:
+                                                      payload.accountType ==
+                                                          'admin'
+                                                      ? true
+                                                      : false,
+                                                  changePassDenied:
+                                                      payload.canChangePassword,
+                                                  addCamDenied:
+                                                      payload.canAddCamera,
+                                                  password: state
+                                                      .users![index]
+                                                      .password,
+                                                  email: payload.email,
+                                                  tel: payload.phoneNumber,
+                                                  desc: payload.description,
+                                                  fullName: payload.fullName,
+                                                  userId:
+                                                      state.users![index].id,
+                                                  account: payload.username,
+                                                );
+                                              },
+                                            );
+                                          },
+                                          onResetPassword: () {
+                                            showResetPasswordDialog(
+                                              context,
+                                              username:
+                                                  state.users![index].account,
+                                              user: state.users![index],
+                                              onSubmit: (newPassword) async {
+                                                _onResetPassword(
+                                                  newPassword: newPassword,
+                                                  userId:
+                                                      state.users![index].id,
+                                                );
+                                              },
+                                            );
+                                          },
                                         ),
                                   );
                                 },
