@@ -116,7 +116,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                         padding: EdgeInsets.only(bottom: 20),
                         primary: true,
                         itemCount: cameras.length,
-                        itemBuilder: (context, index) => _cameraItem(context ,cameras[index]),
+                        itemBuilder: (context, index) => _cameraItem(context, cameras[index]),
                       );
                     },
                   ),
@@ -163,7 +163,6 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                           fontWeight: FontWeight.w600,
                           color: AppColors.blackOrWhite,
                         ),
-                        maxLines: 1,
                         overflow: TextOverflow.visible,
                       ),
                       SizedBox(height: 6),
