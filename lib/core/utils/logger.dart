@@ -10,11 +10,13 @@ import '../error_service.dart';
 class Logger {
   Logger._();
 
-  static void log(String message, {String tag = 'VMS'}) {
+  static void log(String message, {String tag = 'VMS', bool writeLog = false}) {
     if (kReleaseMode) return;
 
     final colorTag = _wrapWithColor('info', '[$tag]', needBackground: true);
     stdout.writeln("$colorTag ${_wrapWithColor('info', message)}");
+
+    if (writeLog) ErrorService.record(tag, message, null, level: 'INFO');
   }
 
   static void warn(String message, {String tag = 'VMS'}) {

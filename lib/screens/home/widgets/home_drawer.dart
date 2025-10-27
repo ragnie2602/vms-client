@@ -110,7 +110,7 @@ class DrawerTile extends StatelessWidget {
     if (tab.route == Routes.playback &&
         context.read<MonitorBloc>().state is MonitorSuccess &&
         (context.read<MonitorBloc>().state as MonitorSuccess).cameras.isNotEmpty) {
-      final cam = (context.read<MonitorBloc>().state as MonitorSuccess).cameras.first;
+      final cam = (context.read<MonitorBloc>().state as MonitorSuccess).cameras.last;
 
       _route = Routes.livecamera;
       _extra = CameraLiveScreenArgs(data: cam, isPlayback: true, title: 'Playback ${cam.name}');

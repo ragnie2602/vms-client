@@ -14,19 +14,19 @@ class CameraLiveState extends BaseState {
     this.status = PlayerStatus.playing,
     required this.mode,
     required this.camera,
-    required this.ref,
     this.volume = 100,
     required this.playbackDate,
     this.timelineDisplayMode = TimelineDisplayMode.h8,
+    required this.playbackController,
   });
 
   final LiveViewMode mode;
   final CameraEntity camera;
-  final GlobalKey<CameraPlayerState> ref;
   final PlayerStatus status;
   final double volume;
   final DateTime playbackDate;
   final TimelineDisplayMode timelineDisplayMode;
+  final PlaybackController playbackController;
 
   @override
   List<Object?> get props => [mode, camera, status, volume, playbackDate, timelineDisplayMode];
@@ -34,20 +34,20 @@ class CameraLiveState extends BaseState {
   CameraLiveState copyWith({
     LiveViewMode? mode,
     CameraEntity? camera,
-    GlobalKey<CameraPlayerState>? ref,
     PlayerStatus? status,
     double? volume,
     DateTime? playbackDate,
     TimelineDisplayMode? timelineDisplayMode,
+    PlaybackController? playbackController,
   }) {
     return CameraLiveState(
       mode: mode ?? this.mode,
       camera: camera ?? this.camera,
-      ref: ref ?? this.ref,
       status: status ?? this.status,
       volume: volume ?? this.volume,
       playbackDate: playbackDate ?? this.playbackDate,
       timelineDisplayMode: timelineDisplayMode ?? this.timelineDisplayMode,
+      playbackController: playbackController ?? this.playbackController,
     );
   }
 }
