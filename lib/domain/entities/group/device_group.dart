@@ -1,4 +1,5 @@
 import 'package:animated_tree_view/tree_view/tree_node.dart';
+import 'package:diacritic/diacritic.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_status.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_type.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
@@ -41,9 +42,8 @@ class DeviceGroup {
   }
 
   bool isContainGroupName({required String keywordGroupName}) {
-    if (name.toLowerCase().trim().contains(
-      keywordGroupName.toLowerCase().trim(),
-    )) {
+    String _key = removeDiacritics(keywordGroupName.trim().toLowerCase());
+    if (removeDiacritics(name.toLowerCase().trim()).contains(_key)) {
       return true;
     }
     for (var e in groups) {
@@ -53,12 +53,13 @@ class DeviceGroup {
     }
     return false;
   }
-  List<DeviceGroup> convertToOneLevel({int? hideFromLevel}){
-    if(hideFromLevel != null && level >= hideFromLevel){
+
+  List<DeviceGroup> convertToOneLevel({int? hideFromLevel}) {
+    if (hideFromLevel != null && level >= hideFromLevel) {
       return [];
     }
     List<DeviceGroup> ans = [this];
-    for(var e in groups){
+    for (var e in groups) {
       ans.addAll(e.convertToOneLevel(hideFromLevel: hideFromLevel));
     }
     return ans;

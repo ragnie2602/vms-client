@@ -466,7 +466,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                         ),
                         child: const Center(
                           child: Text(
-                            'Chưa có người dùng nào được chia sẻ',
+                            'Chưa chia sẻ cho tài khoản nào',
                             style: TextStyle(
                               fontSize: 14,
                               color: Color(0xFF92929D),

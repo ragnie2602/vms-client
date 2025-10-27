@@ -217,10 +217,14 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                     },
                     splashColor: Colors.transparent,
                     child: Container(
+                      decoration: BoxDecoration(
+                        color: widget.isClickAllGroup == true
+                            ? AppColors.greyF2F4FA
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                       padding: EdgeInsets.symmetric(vertical: 8),
-                      color: widget.isClickAllGroup == true
-                          ? AppColors.greyF2F4FA
-                          : Colors.transparent,
+
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -258,9 +262,12 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                     splashColor: Colors.transparent,
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8),
-                      color: widget.isClickNoGroup == true
-                          ? AppColors.greyF2F4FA
-                          : Colors.transparent,
+                      decoration: BoxDecoration(
+                        color: widget.isClickNoGroup == true
+                            ? AppColors.greyF2F4FA
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
