@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/screens/home/change_my_password_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/popup_menu.dart';
@@ -115,7 +116,19 @@ class _UserProfileState extends State<UserProfile> {
             ),
             Divider(height: 0.5, color: Colors.grey.shade300),
              _buildMenuItem(
-              onTap: () => showChangeMyPasswordDialog(context),
+              onTap: () {
+                if (AppData.instance.profile?.changePassDenied ?? false) {
+                  ToastUtil.toastFail(
+                    context: context,
+                    title: Text(
+                      'Bạn không có quyền sử dụng chức năng này!',
+                      maxLines: 5,
+                    ),
+                  );
+                  return;
+                }
+                showChangeMyPasswordDialog(context);
+              },
               icon: Icons.key,
               title: 'Đổi mật khẩu',
             ),
