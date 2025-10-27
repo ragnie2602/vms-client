@@ -22,6 +22,7 @@ Future<String?> showResetPasswordDialog(
 }) {
   final TextEditingController _controller = TextEditingController();
   bool _obscurePassword = true;
+  final _form = GlobalKey<FormState>();
 
   return showDialog<String?>(
     context: context,
@@ -42,86 +43,92 @@ Future<String?> showResetPasswordDialog(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Title
-                    const Text(
-                      'Khôi phục mật khẩu',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    // Subtitle
-                    Text(
-                      'Vui lòng nhập mật khẩu mới cho tài khoản:\n$username',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    AppField(
-                      controller: _controller,
-                      hintText: 'Nhập mật khẩu',
-                      label: '',
-                      requiredField: false,
-                      obscureText: _obscurePassword,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Mật khẩu không được để trống';
-                        }
-                        if (v.contains(' ')) {
-                          return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
-                        }
-                        if (v.length < 8 || v.length > 16) {
-                          return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
-                        }
-                        return null;
-                      },
-                      suffix: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                child: Form(
+                  key: _form,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Title
+                      const Text(
+                        'Khôi phục mật khẩu',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                         ),
-                        iconSize: 20,
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      // Subtitle
+                      Text(
+                        'Vui lòng nhập mật khẩu mới cho tài khoản:\n$username',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      AppField(
+                        controller: _controller,
+                        hintText: 'Nhập mật khẩu',
+                        label: 'Mật khẩu',
+                        requiredField: true,
+                        obscureText: _obscurePassword,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Mật khẩu không được để trống';
+                          }
+                          if (v.contains(' ')) {
+                            return 'Mật khẩu không hợp lệ. Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
+                          }
+                          if (v.length < 8 || v.length > 16) {
+                            return 'Mật khẩu không hợp lệ. Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
+                          }
+                          return null;
+                        },
+                        suffix: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          iconSize: 20,
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Mật khẩu 8-16 ký tự, bao gồm ký tự đặc biệt, in hoa và in thường",
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 12,
-                        color: AppColors.grey6F767E,
+                      const SizedBox(height: 8),
+                      Text(
+                        "Mật khẩu 8-16 ký tự, bao gồm ký tự đặc biệt, in hoa và in thường",
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          fontSize: 12,
+                          color: AppColors.grey6F767E,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Actions
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppButton.outline(
-                          label: 'Hủy',
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const SizedBox(width: 12),
-                        AppButton.filled(
-                          label: 'Khôi phục',
-                          onPressed: () =>
-                              onSubmit!.call(_controller.text.toString()),
-                        ),
-                      ],
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      // Actions
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppButton.outline(
+                            label: 'Hủy',
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          const SizedBox(width: 12),
+                          AppButton.filled(
+                            label: 'Khôi phục',
+                            onPressed: () {
+                              if (_form.currentState?.validate() ?? false) {
+                                onSubmit!.call(_controller.text.toString());
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -383,6 +390,14 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                         ),
                       ],
                     ),
+                    // Số điện thoại
+                    const SizedBox(height: 12),
+                    // Họ và tên
+                    AppField(
+                      controller: _fullName,
+                      hintText: 'Nhập họ và tên',
+                      label: 'Họ và tên',
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,14 +451,6 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                       ],
                     ),
 
-                    // Số điện thoại
-                    const SizedBox(height: 12),
-                    // Họ và tên
-                    AppField(
-                      controller: _fullName,
-                      hintText: 'Nhập họ và tên',
-                      label: 'Họ và tên',
-                    ),
                     const SizedBox(height: 16),
                     // Loại tài khoản
                     _buildDropdownField(
