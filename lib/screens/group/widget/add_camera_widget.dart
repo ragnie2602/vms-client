@@ -173,7 +173,9 @@ class _AddCameraWidgetState extends State<AddCameraWidget> {
                       child: (_listCameraAvailable ?? []).isEmpty
                           ? Center(
                               child: Text(
-                                'Không có kết quả phù hợp',
+                                _nameCameraController.text.isEmpty
+                                    ? 'Không có camera khả dụng để thêm vào nhóm'
+                                    : 'Không tìm thấy kết quả phù hợp',
                                 style: AppTypography.style(
                                   14,
                                   fontWeight: FontWeight.w400,
