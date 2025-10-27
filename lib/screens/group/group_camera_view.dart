@@ -258,6 +258,18 @@ class _GroupCameraViewState extends State<GroupCameraView> {
               title: Text('Thêm nhóm camera thành công!'),
             );
           }
+          if (state is UpdateGroupCameraSuccessState) {
+            ToastUtil.toastSuccess(
+              context: context,
+              title: Text('Cập nhật nhóm camera thành công!'),
+            );
+          }
+          if (state is RemoveGroupCameraSuccessState) {
+            ToastUtil.toastSuccess(
+              context: context,
+              title: Text('Xóa thành công'),
+            );
+          }
         },
         builder: (context, newState) {
           if (newState is GroupCameraLoadingState) {
@@ -325,7 +337,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                         await _onShowDialogShareGroup(
                                           c: context,
                                           groupId: node.data!.groupId,
-                                          nameGroup: node.data!.name
+                                          nameGroup: node.data!.name,
                                         );
                                       }
                                       break;

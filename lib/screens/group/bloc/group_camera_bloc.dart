@@ -94,6 +94,7 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       (onFailure) => emit(RemoveGroupCameraFailState(groups.left.toString())),
       (onSuccess) {
         listGroup = onSuccess ?? [];
+        emit(RemoveGroupCameraSuccessState(groups: listGroup));
         emit(GetAllGroupCameraSuccessState(groups: groups.right));
       },
     );
