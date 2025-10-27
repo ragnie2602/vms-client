@@ -274,10 +274,9 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         }
         if (state is DeleteCameraSuccessState) {
           _onGetListCamera(c: context);
-          showAppMessageDialog(
-            context,
-            message: 'Xóa camera thành công!',
-            type: AppMessageType.success,
+          ToastUtil.toastSuccess(
+            context: context,
+            title: Text('Xóa thành công'),
           );
         } else if (state is ListCameraSuccessState) {
           setState(() {});
