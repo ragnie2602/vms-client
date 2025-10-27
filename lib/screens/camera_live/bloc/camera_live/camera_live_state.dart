@@ -15,39 +15,43 @@ class CameraLiveState extends BaseState {
     required this.mode,
     required this.camera,
     this.volume = 100,
+    this.speed = 1,
     required this.playbackDate,
     this.timelineDisplayMode = TimelineDisplayMode.h8,
-    required this.playbackController,
+    required this.cameraLiveController,
   });
 
   final LiveViewMode mode;
   final CameraEntity camera;
   final PlayerStatus status;
   final double volume;
+  final double speed;
   final DateTime playbackDate;
   final TimelineDisplayMode timelineDisplayMode;
-  final PlaybackController playbackController;
+  final CameraLiveController cameraLiveController;
 
   @override
-  List<Object?> get props => [mode, camera, status, volume, playbackDate, timelineDisplayMode];
+  List<Object?> get props => [mode, camera, status, volume, speed, playbackDate, timelineDisplayMode];
 
   CameraLiveState copyWith({
     LiveViewMode? mode,
     CameraEntity? camera,
     PlayerStatus? status,
     double? volume,
+    double? speed,
     DateTime? playbackDate,
     TimelineDisplayMode? timelineDisplayMode,
-    PlaybackController? playbackController,
+    CameraLiveController? cameraLiveController,
   }) {
     return CameraLiveState(
       mode: mode ?? this.mode,
       camera: camera ?? this.camera,
       status: status ?? this.status,
       volume: volume ?? this.volume,
+      speed: speed ?? this.speed,
       playbackDate: playbackDate ?? this.playbackDate,
       timelineDisplayMode: timelineDisplayMode ?? this.timelineDisplayMode,
-      playbackController: playbackController ?? this.playbackController,
+      cameraLiveController: cameraLiveController ?? this.cameraLiveController,
     );
   }
 }

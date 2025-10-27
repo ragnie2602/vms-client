@@ -37,7 +37,7 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
                     isMuted = !isMuted;
                     if (isMuted) _volumeBeforeMuted = volume;
                     context.read<CameraLiveBloc>().add(
-                      ChangeVolume(isMuted ? 0 : _volumeBeforeMuted, mute: isMuted),
+                      ChangeVolume(isMuted ? 0 : _volumeBeforeMuted),
                     );
                   },
                   child: SvgPicture.asset(
@@ -48,10 +48,7 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
                         : AppAssets.icVolumeHalf,
                     width: 28,
                     height: 28,
-                    colorFilter: ColorFilter.mode(
-                      Colors.black,
-                      BlendMode.srcIn,
-                    ),
+                    colorFilter: ColorFilter.mode(Colors.black, BlendMode.srcIn),
                   ),
                 ),
 

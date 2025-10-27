@@ -206,7 +206,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                   child: GestureDetector(
                     // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
                     onTapUp: (details) {
-                      _cameraLiveBloc.state.playbackController.ref.currentState?.jumpToDate(
+                      _cameraLiveBloc.state.cameraLiveController.ref.currentState?.jumpToDate(
                         _hoverDate ?? _calculateDateFromOffset(details.localPosition.dx),
                       );
                     },
@@ -228,7 +228,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                                 current is PlaybackSuccess &&
                                 current.playbacks.isNotEmpty) {
                               _clampCentralDate(current.playbacks[current.initialIndex].startTime);
-                              _cameraLiveBloc.state.playbackController
+                              _cameraLiveBloc.state.cameraLiveController
                                 ..onPlaybackChanged = _onPlaybackChanged
                                 ..onTimeChanged = _onTimeChanged;
                             }

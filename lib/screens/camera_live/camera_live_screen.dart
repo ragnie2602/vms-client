@@ -7,7 +7,7 @@ import '../shared/state_builder_mixin.dart';
 import 'bloc/camera_live/camera_live_bloc.dart';
 import 'bloc/playback/playback_bloc.dart';
 import 'layout/camera_live_desktop_layout.dart';
-import 'widgets/playback_player.dart';
+import 'widgets/camera_live_player.dart';
 
 class CameraLiveScreenArgs extends BaseScreenArgs {
   final CameraEntity data;
@@ -61,7 +61,7 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
               openCamerasPanelImmediately: isPlayback,
               content: state.mode.isPlayback
                   ? _waitingPlayback(state, context)
-                  : _buildPlayer(state),
+                  : _buildPlayer(state, context),
               mode: state.mode,
             ),
           );
@@ -77,21 +77,27 @@ class CameraLiveScreen extends StatelessWidget with StateBuilderMixin {
         onReload: () => context.read<PlaybackBloc>().add(
           GetVideoPlaybacks(data.camera.id, context.read<CameraLiveBloc>().state.playbackDate),
         ),
-        child: (state) => PlaybackPlayer.playlist(
+        child: (state) => CameraLivePlayer.playlist(
           playlist: state.playbacks.toList(),
           name: data.camera.name,
           initialIndex: state.initialIndex,
-          controller: data.playbackController,
+          controller: data.cameraLiveController,
+          onStatusChanged: (status) {
+            context.read<CameraLiveBloc>().add(ChangePlayerStatus(status));
+          },
         ),
       ),
     );
   }
 
-  Widget _buildPlayer(CameraLiveState state) {
-    return PlaybackPlayer.liveview(
+  Widget _buildPlayer(CameraLiveState state, BuildContext context) {
+    return CameraLivePlayer.liveview(
       source: state.camera.mainStreamUri.toString(),
       name: state.camera.name,
-      controller: state.playbackController,
+      controller: state.cameraLiveController,
+      onStatusChanged: (status) {
+        context.read<CameraLiveBloc>().add(ChangePlayerStatus(status));
+      },
     );
   }
 }
