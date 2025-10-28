@@ -115,15 +115,12 @@ class _UserProfileState extends State<UserProfile> {
               title: 'Mở log file',
             ),
             Divider(height: 0.5, color: Colors.grey.shade300),
-             _buildMenuItem(
+            _buildMenuItem(
               onTap: () {
                 if (AppData.instance.profile?.changePassDenied ?? false) {
                   ToastUtil.toastFail(
                     context: context,
-                    title: Text(
-                      'Bạn không có quyền sử dụng chức năng này!',
-                      maxLines: 5,
-                    ),
+                    title: Text('Bạn không có quyền sử dụng chức năng này!', maxLines: 5),
                   );
                   return;
                 }
@@ -239,7 +236,7 @@ class _UserProfileState extends State<UserProfile> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                           ),
                           child: Text(
-                            'Đăng xuất',
+                            'Xác nhận',
                             style: AppTypography.style(
                               14,
                               fontWeight: FontWeight.w600,
