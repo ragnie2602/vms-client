@@ -81,7 +81,8 @@ const Map<int, Map<String, String>> vi = {
 
   // checkAccountShare (502)
   502: {
-    'ALREADY_INVITE': "Đã được mời",
+    ..._commonErrors,
+    'ALREADY_INVITE': "Tài khoản đã được chia sẻ",
     'TEL_INVALID': "Số điện thoại không hợp lệ",
     'EMAIL_INVALID': "Email không hợp lệ",
     'TEL_NOT_IN_USE': "Số điện thoại chưa được sử dụng",
@@ -193,5 +194,46 @@ const Map<int, Map<String, String>> vi = {
     'ACCOUNT_INVALID': "Tài khoản không hợp lệ",
     'GROUP_ID_EMPTY': "ID nhóm trống",
     'GROUP_NOT_FOUND': "Không tìm thấy nhóm",
+  },
+
+  258: {
+    ..._commonErrors,
+    "ACCOUNT_EMPTY": "Tên tài khoản không được để trống!",
+    "ACCOUNT_EXIST": "Tên tài khoản đã tồn tại",
+    "ACCOUNT_INVALID": "Tên tài khoản không hợp lệ",
+    "PASSWORD_INVALID":
+        "Mật khẩu không hợp lệ. Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!",
+    "EMAIL_INVALID": "Email không hợp lệ",
+    "EMAIL_EXIST": "Email đã tồn tại trên hệ thống. Vui lòng thử lại",
+    "TEL_EXIST": "Số điện thoại đã tồn tại",
+    "TEL_INVALID": "Số điện thoại không hợp lệ",
+    "USER_TYPE_EMPTY": "Loại tài khoản không được để trống",
+    "PASSWORD_EMPTY": "Mật khẩu không được để trống",
+  },
+
+  270: {
+    ..._commonErrors,
+    "ERROR_DEFAULT": "Lỗi hệ thống",
+    "USER_EMPTY": "Tên tài khoản đã tồn tại!",
+    "USER_NOT_FOUND": "Không tìm thấy người dùng",
+    "PASSWORD_INVALID":
+        "Mật khẩu không hợp lệ. Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!",
+  },
+  259: {
+    "ACCOUNT_EMPTY": "Tên tài khoản không được để trống!",
+    "ACCOUNT_EXIST": "Tên tài khoản đã tồn tại",
+    "ACCOUNT_INVALID": "Tên tài khoản không hợp lệ",
+    "EMAIL_INVALID": "Email không hợp lệ",
+    "EMAIL_EXIST": "Email đã tồn tại trên hệ thống. Vui lòng thử lại",
+    "TEL_EXIST": "Số điện thoại đã tồn tại",
+    "TEL_INVALID": "Số điện thoại không hợp lệ",
+    "USER_TYPE_EMPTY": "Loại tài khoản không được để trống",
+    "USER_NOT_FOUND": "Không tìm thấy người dùng",
+  },
+
+  260: {
+    ..._commonErrors,
+    "USER_EMPTY": "Không tìm thấy tài khoản! Vui lòng thử lại!",
+    "USER_NOT_FOUND": "Không tìm thấy tài khoản! Vui lòng thử lại!",
   },
 };

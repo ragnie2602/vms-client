@@ -8,20 +8,23 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
-
+import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
+import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
+
+import 'player_full_screen.dart';
 
 enum PlayerMode { liveview, playlist }
 
-class PlaybackController {
-  GlobalKey<PlaybackPlayerState> ref = GlobalKey();
+class CameraLiveController {
+  GlobalKey<CameraLivePlayerState> ref = GlobalKey();
 
   Function(int)? onPlaybackChanged;
   Function(DateTime)? onTimeChanged;
 }
 
-class PlaybackPlayer extends StatefulWidget {
-  const PlaybackPlayer({
+class CameraLivePlayer extends StatefulWidget {
+  const CameraLivePlayer({
     super.key,
     required this.playlist,
     required this.name,
@@ -29,21 +32,24 @@ class PlaybackPlayer extends StatefulWidget {
     required this.source,
     this.initialIndex = 0,
     required this.controller,
+    this.onStatusChanged,
   });
   final List<PlaybackVideo> playlist;
   final String source;
   final String name;
   final PlayerMode mode;
   final int initialIndex;
-  final PlaybackController controller;
+  final CameraLiveController controller;
+  final Function(PlayerStatus)? onStatusChanged;
 
-  factory PlaybackPlayer.playlist({
+  factory CameraLivePlayer.playlist({
     required List<PlaybackVideo> playlist,
     required String name,
     required int initialIndex,
-    required PlaybackController controller,
+    required CameraLiveController controller,
+    Function(PlayerStatus)? onStatusChanged,
   }) {
-    return PlaybackPlayer(
+    return CameraLivePlayer(
       playlist: playlist,
       name: name,
       mode: PlayerMode.playlist,
@@ -51,34 +57,40 @@ class PlaybackPlayer extends StatefulWidget {
       initialIndex: initialIndex,
       controller: controller,
       key: controller.ref,
+      onStatusChanged: onStatusChanged,
     );
   }
 
-  factory PlaybackPlayer.liveview({
+  factory CameraLivePlayer.liveview({
     required String source,
     required String name,
-    required PlaybackController controller,
+    required CameraLiveController controller,
+    Function(PlayerStatus)? onStatusChanged,
   }) {
-    return PlaybackPlayer(
+    return CameraLivePlayer(
       playlist: [],
       source: source,
       name: name,
       mode: PlayerMode.liveview,
       controller: controller,
       key: controller.ref,
+      onStatusChanged: onStatusChanged,
     );
   }
 
   @override
-  State<PlaybackPlayer> createState() => PlaybackPlayerState();
+  State<CameraLivePlayer> createState() => CameraLivePlayerState();
 }
 
-class PlaybackPlayerState extends State<PlaybackPlayer> {
+class CameraLivePlayerState extends State<CameraLivePlayer> {
+  final GlobalKey<VideoState> _videoKey = GlobalKey();
+
   late final Player _player;
   late final Player _audioPlayer;
   late final VideoController _controller;
 
   late String name = widget.name;
+  final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
 
   late int _playlistIndex;
   bool _shouldSyncPlayerTime = true;
@@ -86,6 +98,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> {
 
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Playlist>? _playlistSub;
+  StreamSubscription<void>? _completedSub;
+  StreamSubscription<String>? _errorSub;
 
   PlaybackVideo get currentPlayback => widget.playlist[_playlistIndex];
   int get initialIndex => widget.initialIndex;
@@ -93,6 +107,12 @@ class PlaybackPlayerState extends State<PlaybackPlayer> {
   @override
   void initState() {
     _playlistIndex = widget.initialIndex;
+
+    if (widget.onStatusChanged != null) {
+      _status.addListener(() {
+        widget.onStatusChanged?.call(_status.value);
+      });
+    }
 
     super.initState();
     _initPlayer();
@@ -108,7 +128,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer> {
   void dispose() {
     _positionSub?.cancel();
     _playlistSub?.cancel();
+    _completedSub?.cancel();
+    _errorSub?.cancel();
     _player.dispose();
+    _status.dispose();
     try {
       _audioPlayer.dispose();
     } catch (_) {}
@@ -116,12 +139,13 @@ class PlaybackPlayerState extends State<PlaybackPlayer> {
   }
 
   @override
-  void didUpdateWidget(covariant PlaybackPlayer oldWidget) {
+  void didUpdateWidget(covariant CameraLivePlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
     name = widget.name;
   }
 
   Future<void> _initPlayer() async {
+    _status.value = PlayerStatus.playing;
     _player = Player(
       configuration: PlayerConfiguration(
         title: widget.name,
@@ -149,12 +173,18 @@ class PlaybackPlayerState extends State<PlaybackPlayer> {
 
     _positionSub = _player.stream.position.listen(_onPositionChanged);
     _playlistSub = _player.stream.playlist.listen(_onPlaylistChanged);
-    _player.stream.completed.listen((completed) {
-      print('============> completed $completed');
-    });
-    _player.stream.error.listen((error) {
-      print('============> error $error');
-    });
+    _completedSub = _player.stream.completed.listen(_onCompleted);
+    _errorSub = _player.stream.error.listen(_onError);
+  }
+
+  void _onError(String error) {
+    Logger.error(error);
+  }
+
+  void _onCompleted(bool completed) {
+    if (completed && _playlistIndex == widget.playlist.length - 1) {
+      _status.value = PlayerStatus.finished;
+    }
   }
 
   void _onPositionChanged(Duration position) {
@@ -162,11 +192,13 @@ class PlaybackPlayerState extends State<PlaybackPlayer> {
       _audioPlayer.seek(position);
     }
 
-    if (_shouldSyncPlayerTime == false) return;
-
-    widget.controller.onTimeChanged?.call(
-      currentPlayback.startTime.add(Duration(milliseconds: position.inMilliseconds)).roundToSecond,
-    );
+    if (_shouldSyncPlayerTime == true && widget.mode == PlayerMode.playlist) {
+      widget.controller.onTimeChanged?.call(
+        currentPlayback.startTime
+            .add(Duration(milliseconds: position.inMilliseconds))
+            .roundToSecond,
+      );
+    }
   }
 
   void _onPlaylistChanged(Playlist playlist) {
@@ -250,6 +282,37 @@ class PlaybackPlayerState extends State<PlaybackPlayer> {
     }
   }
 
+  Future<void> changeVolume(double volume) async {
+    if (widget.mode == PlayerMode.liveview) {
+      await _audioPlayer.setVolume(volume);
+    } else {
+      await _player.setVolume(volume);
+    }
+  }
+
+  Future<void> togglePlay() async {
+    _shouldSyncPlayerTime = false;
+    if (_status.value == PlayerStatus.playing) {
+      await _player.pause();
+      if (widget.mode == PlayerMode.liveview) await _audioPlayer.pause();
+      _status.value = PlayerStatus.paused;
+    } else {
+      await _player.play();
+      if (widget.mode == PlayerMode.liveview) await _audioPlayer.play();
+      _status.value = PlayerStatus.playing;
+    }
+    _shouldSyncPlayerTime = true;
+  }
+
+  Future<void> changeSpeed(double speed) async {
+    if (widget.mode == PlayerMode.liveview) await _audioPlayer.setRate(speed);
+    await _player.setRate(speed);
+  }
+
+  void toggleFullscreen() {
+    _videoKey.currentState?.enterFullscreen();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -257,15 +320,47 @@ class PlaybackPlayerState extends State<PlaybackPlayer> {
       child: showingNoPlayback
           ? _buildNoPlayback()
           : Video(
+              key: _videoKey,
               height: double.infinity,
               fit: BoxFit.fitHeight,
               controller: _controller,
               controls: (state) => Stack(
                 fit: StackFit.expand,
-                children: [Positioned(top: 20, right: 20, child: _buildLabel())],
+                children: [
+                  if (_videoKey.currentState?.isFullscreen() == false)
+                    Positioned(top: 20, right: 20, child: _buildLabel()),
+
+                  Positioned.fill(child: _buildPlaybackStatus()),
+
+                  if (_videoKey.currentState?.isFullscreen() == true)
+                    PlayerFullScreen(onExit: () => _videoKey.currentState?.exitFullscreen()),
+                ],
               ),
               subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
             ),
+    );
+  }
+
+  Widget _buildPlaybackStatus() {
+    return ValueListenableBuilder(
+      valueListenable: _status,
+      builder: (context, status, child) {
+        if (status == PlayerStatus.playing) return const SizedBox.shrink();
+
+        return InkWell(
+          onTap: togglePlay,
+          child: Container(
+            alignment: Alignment.center,
+            color: Colors.black.withValues(alpha: 0.25),
+            child: SvgPicture.asset(
+              AppAssets.icPlay,
+              width: 60,
+              height: 60,
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            ),
+          ),
+        );
+      },
     );
   }
 
