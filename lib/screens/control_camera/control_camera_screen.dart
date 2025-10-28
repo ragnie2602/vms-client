@@ -173,7 +173,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   }) {
     showDialogRemoveCameraFromGroup(
       context,
-      title: 'xóa camera này khỏi hệ thống?',
+      title: 'camera này khỏi hệ thống?',
       onConfirm: () {
         context.read<ControlCameraBloc>().add(
           DeleteCameraEvent(cameraId: cameraId),
