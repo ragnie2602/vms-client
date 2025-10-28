@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -32,13 +33,8 @@ Future<String?> showResetPasswordDialog(
       return StatefulBuilder(
         builder: (context, setState) {
           return Dialog(
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 24,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Padding(
@@ -52,20 +48,14 @@ Future<String?> showResetPasswordDialog(
                       // Title
                       const Text(
                         'Khôi phục mật khẩu',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
                       // Subtitle
                       Text(
                         'Vui lòng nhập mật khẩu mới cho tài khoản:\n$username',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
-                        ),
+                        style: const TextStyle(fontSize: 14, color: Colors.black87),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
@@ -89,15 +79,11 @@ Future<String?> showResetPasswordDialog(
                         },
                         suffix: IconButton(
                           icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
                             color: AppColors.black,
                           ),
                           iconSize: 20,
-                          onPressed: () => setState(
-                            () => _obscurePassword = !_obscurePassword,
-                          ),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -114,10 +100,7 @@ Future<String?> showResetPasswordDialog(
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AppButton.outline(
-                            label: 'Hủy',
-                            onPressed: () => Navigator.pop(context),
-                          ),
+                          AppButton.outline(label: 'Hủy', onPressed: () => Navigator.pop(context)),
                           const SizedBox(width: 12),
                           AppButton.filled(
                             label: 'Khôi phục',
@@ -156,11 +139,7 @@ Future<T?> showAddUserDialog<T>(
     barrierDismissible: false,
     builder: (_) => BlocProvider.value(
       value: userManagementBloc,
-      child: _AddUserDialog(
-        onSubmit: onSubmit,
-        onEdit: onEdit,
-        userEntity: userEntity,
-      ),
+      child: _AddUserDialog(onSubmit: onSubmit, onEdit: onEdit, userEntity: userEntity),
     ),
   );
 }
@@ -314,9 +293,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 children: [
                   Text(
                     'Thêm tài khoản',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                 ],
@@ -352,9 +329,8 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                             hintText: 'Nhập tài khoản',
                             label: 'Tên đăng nhập',
                             requiredField: true,
-                            validator: (v) => v!.isEmpty
-                                ? 'Tên đăng nhập không được để trống'
-                                : null,
+                            validator: (v) =>
+                                v!.isEmpty ? 'Tên đăng nhập không được để trống' : null,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -380,15 +356,11 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                             },
                             suffix: IconButton(
                               icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
+                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
                                 color: AppColors.black,
                               ),
                               iconSize: 20,
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
                           ),
                         ),
@@ -397,11 +369,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                     // Số điện thoại
                     const SizedBox(height: 12),
                     // Họ và tên
-                    AppField(
-                      controller: _fullName,
-                      hintText: 'Nhập họ và tên',
-                      label: 'Họ và tên',
-                    ),
+                    AppField(controller: _fullName, hintText: 'Nhập họ và tên', label: 'Họ và tên'),
                     const SizedBox(height: 12),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,9 +410,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                               }
                               // Regex kiểm tra định dạng số điện thoại Việt Nam
                               // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
-                              final phoneRegex = RegExp(
-                                r'^(84|0)(3|5|7|8|9)\d{8,9}$',
-                              );
+                              final phoneRegex = RegExp(r'^(84|0)(3|5|7|8|9)\d{8,9}$');
                               if (!phoneRegex.hasMatch(v)) {
                                 return 'Số điện thoại không đúng định dạng';
                               }
@@ -520,9 +486,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
               children: [
                 AppButton.outline(
                   label: 'Hủy',
-                  onPressed: _isSubmitting
-                      ? null
-                      : () => Navigator.pop(context),
+                  onPressed: _isSubmitting ? null : () => Navigator.pop(context),
                 ),
                 const SizedBox(width: 12),
                 AppButton.filled(
@@ -534,9 +498,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : null,
@@ -581,25 +543,17 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 ),
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 200),
-                  alignment: value
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
+                  alignment: value ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.all(2),
                     width: 24,
                     height: 24,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
+                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                'Có',
-                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-              ),
+              Text('Có', style: TextStyle(fontSize: 14, color: Colors.grey[700])),
             ],
           ),
         ),
@@ -631,11 +585,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
       } catch (e) {
         if (mounted) {
           setState(() => _isSubmitting = false);
-          showAppMessageDialog(
-            context,
-            type: AppMessageType.error,
-            message: e.toString(),
-          );
+          showAppMessageDialog(context, type: AppMessageType.error, message: e.toString());
         }
       }
     }
@@ -753,9 +703,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
           Expanded(
             child: Text(
               'Cập nhật tài khoản',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
           IconButton(
@@ -818,17 +766,11 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                               ),
                               disabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(1),
-                                borderSide: BorderSide(
-                                  color: AppColors.greyE2E8F0,
-                                  width: 1,
-                                ),
+                                borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(1),
-                                borderSide: BorderSide(
-                                  color: AppColors.greyE2E8F0,
-                                  width: 1,
-                                ),
+                                borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                               ),
                             ),
                           ),
@@ -886,9 +828,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                           }
                           // Regex kiểm tra định dạng số điện thoại Việt Nam
                           // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
-                          final phoneRegex = RegExp(
-                            r'^(84|0)(3|5|7|8|9)\d{8,9}$',
-                          );
+                          final phoneRegex = RegExp(r'^(84|0)(3|5|7|8|9)\d{8,9}$');
                           if (!phoneRegex.hasMatch(v)) {
                             return 'Số điện thoại không đúng định dạng';
                           }
@@ -976,19 +916,14 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                   child: InkWell(
                     onTap: _hasChanges && !_isSubmitting ? _handleSubmit : null,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 34,
-                        vertical: 10,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 10),
                       child: _isSubmitting
                           ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : Text(
@@ -1035,11 +970,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
       } catch (e) {
         if (mounted) {
           setState(() => _isSubmitting = false);
-          showAppMessageDialog(
-            context,
-            type: AppMessageType.error,
-            message: e.toString(),
-          );
+          showAppMessageDialog(context, type: AppMessageType.error, message: e.toString());
         }
       }
     }
@@ -1072,16 +1003,58 @@ Widget _buildCheckboxRow({
       Expanded(
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: AppColors.black,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.black),
         ),
       ),
     ],
   );
 }
+
+// Widget _buildDropdownField({
+//   required String label,
+//   required String value,
+//   required List<Map<String, String>> items,
+//   required ValueChanged<String?> onChanged,
+// }) {
+//   return Column(
+//     crossAxisAlignment: CrossAxisAlignment.start,
+//     children: [
+//       Text(
+//         label,
+//         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.black),
+//       ),
+//       const SizedBox(height: 6),
+//       DropdownButtonFormField<String>(
+//         value: value,
+//         decoration: InputDecoration(
+//           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+//           border: OutlineInputBorder(
+//             borderRadius: BorderRadius.circular(4),
+//             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+//           ),
+//           enabledBorder: OutlineInputBorder(
+//             borderRadius: BorderRadius.circular(4),
+//             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+//           ),
+//           focusedBorder: OutlineInputBorder(
+//             borderRadius: BorderRadius.circular(4),
+//             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+//           ),
+//         ),
+//         items: items.map((item) {
+//           return DropdownMenuItem<String>(
+//             value: item['value'],
+//             child: Text(
+//               item['label']!,
+//               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+//             ),
+//           );
+//         }).toList(),
+//         onChanged: onChanged,
+//       ),
+//     ],
+//   );
+// }
 
 Widget _buildDropdownField({
   required String label,
@@ -1094,24 +1067,18 @@ Widget _buildDropdownField({
     children: [
       Text(
         label,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.black,
-        ),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.black),
       ),
       const SizedBox(height: 6),
-      DropdownButtonFormField<String>(
+      DropdownButtonFormField2<String>(
         value: value,
+        buttonStyleData: const ButtonStyleData(padding: EdgeInsets.only(right: 8), height: 48),
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 14,
-          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
           ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
@@ -1121,6 +1088,7 @@ Widget _buildDropdownField({
             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
           ),
         ),
+        dropdownStyleData: DropdownStyleData(offset: const Offset(0, -5), maxHeight: 300),
         items: items.map((item) {
           return DropdownMenuItem<String>(
             value: item['value'],
