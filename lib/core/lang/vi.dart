@@ -114,7 +114,7 @@ const Map<int, Map<String, String>> vi = {
     'IP_OR_DOMAIN_NOT_AVAILABLE': "IP hoặc domain không khả dụng",
     'USER_NAME_OR_PASSWORD_ERROR': "Sai tài khoản hoặc mật khẩu",
     'CAMERA_PORT_ERROR': "Port camera lỗi",
-    'CAMERA_EXIST': "Camera đã tồn tại",
+    'CAMERA_EXIST': "Camera đã tồn tại. Vui lòng kiểm tra và nhập lại!",
     'LOCATION_INVALID': "Vị trí không hợp lệ",
     'CAMERA_NAME_EXIST': "Tên camera đã tồn tại",
     'BOX_ID_INVALID': "ID box không hợp lệ",

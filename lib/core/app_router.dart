@@ -34,7 +34,7 @@ enum Routes {
   addGroupCamera(
     name: 'addGroupCamera',
     path: '/addGroupCamera',
-    title: 'Quản lý nhóm camera',
+    title: 'Quản lý camera',
     description:
         'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
   ),
@@ -115,7 +115,7 @@ class AppRouter {
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(
-              create: (context) => MonitorBloc(context.read() ,context.read()),
+              create: (context) => MonitorBloc(context.read(), context.read()),
             ),
             BlocProvider(
               create: (context) => CustomViewBloc(
@@ -177,7 +177,9 @@ class AppRouter {
                   return fadeTransition(
                     context: context,
                     state: state,
-                    child: CustomMonitorPane(mode: args?.mode ?? CustomMonitorPaneMode.view),
+                    child: CustomMonitorPane(
+                      mode: args?.mode ?? CustomMonitorPaneMode.view,
+                    ),
                   );
                 },
               ),
@@ -201,7 +203,11 @@ class AppRouter {
             path: Routes.playback.path,
             name: Routes.playback.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: PlaybackScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: PlaybackScreen(),
+              );
             },
           ),
           GoRoute(
@@ -260,10 +266,11 @@ CustomTransitionPage fadeTransition<T>({
     child: child,
     transitionDuration: const Duration(milliseconds: 250),
     reverseTransitionDuration: const Duration(milliseconds: 250),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
-      opacity: CurveTween(curve: Curves.easeIn).animate(animation),
-      child: child,
-    ),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(
+          opacity: CurveTween(curve: Curves.easeIn).animate(animation),
+          child: child,
+        ),
   );
 }
 

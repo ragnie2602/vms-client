@@ -95,7 +95,7 @@ class ItemCameraWidget extends StatelessWidget {
 
   Widget _buildStatusColumn() {
     return Expanded(
-      flex: 180,
+      flex: 190,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: CameraStatusWidget(cameraStatus: itemCamera.status),
@@ -231,7 +231,7 @@ class CameraStatusWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+      padding: EdgeInsets.symmetric(vertical: 4, horizontal: 6),
       decoration: BoxDecoration(
         color: cameraStatus.bgColor,
         borderRadius: BorderRadius.circular(5),
@@ -243,7 +243,7 @@ class CameraStatusWidget extends StatelessWidget {
             Container(
               width: 6,
               height: 6,
-              margin: EdgeInsets.only(right: 4),
+              margin: EdgeInsets.only(right: 2),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(3),
                 color: cameraStatus.contentColor,
