@@ -319,7 +319,6 @@ class CameraPlayerState extends State<CameraPlayer> {
           _PlayerState.none => Center(
             child: Text('Không có dữ liệu!', style: TextStyle(fontSize: 13, color: Colors.white)),
           ),
-          _PlayerState.error => _buildError(),
           _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
           _ => AspectRatio(
             aspectRatio: _aspectRatio,
@@ -335,7 +334,11 @@ class CameraPlayerState extends State<CameraPlayer> {
                       )
                     : Texture(textureId: id);
 
-                return widget.builder?.call(player, _status) ?? player;
+                return widget.builder?.call(
+                      state == _PlayerState.error ? _buildError() : player,
+                      _status,
+                    ) ??
+                    player;
               },
             ),
           ),
@@ -345,22 +348,23 @@ class CameraPlayerState extends State<CameraPlayer> {
   }
 
   Widget _buildError() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 14),
-        Icon(Icons.videocam_off, color: Colors.red, size: 36),
-        SizedBox(height: 6),
-        Text(
-          widget.mode != PlayerMode.playback
-              ? 'Camera ${widget.name} đang ngoại tuyến'
-              : 'Có lỗi xảy ra khi tải video',
-          style: TextStyle(fontSize: 13, color: Colors.white),
-          textAlign: TextAlign.center,
-        ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 14),
+          Icon(Icons.videocam_off, color: Colors.red, size: 36),
+          SizedBox(height: 6),
+          Text(
+            widget.mode != PlayerMode.playback
+                ? 'Camera ${widget.name} đang ngoại tuyến'
+                : 'Có lỗi xảy ra khi tải video',
+            style: TextStyle(fontSize: 13, color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }
