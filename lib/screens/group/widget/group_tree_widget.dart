@@ -326,9 +326,13 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                         ),
                         onTreeReady: (treeViewController) {
                           _treeController = treeViewController;
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            treeViewController.expandAllChildren(widget.tree);
-                          });
+                          Future.delayed(
+                            Duration.zero,
+                            () => _treeController?.expandAllChildren(widget.tree),
+                          );
+                          // WidgetsBinding.instance.addPostFrameCallback((_) {
+                          //   treeViewController.expandAllChildren(widget.tree);
+                          // });
                         },
                       ),
               );
