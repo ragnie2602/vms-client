@@ -92,6 +92,7 @@ Future<String?> showResetPasswordDialog(
                             _obscurePassword
                                 ? Icons.visibility_off
                                 : Icons.visibility,
+                            color: AppColors.black,
                           ),
                           iconSize: 20,
                           onPressed: () => setState(
@@ -382,6 +383,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                                 _obscurePassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: AppColors.black,
                               ),
                               iconSize: 20,
                               onPressed: () => setState(
