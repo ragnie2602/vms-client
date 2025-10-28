@@ -178,7 +178,7 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
   }
 
   void _onError(String error) {
-    Logger.error(error);
+    Logger.error(error, writeLog: true);
   }
 
   void _onCompleted(bool completed) {
