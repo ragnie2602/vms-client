@@ -149,7 +149,7 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
     _player = Player(
       configuration: PlayerConfiguration(
         title: widget.name,
-        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 32 * 1024 * 1024,
+        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 6 * 1024 * 1024,
       ),
     );
     _controller = VideoController(_player);

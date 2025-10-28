@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
+import 'package:vms_flutter_client/core/utils/task_pool.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 
 enum _PlayerState { initializing, initialized, error, none }
@@ -67,8 +68,11 @@ class CameraPlayerState extends State<CameraPlayer> {
     blocRef = context.read<AppBloc>();
     _currentSource = widget.source;
     super.initState();
-    _initPlayer();
-    _onConnecting();
+
+    TaskPool.instance.add(() async {
+      _initPlayer();
+      await _onConnecting();
+    });
   }
 
   @override
