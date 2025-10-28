@@ -320,6 +320,7 @@ class CameraPlayerState extends State<CameraPlayer> {
             child: Text('Không có dữ liệu!', style: TextStyle(fontSize: 13, color: Colors.white)),
           ),
           _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
+          _PlayerState.error => _buildError(),
           _ => AspectRatio(
             aspectRatio: _aspectRatio,
             child: ValueListenableBuilder(
@@ -334,11 +335,7 @@ class CameraPlayerState extends State<CameraPlayer> {
                       )
                     : Texture(textureId: id);
 
-                return widget.builder?.call(
-                      state == _PlayerState.error ? _buildError() : player,
-                      _status,
-                    ) ??
-                    player;
+                return widget.builder?.call(player, _status) ?? player;
               },
             ),
           ),
