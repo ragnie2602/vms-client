@@ -358,6 +358,7 @@ class CameraPlayerState extends State<CameraPlayer> {
               ? 'Camera ${widget.name} đang ngoại tuyến'
               : 'Có lỗi xảy ra khi tải video',
           style: TextStyle(fontSize: 13, color: Colors.white),
+          textAlign: TextAlign.center,
         ),
       ],
     );
