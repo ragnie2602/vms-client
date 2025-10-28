@@ -353,11 +353,15 @@ class CameraPlayerState extends State<CameraPlayer> {
         const SizedBox(height: 14),
         Icon(Icons.videocam_off, color: Colors.red, size: 36),
         SizedBox(height: 6),
-        Text(
-          widget.mode != PlayerMode.playback
-              ? 'Camera ${widget.name} đang ngoại tuyến'
-              : 'Có lỗi xảy ra khi tải video',
-          style: TextStyle(fontSize: 13, color: Colors.white),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          child: Text(
+            widget.mode != PlayerMode.playback
+                ? 'Camera ${widget.name} đang ngoại tuyến'
+                : 'Có lỗi xảy ra khi tải video',
+            style: TextStyle(fontSize: 13, color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     );
