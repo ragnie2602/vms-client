@@ -214,7 +214,9 @@ class ItemCameraWidget extends StatelessWidget {
     return _buildMenuItem(
       value: 'delete',
       icon: AppAssets.icDelete,
-      label: 'Xóa khỏi hệ thống',
+      label: itemCamera.cameraRole == CameraRole.view
+          ? "Xóa"
+          : 'Xóa khỏi hệ thống',
       iconColor: AppColors.redFF0004,
       textColor: AppColors.redFF0004,
     );
