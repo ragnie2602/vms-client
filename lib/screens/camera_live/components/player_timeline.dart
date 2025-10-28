@@ -330,9 +330,9 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
 }
 
 enum TimelineDisplayMode {
-  h24('24h', Duration(hours: 1), 5, Duration(minutes: 2)),
-  h8('8h', Duration(hours: 1), 5, Duration(minutes: 1)),
-  h1('1h', Duration(hours: 1), 5, Duration(minutes: 1));
+  h24('24h', Duration(hours: 1), 5, Duration(minutes: 1, seconds: 30)),
+  h8('8h', Duration(hours: 1), 5, Duration(seconds: 30)),
+  h1('1h', Duration(hours: 1), 5, Duration.zero);
 
   final String label;
   final Duration interval;
