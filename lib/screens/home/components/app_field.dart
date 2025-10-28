@@ -19,6 +19,7 @@ class AppField extends StatefulWidget {
     this.requiredField = false,
     this.trailingButton,
     this.inputFormatters,
+    this.readOnly = false,
   });
 
   final TextEditingController controller;
@@ -34,6 +35,7 @@ class AppField extends StatefulWidget {
   final bool requiredField;
   final Widget? trailingButton;
   final List<TextInputFormatter>? inputFormatters;
+  final bool? readOnly;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -118,9 +120,15 @@ class _AppFieldState extends State<AppField> {
                         _errorText = null;
                       });
                     },
+                    readOnly: widget.readOnly ?? false,
                     inputFormatters: widget.inputFormatters,
+
                     decoration: InputDecoration(
                       hintText: widget.hintText,
+                      filled: widget.readOnly ?? false,
+                      fillColor: widget.readOnly ?? false
+                          ? AppColors.greyF2F4FA
+                          : null,
                       hintStyle: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,

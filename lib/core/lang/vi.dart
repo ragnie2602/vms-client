@@ -19,7 +19,6 @@ const Map<String, String> _commonErrors = {
 const Map<int, Map<String, String>> vi = {
   // authenticate (101)
   101: {
-    ..._commonErrors,
     'ACCOUNT_INVALID': "Thông tin Email/số điện thoại không hợp lệ",
     'PASSWORD_INVALID': "Mật khẩu không hợp lệ",
     'PLATFORM_INVALID': "Loại thiết bị không hợp lệ",
@@ -29,7 +28,6 @@ const Map<int, Map<String, String>> vi = {
 
   // login (102)
   102: {
-    ..._commonErrors,
     'USER_INVALID': "Người dùng không hợp lệ",
     'ACCOUNT_INVALID': "Thông tin Email/số điện thoại không hợp lệ",
     'PASSWORD_INVALID': "Mật khẩu không hợp lệ",
@@ -37,7 +35,6 @@ const Map<int, Map<String, String>> vi = {
 
   // register (104)
   104: {
-    ..._commonErrors,
     'ACCOUNT_EXIST': "Tên tài khoản đã tồn tại",
     'TEL_EXIST': 'Số điện thoại đã tồn tại',
     'EMAIL_EXIST': "Email đã tồn tại trên hệ thống. Vui lòng thử lại",
@@ -56,14 +53,12 @@ const Map<int, Map<String, String>> vi = {
 
   // checkCameraOnvif (247)
   247: {
-    ..._commonErrors,
     'IP_OR_DOMAIN_ERROR': "Lỗi IP hoặc domain",
     'USER_OR_PASSWORD_INVALID': "Tên người dùng hoặc mật khẩu không hợp lệ",
   },
 
   // updateCamera (142)
   142: {
-    ..._commonErrors,
     'RTSP_URL_INVALID': "URL RTSP không hợp lệ",
     'NAME_INVALID': "Tên không hợp lệ",
     'CAMERA_ID_INVALID': "ID camera không hợp lệ",
@@ -101,11 +96,10 @@ const Map<int, Map<String, String>> vi = {
   },
 
   // shareCamera (154)
-  154: {..._commonErrors, 'CAMERA_NOT_FOUND': "Không tìm thấy camera"},
+  154: {'CAMERA_NOT_FOUND': "Không tìm thấy camera"},
 
   // addGroupCamera (203)
   203: {
-    ..._commonErrors,
     'GROUP_NAME_EMPTY': "Tên nhóm trống",
     'PARENT_GROUP_NOT_FOUND_OR_INVALID':
         "Nhóm cha không tìm thấy hoặc không hợp lệ",
@@ -114,7 +108,6 @@ const Map<int, Map<String, String>> vi = {
 
   // addCameraRTSP (192)
   192: {
-    ..._commonErrors,
     'RTSP_EMPTY': "URL RTSP trống",
     'USER_NOT_FOUND': "Không tìm thấy người dùng",
     'CAMERA_NAME_EMPTY': "Tên camera trống",
@@ -135,7 +128,6 @@ const Map<int, Map<String, String>> vi = {
 
   // addCameraOnVif (199)
   199: {
-    ..._commonErrors,
     'RTSP_EMPTY': "URL RTSP trống",
     'USER_NOT_FOUND': "Không tìm thấy người dùng",
     'CAMERA_NAME_EMPTY': "Tên camera trống",
@@ -163,7 +155,6 @@ const Map<int, Map<String, String>> vi = {
 
   // addCameraToGroup (205)
   205: {
-    ..._commonErrors,
     'CAMERA_ID_EMPTY': "ID camera trống",
     'GROUP_ID_EMPTY': "ID nhóm trống",
     'CAMERA_ID_NOT_FOUND': "Không tìm thấy camera",
@@ -173,7 +164,6 @@ const Map<int, Map<String, String>> vi = {
 
   // removeCameraFromGroup (206)
   206: {
-    ..._commonErrors,
     'CAMERA_ID_EMPTY': "ID camera trống",
     'GROUP_ID_EMPTY': "ID nhóm trống",
     'CAMERA_ID_NOT_FOUND': "Không tìm thấy camera",
@@ -182,7 +172,6 @@ const Map<int, Map<String, String>> vi = {
 
   // updateGroupDevice (208)
   208: {
-    ..._commonErrors,
     'GROUP_ID_EMPTY': "ID nhóm trống",
     'GROUP_ID_NOT_FOUND': "Không tìm thấy nhóm",
     'PARENT_GROUP_NOT_FOUND': "Không tìm thấy nhóm cha",
@@ -193,14 +182,12 @@ const Map<int, Map<String, String>> vi = {
 
   // listShareInviteGroup (235)
   235: {
-    ..._commonErrors,
     'GROUP_ID_EMPTY': "ID nhóm trống",
     'GROUP_NOT_FOUND': "Không tìm thấy nhóm",
   },
 
   // shareGroupCamera (234)
   234: {
-    ..._commonErrors,
     'ALREADY_SHARE': "Đã được chia sẻ",
     'SHARE_YOURSELF': "Không thể chia sẻ cho chính mình",
     'ALREADY_INVITE': "Đã được mời",
