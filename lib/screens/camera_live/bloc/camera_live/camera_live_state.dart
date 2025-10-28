@@ -22,7 +22,7 @@ class CameraLiveState extends BaseState {
   });
 
   final LiveViewMode mode;
-  final CameraEntity camera;
+  final CameraEntity? camera;
   final PlayerStatus status;
   final double volume;
   final double speed;

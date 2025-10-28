@@ -29,7 +29,14 @@ class LiveViewActions extends StatefulWidget {
 
 class _LiveViewActionsState extends State<LiveViewActions> {
   late final ValueNotifier<int?> _leftPanelIndex = ValueNotifier(null);
-  late final ValueNotifier<int?> _rightPanelIndex = ValueNotifier(null);
+  // late final ValueNotifier<int?> _rightPanelIndex = ValueNotifier(null);
+
+  @override
+  void dispose() {
+    _leftPanelIndex.dispose();
+    // _rightPanelIndex.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -39,6 +46,7 @@ class _LiveViewActionsState extends State<LiveViewActions> {
       if (widget.openCamerasPanelImmediately) {
         widget.leftController.togglePanel(
           MonitorCameras(
+            highlightSelected: true,
             maxWidth: widget.leftController.expandedWidth,
             key: ValueKey('live_view_cameras'),
             selectedCamera: context.read<CameraLiveBloc>().state.camera,
@@ -70,19 +78,13 @@ class _LiveViewActionsState extends State<LiveViewActions> {
                 children: [
                   if (widget.mode.isPlayback) PlaybackDate(),
 
-                  if (widget.mode.isLive)
-                    ActionItem(
-                      title: 'Chế độ xem',
-                      icon: AppAssets.icViewMode,
-                      isSelected: index == 0,
-                    ),
-
                   ActionItem(
                     isSelected: index == 1,
                     title: 'Danh sách camera',
                     icon: AppAssets.icListCamera,
                     onTap: () => widget.leftController.togglePanel(
                       MonitorCameras(
+                        highlightSelected: true,
                         maxWidth: widget.leftController.expandedWidth,
                         key: ValueKey('live_view_cameras'),
                         selectedCamera: context.read<CameraLiveBloc>().state.camera,
@@ -94,6 +96,7 @@ class _LiveViewActionsState extends State<LiveViewActions> {
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
                   ),
+
                   if (widget.mode.isPlayback)
                     ActionItem(
                       title: 'Danh sách Playback',
@@ -113,21 +116,21 @@ class _LiveViewActionsState extends State<LiveViewActions> {
             ),
 
             /*  */
-            ValueListenableBuilder(
-              valueListenable: _rightPanelIndex,
-              builder: (context, index, child) => Row(
-                spacing: 28,
-                children: [
-                  // ActionItem.alert(
-                  //   isSelected: index == 0,
-                  //   id: 0,
-                  //   controller: rightController,
-                  //   onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
-                  //   count: '09',
-                  // ),
-                ],
-              ),
-            ),
+            // ValueListenableBuilder(
+            //   valueListenable: _rightPanelIndex,
+            //   builder: (context, index, child) => Row(
+            //     spacing: 28,
+            //     children: [
+            //       ActionItem.alert(
+            //         isSelected: index == 0,
+            //         id: 0,
+            //         controller: rightController,
+            //         onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
+            //         count: '09',
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),

@@ -13,7 +13,7 @@ part 'camera_live_event.dart';
 part 'camera_live_state.dart';
 
 class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
-  CameraLiveBloc({required LiveViewMode mode, required CameraEntity camera})
+  CameraLiveBloc({required LiveViewMode mode, required CameraEntity? camera})
     : super(
         CameraLiveState(
           mode: mode,
@@ -48,9 +48,17 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
   }
 
   FutureOr<void> _onChangeCamera(ChangeCamera event, Emitter<CameraLiveState> emit) async {
-    if (state.camera.id == event.camera.id) return;
+    if (state.camera?.id == event.camera.id) return;
 
-    emit(state.copyWith(camera: event.camera, volume: 100, speed: 1, status: PlayerStatus.playing));
+    emit(
+      state.copyWith(
+        camera: event.camera,
+        volume: 100,
+        speed: 1,
+        status: PlayerStatus.playing,
+        cameraLiveController: CameraLiveController(), // Instance mới
+      ),
+    );
   }
 
   FutureOr<void> _onChangePlayerStatus(ChangePlayerStatus event, Emitter<CameraLiveState> emit) {

@@ -10,10 +10,17 @@ import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import '../bloc/monitor/monitor_bloc.dart';
 
 class MonitorCameras extends StatefulWidget {
-  const MonitorCameras({super.key, required this.maxWidth, this.onTap, this.selectedCamera});
+  const MonitorCameras({
+    super.key,
+    required this.maxWidth,
+    this.onTap,
+    this.selectedCamera,
+    this.highlightSelected = false,
+  });
   final double maxWidth;
   final Function(CameraEntity)? onTap;
   final CameraEntity? selectedCamera;
+  final bool highlightSelected;
 
   @override
   State<MonitorCameras> createState() => _MonitorCamerasState();
@@ -147,11 +154,11 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
       onTap: () {
         if (selectedCamera?.id == camera.id) return;
         onTap(camera);
-        if (selectedCamera != null) setState(() => selectedCamera = camera);
+        if (widget.highlightSelected) setState(() => selectedCamera = camera);
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        color: selectedCamera?.id == camera.id ? AppColors.greyF2F4FA : Colors.transparent,
+        color: selectedCamera?.camId == camera.camId ? AppColors.greyF2F4FA : Colors.transparent,
         child: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [

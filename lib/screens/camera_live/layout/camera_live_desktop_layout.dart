@@ -16,7 +16,7 @@ class CameraLiveDesktopLayout extends StatefulWidget {
     required this.mode,
     this.openCamerasPanelImmediately = false,
   });
-  final Widget content;
+  final Widget? content;
   final double leftPanelWidth;
   final double rightPanelWidth;
   final LiveViewMode mode;
@@ -58,38 +58,45 @@ class _CameraLiveDesktopLayoutState extends State<CameraLiveDesktopLayout> {
               Panel(expandedWidth: widget.leftPanelWidth, controller: _leftController),
 
               Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
-                    color: Colors.black,
-                  ),
-                  child: Column(
-                    children: [
-                      Expanded(child: widget.content),
-                      if (widget.mode == LiveViewMode.playback)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 3),
-                          child: PlayerTimeline(
-                            size: Size(double.infinity, 60),
-                            normalStyle: const TextStyle(
-                              color: Color.fromRGBO(255, 255, 255, 0.2),
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            highlightStyle: TextStyle(
-                              color: Color.fromRGBO(255, 255, 255, 0.2),
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            playbackColor: Color.fromRGBO(21, 171, 255, 0.4),
-                            centralLineColor: Color.fromRGBO(33, 204, 195, 1),
-                          ),
+                child: widget.content == null
+                    ? Container(
+                        color: Colors.black,
+                        width: double.infinity,
+                        height: double.infinity,
+                        margin: const EdgeInsets.all(20),
+                      )
+                    : Container(
+                        margin: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+                          color: Colors.black,
                         ),
-                      PlayerControls(mode: widget.mode),
-                    ],
-                  ),
-                ),
+                        child: Column(
+                          children: [
+                            Expanded(child: widget.content!),
+                            if (widget.mode == LiveViewMode.playback)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 3),
+                                child: PlayerTimeline(
+                                  size: Size(double.infinity, 60),
+                                  normalStyle: const TextStyle(
+                                    color: Color.fromRGBO(255, 255, 255, 0.2),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  highlightStyle: TextStyle(
+                                    color: Color.fromRGBO(255, 255, 255, 0.2),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  playbackColor: Color.fromRGBO(21, 171, 255, 0.4),
+                                  centralLineColor: Color.fromRGBO(33, 204, 195, 1),
+                                ),
+                              ),
+                            PlayerControls(mode: widget.mode),
+                          ],
+                        ),
+                      ),
               ),
 
               Panel(expandedWidth: widget.rightPanelWidth, controller: _rightController),

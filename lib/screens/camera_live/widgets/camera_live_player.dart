@@ -175,6 +175,11 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
     _playlistSub = _player.stream.playlist.listen(_onPlaylistChanged);
     _completedSub = _player.stream.completed.listen(_onCompleted);
     _errorSub = _player.stream.error.listen(_onError);
+
+    // Có vài case đang pause nhưng player tự playing (vd seek, ...) --> update status theo player
+    _player.stream.playing.listen((playing) {
+      if (playing && _status.value != PlayerStatus.playing) _status.value = PlayerStatus.playing;
+    });
   }
 
   void _onError(String error) {
@@ -206,12 +211,12 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
     widget.controller.onPlaybackChanged?.call(_playlistIndex);
   }
 
-  Future<void> jumpToDate(DateTime date) async {
+  Future<void> jumpToDate(DateTime date, {int? dateIndex}) async {
     _shouldSyncPlayerTime = false;
     // Set timeline trước tránh cảm giác delay
     widget.controller.onTimeChanged?.call(date.roundToSecond);
 
-    final index = widget.playlist.atTime(date);
+    final index = dateIndex ?? widget.playlist.atTime(date);
 
     // Click ngoài khoảng playback
     if (index == null) {

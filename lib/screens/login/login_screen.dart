@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   //     backgroundColor: Colors.green,
                   //   ),
                   // );
-                  context.goNamed(Routes.monitoring.name);
+                  context.goNamed(AppConfig.INITIAL_HOME_TAB.route?.name ?? Routes.monitoring.name);
                 } else if (state.isLoading == false && state.errorMessage != null) {
                   showAppMessageDialog(
                     context,

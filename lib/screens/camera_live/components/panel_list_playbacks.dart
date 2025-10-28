@@ -18,6 +18,9 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Trường hợp mở tab playback -- chưa chọn camera -- mở tab playback --> infinity loading
+    if (context.read<CameraLiveBloc>().state.camera == null) return buildEmpty();
+
     return BlocBuilder<PlaybackBloc, PlaybackState>(
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,
@@ -36,7 +39,7 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
                     .cameraLiveController
                     .ref
                     .currentState
-                    ?.jumpToDate(playback.startTime),
+                    ?.jumpToDate(playback.startTime, dateIndex: index),
                 child: PlaybackItem(
                   maxWidth: maxWidth,
                   playback: playback,

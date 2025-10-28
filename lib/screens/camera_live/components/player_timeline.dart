@@ -66,7 +66,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
       TimelineDisplayMode.h24 => 10000,
     },
   );
-  PlaybackBloc get _playbackBloc => context.read<PlaybackBloc>();
+  // PlaybackBloc get _playbackBloc => context.read<PlaybackBloc>();
   CameraLiveBloc get _cameraLiveBloc => context.read<CameraLiveBloc>();
   DateTime get _startDate => _cameraLiveBloc.state.playbackDate.startOfDay;
   DateTime get _endDate => _cameraLiveBloc.state.playbackDate.startOfNextDay;
@@ -74,16 +74,16 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
   DateTime? _centralDateFromStart;
   DateTime? _centralDateFromEnd;
 
-  @override
-  void initState() {
-    super.initState();
+  // @override
+  // void initState() {
+  //   super.initState();
 
-    if (_playbackBloc.state is PlaybackInitial) {
-      _playbackBloc.add(
-        GetVideoPlaybacks(_cameraLiveBloc.state.camera.id, _cameraLiveBloc.state.playbackDate),
-      );
-    }
-  }
+  //   if (_playbackBloc.state is PlaybackInitial && _cameraLiveBloc.state.camera != null) {
+  //     _playbackBloc.add(
+  //       GetVideoPlaybacks(_cameraLiveBloc.state.camera!.id, _cameraLiveBloc.state.playbackDate),
+  //     );
+  //   }
+  // }
 
   @override
   void dispose() {
