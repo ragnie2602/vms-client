@@ -53,61 +53,65 @@ class _SidebarState extends State<Sidebar> {
     if (!AppConfig.SHOW_HOME_SIDEBAR) return SizedBox.shrink();
 
     return BlocListener<AppBloc, AppState>(
-      listenWhen: (previous, current) => previous.themeMode != current.themeMode,
+      listenWhen: (previous, current) => previous.themeMode != current.themeMode 
+      || previous.displayFullScreenLiveView != current.displayFullScreenLiveView,
       listener: (context, state) => setState(() {}),
-      child: ValueListenableBuilder<double>(
-        valueListenable: width,
-        builder: (context, value, child) => AnimatedContainer(
-          duration: Durations.short2,
-          width: value,
-          height: double.infinity,
-          color: AppColors.contentBg,
-          child: Column(
-            children: [
-              /* Logo */
-              SizedBox(
-                height: AppConfig.APP_BAR_HEIGHT,
-                child: SvgPicture.asset(
-                  value >= widget.maxWidth ? AppAssets.logoFull : AppAssets.logoOnly,
+      child: Visibility(
+        visible: !context.read<AppBloc>().state.displayFullScreenLiveView,
+        child: ValueListenableBuilder<double>(
+          valueListenable: width,
+          builder: (context, value, child) => AnimatedContainer(
+            duration: Durations.short2,
+            width: value,
+            height: double.infinity,
+            color: AppColors.contentBg,
+            child: Column(
+              children: [
+                /* Logo */
+                SizedBox(
+                  height: AppConfig.APP_BAR_HEIGHT,
+                  child: SvgPicture.asset(
+                    value >= widget.maxWidth ? AppAssets.logoFull : AppAssets.logoOnly,
+                  ),
                 ),
-              ),
-              Divider(height: 1, color: AppColors.scaffoldBg),
-              Expanded(
-                child: HomeDrawer(maxWidth: widget.maxWidth, onToggleExpanded: _onToggleExpanded),
-              ),
-
-              /*  */
-              ThemeBox(
-                maxWidth: widget.maxWidth,
-                expandedPadding: const EdgeInsets.symmetric(horizontal: 20),
-                collapsedPadding: const EdgeInsets.symmetric(horizontal: 6),
-              ),
-              // MouseRegion(
-              //   cursor: SystemMouseCursors.resizeColumn,
-              //   child: GestureDetector(
-              //     onHorizontalDragStart: (_) =>
-              //         widget.onCursorChange?.call(SystemMouseCursors.resizeColumn),
-              //     onHorizontalDragEnd: (_) => widget.onCursorChange?.call(MouseCursor.defer),
-              //     onHorizontalDragUpdate: (details) {
-              //       if (details.primaryDelta == null) return;
-
-              //       var newOffset = width.value + min(details.primaryDelta!, 60);
-              //       if (newOffset <= widget.minWidth) {
-              //         width.value = widget.minWidth;
-              //       } else if (newOffset >= widget.maxWidth) {
-              //         width.value = widget.maxWidth;
-              //       } else {
-              //         width.value = newOffset;
-              //       }
-              //     },
-              //     child: Container(
-              //       width: widget.dividerWidth,
-              //       height: double.infinity,
-              //       color: Colors.white70,
-              //     ),
-              //   ),
-              // ),
-            ],
+                Divider(height: 1, color: AppColors.scaffoldBg),
+                Expanded(
+                  child: HomeDrawer(maxWidth: widget.maxWidth, onToggleExpanded: _onToggleExpanded),
+                ),
+        
+                /*  */
+                ThemeBox(
+                  maxWidth: widget.maxWidth,
+                  expandedPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  collapsedPadding: const EdgeInsets.symmetric(horizontal: 6),
+                ),
+                // MouseRegion(
+                //   cursor: SystemMouseCursors.resizeColumn,
+                //   child: GestureDetector(
+                //     onHorizontalDragStart: (_) =>
+                //         widget.onCursorChange?.call(SystemMouseCursors.resizeColumn),
+                //     onHorizontalDragEnd: (_) => widget.onCursorChange?.call(MouseCursor.defer),
+                //     onHorizontalDragUpdate: (details) {
+                //       if (details.primaryDelta == null) return;
+        
+                //       var newOffset = width.value + min(details.primaryDelta!, 60);
+                //       if (newOffset <= widget.minWidth) {
+                //         width.value = widget.minWidth;
+                //       } else if (newOffset >= widget.maxWidth) {
+                //         width.value = widget.maxWidth;
+                //       } else {
+                //         width.value = newOffset;
+                //       }
+                //     },
+                //     child: Container(
+                //       width: widget.dividerWidth,
+                //       height: double.infinity,
+                //       color: Colors.white70,
+                //     ),
+                //   ),
+                // ),
+              ],
+            ),
           ),
         ),
       ),

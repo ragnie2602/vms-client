@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
 import '../../shared/panel.dart';
@@ -35,8 +37,15 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
             children: [
               Panel(expandedWidth: widget.leftPanelWidth, controller: _leftController),
 
-              Expanded(
-                child: Padding(padding: const EdgeInsets.all(20), child: widget.content),
+              BlocSelector<AppBloc, AppState, bool>(
+                selector: (state) => state.displayFullScreenLiveView,
+                builder: (BuildContext context, shouldDisplayFullScreen) {  
+                  return Expanded(
+                    child: !shouldDisplayFullScreen ? 
+                      Padding(padding: const EdgeInsets.all(20), child: widget.content)
+                      : widget.content,
+                  );
+                },
               ),
 
               Panel(expandedWidth: widget.rightPanelWidth, controller: _rightController),

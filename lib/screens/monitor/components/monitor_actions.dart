@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -96,6 +97,12 @@ class _MonitorActionsState extends State<MonitorActions> {
                       id: 0,
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
+                  ),
+                  ActionItem(
+                    isSelected: value == 0,
+                    title: 'Xem toàn màn hình',
+                    icon: AppAssets.icListCamera,
+                    onTap: () => context.read<AppBloc>().add(ToggleMonitorDisplayMode()),
                   ),
                 ],
               ),
