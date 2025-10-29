@@ -308,7 +308,6 @@ class _AddUserDialogState extends State<_AddUserDialog> {
               padding: const EdgeInsets.only(right: 16),
               child: Form(
                 key: _form,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -325,7 +324,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                             label: 'Tên đăng nhập',
                             requiredField: true,
                             validator: (v) =>
-                                v!.isEmpty ? 'Tên đăng nhập không được để trống' : null,
+                                v!.trim().isEmpty ? 'Tên đăng nhập không được để trống' : null,
                           ),
                         ),
                         const SizedBox(width: 12),
