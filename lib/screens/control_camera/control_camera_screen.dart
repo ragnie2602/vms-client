@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -32,7 +33,7 @@ class ControlCameraScreen extends StatefulWidget {
 
 class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final TextEditingController cameraNameController = TextEditingController();
-  CameraStatus? cameraStatus;
+  CameraOnlineChecked? cameraStatus;
   final ScrollController _cameraListController = ScrollController();
 
   void _onClearSearch() {
@@ -84,7 +85,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     context.read<ControlCameraBloc>().add(
       FilterCameraEvent(
         cameraName: cameraNameController.text,
-        cameraStatus: cameraStatus,
+        isOnline: cameraStatus?.getValue,
       ),
     );
   }
@@ -173,7 +174,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   }) {
     showDialogRemoveCameraFromGroup(
       context,
-      title: 'xóa camera này khỏi hệ thống?',
+      title: 'camera này khỏi hệ thống?',
       onConfirm: () {
         context.read<ControlCameraBloc>().add(
           DeleteCameraEvent(cameraId: cameraId),
@@ -221,6 +222,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           camId: camera.id,
           accountB: _accName,
           shareId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(
+              context: c,
+              title: Text(messageFail ?? 'Thất bại'),
+            );
+          },
         );
       },
       onShareCamera: (_accountNameInvite) {
@@ -339,7 +346,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Tên nhóm camera',
+                                'Tên camera',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w400,
@@ -401,13 +408,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              CustomCommonDropdown<CameraStatus>(
-                                items: CameraStatus.values,
+                              CustomCommonDropdown<CameraOnlineChecked>(
+                                items: CameraOnlineChecked.values,
                                 value: cameraStatus,
                                 onChanged: (p0) {
                                   setState(() {
                                     if (cameraStatus == p0 ||
-                                        p0 == CameraStatus.all) {
+                                        p0 == CameraOnlineChecked.all) {
                                       cameraStatus = null;
                                     } else {
                                       cameraStatus = p0;
@@ -431,29 +438,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            _onSearch();
-                          },
-                          splashColor: Colors.transparent,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(3),
-                              color: AppColors.secondary,
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 18,
-                            ),
-                            margin: EdgeInsets.only(left: 15),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                AppAssets.icSearch,
-                                color: Colors.white,
-                              ),
-                            ),
                           ),
                         ),
                         const SizedBox(width: 25),
@@ -514,7 +498,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
 
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                              vertical: 10,
+                              vertical: 12,
                               horizontal: 12,
                             ),
                             decoration: BoxDecoration(

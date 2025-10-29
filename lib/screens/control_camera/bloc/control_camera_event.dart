@@ -42,8 +42,8 @@ class CheckOnvifEvent extends ControlCameraEvent {
 
 class FilterCameraEvent extends ControlCameraEvent {
   final String? cameraName;
-  final CameraStatus? cameraStatus;
-  const FilterCameraEvent({this.cameraName, this.cameraStatus});
+  final bool? isOnline;
+  const FilterCameraEvent({this.cameraName, this.isOnline});
 }
 
 class AddCameraRTSPEvent extends ControlCameraEvent {

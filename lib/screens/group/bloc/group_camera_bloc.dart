@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
@@ -91,7 +90,10 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       groupId: event.groupId,
     );
     groups.fold(
-      (onFailure) => emit(RemoveGroupCameraFailState(groups.left.toString())),
+      (onFailure) {
+        emit(RemoveGroupCameraFailState(groups.left.toString()));
+        emit(GetAllGroupCameraSuccessState(groups: listGroup));
+      },
       (onSuccess) {
         listGroup = onSuccess ?? [];
         emit(RemoveGroupCameraSuccessState(groups: listGroup));
@@ -110,7 +112,10 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       parentGroupId: event.parentGroupId,
     );
     groups.fold(
-      (onFailure) => emit(UpdateGroupCameraFailState(groups.left.toString())),
+      (onFailure) {
+        emit(UpdateGroupCameraFailState(groups.left.toString()));
+        emit(GetAllGroupCameraSuccessState(groups: listGroup));
+      },
       (onSuccess) {
         listGroup = onSuccess ?? [];
         emit(UpdateGroupCameraSuccessState(groups: listGroup));
@@ -139,14 +144,19 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     );
   }
 
-  Future<List<int>> deleteShareGroup({List<int>? shareInviteId}) async {
+  Future<List<int>> deleteShareGroup({
+    List<int>? shareInviteId,
+    Function({String? messageFail})? onToastFail,
+  }) async {
     final res = await groupCameraRepository.deleteShareGroupCamera(
       shareInviteId: shareInviteId ?? [],
     );
-    return res.fold(
-      (onFailure) => <int>[],
-      (onSuccess) => onSuccess ?? <int>[],
-    );
+    return res.fold((onFailure) {
+      if (onToastFail != null) {
+        onToastFail(messageFail: onFailure.toString()).call();
+      }
+      return <int>[];
+    }, (onSuccess) => onSuccess ?? <int>[]);
   }
 
   Future<List<int>> shareGroup({

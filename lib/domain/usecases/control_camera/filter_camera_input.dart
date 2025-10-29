@@ -8,7 +8,7 @@ part 'filter_camera_input.freezed.dart';
 class FilterCameraInput extends BaseInput with _$FilterCameraInput {
   const factory FilterCameraInput({
     String? nameCamera,
-    CameraStatus? cameraStatus,
+    bool? isOnline,
     List<CameraEntity>? listCameraOrigin,
   }) = _FilterCameraInput;
 }
