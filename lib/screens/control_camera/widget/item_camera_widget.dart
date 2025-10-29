@@ -69,7 +69,7 @@ class ItemCameraWidget extends StatelessWidget {
           style: AppTypography.style(
             14,
             fontWeight: FontWeight.w500,
-            color: AppColors.black4A4A4A,
+            color: AppColors.black,
           ),
         ),
       ),
@@ -249,9 +249,8 @@ class CameraStatusWidget extends StatelessWidget {
         child: Text(
           isOnline ? 'Online' : 'Offline',
           style: AppTypography.style(
-            14,
+            13,
             fontWeight: FontWeight.w500,
-            letterSpacing: 0.2,
             color: isOnline ? AppColors.primary : AppColors.grey6F767E,
           ),
         ),

@@ -520,7 +520,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     style: AppTypography.style(
                                       14,
                                       fontWeight: FontWeight.w500,
-                                      color: AppColors.black,
+                                      color: AppColors.secondary,
                                     ),
                                   ),
                                 ],
