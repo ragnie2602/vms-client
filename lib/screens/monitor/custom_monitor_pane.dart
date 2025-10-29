@@ -90,7 +90,7 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
                           (column) => SizedBox(
                             height: itemHeight,
                             width: itemWidth,
-                            child: buildItem(context, column, row),
+                            child: buildItem(context, column, row, Size(itemWidth, itemHeight)),
                           ),
                         ),
                       );
@@ -103,7 +103,7 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
     );
   }
 
-  Widget buildItem(BuildContext context, int column, int row) {
+  Widget buildItem(BuildContext context, int column, int row, Size size) {
     final index = row * _viewMode.columns + column;
 
     return BlocBuilder<CustomViewBloc, CustomViewState>(
@@ -141,33 +141,34 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
         camera = customView?.positions.elementAtOrNull(index)?.camera;
         return camera == null
             ? _buildEmptyCell(context, index)
-            : _buildCameraView(context, camera, index);
+            : _buildCameraView(context, camera, index, size);
       },
     );
   }
 
-  Widget _buildCameraView(BuildContext context, CameraEntity camera, int index) {
+  Widget _buildCameraView(BuildContext context, CameraEntity camera, int index, Size size) {
     return Padding(
       padding: const EdgeInsets.all(AppConfig.MONITOR_GRID_SPACING),
       child: Stack(
         children: [
           Positioned.fill(
-            child: CameraPlayer(
-              mode: PlayerMode.monitoring,
-              name: camera.name,
-              source: camera.subStreamUri.toString(),
-              builder: (player, status) => GestureDetector(
-                onTap: () => context.pushNamed(
-                  Routes.livecamera.name,
-                  extra: CameraLiveScreenArgs(data: camera),
-                ),
-                child: Stack(
+            child: GestureDetector(
+              onTap: () => context.pushNamed(
+                Routes.livecamera.name,
+                extra: CameraLiveScreenArgs(data: camera),
+              ),
+              child: CameraPlayer(
+                mode: PlayerMode.monitoring,
+                name: camera.name,
+                source: camera.subStreamUri.toString(),
+                builder: (player, status) => Stack(
                   children: [
                     player,
                     Positioned(
                       bottom: 10,
                       right: 10,
                       child: Container(
+                        constraints: BoxConstraints(maxWidth: size.width - 10),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(3),
@@ -177,15 +178,19 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
                         ),
                         padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
                             SizedBox(width: 4),
-                            Text(
-                              camera.name,
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w600,
+                            Flexible(
+                              child: Text(
+                                camera.name,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w600,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ),
                           ],

@@ -433,29 +433,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             ],
                           ),
                         ),
-                        InkWell(
-                          onTap: () {
-                            _onSearch();
-                          },
-                          splashColor: Colors.transparent,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(3),
-                              color: AppColors.secondary,
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 18,
-                            ),
-                            margin: EdgeInsets.only(left: 15),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                AppAssets.icSearch,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
                         const SizedBox(width: 25),
                         InkWell(
                           onTap: () {
@@ -514,7 +491,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
 
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                              vertical: 10,
+                              vertical: 12,
                               horizontal: 12,
                             ),
                             decoration: BoxDecoration(

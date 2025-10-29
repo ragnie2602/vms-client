@@ -94,7 +94,7 @@ const Map<int, Map<String, String>> vi = {
     'SHARE_YOURSELF': "Không thể chia sẻ cho chính mình",
     'ACCOUNT_IVALID': "Tài khoản không hợp lệ",
     'SHARE_TO_ADMIN': "Không thể chia sẻ cho admin",
-    'SHARE_TO_OWNER': "Không thể chia sẻ cho chủ sở hữu camera",
+    'SHARE_TO_OWNER': "Không thể chia sẻ cho chủ sở hữu",
     'OVER_SHARED_USER_NUMBER': "Vượt quá số người được chia sẻ",
   },
 

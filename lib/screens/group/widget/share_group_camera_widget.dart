@@ -521,63 +521,58 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                             if (_listInviteId.length > index) {
                               _accRemoveId = _listInviteId[index];
                             }
-                            return ColoredBox(
-                              color: index % 2 != 0
-                                  ? AppColors.greyF1F5F9
-                                  : Colors.white,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0,
-                                  vertical: 12,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        username,
-                                        style: AppTypography.style(
-                                          14,
-                                          fontWeight: FontWeight.w400,
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 12,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      username,
+                                      style: AppTypography.style(
+                                        14,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      if (_accRemoveId == null) return;
+                                      _onShowDialogRemoveShareGroup(
+                                        context,
+                                        invitedId: _accRemoveId,
+                                        accNameRemove: username,
+                                      );
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SvgPicture.asset(
+                                          AppAssets.icDelete,
+                                          width: 16,
+                                          height: 16,
+                                          colorFilter: const ColorFilter.mode(
+                                            Colors.black,
+                                            BlendMode.srcIn,
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                    InkWell(
-                                      onTap: () {
-                                        if (_accRemoveId == null) return;
-                                        _onShowDialogRemoveShareGroup(
-                                          context,
-                                          invitedId: _accRemoveId,
-                                          accNameRemove: username,
-                                        );
-                                      },
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            AppAssets.icDelete,
-                                            width: 16,
-                                            height: 16,
-                                            colorFilter: const ColorFilter.mode(
-                                              Colors.black,
-                                              BlendMode.srcIn,
-                                            ),
+                                        const SizedBox(width: 4),
+                                        const Text(
+                                          'Xoá',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w500,
                                           ),
-                                          const SizedBox(width: 4),
-                                          const Text(
-                                            'Xoá',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             );
                           },
