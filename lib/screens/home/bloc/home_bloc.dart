@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 
@@ -12,9 +13,9 @@ class HomeTab {
   final String svg;
   final List<HomeTab> nested;
 
-  HomeTab(this.route, {required this.title, required this.svg, this.nested = const []});
+  const HomeTab(this.route, {required this.title, required this.svg, this.nested = const []});
 
-  static final tabs = [
+  static const tabs = [
     HomeTab(Routes.monitoring, title: 'Liveview', svg: AppAssets.tabMonitor),
     HomeTab(Routes.playback, title: 'Playback', svg: AppAssets.tabPlayback),
     HomeTab(Routes.addGroupCamera, title: 'Quản lý camera', svg: AppAssets.tabCameraGroups),
@@ -24,33 +25,10 @@ class HomeTab {
   ];
 }
 
-class HomeState extends BaseState {
-  final HomeTab selectedTab;
-
-  HomeState({HomeTab? selectedTab}) : selectedTab = selectedTab ?? HomeTab.tabs[0];
-
-  HomeState copyWith({HomeTab? selectedTab}) {
-    return HomeState(selectedTab: selectedTab ?? this.selectedTab);
-  }
-
-  @override
-  List<Object?> get props => [selectedTab];
-}
-
-class HomeEvent extends BaseEvent {
-  const HomeEvent();
-}
-
-class ChangeTab extends HomeEvent {
-  final HomeTab tab;
-  final Routes? route;
-  final Object? extra;
-  const ChangeTab(this.tab, {this.route, this.extra});
-}
-
 class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
   HomeBloc() : super(HomeState()) {
     on<ChangeTab>(_onChangeTab);
+    on<ChangePageInfo>(_onChangePageInfo);
   }
 
   FutureOr<void> _onChangeTab(ChangeTab event, Emitter<HomeState> emit) async {
@@ -61,4 +39,59 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
       AppRouter.router.goNamed(event.route?.name ?? event.tab.route!.name, extra: event.extra);
     }
   }
+
+  FutureOr<void> _onChangePageInfo(ChangePageInfo event, Emitter<HomeState> emit) async {
+    emit(
+      state.copyWith(
+        pageTitle: event.title,
+        pageDescription: event.description,
+        onBack: event.onBack,
+      ),
+    );
+  }
+}
+
+class ChangePageInfo extends HomeEvent {
+  final String? title;
+  final String? description;
+  final void Function()? onBack;
+  const ChangePageInfo({this.title, this.description, this.onBack});
+}
+
+class ChangeTab extends HomeEvent {
+  final HomeTab tab;
+  final Routes? route;
+  final Object? extra;
+  const ChangeTab(this.tab, {this.route, this.extra});
+}
+
+class HomeEvent extends BaseEvent {
+  const HomeEvent();
+}
+
+class HomeState extends BaseState {
+  final HomeTab selectedTab;
+  final String pageTitle;
+  final String pageDescription;
+  final void Function()? onBack;
+
+  HomeState({HomeTab? selectedTab, this.pageTitle = '', this.pageDescription = '', this.onBack})
+    : selectedTab = selectedTab ?? AppConfig.INITIAL_HOME_TAB;
+
+  HomeState copyWith({
+    HomeTab? selectedTab,
+    String? pageTitle,
+    String? pageDescription,
+    void Function()? onBack,
+  }) {
+    return HomeState(
+      selectedTab: selectedTab ?? this.selectedTab,
+      pageTitle: pageTitle ?? this.pageTitle,
+      pageDescription: pageDescription ?? this.pageDescription,
+      onBack: onBack ?? this.onBack,
+    );
+  }
+
+  @override
+  List<Object?> get props => [selectedTab, pageTitle, pageDescription, onBack];
 }

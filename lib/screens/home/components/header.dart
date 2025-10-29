@@ -7,8 +7,10 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
+import '../bloc/home_bloc.dart';
 import '../widgets/expandable_search_bar.dart';
 import '../widgets/user_profile.dart';
 
@@ -20,11 +22,9 @@ class Header extends StatefulWidget {
 }
 
 class _HeaderState extends State<Header> {
-  late final ValueNotifier<GoRouterState> _state;
-
   @override
   void initState() {
-    _state = ValueNotifier(AppRouter.router.routerDelegate.state);
+    _onRouteChanged();
     AppRouter.router.routerDelegate.addListener(_onRouteChanged);
     super.initState();
   }
@@ -36,15 +36,32 @@ class _HeaderState extends State<Header> {
   }
 
   void _onRouteChanged() {
-    if (Routes.fromName(AppRouter.router.routerDelegate.state.name ?? '-') == null) return;
-    _state.value = AppRouter.router.routerDelegate.state;
+    final route = Routes.fromName(AppRouter.router.routerDelegate.state.name ?? '-');
+    if (route == null) return;
+
+    VoidCallback? onBack;
+    String title = route.title;
+    String description = route.description;
+
+    AppRouter.router.routerDelegate.state.extra.let((extra) {
+      if (extra is BaseScreenArgs) {
+        onBack = extra.onBack;
+        title = extra.title ?? title;
+        description = extra.description ?? description;
+      }
+    });
+
+    context.read<HomeBloc>().add(
+      ChangePageInfo(title: title, description: description, onBack: onBack),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AppBloc, AppState>(
-      listenWhen: (previous, current) => previous.themeMode != current.themeMode 
-      || previous.displayFullScreenLiveView != current.displayFullScreenLiveView,
+      listenWhen: (previous, current) =>
+          previous.themeMode != current.themeMode ||
+          previous.displayFullScreenLiveView != current.displayFullScreenLiveView,
       listener: (context, state) => setState(() {}),
       child: Visibility(
         visible: !context.read<AppBloc>().state.displayFullScreenLiveView,
@@ -58,19 +75,22 @@ class _HeaderState extends State<Header> {
             child: Row(
               children: <Widget>[
                 Expanded(
-                  child: ValueListenableBuilder(
-                    valueListenable: _state,
-                    builder: (context, state, child) {
+                  child: BlocBuilder<HomeBloc, HomeState>(
+                    buildWhen: (pre, cur) =>
+                        pre.onBack != cur.onBack ||
+                        pre.pageTitle != cur.pageTitle ||
+                        pre.pageDescription != cur.pageDescription,
+                    builder: (context, state) {
                       return Row(
                         children: <Widget>[
-                          _buildBackIcon(state),
-                          Flexible(child: _buildPageTitle(state)),
+                          _buildBackIcon(state.onBack),
+                          Flexible(child: _buildPageTitle(state.pageTitle, state.pageDescription)),
                         ],
                       );
                     },
                   ),
                 ),
-        
+
                 Row(
                   children: <Widget>[
                     SizedBox(width: 20),
@@ -103,12 +123,7 @@ class _HeaderState extends State<Header> {
     );
   }
 
-  Widget _buildBackIcon(GoRouterState state) {
-    VoidCallback? onBack;
-    if (state.extra is BaseScreenArgs && (state.extra as BaseScreenArgs).onBack != null) {
-      onBack = (state.extra as BaseScreenArgs).onBack!;
-    }
-
+  Widget _buildBackIcon(void Function()? onBack) {
     return onBack != null || context.canPop()
         ? InkWell(
             onTap: onBack ?? () => context.pop(),
@@ -121,21 +136,7 @@ class _HeaderState extends State<Header> {
         : SizedBox.shrink();
   }
 
-  Widget _buildPageTitle(GoRouterState state) {
-    String title;
-    if (state.extra is BaseScreenArgs && (state.extra as BaseScreenArgs).title != null) {
-      title = (state.extra as BaseScreenArgs).title!;
-    } else {
-      title = Routes.fromName(state.name!)!.title;
-    }
-
-    String description;
-    if (state.extra is BaseScreenArgs && (state.extra as BaseScreenArgs).description != null) {
-      description = (state.extra as BaseScreenArgs).description!;
-    } else {
-      description = Routes.fromName(state.name!)!.description;
-    }
-
+  Widget _buildPageTitle(String title, String description) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,

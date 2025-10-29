@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
+import 'package:vms_flutter_client/core/utils/task_pool.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 
 enum _PlayerState { initializing, initialized, error, none }
@@ -67,8 +68,11 @@ class CameraPlayerState extends State<CameraPlayer> {
     blocRef = context.read<AppBloc>();
     _currentSource = widget.source;
     super.initState();
-    _initPlayer();
-    _onConnecting();
+
+    TaskPool.instance.add(() async {
+      _initPlayer();
+      await _onConnecting();
+    });
   }
 
   @override
@@ -345,23 +349,25 @@ class CameraPlayerState extends State<CameraPlayer> {
   }
 
   Widget _buildError() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 14),
-          Icon(Icons.videocam_off, color: Colors.red, size: 36),
-          SizedBox(height: 6),
-          Text(
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 14),
+        Icon(Icons.videocam_off, color: Colors.red, size: 36),
+        SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          child: Text(
             widget.mode != PlayerMode.playback
                 ? 'Camera ${widget.name} đang ngoại tuyến'
                 : 'Có lỗi xảy ra khi tải video',
             style: TextStyle(fontSize: 13, color: Colors.white),
             textAlign: TextAlign.center,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -10,7 +10,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/size_observer.dart';
 
-import '../bloc/camera_live/camera_live_bloc.dart';
+import '../bloc/camera_detail/camera_detail_bloc.dart';
 import '../bloc/playback/playback_bloc.dart';
 import '../widgets/timeline_painter.dart';
 
@@ -66,24 +66,24 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
       TimelineDisplayMode.h24 => 10000,
     },
   );
-  PlaybackBloc get _playbackBloc => context.read<PlaybackBloc>();
-  CameraLiveBloc get _cameraLiveBloc => context.read<CameraLiveBloc>();
+  // PlaybackBloc get _playbackBloc => context.read<PlaybackBloc>();
+  CameraDetailBloc get _cameraLiveBloc => context.read<CameraDetailBloc>();
   DateTime get _startDate => _cameraLiveBloc.state.playbackDate.startOfDay;
   DateTime get _endDate => _cameraLiveBloc.state.playbackDate.startOfNextDay;
 
   DateTime? _centralDateFromStart;
   DateTime? _centralDateFromEnd;
 
-  @override
-  void initState() {
-    super.initState();
+  // @override
+  // void initState() {
+  //   super.initState();
 
-    if (_playbackBloc.state is PlaybackInitial) {
-      _playbackBloc.add(
-        GetVideoPlaybacks(_cameraLiveBloc.state.camera.id, _cameraLiveBloc.state.playbackDate),
-      );
-    }
-  }
+  //   if (_playbackBloc.state is PlaybackInitial && _cameraLiveBloc.state.camera != null) {
+  //     _playbackBloc.add(
+  //       GetVideoPlaybacks(_cameraLiveBloc.state.camera!.id, _cameraLiveBloc.state.playbackDate),
+  //     );
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -132,8 +132,9 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
     context.read<PlaybackBloc>().add(ChangePlayback(index));
   }
 
-  void _onTimeChanged(DateTime time) {
+  void _onTimeChanged(DateTime time, [bool shouldUpdateCentralDate = false]) {
     _time.value = time;
+    if (shouldUpdateCentralDate) _clampCentralDate(time);
   }
 
   void _showOverlay(double dx, {DateTime? date, bool isCenter = false}) {
@@ -176,7 +177,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    final mode = context.select<CameraLiveBloc, TimelineDisplayMode>(
+    final mode = context.select<CameraDetailBloc, TimelineDisplayMode>(
       (bloc) => bloc.state.timelineDisplayMode,
     );
 
@@ -206,7 +207,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                   child: GestureDetector(
                     // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
                     onTapUp: (details) {
-                      _cameraLiveBloc.state.cameraLiveController.ref.currentState?.jumpToDate(
+                      _cameraLiveBloc.state.cameraDetailController.ref.currentState?.jumpToDate(
                         _hoverDate ?? _calculateDateFromOffset(details.localPosition.dx),
                       );
                     },
@@ -228,7 +229,7 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                                 current is PlaybackSuccess &&
                                 current.playbacks.isNotEmpty) {
                               _clampCentralDate(current.playbacks[current.initialIndex].startTime);
-                              _cameraLiveBloc.state.cameraLiveController
+                              _cameraLiveBloc.state.cameraDetailController
                                 ..onPlaybackChanged = _onPlaybackChanged
                                 ..onTimeChanged = _onTimeChanged;
                             }
@@ -330,9 +331,9 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
 }
 
 enum TimelineDisplayMode {
-  h24('24h', Duration(hours: 1), 5, Duration(minutes: 2)),
-  h8('8h', Duration(hours: 1), 5, Duration(minutes: 1)),
-  h1('1h', Duration(hours: 1), 5, Duration(minutes: 1));
+  h24('24h', Duration(hours: 1), 5, Duration(minutes: 1, seconds: 30)),
+  h8('8h', Duration(hours: 1), 5, Duration(seconds: 30)),
+  h1('1h', Duration(hours: 1), 5, Duration.zero);
 
   final String label;
   final Duration interval;

@@ -307,37 +307,33 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                 height: constraints.maxHeight,
                 child: widget.tree.length == 0
                     ? Center(child: Text('Không có nhóm phù hợp'))
-                    : Scrollbar(
-                        thumbVisibility: true,
-                        child: TreeView.simple(
-                          key: ValueKey(widget.tree.hashCode),
-                          padding: EdgeInsets.symmetric(horizontal: 24),
-                          showRootNode: false,
-                          tree: widget.tree,
-                          expansionBehavior:
-                              ExpansionBehavior.scrollToLastChild,
-                          indentation: Indentation(color: Colors.black),
-                          expansionIndicatorBuilder: (context, node) =>
-                              NoExpansionIndicator(tree: node),
-                          builder: (context, node) => GroupNode(
-                            group: node.data!,
-                            onToggleExpansion: () =>
-                                _treeController?.toggleExpansion(node),
-                            isExpand: node.isExpanded,
-                            actions:
-                                widget.actionBuilder?.call(node) ??
-                                widget.action,
-                            isSelected: _selectedNode == node,
-                            onTap: () =>
-                                _onNodeTap(node: node, context: context),
-                          ),
-                          onTreeReady: (treeViewController) {
-                            _treeController = treeViewController;
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              treeViewController.expandAllChildren(widget.tree);
-                            });
-                          },
+                    : TreeView.simple(
+                        key: ValueKey(widget.tree.hashCode),
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        showRootNode: false,
+                        tree: widget.tree,
+                        expansionBehavior: ExpansionBehavior.scrollToLastChild,
+                        indentation: Indentation(color: Colors.black),
+                        expansionIndicatorBuilder: (context, node) =>
+                            NoExpansionIndicator(tree: node),
+                        builder: (context, node) => GroupNode(
+                          group: node.data!,
+                          onToggleExpansion: () => _treeController?.toggleExpansion(node),
+                          isExpand: node.isExpanded,
+                          actions: widget.actionBuilder?.call(node) ?? widget.action,
+                          isSelected: _selectedNode == node,
+                          onTap: () => _onNodeTap(node: node, context: context),
                         ),
+                        onTreeReady: (treeViewController) {
+                          _treeController = treeViewController;
+                          Future.delayed(
+                            Duration.zero,
+                            () => _treeController?.expandAllChildren(widget.tree),
+                          );
+                          // WidgetsBinding.instance.addPostFrameCallback((_) {
+                          //   treeViewController.expandAllChildren(widget.tree);
+                          // });
+                        },
                       ),
               );
             },

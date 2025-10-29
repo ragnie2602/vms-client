@@ -8,7 +8,7 @@ import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 
 import '../../shared/state_builder_mixin.dart';
-import '../bloc/camera_live/camera_live_bloc.dart';
+import '../bloc/camera_detail/camera_detail_bloc.dart';
 import '../bloc/playback/playback_bloc.dart';
 import '../widgets/playback_painter.dart';
 
@@ -18,6 +18,9 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Trường hợp mở tab playback -- chưa chọn camera -- mở tab playback --> infinity loading
+    if (context.read<CameraDetailBloc>().state.camera == null) return buildEmpty();
+
     return BlocBuilder<PlaybackBloc, PlaybackState>(
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,
@@ -31,12 +34,12 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
 
               return InkWell(
                 onTap: () => context
-                    .read<CameraLiveBloc>()
+                    .read<CameraDetailBloc>()
                     .state
-                    .cameraLiveController
+                    .cameraDetailController
                     .ref
                     .currentState
-                    ?.jumpToDate(playback.startTime),
+                    ?.jumpToDate(playback.startTime, dateIndex: index),
                 child: PlaybackItem(
                   maxWidth: maxWidth,
                   playback: playback,

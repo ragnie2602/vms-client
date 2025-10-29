@@ -7,7 +7,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
@@ -157,8 +157,8 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
           ? null
           : () {
               context.pushNamed(
-                Routes.livecamera.name,
-                extra: CameraLiveScreenArgs(data: data),
+                Routes.cameraDetail.name,
+                extra: CameraDetailScreenArgs(data: data),
               );
             },
       child: Stack(
