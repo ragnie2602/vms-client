@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -516,10 +515,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     'Thêm camera',
-                                    style: TextStyle(
-                                      color: AppColors.secondary,
-                                      fontSize: 14,
+                                    style: AppTypography.style(
+                                      14,
                                       fontWeight: FontWeight.w500,
+                                      color: AppColors.black,
                                     ),
                                   ),
                                 ],
