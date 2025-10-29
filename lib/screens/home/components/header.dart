@@ -94,23 +94,23 @@ class _HeaderState extends State<Header> {
                 Row(
                   children: <Widget>[
                     SizedBox(width: 20),
-                    ExpandableSearchBar(),
+                    // ExpandableSearchBar(),
                     SizedBox(width: 20),
-                    InkWell(
-                      onTap: () {},
-                      borderRadius: BorderRadius.circular(20),
-                      child: Badge.count(
-                        count: 01,
-                        padding: EdgeInsets.all(2),
-                        backgroundColor: Color(0xFF21CCC3),
-                        textStyle: AppTypography.style(
-                          9,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                        child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
-                      ),
-                    ),
+                    // InkWell(
+                    //   onTap: () {},
+                    //   borderRadius: BorderRadius.circular(20),
+                    //   child: Badge.count(
+                    //     count: 01,
+                    //     padding: EdgeInsets.all(2),
+                    //     backgroundColor: Color(0xFF21CCC3),
+                    //     textStyle: AppTypography.style(
+                    //       9,
+                    //       fontWeight: FontWeight.w600,
+                    //       color: Colors.white,
+                    //     ),
+                    //     child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
+                    //   ),
+                    // ),
                     SizedBox(width: 12),
                     UserProfile(),
                   ],
