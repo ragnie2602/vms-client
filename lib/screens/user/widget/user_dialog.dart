@@ -1,7 +1,11 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
@@ -81,10 +85,10 @@ Future<String?> showResetPasswordDialog(
                             return 'Mật khẩu không được để trống';
                           }
                           if (v.contains(' ')) {
-                            return 'Mật khẩu không hợp lệ. Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
+                            return 'Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
                           }
                           if (v.length < 8 || v.length > 16) {
-                            return 'Mật khẩu không hợp lệ. Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
+                            return 'Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
                           }
                           return null;
                         },
@@ -101,15 +105,7 @@ Future<String?> showResetPasswordDialog(
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Mật khẩu 8-16 ký tự, bao gồm ký tự đặc biệt, in hoa và in thường",
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          fontSize: 12,
-                          color: AppColors.grey6F767E,
-                        ),
-                      ),
+
                       const SizedBox(height: 20),
                       // Actions
                       Row(
@@ -284,13 +280,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
             bloc.add(GetListUserEvent());
             // Hiển thị dialog thành công và reload danh sách
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              showAppMessageDialog(
-                context,
-                message: 'Thêm người dùng thành công!',
-                type: AppMessageType.success,
-                onOk: () {
-                  // Reload danh sách camera
-                },
+              ToastUtil.toastSuccess(
+                context: context,
+                title: Text('Thêm tài khoản thành công!'),
               );
             });
           }
@@ -366,10 +358,10 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                                 return 'Mật khẩu không được để trống';
                               }
                               if (v.contains(' ')) {
-                                return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                                return 'Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
                               }
                               if (v.length < 8 || v.length > 16) {
-                                return 'Mật khẩu từ 8-16 ký tự, không chứa ký tự khoảng trống';
+                                return 'Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
                               }
                               return null;
                             },
@@ -1085,51 +1077,131 @@ Widget _buildCheckboxRow({
   );
 }
 
-// Widget _buildDropdownField({
-//   required String label,
-//   required String value,
-//   required List<Map<String, String>> items,
-//   required ValueChanged<String?> onChanged,
-// }) {
-//   return Column(
-//     crossAxisAlignment: CrossAxisAlignment.start,
-//     children: [
-//       Text(
-//         label,
-//         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.black),
-//       ),
-//       const SizedBox(height: 6),
-//       DropdownButtonFormField<String>(
-//         value: value,
-//         decoration: InputDecoration(
-//           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-//           border: OutlineInputBorder(
-//             borderRadius: BorderRadius.circular(4),
-//             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-//           ),
-//           enabledBorder: OutlineInputBorder(
-//             borderRadius: BorderRadius.circular(4),
-//             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-//           ),
-//           focusedBorder: OutlineInputBorder(
-//             borderRadius: BorderRadius.circular(4),
-//             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-//           ),
-//         ),
-//         items: items.map((item) {
-//           return DropdownMenuItem<String>(
-//             value: item['value'],
-//             child: Text(
-//               item['label']!,
-//               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-//             ),
-//           );
-//         }).toList(),
-//         onChanged: onChanged,
-//       ),
-//     ],
-//   );
-// }
+Future<T?> showDialogRemoveCameraFromGroup<T>(
+  BuildContext context, {
+  required Function() onConfirm,
+  String? title,
+}) {
+  final controlCameraBloc = context.read<UserManagementBloc>();
+  return showDialog<T>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => BlocProvider.value(
+      value: controlCameraBloc,
+      child: RemoveCameraFromGroupWidget(onConfirm: onConfirm, title: title),
+    ),
+  );
+}
+
+class RemoveCameraFromGroupWidget extends StatelessWidget {
+  const RemoveCameraFromGroupWidget({super.key, this.onConfirm, this.title});
+  final Function()? onConfirm;
+  final String? title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(36),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  AppAssets.icDeleteLight,
+                  height: 60,
+                  width: 60,
+                ),
+                const SizedBox(height: 28),
+
+                Text(
+                  title ?? 'camera này khỏi nhóm?',
+                  textAlign: TextAlign.center,
+                  style: AppTypography.style(
+                    14,
+                    color: AppColors.blackOrWhite,
+                    fontWeight: FontWeight.w500,
+                    lineHeight: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 130.5 / 2500,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blackOrWhiteReverse,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          side: BorderSide(
+                            color: AppColors.greyE2E8F0,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          'Hủy',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhite,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          //
+                          Navigator.pop(context);
+                          onConfirm?.call();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blackOrWhite,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        child: Text(
+                          'Xóa',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhiteReverse,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.close, size: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 Widget _buildDropdownField({
   required String label,
