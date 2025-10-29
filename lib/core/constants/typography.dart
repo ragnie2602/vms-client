@@ -21,6 +21,7 @@ class AppTypography {
     double lineHeight = 1.0,
     double letterSpacing = 0.0,
   }) => TextStyle(
+    fontFamily: 'Inter',
     fontSize: fontSize,
     fontWeight: fontWeight,
     fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
