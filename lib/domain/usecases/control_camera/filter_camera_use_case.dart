@@ -12,7 +12,7 @@ class FilterCameraUseCase
     List<CameraEntity> listCameraOrigin = input.listCameraOrigin ?? [];
     List<CameraEntity> listCameraAfterFilter = listCameraOrigin;
     // nếu ko có dữ liệu filter => return list cũ
-    if (input.cameraStatus == null && (input.nameCamera ?? '').isEmpty) {
+    if (input.isOnline == null && (input.nameCamera ?? '').isEmpty) {
       return FilterCameraOutput(listCamera: listCameraOrigin);
     }
     // lọc theo tên camera
@@ -27,9 +27,9 @@ class FilterCameraUseCase
           .toList();
     }
     // lọc theo trạng thái
-    if (input.cameraStatus != null) {
+    if (input.isOnline != null) {
       listCameraAfterFilter = listCameraAfterFilter
-          .where((e) => e.status == input.cameraStatus)
+          .where((e) => e.isOnline == input.isOnline)
           .toList();
     }
     return FilterCameraOutput(listCamera: listCameraAfterFilter);

@@ -158,7 +158,7 @@ class ControlCameraBloc
   ) {
     final FilterCameraInput input = FilterCameraInput(
       nameCamera: event.cameraName,
-      cameraStatus: event.cameraStatus,
+      isOnline: event.isOnline,
       listCameraOrigin: listCamera,
     );
     final FilterCameraOutput output = filterCameraUseCase.execute(input);
