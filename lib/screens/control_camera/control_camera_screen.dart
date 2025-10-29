@@ -347,9 +347,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             children: [
                               Text(
                                 'Tên camera',
-                                style: TextStyle(
-                                  fontSize: 13,
+                                style: AppTypography.style(
+                                  13,
                                   fontWeight: FontWeight.w400,
+                                  color: AppColors.black,
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -370,10 +371,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     child: SvgPicture.asset(AppAssets.icSearch),
                                   ),
                                   hintText: 'Nhập tên camera',
-                                  hintStyle: TextStyle(
-                                    color: AppColors.grey64748B,
-                                    fontSize: 14,
+                                  hintStyle: AppTypography.style(
+                                    14,
                                     fontWeight: FontWeight.w400,
+                                    color: AppColors.grey64748B,
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -402,9 +403,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             children: [
                               Text(
                                 'Trạng thái',
-                                style: TextStyle(
-                                  fontSize: 13,
+                                style: AppTypography.style(
+                                  13,
                                   fontWeight: FontWeight.w400,
+                                  color: AppColors.black,
                                 ),
                               ),
                               const SizedBox(height: 10),
