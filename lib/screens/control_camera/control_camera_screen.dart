@@ -221,6 +221,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           camId: camera.id,
           accountB: _accName,
           shareId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(
+              context: c,
+              title: Text(messageFail ?? 'Thất bại'),
+            );
+          },
         );
       },
       onShareCamera: (_accountNameInvite) {

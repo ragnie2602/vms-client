@@ -233,6 +233,12 @@ class _GroupCameraViewState extends State<GroupCameraView> {
       onDeleteShareGroup: (_inviteId) {
         return context.read<GroupCameraBloc>().deleteShareGroup(
           shareInviteId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(
+              context: c,
+              title: Text(messageFail ?? 'Thất bại'),
+            );
+          },
         );
       },
       onShareGroup: (_inviteId) {
