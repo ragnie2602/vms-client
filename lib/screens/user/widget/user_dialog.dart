@@ -235,11 +235,6 @@ class _AddUserDialogState extends State<_AddUserDialog> {
   bool _isSubmitting = false;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _username.dispose();
     _password.dispose();
