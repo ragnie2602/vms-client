@@ -139,9 +139,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               child: SvgPicture.asset(AppAssets.icSearch),
                             ),
                             hintText: 'Nhập thông tin tìm kiếm',
-                            hintStyle: TextStyle(
+                            hintStyle: AppTypography.style(
+                              14,
                               color: AppColors.grey64748B,
-                              fontSize: 14,
                               fontWeight: FontWeight.w400,
                             ),
                             contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -196,9 +196,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Thêm người dùng',
-                                  style: TextStyle(
+                                  style: AppTypography.style(
+                                    14,
                                     color: AppColors.secondary,
-                                    fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

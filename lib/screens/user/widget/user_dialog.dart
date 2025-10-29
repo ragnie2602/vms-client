@@ -2,6 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
@@ -288,7 +289,11 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 children: [
                   Text(
                     'Thêm tài khoản',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                    style: AppTypography.style(
+                      20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.black,
+                    ),
                   ),
                   const SizedBox(height: 4),
                 ],
@@ -997,7 +1002,7 @@ Widget _buildCheckboxRow({
       Expanded(
         child: Text(
           label,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.black),
+          style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
         ),
       ),
     ],
@@ -1088,11 +1093,12 @@ Widget _buildDropdownField({
             value: item['value'],
             child: Text(
               item['label']!,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+              style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
             ),
           );
         }).toList(),
         onChanged: onChanged,
+        style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
       ),
     ],
   );
