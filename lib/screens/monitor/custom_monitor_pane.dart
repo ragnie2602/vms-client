@@ -202,23 +202,24 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
               ),
             ),
           ),
-          Positioned(
-            right: 10,
-            top: 10,
-            child: IconButton(
-              icon: Icon(Icons.close, color: Colors.white, size: 20),
-              onPressed: () => removeCamera(index),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.black.withOpacity(0.6),
-                maximumSize: Size(20, 20),
-                minimumSize: Size(20, 20),
-                padding: EdgeInsets.all(0),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
+          if (widget.mode == CustomMonitorPaneMode.edit)
+            Positioned(
+              right: 10,
+              top: 10,
+              child: IconButton(
+                icon: Icon(Icons.close, color: Colors.white, size: 20),
+                onPressed: () => removeCamera(index),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withOpacity(0.6),
+                  maximumSize: Size(20, 20),
+                  minimumSize: Size(20, 20),
+                  padding: EdgeInsets.all(0),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -234,18 +235,21 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
               borderRadius: BorderRadius.circular(4),
               clipBehavior: Clip.antiAlias,
               color: Colors.transparent,
-              child: InkWell(
-                onTapDown: (TapDownDetails details) =>
-                    showCameraListPopup(context, details.globalPosition, index),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: double.infinity,
-                  child: Center(
-                    child: SvgPicture.asset(
-                      AppAssets.iconAddSlim,
-                      colorFilter: ColorFilter.mode(AppColors.blackOrWhite, BlendMode.srcIn),
-                      width: 72,
-                      height: 72,
+              child: IgnorePointer(
+                ignoring: widget.mode == CustomMonitorPaneMode.view,
+                child: InkWell(
+                  onTapDown: (TapDownDetails details) =>
+                      showCameraListPopup(context, details.globalPosition, index),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: Center(
+                      child: SvgPicture.asset(
+                        AppAssets.iconAddSlim,
+                        colorFilter: ColorFilter.mode(AppColors.blackOrWhite, BlendMode.srcIn),
+                        width: 72,
+                        height: 72,
+                      ),
                     ),
                   ),
                 ),
@@ -276,18 +280,18 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
               child: CameraListPopup(
                 bloc: monitorBloc,
                 onCameraSelected: (camera) {
-                  if (widget.mode != CustomMonitorPaneMode.view) {
-                    bloc.add(AddingCameraToCustomView(camera, index));
-                  } else {
-                    final cv = customView!.copyWith();
-                    cv.positions[index] = LiveViewPosition(
-                      index: index,
-                      cameraId: camera.id,
-                      camera: camera,
-                    );
-
-                    bloc.add(UpdateCustomView(customView: cv, index: index));
-                  }
+                  // if (widget.mode != CustomMonitorPaneMode.view) {
+                  bloc.add(AddingCameraToCustomView(camera, index));
+                  // } else {
+                  // final cv = customView!.copyWith();
+                  // cv.positions[index] = LiveViewPosition(
+                  //   // index: index,
+                  // cameraId: camera.id,
+                  // camera: camera,
+                  // );
+                  //
+                  // // bloc.add(UpdateCustomView(customView: cv, index: index));
+                  // }
 
                   Navigator.of(context).pop();
                 },
@@ -300,12 +304,12 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
   }
 
   removeCamera(int index) {
-    if (widget.mode != CustomMonitorPaneMode.view) {
-      bloc.add(RemovingCameraFromCustomView(index));
-    } else {
-      final cv = customView!.copyWith();
-      cv.positions[index] = LiveViewPosition(index: index, cameraId: [], camera: null);
-      bloc.add(UpdateCustomView(customView: cv, index: index));
-    }
+    // if (widget.mode != CustomMonitorPaneMode.view) {
+    bloc.add(RemovingCameraFromCustomView(index));
+    // } else {
+    //   final cv = customView!.copyWith();
+    //   cv.positions[index] = LiveViewPosition(index: index, cameraId: [], camera: null);
+    //   bloc.add(UpdateCustomView(customView: cv, index: index));
+    // }
   }
 }
