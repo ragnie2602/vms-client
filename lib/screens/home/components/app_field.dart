@@ -87,7 +87,11 @@ class _AppFieldState extends State<AppField> {
               padding: const EdgeInsets.only(right: 8),
               child: Text(
                 '${value.text.length}/${widget.maxLength}',
-                style: theme.textTheme.bodySmall,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.grey92929D,
+                ),
               ),
             ),
           );
