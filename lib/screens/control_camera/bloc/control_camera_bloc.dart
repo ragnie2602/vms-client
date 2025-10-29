@@ -51,12 +51,14 @@ class ControlCameraBloc
   // list camera
   List<CameraEntity> listCamera = [];
   List<int> currentGroupId = [];
+  bool isNoGroup = false;
 
   FutureOr<void> _onGetListCamera(
     GetListCameraEvent event,
     Emitter<ControlCameraState> emit,
   ) async {
     currentGroupId.clear();
+    isNoGroup = false;
     final groups = await controlGroupRepository.getAllCamera();
     groups.fold(
       (onFailure) {
@@ -76,6 +78,7 @@ class ControlCameraBloc
     Emitter<ControlCameraState> emit,
   ) async {
     currentGroupId.clear();
+    isNoGroup = true;
     final groups = await controlGroupRepository.getAllCamera();
     groups.fold(
       (onFailure) {
@@ -98,6 +101,7 @@ class ControlCameraBloc
   ) async {
     currentGroupId.clear();
     currentGroupId.addAll(event.groupId ?? []);
+    isNoGroup = false;
     final groups = await controlGroupRepository.getCamerasInGroup(
       groupId: event.groupId,
     );
@@ -154,7 +158,7 @@ class ControlCameraBloc
   ) {
     final FilterCameraInput input = FilterCameraInput(
       nameCamera: event.cameraName,
-      cameraStatus: event.cameraStatus,
+      isOnline: event.isOnline,
       listCameraOrigin: listCamera,
     );
     final FilterCameraOutput output = filterCameraUseCase.execute(input);
@@ -327,13 +331,19 @@ class ControlCameraBloc
     List<int>? camId,
     String? accountB,
     List<int>? shareId,
+    Function({String? messageFail})? onToastFail,
   }) async {
     final res = await controlGroupRepository.deleteShareCamera(
       cameraId: camId ?? [],
       accountB: accountB ?? '',
       shareId: shareId ?? [],
     );
-    return res.fold((onFailure) => <int>[], (onSuccess) => onSuccess);
+    return res.fold((onFailure) {
+      if (onToastFail != null) {
+        onToastFail(messageFail: onFailure.toString()).call();
+      }
+      return <int>[];
+    }, (onSuccess) => onSuccess);
   }
 
   FutureOr<void> _onRemoveCameraFromGroup(
@@ -351,8 +361,16 @@ class ControlCameraBloc
         // Cập nhật lại danh sách camera sau khi xóa khỏi nhóm.
         final updated = List<CameraEntity>.from(listCamera)
           ..removeWhere((camera) => listEquals(event.cameraId, camera.id));
-        listCamera = updated;
-        emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(updated)));
+        // check nếu đang ở node của 1 group bất kì hoặc ở node 'chưa gán nhóm' -> update lại list = cách remove
+        // nếu đang ở node 'Tất cả' thì giữ nguyên list
+        if (currentGroupId.isNotEmpty || isNoGroup == true) {
+          listCamera = updated;
+        }
+        // emit state succes
+        emit(RemoveCameraFromGroupSuccessState(listCamera));
+        emit(
+          ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)),
+        );
       },
     );
   }

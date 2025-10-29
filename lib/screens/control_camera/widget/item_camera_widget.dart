@@ -3,8 +3,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/time_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_role.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 
 class ItemCameraWidget extends StatelessWidget {
@@ -18,6 +18,7 @@ class ItemCameraWidget extends StatelessWidget {
     this.onShare,
     this.onRemoveFromGroup,
   });
+
   final CameraEntity itemCamera;
   final int index;
   final VoidCallback? onAdd;
@@ -28,253 +29,231 @@ class ItemCameraWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isHaveGroupOwner = (itemCamera.groupOwnerId ?? []).isNotEmpty;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 15),
       child: Row(
         children: [
-          Expanded(
-            flex: 66,
-            child: Center(
-              child: Text(
-                '$index',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.black,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 400,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                itemCamera.name,
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.black4A4A4A,
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 360,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                itemCamera.iPUrlStream,
-                style: AppTypography.style(
-                  13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.blue005BAA,
-                ),
-              ),
-            ),
-          ),
+          _buildIndexColumn(),
+          _buildNameColumn(),
+          _buildIpColumn(),
+          _buildStatusColumn(),
+          _buildActionsColumn(),
+        ],
+      ),
+    );
+  }
 
-          // Expanded(
-          //   flex: 151,
-          //   child: Padding(
-          //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          //     child: Text(
-          //       TimeUtil.convertTime(itemCamera.timeAdded),
-          //       style: AppTypography.style(
-          //         14,
-          //         fontWeight: FontWeight.w400,
-          //         color: AppColors.black171725,
-          //       ),
-          //     ),
-          //   ),
-          // ),
-          Expanded(
-            flex: 130,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                children: [CameraStatusWidget(cameraStatus: itemCamera.status)],
-              ),
-            ),
+  Widget _buildIndexColumn() {
+    return Expanded(
+      flex: 66,
+      child: Center(
+        child: Text(
+          '$index',
+          style: AppTypography.style(
+            14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.black,
           ),
-          Expanded(
-            flex: 190,
-            child: Center(
-              child: PopupMenuButton<String>(
-                icon: SvgPicture.asset(AppAssets.icAction),
-                padding: EdgeInsets.zero,
-                splashRadius: 20,
-                onSelected: (String value) {
-                  switch (value) {
-                    case 'add':
-                      onAdd?.call();
-                      break;
-                    case 'edit':
-                      onEdit?.call();
-                      break;
-                    case 'delete':
-                      onDelete?.call();
-                      break;
-                    case 'share':
-                      onShare?.call();
-                      break;
-                    case 'remove_from_group':
-                      onRemoveFromGroup?.call();
-                      break;
-                    default:
-                      break;
-                  }
-                },
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem<String>(
-                    value: 'add',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        Icon(Icons.add, size: 16, color: AppColors.black171725),
-                        SizedBox(width: 8),
-                        Text(
-                          'Thêm',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.black171725,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
-                  PopupMenuItem<String>(
-                    value: 'edit',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(AppAssets.icEdit),
-                        SizedBox(width: 8),
-                        Text(
-                          'Sửa',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.black171725,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
-                  PopupMenuItem<String>(
-                    value: 'share',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(AppAssets.iconShare),
-                        SizedBox(width: 8),
-                        Text(
-                          'Chia sẻ',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
-                  if (isHaveGroupOwner)
-                    PopupMenuItem<String>(
-                      value: 'remove_from_group',
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(AppAssets.icDelete),
-                          SizedBox(width: 8),
-                          Text(
-                            'Xóa khỏi nhóm',
-                            style: AppTypography.style(
-                              14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (isHaveGroupOwner)
-                    PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
-                  PopupMenuItem<String>(
-                    value: 'delete',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          AppAssets.icDelete,
-                          color: AppColors.redFF0004,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Xóa khỏi hệ thống',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.redFF0004,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                elevation: 8,
-              ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNameColumn() {
+    return Expanded(
+      flex: 400,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Text(
+          itemCamera.name,
+          style: AppTypography.style(
+            14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.black4A4A4A,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIpColumn() {
+    return Expanded(
+      flex: 360,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Text(
+          itemCamera.iPUrlStream,
+          style: AppTypography.style(
+            13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.blue005BAA,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusColumn() {
+    return Expanded(
+      flex: 130,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Spacer(),
+            CameraStatusWidget(isOnline: itemCamera.isOnline),
+            Spacer(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionsColumn() {
+    return Expanded(
+      flex: 190,
+      child: Center(
+        child: PopupMenuButton<String>(
+          icon: SvgPicture.asset(AppAssets.icAction),
+          padding: EdgeInsets.zero,
+          splashRadius: 20,
+          onSelected: _handleMenuSelection,
+          itemBuilder: _buildMenuItems,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 8,
+        ),
+      ),
+    );
+  }
+
+  void _handleMenuSelection(String value) {
+    switch (value) {
+      case 'edit':
+        onEdit?.call();
+        break;
+      case 'delete':
+        onDelete?.call();
+        break;
+      case 'share':
+        onShare?.call();
+        break;
+      case 'remove_from_group':
+        onRemoveFromGroup?.call();
+        break;
+    }
+  }
+
+  List<PopupMenuEntry<String>> _buildMenuItems(BuildContext context) {
+    final isViewRole = itemCamera.cameraRole == CameraRole.view;
+    final isHaveGroupOwner = (itemCamera.groupOwnerId ?? []).isNotEmpty;
+
+    if (isViewRole) {
+      return [_buildDeleteMenuItem()];
+    }
+
+    return [
+      _buildEditMenuItem(),
+      _buildDivider(),
+      _buildShareMenuItem(),
+      _buildDivider(),
+      if (isHaveGroupOwner) ...[
+        _buildRemoveFromGroupMenuItem(),
+        _buildDivider(),
+      ],
+      _buildDeleteMenuItem(),
+    ];
+  }
+
+  PopupMenuItem<String> _buildMenuItem({
+    required String value,
+    required String icon,
+    required String label,
+    Color? iconColor,
+    Color? textColor,
+  }) {
+    return PopupMenuItem<String>(
+      value: value,
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          SvgPicture.asset(icon, color: iconColor),
+          SizedBox(width: 8),
+          Text(
+            label,
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: textColor,
             ),
           ),
         ],
       ),
     );
   }
+
+  PopupMenuItem<String> _buildEditMenuItem() {
+    return _buildMenuItem(
+      value: 'edit',
+      icon: AppAssets.icEdit,
+      label: 'Sửa',
+      textColor: AppColors.black171725,
+    );
+  }
+
+  PopupMenuItem<String> _buildShareMenuItem() {
+    return _buildMenuItem(
+      value: 'share',
+      icon: AppAssets.iconShare,
+      label: 'Chia sẻ',
+    );
+  }
+
+  PopupMenuItem<String> _buildRemoveFromGroupMenuItem() {
+    return _buildMenuItem(
+      value: 'remove_from_group',
+      icon: AppAssets.icDelete,
+      label: 'Xóa khỏi nhóm',
+    );
+  }
+
+  PopupMenuItem<String> _buildDeleteMenuItem() {
+    return _buildMenuItem(
+      value: 'delete',
+      icon: AppAssets.icDelete,
+      label: itemCamera.cameraRole == CameraRole.view
+          ? "Xóa"
+          : 'Xóa khỏi hệ thống',
+      iconColor: AppColors.redFF0004,
+      textColor: AppColors.redFF0004,
+    );
+  }
+
+  PopupMenuDivider _buildDivider() {
+    return PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0);
+  }
 }
 
 class CameraStatusWidget extends StatelessWidget {
-  const CameraStatusWidget({super.key, required this.cameraStatus});
-  final CameraStatus cameraStatus;
+  const CameraStatusWidget({super.key, required this.isOnline});
+  final bool isOnline;
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       decoration: BoxDecoration(
-        color: cameraStatus.bgColor,
+        color: isOnline ? AppColors.blueD7F1FF : AppColors.scaffoldBgLight,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              margin: EdgeInsets.only(right: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                color: cameraStatus.contentColor,
-              ),
-            ),
-            Text(
-              cameraStatus.getName(),
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.2,
-                color: cameraStatus.contentColor,
-              ),
-            ),
-          ],
+        child: Text(
+          isOnline ? 'Online' : 'Offline',
+          style: AppTypography.style(
+            14,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.2,
+            color: isOnline ? AppColors.primary : AppColors.grey6F767E,
+          ),
         ),
       ),
     );

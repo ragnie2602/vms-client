@@ -20,6 +20,7 @@ class CameraEntity {
   final CameraStream stream;
   final CameraEntityOnvif onvif;
   final CameraRole cameraRole;
+  final bool isOnline;
 
   /// streamHlsUrl: http://ipcam.vivas.vn:8080/record01/EfCSykeCNyi-VwJCrB4AAg/EfCSykeCNyi-VwJCrB4AAg.m3u8
   /// streamOriginUrl: rtsp://any:1@10.3.3.162:8081/mystream7
@@ -47,7 +48,8 @@ class CameraEntity {
     required this.status,
     required this.stream,
     required this.onvif,
-    required this.cameraRole
+    required this.cameraRole,
+    required this.isOnline
   });
 
   Uri parseUri(String url) {

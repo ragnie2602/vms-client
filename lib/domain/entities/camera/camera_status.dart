@@ -19,12 +19,25 @@ enum CameraStatus {
   }
 }
 
-extension CameraStatusExt on CameraStatus {
+enum CameraOnlineChecked { all, online, offline }
+
+extension CameraStatusExt on CameraOnlineChecked {
+  bool? get getValue {
+    switch (this) {
+      case CameraOnlineChecked.online:
+        return true;
+      case CameraOnlineChecked.offline:
+        return false;
+      default:
+        return null;
+    }
+  }
+
   String getName() {
     switch (this) {
-      case CameraStatus.active:
+      case CameraOnlineChecked.online:
         return 'Online';
-      case CameraStatus.inactive:
+      case CameraOnlineChecked.offline:
         return 'Offline';
       default:
         return 'Tất cả';
@@ -33,7 +46,7 @@ extension CameraStatusExt on CameraStatus {
 
   Color get contentColor {
     switch (this) {
-      case CameraStatus.active:
+      case CameraOnlineChecked.online:
         return AppColors.primary;
       default:
         return AppColors.grey6F767E;
@@ -42,7 +55,7 @@ extension CameraStatusExt on CameraStatus {
 
   Color get bgColor {
     switch (this) {
-      case CameraStatus.active:
+      case CameraOnlineChecked.online:
         return AppColors.blueD7F1FF;
       default:
         return AppColors.scaffoldBgLight;

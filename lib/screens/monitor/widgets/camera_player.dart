@@ -323,8 +323,8 @@ class CameraPlayerState extends State<CameraPlayer> {
           _PlayerState.none => Center(
             child: Text('Không có dữ liệu!', style: TextStyle(fontSize: 13, color: Colors.white)),
           ),
-          _PlayerState.error => _buildError(),
           _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
+          _PlayerState.error => _buildError(),
           _ => AspectRatio(
             aspectRatio: _aspectRatio,
             child: ValueListenableBuilder(

@@ -111,6 +111,7 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
                                 _obscureCurrentPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: AppColors.black,
                               ),
                               iconSize: 20,
                               onPressed: () => setState(
@@ -138,6 +139,8 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
                                   _obscureNewPassword
                                       ? Icons.visibility_off
                                       : Icons.visibility,
+                                  color: AppColors.black,
+
                                 ),
                                 iconSize: 20,
                                 onPressed: () => setState(
@@ -166,6 +169,7 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
                                 _obscureConfirmPassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: AppColors.black,
                               ),
                               iconSize: 20,
                               onPressed: () => setState(

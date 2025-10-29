@@ -1,3 +1,4 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -54,7 +55,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
   bool _filterFunc(CameraEntity camera) {
     if (_searchController.text.isEmpty) return true;
 
-    return camera.name.toLowerCase().contains(_searchController.text.toLowerCase());
+    return removeDiacritics(
+      camera.name.toLowerCase(),
+    ).contains(removeDiacritics(_searchController.text.toLowerCase()));
   }
 
   @override
@@ -183,7 +186,6 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                           fontWeight: FontWeight.w600,
                           color: AppColors.blackOrWhite,
                         ),
-                        maxLines: 1,
                         overflow: TextOverflow.visible,
                       ),
                       SizedBox(height: 6),

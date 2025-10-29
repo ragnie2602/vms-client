@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.profile.pb.dart';
 import 'package:web_socket_client/web_socket_client.dart';
 
 import '../models/packet.dart';
@@ -100,7 +101,7 @@ class SocketApiClient extends BaseApiClient {
   }
 
   void _sendKeepAlive(Timer _) {
-    _socket.send(Packet(id: 100, data: [], type: PacketType.keepAlive).writeToBuffer());
+    _socket.send(Packet(id: 100, data: KeepAlive_Request(idle: false).writeToBuffer(), type: PacketType.keepAlive).writeToBuffer());
   }
 
   void _handleMessages(dynamic message) {

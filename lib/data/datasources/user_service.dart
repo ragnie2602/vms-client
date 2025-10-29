@@ -67,7 +67,10 @@ class UserService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(AddUser_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        AddUser_Error.valueOf,
+        PacketType.addUser.value,
+      ),
       (buffer) => AddUser_Reply.fromBuffer(buffer).user,
     );
   }
@@ -92,7 +95,10 @@ class UserService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(DeleteUser_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        DeleteUser_Error.valueOf,
+        PacketType.deleteUser.value,
+      ),
       (buffer) => DeleteUser_Reply.fromBuffer(buffer).userId,
     );
   }
@@ -119,7 +125,10 @@ class UserService {
       ),
     );
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(ResetPassword_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        ResetPassword_Error.valueOf,
+        PacketType.resetPassword.value,
+      ),
       (buffer) {
         return true;
       },
@@ -174,7 +183,10 @@ class UserService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(EditUser_Error.valueOf),
+      (failure) => throw failure.toMessageFailure(
+        EditUser_Error.valueOf,
+        PacketType.editUser.value,
+      ),
       (buffer) => EditUser_Reply.fromBuffer(buffer).user,
     );
   }

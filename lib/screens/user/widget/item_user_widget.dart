@@ -4,6 +4,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 
 class ItemUserWidget extends StatelessWidget {
   const ItemUserWidget({
@@ -23,7 +24,7 @@ class ItemUserWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 15),
+      padding: EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
           Expanded(
@@ -31,16 +32,12 @@ class ItemUserWidget extends StatelessWidget {
             child: Center(
               child: Text(
                 '$index',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.black,
-                ),
+                style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
               ),
             ),
           ),
           Expanded(
-            flex: 267,
+            flex: 300,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -54,7 +51,7 @@ class ItemUserWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 267,
+            flex: 300,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -68,13 +65,13 @@ class ItemUserWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 190,
+            flex: 250,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 itemUser.emailAddress,
                 style: AppTypography.style(
-                  13,
+                  14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.black171725,
                 ),
@@ -83,7 +80,7 @@ class ItemUserWidget extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 190,
+            flex: 150,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -98,11 +95,13 @@ class ItemUserWidget extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 130,
+            flex: 150,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                itemUser.type.name,
+                itemUser.type == UserType.admin || itemUser.type == UserType.admin_client
+                    ? 'Tài khoản admin'
+                    : 'Tài khoản thường',
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
@@ -112,7 +111,7 @@ class ItemUserWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 190,
+            flex: 112,
             child: Center(
               child: PopupMenuButton<String>(
                 icon: SvgPicture.asset(AppAssets.icAction),
@@ -134,8 +133,9 @@ class ItemUserWidget extends StatelessWidget {
                 itemBuilder: (BuildContext context) => [
                   PopupMenuItem<String>(
                     value: 'reset_password',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         SvgPicture.asset(AppAssets.icReset),
                         SizedBox(width: 8),
@@ -144,7 +144,7 @@ class ItemUserWidget extends StatelessWidget {
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.black171725,
+                            color: AppColors.black,
                           ),
                         ),
                       ],
@@ -153,8 +153,9 @@ class ItemUserWidget extends StatelessWidget {
                   PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                   PopupMenuItem<String>(
                     value: 'edit',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         SvgPicture.asset(AppAssets.icEdit),
                         SizedBox(width: 8),
@@ -163,7 +164,7 @@ class ItemUserWidget extends StatelessWidget {
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.black171725,
+                            color: AppColors.black,
                           ),
                         ),
                       ],
@@ -172,8 +173,9 @@ class ItemUserWidget extends StatelessWidget {
                   PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                   PopupMenuItem<String>(
                     value: 'delete',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         SvgPicture.asset(AppAssets.icDelete),
                         SizedBox(width: 8),
@@ -182,15 +184,14 @@ class ItemUserWidget extends StatelessWidget {
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,
+                            color: AppColors.black,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 elevation: 8,
               ),
             ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -96,6 +98,15 @@ class _MonitorActionsState extends State<MonitorActions> {
                       id: 0,
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
+                  ),
+                  ActionItem(
+                    title: 'Xem toàn màn hình',
+                    icon: AppAssets.icFullTv,
+                    onTap: () {
+                      widget.leftController.closePanel();
+                      context.read<AppBloc>().add(ToggleMonitorDisplayMode());
+                      defaultEnterNativeFullscreen();
+                    },
                   ),
                 ],
               ),

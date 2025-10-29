@@ -309,56 +309,64 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         ),
         content: SizedBox(
           width: MediaQuery.of(context).size.width * 0.3,
-          child: SingleChildScrollView(
-            child: Form(
-              key: _form,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 12),
-                  AppField(
-                    controller: _name,
-                    hintText: 'Nhập tên camera',
-                    validator: (v) =>
-                        v!.isEmpty ? 'Tên camera không được để trống' : null,
-                    label: 'Tên camera',
-                    requiredField: true,
-                    maxLength: 50,
-                  ),
-                  SizedBox(height: 24),
-                  // Phương thức selection
-                  _buildMethodCamera(),
-                  _buildAccountCamera(),
-                  SizedBox(height: 24),
-                  AppField(
-                    controller: _rtsp,
-                    hintText: 'Nhập địa chỉ RTSP',
-                    keyboardType: TextInputType.url,
-                    label: 'Địa chỉ RTSP',
-                    requiredField: true,
-                    validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Địa chỉ RTSP không được để trống'
-                        : null,
-                  ),
-                  SizedBox(height: 24),
-                  AppField(
-                    controller: _sub,
-                    hintText: 'Nhập địa chỉ luồng phụ',
-                    label: 'Địa chỉ luồng phụ',
-                    requiredField: true,
-                    validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Địa chỉ luồng phụ không được để trống'
-                        : null,
-                  ),
-                  const SizedBox(height: 24),
-                  AppField(
-                    controller: _desc,
-                    hintText: 'Nhập địa chỉ khu vực',
-                    label: "Địa chỉ khu vực",
-                    maxLength: 50,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: SingleChildScrollView(
+              child: Form(
+                key: _form,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 12),
+                    AppField(
+                      controller: _name,
+                      hintText: 'Nhập tên camera',
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return 'Tên camera không được để trống';
+                        }
+                        return null;
+                      },
+                      label: 'Tên camera',
+                      requiredField: true,
+                      maxLength: 50,
+                    ),
+                    SizedBox(height: 24),
+                    // Phương thức selection
+                    _buildMethodCamera(),
+                    _buildAccountCamera(),
+                    SizedBox(height: 24),
+                    AppField(
+                      controller: _rtsp,
+                      hintText: 'Nhập địa chỉ RTSP',
+                      keyboardType: TextInputType.url,
+                      label: 'Địa chỉ RTSP',
+                      requiredField: true,
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? 'Địa chỉ RTSP không được để trống'
+                          : null,
+                    ),
+                    SizedBox(height: 24),
+                    AppField(
+                      controller: _sub,
+                      hintText: 'Nhập địa chỉ luồng phụ',
+                      label: 'Địa chỉ luồng phụ',
+                      // validator: (v) => v == null || v.trim().isEmpty
+                      //     ? 'Địa chỉ luồng phụ không được để trống'
+                      //     : null,
+                    ),
+                    // const SizedBox(height: 24),
+                    // AppField(
+                    //   controller: _desc,
+                    //   hintText: 'Nhập địa chỉ khu vực',
+                    //   label: "Địa chỉ khu vực",
+                    //   maxLength: 50,
+                    // ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),
@@ -451,22 +459,28 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       children: [
         Visibility(
           visible: _method != 'RTSP',
-          child: AppField(
-            controller: _onvifXaddrs,
-            hintText: 'Nhập địa chỉ ONVIF',
-            label: 'Địa chỉ ONVIF',
-            requiredField: true,
-            validator: (v) {
-              if (_method != 'RTSP' && (v == null || v.trim().isEmpty)) {
-                return 'Địa chỉ ONVIF không được để trống';
-              }
-              return null;
-            },
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              AppField(
+                controller: _onvifXaddrs,
+                hintText: 'Nhập địa chỉ ONVIF',
+                label: 'Địa chỉ ONVIF',
+                requiredField: true,
+                readOnly: widget.mode == CameraDialogMode.edit,
+                validator: (v) {
+                  if (_method != 'RTSP' && (v == null || v.trim().isEmpty)) {
+                    return 'Địa chỉ ONVIF không được để trống';
+                  }
+                  return null;
+                },
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               flex: 2,
@@ -496,6 +510,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 suffix: IconButton(
                   icon: Icon(
                     _obscure ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.black,
                   ),
                   onPressed: _togglePasswordVisibility,
                 ),
@@ -577,8 +592,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         Row(
           children: [
             CustomRadioButton(
-              title: 'RTSP',
-              value: 'RTSP',
+              title: 'ONVIF',
+              value: 'ONVIF',
+              readonly: widget.mode == CameraDialogMode.edit,
               groupValue: _method,
               onChanged: (value) {
                 if (value == null) return;
@@ -587,8 +603,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             ),
             const SizedBox(width: 24),
             CustomRadioButton(
-              title: 'ONVIF',
-              value: 'ONVIF',
+              title: 'RTSP',
+              value: 'RTSP',
+              readonly: widget.mode == CameraDialogMode.edit,
               groupValue: _method,
               onChanged: (value) {
                 if (value == null) return;
