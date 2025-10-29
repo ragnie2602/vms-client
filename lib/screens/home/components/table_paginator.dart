@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:number_paginator/number_paginator.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 
 class TablePaginator extends StatefulWidget {
   final int _totalPages;
@@ -111,8 +112,8 @@ class _CustomButton extends StatelessWidget {
           child: image != null ? SvgPicture.asset(image!, color: disabled ? AppColors.grey94A3B8 : AppColors.grey64748B,) :
           Text(
             text, 
-            style: TextStyle(
-              fontSize: 13, 
+            style: AppTypography.style(
+              13, 
               fontWeight: FontWeight.w500, 
               color: isSelected ? Colors.white : AppColors.grey94A3B8
               ),

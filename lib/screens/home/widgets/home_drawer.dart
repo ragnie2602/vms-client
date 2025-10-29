@@ -194,7 +194,7 @@ class DrawerTile extends StatelessWidget {
               tab.title,
               style: AppTypography.style(
                 14,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: isSelected ? AppColors.primary : null,
               ),
               overflow: TextOverflow.visible,

@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
@@ -91,9 +92,9 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                             children: [
                               Text(
                                 "Hiển thị ${state.paginatedCameras.length} trong số ${state.cameras.length} camera",
-                                style: TextStyle(
+                                style: AppTypography.style(
                                   fontWeight: FontWeight.w400,
-                                  fontSize: 13,
+                                  13,
                                   color: Colors.black,
                                 ),
                               ),
@@ -188,11 +189,11 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                   Flexible(
                     child: Text(
                       data.name,
-                      style: TextStyle(
+                      style: AppTypography.style(
                         color: Colors.black,
-                        fontSize: 9,
+                        9,
                         fontWeight: FontWeight.w600,
-                        overflow: TextOverflow.ellipsis,
+                        textOverflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
