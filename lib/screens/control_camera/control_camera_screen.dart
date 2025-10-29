@@ -581,7 +581,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                       return Center(
                                         child: Text(
                                           'Danh sách trống',
-                                          style: AppTypography.style(14),
+                                          style: AppTypography.style(
+                                            14,
+                                            color: AppColors.black,
+                                            fontWeight: FontWeight.w400,
+                                          ),
                                         ),
                                       );
                                     }
