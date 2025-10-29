@@ -29,9 +29,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   void _onSearchUser({required String keyword}) {
-    context.read<UserManagementBloc>().add(
-      SearchUserEvent(keyword: keyword.trim().toString()),
-    );
+    context.read<UserManagementBloc>().add(SearchUserEvent(keyword: keyword.trim().toString()));
   }
 
   void _onGetListUser() {
@@ -39,9 +37,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   void _onDeleteUser({required List<int> userId}) {
-    context.read<UserManagementBloc>().add(
-      DeleteUserEvent(userId: userId, uidStr: ''),
-    );
+    context.read<UserManagementBloc>().add(DeleteUserEvent(userId: userId, uidStr: ''));
   }
 
   void _addUser({
@@ -102,10 +98,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  void _onResetPassword({
-    required List<int> userId,
-    required String newPassword,
-  }) {
+  void _onResetPassword({required List<int> userId, required String newPassword}) {
     context.read<UserManagementBloc>().add(
       ResetPassWordEvent(userId: userId, newPassword: newPassword),
     );
@@ -124,7 +117,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 color: Colors.white,
               ),
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              margin: EdgeInsets.only(bottom: 10),
+              margin: EdgeInsets.all(10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,10 +135,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                           controller: userNameController,
                           decoration: InputDecoration(
                             prefixIcon: Container(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 12,
-                                horizontal: 12,
-                              ),
+                              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                               child: SvgPicture.asset(AppAssets.icSearch),
                             ),
                             hintText: 'Nhập thông tin tìm kiếm',
@@ -154,30 +144,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
                             ),
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 8,
-                              horizontal: 12,
-                            ),
+                            contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(4),
-                              borderSide: BorderSide(
-                                color: AppColors.greyE2E8F0,
-                                width: 1,
-                              ),
+                              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(4),
-                              borderSide: BorderSide(
-                                color: AppColors.greyE2E8F0,
-                                width: 1,
-                              ),
+                              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(4),
-                              borderSide: BorderSide(
-                                color: AppColors.greyE2E8F0,
-                                width: 1,
-                              ),
+                              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                             ),
                           ),
                         ),
@@ -205,16 +183,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         splashColor: Colors.transparent,
 
                         child: Container(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 12,
-                          ),
+                          padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(3),
-                            border: Border.all(
-                              width: 1,
-                              color: AppColors.secondary,
-                            ),
+                            border: Border.all(width: 1, color: AppColors.secondary),
                           ),
                           child: Center(
                             child: Row(
@@ -247,6 +219,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     borderRadius: BorderRadius.circular(5),
                     color: Colors.white,
                   ),
+                  margin: EdgeInsets.only(bottom: 10, left: 10, right: 10),
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -268,61 +241,50 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                     );
                                   }
                                   return ListView.separated(
-                                    separatorBuilder: (_, __) => const Divider(
-                                      height: 1,
-                                      color: AppColors.greyF1F5F9,
-                                    ),
+                                    separatorBuilder: (_, __) =>
+                                        const Divider(height: 1, color: AppColors.greyF1F5F9),
                                     shrinkWrap: true,
                                     itemCount: state.users!.length,
-                                    itemBuilder: (context, index) =>
-                                        ItemUserWidget(
-                                          itemUser: state.users![index],
-                                          index: index + 1,
-                                          onEdit: () async {
-                                            await showEditUserDialog(
-                                              context,
-                                              userEntity: state.users![index],
-                                              onSubmit: (payload) async {
-                                                _editUser(
-                                                  isAdmin:
-                                                      payload.accountType ==
-                                                          'admin'
-                                                      ? true
-                                                      : false,
-                                                  changePassDenied:
-                                                      payload.canChangePassword,
-                                                  addCamDenied:
-                                                      payload.canAddCamera,
-                                                  password: state
-                                                      .users![index]
-                                                      .password,
-                                                  email: payload.email,
-                                                  tel: payload.phoneNumber,
-                                                  desc: payload.description,
-                                                  fullName: payload.fullName,
-                                                  userId:
-                                                      state.users![index].id,
-                                                  account: payload.username,
-                                                );
-                                              },
+                                    itemBuilder: (context, index) => ItemUserWidget(
+                                      itemUser: state.users![index],
+                                      index: index + 1,
+                                      onDelete: () => _onDeleteUser(userId: state.users![index].id),
+                                      onEdit: () async {
+                                        await showEditUserDialog(
+                                          context,
+                                          userEntity: state.users![index],
+                                          onSubmit: (payload) async {
+                                            _editUser(
+                                              isAdmin: payload.accountType == 'admin'
+                                                  ? true
+                                                  : false,
+                                              changePassDenied: !payload.canChangePassword,
+                                              addCamDenied: !payload.canAddCamera,
+                                              password: state.users![index].password,
+                                              email: payload.email,
+                                              tel: payload.phoneNumber,
+                                              desc: payload.description,
+                                              fullName: payload.fullName,
+                                              userId: state.users![index].id,
+                                              account: payload.username,
                                             );
                                           },
-                                          onResetPassword: () {
-                                            showResetPasswordDialog(
-                                              context,
-                                              username:
-                                                  state.users![index].account,
-                                              user: state.users![index],
-                                              onSubmit: (newPassword) async {
-                                                _onResetPassword(
-                                                  newPassword: newPassword,
-                                                  userId:
-                                                      state.users![index].id,
-                                                );
-                                              },
+                                        );
+                                      },
+                                      onResetPassword: () {
+                                        showResetPasswordDialog(
+                                          context,
+                                          username: state.users![index].account,
+                                          user: state.users![index],
+                                          onSubmit: (newPassword) async {
+                                            _onResetPassword(
+                                              newPassword: newPassword,
+                                              userId: state.users![index].id,
                                             );
                                           },
-                                        ),
+                                        );
+                                      },
+                                    ),
                                   );
                                 },
                               ),
@@ -346,11 +308,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           );
         } else if (state is DeleteUserFail) {
           _onGetListUser();
-          showAppMessageDialog(
-            context,
-            message: state.errorMsg,
-            type: AppMessageType.error,
-          );
+          showAppMessageDialog(context, message: state.errorMsg, type: AppMessageType.error);
         } else if (state is ListCameraSuccessState) {
           _onGetListUser();
           setState(() {});
@@ -363,41 +321,26 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           );
         } else if (state is EditUserFail) {
           _onGetListUser();
-          showAppMessageDialog(
-            context,
-            message: state.errorMsg,
-            type: AppMessageType.error,
-          );
+          showAppMessageDialog(context, message: state.errorMsg, type: AppMessageType.error);
         } else if (state is ResetPassWordSuccess) {
           _onGetListUser();
           showAppMessageDialog(
             context,
             message: 'Cập nhật mật khẩu thành công !',
+            onOk: () => Navigator.of(context, rootNavigator: true).pop(),
             type: AppMessageType.success,
           );
         } else if (state is ResetPassWordFail) {
           _onGetListUser();
-          showAppMessageDialog(
-            context,
-            message: state.errorMsg,
-            type: AppMessageType.error,
-          );
+          showAppMessageDialog(context, message: state.errorMsg, type: AppMessageType.error);
         } else if (state is AddUserSuccess) {
           _onGetListUser();
         } else if (state is AddUserFail) {
           _onGetListUser();
-          showAppMessageDialog(
-            context,
-            message: state.errorMsg,
-            type: AppMessageType.error,
-          );
+          showAppMessageDialog(context, message: state.errorMsg, type: AppMessageType.error);
         } else if (state is AddUserFail) {
           _onGetListUser();
-          showAppMessageDialog(
-            context,
-            message: state.errorMsg,
-            type: AppMessageType.error,
-          );
+          showAppMessageDialog(context, message: state.errorMsg, type: AppMessageType.error);
         }
       },
       listenWhen: (previous, current) =>

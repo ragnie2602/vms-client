@@ -89,7 +89,7 @@ class _PanelState extends State<Panel> {
                 child: SvgPicture.asset(AppAssets.icClose),
               ),
             ),
-            if (content != null) Expanded(child: content!),
+            if (content != null && isOpening) Expanded(child: content!),
           ],
         ),
       ),

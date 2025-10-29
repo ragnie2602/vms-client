@@ -27,7 +27,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   Widget build(BuildContext context) {
     // Vì là stateless nên buộc phải viết vào đây, hy vọng nó không bị gọi lung tung :*(
     context.read<MonitorBloc>().add(GetAllCamera());
-    
+
     return BlocBuilder<MonitorBloc, MonitorState>(
       builder: (context, blocState) => stateBuilder<MonitorSuccess>(
         blocState,
@@ -63,7 +63,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                                   key: ValueKey("player($index)___${camera.camId}"),
                                   mode: PlayerMode.monitoring,
                                   builder: (player, status) =>
-                                      _buildCameraView(context, player, camera, isFullScreen),
+                                      _buildCameraView(context, player, camera, isFullScreen, size),
                                 ),
                               );
                             } else {
@@ -145,32 +145,56 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
     return Size(width, height);
   }
 
-  Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data, bool shouldRemoveAction) {
+  Widget _buildCameraView(
+    BuildContext context,
+    Widget player,
+    CameraEntity data,
+    bool shouldRemoveAction,
+    Size size,
+  ) {
     return InkWell(
-      onTap: shouldRemoveAction ? null : () {
-        context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
-      },
+      onTap: shouldRemoveAction
+          ? null
+          : () {
+              context.pushNamed(
+                Routes.livecamera.name,
+                extra: CameraLiveScreenArgs(data: data),
+              );
+            },
       child: Stack(
         children: [
           player,
-
           Positioned(
             bottom: 10,
             right: 10,
             child: Container(
+              constraints: BoxConstraints(maxWidth: size.width - 10),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(3),
-                boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 4,
+                    color: Colors.white.withValues(alpha: 0.6),
+                  ),
+                ],
               ),
               padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
                   SizedBox(width: 4),
-                  Text(
-                    data.name,
-                    style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w600),
+                  Flexible(
+                    child: Text(
+                      data.name,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
                 ],
               ),
