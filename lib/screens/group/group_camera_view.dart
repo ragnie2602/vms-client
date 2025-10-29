@@ -233,6 +233,12 @@ class _GroupCameraViewState extends State<GroupCameraView> {
       onDeleteShareGroup: (_inviteId) {
         return context.read<GroupCameraBloc>().deleteShareGroup(
           shareInviteId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(
+              context: c,
+              title: Text(messageFail ?? 'Thất bại'),
+            );
+          },
         );
       },
       onShareGroup: (_inviteId) {
@@ -268,6 +274,12 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             ToastUtil.toastSuccess(
               context: context,
               title: Text('Xóa thành công'),
+            );
+          }
+          if (state is RemoveGroupCameraFailState) {
+            ToastUtil.toastFail(
+              context: context,
+              title: Text('Không thể xóa nhóm con cửa nhóm được chia sẻ'),
             );
           }
         },
@@ -362,6 +374,11 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                   // nếu level >= 2 (thứ 3) thì ko còn action add group nữa
                                   if ((node.data?.level ?? 0) >= 2) {
                                     listAction.remove(ItemGroupAction.add);
+                                  }
+                                  // check role để ẩn button
+                                  if (node.data?.groupRole ==
+                                      DeviceGroupRole.gview) {
+                                    listAction = [ItemGroupAction.remove];
                                   }
                                   final List<PopupMenuEntry<ItemGroupAction>>
                                   entries = [];

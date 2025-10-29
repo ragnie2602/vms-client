@@ -84,7 +84,7 @@ const Map<int, Map<String, String>> vi = {
 
   // checkAccountShare (502)
   502: {
-    ..._commonErrors,
+    // ..._commonErrors,
     'ALREADY_INVITE': "Tài khoản đã được chia sẻ",
     'TEL_INVALID': "Số điện thoại không hợp lệ",
     'EMAIL_INVALID': "Email không hợp lệ",
@@ -96,8 +96,21 @@ const Map<int, Map<String, String>> vi = {
     'SHARE_TO_ADMIN': "Không thể chia sẻ cho admin",
     'SHARE_TO_OWNER': "Không thể chia sẻ cho chủ sở hữu",
     'OVER_SHARED_USER_NUMBER': "Vượt quá số người được chia sẻ",
+    'PERMISSION_DENIED': 'Bạn không có quyền thực hiện chức năng này',
+    'ERROR_DEFAULT': 'Lỗi hệ thống',
   },
-
+  // deleteShareGroup (238)
+  238: {
+    ..._commonErrors,
+    'ERROR_DEFAULT': 'Lỗi hệ thống',
+    'INVALID_SHARE': 'Bạn không có quyền thực hiện chức năng này',
+  },
+  // deleteShareCamera (180)
+  180: {
+    ..._commonErrors,
+    'ERROR_DEFAULT': 'Lỗi hệ thống',
+    'INVALID_SHARE': 'Bạn không có quyền thực hiện chức năng này',
+  },
   // shareCamera (154)
   154: {'CAMERA_NOT_FOUND': "Không tìm thấy camera"},
 

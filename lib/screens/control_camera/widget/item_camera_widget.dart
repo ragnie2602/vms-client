@@ -95,10 +95,17 @@ class ItemCameraWidget extends StatelessWidget {
 
   Widget _buildStatusColumn() {
     return Expanded(
-      flex: 190,
+      flex: 130,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: CameraStatusWidget(cameraStatus: itemCamera.status),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Spacer(),
+            CameraStatusWidget(isOnline: itemCamera.isOnline),
+            Spacer(),
+          ],
+        ),
       ),
     );
   }
@@ -228,39 +235,25 @@ class ItemCameraWidget extends StatelessWidget {
 }
 
 class CameraStatusWidget extends StatelessWidget {
-  const CameraStatusWidget({super.key, required this.cameraStatus});
-  final CameraStatus cameraStatus;
+  const CameraStatusWidget({super.key, required this.isOnline});
+  final bool isOnline;
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+      padding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
       decoration: BoxDecoration(
-        color: cameraStatus.bgColor,
+        color: isOnline ? AppColors.blueD7F1FF : AppColors.scaffoldBgLight,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              margin: EdgeInsets.only(right: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                color: cameraStatus.contentColor,
-              ),
-            ),
-            Text(
-              cameraStatus.getName(),
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.2,
-                color: cameraStatus.contentColor,
-              ),
-            ),
-          ],
+        child: Text(
+          isOnline ? 'Online' : 'Offline',
+          style: AppTypography.style(
+            14,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.2,
+            color: isOnline ? AppColors.primary : AppColors.grey6F767E,
+          ),
         ),
       ),
     );

@@ -133,7 +133,8 @@ extension CameraMapper on pb.Camera {
       status: status.toDomain(),
       stream: streamUrl.toDomain(),
       onvif: onvif.toDomain(),
-      cameraRole: role.toDomain()
+      cameraRole: role.toDomain(),
+      isOnline: on
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -32,7 +33,7 @@ class ControlCameraScreen extends StatefulWidget {
 
 class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final TextEditingController cameraNameController = TextEditingController();
-  CameraStatus? cameraStatus;
+  CameraOnlineChecked? cameraStatus;
   final ScrollController _cameraListController = ScrollController();
 
   void _onClearSearch() {
@@ -84,7 +85,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     context.read<ControlCameraBloc>().add(
       FilterCameraEvent(
         cameraName: cameraNameController.text,
-        cameraStatus: cameraStatus,
+        isOnline: cameraStatus?.getValue,
       ),
     );
   }
@@ -221,6 +222,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           camId: camera.id,
           accountB: _accName,
           shareId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(
+              context: c,
+              title: Text(messageFail ?? 'Thất bại'),
+            );
+          },
         );
       },
       onShareCamera: (_accountNameInvite) {
@@ -401,13 +408,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              CustomCommonDropdown<CameraStatus>(
-                                items: CameraStatus.values,
+                              CustomCommonDropdown<CameraOnlineChecked>(
+                                items: CameraOnlineChecked.values,
                                 value: cameraStatus,
                                 onChanged: (p0) {
                                   setState(() {
                                     if (cameraStatus == p0 ||
-                                        p0 == CameraStatus.all) {
+                                        p0 == CameraOnlineChecked.all) {
                                       cameraStatus = null;
                                     } else {
                                       cameraStatus = p0;
