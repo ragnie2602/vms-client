@@ -117,7 +117,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 color: Colors.white,
               ),
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              margin: EdgeInsets.only(bottom: 10),
+              margin: EdgeInsets.all(10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,6 +219,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     borderRadius: BorderRadius.circular(5),
                     color: Colors.white,
                   ),
+                  margin: EdgeInsets.only(bottom: 10, left: 10, right: 10),
                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

@@ -24,7 +24,7 @@ class ItemUserWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 15),
+      padding: EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
           Expanded(
@@ -71,7 +71,7 @@ class ItemUserWidget extends StatelessWidget {
               child: Text(
                 itemUser.emailAddress,
                 style: AppTypography.style(
-                  13,
+                  14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.black171725,
                 ),
@@ -133,8 +133,9 @@ class ItemUserWidget extends StatelessWidget {
                 itemBuilder: (BuildContext context) => [
                   PopupMenuItem<String>(
                     value: 'reset_password',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         SvgPicture.asset(AppAssets.icReset),
                         SizedBox(width: 8),
@@ -143,7 +144,7 @@ class ItemUserWidget extends StatelessWidget {
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.black171725,
+                            color: AppColors.black,
                           ),
                         ),
                       ],
@@ -152,8 +153,9 @@ class ItemUserWidget extends StatelessWidget {
                   PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                   PopupMenuItem<String>(
                     value: 'edit',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         SvgPicture.asset(AppAssets.icEdit),
                         SizedBox(width: 8),
@@ -162,7 +164,7 @@ class ItemUserWidget extends StatelessWidget {
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.black171725,
+                            color: AppColors.black,
                           ),
                         ),
                       ],
@@ -171,12 +173,20 @@ class ItemUserWidget extends StatelessWidget {
                   PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                   PopupMenuItem<String>(
                     value: 'delete',
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         SvgPicture.asset(AppAssets.icDelete),
                         SizedBox(width: 8),
-                        Text('Xóa', style: AppTypography.style(14, fontWeight: FontWeight.w500)),
+                        Text(
+                          'Xóa',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.black,
+                          ),
+                        ),
                       ],
                     ),
                   ),
