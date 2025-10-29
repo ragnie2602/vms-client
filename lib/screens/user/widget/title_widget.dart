@@ -29,7 +29,7 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 267,
+            flex: 300,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -43,7 +43,7 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 267,
+            flex: 300,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -58,7 +58,7 @@ class TitleWidget extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 190,
+            flex: 250,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -72,7 +72,7 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 190,
+            flex: 150,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -86,7 +86,7 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 130,
+            flex: 150,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -100,7 +100,7 @@ class TitleWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 190,
+            flex: 112,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Center(

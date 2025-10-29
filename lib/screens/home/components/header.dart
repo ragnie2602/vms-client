@@ -43,56 +43,60 @@ class _HeaderState extends State<Header> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AppBloc, AppState>(
-      listenWhen: (previous, current) => previous.themeMode != current.themeMode,
+      listenWhen: (previous, current) => previous.themeMode != current.themeMode 
+      || previous.displayFullScreenLiveView != current.displayFullScreenLiveView,
       listener: (context, state) => setState(() {}),
-      child: Container(
-        height: AppConfig.APP_BAR_HEIGHT,
-        width: double.infinity,
-        color: AppColors.contentBg,
-        padding: EdgeInsets.only(left: 20, right: 20),
-        child: Material(
-          color: Colors.transparent,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: ValueListenableBuilder(
-                  valueListenable: _state,
-                  builder: (context, state, child) {
-                    return Row(
-                      children: <Widget>[
-                        _buildBackIcon(state),
-                        Flexible(child: _buildPageTitle(state)),
-                      ],
-                    );
-                  },
-                ),
-              ),
-
-              Row(
-                children: <Widget>[
-                  SizedBox(width: 20),
-                  ExpandableSearchBar(),
-                  SizedBox(width: 20),
-                  InkWell(
-                    onTap: () {},
-                    borderRadius: BorderRadius.circular(20),
-                    child: Badge.count(
-                      count: 01,
-                      padding: EdgeInsets.all(2),
-                      backgroundColor: Color(0xFF21CCC3),
-                      textStyle: AppTypography.style(
-                        9,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                      child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
-                    ),
+      child: Visibility(
+        visible: !context.read<AppBloc>().state.displayFullScreenLiveView,
+        child: Container(
+          height: AppConfig.APP_BAR_HEIGHT,
+          width: double.infinity,
+          color: AppColors.contentBg,
+          padding: EdgeInsets.only(left: 20, right: 20),
+          child: Material(
+            color: Colors.transparent,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: ValueListenableBuilder(
+                    valueListenable: _state,
+                    builder: (context, state, child) {
+                      return Row(
+                        children: <Widget>[
+                          _buildBackIcon(state),
+                          Flexible(child: _buildPageTitle(state)),
+                        ],
+                      );
+                    },
                   ),
-                  SizedBox(width: 12),
-                  UserProfile(),
-                ],
-              ),
-            ],
+                ),
+        
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 20),
+                    ExpandableSearchBar(),
+                    SizedBox(width: 20),
+                    InkWell(
+                      onTap: () {},
+                      borderRadius: BorderRadius.circular(20),
+                      child: Badge.count(
+                        count: 01,
+                        padding: EdgeInsets.all(2),
+                        backgroundColor: Color(0xFF21CCC3),
+                        textStyle: AppTypography.style(
+                          9,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                        child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    UserProfile(),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
