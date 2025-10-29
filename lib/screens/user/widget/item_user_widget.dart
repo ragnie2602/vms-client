@@ -37,7 +37,7 @@ class ItemUserWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 267,
+            flex: 300,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -51,7 +51,7 @@ class ItemUserWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 267,
+            flex: 300,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -65,7 +65,7 @@ class ItemUserWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 190,
+            flex: 250,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -80,7 +80,7 @@ class ItemUserWidget extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 190,
+            flex: 150,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -95,7 +95,7 @@ class ItemUserWidget extends StatelessWidget {
           ),
 
           Expanded(
-            flex: 130,
+            flex: 150,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
@@ -111,7 +111,7 @@ class ItemUserWidget extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 190,
+            flex: 112,
             child: Center(
               child: PopupMenuButton<String>(
                 icon: SvgPicture.asset(AppAssets.icAction),
