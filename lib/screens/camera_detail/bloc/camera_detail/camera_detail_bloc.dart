@@ -7,19 +7,19 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
 import '../../components/player_timeline.dart';
-import '../../widgets/camera_live_player.dart';
+import '../../widgets/camera_detail_player.dart';
 
-part 'camera_live_event.dart';
-part 'camera_live_state.dart';
+part 'camera_detail_event.dart';
+part 'camera_detail_state.dart';
 
-class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
-  CameraLiveBloc({required LiveViewMode mode, required CameraEntity camera})
+class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
+  CameraDetailBloc({required CameraDetailMode mode, required CameraEntity? camera})
     : super(
-        CameraLiveState(
+        CameraDetailState(
           mode: mode,
           camera: camera,
           playbackDate: DateTime.now(),
-          cameraLiveController: CameraLiveController(),
+          cameraDetailController: CameraDetailController(),
         ),
       ) {
     on<ChangeViewMode>(_onChaneViewMode);
@@ -32,7 +32,7 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
     on<ChangeTimelineDisplayMode>(_onChangeTimelineDisplayMode);
   }
 
-  FutureOr<void> _onChaneViewMode(ChangeViewMode event, Emitter<CameraLiveState> emit) async {
+  FutureOr<void> _onChaneViewMode(ChangeViewMode event, Emitter<CameraDetailState> emit) async {
     if (state.mode == event.mode) return;
 
     emit(
@@ -42,42 +42,50 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
         speed: 1,
         status: PlayerStatus.playing,
         playbackDate: DateTime.now(),
-        cameraLiveController: CameraLiveController(), // Instance mới
+        cameraDetailController: CameraDetailController(), // Instance mới
       ),
     );
   }
 
-  FutureOr<void> _onChangeCamera(ChangeCamera event, Emitter<CameraLiveState> emit) async {
-    if (state.camera.id == event.camera.id) return;
+  FutureOr<void> _onChangeCamera(ChangeCamera event, Emitter<CameraDetailState> emit) async {
+    if (state.camera?.id == event.camera.id) return;
 
-    emit(state.copyWith(camera: event.camera, volume: 100, speed: 1, status: PlayerStatus.playing));
+    emit(
+      state.copyWith(
+        camera: event.camera,
+        volume: 100,
+        speed: 1,
+        status: PlayerStatus.playing,
+        cameraDetailController: CameraDetailController(), // Instance mới
+      ),
+    );
   }
 
-  FutureOr<void> _onChangePlayerStatus(ChangePlayerStatus event, Emitter<CameraLiveState> emit) {
+  FutureOr<void> _onChangePlayerStatus(ChangePlayerStatus event, Emitter<CameraDetailState> emit) {
     if (state.status == event.status) return null;
 
     emit(state.copyWith(status: event.status));
   }
 
-  FutureOr<void> _onSeekPlayer(SeekPlayer event, Emitter<CameraLiveState> emit) async {
-    await state.cameraLiveController.ref.currentState?.seek(event.amount);
+  FutureOr<void> _onSeekPlayer(SeekPlayer event, Emitter<CameraDetailState> emit) async {
+    await state.cameraDetailController.ref.currentState?.seek(event.amount);
   }
 
-  FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraLiveState> emit) async {
-    await state.cameraLiveController.ref.currentState?.changeVolume(event.volume);
+  FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraDetailState> emit) async {
+    await state.cameraDetailController.ref.currentState?.changeVolume(event.volume);
 
     emit(state.copyWith(volume: event.volume));
   }
 
-  FutureOr<void> _onChangeSpeed(ChangeSpeed event, Emitter<CameraLiveState> emit) async {
-    await state.cameraLiveController.ref.currentState?.changeSpeed(event.speed);
+  FutureOr<void> _onChangeSpeed(ChangeSpeed event, Emitter<CameraDetailState> emit) async {
+    await state.cameraDetailController.ref.currentState?.changeSpeed(event.speed);
 
     emit(state.copyWith(speed: event.speed));
   }
 
   FutureOr<void> _onChangePlaybackDate(
     ChangePlaybackDate event,
-    Emitter<CameraLiveState> emit,
+    Emitter<CameraDetailState> emit,
   ) async {
     if (state.playbackDate == event.date) return;
 
@@ -86,7 +94,7 @@ class CameraLiveBloc extends Bloc<CameraLiveEvent, CameraLiveState> {
 
   FutureOr<void> _onChangeTimelineDisplayMode(
     ChangeTimelineDisplayMode event,
-    Emitter<CameraLiveState> emit,
+    Emitter<CameraDetailState> emit,
   ) async {
     if (state.timelineDisplayMode == event.mode) return;
 

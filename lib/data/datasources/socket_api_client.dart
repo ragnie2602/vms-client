@@ -82,7 +82,7 @@ class SocketApiClient extends BaseApiClient {
   @override
   Future<Either<Failure, T>> send<T>(SocketRequestPayload data) async {
     if (!isConnected &&
-        !await _waitForConnected(Duration(seconds: AppConfig.SOCKET_CONNECTION_TIMEOUT))) {
+        !await _waitForConnected(Duration(seconds: 5))) {
       return Left(Failure.message(SOCKET_UNCONNECTED));
     }
 
@@ -118,10 +118,7 @@ class SocketApiClient extends BaseApiClient {
         result = Right(reply.reply.value);
       } else {
         final msg = ResultType.valueOf(reply.type).translate(packet.id);
-        Logger.error(
-          "Request '${reply.reply.typeUrl}' failed: $msg",
-          tag: 'SOCKET',
-        );
+        Logger.error("Request '${reply.reply.typeUrl}' failed: $msg", tag: 'SOCKET');
         result = Left(Failure.code(reply.type));
       }
 
@@ -143,10 +140,12 @@ class SocketApiClient extends BaseApiClient {
 
   Future<bool> _waitForConnected(Duration timeout) async {
     try {
-      await _socket.connection.firstWhere((state) => state is Connected).timeout(timeout);
+      await _socket.connection
+          .firstWhere((state) => state is Connected || state is Reconnected)
+          .timeout(timeout);
       return true;
     } catch (_) {
-      return false;
+      return isConnected;
     }
   }
 
@@ -156,7 +155,8 @@ class SocketApiClient extends BaseApiClient {
   }
 
   @override
-  bool get isConnected => _socket.connection.state is Connected;
+  bool get isConnected =>
+      _socket.connection.state is Connected || _socket.connection.state is Reconnected;
 }
 
 class SocketConnectionParams extends BaseConnectionParams {

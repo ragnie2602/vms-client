@@ -353,9 +353,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       controller: _sub,
                       hintText: 'Nhập địa chỉ luồng phụ',
                       label: 'Địa chỉ luồng phụ',
-                      validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Địa chỉ luồng phụ không được để trống'
-                          : null,
+                      // validator: (v) => v == null || v.trim().isEmpty
+                      //     ? 'Địa chỉ luồng phụ không được để trống'
+                      //     : null,
                     ),
                     // const SizedBox(height: 24),
                     // AppField(

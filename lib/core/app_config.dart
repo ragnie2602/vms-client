@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:fvp/mdk.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
+import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 
 class AppConfig {
   const AppConfig._();
@@ -15,6 +16,7 @@ class AppConfig {
   /* File log */
   static const LOG_FILE_RETENTION_PERIOD = Duration(days: 3);
   static const LOG_FILE_MAX_TRACE_LINES = 31;
+  static final INITIAL_HOME_TAB = HomeTab.tabs.first;
 
   /*  */
   static const SHOW_HOME_SIDEBAR = true;

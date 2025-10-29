@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
@@ -16,15 +17,17 @@ import 'player_full_screen.dart';
 
 enum PlayerMode { liveview, playlist }
 
-class CameraLiveController {
-  GlobalKey<CameraLivePlayerState> ref = GlobalKey();
+enum _PlayerState { initialized, empty, error }
+
+class CameraDetailController {
+  GlobalKey<CameraDetailPlayerState> ref = GlobalKey();
 
   Function(int)? onPlaybackChanged;
-  Function(DateTime)? onTimeChanged;
+  Function(DateTime, [bool])? onTimeChanged;
 }
 
-class CameraLivePlayer extends StatefulWidget {
-  const CameraLivePlayer({
+class CameraDetailPlayer extends StatefulWidget {
+  const CameraDetailPlayer({
     super.key,
     required this.playlist,
     required this.name,
@@ -39,17 +42,17 @@ class CameraLivePlayer extends StatefulWidget {
   final String name;
   final PlayerMode mode;
   final int initialIndex;
-  final CameraLiveController controller;
+  final CameraDetailController controller;
   final Function(PlayerStatus)? onStatusChanged;
 
-  factory CameraLivePlayer.playlist({
+  factory CameraDetailPlayer.playlist({
     required List<PlaybackVideo> playlist,
     required String name,
     required int initialIndex,
-    required CameraLiveController controller,
+    required CameraDetailController controller,
     Function(PlayerStatus)? onStatusChanged,
   }) {
-    return CameraLivePlayer(
+    return CameraDetailPlayer(
       playlist: playlist,
       name: name,
       mode: PlayerMode.playlist,
@@ -61,13 +64,13 @@ class CameraLivePlayer extends StatefulWidget {
     );
   }
 
-  factory CameraLivePlayer.liveview({
+  factory CameraDetailPlayer.liveview({
     required String source,
     required String name,
-    required CameraLiveController controller,
+    required CameraDetailController controller,
     Function(PlayerStatus)? onStatusChanged,
   }) {
-    return CameraLivePlayer(
+    return CameraDetailPlayer(
       playlist: [],
       source: source,
       name: name,
@@ -79,10 +82,10 @@ class CameraLivePlayer extends StatefulWidget {
   }
 
   @override
-  State<CameraLivePlayer> createState() => CameraLivePlayerState();
+  State<CameraDetailPlayer> createState() => CameraDetailPlayerState();
 }
 
-class CameraLivePlayerState extends State<CameraLivePlayer> {
+class CameraDetailPlayerState extends State<CameraDetailPlayer> {
   final GlobalKey<VideoState> _videoKey = GlobalKey();
 
   late final Player _player;
@@ -90,11 +93,15 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
   late final VideoController _controller;
 
   late String name = widget.name;
+
   final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
+  final ValueNotifier<_PlayerState> _state = ValueNotifier(_PlayerState.initialized);
 
   late int _playlistIndex;
   bool _shouldSyncPlayerTime = true;
-  bool showingNoPlayback = false;
+  Timer? _reconnectingTimer;
+  Timer? _lostConnectionTimer;
+  Duration _lastDuration = Duration.zero;
 
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Playlist>? _playlistSub;
@@ -114,6 +121,8 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
       });
     }
 
+    _state.addListener(() => _tryReconnecting(_state.value == _PlayerState.error));
+
     super.initState();
     _initPlayer();
 
@@ -130,8 +139,11 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
     _playlistSub?.cancel();
     _completedSub?.cancel();
     _errorSub?.cancel();
+    _reconnectingTimer?.cancel();
+    _lostConnectionTimer?.cancel();
     _player.dispose();
     _status.dispose();
+    _state.dispose();
     try {
       _audioPlayer.dispose();
     } catch (_) {}
@@ -139,45 +151,60 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
   }
 
   @override
-  void didUpdateWidget(covariant CameraLivePlayer oldWidget) {
+  void didUpdateWidget(covariant CameraDetailPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
     name = widget.name;
   }
 
   Future<void> _initPlayer() async {
     _status.value = PlayerStatus.playing;
+
+    // Initialize player
     _player = Player(
       configuration: PlayerConfiguration(
         title: widget.name,
-        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 32 * 1024 * 1024,
+        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 6 * 1024 * 1024,
       ),
     );
+    if (widget.mode == PlayerMode.liveview) {
+      _audioPlayer = Player(configuration: PlayerConfiguration(bufferSize: 1));
+    }
     _controller = VideoController(_player);
 
-    if (widget.mode == PlayerMode.liveview) {
-      // Luồng video -- tắt âm thanh
-      _player.open(Media(widget.source));
-      await _player.setAudioTrack(AudioTrack.no());
-
-      // Luồng âm thanh -- tắt hình
-      _audioPlayer = Player(configuration: PlayerConfiguration(bufferSize: 1));
-      _audioPlayer.open(Media(widget.source));
-      await _audioPlayer.setVideoTrack(VideoTrack.no());
-    } else {
-      _player.open(
-        Playlist(widget.playlist.map((e) => Media(e.urlPlayback)).toList(), index: _playlistIndex),
-      );
-
-      await _player.setPlaylistMode(PlaylistMode.none);
-    }
+    // Open player
+    await _onOpenPlayer();
 
     _positionSub = _player.stream.position.listen(_onPositionChanged);
     _playlistSub = _player.stream.playlist.listen(_onPlaylistChanged);
     _completedSub = _player.stream.completed.listen(_onCompleted);
     _errorSub = _player.stream.error.listen(_onError);
+
+    // Có vài case đang pause nhưng player tự playing (vd seek, ...) --> update status theo player
+    _player.stream.playing.listen((playing) {
+      if (playing && _status.value != PlayerStatus.playing) _status.value = PlayerStatus.playing;
+      if (playing && _state.value == _PlayerState.error) _state.value = _PlayerState.initialized;
+    });
+  }
+
+  Future<void> _onOpenPlayer({Duration? position}) async {
+    if (widget.mode == PlayerMode.playlist) {
+      await _player.open(
+        Playlist(widget.playlist.map((e) => Media(e.urlPlayback)).toList(), index: _playlistIndex),
+      );
+
+      await _player.setPlaylistMode(PlaylistMode.none);
+      if (position != null) await _waitForBufferingAndSeek(position, timeout: 10);
+    } else {
+      await _player.open(Media(widget.source));
+      await _player.setAudioTrack(AudioTrack.no());
+      await _audioPlayer.open(Media(widget.source));
+      await _audioPlayer.setVideoTrack(VideoTrack.no());
+    }
   }
 
   void _onError(String error) {
+    _state.value = _PlayerState.error;
+    _player.stop();
     Logger.error(error, writeLog: true);
   }
 
@@ -192,64 +219,113 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
       _audioPlayer.seek(position);
     }
 
+    if (_state.value != _PlayerState.error) {
+      if (_lastDuration != position && widget.mode == PlayerMode.liveview) {
+        _debounceConnectionLost();
+      }
+      _lastDuration = position;
+    }
+
     if (_shouldSyncPlayerTime == true && widget.mode == PlayerMode.playlist) {
-      widget.controller.onTimeChanged?.call(
-        currentPlayback.startTime
-            .add(Duration(milliseconds: position.inMilliseconds))
-            .roundToSecond,
-      );
+      widget.controller.onTimeChanged?.call(currentPlayback.startTime.add(position).roundToSecond);
     }
   }
 
   void _onPlaylistChanged(Playlist playlist) {
-    _playlistIndex = playlist.index;
-    widget.controller.onPlaybackChanged?.call(_playlistIndex);
+    // Delay một chút do nhiều lúc stop không kịp nên index bị nhảy lên 1
+    Future.delayed(Durations.short3, () {
+      if (_state.value == _PlayerState.error) return;
+
+      _playlistIndex = playlist.index;
+      widget.controller.onPlaybackChanged?.call(_playlistIndex);
+    });
   }
 
-  Future<void> jumpToDate(DateTime date) async {
+  void _tryReconnecting(bool isError) {
+    if (!isError) return _reconnectingTimer?.cancel();
+
+    _reconnectingTimer?.cancel();
+    _reconnectingTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      if (!mounted) return timer.cancel();
+
+      _reconnectingTimer?.cancel();
+      await _onOpenPlayer(position: _lastDuration);
+    });
+  }
+
+  void _debounceConnectionLost() {
+    _lostConnectionTimer?.cancel();
+    _lostConnectionTimer = Timer(AppConfig.PLAYER_DISCONNECTION_THRESHOLD, () {
+      // Dừng hoặc hết video
+      if (!mounted ||
+          widget.mode != PlayerMode.liveview ||
+          _status.value == PlayerStatus.finished ||
+          _status.value == PlayerStatus.paused ||
+          _state.value == _PlayerState.error) {
+        return;
+      }
+
+      Logger.warn("Liveview '${widget.name}' disconnected");
+      _onError("Liveview '${widget.name}' disconnected");
+    });
+  }
+
+  Future<void> jumpToDate(DateTime date, {int? dateIndex}) async {
     _shouldSyncPlayerTime = false;
     // Set timeline trước tránh cảm giác delay
-    widget.controller.onTimeChanged?.call(date.roundToSecond);
+    widget.controller.onTimeChanged?.call(date.roundToSecond, dateIndex != null);
 
-    final index = widget.playlist.atTime(date);
+    final index = dateIndex ?? widget.playlist.atTime(date);
 
     // Click ngoài khoảng playback
     if (index == null) {
-      setState(() => showingNoPlayback = true);
+      _state.value = _PlayerState.empty;
       await _player.pause();
       return;
     }
 
-    if (showingNoPlayback) {
+    if (_state.value == _PlayerState.empty) {
+      _state.value = _PlayerState.initialized;
+      // đổi initialized trước play do có thể bị đổi từ error --> initialized
       await _player.play();
-      setState(() => showingNoPlayback = false);
     }
 
     final diff = date.difference(widget.playlist[index].startTime);
 
     // Trong khoảng hiện tại --> seek
     if (index == _playlistIndex) {
-      await _player.seek(diff);
+      if (diff != Duration.zero) await _player.seek(diff);
     }
     // Playback khác --> đổi playlist và jump
     else {
-      // Jump tới playback đích
+      // Gán local biến luôn để khi reconnecting tới đúng index đó
+      _playlistIndex = index;
+      _lastDuration = diff;
+
       await _player.jump(index);
-
-      if (diff != Duration.zero) {
-        try {
-          // Đợi tới khi buffering xong (đã chuyển playback) --> Không bị delay
-          await _player.stream.buffering
-              .firstWhere((buffering) => buffering == false)
-              .timeout(const Duration(seconds: 3));
-
-          // Seek tới điểm click
-          await _player.seek(diff);
-        } catch (_) {}
-      }
+      await _waitForBufferingAndSeek(diff);
     }
 
     _shouldSyncPlayerTime = true;
+  }
+
+  Future<void> _waitForBufferingAndSeek(Duration diff, {int timeout = 3}) async {
+    if (diff != Duration.zero && _state.value != _PlayerState.error) {
+      try {
+        // Đợi tới khi buffering xong (đã chuyển playback) --> Không bị delay
+        await _player.stream.buffering
+            .firstWhere((buffering) => buffering == false)
+            .timeout(Duration(seconds: timeout));
+
+        // Seek tới điểm click
+        await _player.seek(diff);
+      } catch (_) {
+        Logger.error(
+          "Timeout khi buffering --> skip seeking to ${currentPlayback.startTime.add(diff)}",
+          writeLog: true,
+        );
+      }
+    }
   }
 
   Future<void> snapshot() async {
@@ -317,9 +393,13 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(color: Colors.black),
-      child: showingNoPlayback
-          ? _buildNoPlayback()
-          : Video(
+      child: ValueListenableBuilder(
+        valueListenable: _state,
+        builder: (context, value, child) {
+          return switch (value) {
+            _PlayerState.empty => _buildNoPlayback(),
+            _PlayerState.error => _buildError(),
+            _PlayerState.initialized => Video(
               key: _videoKey,
               height: double.infinity,
               fit: BoxFit.fitHeight,
@@ -338,6 +418,31 @@ class CameraLivePlayerState extends State<CameraLivePlayer> {
               ),
               subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
             ),
+          };
+        },
+      ),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error, color: Colors.white, size: 36),
+          SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              widget.mode == PlayerMode.liveview
+                  ? 'Camera ${widget.name} đang ngoại tuyến'
+                  : 'Có lỗi xảy ra trong quá trình tải bản ghi!',
+              style: AppTypography.style(13, color: Colors.white, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
