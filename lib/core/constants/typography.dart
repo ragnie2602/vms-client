@@ -20,6 +20,7 @@ class AppTypography {
     Color? color,
     double lineHeight = 1.0,
     double letterSpacing = 0.0,
+    TextOverflow textOverflow = TextOverflow.ellipsis
   }) => TextStyle(
     fontFamily: 'Inter',
     fontSize: fontSize,
@@ -28,5 +29,6 @@ class AppTypography {
     color: _getColor(lightColor, darkColor, color),
     height: lineHeight,
     letterSpacing: letterSpacing,
+    overflow: textOverflow
   );
 }
