@@ -72,7 +72,7 @@ class GroupNode extends StatelessWidget {
                   group.name,
                   style: AppTypography.style(
                     13,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w500,
                     color: AppColors.black,
                   ),
                   maxLines: 1,
