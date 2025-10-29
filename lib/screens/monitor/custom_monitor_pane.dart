@@ -46,6 +46,10 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
     if (bloc.state is ShowCustomViewSuccess) {
       customView = (bloc.state as ShowCustomViewSuccess).customView;
     }
+
+    if (context.read<MonitorBloc>().state is! MonitorSuccess) {
+      context.read<MonitorBloc>().add(GetAllCamera());
+    }
   }
 
   @override

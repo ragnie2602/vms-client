@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 
 import '../../shared/state_builder_mixin.dart';
@@ -81,7 +82,17 @@ class _PlaybackItemState extends State<PlaybackItem> {
     if (_progress.value != null) return;
 
     context.read<PlaybackBloc>().add(
-      DownloadPlayback(widget.playback, onProgress: (progress) => _progress.value = progress),
+      DownloadPlayback(
+        widget.playback,
+        onProgress: (progress) => _progress.value = progress,
+        onError: (error) {
+          _progress.value = null;
+          ToastUtil.toastFail(
+            context: context,
+            title: Text(error ?? 'Có lỗi xảy ra khi tải video'),
+          );
+        },
+      ),
     );
   }
 

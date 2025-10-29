@@ -20,6 +20,7 @@ class ChangePlayback extends PlaybackEvent {
 class DownloadPlayback extends PlaybackEvent {
   final PlaybackVideo playback;
   final Function(double?)? onProgress;
+  final Function(String?)? onError;
 
-  const DownloadPlayback(this.playback, {this.onProgress});
+  const DownloadPlayback(this.playback, {this.onProgress, this.onError});
 }
