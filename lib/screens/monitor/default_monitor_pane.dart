@@ -63,7 +63,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                                   key: ValueKey("player($index)___${camera.camId}"),
                                   mode: PlayerMode.monitoring,
                                   builder: (player, status) =>
-                                      _buildCameraView(context, player, camera),
+                                      _buildCameraView(context, player, camera, isFullScreen),
                                 ),
                               );
                             } else {
@@ -145,9 +145,9 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
     return Size(width, height);
   }
 
-  Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
+  Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data, bool shouldRemoveAction) {
     return InkWell(
-      onTap: () {
+      onTap: shouldRemoveAction ? null : () {
         context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
       },
       child: Stack(
