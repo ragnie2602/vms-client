@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -49,57 +50,60 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CustomViewBloc, CustomViewState>(
-      listener: (context, state) {
-        if (state is ShowCustomViewSuccess) {
-          setState(() => customView = state.customView);
-        } else if (state is UpdateCustomViewSuccess) {
-          if (Utils.isEqual(state.customView.id, customView?.id ?? [])) {
-            customView = state.customView;
+    return IgnorePointer(
+      ignoring: context.read<AppBloc>().state.displayFullScreenLiveView,
+      child: BlocListener<CustomViewBloc, CustomViewState>(
+        listener: (context, state) {
+          if (state is ShowCustomViewSuccess) {
+            setState(() => customView = state.customView);
+          } else if (state is UpdateCustomViewSuccess) {
+            if (Utils.isEqual(state.customView.id, customView?.id ?? [])) {
+              customView = state.customView;
+            }
+          } else if (state is DeleteCustomViewSuccess) {
+            if (Utils.isEqual(state.id, customView?.id ?? [])) {
+              setState(() => customView = null);
+            }
           }
-        } else if (state is DeleteCustomViewSuccess) {
-          if (Utils.isEqual(state.id, customView?.id ?? [])) {
-            setState(() => customView = null);
-          }
-        }
-      },
-      child: customView != null
-          ? Column(
-              children: List.generate(
-                _viewMode.rows,
-                (row) => Flexible(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final mH = constraints.maxHeight;
-                      final mW = constraints.maxWidth;
+        },
+        child: customView != null
+            ? Column(
+                children: List.generate(
+                  _viewMode.rows,
+                  (row) => Flexible(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final mH = constraints.maxHeight;
+                        final mW = constraints.maxWidth;
 
-                      double itemHeight = 0, itemWidth = 0;
-                      if (mW >= mH * 16 / 9 * _viewMode.columns) {
-                        itemHeight = mH;
-                        itemWidth = mH * 16 / 9;
-                      } else {
-                        itemWidth = mW / _viewMode.columns;
-                        itemHeight = itemWidth * 9 / 16;
-                      }
+                        double itemHeight = 0, itemWidth = 0;
+                        if (mW >= mH * 16 / 9 * _viewMode.columns) {
+                          itemHeight = mH;
+                          itemWidth = mH * 16 / 9;
+                        } else {
+                          itemWidth = mW / _viewMode.columns;
+                          itemHeight = itemWidth * 9 / 16;
+                        }
 
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(
-                          _viewMode.columns,
-                          (column) => SizedBox(
-                            height: itemHeight,
-                            width: itemWidth,
-                            child: buildItem(context, column, row, Size(itemWidth, itemHeight)),
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(
+                            _viewMode.columns,
+                            (column) => SizedBox(
+                              height: itemHeight,
+                              width: itemWidth,
+                              child: buildItem(context, column, row, Size(itemWidth, itemHeight)),
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-            )
-          : Container(),
+              )
+            : Container(),
+      ),
     );
   }
 
