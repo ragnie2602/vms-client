@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -99,10 +100,13 @@ class _MonitorActionsState extends State<MonitorActions> {
                     ),
                   ),
                   ActionItem(
-                    isSelected: value == 0,
                     title: 'Xem toàn màn hình',
-                    icon: AppAssets.icListCamera,
-                    onTap: () => context.read<AppBloc>().add(ToggleMonitorDisplayMode()),
+                    icon: AppAssets.icFullTv,
+                    onTap: () {
+                      widget.leftController.closePanel();
+                      context.read<AppBloc>().add(ToggleMonitorDisplayMode());
+                      defaultEnterNativeFullscreen();
+                    },
                   ),
                 ],
               ),
