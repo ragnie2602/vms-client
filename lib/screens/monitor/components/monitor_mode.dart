@@ -29,10 +29,11 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   int viewMode = 0;
   int currentTab = 0;
 
-  void _onDefaultModeFilterSelected() {
-    if (GoRouterState.of(context).name != Routes.monitoring.name) {
-      context.goNamed(Routes.monitoring.name);
-    }
+  @override
+  void initState() {
+    super.initState();
+
+    if (mounted) onResetCustomViewSelectedItem();
   }
 
   @override
@@ -137,18 +138,16 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
     }
   }
 
+  void onResetCustomViewSelectedItem() {
+    context.read<CustomViewBloc>().add(
+      ShowCustomView(
+        CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
+        CustomMonitorPaneMode.view,
+      ),
+    );
+  }
+
   Widget _buildDefaultMode(double currentWidth, double availableHeight) {
-    onResetCustomViewSelectedItem() {
-      context.read<CustomViewBloc>().add(
-        ShowCustomView(
-          CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
-          CustomMonitorPaneMode.view,
-        ),
-      );
-    }
-
-    ;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,17 +223,17 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         Expanded(
           child: GroupCameraView(
             onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
-              _onDefaultModeFilterSelected();
+              context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
               onResetCustomViewSelectedItem();
             },
             onGetAllGroupCamera: (BuildContext contextTreeGroup) {
-              _onDefaultModeFilterSelected();
+              context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCamera());
               onResetCustomViewSelectedItem();
             },
             onGetNoGroupCamera: (BuildContext contextTreeGroup) {
-              _onDefaultModeFilterSelected();
+              context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCameraNoGroup());
               onResetCustomViewSelectedItem();
             },
