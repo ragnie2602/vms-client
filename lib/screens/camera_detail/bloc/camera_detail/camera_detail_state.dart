@@ -1,16 +1,16 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-part of 'camera_live_bloc.dart';
+part of 'camera_detail_bloc.dart';
 
-enum LiveViewMode {
+enum CameraDetailMode {
   playback,
   live;
 
-  bool get isPlayback => this == LiveViewMode.playback;
-  bool get isLive => this == LiveViewMode.live;
+  bool get isPlayback => this == CameraDetailMode.playback;
+  bool get isLive => this == CameraDetailMode.live;
 }
 
-class CameraLiveState extends BaseState {
-  const CameraLiveState({
+class CameraDetailState extends BaseState {
+  const CameraDetailState({
     this.status = PlayerStatus.playing,
     required this.mode,
     required this.camera,
@@ -18,32 +18,32 @@ class CameraLiveState extends BaseState {
     this.speed = 1,
     required this.playbackDate,
     this.timelineDisplayMode = TimelineDisplayMode.h8,
-    required this.cameraLiveController,
+    required this.cameraDetailController,
   });
 
-  final LiveViewMode mode;
+  final CameraDetailMode mode;
   final CameraEntity? camera;
   final PlayerStatus status;
   final double volume;
   final double speed;
   final DateTime playbackDate;
   final TimelineDisplayMode timelineDisplayMode;
-  final CameraLiveController cameraLiveController;
+  final CameraDetailController cameraDetailController;
 
   @override
   List<Object?> get props => [mode, camera, status, volume, speed, playbackDate, timelineDisplayMode];
 
-  CameraLiveState copyWith({
-    LiveViewMode? mode,
+  CameraDetailState copyWith({
+    CameraDetailMode? mode,
     CameraEntity? camera,
     PlayerStatus? status,
     double? volume,
     double? speed,
     DateTime? playbackDate,
     TimelineDisplayMode? timelineDisplayMode,
-    CameraLiveController? cameraLiveController,
+    CameraDetailController? cameraDetailController,
   }) {
-    return CameraLiveState(
+    return CameraDetailState(
       mode: mode ?? this.mode,
       camera: camera ?? this.camera,
       status: status ?? this.status,
@@ -51,7 +51,7 @@ class CameraLiveState extends BaseState {
       speed: speed ?? this.speed,
       playbackDate: playbackDate ?? this.playbackDate,
       timelineDisplayMode: timelineDisplayMode ?? this.timelineDisplayMode,
-      cameraLiveController: cameraLiveController ?? this.cameraLiveController,
+      cameraDetailController: cameraDetailController ?? this.cameraDetailController,
     );
   }
 }

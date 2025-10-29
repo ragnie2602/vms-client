@@ -9,16 +9,16 @@ import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 
-import '../bloc/camera_live/camera_live_bloc.dart';
+import '../bloc/camera_detail/camera_detail_bloc.dart';
 
-class PlaybackDate extends StatefulWidget {
-  const PlaybackDate({super.key});
+class PopupSelectDate extends StatefulWidget {
+  const PopupSelectDate({super.key});
 
   @override
-  State<PlaybackDate> createState() => _PlaybackDateState();
+  State<PopupSelectDate> createState() => _PopupSelectDateState();
 }
 
-class _PlaybackDateState extends State<PlaybackDate> {
+class _PopupSelectDateState extends State<PopupSelectDate> {
   PageController? _pageController;
   final _menuController = MenuController();
 
@@ -32,7 +32,7 @@ class _PlaybackDateState extends State<PlaybackDate> {
     DateTime.sunday: 'CN',
   };
 
-  CameraLiveBloc get bloc => context.read<CameraLiveBloc>();
+  CameraDetailBloc get bloc => context.read<CameraDetailBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +43,7 @@ class _PlaybackDateState extends State<PlaybackDate> {
         menuChildren: [_buildCalendar()],
         alignmentOffset: Offset(0, 8),
         useRootOverlay: true,
-        child: BlocSelector<CameraLiveBloc, CameraLiveState, DateTime>(
+        child: BlocSelector<CameraDetailBloc, CameraDetailState, DateTime>(
           selector: (state) => state.playbackDate,
           builder: (context, date) => Row(
             children: <Widget>[
@@ -99,12 +99,12 @@ class _PlaybackDateState extends State<PlaybackDate> {
           ),
         ],
       ),
-      child: BlocSelector<CameraLiveBloc, CameraLiveState, DateTime>(
+      child: BlocSelector<CameraDetailBloc, CameraDetailState, DateTime>(
         selector: (state) => state.playbackDate,
         builder: (context, date) {
           return TableCalendar(
             onDaySelected: (date, focusedDay) =>
-                context.read<CameraLiveBloc>().let((bloc) => bloc.add(ChangePlaybackDate(date))),
+                context.read<CameraDetailBloc>().let((bloc) => bloc.add(ChangePlaybackDate(date))),
             onCalendarCreated: (pageController) => _pageController = pageController,
             pageJumpingEnabled: true,
             startingDayOfWeek: StartingDayOfWeek.monday,

@@ -6,7 +6,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
@@ -26,7 +26,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   Widget build(BuildContext context) {
     // Vì là stateless nên buộc phải viết vào đây, hy vọng nó không bị gọi lung tung :*(
     context.read<MonitorBloc>().add(GetAllCamera());
-    
+
     return BlocBuilder<MonitorBloc, MonitorState>(
       builder: (context, blocState) => stateBuilder<MonitorSuccess>(
         blocState,
@@ -138,7 +138,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data) {
     return InkWell(
       onTap: () {
-        context.pushNamed(Routes.livecamera.name, extra: CameraLiveScreenArgs(data: data));
+        context.pushNamed(Routes.cameraDetail.name, extra: CameraDetailScreenArgs(data: data));
       },
       child: Stack(
         children: [

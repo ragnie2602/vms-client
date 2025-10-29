@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
-import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 
 import '../monitor/bloc/monitor/monitor_bloc.dart';
 import '../shared/state_builder_mixin.dart';
@@ -31,8 +31,8 @@ class _PlaybackScreenState extends State<PlaybackScreen> with StateBuilderMixin 
             itemCount: state.cameras.length,
             itemBuilder: (context, index) => InkWell(
               onTap: () => context.pushNamed(
-                Routes.livecamera.name,
-                extra: CameraLiveScreenArgs(
+                Routes.cameraDetail.name,
+                extra: CameraDetailScreenArgs(
                   data: state.cameras[index],
                   isPlayback: true,
                   title: 'Playback ${state.cameras[index].name}',

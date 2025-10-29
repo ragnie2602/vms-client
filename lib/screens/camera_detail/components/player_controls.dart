@@ -6,16 +6,16 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
-import '../bloc/camera_live/camera_live_bloc.dart';
-import '../widgets/camera_live_player.dart';
+import '../bloc/camera_detail/camera_detail_bloc.dart';
+import '../widgets/camera_detail_player.dart';
 import '../widgets/volume_with_slide.dart';
 
 class PlayerControls extends StatelessWidget {
   const PlayerControls({super.key, required this.mode});
-  final LiveViewMode mode;
+  final CameraDetailMode mode;
 
-  CameraLivePlayerState? playerState(BuildContext context) {
-    return context.read<CameraLiveBloc>().state.cameraLiveController.ref.currentState;
+  CameraDetailPlayerState? playerState(BuildContext context) {
+    return context.read<CameraDetailBloc>().state.cameraDetailController.ref.currentState;
   }
 
   @override
@@ -48,11 +48,11 @@ class PlayerControls extends StatelessWidget {
                   /* Backward */
                   if (mode.isPlayback)
                     _controlItem(AppAssets.icFastBackward, () {
-                      context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: -30)));
+                      context.read<CameraDetailBloc>().add(SeekPlayer(Duration(seconds: -30)));
                     }),
 
                   /* Pause/Play */
-                  BlocSelector<CameraLiveBloc, CameraLiveState, PlayerStatus>(
+                  BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
                     selector: (state) => state.status,
                     builder: (context, status) => _controlItem(
                       status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
@@ -63,7 +63,7 @@ class PlayerControls extends StatelessWidget {
                   /* Forward */
                   if (mode.isPlayback)
                     _controlItem(AppAssets.icFastForward, () {
-                      context.read<CameraLiveBloc>().add(SeekPlayer(Duration(seconds: 30)));
+                      context.read<CameraDetailBloc>().add(SeekPlayer(Duration(seconds: 30)));
                     }),
 
                   /* Record */
@@ -92,8 +92,8 @@ class PlayerControls extends StatelessWidget {
           /*  */
           _buildLiveViewMode(
             mode.isPlayback ? 1 : 0,
-            (index) => context.read<CameraLiveBloc>().add(
-              ChangeViewMode(index == 0 ? LiveViewMode.live : LiveViewMode.playback),
+            (index) => context.read<CameraDetailBloc>().add(
+              ChangeViewMode(index == 0 ? CameraDetailMode.live : CameraDetailMode.playback),
             ),
           ),
         ],
@@ -102,7 +102,7 @@ class PlayerControls extends StatelessWidget {
   }
 
   Widget _buildSpeedDropdown() {
-    return BlocSelector<CameraLiveBloc, CameraLiveState, double>(
+    return BlocSelector<CameraDetailBloc, CameraDetailState, double>(
       selector: (state) => state.speed,
       builder: (context, speed) {
         return Container(
@@ -151,7 +151,7 @@ class PlayerControls extends StatelessWidget {
             ],
             onChanged: (speed) {
               if (speed == null) return;
-              context.read<CameraLiveBloc>().add(ChangeSpeed(speed));
+              context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
             },
           ),
         );

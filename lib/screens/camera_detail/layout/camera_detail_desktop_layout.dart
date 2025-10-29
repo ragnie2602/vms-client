@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
 import '../../shared/panel.dart';
-import '../bloc/camera_live/camera_live_bloc.dart';
-import '../components/live_view_actions.dart';
+import '../bloc/camera_detail/camera_detail_bloc.dart';
+import '../components/camera_detail_actions.dart';
 import '../components/player_controls.dart';
 import '../components/player_timeline.dart';
 
-class CameraLiveDesktopLayout extends StatefulWidget {
-  const CameraLiveDesktopLayout({
+class CameraDetailDesktopLayout extends StatefulWidget {
+  const CameraDetailDesktopLayout({
     super.key,
     required this.content,
     this.leftPanelWidth = 281,
@@ -19,19 +19,19 @@ class CameraLiveDesktopLayout extends StatefulWidget {
   final Widget? content;
   final double leftPanelWidth;
   final double rightPanelWidth;
-  final LiveViewMode mode;
+  final CameraDetailMode mode;
   final bool openCamerasPanelImmediately;
 
   @override
-  State<CameraLiveDesktopLayout> createState() => _CameraLiveDesktopLayoutState();
+  State<CameraDetailDesktopLayout> createState() => _CameraDetailDesktopLayoutState();
 }
 
-class _CameraLiveDesktopLayoutState extends State<CameraLiveDesktopLayout> {
+class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
   late final PanelController _leftController = PanelController();
   late final PanelController _rightController = PanelController();
 
   @override
-  void didUpdateWidget(covariant CameraLiveDesktopLayout oldWidget) {
+  void didUpdateWidget(covariant CameraDetailDesktopLayout oldWidget) {
     if (oldWidget.mode != widget.mode) {
       _leftController.closePanel();
       _rightController.closePanel();
@@ -44,7 +44,7 @@ class _CameraLiveDesktopLayoutState extends State<CameraLiveDesktopLayout> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        LiveViewActions(
+        CameraDetailActions(
           leftController: _leftController,
           rightController: _rightController,
           mode: widget.mode,
@@ -74,7 +74,7 @@ class _CameraLiveDesktopLayoutState extends State<CameraLiveDesktopLayout> {
                         child: Column(
                           children: [
                             Expanded(child: widget.content!),
-                            if (widget.mode == LiveViewMode.playback)
+                            if (widget.mode == CameraDetailMode.playback)
                               Padding(
                                 padding: const EdgeInsets.only(top: 3),
                                 child: PlayerTimeline(

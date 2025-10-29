@@ -12,7 +12,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.dart';
-import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/camera_list_popup.dart';
@@ -158,8 +158,8 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
               source: camera.subStreamUri.toString(),
               builder: (player, status) => GestureDetector(
                 onTap: () => context.pushNamed(
-                  Routes.livecamera.name,
-                  extra: CameraLiveScreenArgs(data: camera),
+                  Routes.cameraDetail.name,
+                  extra: CameraDetailScreenArgs(data: camera),
                 ),
                 child: Stack(
                   children: [

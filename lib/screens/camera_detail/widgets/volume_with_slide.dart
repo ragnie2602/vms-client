@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 
-import '../bloc/camera_live/camera_live_bloc.dart';
+import '../bloc/camera_detail/camera_detail_bloc.dart';
 
 class VolumeWithSlide extends StatefulWidget {
   const VolumeWithSlide({super.key});
@@ -27,7 +27,7 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
       child: Container(
         height: 60,
         padding: EdgeInsets.symmetric(horizontal: 16),
-        child: BlocSelector<CameraLiveBloc, CameraLiveState, double>(
+        child: BlocSelector<CameraDetailBloc, CameraDetailState, double>(
           selector: (state) => state.volume,
           builder: (context, volume) {
             return Row(
@@ -36,7 +36,7 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
                   onTap: () {
                     isMuted = !isMuted;
                     if (isMuted) _volumeBeforeMuted = volume;
-                    context.read<CameraLiveBloc>().add(
+                    context.read<CameraDetailBloc>().add(
                       ChangeVolume(isMuted ? 0 : _volumeBeforeMuted),
                     );
                   },
@@ -72,7 +72,7 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
                               inactiveColor: Colors.grey,
                               value: volume,
                               onChanged: (value) {
-                                context.read<CameraLiveBloc>().add(ChangeVolume(value));
+                                context.read<CameraDetailBloc>().add(ChangeVolume(value));
                               },
                             ),
                           ),

@@ -6,12 +6,12 @@ import 'package:vms_flutter_client/screens/monitor/components/monitor_cameras.da
 
 import '../../shared/action_item.dart';
 import '../../shared/panel.dart';
-import '../bloc/camera_live/camera_live_bloc.dart';
-import '../widgets/playback_date.dart';
+import '../bloc/camera_detail/camera_detail_bloc.dart';
+import '../widgets/popup_select_date.dart';
 import 'panel_list_playbacks.dart';
 
-class LiveViewActions extends StatefulWidget {
-  const LiveViewActions({
+class CameraDetailActions extends StatefulWidget {
+  const CameraDetailActions({
     super.key,
     required this.leftController,
     required this.rightController,
@@ -20,14 +20,14 @@ class LiveViewActions extends StatefulWidget {
   });
   final PanelController leftController;
   final PanelController rightController;
-  final LiveViewMode mode;
+  final CameraDetailMode mode;
   final bool openCamerasPanelImmediately;
 
   @override
-  State<LiveViewActions> createState() => _LiveViewActionsState();
+  State<CameraDetailActions> createState() => _CameraDetailActionsState();
 }
 
-class _LiveViewActionsState extends State<LiveViewActions> {
+class _CameraDetailActionsState extends State<CameraDetailActions> {
   late final ValueNotifier<int?> _leftPanelIndex = ValueNotifier(null);
   // late final ValueNotifier<int?> _rightPanelIndex = ValueNotifier(null);
 
@@ -49,9 +49,9 @@ class _LiveViewActionsState extends State<LiveViewActions> {
             highlightSelected: true,
             maxWidth: widget.leftController.expandedWidth,
             key: ValueKey('live_view_cameras'),
-            selectedCamera: context.read<CameraLiveBloc>().state.camera,
+            selectedCamera: context.read<CameraDetailBloc>().state.camera,
             onTap: (camera) {
-              context.read<CameraLiveBloc>().add(ChangeCamera(camera));
+              context.read<CameraDetailBloc>().add(ChangeCamera(camera));
             },
           ),
           id: 1,
@@ -76,7 +76,7 @@ class _LiveViewActionsState extends State<LiveViewActions> {
               builder: (context, index, child) => Row(
                 spacing: 28,
                 children: [
-                  if (widget.mode.isPlayback) PlaybackDate(),
+                  if (widget.mode.isPlayback) PopupSelectDate(),
 
                   ActionItem(
                     isSelected: index == 1,
@@ -87,9 +87,9 @@ class _LiveViewActionsState extends State<LiveViewActions> {
                         highlightSelected: true,
                         maxWidth: widget.leftController.expandedWidth,
                         key: ValueKey('live_view_cameras'),
-                        selectedCamera: context.read<CameraLiveBloc>().state.camera,
+                        selectedCamera: context.read<CameraDetailBloc>().state.camera,
                         onTap: (camera) {
-                          context.read<CameraLiveBloc>().add(ChangeCamera(camera));
+                          context.read<CameraDetailBloc>().add(ChangeCamera(camera));
                         },
                       ),
                       id: 1,
