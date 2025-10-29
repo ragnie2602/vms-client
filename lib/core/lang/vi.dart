@@ -115,7 +115,8 @@ const Map<int, Map<String, String>> vi = {
     'USER_NOT_FOUND': "Không tìm thấy người dùng",
     'CAMERA_NAME_EMPTY': "Tên camera trống",
     'IP_OR_DOMAIN_NOT_AVAILABLE': "Địa chỉ RTSP không tồn tại!",
-    'USER_NAME_OR_PASSWORD_ERROR': "Sai tài khoản hoặc mật khẩu",
+    'USER_NAME_OR_PASSWORD_ERROR':
+        "Tài khoản hoặc mật khẩu truy cập camera không đúng. Vui lòng thử lại!",
     'CAMERA_PORT_ERROR': "Port camera lỗi",
     'CAMERA_EXIST': "Camera đã tồn tại. Vui lòng kiểm tra và nhập lại!",
     'LOCATION_INVALID': "Vị trí không hợp lệ",
@@ -135,7 +136,8 @@ const Map<int, Map<String, String>> vi = {
     'USER_NOT_FOUND': "Không tìm thấy người dùng",
     'CAMERA_NAME_EMPTY': "Tên camera trống",
     'IP_OR_DOMAIN_NOT_AVAILABLE': "IP hoặc domain không khả dụng",
-    'USER_NAME_OR_PASSWORD_ERROR': "Sai tài khoản hoặc mật khẩu",
+    'USER_NAME_OR_PASSWORD_ERROR':
+        "Tài khoản hoặc mật khẩu truy cập camera không đúng. Vui lòng thử lại!",
     'SERIAL_NUMBER_EMPTY': "Serial number trống",
     'CAMERA_EXIST': "Camera đã tồn tại",
     'RTSP_PORT_ERROR': "Port RTSP lỗi",
@@ -145,7 +147,8 @@ const Map<int, Map<String, String>> vi = {
     'BOX_ID_INVALID': "ID box không hợp lệ",
     'BOX_OFFLINE': "Box offline",
     'RTSP_IP_OR_DOMAIN_NOT_AVAILABLE': "IP hoặc domain RTSP không khả dụng",
-    'RTSP_USER_NAME_OR_PASSWORD_ERROR': "Sai tài khoản hoặc mật khẩu RTSP",
+    'RTSP_USER_NAME_OR_PASSWORD_ERROR':
+        "Tài khoản hoặc mật khẩu truy cập camera không đúng. Vui lòng thử lại!",
     'OVER_QUOTA': "Vượt quá số camera được thêm (theo license)",
     'GROUP_INVALID': "Nhóm không tồn tại",
     'PACKAGE_NOT_SUPPORT':
