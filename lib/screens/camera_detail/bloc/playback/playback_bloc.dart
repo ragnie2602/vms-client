@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
@@ -67,17 +69,16 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
       final saveLocation = await FileUtil.selectSaveLocation(fileName, extension);
       if (saveLocation == null) return;
 
-      await client.dio.download(
-        event.playback.urlPlayback,
-        saveLocation,
-        onReceiveProgress: (received, total) {
-          if (total != -1) event.onProgress?.call(received / total);
-        },
+      BackgroundTask.download(
+        url: event.playback.urlPlayback,
+        savePath: saveLocation,
+        onProgress: event.onProgress,
+        onComplete: () => event.onProgress?.call(null),
+        onError: (error) => event.onError?.call(error.toString()),
       );
     } catch (e) {
-      Logger.error(e);
-    } finally {
-      event.onProgress?.call(null);
+      Logger.error(e, writeLog: true);
+      event.onError?.call(kReleaseMode ? null : e.toString());
     }
   }
 }
