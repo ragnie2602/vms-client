@@ -1,3 +1,4 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -101,8 +102,9 @@ class CameraListPopup extends StatelessWidget {
                     builder: (context, value, child) {
                       final cameras = state.cameras
                           .where(
-                            (camera) =>
-                                camera.name.toLowerCase().contains(value.text.toLowerCase()),
+                            (camera) => removeDiacritics(
+                              camera.name.toLowerCase(),
+                            ).contains(removeDiacritics(value.text.toLowerCase())),
                           )
                           .toList();
 
