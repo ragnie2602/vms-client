@@ -196,6 +196,7 @@ class _AppFieldState extends State<AppField> {
                         fontWeight: FontWeight.w500,
                         color: AppColors.redFF0004,
                         lineHeight: 1.3,
+                        textOverflow: TextOverflow.visible,
                       ),
                     ),
                   ),
