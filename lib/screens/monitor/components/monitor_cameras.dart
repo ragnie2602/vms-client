@@ -32,11 +32,15 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
   late Function(CameraEntity) onTap;
   late CameraEntity? selectedCamera;
 
+  late final MonitorBloc _monitorBloc;
+
   @override
   void initState() {
     onTap = widget.onTap ?? (_) {};
     selectedCamera = widget.selectedCamera;
     super.initState();
+
+    if (mounted) _monitorBloc = MonitorBloc(context.read(), context.read())..add(GetAllCamera());
   }
 
   @override
@@ -63,6 +67,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MonitorBloc, MonitorState>(
+      bloc: _monitorBloc,
       builder: (context, state) => stateBuilder<MonitorSuccess>(
         state,
         child: (state) => Column(
@@ -111,7 +116,6 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 ),
               ),
             ),
-
             SizedBox(height: 20 - 6),
             Expanded(
               child: Material(
