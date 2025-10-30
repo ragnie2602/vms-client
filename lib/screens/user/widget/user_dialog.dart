@@ -276,7 +276,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
           final bloc = context.read<UserManagementBloc>();
           // Pop dialog khi thành công
           if (mounted) {
-            //   Navigator.pop(context);
+            Navigator.pop(context);
             bloc.add(GetListUserEvent());
             // Hiển thị dialog thành công và reload danh sách
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -616,9 +616,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
 
       try {
         await widget.onSubmit?.call(payload);
-        if (mounted) {
-          Navigator.pop(context);
-        }
+        // if (mounted) {
+        //   Navigator.pop(context);
+        // }
       } catch (e) {
         if (mounted) {
           setState(() => _isSubmitting = false);
@@ -732,275 +732,291 @@ class _EditUserDialogState extends State<_EditUserDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final bool isAdminAccount = _accountType == 'admin';
+    return BlocListener<UserManagementBloc, UserManagementState>(
+      listenWhen: (prev, curr) => curr is EditUserSuccess,
+      listener: (context, state) {
+        if (state is EditUserSuccess) {
+          setState(() => _isSubmitting = false);
+          // Pop dialog khi thành công
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        }
+      },
 
-    return AlertDialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
-      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Cập nhật tài khoản',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
+      child: AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
+        contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Cập nhật tài khoản',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
-            tooltip: 'Đóng',
-          ),
-        ],
-      ),
-      content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.35,
-        child: SingleChildScrollView(
-          child: Form(
-            key: _form,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 16),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close),
+              tooltip: 'Đóng',
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.35,
+          child: SingleChildScrollView(
+            child: Form(
+              key: _form,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 16),
 
-                // Row: Tên đăng nhập và Họ và tên
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Tên đăng nhập',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.black,
+                  // Row: Tên đăng nhập và Họ và tên
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            RichText(
+                              text: const TextSpan(
+                                text: 'Tên đăng nhập',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.black,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          TextFormField(
-                            controller: _username,
-                            enabled: false,
-                            style: const TextStyle(
-                              color: Color(0xFF64748B),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Nhập tài khoản',
-                              hintStyle: const TextStyle(
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: _username,
+                              enabled: false,
+                              style: const TextStyle(
+                                color: Color(0xFF64748B),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w400,
-                                color: AppColors.greyE2E8F0,
                               ),
-                              filled: true,
-                              fillColor: AppColors.greyF2F4FA,
-                              counterText: '',
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 14,
-                              ),
-                              disabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(1),
-                                borderSide: BorderSide(
+                              decoration: InputDecoration(
+                                hintText: 'Nhập tài khoản',
+                                hintStyle: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
                                   color: AppColors.greyE2E8F0,
-                                  width: 1,
                                 ),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(1),
-                                borderSide: BorderSide(
-                                  color: AppColors.greyE2E8F0,
-                                  width: 1,
+                                filled: true,
+                                fillColor: AppColors.greyF2F4FA,
+                                counterText: '',
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 14,
+                                ),
+                                disabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(1),
+                                  borderSide: BorderSide(
+                                    color: AppColors.greyE2E8F0,
+                                    width: 1,
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(1),
+                                  borderSide: BorderSide(
+                                    color: AppColors.greyE2E8F0,
+                                    width: 1,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AppField(
-                        controller: _fullName,
-                        hintText: 'Nhập họ và tên',
-                        label: 'Họ và tên',
-                        validator: (v) => v!.trim().isEmpty
-                            ? 'Họ và tên không được để trống'
-                            : null,
-                        requiredField: true,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppField(
+                          controller: _fullName,
+                          hintText: 'Nhập họ và tên',
+                          label: 'Họ và tên',
+                          validator: (v) => v!.trim().isEmpty
+                              ? 'Họ và tên không được để trống'
+                              : null,
+                          requiredField: true,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Row: Email và Số điện thoại
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: AppField(
-                        controller: _email,
-                        hintText: 'Nhập email',
-                        label: 'Email',
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return null; // Email không bắt buộc
-                          }
-                          // Regex kiểm tra định dạng email
-                          final emailRegex = RegExp(
-                            r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                          );
-                          if (!emailRegex.hasMatch(v)) {
-                            return 'Email không đúng định dạng';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AppField(
-                        controller: _phoneNumber,
-                        hintText: 'Nhập số điện thoại',
-                        label: 'Số điện thoại',
-                        keyboardType: TextInputType.phone,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return null; // Số điện thoại không bắt buộc
-                          }
-                          // Regex kiểm tra định dạng số điện thoại Việt Nam
-                          // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
-                          final phoneRegex = RegExp(
-                            r'^(84|0)(3|5|7|8|9)\d{8,9}$',
-                          );
-                          if (!phoneRegex.hasMatch(v)) {
-                            return 'Số điện thoại không đúng định dạng';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Loại tài khoản
-                _buildDropdownField(
-                  label: 'Loại tài khoản',
-                  value: _accountType,
-                  items: const [
-                    {'value': 'admin', 'label': 'Tài khoản Admin'},
-                    {'value': 'normal', 'label': 'Tài khoản thường'},
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _accountType = value!;
-                      // Reset permissions khi chuyển sang admin
-                      if (_accountType == 'admin') {
-                        _canChangePassword = false;
-                        _canAddCamera = false;
-                      }
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Checkboxes - chỉ hiện với tài khoản thường
-                if (!isAdminAccount) ...[
-                  _buildCheckboxRow(
-                    label: 'Cho phép đổi mật khẩu',
-                    value: _canChangePassword,
-                    onChanged: (value) {
-                      setState(() => _canChangePassword = value ?? false);
-                    },
+                    ],
                   ),
                   const SizedBox(height: 12),
-                  _buildCheckboxRow(
-                    label: 'Cho phép thêm camera',
-                    value: _canAddCamera,
+
+                  // Row: Email và Số điện thoại
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: AppField(
+                          controller: _email,
+                          hintText: 'Nhập email',
+                          label: 'Email',
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return null; // Email không bắt buộc
+                            }
+                            // Regex kiểm tra định dạng email
+                            final emailRegex = RegExp(
+                              r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                            );
+                            if (!emailRegex.hasMatch(v)) {
+                              return 'Email không đúng định dạng';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppField(
+                          controller: _phoneNumber,
+                          hintText: 'Nhập số điện thoại',
+                          label: 'Số điện thoại',
+                          keyboardType: TextInputType.phone,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return null; // Số điện thoại không bắt buộc
+                            }
+                            // Regex kiểm tra định dạng số điện thoại Việt Nam
+                            // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
+                            final phoneRegex = RegExp(
+                              r'^(84|0)(3|5|7|8|9)\d{8,9}$',
+                            );
+                            if (!phoneRegex.hasMatch(v)) {
+                              return 'Số điện thoại không đúng định dạng';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Loại tài khoản
+                  _buildDropdownField(
+                    label: 'Loại tài khoản',
+                    value: _accountType,
+                    items: const [
+                      {'value': 'admin', 'label': 'Tài khoản Admin'},
+                      {'value': 'normal', 'label': 'Tài khoản thường'},
+                    ],
                     onChanged: (value) {
-                      setState(() => _canAddCamera = value ?? false);
+                      setState(() {
+                        _accountType = value!;
+                        // Reset permissions khi chuyển sang admin
+                        if (_accountType == 'admin') {
+                          _canChangePassword = false;
+                          _canAddCamera = false;
+                        }
+                      });
                     },
                   ),
                   const SizedBox(height: 16),
-                ],
 
-                // Ghi chú
-                AppField(
-                  controller: _description,
-                  hintText: 'Nhập ghi chú',
-                  label: 'Ghi chú',
-                  maxLines: 4,
-                  maxLength: 250,
-                ),
-                const SizedBox(height: 8),
-              ],
+                  // Checkboxes - chỉ hiện với tài khoản thường
+                  if (!isAdminAccount) ...[
+                    _buildCheckboxRow(
+                      label: 'Cho phép đổi mật khẩu',
+                      value: _canChangePassword,
+                      onChanged: (value) {
+                        setState(() => _canChangePassword = value ?? false);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildCheckboxRow(
+                      label: 'Cho phép thêm camera',
+                      value: _canAddCamera,
+                      onChanged: (value) {
+                        setState(() => _canAddCamera = value ?? false);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Ghi chú
+                  AppField(
+                    controller: _description,
+                    hintText: 'Nhập ghi chú',
+                    label: 'Ghi chú',
+                    maxLines: 4,
+                    maxLength: 250,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-      actions: [
-        Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppButton.outline(
-                label: 'Hủy',
-                onPressed: _isSubmitting ? null : () => Navigator.pop(context),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                decoration: BoxDecoration(
-                  color: _hasChanges && !_isSubmitting
-                      ? AppColors.blue005AA9
-                      : AppColors.grey64748B,
+        actions: [
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppButton.outline(
+                  label: 'Hủy',
+                  onPressed: _isSubmitting
+                      ? null
+                      : () => Navigator.pop(context),
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _hasChanges && !_isSubmitting ? _handleSubmit : null,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 34,
-                        vertical: 10,
-                      ),
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
+                const SizedBox(width: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: _hasChanges && !_isSubmitting
+                        ? AppColors.blue005AA9
+                        : AppColors.grey64748B,
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _hasChanges && !_isSubmitting
+                          ? _handleSubmit
+                          : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 34,
+                          vertical: 10,
+                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                'Cập nhật',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            )
-                          : Text(
-                              'Cập nhật',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1023,7 +1039,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
         await widget.onSubmit?.call(payload);
 
         if (mounted) {
-          Navigator.pop(context);
+          //Navigator.pop(context);
           setState(() => _isSubmitting = false);
         }
       } catch (e) {

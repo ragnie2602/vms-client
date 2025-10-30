@@ -221,7 +221,7 @@ const Map<int, Map<String, String>> vi = {
     "ACCOUNT_EXIST": "Tên tài khoản đã tồn tại",
     "ACCOUNT_INVALID": "Tên tài khoản không hợp lệ",
     "PASSWORD_INVALID":
-        "Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng.",
+        "Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!",
     "EMAIL_INVALID": "Email không hợp lệ",
     "EMAIL_EXIST": "Email đã tồn tại trên hệ thống. Vui lòng thử lại",
     "TEL_EXIST": "Số điện thoại đã tồn tại",
