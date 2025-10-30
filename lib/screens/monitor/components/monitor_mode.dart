@@ -30,13 +30,6 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   int currentTab = 0;
 
   @override
-  void initState() {
-    super.initState();
-
-    if (mounted) onResetCustomViewSelectedItem();
-  }
-
-  @override
   Widget build(BuildContext context) {
     if (viewMode == 0) {
       return DefaultTabController(
@@ -171,7 +164,6 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             ),
           ),
         SizedBox(height: 16),
-
         BlocSelector<MonitorBloc, MonitorState, ViewMode?>(
           selector: (state) => state is MonitorSuccess ? state.mode : null,
           builder: (context, selectedMode) {
@@ -283,6 +275,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                 Routes.custom_live_view.name,
                 extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.add),
               );
+              context.read<MonitorBloc>().add(ResetFilter());
             });
           },
           child: Container(

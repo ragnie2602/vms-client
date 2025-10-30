@@ -168,7 +168,7 @@ class _CustomViewItemState extends State<CustomViewItem> {
                     height: 32,
                     width: 32,
                     child: InkWell(
-                      onTapDown: (TapDownDetails details) => showActionsPopup(context, customView),
+                      onTapDown: (details) => showActionsPopup(context, customView),
                       child: Center(
                         child: SvgPicture.asset(AppAssets.icDotHorizontal, width: 12, height: 12),
                       ),
@@ -217,6 +217,8 @@ class _CustomViewItemState extends State<CustomViewItem> {
                     Routes.custom_live_view.name,
                     extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.edit),
                   );
+
+                  widget.monitorBloc?.add(ResetFilter());
                 },
                 child: Container(
                   padding: EdgeInsets.only(bottom: 10, left: 12, right: 16, top: 10),
