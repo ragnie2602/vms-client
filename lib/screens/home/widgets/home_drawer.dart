@@ -72,7 +72,7 @@ class HomeDrawer extends StatelessWidget {
 
             /*  */
             InkWell(
-              onTap: isExpanded ? onToggleExpanded : null,
+              onTap: onToggleExpanded,
               borderRadius: BorderRadius.circular(16),
               child: SvgPicture.asset(
                 isExpanded ? AppAssets.icArrowSquareLeft : AppAssets.icArrowSquareRight,
