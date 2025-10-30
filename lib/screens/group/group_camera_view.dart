@@ -132,11 +132,15 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             String? nameNewGroup,
             List<int>? parentGroupId,
             DeviceGroup? currentGroup,
-          }) {
+          }) async {
+            final bloc = c.read<GroupCameraBloc>();
             if (addEditType == AddEditGroupType.add) {
               _onAddGroupCamera(
                 groupName: nameNewGroup ?? '',
                 parentGroupId: parentGroupId ?? [],
+              );
+              await bloc.stream.firstWhere(
+                (state) => state is AddGroupCameraSuccessState,
               );
             } else if (addEditType == AddEditGroupType.edit &&
                 currentGroup != null) {
@@ -144,6 +148,9 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                 groupName: nameNewGroup ?? '',
                 groupId: currentGroup.groupId,
                 parentGroupId: parentGroupId ?? [],
+              );
+              await bloc.stream.firstWhere(
+                (state) => state is UpdateGroupCameraSuccessState,
               );
             }
           },
