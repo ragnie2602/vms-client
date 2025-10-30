@@ -353,7 +353,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           );
         } else if (state is DeleteUserFail) {
           _onGetListUser();
-          ToastUtil.toastFail(context: context, title: Text(state.errorMsg));
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
         } else if (state is ListCameraSuccessState) {
           _onGetListUser();
           setState(() {});
@@ -365,7 +369,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           );
         } else if (state is EditUserFail) {
           _onGetListUser();
-          ToastUtil.toastFail(context: context, title: Text(state.errorMsg));
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
         } else if (state is ResetPassWordSuccess) {
           _onGetListUser();
           showAppMessageDialog(
@@ -377,12 +385,20 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           );
         } else if (state is ResetPassWordFail) {
           _onGetListUser();
-          ToastUtil.toastFail(context: context, title: Text(state.errorMsg));
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
         } else if (state is AddUserSuccess) {
           _onGetListUser();
         } else if (state is AddUserFail) {
           _onGetListUser();
-          ToastUtil.toastFail(context: context, title: Text(state.errorMsg));
+          showAppMessageDialog(
+            context,
+            message: state.errorMsg,
+            type: AppMessageType.error,
+          );
         }
       },
       listenWhen: (previous, current) =>

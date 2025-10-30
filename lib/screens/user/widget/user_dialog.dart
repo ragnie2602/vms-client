@@ -85,10 +85,10 @@ Future<String?> showResetPasswordDialog(
                             return 'Mật khẩu không được để trống';
                           }
                           if (v.contains(' ')) {
-                            return 'Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
+                            return 'Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng';
                           }
                           if (v.length < 8 || v.length > 16) {
-                            return 'Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!';
+                            return 'Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng';
                           }
                           return null;
                         },
