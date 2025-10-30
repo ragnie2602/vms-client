@@ -74,13 +74,14 @@ class MyApp extends StatelessWidget {
       providers: DependencyInjection.providers,
       child: BlocProvider(
         create: (context) => AppBloc()..add(AppStarted()),
-        child: BlocBuilder<AppBloc, AppState>(
-          builder: (context, state) => MaterialApp.router(
+        child: BlocSelector<AppBloc, AppState, ThemeMode>(
+          selector: (state) => state.themeMode,
+          builder: (context, theme) => MaterialApp.router(
             debugShowCheckedModeBanner: false,
             title: 'VNPT Secure Vision',
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
-            themeMode: state.themeMode,
+            themeMode: theme,
             routerConfig: AppRouter.router,
           ),
         ),

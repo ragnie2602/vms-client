@@ -71,6 +71,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                   padding: EdgeInsets.all(4),
                   margin: EdgeInsets.symmetric(horizontal: 24),
                   height: 38,
+                  alignment: Alignment.center,
                   child: isExpanded
                       ? TabBar(
                           indicatorSize: TabBarIndicatorSize.tab,
@@ -86,6 +87,9 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                             14,
                             fontWeight: FontWeight.w500,
                           ),
+                          labelPadding: EdgeInsets.only(top: 2),
+                          dividerHeight: 0,
+                          indicatorWeight: 0,
                           tabs: [
                             Tab(text: 'Mặc định'),
                             Tab(text: 'Tùy biến'),
