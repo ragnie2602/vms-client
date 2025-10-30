@@ -685,7 +685,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
     _description.text = user.desc;
 
     // Xác định account type từ UserType
-    _accountType = user.type == UserType.admin ? 'admin' : 'normal';
+    _accountType = user.type == UserType.admin_client ? 'admin' : 'normal';
 
     // Permissions
     _canChangePassword = !user.changePassDenied;
