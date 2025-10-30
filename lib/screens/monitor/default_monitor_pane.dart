@@ -31,6 +31,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   @override
   Widget build(BuildContext context) {
     // Vì là stateless nên buộc phải viết vào đây, hy vọng nó không bị gọi lung tung :*(
+    context.read<MonitorBloc>().add(GetAllCamera());
     context.read<CustomViewBloc>().add(
       ShowCustomView(
         CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
