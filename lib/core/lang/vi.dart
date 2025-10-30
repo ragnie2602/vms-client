@@ -54,7 +54,8 @@ const Map<int, Map<String, String>> vi = {
 
   // checkCameraOnvif (247)
   247: {
-    'IP_OR_DOMAIN_ERROR': "Lỗi IP hoặc domain",
+    'IP_OR_DOMAIN_ERROR':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
     'USER_OR_PASSWORD_INVALID':
         "Tài khoản hoặc mật khẩu truy cập camera không đúng. Vui lòng thử lại!",
   },
@@ -64,14 +65,18 @@ const Map<int, Map<String, String>> vi = {
     'RTSP_URL_INVALID': "URL RTSP không hợp lệ",
     'NAME_INVALID': "Tên không hợp lệ",
     'CAMERA_ID_INVALID': "ID camera không hợp lệ",
-    'IP_OR_DOMAIN_INVALID': "IP hoặc domain không hợp lệ",
-    'RTSP_PORT_ERROR': "Port RTSP lỗi",
+    'IP_OR_DOMAIN_INVALID':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
+    'RTSP_PORT_ERROR':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
     'USER_NAME_OR_PASSWORD_ERROR':
         "Tài khoản hoặc mật khẩu truy cập camera không đúng. Vui lòng thử lại!",
     'CAMERA_EXIST': "Camera đã tồn tại",
     'CAMERA_UUID_INVALID': "UUID camera không hợp lệ",
-    'XADDR_EMPTY': "XAddr trống",
-    'XADDR_INVALID': "Lỗi ONVIF API",
+    'XADDR_EMPTY':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
+    'XADDR_INVALID':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
     'LOCATION_INVALID': "Vị trí không hợp lệ",
     'CAMERA_NAME_EXIST': "Tên camera đã tồn tại",
     'GET_SERIAL_NUMBER_CAMERA_ERROR': "Không lấy được thông tin serial number",
@@ -127,7 +132,8 @@ const Map<int, Map<String, String>> vi = {
     'RTSP_EMPTY': "URL RTSP trống",
     'USER_NOT_FOUND': "Không tìm thấy người dùng",
     'CAMERA_NAME_EMPTY': "Tên camera trống",
-    'IP_OR_DOMAIN_NOT_AVAILABLE': "Địa chỉ RTSP không tồn tại!",
+    'IP_OR_DOMAIN_NOT_AVAILABLE':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
     'USER_NAME_OR_PASSWORD_ERROR':
         "Tài khoản hoặc mật khẩu truy cập camera không đúng. Vui lòng thử lại!",
     'CAMERA_PORT_ERROR': "Port camera lỗi",
@@ -148,18 +154,21 @@ const Map<int, Map<String, String>> vi = {
     'RTSP_EMPTY': "URL RTSP trống",
     'USER_NOT_FOUND': "Không tìm thấy người dùng",
     'CAMERA_NAME_EMPTY': "Tên camera trống",
-    'IP_OR_DOMAIN_NOT_AVAILABLE': "IP hoặc domain không khả dụng",
+    'IP_OR_DOMAIN_NOT_AVAILABLE':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
     'USER_NAME_OR_PASSWORD_ERROR':
         "Tài khoản hoặc mật khẩu truy cập camera không đúng. Vui lòng thử lại!",
     'SERIAL_NUMBER_EMPTY': "Serial number trống",
     'CAMERA_EXIST': "Camera đã tồn tại",
-    'RTSP_PORT_ERROR': "Port RTSP lỗi",
+    'RTSP_PORT_ERROR':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
     'LOCATION_INVALID': "Vị trí không hợp lệ",
     'CAMERA_NAME_EXIST': "Tên camera đã tồn tại",
     'SERIAL_NUMBER_NOT_MATH': "Serial number camera không khớp",
     'BOX_ID_INVALID': "ID box không hợp lệ",
     'BOX_OFFLINE': "Box offline",
-    'RTSP_IP_OR_DOMAIN_NOT_AVAILABLE': "IP hoặc domain RTSP không khả dụng",
+    'RTSP_IP_OR_DOMAIN_NOT_AVAILABLE':
+        "Không thể kết nối. Vui lòng kiểm tra lại địa chỉ ONVIF/RTSP",
     'RTSP_USER_NAME_OR_PASSWORD_ERROR':
         "Tài khoản hoặc mật khẩu truy cập camera không đúng. Vui lòng thử lại!",
     'OVER_QUOTA': "Vượt quá số camera được thêm (theo license)",

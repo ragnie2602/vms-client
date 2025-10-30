@@ -53,6 +53,9 @@ class FileUtil {
     );
     if (result == null) return null;
 
-    return '${result.path}.${result.activeFilter?.extensions?.firstOrNull ?? 'mp4'}';
+    final _extension = result.activeFilter?.extensions?.firstOrNull ?? 'mp4';
+
+    // MacOS thì result.path đã gắn extension luôn
+    return result.path.endsWith(_extension) ? result.path : '${result.path}.$_extension';
   }
 }

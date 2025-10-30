@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 
 enum AppMessageType { success, warning, error }
 
@@ -15,12 +16,20 @@ Future<void> showAppMessageDialog(
   return showDialog<void>(
     context: context,
     barrierDismissible: barrierDismissible,
-    builder: (ctx) => AppMessageDialog(title: title, message: message, type: type, okLabel: okLabel, onOk: onOk),
+    builder: (ctx) =>
+        AppMessageDialog(title: title, message: message, type: type, okLabel: okLabel, onOk: onOk),
   );
 }
 
 class AppMessageDialog extends StatelessWidget {
-  const AppMessageDialog({super.key, this.title, required this.message, this.type = AppMessageType.success, this.okLabel = 'OK', this.onOk});
+  const AppMessageDialog({
+    super.key,
+    this.title,
+    required this.message,
+    this.type = AppMessageType.success,
+    this.okLabel = 'OK',
+    this.onOk,
+  });
 
   final String? title;
   final String message;
@@ -63,7 +72,6 @@ class AppMessageDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final Color color = _iconColor(context);
 
     return AlertDialog(
@@ -77,9 +85,16 @@ class AppMessageDialog extends StatelessWidget {
           Icon(_iconData(), color: color, size: 24),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(title ?? _defaultTitle(), style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+            child: Text(
+              title ?? _defaultTitle(),
+              style: AppTypography.style(16, fontWeight: FontWeight.w700),
+            ),
           ),
-          IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.close), tooltip: 'Đóng'),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close),
+            tooltip: 'Đóng',
+          ),
         ],
       ),
       content: Text(message, style: const TextStyle(fontSize: 14, color: Color(0xFF000000))),
@@ -98,7 +113,10 @@ class AppMessageDialog extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               elevation: 0,
             ),
-            child: Text(okLabel),
+            child: Text(
+              okLabel,
+              style: AppTypography.style(14, fontWeight: FontWeight.w600, color: Colors.white),
+            ),
           ),
         ),
       ],

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
@@ -363,7 +364,7 @@ class CameraPlayerState extends State<CameraPlayer> {
             widget.mode != PlayerMode.playback
                 ? 'Camera ${widget.name} đang ngoại tuyến'
                 : 'Có lỗi xảy ra khi tải video',
-            style: TextStyle(fontSize: 13, color: Colors.white),
+            style: AppTypography.style(13, color: Colors.white),
             textAlign: TextAlign.center,
           ),
         ),
