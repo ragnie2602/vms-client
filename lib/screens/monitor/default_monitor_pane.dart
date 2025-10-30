@@ -8,9 +8,13 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
@@ -27,7 +31,12 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   @override
   Widget build(BuildContext context) {
     // Vì là stateless nên buộc phải viết vào đây, hy vọng nó không bị gọi lung tung :*(
-    context.read<MonitorBloc>().add(GetAllCamera());
+    context.read<CustomViewBloc>().add(
+      ShowCustomView(
+        CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
+        CustomMonitorPaneMode.view,
+      ),
+    );
 
     return BlocBuilder<MonitorBloc, MonitorState>(
       builder: (context, blocState) => stateBuilder<MonitorSuccess>(
@@ -41,7 +50,12 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
               return LayoutBuilder(
                 builder: (context, constraints) {
                   final paginatorHeight = isFullScreen ? 4 : 48;
-                  final size = _initPlayerSize(constraints, paginatorHeight, state.mode.rows, state.mode.columns);
+                  final size = _initPlayerSize(
+                    constraints,
+                    paginatorHeight,
+                    state.mode.rows,
+                    state.mode.columns,
+                  );
                   final wrapWidth =
                       (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
                   return Column(
@@ -123,12 +137,18 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
 
   // Getters
 
-  Size _initPlayerSize(BoxConstraints constraints, int paginatorHeight, [int rows = 6, int columns = 6]) {
+  Size _initPlayerSize(
+    BoxConstraints constraints,
+    int paginatorHeight, [
+    int rows = 6,
+    int columns = 6,
+  ]) {
     rows = AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? rows;
     columns = AppConfig.OVERRIDE_MONITOR_GRID_COLUMNS ?? columns;
 
     final availableWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
-    final availableHeight = ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (paginatorHeight / rows);
+    final availableHeight =
+        ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (paginatorHeight / rows);
 
     // Maintain 16:9 aspect ratio - always use width as the constraint
     // This ensures players grow/shrink when drawer opens/closes
@@ -173,12 +193,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(3),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 4,
-                    color: Colors.white.withValues(alpha: 0.6),
-                  ),
-                ],
+                boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
               ),
               padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
               child: Row(
