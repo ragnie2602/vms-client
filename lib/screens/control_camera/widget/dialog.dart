@@ -577,10 +577,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             text: 'Phương thức',
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTypography.style(
+              14,
               fontWeight: FontWeight.w500,
               color: Color(0xFF000000),
             ),
