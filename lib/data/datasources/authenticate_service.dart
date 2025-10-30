@@ -121,6 +121,8 @@ class AuthenticateService {
             displayName: loginReply.profile.displayName,
             addCamDenied: loginReply.profile.addCamDenied,
             changePassDenied: loginReply.profile.changePassDenied,
+            uid: data.uid,
+            sessionId: data.sessionId,
           );
 
           return true;
