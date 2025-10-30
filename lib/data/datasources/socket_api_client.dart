@@ -145,7 +145,7 @@ class SocketApiClient extends BaseApiClient {
       } else {
         final msg = ResultType.valueOf(reply.type).translate(-1);
         Logger.error("Request '${reply.reply.typeUrl}' failed: $msg", tag: 'SOCKET');
-        result = Left(Failure.message(msg));
+        result = Left(Failure.code(reply.type));
       }
 
       _disposeCompleter(packet.id, value: result);
