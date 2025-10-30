@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.profile.pb.dart';
@@ -17,10 +19,26 @@ class SocketApiClient extends BaseApiClient {
   late WebSocket _socket;
   late String serverUrl;
 
+  // Streams
   late StreamController<Map<String, dynamic>> _messageController;
-  late StreamController<ConnectionState> _stateController;
-  Stream<ConnectionState> get state => _stateController.stream.distinct();
+  late StreamController<SocketConnectionState> _stateController;
+  Stream<SocketConnectionState> get stateStream => _stateController.stream.distinct();
 
+  // State
+  SocketConnectionState _state = SocketConnectionState.connecting;
+  SocketConnectionState get state => _state;
+  set state(SocketConnectionState value) {
+    _state = value;
+    if (!_stateController.isClosed) _stateController.add(_state);
+
+    Logger.log(
+      "Connection state: ${_state.name.capitalizeFirstLetter}",
+      tag: 'SOCKET',
+      writeLog: true,
+    );
+  }
+
+  // Requesting
   final Map<int, Completer> _requestCompleters = {};
   Timer? _keepAliveTimer;
 
@@ -50,10 +68,11 @@ class SocketApiClient extends BaseApiClient {
       );
 
       _socket.messages.listen(_handleMessages);
-      _socket.connection.listen((state) {
-        Logger.log("Connection status: ${state.runtimeType}", tag: 'SOCKET', writeLog: true);
-        if (_stateController.isClosed) return;
-        _stateController.add(state);
+      _socket.connection.listen((_state) {
+        // Case Reconnected --> Cần đăng nhập lại
+        if (_state is Reconnected) return _relogin();
+
+        state = SocketConnectionState.fromConnectionState(_state);
       });
 
       // Wait until a connection has been established.
@@ -81,8 +100,7 @@ class SocketApiClient extends BaseApiClient {
 
   @override
   Future<Either<Failure, T>> send<T>(SocketRequestPayload data) async {
-    if (!isConnected &&
-        !await _waitForConnected(Duration(seconds: 5))) {
+    if (!isConnected && !await _waitForConnected(Duration(seconds: 5))) {
       return Left(Failure.message(SOCKET_UNCONNECTED));
     }
 
@@ -100,8 +118,16 @@ class SocketApiClient extends BaseApiClient {
     );
   }
 
-  void _sendKeepAlive(Timer _) {
-    _socket.send(Packet(id: 100, data: KeepAlive_Request(idle: false).writeToBuffer(), type: PacketType.keepAlive).writeToBuffer());
+  void _sendKeepAlive([Timer? _]) {
+    if (!isConnected) return;
+
+    _socket.send(
+      Packet(
+        id: DateTime.now().microsecondsSinceEpoch,
+        data: KeepAlive_Request(idle: false).writeToBuffer(),
+        type: PacketType.keepAlive,
+      ).writeToBuffer(),
+    );
   }
 
   void _handleMessages(dynamic message) {
@@ -117,9 +143,9 @@ class SocketApiClient extends BaseApiClient {
         Logger.log("Request '${reply.reply.typeUrl}' success!", tag: 'SOCKET');
         result = Right(reply.reply.value);
       } else {
-        final msg = ResultType.valueOf(reply.type).translate(packet.id);
+        final msg = ResultType.valueOf(reply.type).translate(-1);
         Logger.error("Request '${reply.reply.typeUrl}' failed: $msg", tag: 'SOCKET');
-        result = Left(Failure.code(reply.type));
+        result = Left(Failure.message(msg));
       }
 
       _disposeCompleter(packet.id, value: result);
@@ -140,9 +166,13 @@ class SocketApiClient extends BaseApiClient {
 
   Future<bool> _waitForConnected(Duration timeout) async {
     try {
-      await _socket.connection
-          .firstWhere((state) => state is Connected || state is Reconnected)
+      // Đăng nhập lỗi --> Đăng nhập lại
+      if (state == SocketConnectionState.unauthenticated) _relogin();
+
+      await stateStream
+          .firstWhere((state) => state == SocketConnectionState.connected)
           .timeout(timeout);
+
       return true;
     } catch (_) {
       return isConnected;
@@ -155,8 +185,63 @@ class SocketApiClient extends BaseApiClient {
   }
 
   @override
-  bool get isConnected =>
-      _socket.connection.state is Connected || _socket.connection.state is Reconnected;
+  bool get isConnected => state == SocketConnectionState.connected;
+
+  static const int RELOGIN_ID = -666666666666666;
+  void _relogin() {
+    if (state == SocketConnectionState.reauthenticating) return;
+    state = SocketConnectionState.reauthenticating;
+
+    if (AppData.instance.profile == null) {
+      state = SocketConnectionState.unauthenticated;
+      Logger.error("Unable to re-login (profile null)", tag: 'SOCKET', writeLog: true);
+      return;
+    }
+
+    if (!_requestCompleters.containsKey(RELOGIN_ID)) {
+      final completer = Completer<Either<Failure, List<int>>>();
+      _requestCompleters[RELOGIN_ID] = completer;
+
+      _socket.send(
+        Packet(
+          id: RELOGIN_ID,
+          data: Login_Request(
+            uid: AppData.instance.profile!.uid,
+            sessionId: AppData.instance.profile!.sessionId,
+          ).writeToBuffer(),
+          type: PacketType.login,
+        ).writeToBuffer(),
+      );
+    }
+
+    (_requestCompleters[RELOGIN_ID] as Completer<Either<Failure, List<int>>>).future
+        .timeout(Duration(seconds: 10), onTimeout: () => Left(Failure.message(TIMEOUT_DEFAULT)))
+        .then(
+          (response) => response.fold(
+            (failure) => state = SocketConnectionState.unauthenticated,
+            (success) => state = SocketConnectionState.connected,
+          ),
+        );
+  }
+}
+
+enum SocketConnectionState {
+  connecting,
+  reconnecting,
+  reauthenticating,
+  unauthenticated,
+  connected,
+  disconnecting,
+  disconnected;
+
+  factory SocketConnectionState.fromConnectionState(ConnectionState state) => switch (state) {
+    Connecting() => SocketConnectionState.connecting,
+    Connected() => SocketConnectionState.connected,
+    Reconnecting() => SocketConnectionState.reconnecting,
+    Reconnected() => SocketConnectionState.connected,
+    Disconnecting() => SocketConnectionState.disconnecting,
+    Disconnected() => SocketConnectionState.disconnected,
+  };
 }
 
 class SocketConnectionParams extends BaseConnectionParams {
