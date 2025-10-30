@@ -421,7 +421,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                                 xaddr: _onvifXaddrs.text.trim(),
                                 // boxId: _boxId.text.trim(),
                                 // groupId: _groupId.text.trim(),
-                                subStreamUrls: _sub.text.trim().split(','),
+                                subStreamUrls: _sub.text.isEmpty
+                                    ? []
+                                    : _sub.text.trim().split(','),
                                 // urn: _urn.text.trim(),
                                 // serialNumber: _serialNumber.text.trim(),
                               );
