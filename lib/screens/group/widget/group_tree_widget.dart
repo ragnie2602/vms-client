@@ -145,9 +145,9 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                       child: SvgPicture.asset(AppAssets.icSearch),
                     ),
                     hintText: 'Nhập tên nhóm',
-                    hintStyle: TextStyle(
+                    hintStyle: AppTypography.style(
+                      14,
                       color: AppColors.grey64748B,
-                      fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),
                     enabledBorder: OutlineInputBorder(
@@ -242,7 +242,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                               style: AppTypography.style(
                                 13,
                                 fontWeight: FontWeight.w500,
-                                color: AppColors.blackOrWhite,
+                                color: AppColors.black,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.visible,
@@ -285,7 +285,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                               style: AppTypography.style(
                                 13,
                                 fontWeight: FontWeight.w500,
-                                color: AppColors.blackOrWhite,
+                                color: AppColors.black,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.visible,
@@ -318,9 +318,11 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                             NoExpansionIndicator(tree: node),
                         builder: (context, node) => GroupNode(
                           group: node.data!,
-                          onToggleExpansion: () => _treeController?.toggleExpansion(node),
+                          onToggleExpansion: () =>
+                              _treeController?.toggleExpansion(node),
                           isExpand: node.isExpanded,
-                          actions: widget.actionBuilder?.call(node) ?? widget.action,
+                          actions:
+                              widget.actionBuilder?.call(node) ?? widget.action,
                           isSelected: _selectedNode == node,
                           onTap: () => _onNodeTap(node: node, context: context),
                         ),
@@ -328,7 +330,8 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                           _treeController = treeViewController;
                           Future.delayed(
                             Duration.zero,
-                            () => _treeController?.expandAllChildren(widget.tree),
+                            () =>
+                                _treeController?.expandAllChildren(widget.tree),
                           );
                           // WidgetsBinding.instance.addPostFrameCallback((_) {
                           //   treeViewController.expandAllChildren(widget.tree);

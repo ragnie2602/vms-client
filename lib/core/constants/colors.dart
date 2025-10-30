@@ -48,4 +48,6 @@ class AppColors {
   static const green21CCC3 = Color(0xFF21CCC3);
 
   static const redFF0004 = Color(0xFFFF0004);
+
+  static const white = Colors.white;
 }

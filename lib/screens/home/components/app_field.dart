@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 
 /// --- Reusable UI atoms ----------------------------------------------------
 class AppField extends StatefulWidget {
@@ -62,11 +63,7 @@ class _AppFieldState extends State<AppField> {
             child: RichText(
               text: TextSpan(
                 text: widget.label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF000000),
-                ),
+                style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black),
                 children: widget.requiredField
                     ? const [
                         TextSpan(
@@ -90,7 +87,11 @@ class _AppFieldState extends State<AppField> {
               padding: const EdgeInsets.only(right: 8),
               child: Text(
                 '${value.text.length}/${widget.maxLength}',
-                style: theme.textTheme.bodySmall,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.grey92929D,
+                ),
               ),
             ),
           );
@@ -126,67 +127,51 @@ class _AppFieldState extends State<AppField> {
                     decoration: InputDecoration(
                       hintText: widget.hintText,
                       filled: widget.readOnly ?? false,
-                      fillColor: widget.readOnly ?? false
-                          ? AppColors.greyF2F4FA
-                          : null,
-                      hintStyle: const TextStyle(
-                        fontSize: 14,
+                      fillColor: widget.readOnly ?? false ? AppColors.greyF2F4FA : null,
+                      hintStyle: AppTypography.style(
+                        14,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xFF92929D),
+                        color: AppColors.grey92929D,
                       ),
                       // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
                       counterText: '',
                       errorMaxLines: 1,
-                      errorStyle: const TextStyle(fontSize: 0, height: 0),
+                      errorStyle: AppTypography.style(0, lineHeight: 0),
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
                         borderSide: BorderSide(
-                          color: _errorText == null
-                              ? AppColors.greyE2E8F0
-                              : Colors.red,
+                          color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
                           width: 1,
                         ),
                       ),
                       focusedErrorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
                         borderSide: BorderSide(
-                          color: _errorText == null
-                              ? AppColors.greyE2E8F0
-                              : Colors.red,
+                          color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
                           width: 1,
                         ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(
-                          color: AppColors.greyE2E8F0,
-                          width: 1,
-                        ),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(
-                          color: AppColors.greyE2E8F0,
-                          width: 1,
-                        ),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
-                          width: 1,
-                        ),
+                        borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
                       ),
                       suffixIcon: suffixChildren.isEmpty
                           ? null
-                          : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: suffixChildren,
-                            ),
+                          : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
+                    ),
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.black,
                     ),
                   ),
                 ),
@@ -206,11 +191,12 @@ class _AppFieldState extends State<AppField> {
                   Expanded(
                     child: Text(
                       _errorText!,
-                      style: const TextStyle(
-                        color: AppColors.redFF0004,
+                      style: AppTypography.style(
+                        12,
                         fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                        height: 1.3,
+                        color: AppColors.redFF0004,
+                        lineHeight: 1.3,
+                        textOverflow: TextOverflow.visible,
                       ),
                     ),
                   ),

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -347,9 +346,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             children: [
                               Text(
                                 'Tên camera',
-                                style: TextStyle(
-                                  fontSize: 13,
+                                style: AppTypography.style(
+                                  13,
                                   fontWeight: FontWeight.w400,
+                                  color: AppColors.black,
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -370,10 +370,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     child: SvgPicture.asset(AppAssets.icSearch),
                                   ),
                                   hintText: 'Nhập tên camera',
-                                  hintStyle: TextStyle(
-                                    color: AppColors.grey64748B,
-                                    fontSize: 14,
+                                  hintStyle: AppTypography.style(
+                                    14,
                                     fontWeight: FontWeight.w400,
+                                    color: AppColors.grey64748B,
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -402,9 +402,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             children: [
                               Text(
                                 'Trạng thái',
-                                style: TextStyle(
-                                  fontSize: 13,
+                                style: AppTypography.style(
+                                  13,
                                   fontWeight: FontWeight.w400,
+                                  color: AppColors.black,
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -516,10 +517,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     'Thêm camera',
-                                    style: TextStyle(
-                                      color: AppColors.secondary,
-                                      fontSize: 14,
+                                    style: AppTypography.style(
+                                      14,
                                       fontWeight: FontWeight.w500,
+                                      color: AppColors.secondary,
                                     ),
                                   ),
                                 ],
@@ -580,7 +581,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                       return Center(
                                         child: Text(
                                           'Danh sách trống',
-                                          style: AppTypography.style(14),
+                                          style: AppTypography.style(
+                                            14,
+                                            color: AppColors.black,
+                                            fontWeight: FontWeight.w400,
+                                          ),
                                         ),
                                       );
                                     }

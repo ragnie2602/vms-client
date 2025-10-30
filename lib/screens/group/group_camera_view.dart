@@ -279,7 +279,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
           if (state is RemoveGroupCameraFailState) {
             ToastUtil.toastFail(
               context: context,
-              title: Text('Không thể xóa nhóm con cửa nhóm được chia sẻ'),
+              title: Text('Không thể xóa nhóm con của nhóm được chia sẻ'),
             );
           }
         },
