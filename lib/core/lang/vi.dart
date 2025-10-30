@@ -17,6 +17,8 @@ const Map<String, String> _commonErrors = {
 
 // PacketType-specific error translations: Map<PacketTypeValue, Map<ErrorCode, TranslatedString>>
 const Map<int, Map<String, String>> vi = {
+  -1: _commonErrors,
+
   // authenticate (101)
   101: {
     'ACCOUNT_INVALID': "Thông tin Email/số điện thoại không hợp lệ",
