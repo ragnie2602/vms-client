@@ -50,7 +50,7 @@ const Map<int, Map<String, String>> vi = {
     ..._commonErrors,
     'PASSWORD_INVALID': 'Mật khẩu cũ không đúng!',
     'PASSWORD_WEAKNESS':
-        'Vui lòng nhập mật khẩu 8-16 ký tự, không chứa ký tự khoảng trống!',
+        'Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng!',
     'PASSWORD_NOT_SAME': 'Mật khẩu mới phải khác mật khẩu cũ!',
   },
 
