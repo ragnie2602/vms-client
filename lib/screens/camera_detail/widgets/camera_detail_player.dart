@@ -17,7 +17,8 @@ import 'player_full_screen.dart';
 
 enum PlayerMode { liveview, playlist }
 
-enum _PlayerState { initialized, empty, error }
+// error2 <=> error (để trigger được listener khi từ error --> error)
+enum _PlayerState { initializing, initialized, empty, error, error2 }
 
 class CameraDetailController {
   GlobalKey<CameraDetailPlayerState> ref = GlobalKey();
@@ -95,7 +96,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
   late String name = widget.name;
 
   final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
-  final ValueNotifier<_PlayerState> _state = ValueNotifier(_PlayerState.initialized);
+  final ValueNotifier<_PlayerState> _state = ValueNotifier(_PlayerState.initializing);
 
   late int _playlistIndex;
   bool _shouldSyncPlayerTime = true;
@@ -163,7 +164,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _player = Player(
       configuration: PlayerConfiguration(
         title: widget.name,
-        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 6 * 1024 * 1024,
+        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 15 * 1024 * 1024,
       ),
     );
     if (widget.mode == PlayerMode.liveview) {
@@ -179,33 +180,58 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _completedSub = _player.stream.completed.listen(_onCompleted);
     _errorSub = _player.stream.error.listen(_onError);
 
-    // Có vài case đang pause nhưng player tự playing (vd seek, ...) --> update status theo player
     _player.stream.playing.listen((playing) {
-      if (playing && _status.value != PlayerStatus.playing) _status.value = PlayerStatus.playing;
-      if (playing && _state.value == _PlayerState.error) _state.value = _PlayerState.initialized;
+      if (!playing) return;
+
+      // Đang dừng --> seeking --> tự play --> update status theo player
+      if (_status.value != PlayerStatus.playing) _status.value = PlayerStatus.playing;
+
+      // Lỗi --> stop --> position = 0
+      // case đang show lỗi - hiển thị màn đen --> vài s sau lại hiển thị lỗi -- <lặp lại>
+      if (_player.state.position != Duration.zero && _state.value == _PlayerState.error) {
+        _state.value = _PlayerState.initialized;
+      }
     });
   }
 
-  Future<void> _onOpenPlayer({Duration? position}) async {
+  Future<void> _onOpenPlayer({Duration? position, bool showLoading = true}) async {
+    _state.value = showLoading ? _PlayerState.initializing : _PlayerState.error2;
+
     if (widget.mode == PlayerMode.playlist) {
       await _player.open(
         Playlist(widget.playlist.map((e) => Media(e.urlPlayback)).toList(), index: _playlistIndex),
       );
 
       await _player.setPlaylistMode(PlaylistMode.none);
-      if (position != null) await _waitForBufferingAndSeek(position, timeout: 10);
+      if (position != null) await _waitForBufferingAndSeek(position, timeout: 30);
     } else {
       await _player.open(Media(widget.source));
       await _player.setAudioTrack(AudioTrack.no());
       await _audioPlayer.open(Media(widget.source));
       await _audioPlayer.setVideoTrack(VideoTrack.no());
     }
+
+    try {
+      final size = await Future.wait([
+        _player.stream.width.firstWhere((width) => width != null),
+        _player.stream.height.firstWhere((height) => height != null),
+      ]).timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT, onTimeout: () => [null, null]);
+
+      if (size[0] != null && size[1] != null) {
+        _state.value = _PlayerState.initialized;
+      } else {
+        _state.value = _PlayerState.error;
+      }
+    } catch (e) {
+      // Case stream bị dispose bên thư viện (đổi cam ...) --> Error "Bad state: No element"
+      if (mounted) _state.value = _PlayerState.error;
+    }
   }
 
   void _onError(String error) {
     _state.value = _PlayerState.error;
     _player.stop();
-    Logger.error(error, writeLog: true);
+    Logger.error(error);
   }
 
   void _onCompleted(bool completed) {
@@ -249,7 +275,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
       if (!mounted) return timer.cancel();
 
       _reconnectingTimer?.cancel();
-      await _onOpenPlayer(position: _lastDuration);
+      await _onOpenPlayer(position: _lastDuration, showLoading: false);
     });
   }
 
@@ -309,7 +335,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _shouldSyncPlayerTime = true;
   }
 
-  Future<void> _waitForBufferingAndSeek(Duration diff, {int timeout = 3}) async {
+  Future<void> _waitForBufferingAndSeek(Duration diff, {int timeout = 60}) async {
     if (diff != Duration.zero && _state.value != _PlayerState.error) {
       try {
         // Đợi tới khi buffering xong (đã chuyển playback) --> Không bị delay
@@ -397,8 +423,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
         valueListenable: _state,
         builder: (context, value, child) {
           return switch (value) {
+            _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
             _PlayerState.empty => _buildNoPlayback(),
-            _PlayerState.error => _buildError(),
+            _PlayerState.error || _PlayerState.error2 => _buildError(),
             _PlayerState.initialized => Video(
               key: _videoKey,
               height: double.infinity,
@@ -425,24 +452,29 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
   }
 
   Widget _buildError() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error, color: Colors.white, size: 36),
-          SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              widget.mode == PlayerMode.liveview
-                  ? 'Camera ${widget.name} đang ngoại tuyến'
-                  : 'Có lỗi xảy ra trong quá trình tải bản ghi!',
-              style: AppTypography.style(13, color: Colors.white, fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-            ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 14),
+        Icon(
+          widget.mode == PlayerMode.liveview ? Icons.videocam_off : Icons.error,
+          color: Colors.red,
+          size: 36,
+        ),
+        SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18),
+          child: Text(
+            widget.mode == PlayerMode.liveview
+                ? 'Camera ${widget.name} đang ngoại tuyến'
+                : 'Có lỗi xảy ra trong quá trình tải bản ghi',
+            style: AppTypography.style(13, color: Colors.white),
+            textAlign: TextAlign.center,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

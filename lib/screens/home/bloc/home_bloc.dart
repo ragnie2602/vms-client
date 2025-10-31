@@ -29,6 +29,27 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
   HomeBloc() : super(HomeState()) {
     on<ChangeTab>(_onChangeTab);
     on<ChangePageInfo>(_onChangePageInfo);
+    on<ToggleSidebar>(_onToggleSidebar);
+  }
+
+  bool? _lastSidebarState;
+
+  FutureOr<void> _onToggleSidebar(ToggleSidebar event, Emitter<HomeState> emit) async {
+    // Đóng và save trạng thái trước đó
+    if (event.type == 1) {
+      _lastSidebarState = state.expandedSidebar;
+      emit(state.copyWith(expandedSidebar: false));
+    }
+    // Khôi phục lại trạng thái đã save
+    else if (event.type == 2) {
+      emit(state.copyWith(expandedSidebar: _lastSidebarState ?? state.expandedSidebar));
+      _lastSidebarState = null;
+    }
+    // Toggle bình thường
+    else {
+      _lastSidebarState = null;
+      emit(state.copyWith(expandedSidebar: !state.expandedSidebar));
+    }
   }
 
   FutureOr<void> _onChangeTab(ChangeTab event, Emitter<HomeState> emit) async {
@@ -49,6 +70,12 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
       ),
     );
   }
+}
+
+class ToggleSidebar extends HomeEvent {
+  /// 1: đóng + save trạng thái cũ, 2: khôi phục lại trạng thái cũ
+  final int type;
+  const ToggleSidebar({this.type = 0});
 }
 
 class ChangePageInfo extends HomeEvent {
@@ -74,24 +101,32 @@ class HomeState extends BaseState {
   final String pageTitle;
   final String pageDescription;
   final void Function()? onBack;
+  final bool expandedSidebar;
 
-  HomeState({HomeTab? selectedTab, this.pageTitle = '', this.pageDescription = '', this.onBack})
-    : selectedTab = selectedTab ?? AppConfig.INITIAL_HOME_TAB;
+  HomeState({
+    HomeTab? selectedTab,
+    this.pageTitle = '',
+    this.pageDescription = '',
+    this.onBack,
+    this.expandedSidebar = true,
+  }) : selectedTab = selectedTab ?? AppConfig.INITIAL_HOME_TAB;
 
   HomeState copyWith({
     HomeTab? selectedTab,
     String? pageTitle,
     String? pageDescription,
     void Function()? onBack,
+    bool? expandedSidebar,
   }) {
     return HomeState(
       selectedTab: selectedTab ?? this.selectedTab,
       pageTitle: pageTitle ?? this.pageTitle,
       pageDescription: pageDescription ?? this.pageDescription,
       onBack: onBack ?? this.onBack,
+      expandedSidebar: expandedSidebar ?? this.expandedSidebar,
     );
   }
 
   @override
-  List<Object?> get props => [selectedTab, pageTitle, pageDescription, onBack];
+  List<Object?> get props => [selectedTab, pageTitle, pageDescription, onBack, expandedSidebar];
 }
