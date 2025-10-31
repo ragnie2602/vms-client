@@ -29,6 +29,7 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetAllGroupCamera,
     required this.onGetNoGroupCamera,
     required this.onAddCameraToGroup,
+    this.onClearGroupSelected,
     this.enableAddGroup,
     this.enableNodeAction,
   });
@@ -38,6 +39,7 @@ class GroupCameraView extends StatefulWidget {
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
+  final Function(BuildContext)? onClearGroupSelected;
   final Function({
     required BuildContext c,
     required List<int> currentGroupId,
@@ -149,6 +151,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
   }
 
   void _onRemoveGroupCamera({required List<int> groupId}) {
+    widget.onClearGroupSelected?.call(context);
     context.read<GroupCameraBloc>().add(
       RemoveGroupCameraEvent(groupId: groupId),
     );
