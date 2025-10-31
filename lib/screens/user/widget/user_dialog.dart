@@ -37,8 +37,13 @@ Future<String?> showResetPasswordDialog(
       return StatefulBuilder(
         builder: (context, setState) {
           return Dialog(
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 24,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Padding(
@@ -52,14 +57,20 @@ Future<String?> showResetPasswordDialog(
                       // Title
                       const Text(
                         'Khôi phục mật khẩu',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
                       // Subtitle
                       Text(
                         'Vui lòng nhập mật khẩu mới cho tài khoản:\n$username',
-                        style: const TextStyle(fontSize: 14, color: Colors.black87),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
@@ -83,11 +94,15 @@ Future<String?> showResetPasswordDialog(
                         },
                         suffix: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
                             color: AppColors.black,
                           ),
                           iconSize: 20,
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                       ),
 
@@ -96,7 +111,10 @@ Future<String?> showResetPasswordDialog(
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AppButton.outline(label: 'Hủy', onPressed: () => Navigator.pop(context)),
+                          AppButton.outline(
+                            label: 'Hủy',
+                            onPressed: () => Navigator.pop(context),
+                          ),
                           const SizedBox(width: 12),
                           AppButton.filled(
                             label: 'Khôi phục',
@@ -135,7 +153,11 @@ Future<T?> showAddUserDialog<T>(
     barrierDismissible: false,
     builder: (_) => BlocProvider.value(
       value: userManagementBloc,
-      child: _AddUserDialog(onSubmit: onSubmit, onEdit: onEdit, userEntity: userEntity),
+      child: _AddUserDialog(
+        onSubmit: onSubmit,
+        onEdit: onEdit,
+        userEntity: userEntity,
+      ),
     ),
   );
 }
@@ -246,7 +268,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
     final bool isAdminAccount = _accountType == 'admin';
     final theme = Theme.of(context);
     return BlocListener<UserManagementBloc, UserManagementState>(
-      listenWhen: (prev, curr) => curr is AddUserSuccess,
+      listenWhen: (prev, curr) => curr is AddUserSuccess || curr is AddUserFail,
       listener: (context, state) {
         if (state is AddUserSuccess) {
           setState(() => _isSubmitting = false);
@@ -258,9 +280,14 @@ class _AddUserDialogState extends State<_AddUserDialog> {
             bloc.add(GetListUserEvent());
             // Hiển thị dialog thành công và reload danh sách
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              ToastUtil.toastSuccess(context: context, title: Text('Thêm tài khoản thành công!'));
+              ToastUtil.toastSuccess(
+                context: context,
+                title: Text('Thêm tài khoản thành công!'),
+              );
             });
           }
+        } else if (state is AddUserFail) {
+          setState(() => _isSubmitting = false);
         }
       },
       child: AlertDialog(
@@ -316,8 +343,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                             hintText: 'Nhập tài khoản',
                             label: 'Tên đăng nhập',
                             requiredField: true,
-                            validator: (v) =>
-                                v!.trim().isEmpty ? 'Tên đăng nhập không được để trống' : null,
+                            validator: (v) => v!.trim().isEmpty
+                                ? 'Tên đăng nhập không được để trống'
+                                : null,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -343,11 +371,15 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                             },
                             suffix: IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: AppColors.black,
                               ),
                               iconSize: 20,
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
                             ),
                           ),
                         ),
@@ -361,7 +393,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                       hintText: 'Nhập họ và tên',
                       label: 'Họ và tên',
                       requiredField: true,
-                      validator: (v) => v!.trim().isEmpty ? 'Họ và tên không được để trống' : null,
+                      validator: (v) => v!.trim().isEmpty
+                          ? 'Họ và tên không được để trống'
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -403,7 +437,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                               }
                               // Regex kiểm tra định dạng số điện thoại Việt Nam
                               // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
-                              final phoneRegex = RegExp(r'^(84|0)(3|5|7|8|9)\d{8,9}$');
+                              final phoneRegex = RegExp(
+                                r'^(84|0)(3|5|7|8|9)\d{8,9}$',
+                              );
                               if (!phoneRegex.hasMatch(v)) {
                                 return 'Số điện thoại không đúng định dạng';
                               }
@@ -479,7 +515,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
               children: [
                 AppButton.outline(
                   label: 'Hủy',
-                  onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+                  onPressed: _isSubmitting
+                      ? null
+                      : () => Navigator.pop(context),
                 ),
                 const SizedBox(width: 12),
                 AppButton.filled(
@@ -491,7 +529,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : null,
@@ -536,17 +576,25 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                 ),
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 200),
-                  alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: value
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.all(2),
                     width: 24,
                     height: 24,
-                    decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              Text('Có', style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+              Text(
+                'Có',
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              ),
             ],
           ),
         ),
@@ -578,7 +626,11 @@ class _AddUserDialogState extends State<_AddUserDialog> {
       } catch (e) {
         if (mounted) {
           setState(() => _isSubmitting = false);
-          showAppMessageDialog(context, type: AppMessageType.error, message: e.toString());
+          showAppMessageDialog(
+            context,
+            type: AppMessageType.error,
+            message: e.toString(),
+          );
         }
       }
     }
@@ -997,7 +1049,11 @@ class _EditUserDialogState extends State<_EditUserDialog> {
       } catch (e) {
         if (mounted) {
           setState(() => _isSubmitting = false);
-          showAppMessageDialog(context, type: AppMessageType.error, message: e.toString());
+          showAppMessageDialog(
+            context,
+            type: AppMessageType.error,
+            message: e.toString(),
+          );
         }
       }
     }
@@ -1030,7 +1086,11 @@ Widget _buildCheckboxRow({
       Expanded(
         child: Text(
           label,
-          style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+          style: AppTypography.style(
+            14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.black,
+          ),
         ),
       ),
     ],
@@ -1070,7 +1130,11 @@ class RemoveCameraFromGroupWidget extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SvgPicture.asset(AppAssets.icDeleteLight, height: 60, width: 60),
+                SvgPicture.asset(
+                  AppAssets.icDeleteLight,
+                  height: 60,
+                  width: 60,
+                ),
                 const SizedBox(height: 28),
 
                 Text(
@@ -1095,8 +1159,13 @@ class RemoveCameraFromGroupWidget extends StatelessWidget {
                           backgroundColor: AppColors.blackOrWhiteReverse,
                           elevation: 0,
                           padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                          side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          side: BorderSide(
+                            color: AppColors.greyE2E8F0,
+                            width: 1,
+                          ),
                         ),
                         child: Text(
                           'Hủy',
@@ -1121,7 +1190,9 @@ class RemoveCameraFromGroupWidget extends StatelessWidget {
                           backgroundColor: AppColors.blackOrWhite,
                           elevation: 0,
                           padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
                         ),
                         child: Text(
                           'Xóa',
@@ -1163,18 +1234,28 @@ Widget _buildDropdownField({
     children: [
       Text(
         label,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.black),
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.black,
+        ),
       ),
       const SizedBox(height: 6),
       DropdownButtonFormField2<String>(
         value: value,
-        buttonStyleData: const ButtonStyleData(padding: EdgeInsets.only(right: 8), height: 48),
+        buttonStyleData: const ButtonStyleData(
+          padding: EdgeInsets.only(right: 8),
+          height: 48,
+        ),
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 0,
+            vertical: 0,
+          ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
@@ -1184,18 +1265,29 @@ Widget _buildDropdownField({
             borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
           ),
         ),
-        dropdownStyleData: DropdownStyleData(offset: const Offset(0, -5), maxHeight: 300),
+        dropdownStyleData: DropdownStyleData(
+          offset: const Offset(0, -5),
+          maxHeight: 300,
+        ),
         items: items.map((item) {
           return DropdownMenuItem<String>(
             value: item['value'],
             child: Text(
               item['label']!,
-              style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w400,
+                color: AppColors.black,
+              ),
             ),
           );
         }).toList(),
         onChanged: onChanged,
-        style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+        style: AppTypography.style(
+          14,
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
       ),
     ],
   );
