@@ -70,6 +70,7 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
   final _nameGroupController = TextEditingController();
   final formAddEditKey = GlobalKey<FormState>();
   DeviceGroup? _selectedParentGroup;
+  bool _isConfirming = false;
 
   @override
   void initState() {
@@ -219,17 +220,37 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                 Flexible(
                   flex: 1,
                   child: InkWell(
-                    onTap: () {
+                    onTap: () async {
+                      if (_isConfirming) return;
                       // tên trống => báo lỗi
                       if (_nameGroupController.text.trim().isEmpty) {
                         formAddEditKey.currentState?.validate();
                       } else {
-                        widget.onConfirm?.call(
-                          nameNewGroup: _nameGroupController.text.trim(),
-                          parentGroupId: _selectedParentGroup?.groupId,
-                          currentGroup: widget.currentGroup,
-                        );
-                        Navigator.pop(context);
+                        setState(() {
+                          _isConfirming = true;
+                        });
+                        bool isSuccess = true;
+                        try {
+                          final result = widget.onConfirm?.call(
+                            nameNewGroup: _nameGroupController.text.trim(),
+                            parentGroupId: _selectedParentGroup?.groupId,
+                            currentGroup: widget.currentGroup,
+                          );
+                          if (result is Future) {
+                            await result;
+                          }
+                        } catch (_) {
+                          isSuccess = false;
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              _isConfirming = false;
+                            });
+                          }
+                        }
+                        if (isSuccess && mounted) {
+                          Navigator.pop(context);
+                        }
                       }
                     },
                     child: Container(
@@ -240,14 +261,37 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                       ),
                       padding: EdgeInsets.symmetric(vertical: 13),
                       child: Center(
-                        child: Text(
-                          'Xác nhận',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: _isConfirming
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Đang xử lý...',
+                                    style: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                'Xác nhận',
+                                style: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ),
