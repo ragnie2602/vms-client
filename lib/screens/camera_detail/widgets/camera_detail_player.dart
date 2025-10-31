@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -355,10 +356,12 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
   }
 
   Future<void> snapshot() async {
-    final data = await _player.screenshot();
-
-    if (data != null) {
-      await FileUtil.saveImageToSelectedLocation(data);
+    final path = await FileUtil.selectSaveLocation('image', 'JPG');
+    if (path != null) {
+      final data = await _player.screenshot();
+      if (data == null) return;
+      
+      await File(path).writeAsBytes(data);
     }
   }
 
