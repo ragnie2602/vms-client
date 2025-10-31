@@ -2,6 +2,7 @@ import 'package:protobuf/protobuf.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.model.pbenum.dart';
 
 sealed class Either<L, R> {
   const Either();
@@ -48,7 +49,10 @@ sealed class Failure {
         return message;
       case CodeFailure(:final code):
         try {
-          return valueOf?.call(code)?.translate(packetType ?? 0) ?? code.toString();
+          // Khi reconnected + relogin lỗi --> code = 1000 (Invalid request)
+          // Một vài API getList sẽ không có hàm valueOf --> Không parse được mã lỗi --> xử lý theo common error
+          return valueOf?.call(code)?.translate(packetType ?? 0) ??
+              ResultType.valueOf(code).translate(-1);
         } catch (e) {
           Logger.error(e);
           return code.toString();

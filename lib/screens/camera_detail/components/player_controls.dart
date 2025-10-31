@@ -73,7 +73,7 @@ class PlayerControls extends StatelessWidget {
                   _controlItem(AppAssets.icCamera, () => playerState(context)?.snapshot()),
 
                   /* Speed */
-                  if (mode.isPlayback) _buildSpeedDropdown(),
+                  // if (mode.isPlayback) _buildSpeedDropdown(),
 
                   /* Zoom */
                   // _controlItem(AppAssets.icZoomIn, () {}),
