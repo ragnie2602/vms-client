@@ -24,7 +24,7 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 32),
             // Version
             const Text(
-              'Phiên bản: 1.0.3 | Build 2',
+              'Phiên bản: 1.0.4 | Build 3',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w300,
