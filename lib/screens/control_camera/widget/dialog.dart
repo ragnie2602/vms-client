@@ -239,7 +239,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
               // Reload danh sách camera
               bloc.add(const GetListCameraEvent());
             } else {
-              bloc.add(GetListCameraInGroupEvent(groupId: bloc.currentGroupId));
+              bloc.add(GetListCameraInGroupEvent(groupId: List.from(bloc.currentGroupId)));
             }
             // Hiển thị dialog thành công và reload danh sách
             WidgetsBinding.instance.addPostFrameCallback((_) {
