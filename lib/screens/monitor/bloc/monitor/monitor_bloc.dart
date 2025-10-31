@@ -25,9 +25,10 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
   final ICameraRepository cameraRepository;
 
+  ViewMode? prevViewMode;
+
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
-    final vm =
-        event.mode ?? (state is MonitorSuccess ? (state as MonitorSuccess).mode : ViewMode.v2x2);
+    prevViewMode = event.mode ?? prevViewMode ?? ViewMode.v2x2;
 
     emit(MonitorLoading());
 
@@ -36,7 +37,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         emit(MonitorFailure(failure.toString()));
       },
       (cameras) {
-        emit(MonitorSuccess(cameras: cameras, mode: vm));
+        emit(MonitorSuccess(cameras: cameras, mode: prevViewMode!));
       },
     );
   }

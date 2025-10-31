@@ -31,6 +31,7 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   @override
   Widget build(BuildContext context) {
     // Vì là stateless nên buộc phải viết vào đây, hy vọng nó không bị gọi lung tung :*(
+    context.read<MonitorBloc>().add(GetAllCamera());
     context.read<CustomViewBloc>().add(
       ShowCustomView(
         CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
@@ -71,14 +72,24 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                               final camera = state.paginatedCameras[index];
                               return SizedBox.fromSize(
                                 size: size,
-                                child: CameraPlayer(
-                                  size: state.mode.total == 1 ? null : size,
-                                  source: camera.subStreamUri.toString(),
-                                  name: camera.name,
-                                  key: ValueKey("player($index)___${camera.camId}"),
-                                  mode: PlayerMode.monitoring,
-                                  builder: (player, status) =>
-                                      _buildCameraView(context, player, camera, isFullScreen, size),
+                                child: InkWell(
+                                  onTap: isFullScreen
+                                      ? null
+                                      : () {
+                                          context.pushNamed(
+                                            Routes.cameraDetail.name,
+                                            extra: CameraDetailScreenArgs(data: camera),
+                                          );
+                                        },
+                                  child: CameraPlayer(
+                                    size: state.mode.total == 1 ? null : size,
+                                    source: camera.subStreamUri.toString(),
+                                    name: camera.name,
+                                    key: ValueKey("player($index)___${camera.camId}"),
+                                    mode: PlayerMode.monitoring,
+                                    builder: (player, status) =>
+                                        _buildCameraView(context, player, camera, size),
+                                  ),
                                 ),
                               );
                             } else {
@@ -166,58 +177,42 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
     return Size(width, height);
   }
 
-  Widget _buildCameraView(
-    BuildContext context,
-    Widget player,
-    CameraEntity data,
-    bool shouldRemoveAction,
-    Size size,
-  ) {
-    return InkWell(
-      onTap: shouldRemoveAction
-          ? null
-          : () {
-              context.pushNamed(
-                Routes.cameraDetail.name,
-                extra: CameraDetailScreenArgs(data: data),
-              );
-            },
-      child: Stack(
-        children: [
-          player,
-          Positioned(
-            bottom: 10,
-            right: 10,
-            child: Container(
-              constraints: BoxConstraints(maxWidth: size.width - 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(3),
-                boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
-              ),
-              padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
-                  SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      data.name,
-                      style: AppTypography.style(
-                        color: Colors.black,
-                        9,
-                        fontWeight: FontWeight.w600,
-                        textOverflow: TextOverflow.ellipsis,
-                      ),
+  Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data, Size size) {
+    return Stack(
+      children: [
+        player,
+        Positioned(
+          bottom: 10,
+          right: 10,
+          child: Container(
+            constraints: BoxConstraints(maxWidth: size.width - 10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(3),
+              boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
+            ),
+            padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
+                SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    data.name,
+                    style: AppTypography.style(
+                      color: Colors.black,
+                      9,
+                      fontWeight: FontWeight.w600,
+                      textOverflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
