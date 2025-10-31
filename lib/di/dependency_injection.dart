@@ -3,6 +3,7 @@ import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
@@ -51,12 +52,16 @@ class DependencyInjection {
     ),
 
     // Use Cases
+    Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
+
     Provider<LoginUseCase>(
       create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>()),
     ),
+
     Provider<DeleteCameraUseCase>(
       create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>()),
     ),
+
     Provider<CreateCustomLiveViewUseCase>(
       create: (context) => CreateCustomLiveViewUseCase(context.read(), context.read()),
     ),
@@ -69,6 +74,7 @@ class DependencyInjection {
     Provider<UpdateCustomLiveViewUseCase>(
       create: (context) => UpdateCustomLiveViewUseCase(context.read(), context.read()),
     ),
+
     Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
     Provider<FilterCameraNoGroupUseCase>(create: (context) => FilterCameraNoGroupUseCase()),
     Provider<FilterCameraNotInGroupUsecase>(

@@ -11,7 +11,6 @@ import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
 import '../bloc/home_bloc.dart';
-import '../widgets/expandable_search_bar.dart';
 import '../widgets/user_profile.dart';
 
 class Header extends StatefulWidget {
@@ -112,6 +111,12 @@ class _HeaderState extends State<Header> {
                     //   ),
                     // ),
                     SizedBox(width: 12),
+                    IconButton(
+                      onPressed: () => context.read<AppBloc>().add(CreateNewWindow()),
+                      icon: Icon(Icons.window_outlined),
+                    ),
+                    const SizedBox(width: 12),
+
                     UserProfile(),
                   ],
                 ),
