@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -280,6 +281,21 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                       itemUser: state.users![index],
                                       index: index + 1,
                                       onDelete: () {
+                                        // check trung acc
+                                        if (state.users == null) {
+                                          return;
+                                        }
+                                        if (AppData.instance.profile?.account ==
+                                            state.users![index].account) {
+                                          ToastUtil.toastFail(
+                                            context: context,
+                                            title: Text(
+                                              'Bạn không thể xóa tài khoản đang đăng nhập. Vui lòng đăng nhập bằng tài khoản admin khác để thực hiện thao tác này',
+                                              maxLines: 5,
+                                            ),
+                                          );
+                                          return;
+                                        }
                                         showDialogRemoveCameraFromGroup(
                                           context,
                                           onConfirm: () {

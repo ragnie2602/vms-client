@@ -97,7 +97,7 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
       }
     }
 
-    emit(ShowCustomViewSuccess(customView: customView));
+    emit(ShowCustomViewSuccess(customView: customView.copyWith()));
   }
 
   FutureOr<void> _onAddingCameraToCustomView(

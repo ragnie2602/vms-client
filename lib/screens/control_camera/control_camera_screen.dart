@@ -309,6 +309,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                 _onClearSearch();
                 _onGetCameraInGroup(groupId: groupId, context: c);
               },
+              onClearGroupSelected: (c) {
+                c.read<ControlCameraBloc>().currentGroupId.clear();
+                _onGetListCamera(c: c);
+              },
               onAddCameraToGroup:
                   ({required c, required cameraIds, required currentGroupId}) {
                     context.read<ControlCameraBloc>().add(

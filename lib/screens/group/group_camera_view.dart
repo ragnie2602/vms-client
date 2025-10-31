@@ -29,6 +29,7 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetAllGroupCamera,
     required this.onGetNoGroupCamera,
     required this.onAddCameraToGroup,
+    this.onClearGroupSelected,
     this.enableAddGroup,
     this.enableNodeAction,
   });
@@ -38,6 +39,7 @@ class GroupCameraView extends StatefulWidget {
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
+  final Function(BuildContext)? onClearGroupSelected;
   final Function({
     required BuildContext c,
     required List<int> currentGroupId,
@@ -130,11 +132,15 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             String? nameNewGroup,
             List<int>? parentGroupId,
             DeviceGroup? currentGroup,
-          }) {
+          }) async {
+            final bloc = c.read<GroupCameraBloc>();
             if (addEditType == AddEditGroupType.add) {
               _onAddGroupCamera(
                 groupName: nameNewGroup ?? '',
                 parentGroupId: parentGroupId ?? [],
+              );
+              await bloc.stream.firstWhere(
+                (state) => state is AddGroupCameraSuccessState,
               );
             } else if (addEditType == AddEditGroupType.edit &&
                 currentGroup != null) {
@@ -143,12 +149,16 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                 groupId: currentGroup.groupId,
                 parentGroupId: parentGroupId ?? [],
               );
+              await bloc.stream.firstWhere(
+                (state) => state is UpdateGroupCameraSuccessState,
+              );
             }
           },
     );
   }
 
   void _onRemoveGroupCamera({required List<int> groupId}) {
+    widget.onClearGroupSelected?.call(context);
     context.read<GroupCameraBloc>().add(
       RemoveGroupCameraEvent(groupId: groupId),
     );
