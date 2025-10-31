@@ -177,114 +177,124 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    final mode = context.select<CameraDetailBloc, TimelineDisplayMode>(
-      (bloc) => bloc.state.timelineDisplayMode,
-    );
+    return BlocBuilder<CameraDetailBloc, CameraDetailState>(
+      buildWhen: (previous, current) {
+        bool shouldRebuild = previous.timelineDisplayMode != current.timelineDisplayMode;
+        if (shouldRebuild) _clampCentralDate(_time.value);
 
-    return Row(
-      key: _globalKey,
-      children: [
-        Expanded(
-          child: DecoratedBox(
-            decoration: BoxDecoration(color: Color(0xFF3C3C3C)),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                _timelineWidth = constraints.maxWidth;
-                if (widget.size != null && !widget.size!.width.isInfinite) {
-                  _timelineWidth = widget.size!.width;
-                }
+        return shouldRebuild;
+      },
+      builder: (context, state) {
+        final mode = state.timelineDisplayMode;
 
-                return MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  onExit: (_) {
-                    _overlayEntry?.remove();
-                    _overlayEntry = null;
-                  },
-                  onHover: (event) {
-                    if (_isInteracting) return;
-                    _showOverlay(event.localPosition.dx);
-                  },
-                  child: GestureDetector(
-                    // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
-                    onTapUp: (details) {
-                      _cameraLiveBloc.state.cameraDetailController.ref.currentState?.jumpToDate(
-                        _hoverDate ?? _calculateDateFromOffset(details.localPosition.dx),
-                      );
-                    },
-                    onHorizontalDragUpdate: _onHorizontalDragUpdate,
-                    onHorizontalDragStart: (_) {
-                      _overlayEntry?.remove();
-                      _overlayEntry = null;
-                    },
-                    onHorizontalDragEnd: (details) {
-                      _isInteracting = false;
-                      _showOverlay(details.localPosition.dx); // Hiển thị luôn lúc thả
-                    },
-                    // Không bị vẽ ra ngoài
-                    child: ClipRRect(
-                      child: RepaintBoundary(
-                        child: BlocBuilder<PlaybackBloc, PlaybackState>(
-                          buildWhen: (previous, current) {
-                            if (previous is! PlaybackSuccess &&
-                                current is PlaybackSuccess &&
-                                current.playbacks.isNotEmpty) {
-                              _clampCentralDate(current.playbacks[current.initialIndex].startTime);
-                              _cameraLiveBloc.state.cameraDetailController
-                                ..onPlaybackChanged = _onPlaybackChanged
-                                ..onTimeChanged = _onTimeChanged;
-                            }
-                            return true;
-                          },
-                          builder: (context, state) {
-                            return ValueListenableBuilder(
-                              valueListenable: _time,
-                              builder: (context, currentTime, child) {
-                                return CustomPaint(
-                                  size: Size(
-                                    _timelineWidth,
-                                    widget.size?.height ?? widget.majorTickHeight,
-                                  ),
-                                  isComplex: true,
-                                  willChange: true,
-                                  painter: TimelinePainter(
-                                    showMinorTickTime: mode == TimelineDisplayMode.h1,
-                                    onCentralOffset: (offset) => _centralOffset = offset,
-                                    majorTickHeight: widget.majorTickHeight,
-                                    minorTickHeight: widget.minorTickHeight,
-                                    minorTickCount: widget.minorTickCount,
-                                    tickGap: _tickGap, //
-                                    interval: _interval, //
-                                    tickWidth: widget.tickWidth,
-                                    centralDate: _centralDate,
-                                    currentTime: currentTime,
-                                    playbacks: state.type.isSuccess
-                                        ? (state as PlaybackSuccess).playbacks
-                                        : [],
-                                    startDate: _startDate,
-                                    endDate: _endDate,
-                                    formatPattern: widget.formatPattern,
-                                    normalStyle: widget.normalStyle,
-                                    highlightStyle: widget.highlightStyle,
-                                    playbackColor: widget.playbackColor,
-                                    centralLineColor: widget.centralLineColor,
-                                  ),
+        return Row(
+          key: _globalKey,
+          children: [
+            Expanded(
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: Color(0xFF3C3C3C)),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    _timelineWidth = constraints.maxWidth;
+                    if (widget.size != null && !widget.size!.width.isInfinite) {
+                      _timelineWidth = widget.size!.width;
+                    }
+
+                    return MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      onExit: (_) {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+                      },
+                      onHover: (event) {
+                        if (_isInteracting) return;
+                        _showOverlay(event.localPosition.dx);
+                      },
+                      child: GestureDetector(
+                        // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
+                        onTapUp: (details) {
+                          _cameraLiveBloc.state.cameraDetailController.ref.currentState?.jumpToDate(
+                            _hoverDate ?? _calculateDateFromOffset(details.localPosition.dx),
+                          );
+                        },
+                        onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                        onHorizontalDragStart: (_) {
+                          _overlayEntry?.remove();
+                          _overlayEntry = null;
+                        },
+                        onHorizontalDragEnd: (details) {
+                          _isInteracting = false;
+                          _showOverlay(details.localPosition.dx); // Hiển thị luôn lúc thả
+                        },
+                        // Không bị vẽ ra ngoài
+                        child: ClipRRect(
+                          child: RepaintBoundary(
+                            child: BlocBuilder<PlaybackBloc, PlaybackState>(
+                              buildWhen: (previous, current) {
+                                if (previous is! PlaybackSuccess &&
+                                    current is PlaybackSuccess &&
+                                    current.playbacks.isNotEmpty) {
+                                  _clampCentralDate(
+                                    current.playbacks[current.initialIndex].startTime,
+                                  );
+                                  _cameraLiveBloc.state.cameraDetailController
+                                    ..onPlaybackChanged = _onPlaybackChanged
+                                    ..onTimeChanged = _onTimeChanged;
+                                }
+                                return true;
+                              },
+                              builder: (context, state) {
+                                return ValueListenableBuilder(
+                                  valueListenable: _time,
+                                  builder: (context, currentTime, child) {
+                                    return CustomPaint(
+                                      size: Size(
+                                        _timelineWidth,
+                                        widget.size?.height ?? widget.majorTickHeight,
+                                      ),
+                                      isComplex: true,
+                                      willChange: true,
+                                      painter: TimelinePainter(
+                                        showMinorTickTime: mode == TimelineDisplayMode.h1,
+                                        onCentralOffset: (offset) => _centralOffset = offset,
+                                        majorTickHeight: widget.majorTickHeight,
+                                        minorTickHeight: widget.minorTickHeight,
+                                        minorTickCount: widget.minorTickCount,
+                                        tickGap: _tickGap, //
+                                        interval: _interval, //
+                                        tickWidth: widget.tickWidth,
+                                        centralDate: _centralDate,
+                                        currentTime: currentTime,
+                                        playbacks: state.type.isSuccess
+                                            ? (state as PlaybackSuccess).playbacks
+                                            : [],
+                                        startDate: _startDate,
+                                        endDate: _endDate,
+                                        formatPattern: widget.formatPattern,
+                                        normalStyle: widget.normalStyle,
+                                        highlightStyle: widget.highlightStyle,
+                                        playbackColor: widget.playbackColor,
+                                        centralLineColor: widget.centralLineColor,
+                                      ),
+                                    );
+                                  },
                                 );
                               },
-                            );
-                          },
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                );
-              },
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
-        ),
 
-        /*  */
-        _buildTimelineMode(mode),
-      ],
+            /*  */
+            _buildTimelineMode(mode),
+          ],
+        );
+      },
     );
   }
 
