@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 
 import '../bloc/home_bloc.dart';
 import '../widgets/user_profile.dart';
@@ -111,12 +112,12 @@ class _HeaderState extends State<Header> {
                     //   ),
                     // ),
                     SizedBox(width: 12),
-                    IconButton(
-                      onPressed: () => context.read<AppBloc>().add(CreateNewWindow()),
-                      icon: Icon(Icons.window_outlined),
-                    ),
+                    if (MultiWindowUtil.isMainWindow(context.read<AppBloc>().windowId))
+                      IconButton(
+                        onPressed: () => context.read<AppBloc>().add(CreateNewWindow()),
+                        icon: Icon(Icons.window_outlined),
+                      ),
                     const SizedBox(width: 12),
-
                     UserProfile(),
                   ],
                 ),

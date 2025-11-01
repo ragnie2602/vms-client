@@ -39,9 +39,7 @@ void main(List<String> args) async {
     final windowController = await WindowController.fromCurrentEngine();
     final arguments = windowController.arguments.isNotEmpty
         ? jsonDecode(windowController.arguments) as Map<String, dynamic>
-        : {};
-
-    debugPrint('CỬA SỔ ĐƯỢC KHỞI TẠO VỚI CÁC THAM SỐ: ${windowController.windowId} - $arguments');
+        : {'businessWindowID': ''};
 
     // const channel = WindowMethodChannel('main_channel');
     // channel.setMethodCallHandler((call) async {
@@ -81,7 +79,7 @@ void main(List<String> args) async {
           return event;
         }
       };
-    }, appRunner: () => runApp(MyApp(windowId: windowController.windowId)));
+    }, appRunner: () => runApp(MyApp(windowId: arguments['businessWindowID'] ?? '')));
   });
 }
 
