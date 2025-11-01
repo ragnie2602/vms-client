@@ -1,9 +1,9 @@
 class MultiWindowUtil {
-  static final Map<String, int> systemAndBusinessMapping = {'': 0};
+  static final Map<String, int> systemAndBusinessMapping = {}; // Sub-window only
 
   static int getSuitableBusinessID() {
     final ids = List.from(systemAndBusinessMapping.values)..sort();
-    for (int i = 1; i < ids.length; i++) {
+    for (int i = 0; i < ids.length; i++) {
       if (ids[i] != i) return i;
     }
     return ids.length;

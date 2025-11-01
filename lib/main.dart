@@ -11,12 +11,54 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'app_bloc.dart';
 import 'core/app_router.dart';
 import 'core/env_service.dart';
 import 'di/dependency_injection.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
+
+Future<String> initialMultiWindowConfig() async {
+  final windowController = await WindowController.fromCurrentEngine();
+  final arguments = windowController.arguments.isNotEmpty
+      ? jsonDecode(windowController.arguments) as Map<String, dynamic>
+      : {'businessWindowID': ''};
+
+  debugPrint('CỬA SỔ HIỆN TẠI (ID: ${windowController.windowId}) VỚI THAM SỐ: $arguments');
+
+  // const channel = WindowMethodChannel('main_channel');
+  // channel.setMethodCallHandler((call) async {
+  //   debugPrint('CỬA SỔ (ID: ${windowController.windowId}) NHẬN ĐƯỢC LỆNH:');
+  //   debugPrint('Lệnh: ${call.method}');
+  //   debugPrint('Tham số: ${call.arguments}');
+
+  //   // Handle received command
+  //   // if (call.method == 'ping') {
+  //   //   return 'ping from window ${windowController.windowId}';
+  //   // }
+
+  //   // Return null if the command is not recognized
+  //   // return 'OK';
+  // });
+
+  if (arguments['businessWindowID'] == '') {
+    onWindowsChanged.listen((_) async {
+      final current = MultiWindowUtil.systemAndBusinessMapping.keys.toSet();
+      final after = (await WindowController.getAll())
+          .map((wc) => wc.windowId)
+          .where((id) => id != windowController.windowId)
+          .toSet();
+
+      final closed = current.difference(after);
+      for (var id in closed) {
+        MultiWindowUtil.systemAndBusinessMapping.remove(id);
+      }
+    });
+  }
+
+  return arguments['businessWindowID']!;
+}
 
 void main(List<String> args) async {
   ErrorService.initGlobalErrorHandler(() async {
@@ -36,25 +78,7 @@ void main(List<String> args) async {
     await AppData.instance.init();
     await EnvService.init();
 
-    final windowController = await WindowController.fromCurrentEngine();
-    final arguments = windowController.arguments.isNotEmpty
-        ? jsonDecode(windowController.arguments) as Map<String, dynamic>
-        : {'businessWindowID': ''};
-
-    // const channel = WindowMethodChannel('main_channel');
-    // channel.setMethodCallHandler((call) async {
-    //   debugPrint('CỬA SỔ (ID: ${windowController.windowId}) NHẬN ĐƯỢC LỆNH:');
-    //   debugPrint('Lệnh: ${call.method}');
-    //   debugPrint('Tham số: ${call.arguments}');
-
-    //   // Handle received command
-    //   // if (call.method == 'ping') {
-    //   //   return 'ping from window ${windowController.windowId}';
-    //   // }
-
-    //   // Return null if the command is not recognized
-    //   // return 'OK';
-    // });
+    final businessWindowID = await initialMultiWindowConfig();
 
     await SentryFlutter.init((options) {
       options.debug = false;
@@ -79,7 +103,7 @@ void main(List<String> args) async {
           return event;
         }
       };
-    }, appRunner: () => runApp(MyApp(windowId: arguments['businessWindowID'] ?? '')));
+    }, appRunner: () => runApp(MyApp(windowId: businessWindowID)));
   });
 }
 
