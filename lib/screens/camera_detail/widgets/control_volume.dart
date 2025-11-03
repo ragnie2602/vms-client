@@ -5,14 +5,14 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 
-class VolumeWithSlide extends StatefulWidget {
-  const VolumeWithSlide({super.key});
+class ControlVolume extends StatefulWidget {
+  const ControlVolume({super.key});
 
   @override
-  State<VolumeWithSlide> createState() => _VolumeWithSlideState();
+  State<ControlVolume> createState() => _ControlVolumeState();
 }
 
-class _VolumeWithSlideState extends State<VolumeWithSlide> {
+class _ControlVolumeState extends State<ControlVolume> {
   bool showSlider = false;
   bool isMuted = false;
 
