@@ -21,4 +21,18 @@ class ToastUtil {
       style: ToastificationStyle.fillColored,
     );
   }
+
+  static void toastWarning({
+    required BuildContext context,
+    Widget? title,
+    int autoCloseDuration = 3,
+  }) {
+    toastification.show(
+      context: context,
+      title: title ?? Text('Cảnh báo'),
+      autoCloseDuration: Duration(seconds: autoCloseDuration),
+      type: ToastificationType.warning,
+      style: ToastificationStyle.fillColored,
+    );
+  }
 }

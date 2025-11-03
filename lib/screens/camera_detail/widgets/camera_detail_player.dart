@@ -7,6 +7,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
@@ -87,8 +88,12 @@ class CameraDetailPlayer extends StatefulWidget {
   State<CameraDetailPlayer> createState() => CameraDetailPlayerState();
 }
 
-class CameraDetailPlayerState extends State<CameraDetailPlayer> {
+class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProviderStateMixin {
   final GlobalKey<VideoState> _videoKey = GlobalKey();
+
+  late final zoomController = TransformationController();
+  late final AnimationController _zoomAnimationController;
+  Animation<double>? _zoomAnimation;
 
   late final Player _player;
   late final Player _audioPlayer;
@@ -126,6 +131,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _state.addListener(() => _tryReconnecting(_state.value == _PlayerState.error));
 
     super.initState();
+    _zoomAnimationController = AnimationController(vsync: this, duration: Durations.medium1);
+
     _initPlayer();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -146,6 +153,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _player.dispose();
     _status.dispose();
     _state.dispose();
+    _zoomAnimationController.dispose();
+    zoomController.dispose();
     try {
       _audioPlayer.dispose();
     } catch (_) {}
@@ -360,7 +369,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     if (path != null) {
       final data = await _player.screenshot();
       if (data == null) return;
-      
+
       await File(path).writeAsBytes(data);
     }
   }
@@ -418,6 +427,33 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _videoKey.currentState?.enterFullscreen();
   }
 
+  void zoom(int type) {
+    final currentScale = zoomController.value.getMaxScaleOnAxis();
+    final targetScale = (currentScale + type).clamp(1.0, 16.0);
+    if (targetScale == currentScale) return;
+
+    final box = _videoKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+
+    final viewportCenter = Offset(box.size.width / 2, box.size.height / 2);
+
+    final startMatrix = zoomController.value.clone();
+    final endMatrix = Matrix4.identity()
+      ..translateByDouble(viewportCenter.dx, viewportCenter.dy, 0, 1)
+      ..scaleByDouble(targetScale, targetScale, targetScale, 1)
+      ..translateByDouble(-viewportCenter.dx, -viewportCenter.dy, 0, 1);
+
+    _zoomAnimationController.reset();
+    _zoomAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(parent: _zoomAnimationController, curve: Curves.easeInOut),
+        )..addListener(() {
+          zoomController.value = startMatrix.lerp(endMatrix, _zoomAnimation!.value);
+        });
+
+    _zoomAnimationController.forward();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -429,24 +465,27 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
             _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
             _PlayerState.empty => _buildNoPlayback(),
             _PlayerState.error || _PlayerState.error2 => _buildError(),
-            _PlayerState.initialized => Video(
-              key: _videoKey,
-              height: double.infinity,
-              fit: BoxFit.fitHeight,
-              controller: _controller,
-              controls: (state) => Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (_videoKey.currentState?.isFullscreen() == false)
+            _PlayerState.initialized => InteractiveViewer(
+              minScale: 0.1,
+              maxScale: 16.0,
+              transformationController: zoomController,
+              child: Video(
+                key: _videoKey,
+                height: double.infinity,
+                fit: BoxFit.fitHeight,
+                controller: _controller,
+                controls: (state) => Stack(
+                  fit: StackFit.expand,
+                  children: [
                     Positioned(top: 20, right: 20, child: _buildLabel()),
+                    Positioned.fill(child: _buildPlaybackStatus()),
 
-                  Positioned.fill(child: _buildPlaybackStatus()),
-
-                  if (_videoKey.currentState?.isFullscreen() == true)
-                    PlayerFullScreen(onExit: () => _videoKey.currentState?.exitFullscreen()),
-                ],
+                    if (_videoKey.currentState?.isFullscreen() == true)
+                      PlayerFullScreen(onExit: () => _videoKey.currentState?.exitFullscreen()),
+                  ],
+                ),
+                subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
               ),
-              subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
             ),
           };
         },
