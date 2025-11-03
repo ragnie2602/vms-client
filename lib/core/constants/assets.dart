@@ -78,6 +78,7 @@ class AppAssets {
   static const icArrowChevronLeft = '$_svgPath/arrow_chevron_left.svg';
   static const icArrowChevronRight = '$_svgPath/arrow_chevron_right.svg';
   static const icDownload = '$_svgPath/download.svg';
+  static const icCheck = '$_svgPath/check.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
