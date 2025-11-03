@@ -10,21 +10,50 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
+import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
+import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_input.dart';
+import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 
 class AppBloc extends BaseBloc<AppEvent, AppState> {
   final CreateNewWindowUseCase createNewWindowUseCase;
+  final SendMultiWindowEventUseCase sendMultiWindowEventUseCase;
+  final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
 
-  String windowId = '';
+  int windowId = 0;
 
-  AppBloc(this.createNewWindowUseCase) : super(AppState(false)) {
+  StreamSubscription? _multiWindowEventSubscription;
+
+  AppBloc(
+    this.createNewWindowUseCase,
+    this.sendMultiWindowEventUseCase,
+    this.subscribeMultiWindowEventUseCase,
+  ) : super(AppState(false)) {
     on<ChangeTheme>(_onChangeTheme);
     on<AppStarted>(_onAppStarted);
     on<DisposePlayer>(_onDisposePlayer, transformer: sequential());
     on<ToggleMonitorDisplayMode>(_onToggleMonitorDisplayMode);
+    on<SignOut>(_onSignOut);
 
     on<CreateNewWindow>(_onCreateNewWindow);
+    on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
+  }
+
+  void registerIPCEvents() {
+    _multiWindowEventSubscription?.cancel();
+
+    final mweOuput = subscribeMultiWindowEventUseCase.execute(
+      SubscribeMultiWindowEventInput(windowId),
+    );
+
+    // In case of call the other usecase(s)
+    _multiWindowEventSubscription = mweOuput.listen((output) {
+      add(MultiWindowEventReceived(output.event));
+    });
   }
 
   FutureOr<void> _onChangeTheme(ChangeTheme event, Emitter<AppState> emit) async {
@@ -36,6 +65,8 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
   FutureOr<void> _onAppStarted(AppStarted event, Emitter<AppState> emit) async {
     windowId = event.windowId;
+
+    registerIPCEvents();
 
     try {
       final userTheme = AppData.instance.read<String>(AppKeys.SP_THEME_KEY);
@@ -51,11 +82,30 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     } catch (_) {}
   }
 
+  FutureOr<void> _onCreateNewWindow(CreateNewWindow event, Emitter<AppState> emit) async {
+    final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
+    output.windowController.show();
+  }
+
   FutureOr<void> _onDisposePlayer(DisposePlayer event, Emitter<AppState> emit) async {
     if (event.sequentialMode) {
       await event.player.dispose();
     } else {
       event.player.dispose();
+    }
+  }
+
+  FutureOr<void> _onMultiWindowEventReceived(
+    MultiWindowEventReceived event,
+    Emitter<AppState> emit,
+  ) async {
+    if (event.multiWindowEvent is MWESignOut) {
+      if (MultiWindowUtil.isMainWindow(windowId)) {
+        print('isMainWindow');
+        emit(state.copyWith(isSignOut: true));
+      } else {
+        WindowController.fromWindowId(windowId).close();
+      }
     }
   }
 
@@ -66,37 +116,37 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     emit(state.copyWith(displayFullScreenLiveView: !state.displayFullScreenLiveView));
   }
 
-  FutureOr<void> _onCreateNewWindow(CreateNewWindow event, Emitter<AppState> emit) async {
-    final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
+  FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) {
+    sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
+  }
 
-    emit(state.copyWith(newWindowController: output.windowController));
+  @override
+  Future<void> close() {
+    _multiWindowEventSubscription?.cancel();
+    return super.close();
   }
 }
 
 class AppState extends BaseState {
   final ThemeMode themeMode;
   final bool displayFullScreenLiveView;
-  final WindowController? newWindowController;
+  final bool isSignOut;
 
-  AppState(this.displayFullScreenLiveView, {ThemeMode? themeMode, this.newWindowController})
+  AppState(this.displayFullScreenLiveView, {ThemeMode? themeMode, this.isSignOut = false})
     : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
     AppTheme.currentMode = this.themeMode;
   }
 
-  AppState copyWith({
-    ThemeMode? themeMode,
-    bool? displayFullScreenLiveView,
-    WindowController? newWindowController,
-  }) {
+  AppState copyWith({ThemeMode? themeMode, bool? displayFullScreenLiveView, bool? isSignOut}) {
     return AppState(
       displayFullScreenLiveView ?? this.displayFullScreenLiveView,
       themeMode: themeMode ?? this.themeMode,
-      newWindowController: newWindowController,
+      isSignOut: isSignOut ?? false,
     );
   }
 
   @override
-  List<Object?> get props => [themeMode, displayFullScreenLiveView, newWindowController];
+  List<Object?> get props => [themeMode, displayFullScreenLiveView, isSignOut];
 }
 
 class AppEvent extends BaseEvent {
@@ -104,7 +154,7 @@ class AppEvent extends BaseEvent {
 }
 
 class AppStarted extends AppEvent {
-  final String windowId;
+  final int windowId;
 
   const AppStarted(this.windowId);
 }
@@ -126,3 +176,11 @@ class ChangeTheme extends AppEvent {
 }
 
 class ToggleMonitorDisplayMode extends AppEvent {}
+
+class SignOut extends AppEvent {}
+
+class MultiWindowEventReceived extends AppEvent {
+  final MWE multiWindowEvent;
+
+  const MultiWindowEventReceived(this.multiWindowEvent);
+}

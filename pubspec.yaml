@@ -87,8 +87,10 @@ dependencies:
 
   # UI
   dropdown_button2: ^2.3.9
-  desktop_multi_window: ^0.3.0
   popover: ^0.3.1
+
+  # MultiWindow
+  desktop_multi_window: 0.2.1
 
 dev_dependencies:
   flutter_test:

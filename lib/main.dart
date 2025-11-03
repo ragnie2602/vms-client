@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,7 +9,6 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
-import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'app_bloc.dart';
 import 'core/app_router.dart';
 import 'core/env_service.dart';
@@ -19,49 +16,16 @@ import 'di/dependency_injection.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
 
-Future<String> initialMultiWindowConfig() async {
-  final windowController = await WindowController.fromCurrentEngine();
-  final arguments = windowController.arguments.isNotEmpty
-      ? jsonDecode(windowController.arguments) as Map<String, dynamic>
-      : {'businessWindowID': ''};
-
-  debugPrint('CỬA SỔ HIỆN TẠI (ID: ${windowController.windowId}) VỚI THAM SỐ: $arguments');
-
-  // const channel = WindowMethodChannel('main_channel');
-  // channel.setMethodCallHandler((call) async {
-  //   debugPrint('CỬA SỔ (ID: ${windowController.windowId}) NHẬN ĐƯỢC LỆNH:');
-  //   debugPrint('Lệnh: ${call.method}');
-  //   debugPrint('Tham số: ${call.arguments}');
-
-  //   // Handle received command
-  //   // if (call.method == 'ping') {
-  //   //   return 'ping from window ${windowController.windowId}';
-  //   // }
-
-  //   // Return null if the command is not recognized
-  //   // return 'OK';
-  // });
-
-  if (arguments['businessWindowID'] == '') {
-    onWindowsChanged.listen((_) async {
-      final current = MultiWindowUtil.systemAndBusinessMapping.keys.toSet();
-      final after = (await WindowController.getAll())
-          .map((wc) => wc.windowId)
-          .where((id) => id != windowController.windowId)
-          .toSet();
-
-      final closed = current.difference(after);
-      for (var id in closed) {
-        MultiWindowUtil.systemAndBusinessMapping.remove(id);
-      }
-    });
+Future<int> initialMultiWindowConfig(List<String> args) async {
+  if (args.firstOrNull == 'multi_window') {
+    return int.parse(args[1]);
+  } else {
+    return WindowController.main().windowId;
   }
-
-  return arguments['businessWindowID']!;
 }
 
 void main(List<String> args) async {
-  ErrorService.initGlobalErrorHandler(() async {
+  await ErrorService.initGlobalErrorHandler(() async {
     initializeDateFormatting('vi');
 
     MediaKit.ensureInitialized();
@@ -78,7 +42,7 @@ void main(List<String> args) async {
     await AppData.instance.init();
     await EnvService.init();
 
-    final businessWindowID = await initialMultiWindowConfig();
+    final windowID = await initialMultiWindowConfig(args);
 
     await SentryFlutter.init((options) {
       options.debug = false;
@@ -103,12 +67,12 @@ void main(List<String> args) async {
           return event;
         }
       };
-    }, appRunner: () => runApp(MyApp(windowId: businessWindowID)));
+    }, appRunner: () => runApp(MyApp(windowId: windowID)));
   });
 }
 
 class MyApp extends StatelessWidget {
-  final String windowId;
+  final int windowId;
 
   const MyApp({super.key, required this.windowId});
 
@@ -117,21 +81,16 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: DependencyInjection.providers,
       child: BlocProvider(
-        create: (context) => AppBloc(context.read())..add(AppStarted(windowId)),
-        child: BlocListener<AppBloc, AppState>(
-          listener: (context, state) {
-            if (state.newWindowController != null) state.newWindowController!.show();
-          },
-          child: BlocSelector<AppBloc, AppState, ThemeMode>(
-            selector: (state) => state.themeMode,
-            builder: (context, theme) => MaterialApp.router(
-              debugShowCheckedModeBanner: false,
-              title: 'VNPT Secure Vision',
-              theme: AppTheme.light,
-              darkTheme: AppTheme.dark,
-              themeMode: theme,
-              routerConfig: AppRouter.router,
-            ),
+        create: (context) => context.read<AppBloc>()..add(AppStarted(windowId)),
+        child: BlocSelector<AppBloc, AppState, ThemeMode>(
+          selector: (state) => state.themeMode,
+          builder: (context, theme) => MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            title: 'VNPT Secure Vision',
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: theme,
+            routerConfig: AppRouter.router,
           ),
         ),
       ),

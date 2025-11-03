@@ -1,9 +1,12 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
@@ -53,6 +56,10 @@ class DependencyInjection {
 
     // Use Cases
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
+    Provider<SendMultiWindowEventUseCase>(create: (context) => SendMultiWindowEventUseCase()),
+    Provider<SubscribeMultiWindowEventUseCase>(
+      create: (context) => SubscribeMultiWindowEventUseCase(),
+    ),
 
     Provider<LoginUseCase>(
       create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>()),
@@ -82,5 +89,8 @@ class DependencyInjection {
           FilterCameraNotInGroupUsecase(cameraRepository: context.read<ICameraRepository>()),
     ),
     Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
+
+    // Bloc
+    Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),
   ];
 }
