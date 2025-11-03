@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:protobuf/protobuf.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
@@ -7,7 +8,18 @@ extension ReplyExts on Reply {
 }
 
 extension PbEnumExt on ProtobufEnum? {
-  String translate() => vi[this?.name] ?? DEFAULT_ERROR_MESSAGE;
+  String translate(int packetTypeValue) {
+    if (this == null) return DEFAULT_ERROR_MESSAGE;
+
+    // Access nested map: vi[packetTypeValue][errorCode]
+    final errorMap = vi[packetTypeValue];
+    if (errorMap == null) {
+      return kReleaseMode ? DEFAULT_ERROR_MESSAGE : this!.name;
+    }
+
+    final errorCode = this!.name;
+    return errorMap[errorCode] ?? (kReleaseMode ? DEFAULT_ERROR_MESSAGE : errorCode);
+  }
 }
 
 enum PacketType {
@@ -172,7 +184,7 @@ enum PacketType {
   addUser(258),
   editUser(259),
   deleteUser(260),
-  resetPassword(263),
+  resetPassword(270),
 
   // HomeVision
   homeVisionFormatSdCard(276),

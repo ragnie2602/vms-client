@@ -6,7 +6,7 @@ mixin StateBuilderMixin {
     return Center(child: CircularProgressIndicator.adaptive());
   }
 
-  Widget buildEmpty([String text = 'No Data']) {
+  Widget buildEmpty([String text = 'Không có dữ liệu']) {
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -49,7 +49,7 @@ mixin StateBuilderMixin {
     if (state.type.isError) {
       return errorBuilder?.call(state.errorMsg) ?? buildError(state.errorMsg, onTap: onReload);
     }
-    if (state.type.isSuccess && state.type.isEmpty) return emptyBuilder?.call() ?? buildEmpty();
+    if (state.type.isEmpty) return emptyBuilder?.call() ?? buildEmpty();
 
     return child(state as T);
   }

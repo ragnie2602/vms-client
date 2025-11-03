@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
+import 'package:vms_flutter_client/domain/entities/user/my_profile.dart';
 import 'package:vms_flutter_client/screens/login/login_screen.dart';
 
 import '../models/packet.dart';
@@ -54,14 +56,32 @@ class AuthenticateService {
 
         return authenticateReply;
       } else {
-        final msg = Authenticate_Error.valueOf(reply.type).translate();
-        Logger.error('Authenticate failed: $msg');
-        loginStatus.text += "Xác thực thất bại ($msg)\n";
-        return Authenticate_Reply();
+        final authenticateError = Authenticate_Error.valueOf(reply.type);
+        final errorMessage = _getAuthenticateErrorMessage(authenticateError);
+        loginStatus.text += "Xác thực thất bại: $errorMessage\n";
+        throw Exception(errorMessage);
       }
     } catch (e) {
-      loginStatus.text += "Xác thực thất bại (${e.toString()})\n";
       rethrow;
+    }
+  }
+
+  String _getAuthenticateErrorMessage(Authenticate_Error? error) {
+    switch (error) {
+      case Authenticate_Error.ACCOUNT_INVALID:
+        return 'Tên đăng nhập hoặc mật khẩu không đúng.';
+      case Authenticate_Error.PASSWORD_INVALID:
+        return 'Tên đăng nhập hoặc mật khẩu không đúng.';
+      case Authenticate_Error.PLATFORM_INVALID:
+        return 'Nền tảng không hợp lệ';
+      case Authenticate_Error.TOKEN_INVALID:
+        return 'Token không hợp lệ';
+      case Authenticate_Error.ACCOUNT_NOT_ACTIVE:
+        return 'Tài khoản chưa được kích hoạt';
+      case Authenticate_Error.LICENSE_EXPIRED:
+        return 'Giấy phép đã hết hạn';
+      default:
+        return 'Xác thực thất bại';
     }
   }
 
@@ -85,15 +105,30 @@ class AuthenticateService {
         ),
       );
 
-      if (response != null) {
-        final loginReply = Login_Reply.fromBuffer(response);
-        Logger.log("Logged in as: ${loginReply.profile.account}");
-        loginStatus.text += "Đang đăng thành công\n";
-      } else {
-        loginStatus.text += "Đăng nhập thất bại (timeout)\n";
-      }
+      return response.fold(
+        (failure) {
+          final msg = failure.parseMessage(Login_Error.valueOf);
+          loginStatus.text += "Đăng nhập thất bại ($msg)\n";
+          return false;
+        },
+        (buffer) {
+          final loginReply = Login_Reply.fromBuffer(response.right!);
+          Logger.log("Logged in as: ${loginReply.profile.account}");
+          loginStatus.text += "Đang đăng thành công\n";
 
-      return response != null;
+          AppData.instance.profile = MyProfile(
+            avatar: loginReply.baseImageUrl,
+            displayName: loginReply.profile.displayName,
+            account: loginReply.profile.account,
+            addCamDenied: loginReply.profile.addCamDenied,
+            changePassDenied: loginReply.profile.changePassDenied,
+            uid: data.uid,
+            sessionId: data.sessionId,
+          );
+
+          return true;
+        },
+      );
     }
 
     loginStatus.text += "Kết nối socket thất bại\n";

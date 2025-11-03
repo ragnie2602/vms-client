@@ -15,25 +15,21 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
 
   @override
   Future<Authentication> authenticate(String server, String username, String password) async {
-    try {
-      // Call the real authenticate API
-      final authReply = await authenticateService.authenticate(
-        username: username,
-        password: password,
-        server: server,
-      );
+    // Call the real authenticate API - let exceptions propagate
+    final authReply = await authenticateService.authenticate(
+      username: username,
+      password: password,
+      server: server,
+    );
 
-      return Authentication(
-        account: username,
-        sessionId: authReply.sessionId,
-        uid: authReply.uid,
-        ssid: authReply.ssid,
-        host: authReply.webSockHost,
-        port: authReply.webSockPort,
-      );
-    } catch (e) {
-      return Authentication(account: username, sessionId: [], uid: [], ssid: '', host: '', port: 0);
-    }
+    return Authentication(
+      account: username,
+      sessionId: authReply.sessionId,
+      uid: authReply.uid,
+      ssid: authReply.ssid,
+      host: authReply.webSockHost,
+      port: authReply.webSockPort,
+    );
   }
 
   @override

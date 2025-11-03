@@ -1,20 +1,34 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity_onvif.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_role.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 
 class CameraEntity {
   final String name;
   final List<int> id;
+  final List<int>? groupOwnerId;
   final String camId;
   final String username;
   final String password;
+  final String iPUrlStream;
+  final Int64 timeAdded;
   final CameraType type;
-  final Camera_Status status;
+  final CameraStatus status;
   final CameraStream stream;
+  final CameraEntityOnvif onvif;
+  final CameraRole cameraRole;
+  final bool isOnline;
 
   /// streamHlsUrl: http://ipcam.vivas.vn:8080/record01/EfCSykeCNyi-VwJCrB4AAg/EfCSykeCNyi-VwJCrB4AAg.m3u8
   /// streamOriginUrl: rtsp://any:1@10.3.3.162:8081/mystream7
   /// userOriginAddedUrl: rtsp://10.3.3.162:8081/mystream7
-  Uri get mainStreamUri => parseUri(stream.streamOriginUrl);
+  Uri get mainStreamUri => parseUri(
+    stream.streamLinks.firstWhereOrNull((e) => e.isMainStream)?.urlOfStream ??
+        stream.streamOriginUrl,
+  );
   Uri get subStreamUri => parseUri(
     stream.streamLinks.firstWhereOrNull((e) => e.nameOfStream == "SUB STREAM")?.urlOfStream ??
         stream.streamOriginUrl,
@@ -27,26 +41,19 @@ class CameraEntity {
   CameraEntity({
     required this.name,
     required this.id,
+    required this.groupOwnerId,
     required this.camId,
     required this.username,
     required this.password,
+    required this.iPUrlStream,
+    required this.timeAdded,
     required this.type,
     required this.status,
     required this.stream,
+    required this.onvif,
+    required this.cameraRole,
+    required this.isOnline,
   });
-
-  factory CameraEntity.fromPB(Camera camera) {
-    return CameraEntity(
-      name: camera.name,
-      id: camera.id,
-      camId: camera.camId,
-      username: camera.username,
-      password: camera.password,
-      type: camera.cameraType,
-      status: camera.status,
-      stream: camera.streamUrl,
-    );
-  }
 
   Uri parseUri(String url) {
     Uri? uri = Uri.tryParse(url);

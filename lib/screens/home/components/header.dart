@@ -1,179 +1,167 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
-import 'package:vms_flutter_client/core/error_service.dart';
-import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/scope_functions.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 
-import '../../shared/popup_menu.dart';
+import '../bloc/home_bloc.dart';
+import '../widgets/expandable_search_bar.dart';
+import '../widgets/user_profile.dart';
 
-class Header extends StatelessWidget {
+class Header extends StatefulWidget {
   const Header({super.key});
 
   @override
+  State<Header> createState() => _HeaderState();
+}
+
+class _HeaderState extends State<Header> {
+  @override
+  void initState() {
+    _onRouteChanged();
+    AppRouter.router.routerDelegate.addListener(_onRouteChanged);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    AppRouter.router.routerDelegate.removeListener(_onRouteChanged);
+    super.dispose();
+  }
+
+  void _onRouteChanged() {
+    final route = Routes.fromName(AppRouter.router.routerDelegate.state.name ?? '-');
+    if (route == null) return;
+
+    VoidCallback? onBack;
+    String title = route.title;
+    String description = route.description;
+
+    AppRouter.router.routerDelegate.state.extra.let((extra) {
+      if (extra is BaseScreenArgs) {
+        onBack = extra.onBack;
+        title = extra.title ?? title;
+        description = extra.description ?? description;
+      }
+    });
+
+    context.read<HomeBloc>().add(
+      ChangePageInfo(title: title, description: description, onBack: onBack),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final shadows = [
-      BoxShadow(color: Colors.black26, blurRadius: 2, spreadRadius: 0, offset: Offset(1, 1)),
-    ];
-    final textStyle = TextStyle(fontSize: 13, color: Colors.black);
-
-    return Container(
-      height: 60,
-      width: double.infinity,
-      color: Theme.of(context).colorScheme.inversePrimary,
-      child: Row(
-        children: <Widget>[
-          _buildLeading(context),
-          Spacer(),
-          // PopupMenuButton(
-          //   itemBuilder: (context) {
-          //     return <PopupMenuEntry>[
-          //       //
-          //       PopupMenuItem(
-          //         mouseCursor: SystemMouseCursors.click,
-          //         padding: EdgeInsets.zero,
-          //         onTap: () => ErrorService.openLogFile(),
-          //         child: ListTile(
-          //           leading: Icon(Icons.article),
-          //           title: Text('Mở log file'),
-          //           contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-          //         ),
-          //       ),
-          //       PopupMenuDivider(height: 1),
-          //       PopupMenuItem(
-          //         mouseCursor: SystemMouseCursors.click,
-          //         padding: EdgeInsets.zero,
-          //         onTap: () {
-          //           context.goNamed(Routes.login.name);
-          //         },
-          //         child: ListTile(
-          //           leading: Icon(Icons.logout),
-          //           title: Text('Đăng xuất'),
-          //           contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-          //         ),
-          //       ),
-          //     ];
-          //   },
-          //   tooltip: "",
-          //   elevation: 10,
-          //   enableFeedback: true,
-          //   useRootNavigator: true,
-          //   borderRadius: BorderRadius.circular(3),
-          //   position: PopupMenuPosition.under,
-          //   menuPadding: EdgeInsets.zero,
-          //   padding: EdgeInsets.zero,
-          //   color: Colors.transparent,
-          //   // offset: Offset(100, 0),
-          //   child: MouseRegion(
-          //     cursor: SystemMouseCursors.click,
-          //     child: Container(
-          //       height: double.infinity,
-          //       padding: EdgeInsets.symmetric(horizontal: 16),
-          //       color: Colors.transparent,
-          //       child: Row(
-          //         children: <Widget>[
-          //           CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.person)),
-          //           SizedBox(width: 6),
-          //           Text('Admin'),
-          //         ],
-          //       ),
-          //     ),
-          //   ),
-          // ),
-
-          /*  */
-          CustomPopupMenu(
-            menuBuilder: () => IntrinsicWidth(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(3),
-                  boxShadow: shadows,
-                ),
-                child: Material(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        onTap: () => ErrorService.openLogFile(),
-                        leading: Icon(Icons.article),
-                        title: Text('Mở log file', style: textStyle),
-                        contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
-                        ),
-                      ),
-                      Divider(height: 0.5, color: Colors.grey.shade300),
-                      ListTile(
-                        onTap: () {
-                          context.read<SocketApiClient>().disconnect();
-                          context.goNamed(Routes.login.name);
-                        },
-                        leading: Icon(Icons.logout),
-                        title: Text('Đăng xuất', style: textStyle),
-                        contentPadding: EdgeInsets.fromLTRB(12, 6, 12, 6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
-                        ),
-                      ),
-                    ],
+    return BlocListener<AppBloc, AppState>(
+      listenWhen: (previous, current) =>
+          previous.themeMode != current.themeMode ||
+          previous.displayFullScreenLiveView != current.displayFullScreenLiveView,
+      listener: (context, state) => setState(() {}),
+      child: Visibility(
+        visible: !context.read<AppBloc>().state.displayFullScreenLiveView,
+        child: Container(
+          height: AppConfig.APP_BAR_HEIGHT,
+          width: double.infinity,
+          color: AppColors.contentBg,
+          padding: EdgeInsets.only(left: 20, right: 20),
+          child: Material(
+            color: Colors.transparent,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: BlocBuilder<HomeBloc, HomeState>(
+                    buildWhen: (pre, cur) =>
+                        pre.onBack != cur.onBack ||
+                        pre.pageTitle != cur.pageTitle ||
+                        pre.pageDescription != cur.pageDescription,
+                    builder: (context, state) {
+                      return Row(
+                        children: <Widget>[
+                          _buildBackIcon(state.onBack),
+                          Flexible(child: _buildPageTitle(state.pageTitle, state.pageDescription)),
+                        ],
+                      );
+                    },
                   ),
                 ),
-              ),
-            ),
-            arrowDecoration: BoxDecoration(color: Colors.white, boxShadow: shadows),
-            arrowSize: Size(16, 10),
-            pressType: PressType.singleClick,
-            verticalMargin: 0,
-            barrierColor: Colors.transparent,
-            position: PreferredPosition.bottom,
-            child: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: Container(
-                height: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                color: Colors.transparent,
-                child: Row(
+
+                Row(
                   children: <Widget>[
-                    CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.person)),
-                    SizedBox(width: 6),
-                    Text('pmc5', style: textStyle),
+                    SizedBox(width: 20),
+                    // ExpandableSearchBar(),
+                    SizedBox(width: 20),
+                    // InkWell(
+                    //   onTap: () {},
+                    //   borderRadius: BorderRadius.circular(20),
+                    //   child: Badge.count(
+                    //     count: 01,
+                    //     padding: EdgeInsets.all(2),
+                    //     backgroundColor: Color(0xFF21CCC3),
+                    //     textStyle: AppTypography.style(
+                    //       9,
+                    //       fontWeight: FontWeight.w600,
+                    //       color: Colors.white,
+                    //     ),
+                    //     child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
+                    //   ),
+                    // ),
+                    SizedBox(width: 12),
+                    UserProfile(),
                   ],
                 ),
-              ),
+              ],
             ),
           ),
-
-          // SizedBox(width: 200),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildLeading(BuildContext context) {
-    final RouteMatchList currentConfiguration = GoRouter.of(
-      context,
-    ).routerDelegate.currentConfiguration;
-    final RouteMatch lastMatch = currentConfiguration.last;
-    final Uri location = lastMatch is ImperativeRouteMatch
-        ? lastMatch.matches.uri
-        : currentConfiguration.uri;
-    final bool canPop = location.pathSegments.length > 1;
-
-    return canPop
-        ? Padding(
-            padding: const EdgeInsets.only(left: 4.0),
-            child: TextButton.icon(
-              style: TextButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                padding: EdgeInsets.fromLTRB(4, 8, 8, 8),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              onPressed: GoRouter.of(context).pop,
-              icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 14),
-              label: Text('Quay lại', style: TextStyle(color: Colors.black, fontSize: 14)),
+  Widget _buildBackIcon(void Function()? onBack) {
+    return onBack != null || context.canPop()
+        ? InkWell(
+            onTap: onBack ?? () => context.pop(),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: SvgPicture.asset(AppAssets.icArrowLeft),
             ),
           )
         : SizedBox.shrink();
+  }
+
+  Widget _buildPageTitle(String title, String description) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        if (title.isNotEmpty)
+          Text(
+            title,
+            style: AppTypography.style(
+              20,
+              fontWeight: FontWeight.w600,
+              color: AppColors.blackOrWhite,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        if (description.isNotEmpty) ...[
+          SizedBox(height: 4),
+          Text(
+            description,
+            style: AppTypography.style(12, fontWeight: FontWeight.w400, color: Color(0xFF92929D)),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ],
+    );
   }
 }

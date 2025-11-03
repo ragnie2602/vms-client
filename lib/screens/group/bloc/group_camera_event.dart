@@ -1,0 +1,72 @@
+import 'package:vms_flutter_client/core/base_bloc.dart';
+
+class GroupCameraEvent extends BaseEvent {
+  const GroupCameraEvent();
+}
+
+class GetAllGroupCameraEvent extends GroupCameraEvent {}
+
+class AddGroupCameraEvent extends GroupCameraEvent {
+  final String groupName;
+  final List<int> parentGroupId;
+  const AddGroupCameraEvent({
+    required this.groupName,
+    required this.parentGroupId,
+  });
+  @override
+  List<Object> get props => [groupName, parentGroupId];
+}
+
+class RemoveGroupCameraEvent extends GroupCameraEvent {
+  final List<int> groupId;
+  const RemoveGroupCameraEvent({required this.groupId});
+  @override
+  List<Object?> get props => [groupId];
+}
+
+class UpdateGroupCameraEvent extends GroupCameraEvent {
+  final List<int> groupId;
+  final String groupName;
+  final List<int> parentGroupId;
+  const UpdateGroupCameraEvent({
+    required this.groupId,
+    required this.groupName,
+    required this.parentGroupId,
+  });
+  @override
+  List<Object?> get props => [groupId, groupName, parentGroupId];
+}
+
+class SearchGroupEvent extends GroupCameraEvent {
+  final String keyword;
+  const SearchGroupEvent({required this.keyword});
+  @override
+  List<Object?> get props => [keyword];
+}
+
+class AddCameraToGroupEvent extends GroupCameraEvent {
+  final List<int> groupId;
+  final List<List<int>> listCameraId;
+  const AddCameraToGroupEvent({
+    required this.groupId,
+    required this.listCameraId,
+  });
+  @override
+  List<Object?> get props => [groupId, listCameraId];
+}
+
+class ShareGroupEvent extends GroupCameraEvent {
+  final List<int> groupId;
+  final List<int> accoungtInviteId;
+  const ShareGroupEvent({
+    required this.groupId,
+    required this.accoungtInviteId,
+  });
+  @override
+  List<Object?> get props => [groupId, accoungtInviteId];
+}
+
+class GetListShareGroupEvent extends GroupCameraEvent {
+  final List<int> groupId;
+  const GetListShareGroupEvent({required this.groupId});
+}

@@ -24,6 +24,8 @@ class Player {
 
   /// for builder
   final ValueNotifier<int?> textureId = ValueNotifier<int?>(null);
+  Completer<void>? _creatingCompleter;
+  bool _isDisposed = false;
 
   Player() {
     _pp.value = _player;
@@ -160,11 +162,20 @@ class Player {
   }
 
   /// Release resources
-  void dispose() async {
+  Future<void> dispose() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+
     if (_pp == nullptr) {
       textureId.dispose();
       return;
     }
+
+    if (_creatingCompleter != null) {
+      // Đợi đến khi tạo xong thì mới thực hiện dispose --> fix crash
+      await _creatingCompleter!.future;
+    }
+
     // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
     await updateTexture(width: -1);
     state = PlaybackState.stopped;
@@ -187,18 +198,25 @@ class Player {
   /// If both [width] and [height] are null, texture size is video frame size, otherwise is requested size.
   Future<int> updateTexture(
       {int? width, int? height, bool? tunnel, bool? fit}) async {
+    if (_creatingCompleter?.isCompleted == false) return textureId.value ?? -1;
+
+    _creatingCompleter = Completer<void>();
+
     if ((textureId.value ?? -1) >= 0) {
       await FvpPlatform.instance.releaseTexture(nativeHandle, textureId.value!);
       textureId.value = null;
     }
+
     final size = await _videoSize.future;
     if (size == null) {
+      _creatingCompleter!.complete(null);
       return -1;
     }
     if (width == null && height == null) {
       // original size
       textureId.value = await FvpPlatform.instance.createTexture(nativeHandle,
           size.width.toInt(), size.height.toInt(), tunnel ?? false);
+      _creatingCompleter!.complete(null);
       return textureId.value!;
     }
     if (width != null && height != null && width > 0 && height > 0) {
@@ -213,8 +231,10 @@ class Player {
       }
       textureId.value = await FvpPlatform.instance
           .createTexture(nativeHandle, width, height, tunnel ?? false);
+      _creatingCompleter!.complete(null);
       return textureId.value!;
     }
+    _creatingCompleter!.complete(null);
     // release texture if width or height <= 0
     return -1;
   }
@@ -559,6 +579,8 @@ class Player {
       fps,
     );
   }
+  void play() => state = PlaybackState.playing;
+  void pause() => state = PlaybackState.paused;
 
   /// Set position range in milliseconds. Can be used by A-B loop.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setrangeint64_t-a-int64_t-b--int64_max
@@ -788,6 +810,7 @@ class Player {
   var _prepared = Completer<int>();
   Completer<Uint8List?>? _snapshot;
   Completer<int>? _seeked;
+  Completer<int>? get seekingCompleter => _seeked;
   final _receivePort = ReceivePort();
 
   final _eventCb = <Function(MediaEvent)>[];
