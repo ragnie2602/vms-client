@@ -1,12 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 
 class PanelController {
-  late Future<void> Function(Widget content, {int? id, Function(int?)? onPanelIndexChanged})
+  late Future<void> Function(
+    Widget content, {
+    int? id,
+    Function(int?)? onPanelIndexChanged,
+    bool? toggleSidebar,
+  })
   togglePanel;
   late void Function() closePanel;
 
@@ -28,6 +35,7 @@ class _PanelState extends State<Panel> {
   Widget? content;
   Function(int?)? onPanelIndexChanged;
   bool get isOpening => _width.value == widget.expandedWidth;
+  bool? shouldToggleSidebar;
 
   @override
   void initState() {
@@ -46,7 +54,13 @@ class _PanelState extends State<Panel> {
     super.dispose();
   }
 
-  Future<void> togglePanel(Widget content, {int? id, Function(int?)? onPanelIndexChanged}) async {
+  Future<void> togglePanel(
+    Widget content, {
+    int? id,
+    Function(int?)? onPanelIndexChanged,
+    bool? toggleSidebar,
+  }) async {
+    shouldToggleSidebar = toggleSidebar;
     this.onPanelIndexChanged = onPanelIndexChanged;
     this.onPanelIndexChanged?.call(id);
 
@@ -57,14 +71,32 @@ class _PanelState extends State<Panel> {
     }
 
     this.content = content;
-    _width.value = _width.value == 0 ? widget.expandedWidth : 0;
-    if (!isOpening) this.onPanelIndexChanged?.call(null);
+
+    // Mở
+    if (_width.value == 0) {
+      this.toggleSidebar(1);
+      _width.value = widget.expandedWidth;
+    }
+    // Đóng
+    else {
+      this.toggleSidebar(2);
+      _width.value = 0;
+      this.onPanelIndexChanged?.call(null);
+    }
   }
 
   void closePanel() {
     if (!isOpening) return;
     _width.value = 0;
     onPanelIndexChanged?.call(null);
+    toggleSidebar(2);
+  }
+
+  /// 1: đóng + save trạng thái cũ, 2: khôi phục lại trạng thái cũ
+  void toggleSidebar(int type) {
+    if (shouldToggleSidebar != true) return;
+
+    context.read<HomeBloc?>()?.add(ToggleSidebar(type: type));
   }
 
   @override

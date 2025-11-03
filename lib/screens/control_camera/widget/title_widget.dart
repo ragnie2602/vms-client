@@ -34,6 +34,7 @@ class TitleWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 'Tên Camera',
+                textAlign: TextAlign.start,
                 style: AppTypography.style(
                   13,
                   fontWeight: FontWeight.w500,
@@ -56,31 +57,18 @@ class TitleWidget extends StatelessWidget {
               ),
             ),
           ),
-
-          // Expanded(
-          //   flex: 151,
-          //   child: Padding(
-          //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          //     child: Text(
-          //       'Thời gian thêm',
-          //       style: AppTypography.style(
-          //         13,
-          //         fontWeight: FontWeight.w500,
-          //         color: AppColors.black4A4A4A,
-          //       ),
-          //     ),
-          //   ),
-          // ),
           Expanded(
             flex: 130,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                'Trạng thái',
-                style: AppTypography.style(
-                  13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.black4A4A4A,
+              child: Center(
+                child: Text(
+                  'Trạng thái',
+                  style: AppTypography.style(
+                    13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.black4A4A4A,
+                  ),
                 ),
               ),
             ),

@@ -29,12 +29,6 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   int viewMode = 0;
   int currentTab = 0;
 
-  void _onDefaultModeFilterSelected() {
-    if (GoRouterState.of(context).name != Routes.monitoring.name) {
-      context.goNamed(Routes.monitoring.name);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (viewMode == 0) {
@@ -71,6 +65,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                   padding: EdgeInsets.all(4),
                   margin: EdgeInsets.symmetric(horizontal: 24),
                   height: 38,
+                  alignment: Alignment.center,
                   child: isExpanded
                       ? TabBar(
                           indicatorSize: TabBarIndicatorSize.tab,
@@ -86,6 +81,9 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                             14,
                             fontWeight: FontWeight.w500,
                           ),
+                          labelPadding: EdgeInsets.only(top: 2),
+                          dividerHeight: 0,
+                          indicatorWeight: 0,
                           tabs: [
                             Tab(text: 'Mặc định'),
                             Tab(text: 'Tùy biến'),
@@ -137,18 +135,16 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
     }
   }
 
+  void onResetCustomViewSelectedItem() {
+    context.read<CustomViewBloc>().add(
+      ShowCustomView(
+        CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
+        CustomMonitorPaneMode.view,
+      ),
+    );
+  }
+
   Widget _buildDefaultMode(double currentWidth, double availableHeight) {
-    onResetCustomViewSelectedItem() {
-      context.read<CustomViewBloc>().add(
-        ShowCustomView(
-          CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
-          CustomMonitorPaneMode.view,
-        ),
-      );
-    }
-
-    ;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +164,6 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             ),
           ),
         SizedBox(height: 16),
-
         BlocSelector<MonitorBloc, MonitorState, ViewMode?>(
           selector: (state) => state is MonitorSuccess ? state.mode : null,
           builder: (context, selectedMode) {
@@ -224,17 +219,17 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
         Expanded(
           child: GroupCameraView(
             onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
-              _onDefaultModeFilterSelected();
+              context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
               onResetCustomViewSelectedItem();
             },
             onGetAllGroupCamera: (BuildContext contextTreeGroup) {
-              _onDefaultModeFilterSelected();
+              context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCamera());
               onResetCustomViewSelectedItem();
             },
             onGetNoGroupCamera: (BuildContext contextTreeGroup) {
-              _onDefaultModeFilterSelected();
+              context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCameraNoGroup());
               onResetCustomViewSelectedItem();
             },
@@ -280,6 +275,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                 Routes.custom_live_view.name,
                 extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.add),
               );
+              context.read<MonitorBloc>().add(ResetFilter());
             });
           },
           child: Container(

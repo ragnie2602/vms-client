@@ -482,12 +482,12 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                         ),
                 ),
                 // danh sách đã chia sẻ
-                const Text(
+                Text(
                   'Danh sách đã chia sẻ',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTypography.style(
+                    14,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF000000),
+                    color: AppColors.black,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -499,12 +499,13 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                           border: Border.all(color: AppColors.greyE2E8F0),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'Chưa chia sẻ cho tài khoản nào',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF92929D),
+                            style: AppTypography.style(
+                              14,
+                              color: AppColors.black,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),
@@ -561,10 +562,10 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                                           ),
                                         ),
                                         const SizedBox(width: 4),
-                                        const Text(
+                                        Text(
                                           'Xoá',
-                                          style: TextStyle(
-                                            fontSize: 13,
+                                          style: AppTypography.style(
+                                            13,
                                             color: Colors.black,
                                             fontWeight: FontWeight.w500,
                                           ),

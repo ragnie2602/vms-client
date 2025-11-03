@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:image/image.dart' as img;
 
@@ -47,12 +48,37 @@ class FileUtil {
   }
 
   static Future<String?> selectSaveLocation(String fileName, String extension) async {
-    final result = await getSaveLocation(
-      acceptedTypeGroups: [_typeGroupMapper[extension.toUpperCase()] ?? _typeGroupMapper['MP4']!],
-      suggestedName: fileName,
-    );
-    if (result == null) return null;
+    try {
+      // Use file_picker for Windows to prevent UI freezing with lockParentWindow
+      if (Platform.isWindows) {
+        final cleanExtension = extension.replaceAll('.', '').toLowerCase();
+        final result = await FilePicker.platform.saveFile(
+          dialogTitle: 'Save file',
+          fileName: fileName,
+          allowedExtensions: [cleanExtension],
+          type: FileType.custom,
+          lockParentWindow: true, // Prevents UI freezing on Windows
+        );
+        if (result == null) return null;
 
-    return '${result.path}.${result.activeFilter?.extensions?.firstOrNull ?? 'mp4'}';
+        // Ensure file has extension
+        return result.endsWith('.$cleanExtension') ? result : '$result.$cleanExtension';
+      }
+
+      // Use file_selector for other platforms (macOS, Linux)
+      final result = await getSaveLocation(
+        acceptedTypeGroups: [_typeGroupMapper[extension.toUpperCase()] ?? _typeGroupMapper['MP4']!],
+        suggestedName: fileName,
+      );
+      if (result == null) return null;
+
+      final _extension = result.activeFilter?.extensions?.firstOrNull ?? 'mp4';
+
+      // MacOS thì result.path đã gắn extension luôn
+      return result.path.endsWith(_extension) ? result.path : '${result.path}.$_extension';
+    } catch (e) {
+      // Handle any errors from the file dialog
+      return null;
+    }
   }
 }

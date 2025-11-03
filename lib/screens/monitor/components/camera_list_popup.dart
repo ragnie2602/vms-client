@@ -159,7 +159,7 @@ class CameraListPopup extends StatelessWidget {
                         ),
                         SizedBox(height: 6),
                         Text(
-                          "Đang hoạt động",
+                          camera.isOnline ? "Đang hoạt động" : "Dừng hoạt động",
                           style: AppTypography.style(
                             12,
                             fontWeight: FontWeight.w500,
@@ -175,7 +175,9 @@ class CameraListPopup extends StatelessWidget {
                   SizedBox(width: 8),
                   SizedBox.square(
                     dimension: 8,
-                    child: CircleAvatar(backgroundColor: Color(0xFF21CCC3)),
+                    child: CircleAvatar(
+                      backgroundColor: camera.isOnline ? Color(0xFF21CCC3) : Color(0xFF64748B),
+                    ),
                   ),
                   SizedBox(width: 8),
                 ],

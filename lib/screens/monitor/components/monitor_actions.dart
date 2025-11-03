@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 
 import '../../shared/action_item.dart';
 import '../../shared/panel.dart';
@@ -88,14 +90,23 @@ class _MonitorActionsState extends State<MonitorActions> {
                         key: ValueKey('monitor_cameras'),
                         onTap: (data) {
                           context.pushNamed(
-                            Routes.livecamera.name,
-                            extra: CameraLiveScreenArgs(data: data),
+                            Routes.cameraDetail.name,
+                            extra: CameraDetailScreenArgs(data: data),
                           );
                         },
                       ),
                       id: 0,
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
+                  ),
+                  ActionItem(
+                    title: 'Xem toàn màn hình',
+                    icon: AppAssets.icFullTv,
+                    onTap: () {
+                      widget.leftController.closePanel();
+                      context.read<AppBloc>().add(ToggleMonitorDisplayMode());
+                      defaultEnterNativeFullscreen();
+                    },
                   ),
                 ],
               ),

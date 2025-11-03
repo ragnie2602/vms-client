@@ -18,7 +18,7 @@ class CustomLiveView {
     return CustomLiveView(
       id: id,
       base: base ?? this.base,
-      positions: positions ?? this.positions,
+      positions: positions ?? [...this.positions],
       name: name ?? this.name,
     );
   }

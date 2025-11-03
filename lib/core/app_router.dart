@@ -8,7 +8,7 @@ import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_u
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
-import 'package:vms_flutter_client/screens/camera_live/camera_live_screen.dart';
+import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
@@ -52,7 +52,7 @@ enum Routes {
     description:
         'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
-  livecamera(name: 'livecamera', path: '/livecamera'),
+  cameraDetail(name: 'camera_detail', path: '/camera_detail'),
   playback(
     name: 'playback',
     path: '/playback',
@@ -187,14 +187,14 @@ class AppRouter {
           ),
 
           GoRoute(
-            path: Routes.livecamera.path,
-            name: Routes.livecamera.name,
+            path: Routes.cameraDetail.path,
+            name: Routes.cameraDetail.name,
             pageBuilder: (context, state) {
               return fadeTransition(
                 context: context,
                 state: state,
-                child: CameraLiveScreen(
-                  args: state.extra as CameraLiveScreenArgs,
+                child: CameraDetailScreen(
+                  args: state.extra as CameraDetailScreenArgs,
                 ),
               );
             },

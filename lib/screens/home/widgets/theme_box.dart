@@ -114,9 +114,10 @@ class ThemeBox extends StatelessWidget {
         ),
         padding: EdgeInsets.symmetric(vertical: 4),
         alignment: Alignment.center,
-        child: BlocBuilder<AppBloc, AppState>(
-          builder: (context, state) => SvgPicture.asset(
-            state.themeMode == ThemeMode.light ? AppAssets.icLightMode : AppAssets.icDarkMode,
+        child: BlocSelector<AppBloc, AppState, ThemeMode>(
+          selector: (state) => state.themeMode,
+          builder: (context, theme) => SvgPicture.asset(
+            theme == ThemeMode.light ? AppAssets.icLightMode : AppAssets.icDarkMode,
             width: 20,
             height: 20,
             colorFilter: ColorFilter.mode(AppColors.blackOrWhite, BlendMode.srcIn),

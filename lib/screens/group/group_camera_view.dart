@@ -29,6 +29,7 @@ class GroupCameraView extends StatefulWidget {
     required this.onGetAllGroupCamera,
     required this.onGetNoGroupCamera,
     required this.onAddCameraToGroup,
+    this.onClearGroupSelected,
     this.enableAddGroup,
     this.enableNodeAction,
   });
@@ -38,6 +39,7 @@ class GroupCameraView extends StatefulWidget {
   final Function(BuildContext, List<int>)? onGetCamerasInGroup;
   final Function(BuildContext)? onGetAllGroupCamera;
   final Function(BuildContext)? onGetNoGroupCamera;
+  final Function(BuildContext)? onClearGroupSelected;
   final Function({
     required BuildContext c,
     required List<int> currentGroupId,
@@ -130,11 +132,15 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             String? nameNewGroup,
             List<int>? parentGroupId,
             DeviceGroup? currentGroup,
-          }) {
+          }) async {
+            final bloc = c.read<GroupCameraBloc>();
             if (addEditType == AddEditGroupType.add) {
               _onAddGroupCamera(
                 groupName: nameNewGroup ?? '',
                 parentGroupId: parentGroupId ?? [],
+              );
+              await bloc.stream.firstWhere(
+                (state) => state is AddGroupCameraSuccessState,
               );
             } else if (addEditType == AddEditGroupType.edit &&
                 currentGroup != null) {
@@ -143,12 +149,16 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                 groupId: currentGroup.groupId,
                 parentGroupId: parentGroupId ?? [],
               );
+              await bloc.stream.firstWhere(
+                (state) => state is UpdateGroupCameraSuccessState,
+              );
             }
           },
     );
   }
 
   void _onRemoveGroupCamera({required List<int> groupId}) {
+    widget.onClearGroupSelected?.call(context);
     context.read<GroupCameraBloc>().add(
       RemoveGroupCameraEvent(groupId: groupId),
     );
@@ -233,6 +243,12 @@ class _GroupCameraViewState extends State<GroupCameraView> {
       onDeleteShareGroup: (_inviteId) {
         return context.read<GroupCameraBloc>().deleteShareGroup(
           shareInviteId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(
+              context: c,
+              title: Text(messageFail ?? 'Thất bại'),
+            );
+          },
         );
       },
       onShareGroup: (_inviteId) {
@@ -268,6 +284,12 @@ class _GroupCameraViewState extends State<GroupCameraView> {
             ToastUtil.toastSuccess(
               context: context,
               title: Text('Xóa thành công'),
+            );
+          }
+          if (state is RemoveGroupCameraFailState) {
+            ToastUtil.toastFail(
+              context: context,
+              title: Text('Không thể xóa nhóm con của nhóm được chia sẻ'),
             );
           }
         },
@@ -362,6 +384,11 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                   // nếu level >= 2 (thứ 3) thì ko còn action add group nữa
                                   if ((node.data?.level ?? 0) >= 2) {
                                     listAction.remove(ItemGroupAction.add);
+                                  }
+                                  // check role để ẩn button
+                                  if (node.data?.groupRole ==
+                                      DeviceGroupRole.gview) {
+                                    listAction = [ItemGroupAction.remove];
                                   }
                                   final List<PopupMenuEntry<ItemGroupAction>>
                                   entries = [];

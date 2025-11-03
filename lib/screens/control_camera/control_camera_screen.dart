@@ -32,7 +32,7 @@ class ControlCameraScreen extends StatefulWidget {
 
 class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final TextEditingController cameraNameController = TextEditingController();
-  CameraStatus? cameraStatus;
+  CameraOnlineChecked? cameraStatus;
   final ScrollController _cameraListController = ScrollController();
 
   void _onClearSearch() {
@@ -84,7 +84,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     context.read<ControlCameraBloc>().add(
       FilterCameraEvent(
         cameraName: cameraNameController.text,
-        cameraStatus: cameraStatus,
+        isOnline: cameraStatus?.getValue,
       ),
     );
   }
@@ -221,6 +221,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           camId: camera.id,
           accountB: _accName,
           shareId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(
+              context: c,
+              title: Text(messageFail ?? 'Thất bại'),
+            );
+          },
         );
       },
       onShareCamera: (_accountNameInvite) {
@@ -303,6 +309,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                 _onClearSearch();
                 _onGetCameraInGroup(groupId: groupId, context: c);
               },
+              onClearGroupSelected: (c) {
+                c.read<ControlCameraBloc>().currentGroupId.clear();
+                _onGetListCamera(c: c);
+              },
               onAddCameraToGroup:
                   ({required c, required cameraIds, required currentGroupId}) {
                     context.read<ControlCameraBloc>().add(
@@ -340,9 +350,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             children: [
                               Text(
                                 'Tên camera',
-                                style: TextStyle(
-                                  fontSize: 13,
+                                style: AppTypography.style(
+                                  13,
                                   fontWeight: FontWeight.w400,
+                                  color: AppColors.black,
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -363,10 +374,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     child: SvgPicture.asset(AppAssets.icSearch),
                                   ),
                                   hintText: 'Nhập tên camera',
-                                  hintStyle: TextStyle(
-                                    color: AppColors.grey64748B,
-                                    fontSize: 14,
+                                  hintStyle: AppTypography.style(
+                                    14,
                                     fontWeight: FontWeight.w400,
+                                    color: AppColors.grey64748B,
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
@@ -395,19 +406,20 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             children: [
                               Text(
                                 'Trạng thái',
-                                style: TextStyle(
-                                  fontSize: 13,
+                                style: AppTypography.style(
+                                  13,
                                   fontWeight: FontWeight.w400,
+                                  color: AppColors.black,
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              CustomCommonDropdown<CameraStatus>(
-                                items: CameraStatus.values,
+                              CustomCommonDropdown<CameraOnlineChecked>(
+                                items: CameraOnlineChecked.values,
                                 value: cameraStatus,
                                 onChanged: (p0) {
                                   setState(() {
                                     if (cameraStatus == p0 ||
-                                        p0 == CameraStatus.all) {
+                                        p0 == CameraOnlineChecked.all) {
                                       cameraStatus = null;
                                     } else {
                                       cameraStatus = p0;
@@ -509,10 +521,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     'Thêm camera',
-                                    style: TextStyle(
-                                      color: AppColors.secondary,
-                                      fontSize: 14,
+                                    style: AppTypography.style(
+                                      14,
                                       fontWeight: FontWeight.w500,
+                                      color: AppColors.secondary,
                                     ),
                                   ),
                                 ],
@@ -573,7 +585,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                       return Center(
                                         child: Text(
                                           'Danh sách trống',
-                                          style: AppTypography.style(14),
+                                          style: AppTypography.style(
+                                            14,
+                                            color: AppColors.black,
+                                            fontWeight: FontWeight.w400,
+                                          ),
                                         ),
                                       );
                                     }

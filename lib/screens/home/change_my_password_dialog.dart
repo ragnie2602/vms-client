@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
-import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
-import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
 import 'package:vms_flutter_client/screens/home/bloc/my_account_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
@@ -200,7 +196,7 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
                         const SizedBox(width: 16),
                         Expanded(
                           child: AppButton.filled(
-                            label: 'Cập nhật',
+                            label: 'Xác nhận',
                             // isLoading: state.isLoading,
                             onPressed: state.isLoading
                                 ? null

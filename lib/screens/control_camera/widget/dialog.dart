@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
@@ -238,7 +239,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
               // Reload danh sách camera
               bloc.add(const GetListCameraEvent());
             } else {
-              bloc.add(GetListCameraInGroupEvent(groupId: bloc.currentGroupId));
+              bloc.add(GetListCameraInGroupEvent(groupId: List.from(bloc.currentGroupId)));
             }
             // Hiển thị dialog thành công và reload danh sách
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -295,8 +296,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                 widget.mode == CameraDialogMode.add
                     ? 'Thêm camera'
                     : 'Sửa camera',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+                style: AppTypography.style(
+                  20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.black,
                 ),
               ),
             ),
@@ -353,9 +356,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       controller: _sub,
                       hintText: 'Nhập địa chỉ luồng phụ',
                       label: 'Địa chỉ luồng phụ',
-                      validator: (v) => v == null || v.trim().isEmpty
-                          ? 'Địa chỉ luồng phụ không được để trống'
-                          : null,
+                      // validator: (v) => v == null || v.trim().isEmpty
+                      //     ? 'Địa chỉ luồng phụ không được để trống'
+                      //     : null,
                     ),
                     // const SizedBox(height: 24),
                     // AppField(
@@ -418,7 +421,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                                 xaddr: _onvifXaddrs.text.trim(),
                                 // boxId: _boxId.text.trim(),
                                 // groupId: _groupId.text.trim(),
-                                subStreamUrls: _sub.text.trim().split(','),
+                                subStreamUrls: _sub.text.isEmpty
+                                    ? []
+                                    : _sub.text.trim().split(','),
                                 // urn: _urn.text.trim(),
                                 // serialNumber: _serialNumber.text.trim(),
                               );
@@ -550,11 +555,12 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                                 ),
                               ),
                             )
-                          : const Text(
+                          : Text(
                               'Kiểm tra',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                              style: AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.white,
                               ),
                             ),
                     ),
@@ -573,10 +579,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             text: 'Phương thức',
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTypography.style(
+              14,
               fontWeight: FontWeight.w500,
               color: Color(0xFF000000),
             ),

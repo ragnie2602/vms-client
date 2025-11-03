@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:fvp/mdk.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
+import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 
 class AppConfig {
   const AppConfig._();
@@ -15,6 +16,7 @@ class AppConfig {
   /* File log */
   static const LOG_FILE_RETENTION_PERIOD = Duration(days: 3);
   static const LOG_FILE_MAX_TRACE_LINES = 31;
+  static final INITIAL_HOME_TAB = HomeTab.tabs.first;
 
   /*  */
   static const SHOW_HOME_SIDEBAR = true;
@@ -29,8 +31,8 @@ class AppConfig {
   static const MDK_DECODERS = ['D3D11', 'DXVA', 'MFT:d3d=11', 'CUDA', 'FFmpeg'];
 
   /* [Player] Timeout khi khởi tạo player (VideoPlayerController) */
-  static const PLAYER_INITIALIZATION_TIMEOUT = Duration(seconds: 60);
-  static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 20);
+  static const PLAYER_INITIALIZATION_TIMEOUT = Duration(seconds: 30);
+  static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 30);
   static const SOCKET_CONNECTION_TIMEOUT = 60;
 
   /* Monitoring view */

@@ -158,7 +158,7 @@ class ControlCameraBloc
   ) {
     final FilterCameraInput input = FilterCameraInput(
       nameCamera: event.cameraName,
-      cameraStatus: event.cameraStatus,
+      isOnline: event.isOnline,
       listCameraOrigin: listCamera,
     );
     final FilterCameraOutput output = filterCameraUseCase.execute(input);
@@ -331,13 +331,19 @@ class ControlCameraBloc
     List<int>? camId,
     String? accountB,
     List<int>? shareId,
+    Function({String? messageFail})? onToastFail,
   }) async {
     final res = await controlGroupRepository.deleteShareCamera(
       cameraId: camId ?? [],
       accountB: accountB ?? '',
       shareId: shareId ?? [],
     );
-    return res.fold((onFailure) => <int>[], (onSuccess) => onSuccess);
+    return res.fold((onFailure) {
+      if (onToastFail != null) {
+        onToastFail(messageFail: onFailure.toString()).call();
+      }
+      return <int>[];
+    }, (onSuccess) => onSuccess);
   }
 
   FutureOr<void> _onRemoveCameraFromGroup(

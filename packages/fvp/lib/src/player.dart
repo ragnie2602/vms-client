@@ -164,6 +164,7 @@ class Player {
   /// Release resources
   Future<void> dispose() async {
     if (_isDisposed) return;
+    _isDisposed = true;
 
     if (_pp == nullptr) {
       textureId.dispose();
@@ -173,23 +174,22 @@ class Player {
     if (_creatingCompleter != null) {
       // Đợi đến khi tạo xong thì mới thực hiện dispose --> fix crash
       await _creatingCompleter!.future;
-
-      // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
-      await updateTexture(width: -1);
-      state = PlaybackState.stopped;
-      Libfvp.unregisterPort(nativeHandle);
-      onEvent(null);
-      onStateChanged(null);
-      onMediaStatus(null);
-
-      _receivePort.close();
-
-      Libmdk.instance.mdkPlayerAPI_delete(_pp);
-      calloc.free(_pp);
-      _pp = nullptr;
-      textureId.dispose();
-      _isDisposed = true;
     }
+
+    // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
+    await updateTexture(width: -1);
+    state = PlaybackState.stopped;
+    Libfvp.unregisterPort(nativeHandle);
+    onEvent(null);
+    onStateChanged(null);
+    onMediaStatus(null);
+
+    _receivePort.close();
+
+    Libmdk.instance.mdkPlayerAPI_delete(_pp);
+    calloc.free(_pp);
+    _pp = nullptr;
+    textureId.dispose();
   }
 
   /// Release current texture then create a new one for current [media], and update [textureId].

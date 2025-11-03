@@ -11,10 +11,17 @@ import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import '../bloc/monitor/monitor_bloc.dart';
 
 class MonitorCameras extends StatefulWidget {
-  const MonitorCameras({super.key, required this.maxWidth, this.onTap, this.selectedCamera});
+  const MonitorCameras({
+    super.key,
+    required this.maxWidth,
+    this.onTap,
+    this.selectedCamera,
+    this.highlightSelected = false,
+  });
   final double maxWidth;
   final Function(CameraEntity)? onTap;
   final CameraEntity? selectedCamera;
+  final bool highlightSelected;
 
   @override
   State<MonitorCameras> createState() => _MonitorCamerasState();
@@ -25,11 +32,15 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
   late Function(CameraEntity) onTap;
   late CameraEntity? selectedCamera;
 
+  late final MonitorBloc _monitorBloc;
+
   @override
   void initState() {
     onTap = widget.onTap ?? (_) {};
     selectedCamera = widget.selectedCamera;
     super.initState();
+
+    if (mounted) _monitorBloc = MonitorBloc(context.read(), context.read())..add(GetAllCamera());
   }
 
   @override
@@ -56,6 +67,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MonitorBloc, MonitorState>(
+      bloc: _monitorBloc,
       builder: (context, state) => stateBuilder<MonitorSuccess>(
         state,
         child: (state) => Column(
@@ -104,7 +116,6 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 ),
               ),
             ),
-
             SizedBox(height: 20 - 6),
             Expanded(
               child: Material(
@@ -150,11 +161,11 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
       onTap: () {
         if (selectedCamera?.id == camera.id) return;
         onTap(camera);
-        if (selectedCamera != null) setState(() => selectedCamera = camera);
+        if (widget.highlightSelected) setState(() => selectedCamera = camera);
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        color: selectedCamera?.id == camera.id ? AppColors.greyF2F4FA : Colors.transparent,
+        color: selectedCamera?.camId == camera.camId ? AppColors.greyF2F4FA : Colors.transparent,
         child: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [
@@ -183,7 +194,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                       ),
                       SizedBox(height: 6),
                       Text(
-                        "Đang hoạt động",
+                        camera.isOnline ? "Đang hoạt động" : "Dừng hoạt động",
                         style: AppTypography.style(
                           12,
                           fontWeight: FontWeight.w500,
@@ -199,7 +210,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 SizedBox(width: 8),
                 SizedBox.square(
                   dimension: 8,
-                  child: CircleAvatar(backgroundColor: Color(0xFF21CCC3)),
+                  child: CircleAvatar(
+                    backgroundColor: camera.isOnline ? Color(0xFF21CCC3) : Color(0xFF64748B),
+                  ),
                 ),
                 SizedBox(width: 8),
               ],
