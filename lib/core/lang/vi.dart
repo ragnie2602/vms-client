@@ -3,7 +3,7 @@ part of 'language.dart';
 // Common error codes shared across multiple packet types
 const Map<String, String> _commonErrors = {
   'OK': "OK",
-  'REQUEST_INVALID': "Yêu cầu không hợp lệ",
+  'REQUEST_INVALID': "Yêu cầu không hợp lệ, vui lòng thử lại sau",
   'SESSION_INVALID': "Phiên đăng nhập không hợp lệ",
   'SESSION_EXPIRE': "Phiên đăng nhập đã hết hạn",
   'SESSION_EXPIRED': "Phiên đăng nhập đã hết hạn",
