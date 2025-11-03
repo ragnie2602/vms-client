@@ -81,8 +81,8 @@ class PlayerControls extends StatelessWidget {
                     ),
 
                   /* Zoom */
-                  // _controlItem(AppAssets.icZoomIn, () {}),
-                  // _controlItem(AppAssets.icZoomOut, () {}),
+                  // _controlItem(AppAssets.icZoomIn, () => playerState(context)?.zoom(1)),
+                  // _controlItem(AppAssets.icZoomOut, () => playerState(context)?.zoom(-1)),
 
                   /* Fullscreen */
                   _controlItem(
