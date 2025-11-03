@@ -21,6 +21,7 @@ class AppField extends StatefulWidget {
     this.trailingButton,
     this.inputFormatters,
     this.readOnly = false,
+    this.borderRadius,
   });
 
   final TextEditingController controller;
@@ -37,6 +38,7 @@ class AppField extends StatefulWidget {
   final Widget? trailingButton;
   final List<TextInputFormatter>? inputFormatters;
   final bool? readOnly;
+  final double? borderRadius;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -63,12 +65,20 @@ class _AppFieldState extends State<AppField> {
             child: RichText(
               text: TextSpan(
                 text: widget.label,
-                style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black),
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.black,
+                ),
                 children: widget.requiredField
-                    ? const [
+                    ? [
                         TextSpan(
                           text: ' *',
-                          style: TextStyle(color: Colors.red),
+                          style: AppTypography.style(
+                            20,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.redFF0004,
+                          ),
                         ),
                       ]
                     : const [],
@@ -123,11 +133,12 @@ class _AppFieldState extends State<AppField> {
                     },
                     readOnly: widget.readOnly ?? false,
                     inputFormatters: widget.inputFormatters,
-
                     decoration: InputDecoration(
                       hintText: widget.hintText,
                       filled: widget.readOnly ?? false,
-                      fillColor: widget.readOnly ?? false ? AppColors.greyF2F4FA : null,
+                      fillColor: widget.readOnly ?? false
+                          ? AppColors.greyF2F4FA
+                          : null,
                       hintStyle: AppTypography.style(
                         14,
                         fontWeight: FontWeight.w400,
@@ -140,33 +151,60 @@ class _AppFieldState extends State<AppField> {
                       errorBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(1),
                         borderSide: BorderSide(
-                          color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
+                          color: _errorText == null
+                              ? AppColors.greyE2E8F0
+                              : Colors.red,
                           width: 1,
                         ),
                       ),
                       focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(1),
+                        borderRadius: BorderRadius.circular(
+                          widget.borderRadius ?? 1,
+                        ),
                         borderSide: BorderSide(
-                          color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
+                          color: _errorText == null
+                              ? AppColors.greyE2E8F0
+                              : Colors.red,
                           width: 1,
                         ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                        borderRadius: BorderRadius.circular(
+                          widget.borderRadius ?? 1,
+                        ),
+                        borderSide: BorderSide(
+                          color: AppColors.greyE2E8F0,
+                          width: 1,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                        borderRadius: BorderRadius.circular(
+                          widget.borderRadius ?? 1,
+                        ),
+                        borderSide: BorderSide(
+                          color: AppColors.greyE2E8F0,
+                          width: 1,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
+                        borderRadius: BorderRadius.circular(
+                          widget.borderRadius ?? 1,
+                        ),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 1,
+                        ),
                       ),
                       suffixIcon: suffixChildren.isEmpty
                           ? null
-                          : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: suffixChildren,
+                            ),
                     ),
                     style: AppTypography.style(
                       14,

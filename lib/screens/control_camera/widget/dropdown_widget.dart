@@ -53,13 +53,13 @@ class CustomCommonDropdown<T> extends StatelessWidget {
       onChanged: onChanged,
       decoration: InputDecoration(
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(1),
           borderSide: BorderSide(
             color: isErr == true ? Colors.red : AppColors.greyE2E8F0,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(1),
           borderSide: BorderSide(
             color: isErr == true ? Colors.red : AppColors.greyE2E8F0,
           ),

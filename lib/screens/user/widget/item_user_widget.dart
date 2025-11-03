@@ -32,7 +32,11 @@ class ItemUserWidget extends StatelessWidget {
             child: Center(
               child: Text(
                 '$index',
-                style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.black,
+                ),
               ),
             ),
           ),
@@ -99,7 +103,8 @@ class ItemUserWidget extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                itemUser.type == UserType.admin || itemUser.type == UserType.admin_client
+                itemUser.type == UserType.admin ||
+                        itemUser.type == UserType.admin_client
                     ? 'Tài khoản admin'
                     : 'Tài khoản thường',
                 style: AppTypography.style(
@@ -117,6 +122,13 @@ class ItemUserWidget extends StatelessWidget {
                 icon: SvgPicture.asset(AppAssets.icAction),
                 padding: EdgeInsets.zero,
                 splashRadius: 20,
+                position: PopupMenuPosition.under,
+                offset: Offset(0, 8),
+                elevation: 3,
+                shadowColor: Color(0x1A000000),
+                surfaceTintColor: Colors.transparent,
+                color: Colors.white,
+                menuPadding: EdgeInsets.zero,
                 onSelected: (String value) {
                   switch (value) {
                     case 'reset_password':
@@ -133,11 +145,21 @@ class ItemUserWidget extends StatelessWidget {
                 itemBuilder: (BuildContext context) => [
                   PopupMenuItem<String>(
                     value: 'reset_password',
-                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
+                    height: 32,
+                    padding: EdgeInsets.only(
+                      left: 12,
+                      bottom: 8,
+                      right: 16,
+                      top: 8,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SvgPicture.asset(AppAssets.icReset),
+                        SvgPicture.asset(
+                          AppAssets.icReset,
+                          width: 16,
+                          height: 16,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Khôi phục mật khẩu',
@@ -153,11 +175,21 @@ class ItemUserWidget extends StatelessWidget {
                   PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                   PopupMenuItem<String>(
                     value: 'edit',
-                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
+                    height: 32,
+                    padding: EdgeInsets.only(
+                      left: 12,
+                      bottom: 8,
+                      right: 16,
+                      top: 8,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SvgPicture.asset(AppAssets.icEdit),
+                        SvgPicture.asset(
+                          AppAssets.icEdit,
+                          width: 16,
+                          height: 16,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Sửa',
@@ -173,11 +205,21 @@ class ItemUserWidget extends StatelessWidget {
                   PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                   PopupMenuItem<String>(
                     value: 'delete',
-                    padding: EdgeInsets.only(left: 12, bottom: 8, right: 16, top: 8),
+                    height: 32,
+                    padding: EdgeInsets.only(
+                      left: 12,
+                      bottom: 8,
+                      right: 16,
+                      top: 8,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SvgPicture.asset(AppAssets.icDelete),
+                        SvgPicture.asset(
+                          AppAssets.icDelete,
+                          width: 16,
+                          height: 16,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Xóa',
@@ -191,8 +233,10 @@ class ItemUserWidget extends StatelessWidget {
                     ),
                   ),
                 ],
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                // elevation set above
               ),
             ),
           ),
