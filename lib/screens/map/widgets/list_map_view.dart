@@ -107,16 +107,31 @@ class ListMapView extends StatelessWidget {
                               borderRadius: BorderRadiusGeometry.circular(8),
                             ),
                             elevation: 8,
+                            onSelected: (value) {
+                              //handler
+                            },
                             itemBuilder: (context) {
                               var listAction = ItemMapAction.values;
-                              return listAction
-                                  .map(
-                                    (e) => PopupMenuItem<ItemMapAction>(
-                                      value: e,
-                                      child: _ItemActionWidget(item: e),
+                              List<PopupMenuEntry<ItemMapAction>> entries = [];
+                              for (int i = 0; i < listAction.length; i++) {
+                                final e = listAction[i];
+                                entries.add(
+                                  PopupMenuItem<ItemMapAction>(
+                                    value: e,
+                                    child: _ItemActionWidget(item: e),
+                                  ),
+                                );
+                                // thêm divider
+                                if (i != listAction.length - 1) {
+                                  entries.add(
+                                    const PopupMenuDivider(
+                                      height: 1,
+                                      color: AppColors.greyF2F4FA,
                                     ),
-                                  )
-                                  .toList();
+                                  );
+                                }
+                              }
+                              return entries;
                             },
                             child: SvgPicture.asset(
                               AppAssets.icAction,
@@ -131,8 +146,7 @@ class ListMapView extends StatelessWidget {
                       ),
                     );
                   },
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 16),
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
                 ),
               ),
             ),
