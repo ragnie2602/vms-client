@@ -81,7 +81,10 @@ class AppAssets {
   static const icDownload = '$_svgPath/download.svg';
   static const icCheck = '$_svgPath/check.svg';
   // map
-   static const icMarkerMap = '$_svgPath/ic_marker_map.svg';
+  static const icMarkerMap = '$_svgPath/ic_marker_map.svg';
+  static const icPlus = '$_svgPath/plus.svg';
+  static const icAddImage = '$_svgPath/ic_plus.svg';
+  static const icReplace = '$_svgPath/icon_replace.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';

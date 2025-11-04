@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/map/widgets/add_map_dialog.dart';
 
 class ListMapView extends StatelessWidget {
   const ListMapView({super.key});
@@ -57,10 +58,23 @@ class ListMapView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                    color: AppColors.secondary,
+                InkWell(
+                  onTap: () async {
+                    await showAddMapDialog(
+                      context,
+                      onSubmit: (payload) async {
+                        // Xử lý submit với:
+                        // payload.name - tên bản đồ
+                        // payload.imageFile - file ảnh đã chọn
+                      },
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      color: AppColors.secondary,
+                    ),
+                    child: SvgPicture.asset(AppAssets.icPlus),
                   ),
                 ),
               ],
