@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 
 class TimelinePainter extends CustomPainter {
@@ -337,6 +338,11 @@ class TimelinePainter extends CustomPainter {
   }
 
   void _drawCurrentTick(Canvas canvas, Size size, double offsetX) {
+    // Case nằm ngoài startDate và endDate --> không vẽ nữa
+    if (startDate != null && endDate != null && !currentTime.isBetween(startDate!, endDate!)) {
+      return;
+    }
+
     canvas.drawPath(
       _path
         ..reset()
