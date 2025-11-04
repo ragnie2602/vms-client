@@ -90,7 +90,9 @@ dependencies:
   popover: ^0.3.1
 
   # MultiWindow
-  desktop_multi_window: 0.2.1
+  desktop_multi_window:
+    path: packages/desktop_multi_window
+  window_manager: ^0.5.1
 
 dev_dependencies:
   flutter_test:

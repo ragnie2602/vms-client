@@ -53,6 +53,7 @@ void main(List<String> args) async {
     await AppData.instance.init();
     await EnvService.init();
 
+    await windowManager.ensureInitialized();
     final windowID = await initialMultiWindowConfig(args);
 
     await SentryFlutter.init((options) {
