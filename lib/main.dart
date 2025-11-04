@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:window_manager/window_manager.dart';
 import 'app_bloc.dart';
 import 'core/app_router.dart';
@@ -24,6 +25,12 @@ Future<int> initialMultiWindowConfig(List<String> args) async {
     return int.parse(args[1]);
   } else {
     final controller = WindowController.main();
+
+    final rect =
+        MultiWindowUtil.getWindowRect(controller.windowId) ??
+        await MultiWindowUtil.saveWindowRect(controller.windowId, Rect.fromLTWH(10, 10, 1200, 675));
+    await windowManager.setBounds(rect);
+    await windowManager.maximize();
 
     return controller.windowId;
   }
