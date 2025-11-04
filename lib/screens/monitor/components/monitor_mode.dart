@@ -41,6 +41,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (constraints.maxWidth >= 24)
                   Padding(
@@ -76,7 +77,10 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                           ),
                           labelColor: AppColors.blackOrWhite,
                           unselectedLabelColor: Color(0xFF6F767E),
-                          labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+                          labelStyle: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                          ),
                           unselectedLabelStyle: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,
@@ -101,8 +105,15 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                         return IndexedStack(
                           index: tabIndex,
                           children: [
-                            _buildDefaultMode(constraints.maxWidth, constraints.maxHeight),
-                            _buildCustomMode(context, constraints.maxWidth, isExpanded),
+                            _buildDefaultMode(
+                              constraints.maxWidth,
+                              constraints.maxHeight,
+                            ),
+                            _buildCustomMode(
+                              context,
+                              constraints.maxWidth,
+                              isExpanded,
+                            ),
                           ],
                         );
                       },
@@ -120,7 +131,9 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
 
           final bloc = context.read<CustomViewBloc>();
           if (bloc.preCustomView != null) {
-            bloc.add(ShowCustomView(bloc.preCustomView!, CustomMonitorPaneMode.view));
+            bloc.add(
+              ShowCustomView(bloc.preCustomView!, CustomMonitorPaneMode.view),
+            );
             context.goNamed(
               Routes.custom_live_view.name,
               extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.view),
@@ -182,10 +195,13 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                         onTap: () {
                           onResetCustomViewSelectedItem();
 
-                          if (GoRouterState.of(context).name != Routes.monitoring.name) {
+                          if (GoRouterState.of(context).name !=
+                              Routes.monitoring.name) {
                             context.goNamed(Routes.monitoring.name);
                           }
-                          context.read<MonitorBloc>().add(ChangeGridMode(value));
+                          context.read<MonitorBloc>().add(
+                            ChangeGridMode(value),
+                          );
                         },
                         child: SvgPicture.asset(
                           selectedMode == value ? value.iconActive : value.icon,
@@ -218,11 +234,12 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
           ),
         Expanded(
           child: GroupCameraView(
-            onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
-              context.goNamed(Routes.monitoring.name);
-              context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
-              onResetCustomViewSelectedItem();
-            },
+            onGetCamerasInGroup:
+                (BuildContext contextTreeGroup, List<int> groupId) {
+                  context.goNamed(Routes.monitoring.name);
+                  context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
+                  onResetCustomViewSelectedItem();
+                },
             onGetAllGroupCamera: (BuildContext contextTreeGroup) {
               context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCamera());
@@ -245,7 +262,11 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
     );
   }
 
-  Widget _buildCustomMode(BuildContext context, double currentWidth, bool showing) {
+  Widget _buildCustomMode(
+    BuildContext context,
+    double currentWidth,
+    bool showing,
+  ) {
     final bloc = context.read<CustomViewBloc>();
 
     return Column(
@@ -266,7 +287,12 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
 
               bloc.add(
                 ShowCustomView(
-                  CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
+                  CustomLiveView(
+                    id: [],
+                    base: ViewMode.v2x2,
+                    positions: [],
+                    name: '',
+                  ),
                   CustomMonitorPaneMode.add,
                 ),
               );
@@ -295,7 +321,10 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                     AppAssets.icAdd,
                     width: 20,
                     height: 20,
-                    colorFilter: ColorFilter.mode(AppColors.blackOrWhite, BlendMode.srcIn),
+                    colorFilter: ColorFilter.mode(
+                      AppColors.blackOrWhite,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 showing ? SizedBox(width: 8) : SizedBox(height: 20),
                 Flexible(

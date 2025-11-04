@@ -119,97 +119,101 @@ class _AppFieldState extends State<AppField> {
             Row(
               children: [
                 Expanded(
-                  child: TextFormField(
-                    controller: widget.controller,
-                    obscureText: widget.obscureText,
-                    keyboardType: widget.keyboardType,
-                    maxLines: widget.maxLines,
-                    maxLength: widget.maxLength,
-                    validator: _customValidator,
-                    onChanged: (value) {
-                      setState(() {
-                        _errorText = null;
-                      });
-                    },
-                    readOnly: widget.readOnly ?? false,
-                    inputFormatters: widget.inputFormatters,
-                    decoration: InputDecoration(
-                      hintText: widget.hintText,
-                      filled: widget.readOnly ?? false,
-                      fillColor: widget.readOnly ?? false
-                          ? AppColors.greyF2F4FA
-                          : null,
-                      hintStyle: AppTypography.style(
+                  child: SizedBox(
+                    height: 41,
+                    child: TextFormField(
+                      controller: widget.controller,
+                      obscureText: widget.obscureText,
+                      keyboardType: widget.keyboardType,
+                      maxLines: widget.maxLines,
+                      maxLength: widget.maxLength,
+                      validator: _customValidator,
+                      onChanged: (value) {
+                        setState(() {
+                          _errorText = null;
+                        });
+                      },
+                      readOnly: widget.readOnly ?? false,
+
+                      inputFormatters: widget.inputFormatters,
+                      decoration: InputDecoration(
+                        hintText: widget.hintText,
+                        filled: widget.readOnly ?? false,
+                        fillColor: widget.readOnly ?? false
+                            ? AppColors.greyF2F4FA
+                            : null,
+                        hintStyle: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.grey92929D,
+                        ),
+                        // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
+                        counterText: '',
+                        errorMaxLines: 1,
+                        errorStyle: AppTypography.style(0, lineHeight: 0),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(1),
+                          borderSide: BorderSide(
+                            color: _errorText == null
+                                ? AppColors.greyE2E8F0
+                                : Colors.red,
+                            width: 1,
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            widget.borderRadius ?? 1,
+                          ),
+                          borderSide: BorderSide(
+                            color: _errorText == null
+                                ? AppColors.greyE2E8F0
+                                : Colors.red,
+                            width: 1,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            widget.borderRadius ?? 1,
+                          ),
+                          borderSide: BorderSide(
+                            color: AppColors.greyE2E8F0,
+                            width: 1,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            widget.borderRadius ?? 1,
+                          ),
+                          borderSide: BorderSide(
+                            color: AppColors.greyE2E8F0,
+                            width: 1,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            widget.borderRadius ?? 1,
+                          ),
+                          borderSide: BorderSide(
+                            color: theme.colorScheme.primary,
+                            width: 1,
+                          ),
+                        ),
+                        suffixIcon: suffixChildren.isEmpty
+                            ? null
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: suffixChildren,
+                              ),
+                      ),
+                      style: AppTypography.style(
                         14,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.grey92929D,
+                        color: AppColors.black,
                       ),
-                      // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
-                      counterText: '',
-                      errorMaxLines: 1,
-                      errorStyle: AppTypography.style(0, lineHeight: 0),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(1),
-                        borderSide: BorderSide(
-                          color: _errorText == null
-                              ? AppColors.greyE2E8F0
-                              : Colors.red,
-                          width: 1,
-                        ),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          widget.borderRadius ?? 1,
-                        ),
-                        borderSide: BorderSide(
-                          color: _errorText == null
-                              ? AppColors.greyE2E8F0
-                              : Colors.red,
-                          width: 1,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          widget.borderRadius ?? 1,
-                        ),
-                        borderSide: BorderSide(
-                          color: AppColors.greyE2E8F0,
-                          width: 1,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          widget.borderRadius ?? 1,
-                        ),
-                        borderSide: BorderSide(
-                          color: AppColors.greyE2E8F0,
-                          width: 1,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                          widget.borderRadius ?? 1,
-                        ),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
-                          width: 1,
-                        ),
-                      ),
-                      suffixIcon: suffixChildren.isEmpty
-                          ? null
-                          : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: suffixChildren,
-                            ),
-                    ),
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.black,
                     ),
                   ),
                 ),

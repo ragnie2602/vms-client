@@ -94,7 +94,10 @@ class _UserProfileState extends State<UserProfile> {
                     },
                     child: SvgPicture.asset(
                       AppAssets.icArrowCircleUp,
-                      colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
+                      colorFilter: ColorFilter.mode(
+                        AppColors.contentFg,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ),
@@ -112,7 +115,12 @@ class _UserProfileState extends State<UserProfile> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(3),
         boxShadow: [
-          BoxShadow(color: Colors.black26, blurRadius: 2, spreadRadius: 0, offset: Offset(1, 1)),
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 2,
+            spreadRadius: 0,
+            offset: Offset(1, 1),
+          ),
         ],
       ),
       // padding: EdgeInsets.symmetric(vertical: 20),
@@ -122,7 +130,7 @@ class _UserProfileState extends State<UserProfile> {
           children: [
             _buildMenuItem(
               onTap: () => ErrorService.openLogFile(),
-              icon: Icons.article,
+              icon: Icon(Icons.article),
               title: 'Mở log file',
             ),
             Divider(height: 0.5, color: Colors.grey.shade300),
@@ -131,13 +139,16 @@ class _UserProfileState extends State<UserProfile> {
                 if (AppData.instance.profile?.changePassDenied ?? false) {
                   ToastUtil.toastFail(
                     context: context,
-                    title: Text('Bạn không có quyền sử dụng chức năng này!', maxLines: 5),
+                    title: Text(
+                      'Bạn không có quyền sử dụng chức năng này!',
+                      maxLines: 5,
+                    ),
                   );
                   return;
                 }
                 showChangeMyPasswordDialog(context);
               },
-              icon: Icons.key,
+              icon: SvgPicture.asset(AppAssets.icKey),
               title: 'Đổi mật khẩu',
             ),
             Divider(height: 0.5, color: Colors.grey.shade300),
@@ -147,7 +158,7 @@ class _UserProfileState extends State<UserProfile> {
                 // context.goNamed(Routes.login.name);
                 showSignOutConfirmationPopup();
               },
-              icon: Icons.logout,
+              icon: SvgPicture.asset(AppAssets.icLogout),
               title: 'Đăng xuất',
             ),
           ],
@@ -158,18 +169,22 @@ class _UserProfileState extends State<UserProfile> {
 
   Widget _buildMenuItem({
     required String title,
-    required IconData icon,
+    required Widget icon,
     required VoidCallback? onTap,
   }) {
     return ListTile(
       onTap: onTap,
-      leading: Icon(icon),
+      leading: icon,
       title: Text(
         title,
-        style: AppTypography.style(14, color: AppColors.blackOrWhite, fontWeight: FontWeight.w500),
+        style: AppTypography.style(
+          14,
+          color: AppColors.blackOrWhite,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       horizontalTitleGap: 20,
-      contentPadding: EdgeInsets.fromLTRB(24, 12, 24, 12),
+      contentPadding: EdgeInsets.fromLTRB(20, 12, 20, 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
       ),
@@ -218,8 +233,13 @@ class _UserProfileState extends State<UserProfile> {
                             backgroundColor: AppColors.blackOrWhiteReverse,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            side: BorderSide(
+                              color: AppColors.greyE2E8F0,
+                              width: 1,
+                            ),
                           ),
                           child: Text(
                             'Hủy',
@@ -235,12 +255,15 @@ class _UserProfileState extends State<UserProfile> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 130.5 / 1600,
                         child: ElevatedButton(
-                          onPressed: () => context.read<AppBloc>().add(SignOut()),
+                          onPressed: () =>
+                              context.read<AppBloc>().add(SignOut()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.blackOrWhite,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
                           ),
                           child: Text(
                             'Xác nhận',
