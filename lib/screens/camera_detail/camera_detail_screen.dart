@@ -100,6 +100,10 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           onStatusChanged: (status) {
             context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
           },
+          onInitializedValues: ({required double volume, required double speed}) {
+            context.read<CameraDetailBloc>().add(ChangeVolume(volume));
+            context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+          },
         ),
       ),
     );
@@ -112,6 +116,10 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
       controller: state.cameraDetailController,
       onStatusChanged: (status) {
         context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
+      },
+      onInitializedValues: ({required double volume, required double speed}) {
+        context.read<CameraDetailBloc>().add(ChangeVolume(volume));
+        context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
       },
     );
   }

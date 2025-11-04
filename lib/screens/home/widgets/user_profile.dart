@@ -2,9 +2,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -28,67 +29,77 @@ class _UserProfileState extends State<UserProfile> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPopupMenu(
-      controller: controller,
-      menuBuilder: () => IntrinsicWidth(child: _buildMenu()),
-      // arrowDecoration: BoxDecoration(color: Colors.white),
-      // arrowSize: Size(16, 10),
-      showArrow: false,
-      pressType: PressType.singleClick,
-      verticalMargin: 0,
-      horizontalMargin: -20,
-      barrierColor: Colors.transparent,
-      position: PreferredPosition.bottom,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: Container(
-          height: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          color: Colors.transparent,
-          child: Row(
-            children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(32),
-                child: Image.network(
-                  AppData.instance.profile?.avatar ?? "",
-                  width: 32,
-                  height: 32,
-                  loadingBuilder: (context, child, loadingProgress) => CupertinoActivityIndicator(),
-                  errorBuilder: (context, error, stackTrace) =>
-                      Image.asset(AppAssets.defaultAvatar),
-                ),
-              ),
-              SizedBox(width: 12),
-              Text(
-                AppData.instance.profile?.displayName ?? 'Giám sát viên',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.blackOrWhite,
-                ),
-              ),
-              SizedBox(width: 12),
-              AnimatedBuilder(
-                animation: controller,
-                builder: (context, _) => TweenAnimationBuilder<double>(
-                  tween: Tween(
-                    begin: controller.menuIsShowing ? 180 : 0,
-                    end: controller.menuIsShowing ? 0 : 180,
-                  ),
-                  duration: Durations.medium2,
-                  builder: (context, angle, child) {
-                    return Transform.rotate(
-                      angle: angle * (math.pi / 180), // đổi độ sang radian
-                      child: child,
-                    );
-                  },
-                  child: SvgPicture.asset(
-                    AppAssets.icArrowCircleUp,
-                    colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
+    return BlocListener<AppBloc, AppState>(
+      listener: (context, state) {
+        if (state.isSignOut) {
+          if (Navigator.canPop(context)) Navigator.pop(context);
+          context.read<SocketApiClient>().disconnect();
+          context.goNamed(Routes.login.name);
+        }
+      },
+      child: CustomPopupMenu(
+        controller: controller,
+        menuBuilder: () => IntrinsicWidth(child: _buildMenu()),
+        // arrowDecoration: BoxDecoration(color: Colors.white),
+        // arrowSize: Size(16, 10),
+        showArrow: false,
+        pressType: PressType.singleClick,
+        verticalMargin: 0,
+        horizontalMargin: -20,
+        barrierColor: Colors.transparent,
+        position: PreferredPosition.bottom,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: Container(
+            height: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            color: Colors.transparent,
+            child: Row(
+              children: <Widget>[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: Image.network(
+                    AppData.instance.profile?.avatar ?? "",
+                    width: 32,
+                    height: 32,
+                    loadingBuilder: (context, child, loadingProgress) =>
+                        CupertinoActivityIndicator(),
+                    errorBuilder: (context, error, stackTrace) =>
+                        Image.asset(AppAssets.defaultAvatar),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(width: 12),
+                Text(
+                  AppData.instance.profile?.displayName ?? 'Giám sát viên',
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.blackOrWhite,
+                  ),
+                ),
+                SizedBox(width: 12),
+                AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) => TweenAnimationBuilder<double>(
+                    tween: Tween(
+                      begin: controller.menuIsShowing ? 180 : 0,
+                      end: controller.menuIsShowing ? 0 : 180,
+                    ),
+                    duration: Durations.medium2,
+                    builder: (context, angle, child) {
+                      return Transform.rotate(
+                        angle: angle * (math.pi / 180), // đổi độ sang radian
+                        child: child,
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      AppAssets.icArrowCircleUp,
+                      colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -224,11 +235,7 @@ class _UserProfileState extends State<UserProfile> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 130.5 / 1600,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            context.read<SocketApiClient>().disconnect();
-                            context.goNamed(Routes.login.name);
-                          },
+                          onPressed: () => context.read<AppBloc>().add(SignOut()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.blackOrWhite,
                             elevation: 0,

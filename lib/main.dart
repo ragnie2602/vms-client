@@ -1,3 +1,4 @@
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -15,18 +16,21 @@ import 'di/dependency_injection.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
 
-void main() async {
-  ErrorService.initGlobalErrorHandler(() async {
-    // WidgetsFlutterBinding.ensureInitialized() --> Đã được gọi trước đó initGlobalErrorHandler
+Future<int> initialMultiWindowConfig(List<String> args) async {
+  if (args.firstOrNull == 'multi_window') {
+    return int.parse(args[1]);
+  } else {
+    return WindowController.main().windowId;
+  }
+}
+
+void main(List<String> args) async {
+  await ErrorService.initGlobalErrorHandler(() async {
     initializeDateFormatting('vi');
 
-    // Initialize media_kit for video playback
     MediaKit.ensureInitialized();
-
-    // Fvp: Only for windows
     fvp.registerWith(
       options: {
-        // 'platforms': ['windows'], // Chỉ sử dụng với platform windows
         'lowLatency': 2,
         'video.decoders': AppConfig.MDK_DECODERS,
         'global': <String, Object>{'log': AppConfig.MDK_LOG_LEVEL},
@@ -35,8 +39,10 @@ void main() async {
       },
     );
 
-    await AppData.instance.init(); // Trước EnvService
+    await AppData.instance.init();
     await EnvService.init();
+
+    final windowID = await initialMultiWindowConfig(args);
 
     await SentryFlutter.init((options) {
       options.debug = false;
@@ -61,19 +67,21 @@ void main() async {
           return event;
         }
       };
-    }, appRunner: () => runApp(const MyApp()));
+    }, appRunner: () => runApp(MyApp(windowId: windowID)));
   });
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final int windowId;
+
+  const MyApp({super.key, required this.windowId});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: DependencyInjection.providers,
       child: BlocProvider(
-        create: (context) => AppBloc()..add(AppStarted()),
+        create: (context) => context.read<AppBloc>()..add(AppStarted(windowId)),
         child: BlocSelector<AppBloc, AppState, ThemeMode>(
           selector: (state) => state.themeMode,
           builder: (context, theme) => MaterialApp.router(
