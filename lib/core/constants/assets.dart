@@ -18,6 +18,7 @@ class AppAssets {
   static const tabCameraGroups = '$_svgPath/tab_camera_groups.svg';
   static const tabCameras = '$_svgPath/tab_camera.svg';
   static const tabSettings = '$_svgPath/settings.svg';
+  static const tabMap = '$_svgPath/ic_map.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
 
   static const icCamera = '$_svgPath/camera.svg';
@@ -79,6 +80,8 @@ class AppAssets {
   static const icArrowChevronRight = '$_svgPath/arrow_chevron_right.svg';
   static const icDownload = '$_svgPath/download.svg';
   static const icCheck = '$_svgPath/check.svg';
+  // map
+   static const icMarkerMap = '$_svgPath/ic_marker_map.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
