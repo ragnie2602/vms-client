@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/map/widgets/item_map_action.dart';
 
 class ListMapView extends StatelessWidget {
   const ListMapView({super.key});
@@ -26,6 +27,7 @@ class ListMapView extends StatelessWidget {
                   child: TextField(
                     decoration: InputDecoration(
                       fillColor: AppColors.greyE2E8F0,
+                      filled: true,
                       prefixIcon: Container(
                         padding: EdgeInsets.symmetric(
                           vertical: 12,
@@ -56,11 +58,17 @@ class ListMapView extends StatelessWidget {
                     onChanged: (value) {},
                   ),
                 ),
-                const SizedBox(width: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                    color: AppColors.secondary,
+                InkWell(
+                  onTap: () {},
+                  splashColor: Colors.transparent,
+                  child: Container(
+                    margin: EdgeInsets.only(left: 16),
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(width: 1, color: AppColors.secondary),
+                    ),
+                    child: Center(child: SvgPicture.asset(AppAssets.icAdd)),
                   ),
                 ),
               ],
@@ -91,12 +99,32 @@ class ListMapView extends StatelessWidget {
                             ),
                           ),
                           Spacer(),
-                          SvgPicture.asset(
-                            AppAssets.icAction,
-                            width: 15,
-                            colorFilter: ColorFilter.mode(
-                              AppColors.black,
-                              BlendMode.srcIn,
+                          PopupMenuButton<ItemMapAction>(
+                            padding: EdgeInsets.zero,
+                            splashRadius: 20,
+                            menuPadding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadiusGeometry.circular(8),
+                            ),
+                            elevation: 8,
+                            itemBuilder: (context) {
+                              var listAction = ItemMapAction.values;
+                              return listAction
+                                  .map(
+                                    (e) => PopupMenuItem<ItemMapAction>(
+                                      value: e,
+                                      child: _ItemActionWidget(item: e),
+                                    ),
+                                  )
+                                  .toList();
+                            },
+                            child: SvgPicture.asset(
+                              AppAssets.icAction,
+                              width: 15,
+                              colorFilter: ColorFilter.mode(
+                                AppColors.black,
+                                BlendMode.srcIn,
+                              ),
                             ),
                           ),
                         ],
@@ -111,6 +139,32 @@ class ListMapView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ItemActionWidget extends StatelessWidget {
+  const _ItemActionWidget({super.key, required this.item});
+  final ItemMapAction item;
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 16,
+          height: 16,
+          margin: EdgeInsets.only(right: 8),
+          child: Center(child: SvgPicture.asset(item.getIcon)),
+        ),
+        Text(
+          item.getName,
+          style: AppTypography.style(
+            13,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
+          ),
+        ),
+      ],
     );
   }
 }
