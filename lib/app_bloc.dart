@@ -101,7 +101,6 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   ) async {
     if (event.multiWindowEvent is MWESignOut) {
       if (MultiWindowUtil.isMainWindow(windowId)) {
-        print('isMainWindow');
         emit(state.copyWith(isSignOut: true));
       } else {
         WindowController.fromWindowId(windowId).close();

@@ -9,6 +9,8 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
+import 'package:window_manager/window_manager.dart';
 import 'app_bloc.dart';
 import 'core/app_router.dart';
 import 'core/env_service.dart';
@@ -20,7 +22,16 @@ Future<int> initialMultiWindowConfig(List<String> args) async {
   if (args.firstOrNull == 'multi_window') {
     return int.parse(args[1]);
   } else {
-    return WindowController.main().windowId;
+    final controller = WindowController.main();
+
+    final rect =
+        MultiWindowUtil.getWindowRect(controller.windowId) ??
+        MultiWindowUtil.saveWindowRect(controller.windowId, Rect.fromLTWH(10, 10, 1200, 675));
+
+    controller.setFrame(rect);
+    controller.show();
+
+    return controller.windowId;
   }
 }
 
