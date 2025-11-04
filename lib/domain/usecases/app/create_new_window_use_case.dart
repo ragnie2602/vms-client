@@ -13,7 +13,7 @@ class CreateNewWindowUseCase extends FutureUseCase<CreateNewWindowInput, CreateN
 
     final rect =
         MultiWindowUtil.getWindowRect(controller.windowId) ??
-        MultiWindowUtil.saveWindowRect(controller.windowId, Rect.fromLTWH(10, 10, 1200, 675));
+        await MultiWindowUtil.saveWindowRect(controller.windowId, Rect.fromLTWH(10, 10, 1200, 675));
 
     controller.setFrame(rect);
     controller.setTitle('VMS Flutter Client - Cửa sổ phụ ${controller.windowId}');

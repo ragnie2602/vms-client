@@ -12,6 +12,8 @@ import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
+import 'package:vms_flutter_client/domain/usecases/app/change_setting_window_input.dart';
+import 'package:vms_flutter_client/domain/usecases/app/change_setting_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
@@ -20,6 +22,7 @@ import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_ev
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 
 class AppBloc extends BaseBloc<AppEvent, AppState> {
+  final ChangeSettingWindowUseCase changeSettingWindowUseCase;
   final CreateNewWindowUseCase createNewWindowUseCase;
   final SendMultiWindowEventUseCase sendMultiWindowEventUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
@@ -29,6 +32,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   StreamSubscription? _multiWindowEventSubscription;
 
   AppBloc(
+    this.changeSettingWindowUseCase,
     this.createNewWindowUseCase,
     this.sendMultiWindowEventUseCase,
     this.subscribeMultiWindowEventUseCase,
@@ -39,6 +43,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     on<ToggleMonitorDisplayMode>(_onToggleMonitorDisplayMode);
     on<SignOut>(_onSignOut);
 
+    on<ChangeSettingWindow>(_onChangeSettingWindow);
     on<CreateNewWindow>(_onCreateNewWindow);
     on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
   }
@@ -124,6 +129,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     _multiWindowEventSubscription?.cancel();
     return super.close();
   }
+
+  FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) {
+    changeSettingWindowUseCase.execute(ChangeSettingWindowInput(windowId));
+  }
 }
 
 class AppState extends BaseState {
@@ -177,6 +186,10 @@ class ChangeTheme extends AppEvent {
 class ToggleMonitorDisplayMode extends AppEvent {}
 
 class SignOut extends AppEvent {}
+
+class ChangeSettingWindow extends AppEvent {
+  const ChangeSettingWindow();
+}
 
 class MultiWindowEventReceived extends AppEvent {
   final MWE multiWindowEvent;

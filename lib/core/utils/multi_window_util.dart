@@ -24,7 +24,7 @@ class MultiWindowUtil {
     return windowId == 0;
   }
 
-  static Rect saveWindowRect(int windowId, Rect rect) {
+  static Future<Rect> saveWindowRect(int windowId, Rect rect) async {
     final _frameKey =
         '${AppData.instance.read(AppKeys.SP_SERVER_KEY)}|${AppData.instance.read(AppKeys.SP_USERNAME_KEY)}';
     final dynamic rawData = AppData.instance.read(_frameKey);
@@ -44,7 +44,7 @@ class MultiWindowUtil {
       frameSettings.add(jsonEncode(setting));
     }
 
-    AppData.instance.save(_frameKey, frameSettings);
+    await AppData.instance.save(_frameKey, frameSettings);
 
     return rect;
   }

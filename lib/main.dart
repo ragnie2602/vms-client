@@ -9,7 +9,6 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
-import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:window_manager/window_manager.dart';
 import 'app_bloc.dart';
 import 'core/app_router.dart';
@@ -19,17 +18,12 @@ import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
 
 Future<int> initialMultiWindowConfig(List<String> args) async {
+  await windowManager.ensureInitialized();
+
   if (args.firstOrNull == 'multi_window') {
     return int.parse(args[1]);
   } else {
     final controller = WindowController.main();
-
-    final rect =
-        MultiWindowUtil.getWindowRect(controller.windowId) ??
-        MultiWindowUtil.saveWindowRect(controller.windowId, Rect.fromLTWH(10, 10, 1200, 675));
-
-    controller.setFrame(rect);
-    controller.show();
 
     return controller.windowId;
   }
@@ -53,7 +47,6 @@ void main(List<String> args) async {
     await AppData.instance.init();
     await EnvService.init();
 
-    await windowManager.ensureInitialized();
     final windowID = await initialMultiWindowConfig(args);
 
     await SentryFlutter.init((options) {
@@ -83,17 +76,30 @@ void main(List<String> args) async {
   });
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final int windowId;
 
   const MyApp({super.key, required this.windowId});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WindowListener {
+  AppBloc? appBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    windowManager.addListener(this);
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: DependencyInjection.providers,
       child: BlocProvider(
-        create: (context) => context.read<AppBloc>()..add(AppStarted(windowId)),
+        create: (context) => (appBloc = context.read<AppBloc>())..add(AppStarted(widget.windowId)),
         child: BlocSelector<AppBloc, AppState, ThemeMode>(
           selector: (state) => state.themeMode,
           builder: (context, theme) => MaterialApp.router(
@@ -107,5 +113,15 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void onWindowMoved() {
+    if (appBloc != null) appBloc!.add(ChangeSettingWindow());
+  }
+
+  @override
+  void onWindowResized() {
+    if (appBloc != null) appBloc!.add(ChangeSettingWindow());
   }
 }
