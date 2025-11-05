@@ -5,7 +5,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
-import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
+import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/screens/group/widget/confirm_remove_view.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
@@ -31,7 +31,7 @@ class _ListMapViewState extends State<ListMapView> {
     context.read<EmapBloc>().add(GetListEmapEvent());
   }
 
-  void _onChangeSelectEmap({required EmapInforEntity? newMap}) {
+  void _onChangeSelectEmap({required EmapEntity? newMap}) {
     context.read<EmapBloc>().add(ChangeEmapEvent(emap: newMap));
   }
 
@@ -54,7 +54,6 @@ class _ListMapViewState extends State<ListMapView> {
         ),
       ),
       onClickRemove: () {
-      
         // xóa
         _onRemoveEmap(emapId: emapId);
       },

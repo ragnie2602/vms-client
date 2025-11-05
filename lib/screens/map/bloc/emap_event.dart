@@ -1,12 +1,12 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
+import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 
 class EmapEvent extends BaseEvent {}
 
 class GetListEmapEvent extends EmapEvent {}
 
 class ChangeEmapEvent extends EmapEvent {
-  final EmapInforEntity? emap;
+  final EmapEntity? emap;
   ChangeEmapEvent({required this.emap});
   @override
   List<Object?> get props => [emap];

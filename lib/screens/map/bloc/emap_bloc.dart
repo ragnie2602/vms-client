@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
+import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
@@ -21,9 +21,9 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     Emitter<EmapState> emit,
   ) async {
     emit(EmapLoadingState());
-    final emaps = await emapRepository.getListEmap();
+    final emaps = await emapRepository.listEmap();
     emaps.fold((onFailure) {}, (onSuccess) {
-      List<EmapInforEntity> _list = onSuccess;
+      List<EmapEntity> _list = onSuccess;
       emit(
         EmapSuccessState(
           listEmap: _list,
@@ -51,7 +51,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     RemoveEmapEvent event,
     Emitter<EmapState> emit,
   ) async {
-    final res = await emapRepository.removeEmap(emapId: event.emapId);
+    final res = await emapRepository.removeEmap(emapId: event.emapId ?? []);
     res.fold((onFailure) {}, (onSuccess) {
       if (state is! EmapSuccessState) {
         return;
@@ -62,7 +62,12 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
         (element) => listEquals(element.emapId, event.emapId),
       );
       emit(RemoveEmapSucessSate());
-      emit(currentState.copyWith(listEmap: _listEmap, emapSelected: _listEmap?.first));
+      emit(
+        currentState.copyWith(
+          listEmap: _listEmap,
+          emapSelected: _listEmap?.first,
+        ),
+      );
     });
   }
 }
