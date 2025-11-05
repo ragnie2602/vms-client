@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 
 import '../bloc/home_bloc.dart';
 import '../widgets/home_drawer.dart';
@@ -31,6 +32,23 @@ class Sidebar extends StatefulWidget {
 class _SidebarState extends State<Sidebar> {
   late double maxWidth = widget.maxWidth;
   late double minWidth = widget.minWidth;
+
+  final tabs = <HomeTab>[];
+
+  @override
+  initState() {
+    super.initState();
+
+    int windowId = 0;
+    if (mounted) windowId = context.read<AppBloc>().windowId;
+    if (MultiWindowUtil.isMainWindow(windowId)) {
+      tabs.addAll(HomeTab.tabs);
+    } else {
+      tabs.add(HomeTab.tabs[0]);
+      tabs.add(HomeTab.tabs[1]);
+      tabs.add(HomeTab.tabs[4]);
+    }
+  }
 
   @override
   void didUpdateWidget(covariant Sidebar oldWidget) {
@@ -81,6 +99,7 @@ class _SidebarState extends State<Sidebar> {
                     child: HomeDrawer(
                       maxWidth: maxWidth,
                       onToggleExpanded: () => context.read<HomeBloc>().add(ToggleSidebar()),
+                      tabs: tabs,
                     ),
                   ),
 

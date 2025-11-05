@@ -12,9 +12,15 @@ import '../bloc/home_bloc.dart';
 import 'tile_expansion.dart';
 
 class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({super.key, required this.maxWidth, required this.onToggleExpanded});
+  const HomeDrawer({
+    super.key,
+    required this.maxWidth,
+    required this.onToggleExpanded,
+    required this.tabs,
+  });
   final double maxWidth;
   final VoidCallback onToggleExpanded;
+  final List<HomeTab> tabs;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +37,7 @@ class HomeDrawer extends StatelessWidget {
                 children: <Widget>[
                   _buildToggleSection(constraints.maxWidth >= maxWidth),
 
-                  ...HomeTab.tabs.map(
+                  ...tabs.map(
                     (tab) => DrawerTile(tab: tab, selectedTab: currentTab, maxWidth: maxWidth),
                   ),
                 ],

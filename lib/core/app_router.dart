@@ -42,15 +42,14 @@ enum Routes {
   monitoring(
     name: 'monitoring',
     path: '/monitoring',
-    title: 'Liveview',
+    title: 'Xem trực tiếp',
     description: 'Hiển thị các màn hình theo dõi theo thời gian thực',
   ),
   custom_live_view(
     name: 'custom_live_view',
     path: '/custom_live_view',
-    title: 'Custom Live View',
-    description:
-        'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
+    title: 'Xem lại',
+    description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   cameraDetail(name: 'camera_detail', path: '/camera_detail'),
   playback(

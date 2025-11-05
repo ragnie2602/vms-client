@@ -26,10 +26,8 @@ Future<int> initialMultiWindowConfig(List<String> args) async {
   } else {
     final controller = WindowController.main();
 
-    final rect =
-        MultiWindowUtil.getWindowRect(controller.windowId) ??
+    MultiWindowUtil.getWindowRect(controller.windowId) ??
         await MultiWindowUtil.saveWindowRect(controller.windowId, Rect.fromLTWH(10, 10, 1200, 675));
-    await windowManager.setBounds(rect);
     await windowManager.maximize();
 
     return controller.windowId;
