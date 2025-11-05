@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
@@ -19,6 +21,7 @@ class EmapService {
     required String emapName,
     required String imagePath,
     required Uint8List imageBytes,
+    required String serverUrl,
     List<int>? emapId,
     List<int>? userId,
   }) async {
@@ -29,28 +32,30 @@ class EmapService {
 
     // Build protobuf request
     final request = PostEmap_Request()
-      ..userId = userId ?? profile.uid
+      ..userId = profile.uid
       ..emapInfo = (EmapInfo()
-        ..emapName = emapName);
+        ..emapName = emapName
+        ..backgroundPath = ""
+        ..emapId = []  
+      );
 
     if (emapId != null && emapId.isNotEmpty) {
       request.emapInfo.emapId = emapId;
     }
 
     // Prepare file for upload
+    final filename = _getFileName(imagePath);
     final imageFile = UploadFile(
-      fieldName: _getFileFieldName(imagePath),
-      filename: _getFileName(imagePath),
+      fieldName: filename.split('.').first, // Filename without extension (matches iOS)
+      filename: filename,
       bytes: imageBytes,
       contentType: _getImageContentType(imagePath),
     );
 
-    final responseBuffer = await uploadClient.send<List<int>>(
-      UploadRequestPayload(
-        protocolId: PacketType.postEmap.value,
-        requestData: request.writeToBuffer(),
-        files: [imageFile],
-      ),
+    final responseBuffer = await uploadClient.upload(
+      url: '$serverUrl/vt/r/${PacketType.postEmap.value}',
+      requestData: request.writeToBuffer(),
+      files: [imageFile],
     );
 
     return responseBuffer.fold(
