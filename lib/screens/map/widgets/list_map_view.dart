@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
+import 'package:vms_flutter_client/screens/group/widget/confirm_remove_view.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
@@ -31,6 +33,32 @@ class _ListMapViewState extends State<ListMapView> {
 
   void _onChangeSelectEmap({required EmapInforEntity? newMap}) {
     context.read<EmapBloc>().add(ChangeEmapEvent(emap: newMap));
+  }
+
+  void _onRemoveEmap({List<int>? emapId}) {
+    context.read<EmapBloc>().add(RemoveEmapEvent(emapId: emapId));
+  }
+
+  void _onShowDialogRemoveEmap(
+    BuildContext contextRemove, {
+    List<int>? emapId,
+  }) {
+    showConfirmRemoveDialog(
+      contextRemove,
+      contentWidget: Text(
+        'bản đồ camera này?',
+        style: AppTypography.style(
+          14,
+          color: AppColors.blackOrWhite,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      onClickRemove: () {
+      
+        // xóa
+        _onRemoveEmap(emapId: emapId);
+      },
+    );
   }
 
   @override
@@ -110,7 +138,15 @@ class _ListMapViewState extends State<ListMapView> {
             child: LayoutBuilder(
               builder: (context, constraints) => SizedBox(
                 height: constraints.maxHeight,
-                child: BlocBuilder<EmapBloc, EmapState>(
+                child: BlocConsumer<EmapBloc, EmapState>(
+                  listener: (BuildContext context, EmapState state) {
+                    if (state is RemoveEmapSucessSate) {
+                      ToastUtil.toastSuccess(
+                        context: context,
+                        title: Text('Xóa thành công '),
+                      );
+                    }
+                  },
                   builder: (context, state) {
                     if (state is EmapLoadingState) {
                       return Center(child: CircularProgressIndicator());
@@ -124,7 +160,6 @@ class _ListMapViewState extends State<ListMapView> {
                           final item = listEmap[index];
                           return InkWell(
                             onTap: () {
-                              // thêm action
                               _onChangeSelectEmap(newMap: item);
                             },
                             child: Container(
@@ -161,6 +196,17 @@ class _ListMapViewState extends State<ListMapView> {
                                       // focus map mới
                                       _onChangeSelectEmap(newMap: item);
                                       // handle case sửa/ xóa
+                                      switch (value) {
+                                        case ItemMapAction.edit:
+                                          break;
+                                        case ItemMapAction.remove:
+                                          // _onRemoveEmap(emapId: item.emapId);
+                                          _onShowDialogRemoveEmap(
+                                            context,
+                                            emapId: item.emapId,
+                                          );
+                                          break;
+                                      }
                                     },
                                     itemBuilder: (context) {
                                       var listAction = ItemMapAction.values;

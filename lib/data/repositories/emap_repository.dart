@@ -18,4 +18,15 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
       return Right(emaps.map((e) => e.toDomain()).toList());
     });
   }
+
+  // remove emap
+  @override
+  Future<Either<Failure, List<int>>> removeEmap({
+    required List<int>? emapId,
+  }) async {
+    return await catchError<List<int>>(() async {
+      final res = await service.removeEmap(emapId: emapId);
+      return Right(res.emapId);
+    });
+  }
 }

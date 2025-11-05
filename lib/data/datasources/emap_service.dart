@@ -8,7 +8,7 @@ class EmapService {
   final SocketApiClient socketClient;
   const EmapService(this.socketClient);
   // get list emap
-   Future<List<EmapInfo>> getListEmap() async {
+  Future<List<EmapInfo>> getListEmap() async {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
@@ -22,6 +22,26 @@ class EmapService {
     return responseBuffer.fold(
       (failure) => throw failure.toMessageFailure(),
       (buffer) => ListEmap_Reply.fromBuffer(buffer).emapInfos,
+    );
+  }
+
+  Future<RemoveEmap_Reply> removeEmap({required List<int>? emapId}) async {
+    final removeEmapRequest = RemoveEmap_Request();
+    if (emapId != null) {
+      removeEmapRequest.emapId = emapId;
+    }
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: removeEmapRequest.writeToBuffer(),
+          type: PacketType.removeEmap,
+        ),
+      ),
+    );
+    return responseBuffer.fold(
+      (onFailure) => throw onFailure.toMessageFailure(),
+      (onSuccess) => RemoveEmap_Reply.fromBuffer(onSuccess),
     );
   }
 }

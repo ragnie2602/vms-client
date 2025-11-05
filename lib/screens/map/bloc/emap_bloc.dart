@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
@@ -12,6 +13,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
   EmapBloc({required this.emapRepository}) : super(const EmapState()) {
     on<GetListEmapEvent>(_onGetListEmap);
     on<ChangeEmapEvent>(_onChangeSelectEmap);
+    on<RemoveEmapEvent>(_onRemoveEmap);
   }
 
   FutureOr<void> _onGetListEmap(
@@ -20,20 +22,15 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
   ) async {
     emit(EmapLoadingState());
     final emaps = await emapRepository.getListEmap();
-    emaps.fold(
-      (onFailure) {
-        //
-      },
-      (onSuccess) {
-        List<EmapInforEntity> _list = onSuccess;
-        emit(
-          EmapSuccessState(
-            listEmap: _list,
-            emapSelected: _list.isEmpty ? null : _list.first,
-          ),
-        );
-      },
-    );
+    emaps.fold((onFailure) {}, (onSuccess) {
+      List<EmapInforEntity> _list = onSuccess;
+      emit(
+        EmapSuccessState(
+          listEmap: _list,
+          emapSelected: _list.isEmpty ? null : _list.first,
+        ),
+      );
+    });
   }
 
   FutureOr<void> _onChangeSelectEmap(
@@ -48,5 +45,24 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     if (currentState.emapSelected != event.emap) {
       emit(currentState.copyWith(emapSelected: event.emap));
     }
+  }
+
+  FutureOr<void> _onRemoveEmap(
+    RemoveEmapEvent event,
+    Emitter<EmapState> emit,
+  ) async {
+    final res = await emapRepository.removeEmap(emapId: event.emapId);
+    res.fold((onFailure) {}, (onSuccess) {
+      if (state is! EmapSuccessState) {
+        return;
+      }
+      final currentState = state as EmapSuccessState;
+      final _listEmap = currentState.listEmap;
+      _listEmap?.removeWhere(
+        (element) => listEquals(element.emapId, event.emapId),
+      );
+      emit(RemoveEmapSucessSate());
+      emit(currentState.copyWith(listEmap: _listEmap, emapSelected: _listEmap?.first));
+    });
   }
 }

@@ -11,3 +11,10 @@ class ChangeEmapEvent extends EmapEvent {
   @override
   List<Object?> get props => [emap];
 }
+
+class RemoveEmapEvent extends EmapEvent {
+  final List<int>? emapId;
+  RemoveEmapEvent({required this.emapId});
+  @override
+  List<Object?> get props => [emapId];
+}
