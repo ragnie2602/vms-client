@@ -12,23 +12,29 @@ import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
+import 'package:vms_flutter_client/domain/usecases/app/change_setting_window_input.dart';
+import 'package:vms_flutter_client/domain/usecases/app/change_setting_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
+import 'package:window_manager/window_manager.dart';
 
 class AppBloc extends BaseBloc<AppEvent, AppState> {
+  final ChangeSettingWindowUseCase changeSettingWindowUseCase;
   final CreateNewWindowUseCase createNewWindowUseCase;
   final SendMultiWindowEventUseCase sendMultiWindowEventUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
 
+  bool isSigningOut = false;
   int windowId = 0;
 
   StreamSubscription? _multiWindowEventSubscription;
 
   AppBloc(
+    this.changeSettingWindowUseCase,
     this.createNewWindowUseCase,
     this.sendMultiWindowEventUseCase,
     this.subscribeMultiWindowEventUseCase,
@@ -39,8 +45,16 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     on<ToggleMonitorDisplayMode>(_onToggleMonitorDisplayMode);
     on<SignOut>(_onSignOut);
 
+    on<ChangeSettingWindow>(_onChangeSettingWindow);
+    on<CloseWindow>(_onCloseWindow);
     on<CreateNewWindow>(_onCreateNewWindow);
     on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
+  }
+
+  @override
+  Future<void> close() {
+    _multiWindowEventSubscription?.cancel();
+    return super.close();
   }
 
   void registerIPCEvents() {
@@ -67,6 +81,14 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     windowId = event.windowId;
 
     registerIPCEvents();
+
+    if (MultiWindowUtil.isMainWindow(windowId)) {
+      final subWindowCount = MultiWindowUtil.getSubWindowCount();
+      for (var i = 0; i < subWindowCount; i++) {
+        final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
+        output.windowController.show();
+      }
+    }
 
     try {
       final userTheme = AppData.instance.read<String>(AppKeys.SP_THEME_KEY);
@@ -99,12 +121,19 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     MultiWindowEventReceived event,
     Emitter<AppState> emit,
   ) async {
+    if (event.multiWindowEvent is MWECloseWindow) {
+      if (isSigningOut) return;
+
+      final sourceID = (event.multiWindowEvent as MWECloseWindow).windowId;
+
+      if (!isSigningOut) MultiWindowUtil.clearWindowSetting(sourceID);
+    }
     if (event.multiWindowEvent is MWESignOut) {
       if (MultiWindowUtil.isMainWindow(windowId)) {
-        print('isMainWindow');
         emit(state.copyWith(isSignOut: true));
       } else {
-        WindowController.fromWindowId(windowId).close();
+        await windowManager.setPreventClose(false);
+        windowManager.close();
       }
     }
   }
@@ -117,13 +146,30 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   }
 
   FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) {
+    isSigningOut = true;
+
     sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
   }
 
-  @override
-  Future<void> close() {
-    _multiWindowEventSubscription?.cancel();
-    return super.close();
+  FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) {
+    changeSettingWindowUseCase.execute(ChangeSettingWindowInput(windowId));
+  }
+
+  FutureOr<void> _onCloseWindow(CloseWindow event, Emitter<AppState> emit) async {
+    isSigningOut = true;
+
+    if (MultiWindowUtil.isMainWindow(windowId)) {
+      await MultiWindowUtil.windowSettingSweeper();
+
+      for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
+        WindowController.fromWindowId(subWindowId).close();
+      }
+    } else {
+      await sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(0, 'close_window'));
+    }
+
+    await windowManager.setPreventClose(false);
+    windowManager.close();
   }
 }
 
@@ -178,6 +224,14 @@ class ChangeTheme extends AppEvent {
 class ToggleMonitorDisplayMode extends AppEvent {}
 
 class SignOut extends AppEvent {}
+
+class ChangeSettingWindow extends AppEvent {
+  const ChangeSettingWindow();
+}
+
+class CloseWindow extends AppEvent {
+  const CloseWindow();
+}
 
 class MultiWindowEventReceived extends AppEvent {
   final MWE multiWindowEvent;
