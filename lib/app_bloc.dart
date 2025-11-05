@@ -82,6 +82,14 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
     registerIPCEvents();
 
+    if (MultiWindowUtil.isMainWindow(windowId)) {
+      final subWindowCount = MultiWindowUtil.getSubWindowCount();
+      for (var i = 0; i < subWindowCount; i++) {
+        final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
+        output.windowController.show();
+      }
+    }
+
     try {
       final userTheme = AppData.instance.read<String>(AppKeys.SP_THEME_KEY);
 

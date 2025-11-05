@@ -33,6 +33,11 @@ class MultiWindowUtil {
     }
   }
 
+  static int getSubWindowCount() {
+    final frameSettings = _getFrameSettings();
+    return frameSettings.$2.length - 1;
+  }
+
   static bool isMainWindow(int windowId) => windowId == 0;
 
   static Future<Rect> saveWindowRect(int windowId, Rect rect) async {
