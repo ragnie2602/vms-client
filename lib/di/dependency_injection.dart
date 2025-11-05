@@ -1,8 +1,11 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
+import 'package:vms_flutter_client/data/repositories/emap_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
@@ -32,6 +35,7 @@ class DependencyInjection {
     ),
     Provider<CameraService>(create: (context) => CameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
+    Provider<EmapService>(create: (context) => EmapService(context.read())),
     Provider<UserService>(create: (context) => UserService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
@@ -46,6 +50,7 @@ class DependencyInjection {
       create: (context) => ControlCameraRepository(context.read()),
     ),
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
+    Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
     Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
     Provider<IUserManagementRepository>(
       create: (context) => UserManagementRepository(context.read()),

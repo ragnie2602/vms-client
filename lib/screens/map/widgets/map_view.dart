@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+
 import 'add_camera_dropdown.dart';
+
+import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -47,126 +53,166 @@ class _MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: Colors.white,
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            margin: const EdgeInsets.all(10),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      height: 40,
-                      child: TextField(
-                        onChanged: (value) {},
-                        decoration: InputDecoration(
-                          prefixIcon: Container(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 12,
-                            ),
-                            child: SvgPicture.asset(AppAssets.icSearch),
+      child: BlocBuilder<EmapBloc, EmapState>(
+        builder: (context, state) => state is EmapSuccessState
+            ? ((state.listEmap ?? []).isEmpty)
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: EdgeInsetsGeometry.only(bottom: 16),
+                            child: SvgPicture.asset(AppAssets.icEmptyEmap),
                           ),
-                          hintText: 'Nhập tên camera',
-                          hintStyle: AppTypography.style(
-                            14,
-                            color: AppColors.grey64748B,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 12,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            borderSide: const BorderSide(
-                              color: AppColors.greyE2E8F0,
-                              width: 1,
+                          Text(
+                            'Chưa có bản đồ camera nào. Click + để thêm bản đồ camera',
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.grey64748B,
                             ),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            borderSide: const BorderSide(
-                              color: AppColors.greyE2E8F0,
-                              width: 1,
-                            ),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            borderSide: const BorderSide(
-                              color: AppColors.greyE2E8F0,
-                              width: 1,
-                            ),
-                          ),
-                        ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Builder(
-                      builder: (buttonContext) => InkWell(
-                        onTap: () =>
-                          _showAddCameraDropdown(context, buttonContext),
-                        splashColor: Colors.transparent,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 12,
-                          ),
+                    )
+                  : Column(
+                      children: [
+                        Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(3),
-                            border: Border.all(
-                              width: 1,
-                              color: AppColors.secondary,
-                            ),
+                            borderRadius: BorderRadius.circular(5),
+                            color: Colors.white,
                           ),
-                          child: Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SvgPicture.asset(AppAssets.icAdd),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Thêm camera',
-                                  style: AppTypography.style(
-                                    14,
-                                    color: AppColors.secondary,
-                                    fontWeight: FontWeight.w500,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 15,
+                          ),
+                          margin: const EdgeInsets.all(10),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.3,
+                                    height: 40,
+                                    child: TextField(
+                                      onChanged: (value) {},
+                                      decoration: InputDecoration(
+                                        prefixIcon: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                            horizontal: 12,
+                                          ),
+                                          child: SvgPicture.asset(
+                                            AppAssets.icSearch,
+                                          ),
+                                        ),
+                                        hintText: 'Nhập tên camera',
+                                        hintStyle: AppTypography.style(
+                                          14,
+                                          color: AppColors.grey64748B,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 8,
+                                              horizontal: 12,
+                                            ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: AppColors.greyE2E8F0,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: AppColors.greyE2E8F0,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: AppColors.greyE2E8F0,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
+                                  const SizedBox(width: 16),
+                                  Builder(
+                                    builder: (buttonContext) => InkWell(
+                                      onTap: () => _showAddCameraDropdown(
+                                        context,
+                                        buttonContext,
+                                      ),
+                                      splashColor: Colors.transparent,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                          horizontal: 12,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
+                                          border: Border.all(
+                                            width: 1,
+                                            color: AppColors.secondary,
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              SvgPicture.asset(AppAssets.icAdd),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Thêm camera',
+                                                style: AppTypography.style(
+                                                  14,
+                                                  color: AppColors.secondary,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                'Chưa có bản đồ camera nào. Click + để thêm bản đồ camera',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.grey64748B,
-                ),
-              ),
-            ),
-          ),
-        ],
+                        Expanded(
+                          child: Image.network(
+                            state.emapSelected?.backgroundPath ?? '',
+                            loadingBuilder: (context, child, loadingProgress) =>
+                                loadingProgress == null
+                                ? child
+                                : Center(child: CircularProgressIndicator()),
+                          ),
+                        ),
+                      ],
+                    )
+            : const SizedBox(),
       ),
     );
   }
 }
+//"http://ipcam.vivas.vn:8888/vt/static/emap/EfCpkoDwXoS7jwJCwKggAg_preview.jpg"

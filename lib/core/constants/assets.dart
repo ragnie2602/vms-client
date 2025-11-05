@@ -83,6 +83,7 @@ class AppAssets {
   // map
   static const icMarkerMap = '$_svgPath/ic_marker_map.svg';
   static const icPlus = '$_svgPath/plus.svg';
+  static const icEmptyEmap = '$_svgPath/ic_empty_emap.svg';
   static const icAddImage = '$_svgPath/ic_plus.svg';
   static const icReplace = '$_svgPath/icon_replace.svg';
   static const icVideoOff = '$_svgPath/video_off.svg';

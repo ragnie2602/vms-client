@@ -1,13 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 import 'package:vms_flutter_client/screens/map/widgets/add_map_dialog.dart';
 import 'package:vms_flutter_client/screens/map/widgets/item_map_action.dart';
 
-class ListMapView extends StatelessWidget {
+class ListMapView extends StatefulWidget {
   const ListMapView({super.key});
+
+  @override
+  State<ListMapView> createState() => _ListMapViewState();
+}
+
+class _ListMapViewState extends State<ListMapView> {
+  @override
+  void initState() {
+    super.initState();
+    _onGetListEmap();
+  }
+
+  void _onGetListEmap() {
+    context.read<EmapBloc>().add(GetListEmapEvent());
+  }
+
+  void _onChangeSelectEmap({required EmapInforEntity? newMap}) {
+    context.read<EmapBloc>().add(ChangeEmapEvent(emap: newMap));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,75 +110,105 @@ class ListMapView extends StatelessWidget {
             child: LayoutBuilder(
               builder: (context, constraints) => SizedBox(
                 height: constraints.maxHeight,
-                child: ListView.separated(
-                  itemCount: 10,
-                  shrinkWrap: true,
-                  itemBuilder: (_, __) {
-                    return InkWell(
-                      onTap: () {
-                        // thêm action
-                      },
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(AppAssets.icMarkerMap),
-                          const SizedBox(width: 8),
-                          Text(
-                            '115 Trần Duy Hưng',
-                            style: AppTypography.style(
-                              13,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.black,
-                            ),
-                          ),
-                          Spacer(),
-                          PopupMenuButton<ItemMapAction>(
-                            padding: EdgeInsets.zero,
-                            splashRadius: 20,
-                            menuPadding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.circular(8),
-                            ),
-                            elevation: 8,
-                            onSelected: (value) {
-                              //handler
+                child: BlocBuilder<EmapBloc, EmapState>(
+                  builder: (context, state) {
+                    if (state is EmapLoadingState) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    if (state is EmapSuccessState) {
+                      final listEmap = state.listEmap ?? [];
+                      return ListView.separated(
+                        itemCount: listEmap.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          final item = listEmap[index];
+                          return InkWell(
+                            onTap: () {
+                              // thêm action
+                              _onChangeSelectEmap(newMap: item);
                             },
-                            itemBuilder: (context) {
-                              var listAction = ItemMapAction.values;
-                              List<PopupMenuEntry<ItemMapAction>> entries = [];
-                              for (int i = 0; i < listAction.length; i++) {
-                                final e = listAction[i];
-                                entries.add(
-                                  PopupMenuItem<ItemMapAction>(
-                                    value: e,
-                                    child: _ItemActionWidget(item: e),
-                                  ),
-                                );
-                                // thêm divider
-                                if (i != listAction.length - 1) {
-                                  entries.add(
-                                    const PopupMenuDivider(
-                                      height: 1,
-                                      color: AppColors.greyF2F4FA,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: item == state.emapSelected
+                                    ? AppColors.greyF2F4FA
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(AppAssets.icMarkerMap),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    item.emapName ?? 'N/A',
+                                    style: AppTypography.style(
+                                      13,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.black,
                                     ),
-                                  );
-                                }
-                              }
-                              return entries;
-                            },
-                            child: SvgPicture.asset(
-                              AppAssets.icAction,
-                              width: 15,
-                              colorFilter: ColorFilter.mode(
-                                AppColors.black,
-                                BlendMode.srcIn,
+                                  ),
+                                  Spacer(),
+                                  PopupMenuButton<ItemMapAction>(
+                                    padding: EdgeInsets.zero,
+                                    splashRadius: 20,
+                                    menuPadding: EdgeInsets.zero,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadiusGeometry.circular(8),
+                                    ),
+                                    elevation: 8,
+                                    onSelected: (value) {
+                                      // focus map mới
+                                      _onChangeSelectEmap(newMap: item);
+                                      // handle case sửa/ xóa
+                                    },
+                                    itemBuilder: (context) {
+                                      var listAction = ItemMapAction.values;
+                                      List<PopupMenuEntry<ItemMapAction>>
+                                      entries = [];
+                                      for (
+                                        int i = 0;
+                                        i < listAction.length;
+                                        i++
+                                      ) {
+                                        final e = listAction[i];
+                                        entries.add(
+                                          PopupMenuItem<ItemMapAction>(
+                                            value: e,
+                                            child: _ItemActionWidget(item: e),
+                                          ),
+                                        );
+                                        // thêm divider
+                                        if (i != listAction.length - 1) {
+                                          entries.add(
+                                            const PopupMenuDivider(
+                                              height: 1,
+                                              color: AppColors.greyF2F4FA,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                      return entries;
+                                    },
+                                    child: SvgPicture.asset(
+                                      AppAssets.icAction,
+                                      width: 20,
+                                      colorFilter: ColorFilter.mode(
+                                        AppColors.black,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
+                          );
+                        },
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      );
+                    }
+                    return SizedBox();
                   },
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
                 ),
               ),
             ),
