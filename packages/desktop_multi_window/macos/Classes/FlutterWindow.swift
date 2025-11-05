@@ -77,6 +77,11 @@ class FlutterWindow: BaseFlutterWindow {
     let plugin = flutterViewController.registrar(forPlugin: "FlutterMultiWindowPlugin")
     FlutterMultiWindowPlugin.registerInternal(with: plugin)
     let windowChannel = WindowChannel.register(with: plugin, windowId: id)
+    
+    // Register fvp plugin for multi-window support
+    let fvpPlugin = flutterViewController.registrar(forPlugin: "FvpPlugin")
+    FvpPlugin.register(with: fvpPlugin)
+    
     // Give app a chance to register plugin.
     FlutterMultiWindowPlugin.onWindowCreatedCallback?(flutterViewController)
 

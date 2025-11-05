@@ -22,6 +22,7 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
 
 target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin flutter_wrapper_app)
 target_link_libraries(${PLUGIN_NAME} PRIVATE window_manager_plugin)
+target_link_libraries(${PLUGIN_NAME} PRIVATE fvp_plugin)
 
 # List of absolute paths to libraries that should be bundled with the plugin
 set(desktop_multi_window_bundled_libraries

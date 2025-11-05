@@ -13,6 +13,7 @@
 
 #include "include/desktop_multi_window/desktop_multi_window_plugin.h"
 #include <window_manager/window_manager_plugin.h>
+#include <fvp/fvp_plugin_c_api.h>
 #include "multi_window_plugin_internal.h"
 
 // Include resource definitions from the main runner
@@ -117,6 +118,7 @@ FlutterWindow::FlutterWindow(
   auto registrar = flutter_controller_->engine()->GetRegistrarForPlugin("DesktopMultiWindowPlugin");
   InternalMultiWindowPluginRegisterWithRegistrar(registrar);
   WindowManagerPluginRegisterWithRegistrar(registrar); // Register window_manager plugin
+  FvpPluginCApiRegisterWithRegistrar(registrar); // Register fvp plugin for multi-window support
   window_channel_ = WindowChannel::RegisterWithRegistrar(registrar, id_);
 
   if (_g_window_created_callback) {
