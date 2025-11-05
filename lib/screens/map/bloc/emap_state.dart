@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/map/camera_emap_info_entity.dart';
 import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
 
 class EmapState extends BaseState {
@@ -15,7 +16,7 @@ class EmapSuccessState extends EmapState {
   final EmapInforEntity? emapSelected;
 
   const EmapSuccessState({this.listEmap, this.emapSelected});
-  
+
   @override
   List<Object?> get props => [listEmap, emapSelected];
 
@@ -28,4 +29,11 @@ class EmapSuccessState extends EmapState {
       emapSelected: emapSelected ?? this.emapSelected,
     );
   }
+}
+
+class AddCameraEmapSuccessState extends EmapState {
+  final CameraEmapInfoEntity? cameraEmapInfo;
+  const AddCameraEmapSuccessState({this.cameraEmapInfo});
+  @override
+  List<Object?> get props => [cameraEmapInfo];
 }

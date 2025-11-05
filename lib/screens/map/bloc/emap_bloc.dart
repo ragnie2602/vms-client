@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
+import 'package:vms_flutter_client/domain/entities/map/camera_emap_info_entity.dart';
 import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
@@ -48,5 +50,22 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     if (currentState.emapSelected != event.emap) {
       emit(currentState.copyWith(emapSelected: event.emap));
     }
+  }
+
+  FutureOr<void> _addCameraEmap(
+    AddCameraEmapEvent event,
+    Emitter<EmapState> emit,
+  ) async {
+    emit(EmapLoadingState());
+    final emaps = await emapRepository.addCameraEmap();
+    emaps.fold(
+      (onFailure) {
+        //
+      },
+      (onSuccess) {
+        CameraEmapInfoEntity cameraEmapInfoEntity = onSuccess;
+        emit(AddCameraEmapSuccessState(cameraEmapInfo: cameraEmapInfoEntity));
+      },
+    );
   }
 }
