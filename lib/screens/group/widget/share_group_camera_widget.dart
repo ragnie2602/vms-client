@@ -257,7 +257,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
       ),
       onClickRemove: () {
         // close confirm dialog
-        Navigator.of(c).pop();
+        // Navigator.of(c).pop();
         // gọi hàm xóa
         _onRemove(invitedGroupId: invitedId, accNameRemove: accNameRemove);
       },

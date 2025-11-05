@@ -1,10 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
-import 'package:vms_flutter_client/domain/entities/map/camera_emap_info_entity.dart';
-import 'package:vms_flutter_client/domain/entities/map/emap_infor_entity.dart';
+import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
@@ -14,6 +13,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
   EmapBloc({required this.emapRepository}) : super(const EmapState()) {
     on<GetListEmapEvent>(_onGetListEmap);
     on<ChangeEmapEvent>(_onChangeSelectEmap);
+    on<RemoveEmapEvent>(_onRemoveEmap);
   }
 
   FutureOr<void> _onGetListEmap(
@@ -21,21 +21,16 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     Emitter<EmapState> emit,
   ) async {
     emit(EmapLoadingState());
-    final emaps = await emapRepository.getListEmap();
-    emaps.fold(
-      (onFailure) {
-        //
-      },
-      (onSuccess) {
-        List<EmapInforEntity> _list = onSuccess;
-        emit(
-          EmapSuccessState(
-            listEmap: _list,
-            emapSelected: _list.isEmpty ? null : _list.first,
-          ),
-        );
-      },
-    );
+    final emaps = await emapRepository.listEmap();
+    emaps.fold((onFailure) {}, (onSuccess) {
+      List<EmapEntity> _list = onSuccess;
+      emit(
+        EmapSuccessState(
+          listEmap: _list,
+          emapSelected: _list.isEmpty ? null : _list.first,
+        ),
+      );
+    });
   }
 
   FutureOr<void> _onChangeSelectEmap(
@@ -52,20 +47,27 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     }
   }
 
-  FutureOr<void> _addCameraEmap(
-    AddCameraEmapEvent event,
+  FutureOr<void> _onRemoveEmap(
+    RemoveEmapEvent event,
     Emitter<EmapState> emit,
   ) async {
-    emit(EmapLoadingState());
-    final emaps = await emapRepository.addCameraEmap();
-    emaps.fold(
-      (onFailure) {
-        //
-      },
-      (onSuccess) {
-        CameraEmapInfoEntity cameraEmapInfoEntity = onSuccess;
-        emit(AddCameraEmapSuccessState(cameraEmapInfo: cameraEmapInfoEntity));
-      },
-    );
+    final res = await emapRepository.removeEmap(emapId: event.emapId ?? []);
+    res.fold((onFailure) {}, (onSuccess) {
+      if (state is! EmapSuccessState) {
+        return;
+      }
+      final currentState = state as EmapSuccessState;
+      final _listEmap = currentState.listEmap;
+      _listEmap?.removeWhere(
+        (element) => listEquals(element.emapId, event.emapId),
+      );
+      emit(RemoveEmapSucessSate());
+      emit(
+        currentState.copyWith(
+          listEmap: _listEmap,
+          emapSelected: _listEmap?.first,
+        ),
+      );
+    });
   }
 }
