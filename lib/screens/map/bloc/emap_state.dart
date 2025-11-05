@@ -12,17 +12,20 @@ class EmapLoadingState extends EmapState {
 
 class EmapSuccessState extends EmapState {
   final List<EmapInforEntity>? listEmap;
-  final int? currentEmapIndex;
+  final EmapInforEntity? emapSelected;
 
-  const EmapSuccessState({this.listEmap, this.currentEmapIndex});
+  const EmapSuccessState({this.listEmap, this.emapSelected});
+  
+  @override
+  List<Object?> get props => [listEmap, emapSelected];
 
   EmapSuccessState copyWith({
     List<EmapInforEntity>? listEmap,
-    int? currentEmapIndex,
+    EmapInforEntity? emapSelected,
   }) {
     return EmapSuccessState(
       listEmap: listEmap ?? this.listEmap,
-      currentEmapIndex: currentEmapIndex ?? this.currentEmapIndex,
+      emapSelected: emapSelected ?? this.emapSelected,
     );
   }
 }
