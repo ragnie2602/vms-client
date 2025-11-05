@@ -72,8 +72,9 @@ showConfirmRemoveDialog(
                       width: MediaQuery.of(context).size.width * 130.5 / 1600,
                       child: ElevatedButton(
                         onPressed: () {
-                        //
-                        onClickRemove?.call();
+                          // close dialog
+                          Navigator.of(context).pop();
+                          onClickRemove?.call();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.blackOrWhite,

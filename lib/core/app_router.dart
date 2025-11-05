@@ -13,6 +13,8 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bl
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
+import 'package:vms_flutter_client/screens/map/emap_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
@@ -58,6 +60,13 @@ enum Routes {
     path: '/playback',
     title: 'Playback',
     description: 'Cho phép truy cập và xem lại các đoạn video đã được ghi',
+  ),
+  emap(
+    name: 'emap',
+    path: '/emap',
+    title: 'Bản đồ camera',
+    description:
+        'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
   ),
   users(
     name: 'users',
@@ -145,7 +154,9 @@ class AppRouter {
                 deleteCameraUseCase: context.read<DeleteCameraUseCase>(),
               ),
             ),
-
+            BlocProvider(
+              create: (context) => EmapBloc(emapRepository: context.read()),
+            ),
             BlocProvider(
               create: (context) => UserManagementBloc(
                 userManagermentRepository: context.read(),
@@ -236,6 +247,17 @@ class AppRouter {
                 context: context,
                 state: state,
                 child: ControlCameraScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.emap.path,
+            name: Routes.emap.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: EmapScreen(),
               );
             },
           ),
