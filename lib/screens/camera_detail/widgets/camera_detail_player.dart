@@ -39,6 +39,7 @@ class CameraDetailPlayer extends StatefulWidget {
     this.initialIndex = 0,
     required this.controller,
     this.onStatusChanged,
+    this.onInitializedValues,
   });
   final List<PlaybackVideo> playlist;
   final String source;
@@ -47,6 +48,7 @@ class CameraDetailPlayer extends StatefulWidget {
   final int initialIndex;
   final CameraDetailController controller;
   final Function(PlayerStatus)? onStatusChanged;
+  final Function({required double volume, required double speed})? onInitializedValues;
 
   factory CameraDetailPlayer.playlist({
     required List<PlaybackVideo> playlist,
@@ -54,6 +56,7 @@ class CameraDetailPlayer extends StatefulWidget {
     required int initialIndex,
     required CameraDetailController controller,
     Function(PlayerStatus)? onStatusChanged,
+    Function({required double volume, required double speed})? onInitializedValues,
   }) {
     return CameraDetailPlayer(
       playlist: playlist,
@@ -64,6 +67,7 @@ class CameraDetailPlayer extends StatefulWidget {
       controller: controller,
       key: controller.ref,
       onStatusChanged: onStatusChanged,
+      onInitializedValues: onInitializedValues,
     );
   }
 
@@ -72,6 +76,7 @@ class CameraDetailPlayer extends StatefulWidget {
     required String name,
     required CameraDetailController controller,
     Function(PlayerStatus)? onStatusChanged,
+    Function({required double volume, required double speed})? onInitializedValues,
   }) {
     return CameraDetailPlayer(
       playlist: [],
@@ -81,6 +86,7 @@ class CameraDetailPlayer extends StatefulWidget {
       controller: controller,
       key: controller.ref,
       onStatusChanged: onStatusChanged,
+      onInitializedValues: onInitializedValues,
     );
   }
 
@@ -136,6 +142,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _initPlayer();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onInitializedValues?.call(volume: _player.state.volume, speed: _player.state.rate);
+
       if (widget.mode != PlayerMode.playlist) return;
       widget.controller.onPlaybackChanged?.call(_playlistIndex);
       widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
