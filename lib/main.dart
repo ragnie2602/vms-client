@@ -99,6 +99,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
   void initState() {
     super.initState();
     windowManager.addListener(this);
+    windowManager.setPreventClose(true);
   }
 
   @override
@@ -123,12 +124,11 @@ class _MyAppState extends State<MyApp> with WindowListener {
   }
 
   @override
-  void onWindowMoved() {
-    if (appBloc != null) appBloc!.add(ChangeSettingWindow());
-  }
+  void onWindowClose() => appBloc?.add(CloseWindow());
 
   @override
-  void onWindowResized() {
-    if (appBloc != null) appBloc!.add(ChangeSettingWindow());
-  }
+  void onWindowMoved() => appBloc?.add(ChangeSettingWindow());
+
+  @override
+  void onWindowResized() => appBloc?.add(ChangeSettingWindow());
 }
