@@ -13,6 +13,7 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bl
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/emap_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
@@ -153,7 +154,9 @@ class AppRouter {
                 deleteCameraUseCase: context.read<DeleteCameraUseCase>(),
               ),
             ),
-
+            BlocProvider(
+              create: (context) => EmapBloc(emapRepository: context.read()),
+            ),
             BlocProvider(
               create: (context) => UserManagementBloc(
                 userManagermentRepository: context.read(),
