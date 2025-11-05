@@ -86,6 +86,9 @@ class AppAssets {
   static const icEmptyEmap = '$_svgPath/ic_empty_emap.svg';
   static const icAddImage = '$_svgPath/ic_plus.svg';
   static const icReplace = '$_svgPath/icon_replace.svg';
+  static const icVideoOff = '$_svgPath/video_off.svg';
+  static const icCheckBox = '$_svgPath/check_box.svg';
+  static const icChecked = '$_svgPath/checked.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
