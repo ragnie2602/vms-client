@@ -1,0 +1,129 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
+
+import '../bloc/camera_detail/camera_detail_bloc.dart';
+
+class ControlRecord extends StatefulWidget {
+  const ControlRecord({super.key, required this.isRecording});
+  final bool isRecording;
+
+  @override
+  State<ControlRecord> createState() => _ControlRecordState();
+}
+
+class _ControlRecordState extends State<ControlRecord> {
+  final ValueNotifier<Duration> _duration = ValueNotifier(Duration.zero);
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _duration.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startRecording() {
+    context.read<CameraDetailBloc>().add(
+      ChangeRecordingStatus(
+        true,
+        cb: (bool success) {
+          _duration.value = Duration.zero;
+          _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+            final future = Duration(seconds: _duration.value.inSeconds + 1);
+            if (future >= Duration(hours: 1)) return _stopRecording();
+            _duration.value = future;
+          });
+        },
+      ),
+    );
+  }
+
+  void _stopRecording() {
+    context.read<CameraDetailBloc>().add(
+      ChangeRecordingStatus(
+        false,
+        cb: (bool success) {
+          _timer?.cancel();
+          _toast('Đã ghi video');
+        },
+      ),
+    );
+  }
+
+  void _toast(String message) {
+    ToastUtil.toastSuccess(
+      context: context,
+      title: Text(
+        message,
+        style: AppTypography.style(13, fontWeight: FontWeight.w500, color: AppColors.white),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.isRecording ? _buildRecordingTimer() : _buildRecordAction();
+  }
+
+  Widget _buildRecordingTimer() {
+    return InkWell(
+      onTap: _stopRecording,
+      child: Container(
+        constraints: BoxConstraints(minWidth: 80),
+        padding: const EdgeInsets.fromLTRB(5, 4, 5, 4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Color(0xFFFF0000)),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              width: 18,
+              height: 18,
+              decoration: BoxDecoration(
+                color: Color(0xFFFF0000),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            ValueListenableBuilder(
+              valueListenable: _duration,
+              builder: (context, value, child) => Text(
+                formatDuration(value),
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.grey64748B,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecordAction() {
+    return InkWell(
+      onTap: _startRecording,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SvgPicture.asset(AppAssets.icRecord, width: 28, height: 28),
+      ),
+    );
+  }
+
+  String formatDuration(Duration duration) {
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+}

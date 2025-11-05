@@ -43,3 +43,9 @@ class ChangeTimelineDisplayMode extends CameraDetailEvent {
   final TimelineDisplayMode mode;
   const ChangeTimelineDisplayMode(this.mode);
 }
+
+class ChangeRecordingStatus extends CameraDetailEvent {
+  final bool isRecording;
+  final Function(bool)? cb;
+  const ChangeRecordingStatus(this.isRecording, {this.cb});
+}

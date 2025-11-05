@@ -19,6 +19,7 @@ class CameraDetailState extends BaseState {
     required this.playbackDate,
     this.timelineDisplayMode = TimelineDisplayMode.h8,
     required this.cameraDetailController,
+    this.isRecording = false,
   });
 
   final CameraDetailMode mode;
@@ -29,9 +30,19 @@ class CameraDetailState extends BaseState {
   final DateTime playbackDate;
   final TimelineDisplayMode timelineDisplayMode;
   final CameraDetailController cameraDetailController;
+  final bool isRecording;
 
   @override
-  List<Object?> get props => [mode, camera, status, volume, speed, playbackDate, timelineDisplayMode];
+  List<Object?> get props => [
+    mode,
+    camera,
+    status,
+    volume,
+    speed,
+    playbackDate,
+    timelineDisplayMode,
+    isRecording,
+  ];
 
   CameraDetailState copyWith({
     CameraDetailMode? mode,
@@ -42,6 +53,7 @@ class CameraDetailState extends BaseState {
     DateTime? playbackDate,
     TimelineDisplayMode? timelineDisplayMode,
     CameraDetailController? cameraDetailController,
+    bool? isRecording,
   }) {
     return CameraDetailState(
       mode: mode ?? this.mode,
@@ -52,6 +64,7 @@ class CameraDetailState extends BaseState {
       playbackDate: playbackDate ?? this.playbackDate,
       timelineDisplayMode: timelineDisplayMode ?? this.timelineDisplayMode,
       cameraDetailController: cameraDetailController ?? this.cameraDetailController,
+      isRecording: isRecording ?? this.isRecording,
     );
   }
 }

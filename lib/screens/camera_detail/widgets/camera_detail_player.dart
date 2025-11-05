@@ -462,6 +462,10 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _zoomAnimationController.forward();
   }
 
+  Future<bool> recording(bool starting) async {
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(

@@ -71,7 +71,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: CameraDetailDesktopLayout(
-              openCamerasPanelImmediately: isPlayback,
+              openCamerasPanelImmediately: true,
               content: state.camera == null
                   ? null
                   : state.mode.isPlayback
@@ -103,6 +103,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           onInitializedValues: ({required double volume, required double speed}) {
             context.read<CameraDetailBloc>().add(ChangeVolume(volume));
             context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+            context.read<CameraDetailBloc>().add(ChangeRecordingStatus(false));
           },
         ),
       ),
@@ -120,6 +121,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
       onInitializedValues: ({required double volume, required double speed}) {
         context.read<CameraDetailBloc>().add(ChangeVolume(volume));
         context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+        context.read<CameraDetailBloc>().add(ChangeRecordingStatus(false));
       },
     );
   }
