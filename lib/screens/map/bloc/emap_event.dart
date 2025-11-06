@@ -18,3 +18,15 @@ class RemoveEmapEvent extends EmapEvent {
   @override
   List<Object?> get props => [emapId];
 }
+
+class AddCameraEmapEvent extends EmapEvent {
+  final List<int> emapId;
+  final CameraEmapInfoEntity cameraEmapInfoEntity;
+  AddCameraEmapEvent({
+    required this.emapId,
+    required this.cameraEmapInfoEntity,
+  });
+
+  @override
+  List<Object?> get props => [emapId, cameraEmapInfoEntity];
+}

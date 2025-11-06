@@ -70,4 +70,18 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
       );
     });
   }
+
+  FutureOr<void> _addCameraEmapInfo(
+    AddCameraEmapEvent event,
+    Emitter<EmapState> emit,
+  ) async {
+    final res = await emapRepository.addCameraEmapInfo(
+      emapId: event.emapId,
+      cameraEmapinfo: event.cameraEmapInfoEntity,
+    );
+    res.fold((onFailure) {}, (onSuccess) {
+      CameraEmapInfoEntity cameraEmapInfoEntity = onSuccess;
+      emit(AddCameraEmapSuccessState(cameraEmapInfo: cameraEmapInfoEntity));
+    });
+  }
 }

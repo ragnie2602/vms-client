@@ -19,7 +19,7 @@ class EmapSuccessState extends EmapState {
   final EmapEntity? emapSelected;
 
   const EmapSuccessState({this.listEmap, this.emapSelected});
-  
+
   @override
   List<Object?> get props => [listEmap, emapSelected];
 
@@ -32,4 +32,11 @@ class EmapSuccessState extends EmapState {
       emapSelected: emapSelected ?? this.emapSelected,
     );
   }
+}
+
+class AddCameraEmapSuccessState extends EmapState {
+  final CameraEmapInfoEntity? cameraEmapInfo;
+  const AddCameraEmapSuccessState({this.cameraEmapInfo});
+  @override
+  List<Object?> get props => [cameraEmapInfo];
 }
