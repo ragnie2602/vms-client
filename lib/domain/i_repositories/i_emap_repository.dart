@@ -9,6 +9,7 @@ abstract class IEmapRepository {
     required String emapName,
     required String imagePath,
     required Uint8List imageBytes,
+    required String serverUrl,
     List<int>? emapId,
     List<int>? userId,
   });

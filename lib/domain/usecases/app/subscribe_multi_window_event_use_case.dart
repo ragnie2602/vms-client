@@ -14,8 +14,11 @@ class SubscribeMultiWindowEventUseCase
 
     DesktopMultiWindow.setMethodHandler((call, sourceId) async {
       switch (call.method) {
+        case 'close_window':
+          stream.add(SubscribeMultiWindowEventOutput(MWECloseWindow(sourceId)));
+          break;
         case 'sign_out':
-          stream.add(SubscribeMultiWindowEventOutput(MWESignOut()));
+          stream.add(SubscribeMultiWindowEventOutput(const MWESignOut()));
           break;
         default:
       }

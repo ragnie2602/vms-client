@@ -7,16 +7,19 @@ class SendMultiWindowEventUseCase
     extends FutureUseCase<SendMultiWindowEventInput, SendMultiWindowEventOutput> {
   @override
   Future<SendMultiWindowEventOutput> buildUseCase(SendMultiWindowEventInput input) async {
-    final List<int> targetIds = [];
-    if (input.targetWindowID == -1) {
-      targetIds.add(0);
-      targetIds.addAll(await DesktopMultiWindow.getAllSubWindowIds());
-    } else {
-      targetIds.add(input.targetWindowID);
-    }
-
     switch (input.methodName) {
+      case 'close_window':
+        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName);
+        break;
       case 'sign_out':
+        final List<int> targetIds = [];
+        if (input.targetWindowID == -1) {
+          targetIds.add(0);
+          targetIds.addAll(await DesktopMultiWindow.getAllSubWindowIds());
+        } else {
+          targetIds.add(input.targetWindowID);
+        }
+
         for (var targetId in targetIds) {
           DesktopMultiWindow.invokeMethod(targetId, input.methodName);
         }

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class EmapEntity {
   final List<int> emapId;
   final String emapName;
@@ -8,6 +10,18 @@ class EmapEntity {
     required this.emapName,
     required this.backgroundPath,
   });
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is EmapEntity &&
+            runtimeType == other.runtimeType &&
+            listEquals(emapId, other.emapId) &&
+            emapName == other.emapName &&
+            backgroundPath == other.backgroundPath);
+  }
+
+  @override
+  int get hashCode => Object.hash(emapId, emapName, backgroundPath);
 }
 
 class CameraEmapInfoEntity {

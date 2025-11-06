@@ -1,140 +1,89 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:vms_flutter_client/core/app_config.dart';
+import 'dart:async';
+import 'package:http/http.dart' as http;
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
-import 'package:vms_flutter_client/core/utils/pretty_dio_logger.dart';
+import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 
-import 'base_api_client.dart';
+class UploadApiClient {
+  UploadApiClient();
 
-class UploadApiClient extends BaseApiClient {
-  late final Dio _dio;
-  Dio get dio => _dio;
-
-  late String _serverUrl;
-
-  UploadApiClient() {
-    _dio = Dio(
-      BaseOptions(
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-      ),
-    );
-
-    // Add interceptors for logging
-    if (!kReleaseMode) {
-      _dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: false, // Don't log multipart body (too large)
-          responseBody: true,
-          responseHeader: false,
-          error: true,
-          compact: true,
-          maxWidth: 90,
-        ),
-      );
-    }
-  }
-
-  @override
-  Future<bool> connect(covariant UploadConnectionParams params) async {
-    _serverUrl = params.serverUrl;
-    return true;
-  }
-
-  @override
-  Future<void> disconnect() async {
-    _dio.close();
-  }
-
-  @override
-  Future<Either<Failure, T>> send<T>(covariant UploadRequestPayload data) async {
+  Future<Either<Failure, Uint8List>> upload({
+    required String url,
+    required List<int> requestData,
+    required List<UploadFile> files,
+  }) async {
     try {
       final profile = AppData.instance.profile;
       if (profile == null) {
         return Left(Failure.message('User not authenticated'));
       }
 
-      final formData = FormData.fromMap({
-        'uid': Uint8List.fromList(profile.uid),
-        'sid': Uint8List.fromList(profile.sessionId),
-        'request': MultipartFile.fromBytes(
-          data.requestData,
-          filename: 'request',
-          contentType: DioMediaType('application', 'octet-stream'),
-        ),
-      });
+      final uri = Uri.parse(url);
+      final boundary = '----dart-http-boundary-${DateTime.now().millisecondsSinceEpoch}';
+      final crlf = '\r\n';
+      final builder = BytesBuilder();
 
-      // Add files if present
-      for (var file in data.files) {
-        formData.files.add(MapEntry(
-          file.fieldName,
-          MultipartFile.fromBytes(
-            file.bytes,
-            filename: file.filename,
-            contentType: DioMediaType.parse(file.contentType),
-          ),
-        ));
+      void write(String s) => builder.add(utf8.encode(s));
+
+      // uid
+      write('--$boundary$crlf');
+      write('Content-Disposition: form-data; name="uid"$crlf$crlf');
+      write('${base64Encode(profile.uid)}$crlf');
+
+      // sid
+      write('--$boundary$crlf');
+      write('Content-Disposition: form-data; name="sid"$crlf$crlf');
+      write('${base64Encode(profile.sessionId)}$crlf');
+
+      // request (⚠️ no Content-Type, no extra \r\n after binary)
+      write('--$boundary$crlf');
+      write('Content-Disposition: form-data; name="request"$crlf$crlf');
+      builder.add(requestData);
+      // DO NOT add extra CRLF here!
+
+      // files
+      for (final file in files) {
+        final filename = file.filename;
+        final fieldName = filename.split('.').first;
+        write('$crlf--$boundary$crlf');
+        write('Content-Disposition: form-data; name="$fieldName"; filename="$filename"$crlf');
+        write('Content-Type: ${file.contentType}$crlf$crlf');
+        builder.add(file.bytes);
       }
 
-      final url = '$_serverUrl${data.protocolId}';
-      final response = await _dio.post<List<int>>(
-        url,
-        data: formData,
-        options: Options(
-          responseType: ResponseType.bytes,
-          contentType: 'multipart/form-data',
-        ),
+      // closing boundary
+      write('$crlf--$boundary--$crlf');
+
+      final resp = await http.post(
+        uri,
+        headers: {'Content-Type': 'multipart/form-data; boundary=$boundary'},
+        body: builder.toBytes(),
       );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final reply = Reply.fromBuffer(Uint8List.fromList(response.data!));
+      if (resp.statusCode != 200) {
+        return Left(Failure.message('HTTP ${resp.statusCode}'));
+      }
+
+      try {
+        final reply = Reply.fromBuffer(resp.bodyBytes);
 
         if (reply.isSuccess) {
-          return Right(reply.reply.value as T);
+          return Right(Uint8List.fromList(reply.reply.value));
         } else {
           return Left(Failure.code(reply.type));
         }
-      } else {
-        return Left(Failure.message('HTTP ${response.statusCode}: ${response.statusMessage}'));
+      } catch (e) {
+        return Left(Failure.message('Invalid response format'));
       }
-    } on DioException catch (e) {
-      return Left(Failure.message('Network error: ${e.message}'));
     } catch (e) {
-      return Left(kReleaseMode ? Failure.defaultError() : Failure.message('Unexpected error: $e'));
+      return Left(Failure.message(e.toString()));
     }
   }
-
-  @override
-  Stream<Map<String, dynamic>> listen() {
-    throw UnimplementedError('Upload client does not support listening');
-  }
-
-  @override
-  bool get isConnected => true;
-}
-
-class UploadConnectionParams extends BaseConnectionParams {
-  final String serverUrl;
-
-  UploadConnectionParams(this.serverUrl);
-}
-
-class UploadRequestPayload extends BaseRequestPayload {
-  final int protocolId;
-  final Uint8List requestData;
-  final List<UploadFile> files;
-
-  UploadRequestPayload({
-    required this.protocolId,
-    required this.requestData,
-    this.files = const [],
-  });
 }
 
 class UploadFile {

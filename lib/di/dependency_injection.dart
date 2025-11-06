@@ -1,19 +1,22 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
+import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/app/change_setting_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
-import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 
@@ -21,7 +24,9 @@ class DependencyInjection {
   static List<SingleChildWidget> providers = [
     // Base
     Provider<SocketApiClient>(create: (_) => SocketApiClient()),
+    Provider<UploadApiClient>(create: (_) => UploadApiClient()),
     Provider<ProtobufHttpClient>(create: (_) => ProtobufHttpClient()),
+    Provider<UploadApiClient>(create: (_) => UploadApiClient()),
 
     // Data Sources
     Provider<AuthenticateService>(
@@ -32,9 +37,13 @@ class DependencyInjection {
     ),
     Provider<CameraService>(create: (context) => CameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
+    Provider<EmapService>(create: (context) => EmapService(context.read(), context.read())),
     Provider<UserService>(create: (context) => UserService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
+    Provider<EmapService>(
+      create: (context) => EmapService(context.read(), context.read()),
+    ),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -46,6 +55,7 @@ class DependencyInjection {
       create: (context) => ControlCameraRepository(context.read()),
     ),
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
+    Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
     Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
     Provider<IUserManagementRepository>(
       create: (context) => UserManagementRepository(context.read()),
@@ -53,8 +63,12 @@ class DependencyInjection {
     Provider<ICustomLiveViewRepository>(
       create: (context) => CustomLiveViewRepository(context.read()),
     ),
+    Provider<IEmapRepository>(
+      create: (context) => EmapRepository(context.read()),
+    ),
 
     // Use Cases
+    Provider<ChangeSettingWindowUseCase>(create: (context) => ChangeSettingWindowUseCase()),
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
     Provider<SendMultiWindowEventUseCase>(create: (context) => SendMultiWindowEventUseCase()),
     Provider<SubscribeMultiWindowEventUseCase>(
@@ -91,6 +105,8 @@ class DependencyInjection {
     Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
 
     // Bloc
-    Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),
+    Provider<AppBloc>(
+      create: (context) => AppBloc(context.read(), context.read(), context.read(), context.read()),
+    ),
   ];
 }
