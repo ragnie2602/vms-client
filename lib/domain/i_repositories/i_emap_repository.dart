@@ -27,6 +27,6 @@ abstract class IEmapRepository {
   /// Add camera to Emap
   Future<Either<Failure, CameraEmapInfoEntity>> addCameraEmapInfo({
     required List<int> emapId,
-    required CameraEmapInfoEntity info,
+    required CameraEmapInfoEntity cameraEmapinfo,
   });
 }

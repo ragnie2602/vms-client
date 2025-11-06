@@ -63,12 +63,12 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
   @override
   Future<Either<Failure, CameraEmapInfoEntity>> addCameraEmapInfo({
     required List<int> emapId,
-    required CameraEmapInfoEntity info,
+    required CameraEmapInfoEntity cameraEmapinfo,
   }) async {
     return await catchError<CameraEmapInfoEntity>(() async {
       final cameraInfo = await service.addCameraEmapInfo(
         emapId: emapId,
-        info: info.toProto(),
+        info: cameraEmapinfo.toProto(),
       );
       return Right(cameraInfo.toDomain());
     });
