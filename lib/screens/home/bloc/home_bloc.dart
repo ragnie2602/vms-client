@@ -16,8 +16,8 @@ class HomeTab {
   const HomeTab(this.route, {required this.title, required this.svg, this.nested = const []});
 
   static const tabs = [
-    HomeTab(Routes.monitoring, title: 'Liveview', svg: AppAssets.tabMonitor),
-    HomeTab(Routes.playback, title: 'Playback', svg: AppAssets.tabPlayback),
+    HomeTab(Routes.monitoring, title: 'Xem trực tiếp', svg: AppAssets.tabMonitor),
+    HomeTab(Routes.playback, title: 'Xem lại', svg: AppAssets.tabPlayback),
     HomeTab(Routes.addGroupCamera, title: 'Quản lý camera', svg: AppAssets.tabCameraGroups),
     HomeTab(Routes.emap, title: 'Bản đồ camera', svg: AppAssets.tabMap),
     HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
