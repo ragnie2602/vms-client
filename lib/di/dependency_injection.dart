@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/app/change_setting_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
@@ -60,6 +61,7 @@ class DependencyInjection {
     ),
 
     // Use Cases
+    Provider<ChangeSettingWindowUseCase>(create: (context) => ChangeSettingWindowUseCase()),
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
     Provider<SendMultiWindowEventUseCase>(create: (context) => SendMultiWindowEventUseCase()),
     Provider<SubscribeMultiWindowEventUseCase>(
@@ -96,6 +98,8 @@ class DependencyInjection {
     Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
 
     // Bloc
-    Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),
+    Provider<AppBloc>(
+      create: (context) => AppBloc(context.read(), context.read(), context.read(), context.read()),
+    ),
   ];
 }
