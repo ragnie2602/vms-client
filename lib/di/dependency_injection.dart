@@ -26,6 +26,7 @@ class DependencyInjection {
     Provider<SocketApiClient>(create: (_) => SocketApiClient()),
     Provider<UploadApiClient>(create: (_) => UploadApiClient()),
     Provider<ProtobufHttpClient>(create: (_) => ProtobufHttpClient()),
+    Provider<UploadApiClient>(create: (_) => UploadApiClient()),
 
     // Data Sources
     Provider<AuthenticateService>(
@@ -40,6 +41,9 @@ class DependencyInjection {
     Provider<UserService>(create: (context) => UserService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
+    Provider<EmapService>(
+      create: (context) => EmapService(context.read(), context.read()),
+    ),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -58,6 +62,9 @@ class DependencyInjection {
     ),
     Provider<ICustomLiveViewRepository>(
       create: (context) => CustomLiveViewRepository(context.read()),
+    ),
+    Provider<IEmapRepository>(
+      create: (context) => EmapRepository(context.read()),
     ),
 
     // Use Cases
