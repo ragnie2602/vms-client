@@ -74,7 +74,7 @@ class _TestEmapUploadButtonState extends State<TestEmapUploadButton> {
 
       // Test postEmap
       final uploadResult = await emapRepository.postEmap(
-        serverUrl: AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? '',
+        // serverUrl: AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? '',
         emapName: 'Test Emap ${DateTime.now().millisecondsSinceEpoch}',
         imagePath: filePath,
         imageBytes: imageBytes,

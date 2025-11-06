@@ -18,7 +18,7 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
     required String emapName,
     required String imagePath,
     required Uint8List imageBytes,
-    required String serverUrl,
+    // required String serverUrl,
     List<int>? emapId,
     List<int>? userId,
   }) async {
@@ -27,7 +27,7 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
         emapName: emapName,
         imagePath: imagePath,
         imageBytes: imageBytes,
-        serverUrl: serverUrl,
+        // serverUrl: serverUrl,
         emapId: emapId,
         userId: userId,
       );
