@@ -4,8 +4,10 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_field.dart';
+import 'package:vms_flutter_client/screens/map/widgets/dash_border_widget.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart';
@@ -56,7 +58,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['jpg', 'jpeg', 'png'],
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'bmp'],
       );
 
       if (result != null) {
@@ -177,42 +179,47 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                 ),
                 const SizedBox(height: 16),
                 if (_selectedImage == null)
-                  Container(
-                    width: double.infinity,
-                    height: MediaQuery.of(context).size.height * 0.35,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.greyE2E8F0),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        InkWell(
-                          onTap: () => _pickImage(),
-                          child: SvgPicture.asset(AppAssets.icAddImage),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Click + để thêm hình ảnh bản đồ',
-                          style: TextStyle(color: AppColors.grey92929D),
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 40,
-                            right: 40,
-                            top: 5,
+                  CustomPaint(
+                    painter: DashedBorderPainter(),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height * 0.35,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          InkWell(
+                            onTap: () => _pickImage(),
+                            child: SvgPicture.asset(AppAssets.icAddImage),
                           ),
-                          child: Text(
-                            textAlign: TextAlign.center,
-                            'Hỗ trợ định dạng .JPG, .JPEG, .PNG, .BMP, kích thước tối thiểu 500×500px, dung lượng tối đa 20MB',
-                            style: TextStyle(
-                              fontSize: 12,
+                          const SizedBox(height: 8),
+                          Text(
+                            'Click + để thêm hình ảnh bản đồ.',
+                            style: AppTypography.style(
+                              13,
+                              fontWeight: FontWeight.w500,
                               color: AppColors.grey64748B,
                             ),
                           ),
-                        ),
-                      ],
+
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              left: 40,
+                              right: 40,
+                              top: 4,
+                            ),
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              'Hỗ trợ định dạng .JPG, .JPEG, .PNG, .BMP,\n kích thước tối thiểu 500×500px, dung lượng tối đa 20MB.',
+                              style: AppTypography.style(
+                                13,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.grey64748B,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 else
@@ -280,38 +287,52 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                   ),
                 if (_selectedImage != null) ...[
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        children: [
-                          SvgPicture.asset(AppAssets.icReplace),
-                          SizedBox(width: 10),
-                          const Text(
-                            'Thay thế ảnh này',
-                            style: TextStyle(color: AppColors.blue005AA9),
-                          ),
-                        ],
-                      ),
-                    ],
+                  InkWell(
+                    onTap: () {
+                      _pickImage();
+                    },
+                    splashColor: Colors.transparent,
+                    focusColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            SvgPicture.asset(AppAssets.icReplace),
+                            SizedBox(width: 10),
+                            const Text(
+                              'Thay thế ảnh này',
+                              style: TextStyle(color: AppColors.blue005AA9),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
+                SizedBox(height: 24),
               ],
             ),
           ),
         ),
       ),
       actions: [
-        Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppButton.outline(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              flex: 1,
+              child: AppButton.outline(
                 label: "Hủy",
                 onPressed: _isSubmitting ? null : () => Navigator.pop(context),
               ),
-              const SizedBox(width: 12),
-              AppButton.filled(
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 1,
+              child: AppButton.filled(
                 onPressed: _selectedImage == null || _isSubmitting
                     ? null
                     : _handleSubmit,
@@ -330,8 +351,8 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                       )
                     : null,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ],
     );

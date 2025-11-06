@@ -162,7 +162,7 @@ class _ListMapViewState extends State<ListMapView> {
                               _onChangeSelectEmap(newMap: item);
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 8),
+                              // padding: EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 color: item == state.emapSelected
                                     ? AppColors.greyF2F4FA
@@ -174,7 +174,7 @@ class _ListMapViewState extends State<ListMapView> {
                                   SvgPicture.asset(AppAssets.icMarkerMap),
                                   const SizedBox(width: 8),
                                   Text(
-                                    item.emapName ?? 'N/A',
+                                    item.emapName,
                                     style: AppTypography.style(
                                       13,
                                       fontWeight: FontWeight.w400,
@@ -199,7 +199,6 @@ class _ListMapViewState extends State<ListMapView> {
                                         case ItemMapAction.edit:
                                           break;
                                         case ItemMapAction.remove:
-                                          // _onRemoveEmap(emapId: item.emapId);
                                           _onShowDialogRemoveEmap(
                                             context,
                                             emapId: item.emapId,
