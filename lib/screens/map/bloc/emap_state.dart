@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 
 class EmapState extends BaseState {
@@ -9,8 +10,9 @@ class EmapLoadingState extends EmapState {
   @override
   StateType get type => StateType.loading;
 }
-class RemoveEmapSucessSate extends EmapState{
-   @override
+
+class RemoveEmapSucessSate extends EmapState {
+  @override
   StateType get type => StateType.success;
 }
 
@@ -39,4 +41,24 @@ class AddCameraEmapSuccessState extends EmapState {
   const AddCameraEmapSuccessState({this.cameraEmapInfo});
   @override
   List<Object?> get props => [cameraEmapInfo];
+}
+
+class ListAllCameraSuccessState extends EmapState {
+  final List<CameraEntity>? cameras;
+  const ListAllCameraSuccessState({required this.cameras});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [cameras];
+}
+
+class ListAllCameraFailState extends EmapState {
+  final String message;
+
+  const ListAllCameraFailState(this.message);
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
 }

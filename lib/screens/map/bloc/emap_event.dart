@@ -29,4 +29,12 @@ class AddCameraEmapEvent extends EmapEvent {
 
   @override
   List<Object?> get props => [emapId, cameraEmapInfoEntity];
+  
 }
+class GetAllListCameraEvent extends EmapEvent {
+  final List<int>? cameraId;
+  final int? status;
+  final int? ivaType;
+   GetAllListCameraEvent({this.cameraId, this.ivaType, this.status});
+}
+
