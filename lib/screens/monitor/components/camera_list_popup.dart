@@ -13,7 +13,11 @@ class CameraListPopup extends StatelessWidget {
   final MonitorBloc bloc;
   final Function(CameraEntity) onCameraSelected;
 
-  CameraListPopup({super.key, required this.bloc, required this.onCameraSelected}) {
+  CameraListPopup({
+    super.key,
+    required this.bloc,
+    required this.onCameraSelected,
+  }) {
     bloc.add(GetAllCamera());
   }
 
@@ -69,7 +73,9 @@ class CameraListPopup extends StatelessWidget {
                   margin: EdgeInsets.only(right: 16, left: 12),
                   child: SvgPicture.asset(AppAssets.icSearch),
                 ),
-                prefixIconConstraints: BoxConstraints.tight(Size(20 + 16 + 12, 20)),
+                prefixIconConstraints: BoxConstraints.tight(
+                  Size(20 + 16 + 12, 20),
+                ),
                 suffixIcon: ValueListenableBuilder(
                   valueListenable: searchController,
                   builder: (context, value, child) => value.text.isEmpty
@@ -93,8 +99,10 @@ class CameraListPopup extends StatelessWidget {
           BlocBuilder<MonitorBloc, MonitorState>(
             bloc: bloc,
             builder: (context, state) {
-              if (state is MonitorLoading) return Center(child: CircularProgressIndicator());
-              if (state is MonitorFailure) return Center(child: Text(state.message));
+              if (state is MonitorLoading)
+                return Center(child: CircularProgressIndicator());
+              if (state is MonitorFailure)
+                return Center(child: Text(state.message));
               if (state is MonitorSuccess) {
                 return Flexible(
                   child: ValueListenableBuilder(
@@ -102,14 +110,18 @@ class CameraListPopup extends StatelessWidget {
                     builder: (context, value, child) {
                       final cameras = state.cameras
                           .where(
-                            (camera) => removeDiacritics(
-                              camera.name.toLowerCase(),
-                            ).contains(removeDiacritics(value.text.toLowerCase())),
+                            (camera) =>
+                                removeDiacritics(
+                                  camera.name.toLowerCase(),
+                                ).contains(
+                                  removeDiacritics(value.text.toLowerCase()),
+                                ),
                           )
                           .toList();
 
                       return ListView.builder(
-                        itemBuilder: (context, index) => _cameraItem(cameras[index]),
+                        itemBuilder: (context, index) =>
+                            _cameraItem(cameras[index]),
                         itemCount: cameras.length,
                       );
                     },
@@ -137,7 +149,11 @@ class CameraListPopup extends StatelessWidget {
                   Container(
                     height: 35,
                     alignment: Alignment.topCenter,
-                    child: SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
+                    child: SvgPicture.asset(
+                      AppAssets.icVideoOn,
+                      width: 20,
+                      height: 20,
+                    ),
                   ),
                   SizedBox(width: 16),
                 ],
@@ -161,9 +177,9 @@ class CameraListPopup extends StatelessWidget {
                         Text(
                           camera.isOnline ? "Đang hoạt động" : "Dừng hoạt động",
                           style: AppTypography.style(
-                            12,
+                            13,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF647488),
+                            color: AppColors.blue15ABFF,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.visible,
@@ -176,7 +192,9 @@ class CameraListPopup extends StatelessWidget {
                   SizedBox.square(
                     dimension: 8,
                     child: CircleAvatar(
-                      backgroundColor: camera.isOnline ? Color(0xFF21CCC3) : Color(0xFF64748B),
+                      backgroundColor: camera.isOnline
+                          ? Color(0xFF21CCC3)
+                          : Color(0xFF64748B),
                     ),
                   ),
                   SizedBox(width: 8),

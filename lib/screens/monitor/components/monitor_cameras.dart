@@ -27,7 +27,8 @@ class MonitorCameras extends StatefulWidget {
   State<MonitorCameras> createState() => _MonitorCamerasState();
 }
 
-class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin {
+class _MonitorCamerasState extends State<MonitorCameras>
+    with StateBuilderMixin {
   final _searchController = TextEditingController();
   late Function(CameraEntity) onTap;
   late CameraEntity? selectedCamera;
@@ -40,7 +41,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     selectedCamera = widget.selectedCamera;
     super.initState();
 
-    if (mounted) _monitorBloc = MonitorBloc(context.read(), context.read())..add(GetAllCamera());
+    if (mounted)
+      _monitorBloc = MonitorBloc(context.read(), context.read())
+        ..add(GetAllCamera());
   }
 
   @override
@@ -75,44 +78,49 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
           children: [
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 24),
-              child: TextField(
-                controller: _searchController,
-                style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.all(12),
-                  hintText: 'Tìm kiếm',
-                  hintStyle: AppTypography.style(
-                    14,
-                    color: Color(0xFF8F95B2),
-                    fontWeight: FontWeight.w400,
-                  ),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  prefixIcon: Container(
-                    width: 20,
-                    height: 20,
-                    margin: EdgeInsets.only(right: 16, left: 12),
-                    child: SvgPicture.asset(AppAssets.icSearch),
-                  ),
-                  prefixIconConstraints: BoxConstraints.tight(Size(20 + 16 + 12, 20)),
-                  suffixIcon: ValueListenableBuilder(
-                    valueListenable: _searchController,
-                    builder: (context, value, child) => value.text.isEmpty
-                        ? const SizedBox.shrink()
-                        : InkWell(
-                            onTap: () => _searchController.clear(),
-                            child: Padding(
-                              padding: EdgeInsets.all(8),
-                              child: SvgPicture.asset(AppAssets.icClose),
+              child: SizedBox(
+                height: 36,
+                child: TextField(
+                  controller: _searchController,
+                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.all(12),
+                    hintText: 'Tìm kiếm',
+                    hintStyle: AppTypography.style(
+                      14,
+                      color: Color(0xFF8F95B2),
+                      fontWeight: FontWeight.w400,
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    prefixIcon: Container(
+                      width: 20,
+                      height: 20,
+                      margin: EdgeInsets.only(right: 16, left: 12),
+                      child: SvgPicture.asset(AppAssets.icSearch),
+                    ),
+                    prefixIconConstraints: BoxConstraints.tight(
+                      Size(20 + 16 + 12, 20),
+                    ),
+                    suffixIcon: ValueListenableBuilder(
+                      valueListenable: _searchController,
+                      builder: (context, value, child) => value.text.isEmpty
+                          ? const SizedBox.shrink()
+                          : InkWell(
+                              onTap: () => _searchController.clear(),
+                              child: Padding(
+                                padding: EdgeInsets.all(8),
+                                child: SvgPicture.asset(AppAssets.icClose),
+                              ),
                             ),
-                          ),
+                    ),
+                    fillColor: Color(0xFFF2F4FA),
+                    filled: true,
                   ),
-                  fillColor: Color(0xFFF2F4FA),
-                  filled: true,
                 ),
               ),
             ),
@@ -134,7 +142,8 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                         padding: EdgeInsets.only(bottom: 20),
                         primary: true,
                         itemCount: cameras.length,
-                        itemBuilder: (context, index) => _cameraItem(context, cameras[index]),
+                        itemBuilder: (context, index) =>
+                            _cameraItem(context, cameras[index]),
                       );
                     },
                   ),
@@ -151,7 +160,11 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     return Center(
       child: Text(
         'Không có dữ liệu hiển thị',
-        style: AppTypography.style(14, fontWeight: FontWeight.w600, color: AppColors.blackOrWhite),
+        style: AppTypography.style(
+          14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.blackOrWhite,
+        ),
       ),
     );
   }
@@ -165,7 +178,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        color: selectedCamera?.camId == camera.camId ? AppColors.greyF2F4FA : Colors.transparent,
+        color: selectedCamera?.camId == camera.camId
+            ? AppColors.greyF2F4FA
+            : Colors.transparent,
         child: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [
@@ -173,7 +188,11 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 Container(
                   height: 35,
                   alignment: Alignment.topCenter,
-                  child: SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
+                  child: SvgPicture.asset(
+                    AppAssets.icVideoOn,
+                    width: 20,
+                    height: 20,
+                  ),
                 ),
                 SizedBox(width: 16),
               ],
@@ -211,7 +230,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 SizedBox.square(
                   dimension: 8,
                   child: CircleAvatar(
-                    backgroundColor: camera.isOnline ? Color(0xFF21CCC3) : Color(0xFF64748B),
+                    backgroundColor: camera.isOnline
+                        ? Color(0xFF21CCC3)
+                        : Color(0xFF64748B),
                   ),
                 ),
                 SizedBox(width: 8),

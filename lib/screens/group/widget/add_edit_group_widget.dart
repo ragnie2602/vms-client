@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
@@ -98,7 +100,7 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       titlePadding: EdgeInsets.only(top: 20, right: 24, left: 24, bottom: 10),
       contentPadding: EdgeInsets.zero,
       title: Row(
@@ -111,13 +113,13 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
               style: AppTypography.style(
                 20,
                 fontWeight: FontWeight.w600,
-                color: AppColors.grey0F172A,
+                color: AppColors.black,
               ),
             ),
           ),
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
+            icon: SvgPicture.asset(AppAssets.icClose),
             tooltip: 'Đóng',
           ),
         ],
@@ -146,6 +148,7 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                       key: formAddEditKey,
                       child: AppField(
                         controller: _nameGroupController,
+                        borderRadius: 3,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Vui lòng nhập tên nhóm';
@@ -162,6 +165,7 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                     // drop down search
                     AppDropdownSearch<DeviceGroup>(
                       label: 'Nhóm cha',
+                      borderRadius: 3,
                       items: widget.listGroupAvailable ?? [],
                       selectedItem: _selectedParentGroup,
                       onChanged: (value) {
@@ -259,7 +263,7 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                         color: AppColors.secondary,
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      padding: EdgeInsets.symmetric(vertical: 13),
+                      padding: EdgeInsets.symmetric(vertical: 16),
                       child: Center(
                         child: _isConfirming
                             ? Row(
