@@ -144,7 +144,7 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                     itemBuilder: (context, index) {
                                       final camera = _filteredCameras[index];
                                       final bool isActive =
-                                          widget.listCamera![index].isOnline;
+                                          widget.listCamera[index].isOnline;
 
                                       return Material(
                                         color: Colors.transparent,

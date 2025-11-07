@@ -1,6 +1,6 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/data/models/drag_item_model.dart';
+import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 
 class EmapState extends BaseState {

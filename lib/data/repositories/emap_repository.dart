@@ -96,4 +96,5 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
       return Right(cameras.map((e) => e.toDomain()).toList());
     });
   }
+
 }

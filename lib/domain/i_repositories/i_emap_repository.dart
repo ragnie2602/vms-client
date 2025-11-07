@@ -31,7 +31,8 @@ abstract class IEmapRepository {
     required List<int> emapId,
     required CameraEmapInfoEntity cameraEmapinfo,
   });
-    Future<Either<Failure, List<CameraEntity>>> getAllCamera({
+  
+  Future<Either<Failure, List<CameraEntity>>> getAllCamera({
     List<int>? cameraId,
     int? status,
     int? ivaType,

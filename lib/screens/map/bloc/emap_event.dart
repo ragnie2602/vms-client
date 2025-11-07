@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/data/models/drag_item_model.dart';
+import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 
 class EmapEvent extends BaseEvent {}
@@ -83,4 +83,11 @@ class RemoveDragItemEvent extends EmapEvent {
   RemoveDragItemEvent({required this.itemId});
   @override
   List<Object?> get props => [itemId];
+}
+
+class ListCameraEmapInfoEvent extends EmapEvent {
+  final List<int> emapId;
+  ListCameraEmapInfoEvent({required this.emapId});
+  @override
+  List<Object?> get props => [emapId];
 }

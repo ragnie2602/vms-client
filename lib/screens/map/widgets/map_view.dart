@@ -1,12 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
-import 'package:vms_flutter_client/data/models/drag_item_model.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
@@ -85,6 +86,32 @@ class _MapViewState extends State<MapView> {
     );
   }
 
+  /// Trả về vị trí ngẫu nhiên trong khu vực hiển thị của ảnh
+  /// Returns null nếu image chưa được render
+  Offset? _getRandomPosition() {
+    final RenderBox? imageBox =
+        _imageKey.currentContext?.findRenderObject() as RenderBox?;
+    if (imageBox == null) return null;
+
+    final imageSize = imageBox.size;
+    const itemSize = 100.0; // Kích thước của item (icon + label)
+
+    // Tính toán phạm vi hợp lệ để item không bị tràn ra ngoài
+    final maxX = imageSize.width - itemSize;
+    final maxY = imageSize.height - itemSize;
+
+    // Nếu image quá nhỏ, không thể đặt item
+    if (maxX <= 0 || maxY <= 0) {
+      return Offset.zero;
+    }
+
+    final random = Random();
+    final randomX = random.nextDouble() * maxX;
+    final randomY = random.nextDouble() * maxY;
+
+    return Offset(randomX, randomY);
+  }
+
   void _showAddCameraDropdown(
     BuildContext context,
     BuildContext buttonContext,
@@ -106,7 +133,7 @@ class _MapViewState extends State<MapView> {
         onSelectCamera: (cameraName) {
           final newItem = DragItemModel(
             id: DateTime.now().millisecondsSinceEpoch.toString(), // hoặc UUID
-            position: Offset(100, 100), // vị trí mặc định
+            position: _getRandomPosition() ?? Offset.zero, // vị trí mặc định
             label: cameraName,
           );
 
@@ -155,12 +182,28 @@ class _MapViewState extends State<MapView> {
           _buildTopBar(context),
           if (state.emapSelected?.backgroundPath != null)
             Expanded(
-              child: Image.network(
-                state.emapSelected?.backgroundPath ?? '',
-                loadingBuilder: (context, child, loadingProgress) =>
-                    loadingProgress == null
-                    ? child
-                    : const Center(child: CircularProgressIndicator()),
+              child: Stack(
+                children: [
+                  // Wrap Image với Container có key để lấy kích thước chính xác
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Container(
+                        key: _imageKey,
+                        child: Image.network(
+                          state.emapSelected?.backgroundPath ?? '',
+                          fit: BoxFit.contain,
+                          loadingBuilder: (context, child, loadingProgress) =>
+                              loadingProgress == null
+                              ? child
+                              : Center(child: CircularProgressIndicator()),
+                        ),
+                      );
+                    },
+                  ),
+                  ...(state.dragItems ?? []).map(
+                    (item) => _buildDragItem(item),
+                  ),
+                ],
               ),
             ),
         ],
@@ -183,56 +226,8 @@ class _MapViewState extends State<MapView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.3,
-                height: 40,
-                child: TextField(
-                  onChanged: (value) {},
-                  decoration: InputDecoration(
-                    prefixIcon: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 12,
-                      ),
-                      child: SvgPicture.asset(AppAssets.icSearch),
-                    ),
-                    hintText: 'Nhập tên camera',
-                    hintStyle: AppTypography.style(
-                      14,
-                      color: AppColors.grey64748B,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 8,
-                      horizontal: 12,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4),
-                      borderSide: const BorderSide(
-                        color: AppColors.greyE2E8F0,
-                        width: 1,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4),
-                      borderSide: const BorderSide(
-                        color: AppColors.greyE2E8F0,
-                        width: 1,
-                      ),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4),
-                      borderSide: const BorderSide(
-                        color: AppColors.greyE2E8F0,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
               Builder(
                 builder: (buttonContext) => InkWell(
                   onTap: () {
