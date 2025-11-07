@@ -27,6 +27,19 @@ class _ControlRecordState extends State<ControlRecord> {
   bool _isKilledByUser = false;
 
   @override
+  void didUpdateWidget(covariant ControlRecord oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Đang recording --> đổi cam --> bị build lại --> reset
+    if (oldWidget.isRecording != widget.isRecording && _process != null) {
+      Future.delayed(
+        Duration.zero,
+        () => _onStop('Quá trình ghi hình đã dừng. Video đã được lưu thành công'),
+      );
+    }
+  }
+
+  @override
   void dispose() {
     // Trường hợp đang ghi mà đổi tab/đổi cam/logout ... --> toast
     if (_process != null) {
