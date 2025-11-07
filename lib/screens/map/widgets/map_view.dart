@@ -13,6 +13,7 @@ import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 
 import 'add_camera_dropdown.dart';
+import 'emap_camera_portal.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -23,7 +24,6 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   OverlayEntry? _overlayEntry;
-  List<CameraEntity> _cameras = [];
   final GlobalKey _imageKey = GlobalKey();
   // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
   final Map<String, Offset> _dragOffsets = {};
@@ -130,11 +130,12 @@ class _MapViewState extends State<MapView> {
           _overlayEntry?.remove();
           _overlayEntry = null;
         },
-        onSelectCamera: (cameraName) {
+        onSelectCamera: (camera) {
           final newItem = DragItemModel(
             id: DateTime.now().millisecondsSinceEpoch.toString(), // hoặc UUID
             position: _getRandomPosition() ?? Offset.zero, // vị trí mặc định
-            label: cameraName,
+            label: camera.name,
+            source: camera.subStreamUri.toString(),
           );
 
           context.read<EmapBloc>().add(AddDragItemEvent(item: newItem));
@@ -142,8 +143,8 @@ class _MapViewState extends State<MapView> {
           _overlayEntry?.remove();
           _overlayEntry = null;
         },
-        onDeselectCamera: (String cameraName) {
-          context.read<EmapBloc>().add(RemoveDragItemEvent(itemId: cameraName));
+        onDeselectCamera: (camera) {
+          context.read<EmapBloc>().add(RemoveDragItemEvent(itemId: camera.name));
         },
         onConfirm: (selectedCameras) {},
       ),
@@ -297,63 +298,79 @@ class _MapViewState extends State<MapView> {
     return Positioned(
       left: item.position.dx,
       top: item.position.dy,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onPanStart: (details) {
-          // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
-          final RenderBox? imageBox =
-              _imageKey.currentContext?.findRenderObject() as RenderBox?;
-          if (imageBox != null) {
-            final localPosition = imageBox.globalToLocal(
-              details.globalPosition,
+      child: EmapCameraPortal(
+        item: item,
+        onDelete: () {},
+        child: Hero(
+          tag: item.id,
+          flightShuttleBuilder: (_, __, ___, ____, toHeroContext) {
+            return Material(
+              color: Colors.transparent,
+              child: toHeroContext.widget,
             );
-            _dragOffsets[item.id] = localPosition - item.position;
-          }
-        },
-        onPanUpdate: (details) {
-          // Sử dụng globalPosition để tính toán vị trí chính xác
-          _updateItemPosition(item.id, details.globalPosition);
-        },
-        onPanEnd: (details) {
-          // Xóa offset đã lưu khi thả item
-          _dragOffsets.remove(item.id);
-          print('Item ${item.id} dropped at: ${item.position}');
-          // Có thể lưu vào database tại đây
-        },
-        child: Column(
-          children: [
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.black,
-                borderRadius: BorderRadius.circular(100),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onPanStart: (details) {
+              // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
+              final RenderBox? imageBox =
+                  _imageKey.currentContext?.findRenderObject() as RenderBox?;
+              if (imageBox != null) {
+                final localPosition = imageBox.globalToLocal(
+                  details.globalPosition,
+                );
+                _dragOffsets[item.id] = localPosition - item.position;
+              }
+            },
+            onPanUpdate: (details) {
+              // Sử dụng globalPosition để tính toán vị trí chính xác
+              _updateItemPosition(item.id, details.globalPosition);
+            },
+            onPanEnd: (details) {
+              // Xóa offset đã lưu khi thả item
+              _dragOffsets.remove(item.id);
+              print('Item ${item.id} dropped at: ${item.position}');
+              // Có thể lưu vào database tại đây
+            },
+            child: Column(
+              children: [
+                // Popup
+                FittedBox(
+                  child: Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.black,
+                      borderRadius: BorderRadius.circular(100),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
                   ),
-                ],
-              ),
-              child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
-            ),
-            SizedBox(height: 8),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                color: AppColors.black,
-              ),
-              child: Text(
-                item.label ?? "",
-                style: AppTypography.style(
-                  13,
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w500,
                 ),
-              ),
+                SizedBox(height: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: AppColors.black,
+                  ),
+                  child: Text(
+                    item.label ?? "",
+                    style: AppTypography.style(
+                      13,
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
