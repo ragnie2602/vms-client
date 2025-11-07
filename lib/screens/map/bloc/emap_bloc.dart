@@ -15,6 +15,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     on<ChangeEmapEvent>(_onChangeSelectEmap);
     on<RemoveEmapEvent>(_onRemoveEmap);
     on<AddEmapEvent>(_onAddEmap);
+    on<EditEmapEvent>(_onEditEmap);
   }
 
   FutureOr<void> _onGetListEmap(
@@ -64,6 +65,32 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     res.fold((onFailure) {}, (onSuccess) {
       emaps.add(onSuccess);
       emit(AddEmapSuccessState());
+      emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
+    });
+  }
+
+  FutureOr<void> _onEditEmap(
+    EditEmapEvent event,
+    Emitter<EmapState> emit,
+  ) async {
+    if ((state is EmapSuccessState) == false) {
+      await _onGetListEmap(GetListEmapEvent(), emit);
+      return;
+    }
+    final currentState = state as EmapSuccessState;
+    List<EmapEntity> emaps = List<EmapEntity>.of(currentState.listEmap ?? []);
+    emit(EmapLoadingState());
+    final res = await emapRepository.postEmap(
+      emapId: event.emapId,
+      emapName: event.emapName,
+      imageBytes: event.imageBytes,
+      imagePath: event.imagePath,
+    );
+    res.fold((onFailure) {}, (onSuccess) {
+      emaps = emaps
+          .map((e) => listEquals(e.emapId, event.emapId) ? onSuccess : e)
+          .toList();
+      emit(EditEmapSuccessState());
       emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
     });
   }
