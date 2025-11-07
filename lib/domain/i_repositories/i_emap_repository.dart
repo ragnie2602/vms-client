@@ -9,7 +9,7 @@ abstract class IEmapRepository {
     required String emapName,
     required String imagePath,
     required Uint8List imageBytes,
-    required String serverUrl,
+    // required String serverUrl,
     List<int>? emapId,
     List<int>? userId,
   });
@@ -28,6 +28,6 @@ abstract class IEmapRepository {
   /// Add camera to Emap
   Future<Either<Failure, CameraEmapInfoEntity>> addCameraEmapInfo({
     required List<int> emapId,
-    required CameraEmapInfoEntity info,
+    required CameraEmapInfoEntity cameraEmapinfo,
   });
 }
