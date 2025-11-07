@@ -3,18 +3,26 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
+import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 
 class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
+  List<CameraEntity> listCamera = [];
   final IEmapRepository emapRepository;
   EmapBloc({required this.emapRepository}) : super(const EmapState()) {
     on<GetListEmapEvent>(_onGetListEmap);
     on<ChangeEmapEvent>(_onChangeSelectEmap);
     on<RemoveEmapEvent>(_onRemoveEmap);
+    on<AddCameraEmapEvent>(_addCameraEmapInfo);
+    on<GetAllListCameraEvent>(_onGetListCamera);
     on<AddEmapEvent>(_onAddEmap);
+    on<AddDragItemEvent>(_onAddDragItem);
+    on<UpdateDragItemPositionEvent>(_onUpdateDragItemPosition);
+    on<RemoveDragItemEvent>(_onRemoveDragItem);
   }
 
   FutureOr<void> _onGetListEmap(
@@ -43,6 +51,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
       return;
     }
     final currentState = state as EmapSuccessState;
+    currentState.dragItems?.clear();
     if (currentState.emapSelected != event.emap) {
       emit(currentState.copyWith(emapSelected: event.emap));
     }
@@ -105,4 +114,69 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
       emit(AddCameraEmapSuccessState(cameraEmapInfo: cameraEmapInfoEntity));
     });
   }
+
+  FutureOr<void> _onGetListCamera(
+    GetAllListCameraEvent event,
+    Emitter<EmapState> emit,
+  ) async {
+    final groups = await emapRepository.getAllCamera();
+    groups.fold(
+      (onFailure) {
+        listCamera = [];
+      },
+      (onSuccess) {
+        listCamera = onSuccess;
+        debugPrint('_onGetListCamera Camera count: ${listCamera.length}');
+      },
+    );
+  }
+
+  // Handler thêm item mới
+  FutureOr<void> _onAddDragItem(
+    AddDragItemEvent event,
+    Emitter<EmapState> emit,
+  ) {
+    final currentState = state as EmapSuccessState;
+    final updatedItems = List<DragItemModel>.from(currentState.dragItems ?? [])
+      ..add(event.item);
+
+    emit(currentState.copyWith(dragItems: updatedItems));
+  }
+
+  // Handler cập nhật vị trí item
+  FutureOr<void> _onUpdateDragItemPosition(
+    UpdateDragItemPositionEvent event,
+    Emitter<EmapState> emit,
+  ) {
+    final currentState = state as EmapSuccessState;
+    final updatedItems = currentState.dragItems?.map((item) {
+      if (item.id == event.itemId) {
+        return item.copyWith(position: event.newPosition);
+      }
+      return item;
+    }).toList();
+
+    emit(currentState.copyWith(dragItems: updatedItems));
+  }
+
+  // Handler xóa item
+  FutureOr<void> _onRemoveDragItem(
+    RemoveDragItemEvent event,
+    Emitter<EmapState> emit,
+  ) {
+    final currentState = state as EmapSuccessState;
+    final updatedItems = currentState.dragItems
+        ?.where((item) => item.id != event.itemId)
+        .toList();
+
+    emit(currentState.copyWith(dragItems: updatedItems));
+  }
+
+  // Future<void> _onlistCameraEmapInfo(ListCameraEmapInfoEvent event) async {
+  //   final res = await emapRepository.listCameraEmapInfo(emapId: event.emapId);
+  //   res.fold((onFailure) {}, (onSuccess) {
+  //     listCameraEmapInfo = onSuccess;
+  //     );
+  //   });
+  // }
 }
