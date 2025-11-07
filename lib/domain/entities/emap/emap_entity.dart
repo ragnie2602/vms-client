@@ -1,15 +1,11 @@
 import 'package:flutter/foundation.dart';
 
 class EmapEntity {
-  final List<int> emapId;
-  final String emapName;
-  final String backgroundPath;
+  final List<int>? emapId;
+  final String? emapName;
+  final String? backgroundPath;
 
-  EmapEntity({
-    required this.emapId,
-    required this.emapName,
-    required this.backgroundPath,
-  });
+  EmapEntity({this.emapId, this.emapName, this.backgroundPath});
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
