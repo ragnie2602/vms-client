@@ -72,6 +72,7 @@ class _MapViewState extends State<MapView> {
           _overlayEntry?.remove();
           _overlayEntry = null;
         },
+        onConfirm: (selectedCameras) {},
       ),
     );
 
