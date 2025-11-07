@@ -15,7 +15,7 @@ class PanelController {
     bool? toggleSidebar,
   })
   togglePanel;
-  late void Function() closePanel;
+  late void Function({bool? toggleSidebar}) closePanel;
 
   late double expandedWidth;
 }
@@ -60,7 +60,7 @@ class _PanelState extends State<Panel> {
     Function(int?)? onPanelIndexChanged,
     bool? toggleSidebar,
   }) async {
-    shouldToggleSidebar = toggleSidebar;
+    shouldToggleSidebar = toggleSidebar ?? true;
     this.onPanelIndexChanged = onPanelIndexChanged;
     this.onPanelIndexChanged?.call(id);
 
@@ -85,11 +85,11 @@ class _PanelState extends State<Panel> {
     }
   }
 
-  void closePanel() {
+  void closePanel({bool? toggleSidebar}) {
     if (!isOpening) return;
     _width.value = 0;
     onPanelIndexChanged?.call(null);
-    toggleSidebar(2);
+    if (toggleSidebar == true) this.toggleSidebar(2);
   }
 
   /// 1: đóng + save trạng thái cũ, 2: khôi phục lại trạng thái cũ
@@ -117,6 +117,7 @@ class _PanelState extends State<Panel> {
                 onTap: () {
                   _width.value = 0;
                   onPanelIndexChanged?.call(null);
+                  toggleSidebar(2);
                 },
                 child: SvgPicture.asset(AppAssets.icClose),
               ),

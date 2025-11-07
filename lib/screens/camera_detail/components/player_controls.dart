@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 import '../widgets/camera_detail_player.dart';
 import '../widgets/control_record.dart';
+import '../widgets/control_source.dart';
 import '../widgets/control_speed_box.dart';
 import '../widgets/control_volume.dart';
 
@@ -47,6 +48,12 @@ class PlayerControls extends StatelessWidget {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      /* Sources */
+                      if (mode.isLive) Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: ControlSource(disabled: isRecording),
+                      ),
+
                       /* Volumne */
                       ControlVolume(disabled: isRecording),
 

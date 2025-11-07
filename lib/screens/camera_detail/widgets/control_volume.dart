@@ -20,9 +20,9 @@ class _ControlVolumeState extends State<ControlVolume> {
 
   double _volumeBeforeMuted = 0;
 
-  VoidCallback? _wrapper(VoidCallback callback) {
-    if (widget.disabled) return null;
-    return callback;
+  void _wrapper(VoidCallback callback) {
+    if (widget.disabled) return;
+    callback.call();
   }
 
   @override
@@ -40,7 +40,7 @@ class _ControlVolumeState extends State<ControlVolume> {
             return Row(
               children: <Widget>[
                 InkWell(
-                  onTap: _wrapper(() {
+                  onTap: () => _wrapper(() {
                     isMuted = !isMuted;
                     if (isMuted) _volumeBeforeMuted = volume;
                     context.read<CameraDetailBloc>().add(
