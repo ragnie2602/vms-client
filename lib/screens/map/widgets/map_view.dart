@@ -110,7 +110,7 @@ class _MapViewState extends State<MapView> {
           if (state.emapSelected?.backgroundPath != null)
             Expanded(
               child: Image.network(
-                state.emapSelected!.backgroundPath,
+                state.emapSelected?.backgroundPath ?? '',
                 loadingBuilder: (context, child, loadingProgress) =>
                     loadingProgress == null
                     ? child
