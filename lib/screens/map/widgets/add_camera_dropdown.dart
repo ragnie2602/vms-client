@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 class AddCameraDropdown extends StatefulWidget {
   final Offset position;
   final VoidCallback? onClose;
+  final List<CameraEntity> listCamera;
 
-  const AddCameraDropdown({Key? key, required this.position, this.onClose})
-    : super(key: key);
+  const AddCameraDropdown({
+    Key? key,
+    required this.position,
+    this.onClose,
+    required this.listCamera,
+  }) : super(key: key);
 
   @override
   State<AddCameraDropdown> createState() => _AddCameraDropdownState();
@@ -17,30 +23,23 @@ class AddCameraDropdown extends StatefulWidget {
 class _AddCameraDropdownState extends State<AddCameraDropdown> {
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
+  List<CameraEntity> listCameras = [];
 
   // Lưu trạng thái chọn của camera
   final Set<String> _selectedCameras = {};
 
-  // Danh sách camera mẫu - sẽ được thay thế bằng dữ liệu thực tế
-  final List<Map<String, dynamic>> _cameras = [
-    {'name': 'Camera cửa chính', 'status': 'Đang hoạt động', 'isActive': true},
-    {
-      'name': 'Camera phòng khách',
-      'status': 'Đang hoạt động',
-      'isActive': true,
-    },
-    {'name': 'Camera phòng ngủ', 'status': 'Đang hoạt động', 'isActive': true},
-    {'name': 'Camera Tầng 10', 'status': 'Dừng hoạt động', 'isActive': false},
-  ];
-
-  List<Map<String, dynamic>> get _filteredCameras {
+  List<CameraEntity> get _filteredCameras {
     final query = _searchController.text.toLowerCase();
-    if (query.isEmpty) return _cameras;
-    return _cameras
-        .where(
-          (camera) => camera['name'].toString().toLowerCase().contains(query),
-        )
+    if (query.isEmpty) return listCameras;
+    return listCameras
+        .where((camera) => camera.name.toString().toLowerCase().contains(query))
         .toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    listCameras = widget.listCamera;
   }
 
   @override
@@ -125,87 +124,93 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                     )
                   else
                     Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: _filteredCameras.length,
-                        itemBuilder: (context, index) {
-                          final camera = _filteredCameras[index];
-                          final bool isActive = camera['isActive'] as bool;
+                      child: listCameras.isNotEmpty
+                          ? ListView.builder(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: _filteredCameras.length,
+                              itemBuilder: (context, index) {
+                                final camera = _filteredCameras[index];
+                                final bool isActive =
+                                    widget.listCamera![index].isOnline;
 
-                          return Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                setState(() {
-                                  final name = camera['name'] as String;
-                                  if (_selectedCameras.contains(name)) {
-                                    _selectedCameras.remove(name);
-                                  } else {
-                                    _selectedCameras.add(name);
-                                  }
-                                });
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    isActive
-                                        ? SvgPicture.asset(
-                                            AppAssets.icVideoOn,
-                                            width: 20,
-                                            height: 20,
-                                          )
-                                        : SvgPicture.asset(
-                                            AppAssets.icVideoOff,
-                                            width: 20,
-                                            height: 20,
-                                          ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        final name = camera.name;
+                                        if (_selectedCameras.contains(name)) {
+                                          _selectedCameras.remove(name);
+                                        } else {
+                                          _selectedCameras.add(name);
+                                        }
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                      child: Row(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            camera['name'] as String,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
+                                          isActive
+                                              ? SvgPicture.asset(
+                                                  AppAssets.icVideoOn,
+                                                  width: 20,
+                                                  height: 20,
+                                                )
+                                              : SvgPicture.asset(
+                                                  AppAssets.icVideoOff,
+                                                  width: 20,
+                                                  height: 20,
+                                                ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  camera.name,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  camera.isOnline
+                                                      ? 'Đang hoạt động'
+                                                      : 'Dừng hoạt động',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: AppColors.grey64748B,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          Text(
-                                            camera['status'] as String,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.grey64748B,
-                                            ),
-                                          ),
+
+                                          _selectedCameras.contains(camera.name)
+                                              ? SvgPicture.asset(
+                                                  AppAssets.icChecked,
+                                                  width: 20,
+                                                  height: 20,
+                                                )
+                                              : SvgPicture.asset(
+                                                  AppAssets.icCheckBox,
+                                                  width: 20,
+                                                  height: 20,
+                                                ),
                                         ],
                                       ),
                                     ),
-
-                                    _selectedCameras.contains(camera['name'])
-                                        ? SvgPicture.asset(
-                                            AppAssets.icChecked,
-                                            width: 20,
-                                            height: 20,
-                                          )
-                                        : SvgPicture.asset(
-                                            AppAssets.icCheckBox,
-                                            width: 20,
-                                            height: 20,
-                                          ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                                  ),
+                                );
+                              },
+                            )
+                          : Text("Không có camera"),
                     ),
                 ],
               ),

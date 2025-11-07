@@ -97,11 +97,12 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     groups.fold(
       (onFailure) {
         listCamera = [];
-        emit(ListAllCameraFailState(groups.left.toString()));
       },
       (onSuccess) {
         listCamera = onSuccess;
-        emit(ListAllCameraSuccessState(cameras: listCamera));
+         debugPrint(
+          '_onGetListCamera Camera count: ${listCamera.length}',
+        );
       },
     );
   }
