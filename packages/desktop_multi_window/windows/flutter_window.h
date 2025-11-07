@@ -31,6 +31,8 @@ class FlutterWindow : public BaseFlutterWindow {
   FlutterWindow(int64_t id, std::string args, const std::shared_ptr<FlutterWindowCallback> &callback);
   ~FlutterWindow() override;
 
+  void InitializeMediaPlugins();
+
   WindowChannel *GetWindowChannel() override {
     return window_channel_.get();
   }
@@ -40,6 +42,8 @@ class FlutterWindow : public BaseFlutterWindow {
   HWND GetWindowHandle() override { return window_handle_; }
 
  private:
+
+  FlutterDesktopPluginRegistrarRef registrar = nullptr;
 
   std::weak_ptr<FlutterWindowCallback> callback_;
 
