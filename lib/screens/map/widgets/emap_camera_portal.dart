@@ -28,6 +28,7 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
     return InkWell(
       key: childKey,
       onTap: () {
+        showPlayer = false;
         final RenderBox box = childKey.currentContext!.findRenderObject() as RenderBox;
         final Offset globalOffset = box.localToGlobal(Offset.zero);
 
@@ -46,10 +47,7 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
                 ),
                 children: [
                   if (showPlayer) LayoutId(id: 0, child: _wrapMaterial(_buildPlayer(setState))),
-                  LayoutId(
-                    id: 1,
-                    child: _wrapMaterial(IgnorePointer(ignoring: true, child: widget.child)),
-                  ),
+                  LayoutId(id: 1, child: widget.child),
                   LayoutId(id: 2, child: _wrapMaterial(_buildActionItem(setState))),
                 ],
               ),

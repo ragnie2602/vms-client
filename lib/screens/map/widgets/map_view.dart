@@ -298,77 +298,77 @@ class _MapViewState extends State<MapView> {
     return Positioned(
       left: item.position.dx,
       top: item.position.dy,
-      child: EmapCameraPortal(
-        item: item,
-        onDelete: () {},
-        child: Hero(
-          tag: item.id,
-          flightShuttleBuilder: (_, __, ___, ____, toHeroContext) {
-            return Material(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanStart: (details) {
+          // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
+          final RenderBox? imageBox = _imageKey.currentContext?.findRenderObject() as RenderBox?;
+          if (imageBox != null) {
+            final localPosition = imageBox.globalToLocal(details.globalPosition);
+            _dragOffsets[item.id] = localPosition - item.position;
+          }
+        },
+        onPanUpdate: (details) {
+          // Sử dụng globalPosition để tính toán vị trí chính xác
+          _updateItemPosition(item.id, details.globalPosition);
+        },
+        onPanEnd: (details) {
+          // Xóa offset đã lưu khi thả item
+          _dragOffsets.remove(item.id);
+          print('Item ${item.id} dropped at: ${item.position}');
+          // Có thể lưu vào database tại đây
+        },
+        child: EmapCameraPortal(
+          item: item,
+          onDelete: () {},
+          child: Hero(
+            tag: item.id,
+            // flightShuttleBuilder: (_, __, ___, ____, toHeroContext) {
+            //   return Material(
+            //     color: Colors.transparent,
+            //     child: toHeroContext.widget,
+            //   );
+            // },
+            child: Material(
               color: Colors.transparent,
-              child: toHeroContext.widget,
-            );
-          },
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onPanStart: (details) {
-              // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
-              final RenderBox? imageBox =
-                  _imageKey.currentContext?.findRenderObject() as RenderBox?;
-              if (imageBox != null) {
-                final localPosition = imageBox.globalToLocal(
-                  details.globalPosition,
-                );
-                _dragOffsets[item.id] = localPosition - item.position;
-              }
-            },
-            onPanUpdate: (details) {
-              // Sử dụng globalPosition để tính toán vị trí chính xác
-              _updateItemPosition(item.id, details.globalPosition);
-            },
-            onPanEnd: (details) {
-              // Xóa offset đã lưu khi thả item
-              _dragOffsets.remove(item.id);
-              print('Item ${item.id} dropped at: ${item.position}');
-              // Có thể lưu vào database tại đây
-            },
-            child: Column(
-              children: [
-                // Popup
-                FittedBox(
-                  child: Container(
-                    padding: EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  // Popup
+                  IntrinsicWidth(
+                    child: Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.black,
+                        borderRadius: BorderRadius.circular(100),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
                       color: AppColors.black,
-                      borderRadius: BorderRadius.circular(100),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
                     ),
-                    child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
-                  ),
-                ),
-                SizedBox(height: 8),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    color: AppColors.black,
-                  ),
-                  child: Text(
-                    item.label ?? "",
-                    style: AppTypography.style(
-                      13,
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w500,
+                    child: Text(
+                      item.label ?? "",
+                      style: AppTypography.style(
+                        13,
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
