@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_size_getter/file_input.dart';
@@ -10,32 +11,51 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_field.dart';
+import 'package:vms_flutter_client/screens/map/widgets/convert.dart';
 import 'package:vms_flutter_client/screens/map/widgets/dash_border_widget.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 /// Data model cho dialog thêm bản đồ
 class AddMapPayload {
   final String name;
-  final File imageFile;
+  final File? imageFile;
+  // case edit
+  final String? imgPath;
+  final Uint8List? imgBytes;
 
-  const AddMapPayload({required this.name, required this.imageFile});
+  const AddMapPayload({
+    required this.name,
+    this.imageFile,
+    this.imgBytes,
+    this.imgPath,
+  });
 }
 
 /// Entry point để hiển thị dialog thêm bản đồ
 Future<T?> showAddMapDialog<T>(
   BuildContext context, {
   Future<void> Function(AddMapPayload value)? onSubmit,
+  // dùng cho case edit
+  final String? emapName,
+  final String? backgroundPath,
 }) {
   return showDialog<T>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => _AddMapDialog(onSubmit: onSubmit),
+    builder: (_) => _AddMapDialog(
+      onSubmit: onSubmit,
+      backgroundPath: backgroundPath,
+      emapName: emapName,
+    ),
   );
 }
 
 class _AddMapDialog extends StatefulWidget {
-  const _AddMapDialog({this.onSubmit});
+  const _AddMapDialog({this.onSubmit, this.backgroundPath, this.emapName});
   final Future<void> Function(AddMapPayload value)? onSubmit;
+  // dùng cho case edit
+  final String? emapName;
+  final String? backgroundPath;
 
   @override
   State<_AddMapDialog> createState() => _AddMapDialogState();
@@ -46,8 +66,22 @@ class _AddMapDialogState extends State<_AddMapDialog> {
   final _nameController = TextEditingController();
 
   bool _isValidateImage = false;
+  String _errorImageMessage = ''; // check lỗi inline
   File? _selectedImage;
-  Size? _imageSize;
+
+  // case edit emap
+  String? _backgroundPath;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget.emapName ?? '';
+    _backgroundPath = widget.backgroundPath;
+  }
+
+  bool isEditEmap() {
+    return (widget.emapName != null && widget.backgroundPath != null);
+  }
 
   @override
   void dispose() {
@@ -57,32 +91,16 @@ class _AddMapDialogState extends State<_AddMapDialog> {
 
   Future<void> _pickImage() async {
     try {
+      _isValidateImage = false;
+      _validateImage();
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['jpg', 'jpeg', 'png', 'bmp'],
       );
       if (result != null) {
         final file = File(result.files.single.path!);
-        // Kiểm tra kích thước file
-        final size = await file.length();
-        if (size > 20 * 1024 * 1024) {
-          // 20MB
-          if (mounted) {
-            showAppMessageDialog(
-              context,
-              message: 'Kích thước file không được vượt quá 20MB',
-              type: AppMessageType.error,
-            );
-          }
-          return;
-        }
-
-        // Lấy kích thước ảnh
-        final imageSize = ImageSizeGetter.getSize(FileInput(file));
         setState(() {
           _selectedImage = file;
-          _isValidateImage = false;
-          _imageSize = Size(imageSize.width.toInt(), imageSize.height.toInt());
         });
       }
     } catch (e) {
@@ -99,20 +117,90 @@ class _AddMapDialogState extends State<_AddMapDialog> {
   void _removeImage() {
     setState(() {
       _selectedImage = null;
-      _imageSize = null;
     });
+  }
+
+  void _validateImage() async {
+    if (_isValidateImage == true) {
+      // case add new emap
+      if (!isEditEmap()) {
+        // ảnh rỗng
+        if (_selectedImage == null) {
+          _errorImageMessage = 'Hình ảnh không được để trống';
+        } else {
+          // check dung lượng ảnh
+          _errorImageMessage = await _checkSizeImage();
+          if (_errorImageMessage.isEmpty) {
+            // check kích thước ảnh
+            _errorImageMessage = await _checkDimensionImage();
+          }
+        }
+      } else {
+        // case edit image
+        if (_selectedImage == null) {
+          // case giữ nguyên ảnh gốc, ko thay ảnh
+          _errorImageMessage = '';
+        } else {
+          // check dung lượng ảnh
+          _errorImageMessage = await _checkSizeImage();
+          //
+          if (_errorImageMessage.isEmpty) {
+            // check kích thước ảnh
+            _errorImageMessage = await _checkDimensionImage();
+          }
+        }
+      }
+    } else {
+      _errorImageMessage = '';
+    }
+    setState(() {});
+  }
+
+  Future<String> _checkSizeImage() async {
+    if (_selectedImage == null) {
+      return '';
+    }
+    // Kiểm tra dung lượng file
+    final size = await _selectedImage!.length();
+    if (size > 20 * 1024 * 1024) {
+      return 'Dung lượng tối đa: 20 MB';
+    }
+    return '';
+  }
+
+  Future<String> _checkDimensionImage() async {
+    if (_selectedImage == null) {
+      return '';
+    }
+    // Lấy kích thước ảnh
+    final imageSize = ImageSizeGetter.getSize(FileInput(_selectedImage!));
+    if (imageSize.width.toInt() < 500 || imageSize.height.toInt() < 500) {
+      return 'Kích thước tối thiểu 500x500 px';
+    }
+    return '';
   }
 
   Future<void> _handleSubmit() async {
     setState(() {
       _isValidateImage = true;
     });
-
-    if (_form.currentState?.validate() ?? false) {
-      final payload = AddMapPayload(
-        name: _nameController.text.trim(),
-        imageFile: _selectedImage!,
-      );
+    _validateImage();
+    if ((_form.currentState?.validate() ?? false) &&
+        _errorImageMessage.isEmpty) {
+      AddMapPayload payload;
+      if ((_selectedImage == null && isEditEmap())) {
+        Uint8List _tmp = await networkImageToBytes(_backgroundPath ?? '');
+        payload = AddMapPayload(
+          name: _nameController.text.trim(),
+          imgPath: _backgroundPath,
+          imgBytes: _tmp,
+        );
+      } else {
+        payload = AddMapPayload(
+          name: _nameController.text.trim(),
+          imageFile: _selectedImage!,
+        );
+      }
 
       try {
         await widget.onSubmit?.call(payload);
@@ -184,59 +272,81 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                     children: [
                       CustomPaint(
                         painter: DashedBorderPainter(
-                          isError:
-                              (_isValidateImage == true &&
-                                  _selectedImage == null)
-                              ? true
-                              : false,
+                          isError: _errorImageMessage.isNotEmpty,
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (_selectedImage == null)
-                              SizedBox(
-                                width: double.infinity,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.35,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    InkWell(
-                                      onTap: () => _pickImage(),
-                                      child: SvgPicture.asset(
-                                        AppAssets.icAddImage,
+                              if (isEditEmap())
+                                Container(
+                                  padding: EdgeInsets.only(
+                                    top: 24,
+                                    left: 10,
+                                    right: 10,
+                                  ),
+                                  width: double.infinity,
+                                  constraints: BoxConstraints(
+                                    maxHeight:
+                                        MediaQuery.of(context).size.height *
+                                        0.35,
+                                  ),
+                                  child: Image.network(
+                                    _backgroundPath ?? '',
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) =>
+                                            loadingProgress == null
+                                            ? child
+                                            : Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
+                                  ),
+                                )
+                              else
+                                SizedBox(
+                                  width: double.infinity,
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.35,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      InkWell(
+                                        onTap: () => _pickImage(),
+                                        child: SvgPicture.asset(
+                                          AppAssets.icAddImage,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Click + để thêm hình ảnh bản đồ.',
-                                      style: AppTypography.style(
-                                        13,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.grey64748B,
-                                      ),
-                                    ),
-
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 40,
-                                        right: 40,
-                                        top: 4,
-                                      ),
-                                      child: Text(
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        'Hỗ trợ định dạng .JPG, .JPEG, .PNG, .BMP,\n kích thước tối thiểu 500×500px, dung lượng tối đa 20MB.',
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Click + để thêm hình ảnh bản đồ.',
                                         style: AppTypography.style(
                                           13,
-                                          fontWeight: FontWeight.w400,
+                                          fontWeight: FontWeight.w500,
                                           color: AppColors.grey64748B,
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              )
+
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 40,
+                                          right: 40,
+                                          top: 4,
+                                        ),
+                                        child: Text(
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          'Hỗ trợ định dạng .JPG, .JPEG, .PNG, .BMP,\n kích thước tối thiểu 500×500px, dung lượng tối đa 20MB.',
+                                          style: AppTypography.style(
+                                            13,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppColors.grey64748B,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
                             else
                               Stack(
                                 children: [
@@ -265,28 +375,6 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                                     right: 8,
                                     child: Row(
                                       children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(
-                                              0.6,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            '${_imageSize?.width.toInt() ?? 0}x${_imageSize?.height.toInt() ?? 0}',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
                                         InkWell(
                                           onTap: _removeImage,
                                           child: Container(
@@ -309,7 +397,9 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                                   ),
                                 ],
                               ),
-                            if (_selectedImage != null) ...[
+                            if (_selectedImage != null ||
+                                (_selectedImage == null &&
+                                    _backgroundPath != null)) ...[
                               const SizedBox(height: 16),
                               InkWell(
                                 onTap: () {
@@ -342,7 +432,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                           ],
                         ),
                       ),
-                      (_isValidateImage == true && _selectedImage == null)
+                      (_errorImageMessage.isNotEmpty)
                           ? Padding(
                               padding: const EdgeInsets.only(top: 5),
                               child: Row(
@@ -356,7 +446,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
-                                      'Hình ảnh không được để trống',
+                                      _errorImageMessage,
                                       style: AppTypography.style(
                                         12,
                                         fontWeight: FontWeight.w500,
