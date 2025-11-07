@@ -14,6 +14,7 @@
 #include "include/desktop_multi_window/desktop_multi_window_plugin.h"
 #include <window_manager/window_manager_plugin.h>
 #include <fvp/fvp_plugin_c_api.h>
+#include <media_kit_video/media_kit_video_plugin_c_api.h>
 #include "multi_window_plugin_internal.h"
 
 // Include resource definitions from the main runner
