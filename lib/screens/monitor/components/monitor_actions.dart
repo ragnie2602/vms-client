@@ -91,7 +91,10 @@ class _MonitorActionsState extends State<MonitorActions> {
                         onTap: (data) {
                           context.pushNamed(
                             Routes.cameraDetail.name,
-                            extra: CameraDetailScreenArgs(data: data),
+                            extra: CameraDetailScreenArgs(
+                              data: data,
+                              openCamerasPanelImmediately: true,
+                            ),
                           );
                         },
                       ),

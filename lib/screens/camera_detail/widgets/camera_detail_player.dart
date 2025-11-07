@@ -10,6 +10,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
@@ -123,6 +124,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
   PlaybackVideo get currentPlayback => widget.playlist[_playlistIndex];
   int get initialIndex => widget.initialIndex;
+  bool get isInitialized => _state.value == _PlayerState.initialized;
 
   @override
   void initState() {
@@ -144,9 +146,10 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onInitializedValues?.call(volume: _player.state.volume, speed: _player.state.rate);
 
-      if (widget.mode != PlayerMode.playlist) return;
-      widget.controller.onPlaybackChanged?.call(_playlistIndex);
-      widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
+      if (widget.mode == PlayerMode.playlist) {
+        widget.controller.onPlaybackChanged?.call(_playlistIndex);
+        widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
+      }
     });
   }
 
@@ -173,6 +176,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   void didUpdateWidget(covariant CameraDetailPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
     name = widget.name;
+    if (widget.mode == PlayerMode.liveview && oldWidget.source != widget.source) {
+      _onOpenPlayer();
+    }
   }
 
   Future<void> _initPlayer() async {
@@ -460,6 +466,15 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
         });
 
     _zoomAnimationController.forward();
+  }
+
+  Future<Process?> recording(String output) async {
+    // Preload - tránh bị mất các giây đầu
+    await FFmpegProcess.instance.preload(widget.source);
+    // Bắt đầu ghi -- time sẽ chuẩn
+    final process = await FFmpegProcess.instance.record(widget.source, output);
+
+    return process;
   }
 
   @override

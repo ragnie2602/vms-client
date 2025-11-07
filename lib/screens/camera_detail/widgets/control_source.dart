@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -9,31 +8,20 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 
-typedef _SpeedData = ({String label, double value});
-
-class ControlSpeedBox extends StatefulWidget {
-  const ControlSpeedBox({super.key, required this.disabled});
+class ControlSource extends StatefulWidget {
+  const ControlSource({super.key, required this.disabled});
   final bool disabled;
 
   @override
-  State<ControlSpeedBox> createState() => _ControlSpeedBoxState();
+  State<ControlSource> createState() => _ControlSourceState();
 }
 
-class _ControlSpeedBoxState extends State<ControlSpeedBox> {
+class _ControlSourceState extends State<ControlSource> {
   late final _menuShowing = ValueNotifier<bool>(false);
-
-  late final _map = <double, _SpeedData>{
-    0.5: (label: "0.5", value: 0.5),
-    1: (label: "Chuẩn", value: 1),
-    2: (label: "2", value: 2),
-    4: (label: "4", value: 4),
-    8: (label: "8", value: 8),
-    16: (label: "16", value: 16),
-  };
 
   @override
   void dispose() {
@@ -42,13 +30,16 @@ class _ControlSpeedBoxState extends State<ControlSpeedBox> {
   }
 
   void _showMenu() {
+    final streams = context.read<CameraDetailBloc>().state.camera?.stream.streamLinks ?? [];
+    if (streams.isEmpty) return;
+
     _menuShowing.value = true;
     showPopover(
       barrierColor: Colors.black.withValues(alpha: 0.1),
       context: context,
       bodyBuilder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
-        children: _map.values
+        children: streams
             .mapIndexed((index, e) => _buildMenuItem(e, showTopBorder: index != 0))
             .toList(),
       ),
@@ -61,27 +52,9 @@ class _ControlSpeedBoxState extends State<ControlSpeedBox> {
     );
   }
 
-  void _onItemTap(double value) {
+  void _onItemTap(CameraStreamUrlStream value) {
     Navigator.of(context, rootNavigator: true).pop();
-    context.read<CameraDetailBloc>().add(ChangeSpeed(value));
-
-    if (value >= 8) {
-      ToastUtil.toastWarning(
-        context: context,
-        autoCloseDuration: 5,
-        title: Text(
-          "Lưu ý: Tốc độ tua nhanh này yêu cầu băng thông mạng rất lớn nên hình ảnh video có thể bị giật, chậm. Vui lòng chọn chế độ thấp hơn nếu gặp vấn đề khi xem video.",
-          style: AppTypography.style(
-            13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.white,
-            lineHeight: 1.25,
-            letterSpacing: 0.15,
-          ),
-          maxLines: 6,
-        ),
-      );
-    }
+    context.read<CameraDetailBloc>().add(ChangeStream(value));
   }
 
   @override
@@ -90,20 +63,20 @@ class _ControlSpeedBoxState extends State<ControlSpeedBox> {
       onTap: widget.disabled ? null : _showMenu,
       borderRadius: BorderRadius.circular(3),
       child: Container(
+        padding: EdgeInsets.fromLTRB(12, 8, 8, 8),
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.greyE2E8F0),
           borderRadius: BorderRadius.circular(3),
         ),
-        padding: EdgeInsets.fromLTRB(12, 8, 8, 8),
         child: Row(
           children: <Widget>[
-            BlocSelector<CameraDetailBloc, CameraDetailState, double>(
-              selector: (state) => state.speed,
-              builder: (context, speed) {
+            BlocSelector<CameraDetailBloc, CameraDetailState, CameraStreamUrlStream?>(
+              selector: (state) => state.stream,
+              builder: (context, stream) {
                 return ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: 44),
+                  constraints: BoxConstraints(minWidth: 90),
                   child: Text(
-                    _map[speed]?.label ?? "",
+                    stream?.nameOfStream ?? "",
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
@@ -140,14 +113,14 @@ class _ControlSpeedBoxState extends State<ControlSpeedBox> {
     );
   }
 
-  Widget _buildMenuItem(_SpeedData data, {showTopBorder = true}) {
-    bool isSelected = data.value == context.read<CameraDetailBloc>().state.speed;
+  Widget _buildMenuItem(CameraStreamUrlStream stream, {showTopBorder = true}) {
+    bool isSelected = stream == context.read<CameraDetailBloc>().state.stream;
 
     return InkWell(
-      onTap: () => _onItemTap(data.value),
+      onTap: () => _onItemTap(stream),
       child: Container(
-        constraints: BoxConstraints(minWidth: 90),
-        padding: EdgeInsets.fromLTRB(4, 8, 16, 8),
+        constraints: BoxConstraints(minWidth: 108),
+        padding: EdgeInsets.fromLTRB(4, 8, 12, 8),
         decoration: showTopBorder
             ? BoxDecoration(
                 border: Border(top: BorderSide(color: AppColors.greyF2F4FA)),
@@ -168,7 +141,7 @@ class _ControlSpeedBoxState extends State<ControlSpeedBox> {
             ),
             SizedBox(width: 4),
             Text(
-              data.label,
+              stream.nameOfStream,
               style: AppTypography.style(
                 13,
                 fontWeight: FontWeight.w500,

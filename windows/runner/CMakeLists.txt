@@ -14,6 +14,7 @@ add_executable(${BINARY_NAME} WIN32
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
   "Runner.rc"
   "runner.exe.manifest"
+  "../ffmpeg_job_object.cpp"
 )
 
 # Apply the standard set of build settings. This can be removed for applications
@@ -38,3 +39,30 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
+
+# ============================================================
+# Auto-copy ffmpeg.exe to output folder after build
+# ============================================================
+
+set(FFMPEG_SOURCE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../ffmpeg/ffmpeg.exe")
+
+if(NOT EXISTS ${FFMPEG_SOURCE_PATH})
+    message(FATAL_ERROR
+        "❌ ERROR: ffmpeg.exe not found at:\n"
+        "   ${FFMPEG_SOURCE_PATH}\n"
+        "   → Place ffmpeg.exe in: <project_root>/ffmpeg/ffmpeg.exe"
+    )
+endif()
+
+add_custom_command(
+    TARGET ${BINARY_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "📦 Copying ffmpeg.exe to: $<TARGET_FILE_DIR:${BINARY_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy
+            "${FFMPEG_SOURCE_PATH}"
+            "$<TARGET_FILE_DIR:${BINARY_NAME}>/ffmpeg.exe"
+    COMMENT "📌 Attaching FFmpeg after build"
+)
+
+message(STATUS "✅ attach_ffmpeg.cmake loaded")
+message(STATUS "-----------------------------------------------")
