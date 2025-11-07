@@ -7,12 +7,14 @@ class AddCameraDropdown extends StatefulWidget {
   final Offset position;
   final VoidCallback? onClose;
   final Function(String cameraName) onSelectCamera;
+  final Function(String cameraName) onDeselectCamera;
 
   const AddCameraDropdown({
     super.key,
     required this.position,
     this.onClose,
     required this.onSelectCamera,
+    required this.onDeselectCamera,
   });
 
   @override
@@ -146,10 +148,11 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                   final name = camera['name'] as String;
                                   if (_selectedCameras.contains(name)) {
                                     _selectedCameras.remove(name);
+                                    widget.onDeselectCamera(name);
                                   } else {
                                     _selectedCameras.add(name);
+                                    widget.onSelectCamera(name);
                                   }
-                                  widget.onSelectCamera(name);
                                 });
                               },
                               child: Padding(
