@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:toastification/toastification.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
@@ -108,13 +109,15 @@ class _MyAppState extends State<MyApp> with WindowListener {
         create: (context) => (appBloc = context.read<AppBloc>())..add(AppStarted(widget.windowId)),
         child: BlocSelector<AppBloc, AppState, ThemeMode>(
           selector: (state) => state.themeMode,
-          builder: (context, theme) => MaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            title: 'VNPT Secure Vision',
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: theme,
-            routerConfig: AppRouter.router,
+          builder: (context, theme) => ToastificationWrapper(
+            child: MaterialApp.router(
+              debugShowCheckedModeBanner: false,
+              title: 'VNPT Secure Vision',
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: theme,
+              routerConfig: AppRouter.router,
+            ),
           ),
         ),
       ),

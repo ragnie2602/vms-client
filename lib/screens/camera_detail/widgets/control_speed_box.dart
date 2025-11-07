@@ -16,7 +16,8 @@ import '../bloc/camera_detail/camera_detail_bloc.dart';
 typedef _SpeedData = ({String label, double value});
 
 class ControlSpeedBox extends StatefulWidget {
-  const ControlSpeedBox({super.key});
+  const ControlSpeedBox({super.key, required this.disabled});
+  final bool disabled;
 
   @override
   State<ControlSpeedBox> createState() => _ControlSpeedBoxState();
@@ -86,7 +87,7 @@ class _ControlSpeedBoxState extends State<ControlSpeedBox> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: _showMenu,
+      onTap: widget.disabled ? null : _showMenu,
       borderRadius: BorderRadius.circular(3),
       child: Container(
         decoration: BoxDecoration(
@@ -106,7 +107,7 @@ class _ControlSpeedBoxState extends State<ControlSpeedBox> {
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.blackOrWhite,
+                      color: widget.disabled ? AppColors.grey64748B : AppColors.blackOrWhite,
                     ),
                   ),
                 );

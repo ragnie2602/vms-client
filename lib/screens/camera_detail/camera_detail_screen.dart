@@ -13,10 +13,12 @@ import 'widgets/camera_detail_player.dart';
 class CameraDetailScreenArgs extends BaseScreenArgs {
   final CameraEntity? data;
   final bool isPlayback;
+  final bool openCamerasPanelImmediately;
 
   CameraDetailScreenArgs({
     required this.data,
     this.isPlayback = false,
+    this.openCamerasPanelImmediately = false,
     super.onBack,
     String? title,
     super.description,
@@ -26,10 +28,12 @@ class CameraDetailScreenArgs extends BaseScreenArgs {
 class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
   CameraDetailScreen({super.key, required CameraDetailScreenArgs args})
     : data = args.data,
-      isPlayback = args.isPlayback;
+      isPlayback = args.isPlayback,
+      openCamerasPanelImmediately = args.openCamerasPanelImmediately;
 
   final CameraEntity? data;
   final bool isPlayback;
+  final bool openCamerasPanelImmediately;
 
   void _handlePageInfo(BuildContext context, CameraDetailState pre, CameraDetailState cur) {
     if ((pre.mode != cur.mode || pre.camera != cur.camera) && cur.camera != null) {
@@ -65,18 +69,20 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           context.read<PlaybackBloc>().add(GetVideoPlaybacks(state.camera!.id, state.playbackDate));
         },
         buildWhen: (previous, current) {
-          return previous.camera?.id != current.camera?.id || previous.mode != current.mode;
+          return previous.camera?.id != current.camera?.id ||
+              previous.mode != current.mode ||
+              previous.stream != current.stream;
         },
         builder: (context, state) {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: CameraDetailDesktopLayout(
-              openCamerasPanelImmediately: isPlayback,
+              openCamerasPanelImmediately: openCamerasPanelImmediately || isPlayback,
               content: state.camera == null
                   ? null
                   : state.mode.isPlayback
                   ? _waitingPlayback(state, context)
-                  : _buildPlayer(state, context),
+                  : _buildLiveview(state, context),
               mode: state.mode,
             ),
           );
@@ -103,15 +109,16 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           onInitializedValues: ({required double volume, required double speed}) {
             context.read<CameraDetailBloc>().add(ChangeVolume(volume));
             context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+            context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
           },
         ),
       ),
     );
   }
 
-  Widget _buildPlayer(CameraDetailState state, BuildContext context) {
+  Widget _buildLiveview(CameraDetailState state, BuildContext context) {
     return CameraDetailPlayer.liveview(
-      source: state.camera!.mainStreamUri.toString(),
+      source: state.stream?.urlOfStream ?? state.camera!.mainStreamUri.toString(),
       name: state.camera!.name,
       controller: state.cameraDetailController,
       onStatusChanged: (status) {
@@ -120,6 +127,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
       onInitializedValues: ({required double volume, required double speed}) {
         context.read<CameraDetailBloc>().add(ChangeVolume(volume));
         context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+        context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
       },
     );
   }

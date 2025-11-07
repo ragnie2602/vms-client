@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
 class ToastUtil {
-  static toastSuccess({required BuildContext context, Widget? title}) {
+  static toastSuccess({BuildContext? context, Widget? title}) {
     toastification.show(
       context: context,
       title: title ?? Text('Thành công!'),
@@ -12,7 +12,7 @@ class ToastUtil {
     );
   }
 
-  static void toastFail({required BuildContext context, Widget? title}) {
+  static void toastFail({BuildContext? context, Widget? title}) {
     toastification.show(
       context: context,
       title: title ?? Text('Thất bại'),
@@ -23,13 +23,13 @@ class ToastUtil {
   }
 
   static void toastWarning({
-    required BuildContext context,
-    Widget? title,
+    BuildContext? context,
+    required Widget title,
     int autoCloseDuration = 3,
   }) {
     toastification.show(
       context: context,
-      title: title ?? Text('Cảnh báo'),
+      title: title,
       autoCloseDuration: Duration(seconds: autoCloseDuration),
       type: ToastificationType.warning,
       style: ToastificationStyle.fillColored,

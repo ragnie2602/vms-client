@@ -45,34 +45,36 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
       child: BlocSelector<AppBloc, AppState, bool>(
         selector: (state) => state.displayFullScreenLiveView,
         builder: (BuildContext context, shouldDisplayFullScreen) {
-        return Column(
-          children: <Widget>[
-            Visibility(
-              visible: !shouldDisplayFullScreen,
-              child: MonitorActions(leftController: _leftController, rightController: _rightController)
-            ),
-            Container(width: double.infinity, height: 1, color: AppColors.scaffoldBg),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Panel(expandedWidth: widget.leftPanelWidth, controller: _leftController),
-        
-                  Expanded(
-                    child: !shouldDisplayFullScreen ?
-                      Padding(padding: const EdgeInsets.all(20), child: widget.content)
-                      : widget.content,
-                  ),
-        
-                  Panel(expandedWidth: widget.rightPanelWidth, controller: _rightController),
-                ],
+          return Column(
+            children: <Widget>[
+              Visibility(
+                visible: !shouldDisplayFullScreen,
+                child: MonitorActions(
+                  leftController: _leftController,
+                  rightController: _rightController,
+                ),
               ),
-            ),
-          ],
-        );
-      
-      },
-    )
+              Container(width: double.infinity, height: 1, color: AppColors.scaffoldBg),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Panel(expandedWidth: widget.leftPanelWidth, controller: _leftController),
+
+                    Expanded(
+                      child: !shouldDisplayFullScreen
+                          ? Padding(padding: const EdgeInsets.all(20), child: widget.content)
+                          : widget.content,
+                    ),
+
+                    Panel(expandedWidth: widget.rightPanelWidth, controller: _rightController),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

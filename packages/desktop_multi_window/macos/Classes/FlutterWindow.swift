@@ -7,6 +7,9 @@
 import Cocoa
 import FlutterMacOS
 import Foundation
+#if canImport(fvp)
+import fvp
+#endif
 
 class BaseFlutterWindow: NSObject {
   private let window: NSWindow
@@ -79,8 +82,10 @@ class FlutterWindow: BaseFlutterWindow {
     let windowChannel = WindowChannel.register(with: plugin, windowId: id)
     
     // Register fvp plugin for multi-window support
+    #if canImport(fvp)
     let fvpPlugin = flutterViewController.registrar(forPlugin: "FvpPlugin")
     FvpPlugin.register(with: fvpPlugin)
+    #endif
     
     // Give app a chance to register plugin.
     FlutterMultiWindowPlugin.onWindowCreatedCallback?(flutterViewController)
