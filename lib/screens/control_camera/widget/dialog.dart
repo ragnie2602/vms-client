@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
@@ -206,7 +208,6 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return BlocListener<ControlCameraBloc, ControlCameraState>(
       listenWhen: (prev, curr) =>
           curr is CheckOnvifSuccessState ||
@@ -239,7 +240,11 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
               // Reload danh sách camera
               bloc.add(const GetListCameraEvent());
             } else {
-              bloc.add(GetListCameraInGroupEvent(groupId: List.from(bloc.currentGroupId)));
+              bloc.add(
+                GetListCameraInGroupEvent(
+                  groupId: List.from(bloc.currentGroupId),
+                ),
+              );
             }
             // Hiển thị dialog thành công và reload danh sách
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -285,7 +290,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       },
       child: AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
         contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
         actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -305,7 +310,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             ),
             IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
+              icon: SvgPicture.asset(AppAssets.icClose),
               tooltip: 'Đóng',
             ),
           ],
@@ -380,75 +385,81 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
-                  child: AppButton.outline(
-                    label: 'Hủy',
-                    onPressed: (_isChecking || _isSubmitting)
-                        ? null
-                        : () => Navigator.pop(context),
+                  child: SizedBox(
+                    height: 44,
+                    child: AppButton.outline(
+                      label: 'Hủy',
+                      onPressed: (_isChecking || _isSubmitting)
+                          ? null
+                          : () => Navigator.pop(context),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: AppButton.filled(
-                    label: _isSubmitting ? '' : 'Xác nhận',
-                    onPressed: _isSubmitting
-                        ? null
-                        : () async {
-                            if (_form.currentState?.validate() ?? false) {
-                              setState(() => _isSubmitting = true);
+                  child: SizedBox(
+                    height: 44,
+                    child: AppButton.filled(
+                      label: _isSubmitting ? '' : 'Xác nhận',
+                      onPressed: _isSubmitting
+                          ? null
+                          : () async {
+                              if (_form.currentState?.validate() ?? false) {
+                                setState(() => _isSubmitting = true);
 
-                              final payload = AddCameraPayload(
-                                name: _name.text.trim(),
-                                method: _method,
-                                rtsp: _rtsp.text.trim(),
-                                onifDeviceIp: _onvifXaddrs.text.trim(),
-                                username: _onvifUserName.text.trim(),
-                                password: _onvifPassword.text.trim(),
-                                subStream: _sub.text.trim(),
-                                location: CameraMap(
-                                  lat:
-                                      double.tryParse(
-                                        _lat.text.replaceAll(',', '.'),
-                                      ) ??
-                                      0,
-                                  log:
-                                      double.tryParse(
-                                        _lon.text.replaceAll(',', '.'),
-                                      ) ??
-                                      0,
-                                  locationDes: _desc.text.trim(),
-                                ),
-                                xaddr: _onvifXaddrs.text.trim(),
-                                // boxId: _boxId.text.trim(),
-                                // groupId: _groupId.text.trim(),
-                                subStreamUrls: _sub.text.isEmpty
-                                    ? []
-                                    : _sub.text.trim().split(','),
-                                // urn: _urn.text.trim(),
-                                // serialNumber: _serialNumber.text.trim(),
-                              );
+                                final payload = AddCameraPayload(
+                                  name: _name.text.trim(),
+                                  method: _method,
+                                  rtsp: _rtsp.text.trim(),
+                                  onifDeviceIp: _onvifXaddrs.text.trim(),
+                                  username: _onvifUserName.text.trim(),
+                                  password: _onvifPassword.text.trim(),
+                                  subStream: _sub.text.trim(),
+                                  location: CameraMap(
+                                    lat:
+                                        double.tryParse(
+                                          _lat.text.replaceAll(',', '.'),
+                                        ) ??
+                                        0,
+                                    log:
+                                        double.tryParse(
+                                          _lon.text.replaceAll(',', '.'),
+                                        ) ??
+                                        0,
+                                    locationDes: _desc.text.trim(),
+                                  ),
+                                  xaddr: _onvifXaddrs.text.trim(),
+                                  // boxId: _boxId.text.trim(),
+                                  // groupId: _groupId.text.trim(),
+                                  subStreamUrls: _sub.text.isEmpty
+                                      ? []
+                                      : _sub.text.trim().split(','),
+                                  // urn: _urn.text.trim(),
+                                  // serialNumber: _serialNumber.text.trim(),
+                                );
 
-                              // Gọi callback tương ứng với mode
-                              if (widget.mode == CameraDialogMode.add) {
-                                await widget.onSubmit?.call(payload);
-                              } else {
-                                await widget.onEdit?.call(payload);
+                                // Gọi callback tương ứng với mode
+                                if (widget.mode == CameraDialogMode.add) {
+                                  await widget.onSubmit?.call(payload);
+                                } else {
+                                  await widget.onEdit?.call(payload);
+                                }
+                                // Không pop ở đây, sẽ pop trong BlocListener khi API hoàn thành
                               }
-                              // Không pop ở đây, sẽ pop trong BlocListener khi API hoàn thành
-                            }
-                          },
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                            },
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
                               ),
-                            ),
-                          )
-                        : null,
+                            )
+                          : null,
+                    ),
                   ),
                 ),
               ],

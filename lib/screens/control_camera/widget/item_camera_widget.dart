@@ -5,7 +5,6 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_role.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 
 class ItemCameraWidget extends StatelessWidget {
   const ItemCameraWidget({
@@ -95,7 +94,7 @@ class ItemCameraWidget extends StatelessWidget {
 
   Widget _buildStatusColumn() {
     return Expanded(
-      flex: 130,
+      flex: 170,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Row(
@@ -118,10 +117,16 @@ class ItemCameraWidget extends StatelessWidget {
           icon: SvgPicture.asset(AppAssets.icAction),
           padding: EdgeInsets.zero,
           splashRadius: 20,
+          position: PopupMenuPosition.under,
+          offset: Offset(0, 8),
           onSelected: _handleMenuSelection,
           itemBuilder: _buildMenuItems,
+          menuPadding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          elevation: 8,
+          elevation: 3,
+          shadowColor: Color(0x1A000000),
+          surfaceTintColor: Colors.transparent,
+          color: Colors.white,
         ),
       ),
     );
@@ -174,15 +179,16 @@ class ItemCameraWidget extends StatelessWidget {
   }) {
     return PopupMenuItem<String>(
       value: value,
+      // height: 32,
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
-          SvgPicture.asset(icon, color: iconColor),
+          SvgPicture.asset(icon, color: iconColor, width: 16, height: 16),
           SizedBox(width: 8),
           Text(
             label,
             style: AppTypography.style(
-              14,
+              13,
               fontWeight: FontWeight.w500,
               color: textColor,
             ),
@@ -230,7 +236,7 @@ class ItemCameraWidget extends StatelessWidget {
   }
 
   PopupMenuDivider _buildDivider() {
-    return PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0);
+    return PopupMenuDivider(height: 1, color: AppColors.greyF2F4FA);
   }
 }
 
@@ -247,7 +253,7 @@ class CameraStatusWidget extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          isOnline ? 'Online' : 'Offline',
+          isOnline ? 'Đang hoạt động' : 'Ngừng hoạt động',
           style: AppTypography.style(
             13,
             fontWeight: FontWeight.w500,

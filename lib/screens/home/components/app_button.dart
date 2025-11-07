@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
@@ -26,7 +24,7 @@ class AppButton extends StatelessWidget {
           backgroundColor: AppColors.blue005AA9,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           minimumSize: fullWidth ? const Size(double.infinity, 48) : const Size(150, 48),
           elevation: 0,
         ),

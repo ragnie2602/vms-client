@@ -18,6 +18,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     on<RemoveEmapEvent>(_onRemoveEmap);
     on<AddCameraEmapEvent>(_addCameraEmapInfo);
     on<GetAllListCameraEvent>(_onGetListCamera);
+    on<AddEmapEvent>(_onAddEmap);
   }
 
   FutureOr<void> _onGetListEmap(
@@ -49,6 +50,26 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     if (currentState.emapSelected != event.emap) {
       emit(currentState.copyWith(emapSelected: event.emap));
     }
+  }
+
+  FutureOr<void> _onAddEmap(AddEmapEvent event, Emitter<EmapState> emit) async {
+    if ((state is EmapSuccessState) == false) {
+      await _onGetListEmap(GetListEmapEvent(), emit);
+      return;
+    }
+    final currentState = state as EmapSuccessState;
+    List<EmapEntity> emaps = List<EmapEntity>.of(currentState.listEmap ?? []);
+    emit(EmapLoadingState());
+    final res = await emapRepository.postEmap(
+      emapName: event.emapName,
+      imageBytes: event.imageBytes,
+      imagePath: event.imagePath,
+    );
+    res.fold((onFailure) {}, (onSuccess) {
+      emaps.add(onSuccess);
+      emit(AddEmapSuccessState());
+      emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
+    });
   }
 
   FutureOr<void> _onRemoveEmap(

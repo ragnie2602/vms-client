@@ -15,6 +15,10 @@ class RemoveEmapSucessSate extends EmapState {
   @override
   StateType get type => StateType.success;
 }
+class AddEmapSuccessState extends EmapState{
+   @override
+  StateType get type => StateType.success;
+}
 
 class EmapSuccessState extends EmapState {
   final List<EmapEntity>? listEmap;

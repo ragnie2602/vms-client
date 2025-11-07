@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:vms_flutter_client/core/app_data.dart';
-import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/utils/unique_id.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
@@ -23,7 +22,7 @@ class EmapService {
     required String emapName,
     required String imagePath,
     required Uint8List imageBytes,
-    required String serverUrl,
+    // required String serverUrl,
     List<int>? emapId,
     List<int>? userId,
   }) async {
@@ -54,9 +53,10 @@ class EmapService {
       bytes: imageBytes,
       contentType: _getImageContentType(imagePath),
     );
-
+    String _serverUrl =
+        AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? '';
     final responseBuffer = await uploadClient.upload(
-      url: '$serverUrl/vt/r/${PacketType.postEmap.value}',
+      url: '$_serverUrl/vt/r/${PacketType.postEmap.value}',
       requestData: request.writeToBuffer(),
       files: [imageFile],
     );
