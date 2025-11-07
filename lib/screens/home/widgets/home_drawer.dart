@@ -12,9 +12,15 @@ import '../bloc/home_bloc.dart';
 import 'tile_expansion.dart';
 
 class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({super.key, required this.maxWidth, required this.onToggleExpanded});
+  const HomeDrawer({
+    super.key,
+    required this.maxWidth,
+    required this.onToggleExpanded,
+    required this.tabs,
+  });
   final double maxWidth;
   final VoidCallback onToggleExpanded;
+  final List<HomeTab> tabs;
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +37,12 @@ class HomeDrawer extends StatelessWidget {
                 children: <Widget>[
                   _buildToggleSection(constraints.maxWidth >= maxWidth),
 
-                  ...HomeTab.tabs.map(
-                    (tab) => DrawerTile(tab: tab, selectedTab: currentTab, maxWidth: maxWidth),
+                  ...tabs.map(
+                    (tab) => DrawerTile(
+                      tab: tab,
+                      selectedTab: currentTab,
+                      maxWidth: maxWidth,
+                    ),
                   ),
                 ],
               );
@@ -75,10 +85,15 @@ class HomeDrawer extends StatelessWidget {
               onTap: onToggleExpanded,
               borderRadius: BorderRadius.circular(16),
               child: SvgPicture.asset(
-                isExpanded ? AppAssets.icArrowSquareLeft : AppAssets.icArrowSquareRight,
+                isExpanded
+                    ? AppAssets.icArrowSquareLeft
+                    : AppAssets.icArrowSquareRight,
                 width: 16,
                 height: 16,
-                colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
+                colorFilter: ColorFilter.mode(
+                  AppColors.contentFg,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ],
@@ -108,7 +123,11 @@ class DrawerTile extends StatelessWidget {
 
     if (tab.route == Routes.playback) {
       _route = Routes.cameraDetail;
-      _extra = CameraDetailScreenArgs(data: null, isPlayback: true, title: 'Playback');
+      _extra = CameraDetailScreenArgs(
+        data: null,
+        isPlayback: true,
+        title: 'Playback',
+      );
     }
 
     context.read<HomeBloc>().add(ChangeTab(tab, route: _route, extra: _extra));
@@ -137,7 +156,11 @@ class DrawerTile extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return tab.nested.isEmpty
-              ? _buildTitle(context, isSelected, onTap: () => _handleTap(context))
+              ? _buildTitle(
+                  context,
+                  isSelected,
+                  onTap: () => _handleTap(context),
+                )
               : TileExpansion(
                   body: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -160,49 +183,60 @@ class DrawerTile extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(BuildContext context, bool isSelected, {VoidCallback? onTap}) {
+  Widget _buildTitle(
+    BuildContext context,
+    bool isSelected, {
+    VoidCallback? onTap,
+  }) {
     return AnimatedContainer(
       duration: Durations.long2,
       height: 52,
       width: double.infinity,
-      child: Row(
-        children: [
-          AnimatedContainer(
-            duration: Durations.long2,
-            height: 32,
-            width: 3,
-            decoration: isSelected
-                ? BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.horizontal(right: Radius.circular(100)),
-                  )
-                : null,
-          ),
-          SizedBox(width: 20),
-          SvgPicture.asset(
-            tab.svg,
-            colorFilter: ColorFilter.mode(
-              isSelected ? AppColors.primary : AppColors.contentFg,
-              BlendMode.srcIn,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 17.5),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: Durations.long2,
+              height: 32,
+              width: 3,
+              decoration: isSelected
+                  ? BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.horizontal(
+                        right: Radius.circular(100),
+                      ),
+                    )
+                  : null,
             ),
-            width: 20,
-            height: 20,
-          ),
-          SizedBox(width: 20),
-          Flexible(
-            child: Text(
-              tab.title,
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? AppColors.primary : null,
+            SizedBox(width: 20),
+            SvgPicture.asset(
+              tab.svg,
+              colorFilter: ColorFilter.mode(
+                isSelected ? AppColors.primary : AppColors.contentFg,
+                BlendMode.srcIn,
               ),
-              overflow: TextOverflow.visible,
-              maxLines: 1,
+              width: 20,
+              height: 20,
             ),
-          ),
-        ],
+            SizedBox(width: 20),
+            Flexible(
+              child: Text(
+                tab.title,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected ? AppColors.primary : null,
+                ),
+                overflow: TextOverflow.visible,
+                maxLines: 1,
+              ),
+            ),
+          ],
+        ),
       ),
-    ).let((child) => onTap != null ? InkWell(onTap: onTap, child: child) : child);
+    ).let(
+      (child) => onTap != null ? InkWell(onTap: onTap, child: child) : child,
+    );
   }
 }

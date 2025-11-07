@@ -85,9 +85,16 @@ dependencies:
   file_picker: ^8.1.4
   table_calendar: ^3.2.0
 
-  #UI
+  # UI
   dropdown_button2: ^2.3.9
   popover: ^0.3.1
+
+  image_size_getter: ^2.1.0
+
+  # MultiWindow
+  desktop_multi_window:
+    path: packages/desktop_multi_window
+  window_manager: ^0.5.1
 
 dev_dependencies:
   flutter_test:

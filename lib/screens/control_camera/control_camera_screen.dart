@@ -373,6 +373,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     ),
                                     child: SvgPicture.asset(AppAssets.icSearch),
                                   ),
+
                                   hintText: 'Nhập tên camera',
                                   hintStyle: AppTypography.style(
                                     14,
@@ -384,12 +385,14 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                       color: AppColors.greyE2E8F0,
                                       width: 1,
                                     ),
+                                    borderRadius: BorderRadius.circular(1),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color: AppColors.greyE2E8F0,
                                       width: 1,
                                     ),
+                                    borderRadius: BorderRadius.circular(1),
                                   ),
                                   border: UnderlineInputBorder(),
                                 ),
@@ -596,7 +599,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     return Scrollbar(
                                       controller: _cameraListController,
                                       thumbVisibility: true,
-                                      child: ListView.builder(
+                                      child: ListView.separated(
                                         controller: _cameraListController,
                                         primary: false,
                                         physics: const ClampingScrollPhysics(),
@@ -662,6 +665,18 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                                 );
                                               },
                                             ),
+                                        separatorBuilder:
+                                            (BuildContext context, int index) {
+                                              return Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 15,
+                                                ),
+                                                child: Divider(
+                                                  height: 0.5,
+                                                  color: AppColors.greyE2E8F0,
+                                                ),
+                                              );
+                                            },
                                       ),
                                     );
                                   },

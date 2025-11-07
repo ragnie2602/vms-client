@@ -36,9 +36,9 @@ extension CameraStatusExt on CameraOnlineChecked {
   String getName() {
     switch (this) {
       case CameraOnlineChecked.online:
-        return 'Online';
+        return 'Đang hoạt động';
       case CameraOnlineChecked.offline:
-        return 'Offline';
+        return 'Ngừng hoạt động';
       default:
         return 'Tất cả';
     }

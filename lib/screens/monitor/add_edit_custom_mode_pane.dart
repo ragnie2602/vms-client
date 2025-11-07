@@ -26,8 +26,9 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
   String? _errorMessage;
   ViewMode _mode = ViewMode.v2x2;
 
-  CustomMonitorPaneMode get mode =>
-      customView?.id.isEmpty ?? true ? CustomMonitorPaneMode.add : CustomMonitorPaneMode.edit;
+  CustomMonitorPaneMode get mode => customView?.id.isEmpty ?? true
+      ? CustomMonitorPaneMode.add
+      : CustomMonitorPaneMode.edit;
 
   @override
   void initState() {
@@ -70,7 +71,11 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                 onTap: () => widget.onBack?.call(),
                 child: Padding(
                   padding: EdgeInsets.all(2),
-                  child: Icon(Icons.arrow_back, size: 20, color: AppColors.blackOrWhite),
+                  child: Icon(
+                    Icons.arrow_back,
+                    size: 20,
+                    color: AppColors.blackOrWhite,
+                  ),
                 ),
               ),
               SizedBox(width: 8),
@@ -92,58 +97,72 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
             style: AppTypography.style(
               14,
               fontWeight: FontWeight.w500,
-              color: AppColors.blackOrWhite,
+              color: AppColors.grey64748B,
             ),
           ),
           SizedBox(height: 15),
-          TextField(
-            controller: nameController,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 19),
-              isDense: true,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(
-                  color: _errorMessage != null ? Colors.red : AppColors.greyE2E8F0,
-                  width: 1,
+          SizedBox(
+            height: 37,
+            child: TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 19,
                 ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(
-                  color: _errorMessage != null ? Colors.red : AppColors.black,
-                  width: 1,
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(1),
+                  borderSide: BorderSide(
+                    color: _errorMessage != null
+                        ? Colors.red
+                        : AppColors.greyE2E8F0,
+                    width: 1,
+                  ),
                 ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(
-                  color: _errorMessage != null ? Colors.red : AppColors.greyE2E8F0,
-                  width: 1,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(1),
+                  borderSide: BorderSide(
+                    color: _errorMessage != null ? Colors.red : AppColors.black,
+                    width: 1,
+                  ),
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(1),
+                  borderSide: BorderSide(
+                    color: _errorMessage != null
+                        ? Colors.red
+                        : AppColors.greyE2E8F0,
+                    width: 1,
+                  ),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(1),
+                  borderSide: BorderSide(color: Colors.red, width: 1),
+                ),
+                errorMaxLines: 3,
+                errorStyle: AppTypography.style(
+                  12,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.red,
+                ),
+                errorText: _errorMessage,
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(1),
+                  borderSide: BorderSide(color: Colors.red, width: 1),
+                ),
+                hintStyle: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.grey64748B,
+                ),
+                hintText: 'Nhập tên chế độ xem',
               ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: Colors.red, width: 1),
-              ),
-              errorMaxLines: 3,
-              errorStyle: AppTypography.style(12, fontWeight: FontWeight.w400, color: Colors.red),
-              errorText: _errorMessage,
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: Colors.red, width: 1),
-              ),
-              hintStyle: AppTypography.style(
+              style: AppTypography.style(
                 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.grey64748B,
+                fontWeight: FontWeight.w400,
+                color: AppColors.blackOrWhite,
               ),
-              hintText: 'Nhập tên chế độ xem',
-            ),
-            style: AppTypography.style(
-              14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.blackOrWhite,
             ),
           ),
           SizedBox(height: 20),
@@ -167,7 +186,12 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                       () => bloc.add(
                         ShowCustomView(
                           customView?.copyWith(base: _mode = value) ??
-                              CustomLiveView(id: [], base: _mode = value, positions: [], name: ''),
+                              CustomLiveView(
+                                id: [],
+                                base: _mode = value,
+                                positions: [],
+                                name: '',
+                              ),
                           mode,
                         ),
                       ),
@@ -184,7 +208,8 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
           SizedBox(height: 40),
           BlocConsumer<CustomViewBloc, CustomViewState>(
             listener: (context, state) {
-              if (state is CreateCustomViewSuccess || state is UpdateCustomViewSuccess) {
+              if (state is CreateCustomViewSuccess ||
+                  state is UpdateCustomViewSuccess) {
                 context.read<MonitorBloc>().add(ResetFilter());
                 widget.onBack?.call();
               }
@@ -193,7 +218,9 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
               if (state is CreatingCustomView || state is UpdatingCustomView) {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [CircularProgressIndicator(color: AppColors.blackOrWhite)],
+                  children: [
+                    CircularProgressIndicator(color: AppColors.blackOrWhite),
+                  ],
                 );
               }
 
@@ -206,7 +233,9 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                         backgroundColor: AppColors.blackOrWhiteReverse,
                         elevation: 0,
                         padding: EdgeInsets.symmetric(vertical: 22),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                         side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                       ),
                       child: Text(
@@ -245,18 +274,23 @@ class _AddEditCustomModePaneState extends State<AddEditCustomModePane> {
                           }
                         } else if (nameController.text.trim().isNotEmpty) {
                           setState(
-                            () =>
-                                _errorMessage = 'Vui lòng nhập tên chế độ xem không quá 64 ký tự!',
+                            () => _errorMessage =
+                                'Vui lòng nhập tên chế độ xem không quá 64 ký tự!',
                           );
                         } else {
-                          setState(() => _errorMessage = 'Vui lòng nhập tên chế độ xem');
+                          setState(
+                            () =>
+                                _errorMessage = 'Vui lòng nhập tên chế độ xem',
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.blackOrWhite,
                         elevation: 0,
                         padding: EdgeInsets.symmetric(vertical: 22),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                       ),
                       child: Text(
                         'Lưu',

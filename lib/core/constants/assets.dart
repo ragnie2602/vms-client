@@ -18,6 +18,7 @@ class AppAssets {
   static const tabCameraGroups = '$_svgPath/tab_camera_groups.svg';
   static const tabCameras = '$_svgPath/tab_camera.svg';
   static const tabSettings = '$_svgPath/settings.svg';
+  static const tabMap = '$_svgPath/ic_map.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
 
   static const icCamera = '$_svgPath/camera.svg';
@@ -79,6 +80,15 @@ class AppAssets {
   static const icArrowChevronRight = '$_svgPath/arrow_chevron_right.svg';
   static const icDownload = '$_svgPath/download.svg';
   static const icCheck = '$_svgPath/check.svg';
+  // map
+  static const icMarkerMap = '$_svgPath/ic_marker_map.svg';
+  static const icPlus = '$_svgPath/plus.svg';
+  static const icEmptyEmap = '$_svgPath/ic_empty_emap.svg';
+  static const icAddImage = '$_svgPath/ic_plus.svg';
+  static const icReplace = '$_svgPath/icon_replace.svg';
+  static const icVideoOff = '$_svgPath/video_off.svg';
+  static const icCheckBox = '$_svgPath/check_box.svg';
+  static const icChecked = '$_svgPath/checked.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
@@ -90,4 +100,8 @@ class AppAssets {
   static const iconAddCamToGroup = '$_svgPath/ic_add_camera_group.svg';
   static const icLocation = '$_svgPath/ic_location.svg';
   static const icAllCamera = '$_svgPath/ic_all_camera.svg';
+  static const icAddGroupCamera = '$_svgPath/ic_add_group_camera.svg';
+
+  static const icLogout = '$_svgPath/ic_logout.svg';
+  static const icKey = '$_svgPath/ic_key.svg';
 }

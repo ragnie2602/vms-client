@@ -116,6 +116,7 @@ enum PacketType {
   getCurrentRecoding(244),
 
   // Emap
+  postEmap(215),
   listEmap(216),
   listCameraEmapInfo(220),
   addCameraEmapInfo(219),

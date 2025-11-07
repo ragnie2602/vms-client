@@ -11,9 +11,9 @@ import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
-import 'package:vms_flutter_client/screens/user/widget/user_dialog.dart';
 import 'package:vms_flutter_client/screens/user/widget/item_user_widget.dart';
 import 'package:vms_flutter_client/screens/user/widget/title_widget.dart';
+import 'package:vms_flutter_client/screens/user/widget/user_dialog.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -256,6 +256,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TitleWidget(),
+                      SizedBox(height: 16),
                       state is UserManagementLoadingState
                           ? Center(child: CircularProgressIndicator())
                           : state is GetListUserState
