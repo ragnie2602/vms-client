@@ -6,9 +6,14 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 class AddCameraDropdown extends StatefulWidget {
   final Offset position;
   final VoidCallback? onClose;
+  final Function(String cameraName) onSelectCamera;
 
-  const AddCameraDropdown({Key? key, required this.position, this.onClose})
-    : super(key: key);
+  const AddCameraDropdown({
+    super.key,
+    required this.position,
+    this.onClose,
+    required this.onSelectCamera,
+  });
 
   @override
   State<AddCameraDropdown> createState() => _AddCameraDropdownState();
@@ -144,6 +149,7 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                   } else {
                                     _selectedCameras.add(name);
                                   }
+                                  widget.onSelectCamera(name);
                                 });
                               },
                               child: Padding(

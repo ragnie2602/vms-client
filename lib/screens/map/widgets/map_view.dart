@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/data/models/drag_item_model.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 
 import 'add_camera_dropdown.dart';
-
-import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
-import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -20,11 +20,31 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   OverlayEntry? _overlayEntry;
+  final GlobalKey _imageKey = GlobalKey();
 
   @override
   void dispose() {
     _overlayEntry?.remove();
     super.dispose();
+  }
+
+  void _updateItemPosition(String itemId, Offset newPosition) {
+    final RenderBox? imageBox =
+        _imageKey.currentContext?.findRenderObject() as RenderBox?;
+    if (imageBox == null) return;
+
+    final imageSize = imageBox.size;
+    const itemSize = 100.0;
+
+    final clampedX = newPosition.dx.clamp(0.0, imageSize.width - itemSize);
+    final clampedY = newPosition.dy.clamp(0.0, imageSize.height - itemSize);
+
+    context.read<EmapBloc>().add(
+      UpdateDragItemPositionEvent(
+        itemId: itemId,
+        newPosition: Offset(clampedX, clampedY),
+      ),
+    );
   }
 
   void _showAddCameraDropdown(
@@ -40,6 +60,18 @@ class _MapViewState extends State<MapView> {
       builder: (context) => AddCameraDropdown(
         position: Offset(offset.dx, offset.dy + size.height),
         onClose: () {
+          _overlayEntry?.remove();
+          _overlayEntry = null;
+        },
+        onSelectCamera: (cameraName) {
+          final newItem = DragItemModel(
+            id: DateTime.now().millisecondsSinceEpoch.toString(), // hoặc UUID
+            position: Offset(100, 100), // vị trí mặc định
+            label: cameraName,
+          );
+
+          context.read<EmapBloc>().add(AddDragItemEvent(item: newItem));
+
           _overlayEntry?.remove();
           _overlayEntry = null;
         },
@@ -200,17 +232,83 @@ class _MapViewState extends State<MapView> {
                           ),
                         ),
                         Expanded(
-                          child: Image.network(
-                            state.emapSelected?.backgroundPath ?? '',
-                            loadingBuilder: (context, child, loadingProgress) =>
-                                loadingProgress == null
-                                ? child
-                                : Center(child: CircularProgressIndicator()),
+                          child: Stack(
+                            children: [
+                              // Wrap Image với Container có key để lấy kích thước chính xác
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return Container(
+                                    key: _imageKey,
+                                    child: Image.network(
+                                      state.emapSelected?.backgroundPath ?? '',
+                                      fit: BoxFit.contain,
+                                      loadingBuilder:
+                                          (
+                                            context,
+                                            child,
+                                            loadingProgress,
+                                          ) => loadingProgress == null
+                                          ? child
+                                          : Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              ...(state.dragItems ?? []).map(
+                                (item) => _buildDragItem(item),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     )
             : const SizedBox(),
+      ),
+    );
+  }
+
+  Widget _buildDragItem(DragItemModel item) {
+    return Positioned(
+      left: item.position.dx,
+      top: item.position.dy,
+      child: GestureDetector(
+        onPanUpdate: (details) {
+          _updateItemPosition(
+            item.id,
+            Offset(
+              item.position.dx + details.delta.dx,
+              item.position.dy + details.delta.dy,
+            ),
+          );
+        },
+        onPanEnd: (details) {
+          print('Item ${item.id} dropped at: ${item.position}');
+          // Có thể lưu vào database tại đây
+        },
+        child: Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              item.label ?? 'Drag Me',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
       ),
     );
   }

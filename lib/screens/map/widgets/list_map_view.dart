@@ -59,6 +59,7 @@ class _ListMapViewState extends State<ListMapView> {
       },
     );
   }
+  
 
   @override
   Widget build(BuildContext context) {

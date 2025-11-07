@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/data/models/drag_item_model.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
@@ -14,6 +15,9 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     on<GetListEmapEvent>(_onGetListEmap);
     on<ChangeEmapEvent>(_onChangeSelectEmap);
     on<RemoveEmapEvent>(_onRemoveEmap);
+    on<AddDragItemEvent>(_onAddDragItem);
+    on<UpdateDragItemPositionEvent>(_onUpdateDragItemPosition);
+    on<RemoveDragItemEvent>(_onRemoveDragItem);
   }
 
   FutureOr<void> _onGetListEmap(
@@ -69,5 +73,46 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
         ),
       );
     });
+  }
+
+  // Handler thêm item mới
+  FutureOr<void> _onAddDragItem(
+    AddDragItemEvent event,
+    Emitter<EmapState> emit,
+  ) {
+    final currentState = state as EmapSuccessState;
+    final updatedItems = List<DragItemModel>.from(currentState.dragItems ?? [])
+      ..add(event.item);
+
+    emit(currentState.copyWith(dragItems: updatedItems));
+  }
+
+  // Handler cập nhật vị trí item
+  FutureOr<void> _onUpdateDragItemPosition(
+    UpdateDragItemPositionEvent event,
+    Emitter<EmapState> emit,
+  ) {
+    final currentState = state as EmapSuccessState;
+    final updatedItems = currentState.dragItems?.map((item) {
+      if (item.id == event.itemId) {
+        return item.copyWith(position: event.newPosition);
+      }
+      return item;
+    }).toList();
+
+    emit(currentState.copyWith(dragItems: updatedItems));
+  }
+
+  // Handler xóa item
+  FutureOr<void> _onRemoveDragItem(
+    RemoveDragItemEvent event,
+    Emitter<EmapState> emit,
+  ) {
+    final currentState = state as EmapSuccessState;
+    final updatedItems = currentState.dragItems
+        ?.where((item) => item.id != event.itemId)
+        .toList();
+
+    emit(currentState.copyWith(dragItems: updatedItems));
   }
 }
