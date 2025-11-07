@@ -6,23 +6,23 @@ import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repos
 import '../../../core/base_bloc.dart';
 
 // States
-class MyAccountState extends BaseState {
+class ChangeMyInfoState extends BaseState {
   final bool isLoading;
   final bool isSuccess;
   final String? errorMessage;
 
-  MyAccountState({
+  ChangeMyInfoState({
     this.isLoading = false,
     this.isSuccess = false,
     this.errorMessage,
   });
 
-  MyAccountState copyWith({
+  ChangeMyInfoState copyWith({
     bool? isLoading,
     bool? isSuccess,
     String? errorMessage,
   }) {
-    return MyAccountState(
+    return ChangeMyInfoState(
       isLoading: isLoading ?? this.isLoading,
       isSuccess: isSuccess ?? this.isSuccess,
       errorMessage: errorMessage,
@@ -34,16 +34,12 @@ class MyAccountState extends BaseState {
 }
 
 // Events
-class MyAccountEvent extends BaseEvent {
-  const MyAccountEvent();
-}
-
-class ChangeMyPasswordEvent extends MyAccountEvent {
+class ChangeMyInfoEvent extends BaseEvent {
   final String currentPassword;
   final String newPassword;
   final bool kickOthers;
 
-  const ChangeMyPasswordEvent({
+  const ChangeMyInfoEvent({
     required this.currentPassword,
     required this.newPassword,
     this.kickOthers = false,
@@ -51,16 +47,16 @@ class ChangeMyPasswordEvent extends MyAccountEvent {
 }
 
 // Bloc
-class MyAccountBloc extends BaseBloc<MyAccountEvent, MyAccountState> {
+class ChangeMyInfoBloc extends BaseBloc<ChangeMyInfoEvent, ChangeMyInfoState> {
   final IUserManagementRepository repository;
 
-  MyAccountBloc(this.repository) : super(MyAccountState()) {
-    on<ChangeMyPasswordEvent>(_onChangeMyPassword);
+  ChangeMyInfoBloc(this.repository) : super(ChangeMyInfoState()) {
+    on<ChangeMyInfoEvent>(_onChangeMyInfo);
   }
 
-  FutureOr<void> _onChangeMyPassword(
-    ChangeMyPasswordEvent event,
-    Emitter<MyAccountState> emit,
+  FutureOr<void> _onChangeMyInfo(
+    ChangeMyInfoEvent event,
+    Emitter<ChangeMyInfoState> emit,
   ) async {
     emit(state.copyWith(isLoading: true, isSuccess: false, errorMessage: null));
 

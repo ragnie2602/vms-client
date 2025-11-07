@@ -6,7 +6,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
-import 'package:vms_flutter_client/screens/home/bloc/my_account_bloc.dart';
+import 'package:vms_flutter_client/screens/home/bloc/change_my_info_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import 'components/components_src.dart';
@@ -31,8 +31,8 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
     barrierColor: Colors.black.withOpacity(0.5),
     builder: (ctx) {
       return BlocProvider(
-        create: (context) => MyAccountBloc(repository),
-        child: BlocConsumer<MyAccountBloc, MyAccountState>(
+        create: (context) => ChangeMyInfoBloc(repository),
+        child: BlocConsumer<ChangeMyInfoBloc, ChangeMyInfoState>(
           listener: (context, state) {
             if (state.isSuccess) {
               Navigator.pop(context, true);
