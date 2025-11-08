@@ -121,7 +121,7 @@ extension CameraStreamOnvifMapper on pb.Onvif {
 extension CameraMapper on pb.Camera {
   CameraEntity toDomain() {
     return CameraEntity(
-      name: name,
+      name: name.trim(),
       id: id,
       groupOwnerId: groupOwnerId,
       camId: camId,

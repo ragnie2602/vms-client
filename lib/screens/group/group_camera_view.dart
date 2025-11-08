@@ -302,7 +302,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
               newState is GetAllGroupCameraSuccessState) {
             return Container(
               margin: EdgeInsets.only(left: 1),
-              padding: EdgeInsets.symmetric(vertical: 20),
+              padding: EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(color: Colors.white),
               child: Column(
                 children: [
@@ -315,12 +315,17 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                 padding: EdgeInsets.zero,
                                 splashRadius: 20,
                                 menuPadding: EdgeInsets.zero,
+                                position: PopupMenuPosition.under,
+                                offset: Offset(0, 8),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadiusGeometry.circular(
                                     8,
                                   ),
                                 ),
-                                elevation: 8,
+                                elevation: 3,
+                                shadowColor: Color(0x1A000000),
+                                surfaceTintColor: Colors.transparent,
+                                color: Colors.white,
                                 onSelected: (value) async {
                                   setState(() {
                                     isClickAllGroup = false;
@@ -396,6 +401,11 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                                     final e = listAction[i];
                                     entries.add(
                                       PopupMenuItem<ItemGroupAction>(
+                                        // height: 32,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
                                         value: e,
                                         child: ItemActionWidget(item: e),
                                       ),

@@ -8,7 +8,6 @@ class TitleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 15),
       decoration: BoxDecoration(
         color: AppColors.greyF2F4FA,
         borderRadius: BorderRadius.circular(5),
@@ -31,7 +30,10 @@ class TitleWidget extends StatelessWidget {
           Expanded(
             flex: 300,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 16,
+              ),
               child: Text(
                 'Tên tài khoản',
                 style: AppTypography.style(
@@ -45,7 +47,10 @@ class TitleWidget extends StatelessWidget {
           Expanded(
             flex: 300,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 16,
+              ),
               child: Text(
                 'Họ và tên',
                 style: AppTypography.style(
@@ -60,7 +65,10 @@ class TitleWidget extends StatelessWidget {
           Expanded(
             flex: 250,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 16,
+              ),
               child: Text(
                 'Email',
                 style: AppTypography.style(
@@ -74,7 +82,10 @@ class TitleWidget extends StatelessWidget {
           Expanded(
             flex: 150,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 16,
+              ),
               child: Text(
                 'Số điện thoại',
                 style: AppTypography.style(
@@ -88,7 +99,10 @@ class TitleWidget extends StatelessWidget {
           Expanded(
             flex: 150,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 16,
+              ),
               child: Text(
                 'Phân loại',
                 style: AppTypography.style(
@@ -102,7 +116,10 @@ class TitleWidget extends StatelessWidget {
           Expanded(
             flex: 112,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 16,
+              ),
               child: Center(
                 child: Text(
                   'Thao tác',

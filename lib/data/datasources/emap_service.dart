@@ -1,12 +1,13 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:vms_flutter_client/core/app_data.dart';
-import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/utils/unique_id.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command2.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 
@@ -21,7 +22,7 @@ class EmapService {
     required String emapName,
     required String imagePath,
     required Uint8List imageBytes,
-    required String serverUrl,
+    // required String serverUrl,
     List<int>? emapId,
     List<int>? userId,
   }) async {
@@ -36,8 +37,7 @@ class EmapService {
       ..emapInfo = (EmapInfo()
         ..emapName = emapName
         ..backgroundPath = ""
-        ..emapId = []  
-      );
+        ..emapId = []);
 
     if (emapId != null && emapId.isNotEmpty) {
       request.emapInfo.emapId = emapId;
@@ -46,14 +46,17 @@ class EmapService {
     // Prepare file for upload
     final filename = _getFileName(imagePath);
     final imageFile = UploadFile(
-      fieldName: filename.split('.').first, // Filename without extension (matches iOS)
+      fieldName: filename
+          .split('.')
+          .first, // Filename without extension (matches iOS)
       filename: filename,
       bytes: imageBytes,
       contentType: _getImageContentType(imagePath),
     );
-
+    String _serverUrl =
+        AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? '';
     final responseBuffer = await uploadClient.upload(
-      url: '$serverUrl/vt/r/${PacketType.postEmap.value}',
+      url: '$_serverUrl/vt/r/${PacketType.postEmap.value}',
       requestData: request.writeToBuffer(),
       files: [imageFile],
     );
@@ -72,7 +75,7 @@ class EmapService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.listEmap.value),
           data: ListEmap_Request().writeToBuffer(),
           type: PacketType.listEmap,
         ),
@@ -92,7 +95,7 @@ class EmapService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.removeEmap.value),
           data: request.writeToBuffer(),
           type: PacketType.removeEmap,
         ),
@@ -109,13 +112,15 @@ class EmapService {
   }
 
   /// List Camera Emap Info (ID: 220)
-  Future<List<CameraEmapInfo>> listCameraEmapInfo({required List<int> emapId}) async {
+  Future<List<CameraEmapInfo>> listCameraEmapInfo({
+    required List<int> emapId,
+  }) async {
     final request = ListCameraEmapInfo_Request()..emapId = emapId;
 
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.listCameraEmapInfo.value),
           data: request.writeToBuffer(),
           type: PacketType.listCameraEmapInfo,
         ),
@@ -143,7 +148,7 @@ class EmapService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: UniqueId.getUniqueId(PacketType.addCameraEmapInfo.value),
           data: request.writeToBuffer(),
           type: PacketType.addCameraEmapInfo,
         ),
@@ -182,5 +187,36 @@ class EmapService {
       default:
         return 'application/octet-stream';
     }
+  }
+
+  Future<List<Camera>> getAllCamera({
+    List<int>? cameraId,
+    int? status,
+    int? ivaType,
+  }) async {
+    final request = GetAllCamera_Request();
+    if (cameraId != null) request.cameraId = cameraId;
+    if (status != null) request.status = GetAllCamera_Status.valueOf(status)!;
+    if (ivaType != null) {
+      request.ivaType = GetAllCamera_Iva_Type.valueOf(ivaType)!;
+    }
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: UniqueId.getUniqueId(PacketType.getAllCamera.value),
+          data: request.writeToBuffer(),
+          type: PacketType.getAllCamera,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(
+        GetAllCamera_Error.valueOf,
+        PacketType.getAllCamera.value,
+      ),
+      (buffer) => GetAllCamera_Reply.fromBuffer(buffer).cameras,
+    );
   }
 }

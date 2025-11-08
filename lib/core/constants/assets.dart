@@ -100,4 +100,9 @@ class AppAssets {
   static const iconAddCamToGroup = '$_svgPath/ic_add_camera_group.svg';
   static const icLocation = '$_svgPath/ic_location.svg';
   static const icAllCamera = '$_svgPath/ic_all_camera.svg';
+  static const icAddGroupCamera = '$_svgPath/ic_add_group_camera.svg';
+
+  static const icLogout = '$_svgPath/ic_logout.svg';
+  static const icKey = '$_svgPath/ic_key.svg';
+  static const icCameraMap = '$_svgPath/ic_camera_map.svg';
 }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -59,6 +61,73 @@ class _ListMapViewState extends State<ListMapView> {
       },
     );
   }
+  
+
+  void _onAddEmap({
+    required String emapName,
+    required String imagePath,
+    required Uint8List imageBytes,
+  }) {
+    context.read<EmapBloc>().add(
+      AddEmapEvent(
+        emapName: emapName,
+        imageBytes: imageBytes,
+        imagePath: imagePath,
+      ),
+    );
+  }
+
+  Future _onShowDialogEditEmap({
+    required BuildContext contextEdit,
+    required List<int> emapId,
+    required String emapName,
+    required String backgroundPath,
+  }) async {
+    await showAddMapDialog(
+      context,
+      emapName: emapName,
+      backgroundPath: backgroundPath,
+      onSubmit: (payload) async {
+        if (payload.imageFile == null) {
+          // case edit nhưng ko có _selectedImage => convert image path, bytes từ ảnh cũ (backgroundPath)
+          if (payload.imgBytes == null || payload.imgPath == null) {
+            return;
+          }
+          _onEditEmap(
+            emapName: payload.name,
+            imagePath: payload.imgPath!,
+            imageBytes: payload.imgBytes!,
+            emapId: emapId,
+          );
+        } else {
+          // case edit = file ảnh mới
+          final _imageBytes = await payload.imageFile!.readAsBytes();
+          _onEditEmap(
+            emapName: payload.name,
+            imagePath: payload.imageFile!.path,
+            imageBytes: _imageBytes,
+            emapId: emapId,
+          );
+        }
+      },
+    );
+  }
+
+  void _onEditEmap({
+    required List<int> emapId,
+    required String emapName,
+    required String imagePath,
+    required Uint8List imageBytes,
+  }) {
+    context.read<EmapBloc>().add(
+      EditEmapEvent(
+        emapId: emapId,
+        emapName: emapName,
+        imageBytes: imageBytes,
+        imagePath: imagePath,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,9 +185,16 @@ class _ListMapViewState extends State<ListMapView> {
                     await showAddMapDialog(
                       context,
                       onSubmit: (payload) async {
-                        // Xử lý submit với:
-                        // payload.name - tên bản đồ
-                        // payload.imageFile - file ảnh đã chọn
+                        if (payload.imageFile == null) {
+                          return;
+                        }
+                        final _imageBytes = await payload.imageFile!
+                            .readAsBytes();
+                        _onAddEmap(
+                          emapName: payload.name,
+                          imagePath: payload.imageFile!.path,
+                          imageBytes: _imageBytes,
+                        );
                       },
                     );
                   },
@@ -142,7 +218,13 @@ class _ListMapViewState extends State<ListMapView> {
                     if (state is RemoveEmapSucessSate) {
                       ToastUtil.toastSuccess(
                         context: context,
-                        title: Text('Xóa thành công '),
+                        title: Text('Xóa thành công'),
+                      );
+                    }
+                    if (state is AddEmapSuccessState) {
+                      ToastUtil.toastSuccess(
+                        context: context,
+                        title: Text('Thêm bản đồ camera thành công!'),
                       );
                     }
                   },
@@ -162,7 +244,7 @@ class _ListMapViewState extends State<ListMapView> {
                               _onChangeSelectEmap(newMap: item);
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 8),
+                              // padding: EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 color: item == state.emapSelected
                                     ? AppColors.greyF2F4FA
@@ -191,15 +273,21 @@ class _ListMapViewState extends State<ListMapView> {
                                           BorderRadiusGeometry.circular(8),
                                     ),
                                     elevation: 8,
-                                    onSelected: (value) {
+                                    onSelected: (value) async {
                                       // focus map mới
                                       _onChangeSelectEmap(newMap: item);
                                       // handle case sửa/ xóa
                                       switch (value) {
                                         case ItemMapAction.edit:
+                                          await _onShowDialogEditEmap(
+                                            contextEdit: context,
+                                            emapId: item.emapId ?? [],
+                                            emapName: item.emapName ?? '',
+                                            backgroundPath:
+                                                item.backgroundPath ?? '',
+                                          );
                                           break;
                                         case ItemMapAction.remove:
-                                          // _onRemoveEmap(emapId: item.emapId);
                                           _onShowDialogRemoveEmap(
                                             context,
                                             emapId: item.emapId,
