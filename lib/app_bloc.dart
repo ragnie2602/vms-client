@@ -88,6 +88,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
           state.copyWith(
             themeMode: ThemeMode.values.byName(userTheme),
             displayFullScreenLiveView: false,
+            isSignOut: false,
           ),
         );
       }
@@ -120,6 +121,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     }
     if (event.multiWindowEvent is MWESignOut) {
       if (MultiWindowUtil.isMainWindow(windowId)) {
+        emit(state.copyWith(isSignOut: false)); // Avoid equatable mistake
         emit(state.copyWith(isSignOut: true));
       } else {
         await windowManager.setPreventClose(false);
@@ -167,6 +169,8 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   }
 
   FutureOr<void> _onReopenSubWindow(ReopenSubWindow event, Emitter<AppState> emit) async {
+    isSigningOut = false;
+
     if (MultiWindowUtil.isMainWindow(windowId)) {
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
       for (var i = 0; i < subWindowCount; i++) {
@@ -174,10 +178,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         output.windowController.show();
       }
     }
-  FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) {
-    emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
   }
-}
 
   FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) async {
     final rect = await windowManager.getBounds();
@@ -268,4 +269,5 @@ class MultiWindowEventReceived extends AppEvent {
 class ReopenSubWindow extends AppEvent {
   const ReopenSubWindow();
 }
+
 class MyProfileInfoChanged extends AppEvent {}

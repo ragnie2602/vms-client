@@ -184,11 +184,13 @@ class _AddMapDialogState extends State<_AddMapDialog> {
   Future<void> _handleSubmit() async {
     setState(() {
       _isValidateImage = true;
-      isLoading = true;
     });
     await _validateImage();
     if ((_form.currentState?.validate() ?? false) &&
         _errorImageMessage.isEmpty) {
+      setState(() {
+        isLoading = true;
+      });
       AddMapPayload payload;
       if ((_selectedImage == null && isEditEmap())) {
         Uint8List _tmp = await networkImageToBytes(_backgroundPath ?? '');
