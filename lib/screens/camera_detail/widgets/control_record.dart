@@ -56,17 +56,26 @@ class _ControlRecordState extends State<ControlRecord> {
     super.dispose();
   }
 
-  void _reset() {
+  void _reset() async {
     if (!mounted) return;
 
+    context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
     _duration.value = Duration.zero;
     _timer?.cancel();
-    _process?.kill(ProcessSignal.sigint);
+    _process?.stdin.add([113]); // Gửi 'q' để dừng ffmpeg --> File audio không bị 0 bytes
+    await _process?.stdin.close();
     _process = null;
-    context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
   }
 
-  void _onStop([String? message]) {
+  void _onStop([String? message]) async {
+    // Case chủ động ấn stop thì delay thêm vài giây để đảm bảo kết quả có chứa time lúc ấn dừng
+    // --- Thừa hẳn thay vì bị mất đoạn đầu/cuối lúc ấn ghi/dừng ---
+    if (message == null) {
+      setState(() => _isBusy = true);
+      await Future.delayed(Duration(seconds: 3));
+      setState(() => _isBusy = false);
+    }
+
     if (!mounted) return;
 
     _isKilledByUser = true;
@@ -104,6 +113,7 @@ class _ControlRecordState extends State<ControlRecord> {
             _duration.value = Duration.zero;
             _timer?.cancel();
             _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+              if (_isBusy) return;
               final future = Duration(seconds: _duration.value.inSeconds + 1);
               if (future >= Duration(hours: 1)) {
                 return _onStop("Quá trình ghi video đã dừng do quá thời gian ghi tối đa cho phép!");
@@ -166,7 +176,7 @@ class _ControlRecordState extends State<ControlRecord> {
             ValueListenableBuilder(
               valueListenable: _duration,
               builder: (context, value, child) => Text(
-                formatDuration(isLoading ? Duration.zero : value),
+                formatDuration(value),
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,

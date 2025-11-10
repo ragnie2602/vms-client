@@ -120,8 +120,8 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     }
 
     final output = await FileUtil.selectSaveLocation(
-      'record_${DateTime.now().format('yyyyMMdd_HHmm')}',
-      'mkv',
+      'record_${DateTime.now().format('yyyyMMdd_HHmmss')}',
+      'mp4',
     );
     if (output == null) return event.cb?.call(null, null);
 

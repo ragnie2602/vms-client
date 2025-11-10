@@ -22,6 +22,10 @@ fi
 
 cd FFmpeg
 
+echo "=== Cleaning previous build cache ==="
+make distclean || true
+rm -f config.h config.log ffbuild/config.mak || true
+
 echo "=== Configuring FFmpeg ==="
 ./configure \
   --disable-everything \
@@ -45,29 +49,19 @@ echo "=== Configuring FFmpeg ==="
   --extra-ldexeflags="-static" \
   \
   --enable-protocol=* \
-  \
-  --enable-demuxer=rtsp \
-  --enable-demuxer=rtp \
-  --enable-demuxer=h264 \
-  --enable-demuxer=hevc \
-  --enable-demuxer=aac \
-  --enable-demuxer=pcm_mulaw \
-  --enable-demuxer=pcm_alaw \
-  \
-  --enable-parser=h264 \
-  --enable-parser=hevc \
-  --enable-parser=aac \
-  \
-  --enable-muxer=matroska \
-  --enable-muxer=mov \
-  --enable-muxer=mp4 \
-  \
-  --enable-encoder=aac \
+  --enable-demuxer=rtsp,rtp,h264,hevc,aac,adts,mpegts,pcm_mulaw,pcm_alaw,rawvideo,rawaudio,wav \
+  --enable-decoder=h264,hevc,aac,pcm_mulaw,pcm_alaw,pcm_s16le \
+  --enable-parser=h264,hevc,aac \
+  --enable-encoder=aac,pcm_s16le \
+  --enable-muxer=adts,mpegts,matroska,mov,mp4,wav \
+  --enable-filter=aresample,aformat,asetpts \
   \
   --enable-avformat \
   --enable-avcodec \
   --enable-avutil \
+  --enable-avfilter \
   --enable-swresample \
+  --enable-swscale \
   \
   --enable-small
 

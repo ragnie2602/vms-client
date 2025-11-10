@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+// ignore: depend_on_referenced_packages
+import 'package:path/path.dart' as p;
 
 import 'logger.dart';
 
@@ -50,8 +52,14 @@ class FFmpegProcess {
     }
   }
 
-  Future<Process?> record(String source, String output, {bool mute = true}) async {
+  Future<Process?> record(String source, String output) async {
+    final extension = p.extension(output);
+
+    final tempVideo = output.replaceFirst(extension, '_temp.ts');
+    final tempAudio = output.replaceFirst(extension, '_temp.aac');
+
     final args = [
+      '-hide_banner',
       '-y',
       '-rtsp_transport',
       'tcp',
@@ -63,16 +71,27 @@ class FFmpegProcess {
       'make_zero',
       '-i',
       source,
-      if (mute) '-an',
-      mute ? '-c:v' : '-c',
+      '-map',
+      '0:v:0',
+      '-c:v',
       'copy',
-      output,
+      tempVideo,
+      '-map',
+      '0:a:0',
+      '-c:a',
+      'aac',
+      '-b:a',
+      '128k',
+      '-f',
+      'adts',
+      tempAudio,
     ];
     Process? process;
 
     try {
       process = await Process.start('ffmpeg', args);
       Completer<void> completer = Completer<void>();
+      String logMsg = "";
 
       void _onStartingRecording(String msg) {
         if (!completer.isCompleted && msg.contains('frame=')) {
@@ -96,7 +115,12 @@ class FFmpegProcess {
         final trimmed = msg.trim();
 
         _onStartingRecording(trimmed);
-        if (trimmed.isNotEmpty && _shouldWriteLog(trimmed)) Logger.warn(trimmed, writeLog: true);
+        if (trimmed.isNotEmpty && _shouldWriteLog(trimmed)) logMsg += '$trimmed\n';
+      });
+
+      process.exitCode.then((exitCode) async {
+        await mergeVideoWithAudio(tempVideo, tempAudio, output);
+        if (logMsg.isNotEmpty) Logger.warn(logMsg, writeLog: true);
       });
 
       await completer.future.timeout(Duration(seconds: 15), onTimeout: () {});
@@ -111,6 +135,34 @@ class FFmpegProcess {
     }
 
     return process;
+  }
+
+  Future<int> mergeVideoWithAudio(String videoPath, String audioPath, String outputPath) async {
+    final args = [
+      '-hide_banner',
+      '-y',
+      '-fflags',
+      '+genpts',
+      '-i',
+      videoPath,
+      '-i',
+      audioPath,
+      '-c',
+      'copy',
+      '-shortest',
+      outputPath,
+    ];
+
+    final process = await Process.start('ffmpeg', args);
+    process.stdout.transform(SystemEncoding().decoder).listen((_) {});
+    process.stderr.transform(SystemEncoding().decoder).listen((_) {});
+    await _bindPid(process.pid);
+
+    final code = await process.exitCode;
+    await File(videoPath).delete();
+    await File(audioPath).delete();
+
+    return code;
   }
 
   bool _shouldWriteLog(String msg) {

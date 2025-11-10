@@ -125,6 +125,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   PlaybackVideo get currentPlayback => widget.playlist[_playlistIndex];
   int get initialIndex => widget.initialIndex;
   bool get isInitialized => _state.value == _PlayerState.initialized;
+  String get _disconnectedMessage => "Liveview '${widget.name}' disconnected";
 
   @override
   void initState() {
@@ -252,10 +253,13 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     }
   }
 
+  String? _lastError;
   void _onError(String error) {
     _state.value = _PlayerState.error;
     _player.stop();
-    Logger.error(error);
+
+    Logger.error(error, writeLog: _lastError != error && _lastError != _disconnectedMessage);
+    _lastError = error;
   }
 
   void _onCompleted(bool completed) {
@@ -315,8 +319,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
         return;
       }
 
-      Logger.warn("Liveview '${widget.name}' disconnected");
-      _onError("Liveview '${widget.name}' disconnected");
+      Logger.warn(_disconnectedMessage);
+      _onError(_disconnectedMessage);
     });
   }
 
@@ -470,11 +474,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
   Future<Process?> recording(String output) async {
     // Preload - tránh bị mất các giây đầu
-    await FFmpegProcess.instance.preload(widget.source);
+    // await FFmpegProcess.instance.preload(widget.source);
     // Bắt đầu ghi -- time sẽ chuẩn
-    final process = await FFmpegProcess.instance.record(widget.source, output);
-
-    return process;
+    return FFmpegProcess.instance.record(widget.source, output);
   }
 
   @override
