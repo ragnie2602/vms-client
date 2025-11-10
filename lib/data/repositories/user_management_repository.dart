@@ -123,4 +123,22 @@ class UserManagementRepository extends BaseRepository
       return Right(value);
     });
   }
+
+  @override
+  Future<Either<Failure, bool>> updateMyProfile({
+    String? displayName,
+    String? email,
+    String? tel,
+    String? address,
+  }) async {
+    return await catchError<bool>(() async {
+      final value = await service.updateMyProfile(
+        displayName: displayName,
+        email: email,
+        tel: tel,
+        address: address,
+      );
+      return Right(value);
+    });
+  }
 }

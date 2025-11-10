@@ -5,7 +5,7 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/screens/home/bloc/change_my_info_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
@@ -14,7 +14,7 @@ import 'components/components_src.dart';
 /// Hiển thị dialog khôi phục mật khẩu.
 /// Trả về mật khẩu mới nếu người dùng xác nhận, ngược lại trả về null.
 Future<bool?> showChangeMyInfoDialog(BuildContext context) {
-  final repository = context.read<IUserManagementRepository>();
+  final updateMyProfileUseCase = context.read<UpdateMyProfileUseCase>();
   final TextEditingController _usernameController =
       TextEditingController();
   final TextEditingController _fullNameController =
@@ -24,14 +24,14 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
       TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final theme = Theme.of(context);
-
+  
   return showDialog<bool?>(
     context: context,
     barrierDismissible: false,
     barrierColor: Colors.black.withOpacity(0.5),
     builder: (ctx) {
       return BlocProvider(
-        create: (context) => ChangeMyInfoBloc(repository),
+        create: (context) => ChangeMyInfoBloc(updateMyProfileUseCase),
         child: BlocConsumer<ChangeMyInfoBloc, ChangeMyInfoState>(
           listener: (context, state) {
             if (state.isSuccess) {
@@ -43,8 +43,6 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                   maxLines: 5,
                 ),
               );
-              context.read<SocketApiClient>().disconnect();
-              context.goNamed(Routes.login.name);
             } else if (state.errorMessage != null) {
               showAppMessageDialog(
                 context,
@@ -54,6 +52,14 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
             }
           },
           builder: (context, state) {
+            // Populate controllers when profile data is loaded
+            if (state.profile != null) {
+              _usernameController.text = state.profile!.account;
+              _fullNameController.text = state.profile!.displayName;
+              _emailController.text = state.profile!.email;
+              _phoneController.text = state.profile!.tel;
+            }
+
             return StatefulBuilder(
               builder: (builderContext, setState) {
                 return Dialog(
@@ -199,13 +205,20 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                               Expanded(
                                 child: AppButton.filled(
                                   label: 'Xác nhận',
-                                  // isLoading: state.isLoading,
                                   onPressed: state.isLoading
                                       ? null
                                       : () {
                                           if (_formKey.currentState!
                                               .validate()) {
-                                            
+                                            context.read<ChangeMyInfoBloc>().add(
+                                              ChangeMyInfoEvent(
+                                                updateProfile: state.profile?.copyWith(
+                                                  displayName: _fullNameController.text,
+                                                  email: _emailController.text,
+                                                  tel: _phoneController.text,
+                                                ),
+                                              ),
+                                            );
                                           }
                                         },
                                 ),

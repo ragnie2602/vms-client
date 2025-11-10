@@ -20,4 +20,28 @@ class MyProfile {
     required this.email,
     required this.tel
   });
+
+  MyProfile copyWith({
+    String? avatar,
+    String? displayName,
+    String? account,
+    bool? addCamDenied,
+    bool? changePassDenied,
+    List<int>? uid,
+    List<int>? sessionId,
+    String? email,
+    String? tel,
+  }) {
+    return MyProfile(
+      avatar: avatar ?? this.avatar,
+      displayName: displayName ?? this.displayName,
+      account: account ?? this.account,
+      addCamDenied: addCamDenied ?? this.addCamDenied,
+      changePassDenied: changePassDenied ?? this.changePassDenied,
+      uid: uid ?? this.uid,
+      sessionId: sessionId ?? this.sessionId,
+      email: email ?? this.email,
+      tel: tel ?? this.tel,
+    );
+  }
 }
