@@ -81,6 +81,20 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
   }
 
   @override
+  Future<Either<Failure, void>> deleteCameraEmapInfo({
+    required List<int> emapId,
+    required List<int> cameraEmapInfoId,
+  }) async {
+    return await catchError<void>(() async {
+      await service.deleteCameraEmapInfo(
+        emapId: emapId,
+        cameraEmapInfoId: cameraEmapInfoId,
+      );
+      return const Right(null);
+    });
+  }
+
+  @override
   Future<Either<Failure, List<CameraEntity>>> getAllCamera({
     List<int>? cameraId,
     int? status,
@@ -96,5 +110,4 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
       return Right(cameras.map((e) => e.toDomain()).toList());
     });
   }
-
 }

@@ -26,6 +26,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     on<RemoveDragItemEvent>(_onRemoveDragItem);
     on<ListCameraEmapInfoEvent>(_onlistCameraEmapInfo);
     on<UpdateCameraEmapPositionEvent>(_onUpdateCameraEmapPosition);
+    on<RemoveCameraEmapEvent>(_onRemoveCameraEmap);
     on<EditEmapEvent>(_onEditEmap);
   }
 
@@ -350,6 +351,38 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
         debugPrint('Camera position updated successfully');
         // UI đã được update thông qua UpdateDragItemPositionEvent
         // Không cần emit state mới ở đây
+      },
+    );
+  }
+
+  // Xóa camera khỏi emap (gọi API + xóa UI)
+  FutureOr<void> _onRemoveCameraEmap(
+    RemoveCameraEmapEvent event,
+    Emitter<EmapState> emit,
+  ) async {
+    if (state is! EmapSuccessState) return;
+    final currentState = state as EmapSuccessState;
+
+    // Xóa item khỏi UI ngay lập tức
+    final updatedItems = currentState.dragItems
+        ?.where((item) => item.id != event.itemId)
+        .toList();
+
+    emit(currentState.copyWith(dragItems: updatedItems));
+
+    // Gọi API để xóa khỏi server
+    final res = await emapRepository.deleteCameraEmapInfo(
+      emapId: event.emapId,
+      cameraEmapInfoId: event.cameraEmapInfoId,
+    );
+
+    res.fold(
+      (onFailure) {
+        debugPrint('Delete camera from emap failed: $onFailure');
+        // TODO: Có thể rollback UI nếu API thất bại
+      },
+      (onSuccess) {
+        debugPrint('Camera deleted from emap successfully');
       },
     );
   }
