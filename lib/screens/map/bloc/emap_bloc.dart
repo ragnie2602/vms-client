@@ -6,6 +6,9 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_input.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_output.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
@@ -13,7 +16,9 @@ import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
   List<CameraEntity> listCamera = [];
   final IEmapRepository emapRepository;
-  EmapBloc({required this.emapRepository}) : super(const EmapState()) {
+  final SearchEmapUseCase searchEmapUseCase;
+  EmapBloc({required this.emapRepository, required this.searchEmapUseCase})
+    : super(const EmapState()) {
     on<GetListEmapEvent>(_onGetListEmap);
     on<ChangeEmapEvent>(_onChangeSelectEmap);
     on<RemoveEmapEvent>(_onRemoveEmap);
@@ -24,7 +29,11 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     on<UpdateDragItemPositionEvent>(_onUpdateDragItemPosition);
     on<RemoveDragItemEvent>(_onRemoveDragItem);
     on<EditEmapEvent>(_onEditEmap);
+    on<SearchEmapEvent>(_onSearchEmap);
   }
+
+  // list group origin
+  List<EmapEntity> listEmap = [];
 
   FutureOr<void> _onGetListEmap(
     GetListEmapEvent event,
@@ -40,7 +49,30 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
           emapSelected: _list.isEmpty ? null : _list.first,
         ),
       );
+      listEmap = _list;
     });
+  }
+
+  Future<void> _onSearchEmap(
+    SearchEmapEvent event,
+    Emitter<EmapState> emit,
+  ) async {
+    if ((state is EmapSuccessState) == false) {
+      await _onGetListEmap(GetListEmapEvent(), emit);
+      return;
+    }
+    final currentState = state as EmapSuccessState;
+    final SearchEmapInput input = SearchEmapInput(
+      keyword: event.keyword,
+      listEmapOrigin: listEmap,
+    );
+    final SearchEmapOutput output = searchEmapUseCase.execute(input);
+    emit(
+      currentState.copyWith(
+        listEmap: output.listEmapResult,
+        emapSelected: output.listEmapResult?.firstOrNull,
+      ),
+    );
   }
 
   FutureOr<void> _onChangeSelectEmap(
@@ -75,6 +107,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
       emaps.add(onSuccess);
       emit(AddEmapSuccessState());
       emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
+      listEmap = emaps;
     });
   }
 
@@ -101,6 +134,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
           .toList();
       emit(EditEmapSuccessState());
       emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
+      listEmap = emaps;
     });
   }
 
@@ -125,6 +159,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
           emapSelected: _listEmap?.first,
         ),
       );
+      listEmap = _listEmap ?? [];
     });
   }
 

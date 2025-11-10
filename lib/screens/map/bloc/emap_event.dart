@@ -16,6 +16,12 @@ class ChangeEmapEvent extends EmapEvent {
   @override
   List<Object?> get props => [emap];
 }
+class SearchEmapEvent extends EmapEvent {
+  final String keyword;
+  SearchEmapEvent({required this.keyword});
+  @override
+  List<Object?> get props => [keyword];
+}
 
 class AddEmapEvent extends EmapEvent {
   final String emapName;
