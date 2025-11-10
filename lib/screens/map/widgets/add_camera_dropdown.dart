@@ -164,7 +164,7 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                               final name = camera.name;
                                               // Chỉ thêm vào selectedCameras vì camera sẽ biến mất khỏi list
                                               _selectedCameras.add(name);
-                                              widget.onSelectCamera(name);
+                                              widget.onSelectCamera(camera);
                                             });
                                           },
                                           child: Padding(
