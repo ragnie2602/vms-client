@@ -113,8 +113,7 @@ class _MapViewState extends State<MapView> {
       ),
     );
 
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+    // Không đóng dropdown, để user tiếp tục chọn camera khác
   }
 
   void _updateItemPosition(String itemId, Offset globalPosition) {
@@ -208,10 +207,11 @@ class _MapViewState extends State<MapView> {
       );
     }
 
+    List<CameraEntity> listCameraEntity = List.from(listCamera);
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(
       builder: (context) => AddCameraDropdown(
-        listCamera: listCamera,
+        listCamera: listCameraEntity,
         excludedCameraNames:
             excludedCameraNames, // Truyền danh sách camera đã có
         position: Offset(offset.dx, offset.dy + size.height),

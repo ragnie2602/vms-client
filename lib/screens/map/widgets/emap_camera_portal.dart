@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/screens/group/widget/confirm_remove_view.dart';
 import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
@@ -147,8 +148,14 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
           ),
           InkWell(
             onTap: () {
-              widget.onDelete.call();
-              Navigator.of(context, rootNavigator: true).pop();
+              showConfirmRemoveDialog(
+                context,
+                contentWidget: Text('camera này?'),
+                onClickRemove: () {
+                  widget.onDelete.call();
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+              );
             },
             child: Padding(
               padding: const EdgeInsets.all(4),
