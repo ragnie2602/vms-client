@@ -14,8 +14,10 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custo
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 
@@ -101,6 +103,12 @@ class DependencyInjection {
           FilterCameraNotInGroupUsecase(cameraRepository: context.read<ICameraRepository>()),
     ),
     Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
+    Provider<UpdateMyProfileUseCase>(
+      create: (context) => UpdateMyProfileUseCase(
+        userManagementRepository: context.read<IUserManagementRepository>(),
+      ),
+    ),
+    Provider<SearchEmapUseCase>(create: (context) => SearchEmapUseCase()),
 
     // Bloc
     Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),

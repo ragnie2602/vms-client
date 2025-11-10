@@ -46,6 +46,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     on<CreateNewWindow>(_onCreateNewWindow);
     on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
     on<ReopenSubWindow>(_onReopenSubWindow);
+    on<MyProfileInfoChanged>(_onMyProfileChanged);
   }
 
   @override
@@ -173,6 +174,17 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         output.windowController.show();
       }
     }
+  FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) {
+    emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
+  }
+}
+
+  FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) async {
+    final rect = await windowManager.getBounds();
+    sendMultiWindowEventUseCase.execute(
+      SendMultiWindowEventInput(0, 'change_setting_window', data: {'rect': rect}),
+    );
+    emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
   }
 }
 
@@ -180,22 +192,33 @@ class AppState extends BaseState {
   final ThemeMode themeMode;
   final bool displayFullScreenLiveView;
   final bool isSignOut;
+  final int myProfileUpdatedAt;
 
-  AppState(this.displayFullScreenLiveView, {ThemeMode? themeMode, this.isSignOut = false})
-    : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
+  AppState(
+    this.displayFullScreenLiveView, {
+    ThemeMode? themeMode,
+    this.isSignOut = false,
+    this.myProfileUpdatedAt = 0,
+  }) : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
     AppTheme.currentMode = this.themeMode;
   }
 
-  AppState copyWith({ThemeMode? themeMode, bool? displayFullScreenLiveView, bool? isSignOut}) {
+  AppState copyWith({
+    ThemeMode? themeMode,
+    bool? displayFullScreenLiveView,
+    bool? isSignOut,
+    int? myProfileUpdatedAt,
+  }) {
     return AppState(
       displayFullScreenLiveView ?? this.displayFullScreenLiveView,
       themeMode: themeMode ?? this.themeMode,
       isSignOut: isSignOut ?? false,
+      myProfileUpdatedAt: myProfileUpdatedAt ?? this.myProfileUpdatedAt,
     );
   }
 
   @override
-  List<Object?> get props => [themeMode, displayFullScreenLiveView, isSignOut];
+  List<Object?> get props => [themeMode, displayFullScreenLiveView, isSignOut, myProfileUpdatedAt];
 }
 
 class AppEvent extends BaseEvent {
@@ -245,3 +268,4 @@ class MultiWindowEventReceived extends AppEvent {
 class ReopenSubWindow extends AppEvent {
   const ReopenSubWindow();
 }
+class MyProfileInfoChanged extends AppEvent {}

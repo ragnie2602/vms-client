@@ -128,6 +128,10 @@ class _ListMapViewState extends State<ListMapView> {
     );
   }
 
+  void _onSearchEmap({required String keyword}) {
+    context.read<EmapBloc>().add(SearchEmapEvent(keyword: keyword));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -175,7 +179,12 @@ class _ListMapViewState extends State<ListMapView> {
                       ),
                       border: UnderlineInputBorder(),
                     ),
-                    onChanged: (value) {},
+                    onChanged: (value) {
+                      _onSearchEmap(keyword: value);
+                    },
+                    onSubmitted: (value) {
+                      _onSearchEmap(keyword: value);
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -226,6 +235,12 @@ class _ListMapViewState extends State<ListMapView> {
                         title: Text('Thêm bản đồ camera thành công!'),
                       );
                     }
+                    if (state is EditEmapSuccessState) {
+                      ToastUtil.toastSuccess(
+                        context: context,
+                        title: Text('Cập nhật bản đồ camera thành công!'),
+                      );
+                    }
                   },
                   builder: (context, state) {
                     if (state is EmapLoadingState) {
@@ -254,15 +269,17 @@ class _ListMapViewState extends State<ListMapView> {
                                 children: [
                                   SvgPicture.asset(AppAssets.icMarkerMap),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    item.emapName ?? 'N/A',
-                                    style: AppTypography.style(
-                                      13,
-                                      fontWeight: FontWeight.w400,
-                                      color: AppColors.black,
+                                  Expanded(
+                                    child: Text(
+                                      item.emapName ?? 'N/A',
+                                      style: AppTypography.style(
+                                        13,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors.black,
+                                        textOverflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ),
-                                  Spacer(),
                                   PopupMenuButton<ItemMapAction>(
                                     padding: EdgeInsets.zero,
                                     splashRadius: 20,

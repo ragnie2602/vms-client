@@ -62,6 +62,60 @@ class _MapViewState extends State<MapView> {
     );
   }
 
+  void _onDeleteCameraEmap(DragItemModel item) {
+    final bloc = context.read<EmapBloc>();
+    final state = bloc.state;
+
+    if (state is EmapSuccessState && state.emapSelected != null) {
+      // Kiểm tra nếu có cameraEmapInfoId (camera đã tồn tại trên server)
+      if (item.cameraEmapInfoId != null && item.cameraEmapInfoId!.isNotEmpty) {
+        // Gọi API xóa + xóa UI
+        bloc.add(
+          RemoveCameraEmapEvent(
+            itemId: item.id,
+            emapId: state.emapSelected!.emapId ?? [],
+            cameraEmapInfoId: item.cameraEmapInfoId!,
+          ),
+        );
+      } else {
+        // Camera chưa lưu trên server, chỉ xóa UI
+        bloc.add(RemoveDragItemEvent(itemId: item.id));
+      }
+    }
+  }
+
+  void _onAddCameraEmap(CameraEntity cameraEntity) {
+    final bloc = context.read<EmapBloc>();
+    final state = bloc.state;
+
+    if (state is! EmapSuccessState) return;
+
+    // Tìm camera theo tên
+    final camera = bloc.listCamera.firstWhere(
+      (c) => c.name == cameraEntity.name,
+      orElse: () => throw Exception('Camera not found'),
+    );
+
+    // Tạo random position
+    final randomPosition = _getRandomPosition() ?? Offset.zero;
+    // Gọi API thông qua AddCameraEmapEvent
+    // Bloc sẽ tự động thêm camera vào dragItems và emit EmapSuccessState
+    bloc.add(
+      AddCameraEmapEvent(
+        emapId: state.emapSelected?.emapId ?? [],
+        cameraEmapInfoEntity: CameraEmapInfoEntity(
+          cameraId: camera.id,
+          typeIcon: 0, // default type icon
+          xCoordinate: randomPosition.dx.toInt(),
+          yCoordinate: randomPosition.dy.toInt(),
+          cameraEmapInfoId: [], // server sẽ tạo ID mới
+        ),
+      ),
+    );
+
+    // Không đóng dropdown, để user tiếp tục chọn camera khác
+  }
+
   void _updateItemPosition(String itemId, Offset globalPosition) {
     final RenderBox? imageBox =
         _imageKey.currentContext?.findRenderObject() as RenderBox?;
@@ -153,10 +207,11 @@ class _MapViewState extends State<MapView> {
       );
     }
 
+    List<CameraEntity> listCameraEntity = List.from(listCamera);
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(
       builder: (context) => AddCameraDropdown(
-        listCamera: listCamera,
+        listCamera: listCameraEntity,
         excludedCameraNames:
             excludedCameraNames, // Truyền danh sách camera đã có
         position: Offset(offset.dx, offset.dy + size.height),
@@ -164,42 +219,9 @@ class _MapViewState extends State<MapView> {
           _overlayEntry?.remove();
           _overlayEntry = null;
         },
-        onSelectCamera: (cameraName) {
-          final bloc = context.read<EmapBloc>();
-          final state = bloc.state;
-
-          if (state is! EmapSuccessState) return;
-
-          // Tìm camera theo tên
-          final camera = bloc.listCamera.firstWhere(
-            (c) => c.name == cameraName.name,
-            orElse: () => throw Exception('Camera not found'),
-          );
-
-          // Tạo random position
-          final randomPosition = _getRandomPosition() ?? Offset.zero;
-          // Gọi API thông qua AddCameraEmapEvent
-          // Bloc sẽ tự động thêm camera vào dragItems và emit EmapSuccessState
-          bloc.add(
-            AddCameraEmapEvent(
-              emapId: state.emapSelected?.emapId ?? [],
-              cameraEmapInfoEntity: CameraEmapInfoEntity(
-                cameraId: camera.id,
-                typeIcon: 0, // default type icon
-                xCoordinate: randomPosition.dx.toInt(),
-                yCoordinate: randomPosition.dy.toInt(),
-                cameraEmapInfoId: [], // server sẽ tạo ID mới
-              ),
-            ),
-          );
-
-          _overlayEntry?.remove();
-          _overlayEntry = null;
+        onSelectCamera: (cameraEntity) {
+          _onAddCameraEmap(cameraEntity);
         },
-        onDeselectCamera: (camera) {
-          context.read<EmapBloc>().add(RemoveDragItemEvent(itemId: camera.name));
-        },
-        onConfirm: (selectedCameras) {},
       ),
     );
 
@@ -212,22 +234,33 @@ class _MapViewState extends State<MapView> {
     }
     if (state is EmapSuccessState) {
       if ((state.listEmap ?? []).isEmpty) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: SvgPicture.asset(AppAssets.icEmptyEmap),
-            ),
-            Text(
-              'Chưa có bản đồ camera nào. Click + để thêm bản đồ camera',
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w400,
-                color: AppColors.grey64748B,
-              ),
-            ),
-          ],
+        return Center(
+          child: state.isSearching == true
+              ? Text(
+                  'Không tìm thấy kết quả phù hợp',
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.grey64748B,
+                  ),
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: SvgPicture.asset(AppAssets.icEmptyEmap),
+                    ),
+                    Text(
+                      'Chưa có bản đồ camera nào. Click + để thêm bản đồ camera',
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.grey64748B,
+                      ),
+                    ),
+                  ],
+                ),
         );
       }
 
@@ -360,9 +393,12 @@ class _MapViewState extends State<MapView> {
         behavior: HitTestBehavior.opaque,
         onPanStart: (details) {
           // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
-          final RenderBox? imageBox = _imageKey.currentContext?.findRenderObject() as RenderBox?;
+          final RenderBox? imageBox =
+              _imageKey.currentContext?.findRenderObject() as RenderBox?;
           if (imageBox != null) {
-            final localPosition = imageBox.globalToLocal(details.globalPosition);
+            final localPosition = imageBox.globalToLocal(
+              details.globalPosition,
+            );
             _dragOffsets[item.id] = localPosition - item.position;
           }
         },
@@ -413,7 +449,9 @@ class _MapViewState extends State<MapView> {
         },
         child: EmapCameraPortal(
           item: item,
-          onDelete: () {},
+          onDelete: () {
+            _onDeleteCameraEmap(item);
+          },
           child: Hero(
             tag: item.id,
             // flightShuttleBuilder: (_, __, ___, ____, toHeroContext) {
@@ -441,7 +479,9 @@ class _MapViewState extends State<MapView> {
                           ),
                         ],
                       ),
-                      child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
+                      child: Center(
+                        child: SvgPicture.asset(AppAssets.icCameraMap),
+                      ),
                     ),
                   ),
                   SizedBox(height: 8),
@@ -469,4 +509,5 @@ class _MapViewState extends State<MapView> {
     );
   }
 }
+
 //"http://ipcam.vivas.vn:8888/vt/static/emap/EfCpkoDwXoS7jwJCwKggAg_preview.jpg"

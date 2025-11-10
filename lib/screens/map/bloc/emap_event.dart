@@ -15,6 +15,12 @@ class ChangeEmapEvent extends EmapEvent {
   @override
   List<Object?> get props => [emap];
 }
+class SearchEmapEvent extends EmapEvent {
+  final String keyword;
+  SearchEmapEvent({required this.keyword});
+  @override
+  List<Object?> get props => [keyword];
+}
 
 class AddEmapEvent extends EmapEvent {
   final String emapName;
@@ -122,4 +128,20 @@ class UpdateCameraEmapPositionEvent extends EmapEvent {
     newPosition,
     typeIcon,
   ];
+}
+
+// Xóa camera khỏi emap (gọi API + xóa UI)
+class RemoveCameraEmapEvent extends EmapEvent {
+  final String itemId; // ID của DragItem để xóa UI
+  final List<int> emapId;
+  final List<int> cameraEmapInfoId;
+
+  RemoveCameraEmapEvent({
+    required this.itemId,
+    required this.emapId,
+    required this.cameraEmapInfoId,
+  });
+
+  @override
+  List<Object?> get props => [itemId, emapId, cameraEmapInfoId];
 }

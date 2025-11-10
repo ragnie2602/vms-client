@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/screens/group/widget/confirm_remove_view.dart';
 import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
@@ -29,7 +30,8 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
       key: childKey,
       onTap: () {
         showPlayer = false;
-        final RenderBox box = childKey.currentContext!.findRenderObject() as RenderBox;
+        final RenderBox box =
+            childKey.currentContext!.findRenderObject() as RenderBox;
         final Offset globalOffset = box.localToGlobal(Offset.zero);
 
         Navigator.of(context, rootNavigator: true).push(
@@ -46,9 +48,16 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
                   widgetSize: box.size,
                 ),
                 children: [
-                  if (showPlayer) LayoutId(id: 0, child: _wrapMaterial(_buildPlayer(setState))),
+                  if (showPlayer)
+                    LayoutId(
+                      id: 0,
+                      child: _wrapMaterial(_buildPlayer(setState)),
+                    ),
                   LayoutId(id: 1, child: widget.child),
-                  LayoutId(id: 2, child: _wrapMaterial(_buildActionItem(setState))),
+                  LayoutId(
+                    id: 2,
+                    child: _wrapMaterial(_buildActionItem(setState)),
+                  ),
                 ],
               ),
             ),
@@ -59,16 +68,24 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
     );
   }
 
-  Widget _wrapMaterial(Widget child) => Material(color: Colors.transparent, child: child);
+  Widget _wrapMaterial(Widget child) =>
+      Material(color: Colors.transparent, child: child);
   late final shadows = [
-    BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.25), blurRadius: 15, offset: Offset(4, 4)),
+    BoxShadow(
+      color: Color.fromRGBO(0, 0, 0, 0.25),
+      blurRadius: 15,
+      offset: Offset(4, 4),
+    ),
   ];
 
   Widget _buildPlayer(void Function(void Function()) setState) {
     return Container(
       width: 500,
       height: 281,
-      decoration: BoxDecoration(color: Color.fromRGBO(0, 0, 0, 0.9), boxShadow: shadows),
+      decoration: BoxDecoration(
+        color: Color.fromRGBO(0, 0, 0, 0.9),
+        boxShadow: shadows,
+      ),
       padding: EdgeInsets.all(1),
       child: Stack(
         fit: StackFit.expand,
@@ -130,14 +147,26 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
             ),
           ),
           InkWell(
-            onTap: widget.onDelete,
+            onTap: () {
+              showConfirmRemoveDialog(
+                context,
+                contentWidget: Text('camera này?'),
+                onClickRemove: () {
+                  widget.onDelete.call();
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+              );
+            },
             child: Padding(
               padding: const EdgeInsets.all(4),
               child: SvgPicture.asset(
                 AppAssets.icDelete,
                 width: 16,
                 height: 16,
-                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                colorFilter: const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),
@@ -148,7 +177,10 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
 }
 
 class EmapCameraActionsDelegate extends MultiChildLayoutDelegate {
-  EmapCameraActionsDelegate({required this.widgetOffset, required this.widgetSize});
+  EmapCameraActionsDelegate({
+    required this.widgetOffset,
+    required this.widgetSize,
+  });
   final Offset widgetOffset;
   final Size widgetSize;
 
@@ -188,10 +220,12 @@ class EmapCameraActionsDelegate extends MultiChildLayoutDelegate {
     // Trường hợp tràn ra ngoài màn hình phía trên
     // Do chỉnh lại playerOffsetY, playerOffsetX nên phải đồng bộ vs _dx _dy ở trước nữa
     double playerOffsetY = widgetOffset.dy - playerGap - playerSize.height;
-    double playerOffsetX = widgetOffset.dx + widgetSize.width / 2 - playerSize.width / 2;
+    double playerOffsetX =
+        widgetOffset.dx + widgetSize.width / 2 - playerSize.width / 2;
     if (playerOffsetY < 0) _dy = playerOffsetY.abs() + 1;
     if (playerOffsetX + playerSize.width > size.width) {
-      playerOffsetX = size.width - playerSize.width - 1 - _dx; // do position đã +_dx
+      playerOffsetX =
+          size.width - playerSize.width - 1 - _dx; // do position đã +_dx
     }
     if (playerOffsetX < 0) playerOffsetX = 1 - _dx; // do position đã +_dx
 
@@ -208,7 +242,10 @@ class EmapCameraActionsDelegate extends MultiChildLayoutDelegate {
     if (hasChild(2)) {
       positionChild(
         2,
-        Offset(_dx + (widgetOffset.dx + widgetSize.width - actionsSize.width), _dy + actionOffsetY),
+        Offset(
+          _dx + (widgetOffset.dx + widgetSize.width - actionsSize.width),
+          _dy + actionOffsetY,
+        ),
       );
     }
   }

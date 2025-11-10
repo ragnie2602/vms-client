@@ -106,4 +106,5 @@ class AppAssets {
   static const icLogout = '$_svgPath/ic_logout.svg';
   static const icKey = '$_svgPath/ic_key.svg';
   static const icCameraMap = '$_svgPath/ic_camera_map.svg';
+  static const icUserInfo = '$_svgPath/ic_user_info.svg';
 }

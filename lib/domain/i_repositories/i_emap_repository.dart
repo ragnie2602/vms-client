@@ -31,7 +31,13 @@ abstract class IEmapRepository {
     required List<int> emapId,
     required CameraEmapInfoEntity cameraEmapinfo,
   });
-  
+
+  /// Delete camera from Emap
+  Future<Either<Failure, void>> deleteCameraEmapInfo({
+    required List<int> emapId,
+    required List<int> cameraEmapInfoId,
+  });
+
   Future<Either<Failure, List<CameraEntity>>> getAllCamera({
     List<int>? cameraId,
     int? status,
