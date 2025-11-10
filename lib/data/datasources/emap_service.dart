@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
-import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
+import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
@@ -164,15 +164,37 @@ class EmapService {
     );
   }
 
+  /// Delete Camera from Emap (ID: 237)
+  Future<void> deleteCameraEmapInfo({
+    required List<int> emapId,
+    required List<int> cameraEmapInfoId,
+  }) async {
+    final request = DeleteCameraEmapInfo_Request()
+      ..emapId = emapId
+      ..cameraEmapInfoId = cameraEmapInfoId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: UniqueId.getUniqueId(PacketType.deleteCameraEmapInfo.value),
+          data: request.writeToBuffer(),
+          type: PacketType.deleteCameraEmapInfo,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(
+        DeleteCameraEmapInfo_Error.valueOf,
+        PacketType.deleteCameraEmapInfo.value,
+      ),
+      (buffer) => DeleteCameraEmapInfo_Reply.fromBuffer(buffer),
+    );
+  }
+
   // Helper methods for file handling
   String _getFileName(String path) {
     return path.split('/').last.split('\\').last;
-  }
-
-  String _getFileFieldName(String path) {
-    final filename = _getFileName(path);
-    final extension = filename.split('.').first;
-    return extension;
   }
 
   String _getImageContentType(String path) {

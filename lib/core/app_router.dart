@@ -51,9 +51,8 @@ enum Routes {
   custom_live_view(
     name: 'custom_live_view',
     path: '/custom_live_view',
-    title: 'Xem lại',
-    description:
-        'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
+    title: 'Chế độ tùy biến',
+    description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   cameraDetail(name: 'camera_detail', path: '/camera_detail'),
   playback(

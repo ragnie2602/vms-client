@@ -216,14 +216,8 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
           child: Container(
             constraints: BoxConstraints(maxWidth: size.width - 10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.6),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(3),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 4,
-                  color: Colors.white.withValues(alpha: 0.6),
-                ),
-              ],
             ),
             padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
             child: Row(
