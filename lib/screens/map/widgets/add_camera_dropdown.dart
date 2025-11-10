@@ -9,9 +9,10 @@ class AddCameraDropdown extends StatefulWidget {
   final Offset position;
   final VoidCallback? onClose;
   final List<CameraEntity> listCamera;
+  final Set<String> excludedCameraNames; // Camera đã có trên map
   final Function(Set<String> selectedCameras)? onConfirm;
-  final Function(String cameraName) onSelectCamera;
-  final Function(String cameraName) onDeselectCamera;
+  final Function(CameraEntity camera) onSelectCamera;
+  final Function(CameraEntity camera) onDeselectCamera;
 
   const AddCameraDropdown({
     super.key,
@@ -20,6 +21,7 @@ class AddCameraDropdown extends StatefulWidget {
     required this.onSelectCamera,
     required this.onDeselectCamera,
     required this.listCamera,
+    this.excludedCameraNames = const {},
     this.onConfirm,
   });
 
@@ -37,8 +39,17 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
 
   List<CameraEntity> get _filteredCameras {
     final query = _searchController.text.toLowerCase();
-    if (query.isEmpty) return listCameras;
-    return listCameras
+    // Lọc bỏ các camera đã được chọn trong session và camera đã có trên map
+    final availableCameras = listCameras
+        .where(
+          (camera) =>
+              !_selectedCameras.contains(camera.name) &&
+              !widget.excludedCameraNames.contains(camera.name),
+        )
+        .toList();
+
+    if (query.isEmpty) return availableCameras;
+    return availableCameras
         .where((camera) => camera.name.toString().toLowerCase().contains(query))
         .toList();
   }
@@ -143,8 +154,7 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                     itemCount: _filteredCameras.length,
                                     itemBuilder: (context, index) {
                                       final camera = _filteredCameras[index];
-                                      final bool isActive =
-                                          widget.listCamera[index].isOnline;
+                                      final bool isActive = camera.isOnline;
 
                                       return Material(
                                         color: Colors.transparent,
@@ -152,15 +162,9 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                           onTap: () {
                                             setState(() {
                                               final name = camera.name;
-                                              if (_selectedCameras.contains(
-                                                name,
-                                              )) {
-                                                _selectedCameras.remove(name);
-                                                widget.onDeselectCamera(name);
-                                              } else {
-                                                _selectedCameras.add(name);
-                                                widget.onSelectCamera(name);
-                                              }
+                                              // Chỉ thêm vào selectedCameras vì camera sẽ biến mất khỏi list
+                                              _selectedCameras.add(name);
+                                              widget.onSelectCamera(camera);
                                             });
                                           },
                                           child: Padding(
@@ -210,20 +214,6 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                                     ],
                                                   ),
                                                 ),
-
-                                                _selectedCameras.contains(
-                                                      camera.name,
-                                                    )
-                                                    ? SvgPicture.asset(
-                                                        AppAssets.icChecked,
-                                                        width: 20,
-                                                        height: 20,
-                                                      )
-                                                    : SvgPicture.asset(
-                                                        AppAssets.icCheckBox,
-                                                        width: 20,
-                                                        height: 20,
-                                                      ),
                                               ],
                                             ),
                                           ),
