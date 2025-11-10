@@ -269,15 +269,17 @@ class _ListMapViewState extends State<ListMapView> {
                                 children: [
                                   SvgPicture.asset(AppAssets.icMarkerMap),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    item.emapName ?? 'N/A',
-                                    style: AppTypography.style(
-                                      13,
-                                      fontWeight: FontWeight.w400,
-                                      color: AppColors.black,
+                                  Expanded(
+                                    child: Text(
+                                      item.emapName ?? 'N/A',
+                                      style: AppTypography.style(
+                                        13,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors.black,
+                                        textOverflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ),
-                                  Spacer(),
                                   PopupMenuButton<ItemMapAction>(
                                     padding: EdgeInsets.zero,
                                     splashRadius: 20,
