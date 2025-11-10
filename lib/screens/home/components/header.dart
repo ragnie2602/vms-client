@@ -115,7 +115,7 @@ class _HeaderState extends State<Header> {
                     if (MultiWindowUtil.isMainWindow(context.read<AppBloc>().windowId))
                       IconButton(
                         onPressed: () => context.read<AppBloc>().add(CreateNewWindow()),
-                        icon: Icon(Icons.window_outlined),
+                        icon: SvgPicture.asset(AppAssets.icNewWindow, width: 20, height: 20),
                       ),
                     const SizedBox(width: 12),
                     UserProfile(),
