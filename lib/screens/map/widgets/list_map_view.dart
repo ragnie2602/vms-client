@@ -61,7 +61,6 @@ class _ListMapViewState extends State<ListMapView> {
       },
     );
   }
-  
 
   void _onAddEmap({
     required String emapName,

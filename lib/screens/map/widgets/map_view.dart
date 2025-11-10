@@ -6,11 +6,12 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
+import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 
 import 'add_camera_dropdown.dart';
 import 'emap_camera_portal.dart';
@@ -27,6 +28,8 @@ class _MapViewState extends State<MapView> {
   final GlobalKey _imageKey = GlobalKey();
   // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
   final Map<String, Offset> _dragOffsets = {};
+  // Lưu GlobalKey cho mỗi item để lấy kích thước thực tế
+  final Map<String, GlobalKey> _itemKeys = {};
 
   @override
   void dispose() {
@@ -37,7 +40,7 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
         _onGetListCamera(c: context); // Lấy danh sách emap
       }
@@ -72,11 +75,27 @@ class _MapViewState extends State<MapView> {
     final newPosition = localPosition - dragOffset;
 
     final imageSize = imageBox.size;
-    const itemSize = 100.0;
+
+    // Lấy kích thước thực tế của item từ RenderBox
+    final itemKey = _itemKeys[itemId];
+    Size itemSize = Size(100, 100); // Kích thước mặc định
+    if (itemKey?.currentContext != null) {
+      final RenderBox? itemBox =
+          itemKey!.currentContext!.findRenderObject() as RenderBox?;
+      if (itemBox != null) {
+        itemSize = itemBox.size;
+      }
+    }
 
     // Giới hạn vị trí trong phạm vi của ảnh
-    final clampedX = newPosition.dx.clamp(0.0, imageSize.width - itemSize);
-    final clampedY = newPosition.dy.clamp(0.0, imageSize.height - itemSize);
+    final clampedX = newPosition.dx.clamp(
+      0.0,
+      imageSize.width - itemSize.width,
+    );
+    final clampedY = newPosition.dy.clamp(
+      0.0,
+      imageSize.height - itemSize.height,
+    );
 
     context.read<EmapBloc>().add(
       UpdateDragItemPositionEvent(
@@ -121,24 +140,58 @@ class _MapViewState extends State<MapView> {
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
 
+    // Lấy danh sách tên camera đã có trên map hiện tại
+    final bloc = context.read<EmapBloc>();
+    final state = bloc.state;
+    final excludedCameraNames = <String>{};
+    if (state is EmapSuccessState) {
+      excludedCameraNames.addAll(
+        state.dragItems
+                ?.map((item) => item.label ?? '')
+                .where((name) => name.isNotEmpty) ??
+            [],
+      );
+    }
+
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(
       builder: (context) => AddCameraDropdown(
         listCamera: listCamera,
+        excludedCameraNames:
+            excludedCameraNames, // Truyền danh sách camera đã có
         position: Offset(offset.dx, offset.dy + size.height),
         onClose: () {
           _overlayEntry?.remove();
           _overlayEntry = null;
         },
-        onSelectCamera: (camera) {
-          final newItem = DragItemModel(
-            id: DateTime.now().millisecondsSinceEpoch.toString(), // hoặc UUID
-            position: _getRandomPosition() ?? Offset.zero, // vị trí mặc định
-            label: camera.name,
-            source: camera.subStreamUri.toString(),
+        onSelectCamera: (cameraName) {
+          final bloc = context.read<EmapBloc>();
+          final state = bloc.state;
+
+          if (state is! EmapSuccessState) return;
+
+          // Tìm camera theo tên
+          final camera = bloc.listCamera.firstWhere(
+            (c) => c.name == cameraName.name,
+            orElse: () => throw Exception('Camera not found'),
           );
 
-          context.read<EmapBloc>().add(AddDragItemEvent(item: newItem));
+          // Tạo random position
+          final randomPosition = _getRandomPosition() ?? Offset.zero;
+          // Gọi API thông qua AddCameraEmapEvent
+          // Bloc sẽ tự động thêm camera vào dragItems và emit EmapSuccessState
+          bloc.add(
+            AddCameraEmapEvent(
+              emapId: state.emapSelected?.emapId ?? [],
+              cameraEmapInfoEntity: CameraEmapInfoEntity(
+                cameraId: camera.id,
+                typeIcon: 0, // default type icon
+                xCoordinate: randomPosition.dx.toInt(),
+                yCoordinate: randomPosition.dy.toInt(),
+                cameraEmapInfoId: [], // server sẽ tạo ID mới
+              ),
+            ),
+          );
 
           _overlayEntry?.remove();
           _overlayEntry = null;
@@ -295,6 +348,11 @@ class _MapViewState extends State<MapView> {
   }
 
   Widget _buildDragItem(DragItemModel item) {
+    // Tạo hoặc lấy GlobalKey cho item này
+    if (!_itemKeys.containsKey(item.id)) {
+      _itemKeys[item.id] = GlobalKey();
+    }
+
     return Positioned(
       left: item.position.dx,
       top: item.position.dy,
@@ -315,8 +373,43 @@ class _MapViewState extends State<MapView> {
         onPanEnd: (details) {
           // Xóa offset đã lưu khi thả item
           _dragOffsets.remove(item.id);
-          print('Item ${item.id} dropped at: ${item.position}');
-          // Có thể lưu vào database tại đây
+
+          // Lấy thông tin state và emap hiện tại
+          final bloc = context.read<EmapBloc>();
+          final state = bloc.state;
+
+          if (state is EmapSuccessState && state.emapSelected != null) {
+            // Tìm item mới nhất từ state để lấy position đã cập nhật
+            final updatedItem = state.dragItems?.firstWhere(
+              (dragItem) => dragItem.id == item.id,
+              orElse: () => item,
+            );
+
+            // Chỉ gọi API nếu có cameraEmapInfoId (camera đã tồn tại trên map)
+            if (updatedItem?.cameraEmapInfoId != null &&
+                updatedItem!.cameraEmapInfoId!.isNotEmpty) {
+              // Tìm camera trong listCamera để lấy ID gốc
+              final camera = bloc.listCamera.firstWhere(
+                (c) => c.name == updatedItem.label,
+                orElse: () => bloc.listCamera.first, // fallback
+              );
+
+              debugPrint(
+                'Updating camera position: ${updatedItem.label} at (${updatedItem.position.dx.toInt()}, ${updatedItem.position.dy.toInt()})',
+              );
+
+              // Gọi API update position
+              bloc.add(
+                UpdateCameraEmapPositionEvent(
+                  emapId: state.emapSelected!.emapId ?? [],
+                  cameraEmapInfoId: updatedItem.cameraEmapInfoId!,
+                  cameraId: camera.id,
+                  newPosition: updatedItem.position,
+                  typeIcon: 0, // default type icon
+                ),
+              );
+            }
+          }
         },
         child: EmapCameraPortal(
           item: item,
