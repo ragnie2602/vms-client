@@ -474,11 +474,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
   Future<Process?> recording(String output) async {
     // Preload - tránh bị mất các giây đầu
-    await FFmpegProcess.instance.preload(widget.source);
+    // await FFmpegProcess.instance.preload(widget.source);
     // Bắt đầu ghi -- time sẽ chuẩn
-    final process = await FFmpegProcess.instance.record(widget.source, output);
-
-    return process;
+    return FFmpegProcess.instance.record(widget.source, output);
   }
 
   @override
