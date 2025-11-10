@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -94,6 +96,8 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WindowListener {
   AppBloc? appBloc;
 
+  Timer? _changeSettingWindowTimer;
+
   @override
   void initState() {
     super.initState();
@@ -128,8 +132,18 @@ class _MyAppState extends State<MyApp> with WindowListener {
   void onWindowClose() => appBloc?.add(CloseWindow());
 
   @override
-  void onWindowMoved() => appBloc?.add(ChangeSettingWindow());
+  void onWindowMoved() {
+    _changeSettingWindowTimer?.cancel();
+    _changeSettingWindowTimer = Timer(const Duration(milliseconds: 300), () {
+      appBloc?.add(ChangeSettingWindow());
+    });
+  }
 
   @override
-  void onWindowResized() => appBloc?.add(ChangeSettingWindow());
+  void onWindowResized() {
+    _changeSettingWindowTimer?.cancel();
+    _changeSettingWindowTimer = Timer(const Duration(milliseconds: 300), () {
+      appBloc?.add(ChangeSettingWindow());
+    });
+  }
 }

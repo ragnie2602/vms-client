@@ -1,26 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 
 class AddCameraDropdown extends StatefulWidget {
   final Offset position;
   final VoidCallback? onClose;
   final List<CameraEntity> listCamera;
-  final Function(Set<String> selectedCameras)? onConfirm;
+  final Set<String> excludedCameraNames; // Camera đã có trên map
   final Function(CameraEntity camera) onSelectCamera;
-  final Function(CameraEntity camera) onDeselectCamera;
 
   const AddCameraDropdown({
     super.key,
     required this.position,
     this.onClose,
     required this.onSelectCamera,
-    required this.onDeselectCamera,
     required this.listCamera,
-    this.onConfirm,
+    this.excludedCameraNames = const {},
   });
 
   @override
@@ -37,8 +35,17 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
 
   List<CameraEntity> get _filteredCameras {
     final query = _searchController.text.toLowerCase();
-    if (query.isEmpty) return listCameras;
-    return listCameras
+    // Lọc bỏ các camera đã được chọn trong session và camera đã có trên map
+    final availableCameras = listCameras
+        .where(
+          (camera) =>
+              !_selectedCameras.contains(camera.name) &&
+              !widget.excludedCameraNames.contains(camera.name),
+        )
+        .toList();
+
+    if (query.isEmpty) return availableCameras;
+    return availableCameras
         .where((camera) => camera.name.toString().toLowerCase().contains(query))
         .toList();
   }
@@ -134,7 +141,9 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                       child: Column(
                         children: [
                           Expanded(
-                            child: listCameras.isNotEmpty
+                            child:
+                                listCameras.isNotEmpty &&
+                                    _filteredCameras.isNotEmpty
                                 ? ListView.builder(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 8,
@@ -143,8 +152,7 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                     itemCount: _filteredCameras.length,
                                     itemBuilder: (context, index) {
                                       final camera = _filteredCameras[index];
-                                      final bool isActive =
-                                          widget.listCamera[index].isOnline;
+                                      final bool isActive = camera.isOnline;
 
                                       return Material(
                                         color: Colors.transparent,
@@ -152,14 +160,21 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                           onTap: () {
                                             setState(() {
                                               final name = camera.name;
-                                              if (_selectedCameras.contains(
-                                                name,
-                                              )) {
-                                                _selectedCameras.remove(name);
-                                                widget.onDeselectCamera(camera);
-                                              } else {
-                                                _selectedCameras.add(name);
-                                                widget.onSelectCamera(camera);
+                                              // Chỉ thêm vào selectedCameras vì camera sẽ biến mất khỏi list
+                                              _selectedCameras.add(name);
+                                              widget.onSelectCamera(camera);
+                                              listCameras.removeWhere(
+                                                (element) => listEquals(
+                                                  element.id,
+                                                  camera.id,
+                                                ),
+                                              );
+                                            });
+
+                                            // Kiểm tra nếu không còn camera nào để chọn thì tự động đóng
+                                            Future.microtask(() {
+                                              if (_filteredCameras.isEmpty) {
+                                                widget.onClose?.call();
                                               }
                                             });
                                           },
@@ -210,20 +225,6 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                                     ],
                                                   ),
                                                 ),
-
-                                                _selectedCameras.contains(
-                                                      camera.name,
-                                                    )
-                                                    ? SvgPicture.asset(
-                                                        AppAssets.icChecked,
-                                                        width: 20,
-                                                        height: 20,
-                                                      )
-                                                    : SvgPicture.asset(
-                                                        AppAssets.icCheckBox,
-                                                        width: 20,
-                                                        height: 20,
-                                                      ),
                                               ],
                                             ),
                                           ),
@@ -231,35 +232,13 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                       );
                                     },
                                   )
-                                : Text("Không có camera"),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                top: BorderSide(
-                                  color: Colors.grey[200]!,
-                                  width: 1,
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                AppButton.outline(
-                                  label: 'Hủy',
-                                  onPressed: widget.onClose,
-                                ),
-                                const SizedBox(width: 8),
-                                AppButton.filled(
-                                  label: 'Xác nhận',
-                                  onPressed: () {
-                                    widget.onConfirm?.call(_selectedCameras);
-                                    widget.onClose?.call();
-                                  },
-                                ),
-                              ],
-                            ),
+                                : Center(
+                                    child: Text(
+                                      _filteredCameras.isEmpty
+                                          ? "Không tìm thấy kết quả phù hợp"
+                                          : "Không có camera nào để thêm vào bản đồ",
+                                    ),
+                                  ),
                           ),
                         ],
                       ),

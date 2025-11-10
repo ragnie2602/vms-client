@@ -124,6 +124,8 @@ class AuthenticateService {
             changePassDenied: loginReply.profile.changePassDenied,
             uid: data.uid,
             sessionId: data.sessionId,
+            email: loginReply.profile.email,
+            tel: loginReply.profile.tel,
           );
 
           return true;

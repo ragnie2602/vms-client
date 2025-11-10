@@ -12,8 +12,10 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
+import 'package:vms_flutter_client/screens/home/change_my_info_dialog.dart';
 import 'package:vms_flutter_client/screens/home/change_my_password_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/popup_menu.dart';
 
@@ -30,11 +32,18 @@ class _UserProfileState extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AppBloc, AppState>(
+      listenWhen: (previous, current) =>
+          previous.isSignOut != current.isSignOut ||
+          previous.myProfileUpdatedAt != current.myProfileUpdatedAt,
       listener: (context, state) {
         if (state.isSignOut) {
           if (Navigator.canPop(context)) Navigator.pop(context);
           context.read<SocketApiClient>().disconnect();
           context.goNamed(Routes.login.name);
+        }
+        // Rebuild widget when profile is updated
+        if (state.myProfileUpdatedAt > 0) {
+          setState(() {});
         }
       },
       child: CustomPopupMenu(
@@ -94,10 +103,7 @@ class _UserProfileState extends State<UserProfile> {
                     },
                     child: SvgPicture.asset(
                       AppAssets.icArrowCircleUp,
-                      colorFilter: ColorFilter.mode(
-                        AppColors.contentFg,
-                        BlendMode.srcIn,
-                      ),
+                      colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
                     ),
                   ),
                 ),
@@ -115,12 +121,7 @@ class _UserProfileState extends State<UserProfile> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(3),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 2,
-            spreadRadius: 0,
-            offset: Offset(1, 1),
-          ),
+          BoxShadow(color: Colors.black26, blurRadius: 2, spreadRadius: 0, offset: Offset(1, 1)),
         ],
       ),
       // padding: EdgeInsets.symmetric(vertical: 20),
@@ -133,16 +134,23 @@ class _UserProfileState extends State<UserProfile> {
               icon: Icon(Icons.article),
               title: 'Mở log file',
             ),
-            Divider(height: 0.5, color: Colors.grey.shade300),
+            _buildMenuItem(
+              onTap: () => showChangeMyInfoDialog(context),
+              icon: SvgPicture.asset(AppAssets.icUserInfo),
+              title: 'Thông tin cá nhân',
+            ),
+            if (MultiWindowUtil.isMainWindow(context.read<AppBloc>().windowId))
+              _buildMenuItem(
+                title: 'Đa cửa sổ',
+                icon: SvgPicture.asset(AppAssets.icNewWindow),
+                onTap: () => context.read<AppBloc>().add(CreateNewWindow()),
+              ),
             _buildMenuItem(
               onTap: () {
                 if (AppData.instance.profile?.changePassDenied ?? false) {
                   ToastUtil.toastFail(
                     context: context,
-                    title: Text(
-                      'Bạn không có quyền sử dụng chức năng này!',
-                      maxLines: 5,
-                    ),
+                    title: Text('Bạn không có quyền sử dụng chức năng này!', maxLines: 5),
                   );
                   return;
                 }
@@ -151,7 +159,6 @@ class _UserProfileState extends State<UserProfile> {
               icon: SvgPicture.asset(AppAssets.icKey),
               title: 'Đổi mật khẩu',
             ),
-            Divider(height: 0.5, color: Colors.grey.shade300),
             _buildMenuItem(
               onTap: () {
                 // context.read<SocketApiClient>().disconnect();
@@ -177,14 +184,10 @@ class _UserProfileState extends State<UserProfile> {
       leading: icon,
       title: Text(
         title,
-        style: AppTypography.style(
-          14,
-          color: AppColors.blackOrWhite,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppTypography.style(14, color: AppColors.blackOrWhite, fontWeight: FontWeight.w500),
       ),
-      horizontalTitleGap: 20,
-      contentPadding: EdgeInsets.fromLTRB(20, 12, 20, 12),
+      // horizontalTitleGap: 20,
+      // contentPadding: EdgeInsets.fromLTRB(20, 10, 20, 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
       ),
@@ -233,13 +236,8 @@ class _UserProfileState extends State<UserProfile> {
                             backgroundColor: AppColors.blackOrWhiteReverse,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            side: BorderSide(
-                              color: AppColors.greyE2E8F0,
-                              width: 1,
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                           ),
                           child: Text(
                             'Hủy',
@@ -255,15 +253,12 @@ class _UserProfileState extends State<UserProfile> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 130.5 / 1600,
                         child: ElevatedButton(
-                          onPressed: () =>
-                              context.read<AppBloc>().add(SignOut()),
+                          onPressed: () => context.read<AppBloc>().add(SignOut()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.blackOrWhite,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                           ),
                           child: Text(
                             'Xác nhận',

@@ -38,4 +38,10 @@ abstract class IUserManagementRepository {
     required String password,
     bool? kickOthers,
   });
+  Future<Either<Failure, bool>> updateMyProfile({
+    String? displayName,
+    String? email,
+    String? tel,
+    String? address,
+  });
 }

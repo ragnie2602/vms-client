@@ -64,6 +64,7 @@ class _AddMapDialog extends StatefulWidget {
 class _AddMapDialogState extends State<_AddMapDialog> {
   final _form = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  bool? isLoading = false;
 
   bool _isValidateImage = false;
   String _errorImageMessage = ''; // check lỗi inline
@@ -120,7 +121,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
     });
   }
 
-  void _validateImage() async {
+  Future<void> _validateImage() async {
     if (_isValidateImage == true) {
       // case add new emap
       if (!isEditEmap()) {
@@ -184,9 +185,12 @@ class _AddMapDialogState extends State<_AddMapDialog> {
     setState(() {
       _isValidateImage = true;
     });
-    _validateImage();
+    await _validateImage();
     if ((_form.currentState?.validate() ?? false) &&
         _errorImageMessage.isEmpty) {
+      setState(() {
+        isLoading = true;
+      });
       AddMapPayload payload;
       if ((_selectedImage == null && isEditEmap())) {
         Uint8List _tmp = await networkImageToBytes(_backgroundPath ?? '');
@@ -204,6 +208,9 @@ class _AddMapDialogState extends State<_AddMapDialog> {
 
       try {
         await widget.onSubmit?.call(payload);
+        setState(() {
+          isLoading = false;
+        });
         if (mounted) {
           Navigator.pop(context);
         }
@@ -487,6 +494,22 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                   _handleSubmit();
                 },
                 label: 'Xác nhận',
+                child: isLoading == true
+                    ? Center(
+                        child: SizedBox(
+                          width: 15,
+                          height: 15,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.white,
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        'Xác nhận',
+                        style: AppTypography.style(14, color: AppColors.white),
+                      ),
               ),
             ),
           ],
