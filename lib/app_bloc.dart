@@ -23,7 +23,6 @@ import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_ev
 import 'package:window_manager/window_manager.dart';
 
 class AppBloc extends BaseBloc<AppEvent, AppState> {
-  final ChangeSettingWindowUseCase changeSettingWindowUseCase;
   final CreateNewWindowUseCase createNewWindowUseCase;
   final SendMultiWindowEventUseCase sendMultiWindowEventUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
@@ -34,7 +33,6 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   StreamSubscription? _multiWindowEventSubscription;
 
   AppBloc(
-    this.changeSettingWindowUseCase,
     this.createNewWindowUseCase,
     this.sendMultiWindowEventUseCase,
     this.subscribeMultiWindowEventUseCase,
@@ -147,12 +145,16 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
   FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) {
     isSigningOut = true;
+    AppData.instance.profile = null;
 
     sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
   }
 
-  FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) {
-    changeSettingWindowUseCase.execute(ChangeSettingWindowInput(windowId));
+  FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) async {
+    final rect = await windowManager.getBounds();
+    sendMultiWindowEventUseCase.execute(
+      SendMultiWindowEventInput(0, 'change_setting_window', data: {'rect': rect}),
+    );
   }
 
   FutureOr<void> _onCloseWindow(CloseWindow event, Emitter<AppState> emit) async {

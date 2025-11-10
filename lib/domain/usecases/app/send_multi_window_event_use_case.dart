@@ -8,8 +8,14 @@ class SendMultiWindowEventUseCase
   @override
   Future<SendMultiWindowEventOutput> buildUseCase(SendMultiWindowEventInput input) async {
     switch (input.methodName) {
-      case 'close_window':
-        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName);
+      case 'change_setting_window':
+        final data = {
+          'left': input.data?['rect']?.left,
+          'top': input.data?['rect']?.top,
+          'width': input.data?['rect']?.width,
+          'height': input.data?['rect']?.height,
+        };
+        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
         break;
       case 'sign_out':
         final List<int> targetIds = [];
@@ -25,6 +31,7 @@ class SendMultiWindowEventUseCase
         }
         break;
       default:
+        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, input.data);
     }
 
     return SendMultiWindowEventOutput();
