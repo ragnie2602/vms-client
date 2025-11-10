@@ -36,9 +36,6 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     on<SearchEmapEvent>(_onSearchEmap);
   }
 
-  // list group origin
-  List<EmapEntity> listEmap = [];
-
   FutureOr<void> _onGetListEmap(
     GetListEmapEvent event,
     Emitter<EmapState> emit,
@@ -55,7 +52,6 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
           emapSelected: _list.isEmpty ? null : _list.first,
         ),
       );
-        listEmap = _list;
 
       // Đánh dấu cần load camera info nếu có điều kiện
       if (_list.isNotEmpty && listCamera.isNotEmpty) {
@@ -81,17 +77,21 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
       return;
     }
     final currentState = state as EmapSuccessState;
-    final SearchEmapInput input = SearchEmapInput(
-      keyword: event.keyword,
-      listEmapOrigin: listEmap,
-    );
-    final SearchEmapOutput output = searchEmapUseCase.execute(input);
-    emit(
-      currentState.copyWith(
-        listEmap: output.listEmapResult,
-        emapSelected: output.listEmapResult?.firstOrNull,
-      ),
-    );
+    final emaps = await emapRepository.listEmap();
+    emaps.fold((onFailure) {}, (onSuccess) {
+      final SearchEmapInput input = SearchEmapInput(
+        keyword: event.keyword,
+        listEmapOrigin: onSuccess,
+      );
+      final SearchEmapOutput output = searchEmapUseCase.execute(input);
+      emit(
+        currentState.copyWith(
+          listEmap: output.listEmapResult,
+          emapSelected: output.listEmapResult?.firstOrNull,
+          isSearching: true,
+        ),
+      );
+    });
   }
 
   FutureOr<void> _onChangeSelectEmap(
@@ -129,7 +129,6 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
       emaps.add(onSuccess);
       emit(AddEmapSuccessState());
       emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
-      listEmap = emaps;
     });
   }
 
@@ -156,7 +155,6 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
           .toList();
       emit(EditEmapSuccessState());
       emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
-      listEmap = emaps;
     });
   }
 
@@ -181,7 +179,6 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
           emapSelected: _listEmap?.first,
         ),
       );
-      listEmap = _listEmap ?? [];
     });
   }
 

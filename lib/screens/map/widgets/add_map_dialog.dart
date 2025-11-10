@@ -64,6 +64,7 @@ class _AddMapDialog extends StatefulWidget {
 class _AddMapDialogState extends State<_AddMapDialog> {
   final _form = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  bool? isLoading = false;
 
   bool _isValidateImage = false;
   String _errorImageMessage = ''; // check lỗi inline
@@ -183,6 +184,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
   Future<void> _handleSubmit() async {
     setState(() {
       _isValidateImage = true;
+      isLoading = true;
     });
     await _validateImage();
     if ((_form.currentState?.validate() ?? false) &&
@@ -204,6 +206,9 @@ class _AddMapDialogState extends State<_AddMapDialog> {
 
       try {
         await widget.onSubmit?.call(payload);
+        setState(() {
+          isLoading = false;
+        });
         if (mounted) {
           Navigator.pop(context);
         }
@@ -487,6 +492,22 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                   _handleSubmit();
                 },
                 label: 'Xác nhận',
+                child: isLoading == true
+                    ? Center(
+                        child: SizedBox(
+                          width: 15,
+                          height: 15,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.white,
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                      )
+                    : Text(
+                        'Xác nhận',
+                        style: AppTypography.style(14, color: AppColors.white),
+                      ),
               ),
             ),
           ],

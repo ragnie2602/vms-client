@@ -253,7 +253,7 @@ class CameraStatusWidget extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          isOnline ? 'Đang hoạt động' : 'Ngừng hoạt động',
+          isOnline ? 'Online' : 'Offline',
           style: AppTypography.style(
             13,
             fontWeight: FontWeight.w500,
