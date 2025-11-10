@@ -172,13 +172,12 @@ class _MapViewState extends State<MapView> {
 
           // Tìm camera theo tên
           final camera = bloc.listCamera.firstWhere(
-            (c) => c.name == cameraName,
+            (c) => c.name == cameraName.name,
             orElse: () => throw Exception('Camera not found'),
           );
 
           // Tạo random position
           final randomPosition = _getRandomPosition() ?? Offset.zero;
-
           // Gọi API thông qua AddCameraEmapEvent
           // Bloc sẽ tự động thêm camera vào dragItems và emit EmapSuccessState
           bloc.add(

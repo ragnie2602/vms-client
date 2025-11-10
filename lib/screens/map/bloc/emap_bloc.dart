@@ -186,6 +186,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
           cameraId: onSuccess.cameraId.toString(),
           cameraEmapInfoId:
               onSuccess.cameraEmapInfoId, // Lưu ID để update sau này
+          source: camera?.subStreamUri.toString() ?? "",
         );
 
         // Thêm vào danh sách dragItems hiện tại
@@ -312,6 +313,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
             label: camera?.name ?? 'Camera ${e.cameraId}',
             cameraId: e.cameraId.toString(),
             cameraEmapInfoId: e.cameraEmapInfoId, // Lưu ID để update sau này
+            source: camera?.subStreamUri.toString() ?? "",
           );
         }).toList();
 
