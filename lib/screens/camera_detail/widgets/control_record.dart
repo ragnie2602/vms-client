@@ -115,7 +115,7 @@ class _ControlRecordState extends State<ControlRecord> {
             _timer = Timer.periodic(Duration(seconds: 1), (timer) {
               if (_isBusy) return;
               final future = Duration(seconds: _duration.value.inSeconds + 1);
-              if (future >= Duration(hours: 1)) {
+              if (future >= Duration(minutes: 5)) {
                 return _onStop("Quá trình ghi video đã dừng do quá thời gian ghi tối đa cho phép!");
               }
               _duration.value = future;
