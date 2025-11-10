@@ -12,8 +12,6 @@ import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
-import 'package:vms_flutter_client/domain/usecases/app/change_setting_window_input.dart';
-import 'package:vms_flutter_client/domain/usecases/app/change_setting_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
@@ -23,7 +21,6 @@ import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_ev
 import 'package:window_manager/window_manager.dart';
 
 class AppBloc extends BaseBloc<AppEvent, AppState> {
-  final ChangeSettingWindowUseCase changeSettingWindowUseCase;
   final CreateNewWindowUseCase createNewWindowUseCase;
   final SendMultiWindowEventUseCase sendMultiWindowEventUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
@@ -34,7 +31,6 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   StreamSubscription? _multiWindowEventSubscription;
 
   AppBloc(
-    this.changeSettingWindowUseCase,
     this.createNewWindowUseCase,
     this.sendMultiWindowEventUseCase,
     this.subscribeMultiWindowEventUseCase,
@@ -49,6 +45,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     on<CloseWindow>(_onCloseWindow);
     on<CreateNewWindow>(_onCreateNewWindow);
     on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
+    on<ReopenSubWindow>(_onReopenSubWindow);
     on<MyProfileInfoChanged>(_onMyProfileChanged);
   }
 
@@ -82,14 +79,6 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     windowId = event.windowId;
 
     registerIPCEvents();
-
-    if (MultiWindowUtil.isMainWindow(windowId)) {
-      final subWindowCount = MultiWindowUtil.getSubWindowCount();
-      for (var i = 0; i < subWindowCount; i++) {
-        final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
-        output.windowController.show();
-      }
-    }
 
     try {
       final userTheme = AppData.instance.read<String>(AppKeys.SP_THEME_KEY);
@@ -148,12 +137,16 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
   FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) {
     isSigningOut = true;
+    AppData.instance.profile = null;
 
     sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
   }
 
-  FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) {
-    changeSettingWindowUseCase.execute(ChangeSettingWindowInput(windowId));
+  FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) async {
+    final rect = await windowManager.getBounds();
+    sendMultiWindowEventUseCase.execute(
+      SendMultiWindowEventInput(0, 'change_setting_window', data: {'rect': rect}),
+    );
   }
 
   FutureOr<void> _onCloseWindow(CloseWindow event, Emitter<AppState> emit) async {
@@ -173,7 +166,24 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     windowManager.close();
   }
 
+  FutureOr<void> _onReopenSubWindow(ReopenSubWindow event, Emitter<AppState> emit) async {
+    if (MultiWindowUtil.isMainWindow(windowId)) {
+      final subWindowCount = MultiWindowUtil.getSubWindowCount();
+      for (var i = 0; i < subWindowCount; i++) {
+        final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
+        output.windowController.show();
+      }
+    }
   FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) {
+    emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
+  }
+}
+
+  FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) async {
+    final rect = await windowManager.getBounds();
+    sendMultiWindowEventUseCase.execute(
+      SendMultiWindowEventInput(0, 'change_setting_window', data: {'rect': rect}),
+    );
     emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
   }
 }
@@ -255,4 +265,7 @@ class MultiWindowEventReceived extends AppEvent {
   const MultiWindowEventReceived(this.multiWindowEvent);
 }
 
+class ReopenSubWindow extends AppEvent {
+  const ReopenSubWindow();
+}
 class MyProfileInfoChanged extends AppEvent {}

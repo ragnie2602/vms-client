@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
@@ -11,6 +12,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/env_service.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_field.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_event.dart';
@@ -42,20 +44,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     final storedServer = AppData.instance.read<String>(AppKeys.SP_SERVER_KEY);
-    final storedUsername = AppData.instance.read<String>(
-      AppKeys.SP_USERNAME_KEY,
-    );
-    final storedPassword = AppData.instance.read<String>(
-      AppKeys.SP_PASSWORD_KEY,
-    );
+    final storedUsername = AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY);
+    final storedPassword = AppData.instance.read<String>(AppKeys.SP_PASSWORD_KEY);
 
-    serverController = TextEditingController(
-      text: storedServer ?? EnvService.apiBaseUrl,
-    );
+    serverController = TextEditingController(text: storedServer ?? EnvService.apiBaseUrl);
     usernameController = TextEditingController(text: storedUsername);
     passwordController = TextEditingController(text: storedPassword);
 
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LoginBloc>().add(const LoginReset());
 
@@ -65,6 +62,9 @@ class _LoginScreenState extends State<LoginScreen> {
           storedServer != null) {
         _login();
       }
+
+      final appBloc = context.read<AppBloc>();
+      if (!MultiWindowUtil.isMainWindow(appBloc.windowId)) _login();
     });
   }
 
@@ -103,12 +103,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: BlocListener<LoginBloc, LoginState>(
               listener: (context, state) {
                 if (state.isSuccess) {
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   SnackBar(
-                  //     content: Text('Welcome ${state.account ?? 'User'}!'),
-                  //     backgroundColor: Colors.green,
-                  //   ),
-                  // );
+                  final appBloc = context.read<AppBloc>();
+                  if (MultiWindowUtil.isMainWindow(appBloc.windowId)) {
+                    appBloc.add(ReopenSubWindow());
+                  }
+
                   context.goNamed(AppConfig.INITIAL_HOME_TAB.route?.name ?? Routes.monitoring.name);
                 } else if (state.isLoading == false && state.errorMessage != null) {
                   showAppMessageDialog(
