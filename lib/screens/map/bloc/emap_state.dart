@@ -29,28 +29,32 @@ class EditEmapSuccessState extends EmapState{
 class EmapSuccessState extends EmapState {
   final List<EmapEntity>? listEmap;
   final EmapEntity? emapSelected;
+  final bool? isSearching;
   final List<DragItemModel>? dragItems;
   final List<CameraEntity>? listCamera;
 
   const EmapSuccessState({
     this.listEmap,
     this.emapSelected,
+    this.isSearching,
     this.dragItems,
     this.listCamera,
   });
 
   @override
-  List<Object?> get props => [listEmap, emapSelected, dragItems, listCamera];
+  List<Object?> get props => [listEmap, emapSelected, isSearching, dragItems, listCamera];
 
   EmapSuccessState copyWith({
     List<EmapEntity>? listEmap,
     EmapEntity? emapSelected,
+    bool? isSearching,
     List<DragItemModel>? dragItems,
     List<CameraEntity>? listCamera,
   }) {
     return EmapSuccessState(
       listEmap: listEmap ?? this.listEmap,
       emapSelected: emapSelected ?? this.emapSelected,
+      isSearching: isSearching,
       dragItems: dragItems ?? this.dragItems,
       listCamera: listCamera ?? this.listCamera,
     );
