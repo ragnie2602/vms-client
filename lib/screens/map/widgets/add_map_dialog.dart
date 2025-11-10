@@ -120,7 +120,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
     });
   }
 
-  void _validateImage() async {
+  Future<void> _validateImage() async {
     if (_isValidateImage == true) {
       // case add new emap
       if (!isEditEmap()) {
@@ -184,7 +184,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
     setState(() {
       _isValidateImage = true;
     });
-    _validateImage();
+    await _validateImage();
     if ((_form.currentState?.validate() ?? false) &&
         _errorImageMessage.isEmpty) {
       AddMapPayload payload;

@@ -234,7 +234,9 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                                   )
                                 : Center(
                                     child: Text(
-                                      "Không có camera nào để thêm vào bản đồ",
+                                      _filteredCameras.isEmpty
+                                          ? "Không tìm thấy kết quả phù hợp"
+                                          : "Không có camera nào để thêm vào bản đồ",
                                     ),
                                   ),
                           ),
