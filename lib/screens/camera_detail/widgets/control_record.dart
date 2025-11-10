@@ -66,7 +66,15 @@ class _ControlRecordState extends State<ControlRecord> {
     context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
   }
 
-  void _onStop([String? message]) {
+  void _onStop([String? message]) async {
+    // Case chủ động ấn stop thì delay thêm vài giây để đảm bảo kết quả có chứa time lúc ấn dừng
+    // --- Thừa hẳn thay vì bị mất đoạn đầu/cuối lúc ấn ghi/dừng ---
+    if (message == null) {
+      setState(() => _isBusy = true);
+      await Future.delayed(Duration(seconds: 3));
+      setState(() => _isBusy = false);
+    }
+
     if (!mounted) return;
 
     _isKilledByUser = true;
@@ -166,7 +174,7 @@ class _ControlRecordState extends State<ControlRecord> {
             ValueListenableBuilder(
               valueListenable: _duration,
               builder: (context, value, child) => Text(
-                formatDuration(isLoading ? Duration.zero : value),
+                formatDuration(value),
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
