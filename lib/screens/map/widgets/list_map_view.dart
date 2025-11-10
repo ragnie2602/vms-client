@@ -61,7 +61,6 @@ class _ListMapViewState extends State<ListMapView> {
       },
     );
   }
-  
 
   void _onAddEmap({
     required String emapName,
@@ -225,6 +224,12 @@ class _ListMapViewState extends State<ListMapView> {
                       ToastUtil.toastSuccess(
                         context: context,
                         title: Text('Thêm bản đồ camera thành công!'),
+                      );
+                    }
+                    if (state is EditEmapSuccessState) {
+                      ToastUtil.toastSuccess(
+                        context: context,
+                        title: Text('Cập nhật bản đồ camera thành công!'),
                       );
                     }
                   },
