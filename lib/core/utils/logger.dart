@@ -11,15 +11,17 @@ class Logger {
   Logger._();
 
   static void log(String message, {String tag = 'VMS', bool writeLog = false}) {
+    if (writeLog) ErrorService.record(tag, message, null, level: 'INFO');
+
     if (kReleaseMode) return;
 
     final colorTag = _wrapWithColor('info', '[$tag]', needBackground: true);
     stdout.writeln("$colorTag ${_wrapWithColor('info', message)}");
-
-    if (writeLog) ErrorService.record(tag, message, null, level: 'INFO');
   }
 
-  static void warn(String message, {String tag = 'VMS'}) {
+  static void warn(String message, {String tag = 'VMS', bool writeLog = false}) {
+    if (writeLog) ErrorService.record(tag, message, null, level: 'WARN');
+
     if (kReleaseMode) return;
 
     final colorTag = _wrapWithColor('warn', '[$tag]', needBackground: true);
@@ -38,6 +40,10 @@ class Logger {
   }
 
   static void error(Object? error, {String tag = 'VMS', bool writeLog = false}) {
+    if (writeLog && error != null) {
+      ErrorService.record('APP LOG', error, StackTrace.current, level: 'ERROR');
+    }
+    
     if (kReleaseMode) return;
 
     String message = _wrapWithColor('error', stringifyObject(error));
@@ -64,10 +70,6 @@ class Logger {
     final traceStr = traces.map((line) => "\x1B[2m$line$_reset").join('\n');
 
     stdout.writeln("$message\n$traceStr\n");
-
-    if (writeLog && error != null) {
-      ErrorService.record('APP LOG', error, StackTrace.current, level: 'ERROR');
-    }
   }
 
   static final Map<String, Map<String, String>> _colors = {

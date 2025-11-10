@@ -29,6 +29,19 @@ class AddEmapEvent extends EmapEvent {
   List<Object?> get props => [emapName, imageBytes, imagePath];
 }
 
+class EditEmapEvent extends EmapEvent {
+  final List<int> emapId;
+  final String emapName;
+  final String imagePath;
+  final Uint8List imageBytes;
+  EditEmapEvent({
+    required this.emapId,
+    required this.emapName,
+    required this.imageBytes,
+    required this.imagePath,
+  });
+}
+
 class RemoveEmapEvent extends EmapEvent {
   final List<int>? emapId;
   RemoveEmapEvent({required this.emapId});

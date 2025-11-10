@@ -8,6 +8,8 @@ import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 import '../widgets/camera_detail_player.dart';
+import '../widgets/control_record.dart';
+import '../widgets/control_source.dart';
 import '../widgets/control_speed_box.dart';
 import '../widgets/control_volume.dart';
 
@@ -34,89 +36,120 @@ class PlayerControls extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Material(
-              color: Colors.transparent,
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  /* Volumne */
-                  ControlVolume(),
+      child: BlocSelector<CameraDetailBloc, CameraDetailState, bool>(
+        selector: (state) => state.isRecording,
+        builder: (context, isRecording) {
+          return Row(
+            children: <Widget>[
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      /* Sources */
+                      if (mode.isLive) Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: ControlSource(disabled: isRecording),
+                      ),
 
-                  /* Backward */
-                  if (mode.isPlayback)
-                    _controlItem(AppAssets.icFastBackward, () {
-                      context.read<CameraDetailBloc>().add(SeekPlayer(Duration(seconds: -30)));
-                    }),
+                      /* Volumne */
+                      ControlVolume(disabled: isRecording),
 
-                  /* Pause/Play */
-                  BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
-                    selector: (state) => state.status,
-                    builder: (context, status) => _controlItem(
-                      status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
-                      () => playerState(context)?.togglePlay(),
-                    ),
+                      /* Backward */
+                      if (mode.isPlayback)
+                        _controlItem(disabled: isRecording, AppAssets.icFastBackward, () {
+                          context.read<CameraDetailBloc>().add(SeekPlayer(Duration(seconds: -30)));
+                        }),
+
+                      /* Pause/Play */
+                      BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
+                        selector: (state) => state.status,
+                        builder: (context, status) => _controlItem(
+                          disabled: isRecording,
+                          status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
+                          () => playerState(context)?.togglePlay(),
+                        ),
+                      ),
+
+                      /* Forward */
+                      if (mode.isPlayback)
+                        _controlItem(disabled: isRecording, AppAssets.icFastForward, () {
+                          context.read<CameraDetailBloc>().add(SeekPlayer(Duration(seconds: 30)));
+                        }),
+
+                      /* Record */
+                      if (mode.isLive) ControlRecord(isRecording: isRecording),
+
+                      /* Camera */
+                      _controlItem(
+                        disabled: isRecording,
+                        AppAssets.icCamera,
+                        () => playerState(context)?.snapshot(),
+                      ),
+
+                      /* Speed */
+                      if (mode.isPlayback)
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: ControlSpeedBox(disabled: isRecording),
+                        ),
+
+                      /* Zoom */
+                      _controlItem(
+                        disabled: isRecording,
+                        AppAssets.icZoomIn,
+                        () => playerState(context)?.zoom(1),
+                      ),
+                      _controlItem(
+                        disabled: isRecording,
+                        AppAssets.icZoomOut,
+                        () => playerState(context)?.zoom(-1),
+                      ),
+
+                      /* Fullscreen */
+                      _controlItem(
+                        disabled: isRecording,
+                        AppAssets.icFullscreen,
+                        () => playerState(context)?.toggleFullscreen(),
+                      ),
+                    ],
                   ),
-
-                  /* Forward */
-                  if (mode.isPlayback)
-                    _controlItem(AppAssets.icFastForward, () {
-                      context.read<CameraDetailBloc>().add(SeekPlayer(Duration(seconds: 30)));
-                    }),
-
-                  /* Record */
-                  // _controlItem(AppAssets.icRecord, () {}),
-
-                  /* Camera */
-                  _controlItem(AppAssets.icCamera, () => playerState(context)?.snapshot()),
-
-                  /* Speed */
-                  if (mode.isPlayback)
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: ControlSpeedBox(),
-                    ),
-
-                  /* Zoom */
-                  // _controlItem(AppAssets.icZoomIn, () => playerState(context)?.zoom(1)),
-                  // _controlItem(AppAssets.icZoomOut, () => playerState(context)?.zoom(-1)),
-
-                  /* Fullscreen */
-                  _controlItem(
-                    AppAssets.icFullscreen,
-                    () => playerState(context)?.toggleFullscreen(),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
 
-          /*  */
-          _buildLiveViewMode(
-            mode.isPlayback ? 1 : 0,
-            (index) => context.read<CameraDetailBloc>().add(
-              ChangeViewMode(index == 0 ? CameraDetailMode.live : CameraDetailMode.playback),
-            ),
-          ),
-        ],
+              /*  */
+              _buildLiveViewMode(
+                disabled: isRecording,
+                mode.isPlayback ? 1 : 0,
+                (index) => context.read<CameraDetailBloc>().add(
+                  ChangeViewMode(index == 0 ? CameraDetailMode.live : CameraDetailMode.playback),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _controlItem(String icon, VoidCallback onTap) {
+  Widget _controlItem(String icon, VoidCallback onTap, {bool disabled = false}) {
     return InkWell(
-      onTap: onTap,
+      onTap: disabled ? null : onTap,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: SvgPicture.asset(icon, width: 28, height: 28),
+        child: SvgPicture.asset(
+          icon,
+          width: 28,
+          height: 28,
+          colorFilter: disabled ? ColorFilter.mode(AppColors.grey64748B, BlendMode.srcIn) : null,
+        ),
       ),
     );
   }
 
-  Widget _buildLiveViewMode(int initialIndex, Function(int) onToggle) {
+  Widget _buildLiveViewMode(int initialIndex, Function(int) onToggle, {bool disabled = false}) {
     return Container(
       height: 60,
       width: 278,
@@ -130,60 +163,63 @@ class PlayerControls extends StatelessWidget {
           borderRadius: BorderRadius.circular(32),
           color: Color(0xFFF2F4FA),
         ),
-        child: DefaultTabController(
-          length: 2,
-          initialIndex: initialIndex,
-          child: TabBar(
-            onTap: onToggle,
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-            indicator: BoxDecoration(
-              borderRadius: BorderRadius.circular(32),
-              color: AppColors.blackOrWhiteReverse,
+        child: IgnorePointer(
+          ignoring: disabled,
+          child: DefaultTabController(
+            length: 2,
+            initialIndex: initialIndex,
+            child: TabBar(
+              onTap: onToggle,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              indicator: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                color: AppColors.blackOrWhiteReverse,
+              ),
+              labelPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+              labelColor: disabled ? AppColors.grey64748B : AppColors.blackOrWhite,
+              unselectedLabelColor: Color(0xFF64748B),
+              labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+              unselectedLabelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+              tabs: [
+                Builder(
+                  builder: (context) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        AppAssets.icVideoOn,
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          IconTheme.of(context).color ?? Colors.transparent,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Liveview')),
+                    ],
+                  ),
+                ),
+                Builder(
+                  builder: (context) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        AppAssets.tabPlayback,
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          IconTheme.of(context).color ?? Colors.transparent,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Playback')),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            labelPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-            labelColor: AppColors.blackOrWhite,
-            unselectedLabelColor: Color(0xFF64748B),
-            labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
-            unselectedLabelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
-            tabs: [
-              Builder(
-                builder: (context) => Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      AppAssets.icVideoOn,
-                      width: 20,
-                      height: 20,
-                      colorFilter: ColorFilter.mode(
-                        IconTheme.of(context).color ?? Colors.transparent,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Text('Liveview'),
-                  ],
-                ),
-              ),
-              Builder(
-                builder: (context) => Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      AppAssets.tabPlayback,
-                      width: 20,
-                      height: 20,
-                      colorFilter: ColorFilter.mode(
-                        IconTheme.of(context).color ?? Colors.transparent,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Text('Playback'),
-                  ],
-                ),
-              ),
-            ],
           ),
         ),
       ),

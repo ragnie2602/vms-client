@@ -5,6 +5,7 @@ class DragItemModel {
   final Offset position;
   final String? cameraId;
   final String? label;
+  final String source;
   final List<int>? cameraEmapInfoId; // ID của record camera trên map
 
   const DragItemModel({
@@ -12,6 +13,7 @@ class DragItemModel {
     required this.position,
     this.cameraId,
     this.label,
+    required this.source,
     this.cameraEmapInfoId,
   });
 
@@ -20,6 +22,7 @@ class DragItemModel {
     Offset? position,
     String? cameraId,
     String? label,
+    String? source,
     List<int>? cameraEmapInfoId,
   }) {
     return DragItemModel(
@@ -27,6 +30,7 @@ class DragItemModel {
       position: position ?? this.position,
       cameraId: cameraId ?? this.cameraId,
       label: label ?? this.label,
+      source: source ?? this.source,
       cameraEmapInfoId: cameraEmapInfoId ?? this.cameraEmapInfoId,
     );
   }

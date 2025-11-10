@@ -11,8 +11,8 @@ class AddCameraDropdown extends StatefulWidget {
   final List<CameraEntity> listCamera;
   final Set<String> excludedCameraNames; // Camera đã có trên map
   final Function(Set<String> selectedCameras)? onConfirm;
-  final Function(String cameraName) onSelectCamera;
-  final Function(String cameraName) onDeselectCamera;
+  final Function(CameraEntity camera) onSelectCamera;
+  final Function(CameraEntity camera) onDeselectCamera;
 
   const AddCameraDropdown({
     super.key,

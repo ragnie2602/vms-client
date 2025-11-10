@@ -14,6 +14,7 @@ import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 
 import 'add_camera_dropdown.dart';
+import 'emap_camera_portal.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -196,8 +197,8 @@ class _MapViewState extends State<MapView> {
           _overlayEntry?.remove();
           _overlayEntry = null;
         },
-        onDeselectCamera: (String cameraName) {
-          context.read<EmapBloc>().add(RemoveDragItemEvent(itemId: cameraName));
+        onDeselectCamera: (camera) {
+          context.read<EmapBloc>().add(RemoveDragItemEvent(itemId: camera.name));
         },
         onConfirm: (selectedCameras) {},
       ),
@@ -360,12 +361,9 @@ class _MapViewState extends State<MapView> {
         behavior: HitTestBehavior.opaque,
         onPanStart: (details) {
           // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
-          final RenderBox? imageBox =
-              _imageKey.currentContext?.findRenderObject() as RenderBox?;
+          final RenderBox? imageBox = _imageKey.currentContext?.findRenderObject() as RenderBox?;
           if (imageBox != null) {
-            final localPosition = imageBox.globalToLocal(
-              details.globalPosition,
-            );
+            final localPosition = imageBox.globalToLocal(details.globalPosition);
             _dragOffsets[item.id] = localPosition - item.position;
           }
         },
@@ -414,42 +412,59 @@ class _MapViewState extends State<MapView> {
             }
           }
         },
-        child: Column(
-          key: _itemKeys[item.id],
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.black,
-                borderRadius: BorderRadius.circular(100),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
+        child: EmapCameraPortal(
+          item: item,
+          onDelete: () {},
+          child: Hero(
+            tag: item.id,
+            // flightShuttleBuilder: (_, __, ___, ____, toHeroContext) {
+            //   return Material(
+            //     color: Colors.transparent,
+            //     child: toHeroContext.widget,
+            //   );
+            // },
+            child: Material(
+              color: Colors.transparent,
+              child: Column(
+                children: [
+                  // Popup
+                  IntrinsicWidth(
+                    child: Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.black,
+                        borderRadius: BorderRadius.circular(100),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      color: AppColors.black,
+                    ),
+                    child: Text(
+                      item.label ?? "",
+                      style: AppTypography.style(
+                        13,
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
-              child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
             ),
-            SizedBox(height: 8),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                color: AppColors.black,
-              ),
-              child: Text(
-                item.label ?? "",
-                style: AppTypography.style(
-                  13,
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

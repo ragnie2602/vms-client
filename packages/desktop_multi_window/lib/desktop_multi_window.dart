@@ -42,8 +42,7 @@ class DesktopMultiWindow {
   /// method.
   ///
   /// [targetWindowId] which window you want to invoke the method.
-  static Future<dynamic> invokeMethod(int targetWindowId, String method,
-      [dynamic arguments]) {
+  static Future<dynamic> invokeMethod(int targetWindowId, String method, [dynamic arguments]) {
     return windowEventChannel.invokeMethod(method, <String, dynamic>{
       'targetWindowId': targetWindowId,
       'arguments': arguments,
@@ -65,16 +64,14 @@ class DesktopMultiWindow {
     windowEventChannel.setMethodCallHandler((call) async {
       final fromWindowId = call.arguments['fromWindowId'] as int;
       final arguments = call.arguments['arguments'];
-      final result =
-          await handler(MethodCall(call.method, arguments), fromWindowId);
+      final result = await handler(MethodCall(call.method, arguments), fromWindowId);
       return result;
     });
   }
 
   /// Get all sub window id.
   static Future<List<int>> getAllSubWindowIds() async {
-    final result = await multiWindowChannel
-        .invokeMethod<List<dynamic>>('getAllSubWindowIds');
+    final result = await multiWindowChannel.invokeMethod<List<dynamic>>('getAllSubWindowIds');
     final ids = result?.cast<int>() ?? const [];
     assert(!ids.contains(0), 'ids must not contains main window id');
     assert(ids.every((id) => id > 0), 'id must be greater than 0');
