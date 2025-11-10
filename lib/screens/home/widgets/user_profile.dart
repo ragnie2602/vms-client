@@ -194,8 +194,8 @@ class _UserProfileState extends State<UserProfile> {
           fontWeight: FontWeight.w500,
         ),
       ),
-      horizontalTitleGap: 20,
-      contentPadding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+      // horizontalTitleGap: 20,
+      // contentPadding: EdgeInsets.fromLTRB(20, 10, 20, 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
       ),
