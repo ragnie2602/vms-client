@@ -42,20 +42,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     final storedServer = AppData.instance.read<String>(AppKeys.SP_SERVER_KEY);
-    final storedUsername = AppData.instance.read<String>(
-      AppKeys.SP_USERNAME_KEY,
-    );
-    final storedPassword = AppData.instance.read<String>(
-      AppKeys.SP_PASSWORD_KEY,
-    );
+    final storedUsername = AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY);
+    final storedPassword = AppData.instance.read<String>(AppKeys.SP_PASSWORD_KEY);
 
-    serverController = TextEditingController(
-      text: storedServer ?? EnvService.apiBaseUrl,
-    );
+    serverController = TextEditingController(text: storedServer ?? EnvService.apiBaseUrl);
     usernameController = TextEditingController(text: storedUsername);
     passwordController = TextEditingController(text: storedPassword);
 
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LoginBloc>().add(const LoginReset());
 
@@ -65,6 +60,9 @@ class _LoginScreenState extends State<LoginScreen> {
           storedServer != null) {
         _login();
       }
+
+      final appBloc = context.read<AppBloc>();
+      if (!MultiWindowUtil.isMainWindow(appBloc.windowId)) _login();
     });
   }
 
@@ -103,12 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: BlocListener<LoginBloc, LoginState>(
               listener: (context, state) {
                 if (state.isSuccess) {
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   SnackBar(
-                  //     content: Text('Welcome ${state.account ?? 'User'}!'),
-                  //     backgroundColor: Colors.green,
-                  //   ),
-                  // );
+                  final appBloc = context.read<AppBloc>();
+                  if (MultiWindowUtil.isMainWindow(appBloc.windowId)) {
+                    appBloc.add(ReopenSubWindow());
+                  }
+
                   context.goNamed(AppConfig.INITIAL_HOME_TAB.route?.name ?? Routes.monitoring.name);
                 } else if (state.isLoading == false && state.errorMessage != null) {
                   showAppMessageDialog(
