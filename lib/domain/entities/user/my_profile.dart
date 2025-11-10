@@ -6,6 +6,8 @@ class MyProfile {
   final bool changePassDenied;
   final List<int> uid;
   final List<int> sessionId;
+  final String email;
+  final String tel;
 
   MyProfile({
     required this.avatar,
@@ -15,5 +17,7 @@ class MyProfile {
     required this.changePassDenied,
     required this.uid,
     required this.sessionId,
+    required this.email,
+    required this.tel
   });
 }
