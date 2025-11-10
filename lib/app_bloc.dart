@@ -49,6 +49,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     on<CloseWindow>(_onCloseWindow);
     on<CreateNewWindow>(_onCreateNewWindow);
     on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
+    on<MyProfileInfoChanged>(_onMyProfileChanged);
   }
 
   @override
@@ -171,28 +172,43 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     await windowManager.setPreventClose(false);
     windowManager.close();
   }
+
+  FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) {
+    emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
+  }
 }
 
 class AppState extends BaseState {
   final ThemeMode themeMode;
   final bool displayFullScreenLiveView;
   final bool isSignOut;
+  final int myProfileUpdatedAt;
 
-  AppState(this.displayFullScreenLiveView, {ThemeMode? themeMode, this.isSignOut = false})
-    : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
+  AppState(
+    this.displayFullScreenLiveView, {
+    ThemeMode? themeMode,
+    this.isSignOut = false,
+    this.myProfileUpdatedAt = 0,
+  }) : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
     AppTheme.currentMode = this.themeMode;
   }
 
-  AppState copyWith({ThemeMode? themeMode, bool? displayFullScreenLiveView, bool? isSignOut}) {
+  AppState copyWith({
+    ThemeMode? themeMode,
+    bool? displayFullScreenLiveView,
+    bool? isSignOut,
+    int? myProfileUpdatedAt,
+  }) {
     return AppState(
       displayFullScreenLiveView ?? this.displayFullScreenLiveView,
       themeMode: themeMode ?? this.themeMode,
       isSignOut: isSignOut ?? false,
+      myProfileUpdatedAt: myProfileUpdatedAt ?? this.myProfileUpdatedAt,
     );
   }
 
   @override
-  List<Object?> get props => [themeMode, displayFullScreenLiveView, isSignOut];
+  List<Object?> get props => [themeMode, displayFullScreenLiveView, isSignOut, myProfileUpdatedAt];
 }
 
 class AppEvent extends BaseEvent {
@@ -238,3 +254,5 @@ class MultiWindowEventReceived extends AppEvent {
 
   const MultiWindowEventReceived(this.multiWindowEvent);
 }
+
+class MyProfileInfoChanged extends AppEvent {}

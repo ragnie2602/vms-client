@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
@@ -15,6 +16,7 @@ import 'components/components_src.dart';
 /// Trả về mật khẩu mới nếu người dùng xác nhận, ngược lại trả về null.
 Future<bool?> showChangeMyInfoDialog(BuildContext context) {
   final updateMyProfileUseCase = context.read<UpdateMyProfileUseCase>();
+  final appBloc = context.read<AppBloc>();
   final TextEditingController _usernameController =
       TextEditingController();
   final TextEditingController _fullNameController =
@@ -31,7 +33,7 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
     barrierColor: Colors.black.withOpacity(0.5),
     builder: (ctx) {
       return BlocProvider(
-        create: (context) => ChangeMyInfoBloc(updateMyProfileUseCase),
+        create: (context) => ChangeMyInfoBloc(updateMyProfileUseCase, appBloc),
         child: BlocConsumer<ChangeMyInfoBloc, ChangeMyInfoState>(
           listener: (context, state) {
             if (state.isSuccess) {

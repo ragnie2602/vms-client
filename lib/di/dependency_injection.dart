@@ -106,7 +106,9 @@ class DependencyInjection {
     ),
     Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
     Provider<UpdateMyProfileUseCase>(
-      create: (context) => UpdateMyProfileUseCase(userManagementRepository: context.read<IUserManagementRepository>()),
+      create: (context) => UpdateMyProfileUseCase(
+        userManagementRepository: context.read<IUserManagementRepository>(),
+      ),
     ),
     Provider<SearchEmapUseCase>(create: (context) => SearchEmapUseCase()),
 
