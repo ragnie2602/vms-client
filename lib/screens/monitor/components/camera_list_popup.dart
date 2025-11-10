@@ -177,9 +177,9 @@ class CameraListPopup extends StatelessWidget {
                         Text(
                           camera.isOnline ? "Đang hoạt động" : "Dừng hoạt động",
                           style: AppTypography.style(
-                            13,
+                            12,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.blue15ABFF,
+                            color: AppColors.grey64748B,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.visible,
