@@ -441,59 +441,59 @@ class _MapViewState extends State<MapView> {
           onDelete: () {
             _onDeleteCameraEmap(item);
           },
+          highlightChild: Hero(
+            tag: item.id,
+            child: _buildCameraIcon(item, AppColors.blue005AA9),
+          ),
           child: Hero(
             tag: item.id,
-            // flightShuttleBuilder: (_, __, ___, ____, toHeroContext) {
-            //   return Material(
-            //     color: Colors.transparent,
-            //     child: toHeroContext.widget,
-            //   );
-            // },
-            child: Material(
-              color: Colors.transparent,
-              child: Column(
-                children: [
-                  // Popup
-                  IntrinsicWidth(
-                    child: Container(
-                      padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.black,
-                        borderRadius: BorderRadius.circular(100),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(AppAssets.icCameraMap),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      color: AppColors.black,
-                    ),
-                    child: Text(
-                      item.label ?? "",
-                      style: AppTypography.style(
-                        13,
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+            child: _buildCameraIcon(item, AppColors.black),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCameraIcon(DragItemModel item, Color backgroundColor) {
+    return Material(
+      color: Colors.transparent,
+      child: Column(
+        children: [
+          // Popup
+          IntrinsicWidth(
+            child: Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(100),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
+              child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
             ),
           ),
-        ),
+          SizedBox(height: 8),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              color: backgroundColor,
+            ),
+            child: Text(
+              item.label ?? "",
+              style: AppTypography.style(
+                13,
+                color: AppColors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

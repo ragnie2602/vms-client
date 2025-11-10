@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/group/widget/confirm_remove_view.dart';
 import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
@@ -11,9 +12,11 @@ class EmapCameraPortal extends StatefulWidget {
     required this.item,
     required this.child,
     required this.onDelete,
+    this.highlightChild,
   });
   final DragItemModel item;
   final Widget child;
+  final Widget? highlightChild;
   final Function() onDelete;
 
   @override
@@ -53,7 +56,7 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
                       id: 0,
                       child: _wrapMaterial(_buildPlayer(setState)),
                     ),
-                  LayoutId(id: 1, child: widget.child),
+                  LayoutId(id: 1, child: widget.highlightChild ?? widget.child),
                   LayoutId(
                     id: 2,
                     child: _wrapMaterial(_buildActionItem(setState)),
@@ -140,7 +143,7 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
                 width: 16,
                 height: 16,
                 colorFilter: ColorFilter.mode(
-                  showPlayer ? Color(0xFF15ABFF) : Colors.white,
+                  showPlayer ? AppColors.blue005AA9 : Colors.white,
                   BlendMode.srcIn,
                 ),
               ),
