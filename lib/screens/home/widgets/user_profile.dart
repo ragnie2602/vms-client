@@ -31,11 +31,18 @@ class _UserProfileState extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AppBloc, AppState>(
+      listenWhen: (previous, current) =>
+          previous.isSignOut != current.isSignOut ||
+          previous.myProfileUpdatedAt != current.myProfileUpdatedAt,
       listener: (context, state) {
         if (state.isSignOut) {
           if (Navigator.canPop(context)) Navigator.pop(context);
           context.read<SocketApiClient>().disconnect();
           context.goNamed(Routes.login.name);
+        }
+        // Rebuild widget when profile is updated
+        if (state.myProfileUpdatedAt > 0) {
+          setState(() {});
         }
       },
       child: CustomPopupMenu(
