@@ -35,7 +35,6 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
         child: BlocConsumer<ChangeMyInfoBloc, ChangeMyInfoState>(
           listener: (context, state) {
             if (state.isSuccess) {
-              Navigator.pop(context, true);
               ToastUtil.toastSuccess(
                 context: context,
                 title: Text(
@@ -141,7 +140,7 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                                   padding: const EdgeInsets.only(bottom: 24),
                                   child: AppField(
                                     controller: _emailController,
-                                    hintText: 'Nhập email',
+                                    hintText: 'Nhập địa chỉ email',
                                     label: 'Email',
                                     requiredField: false,
                                     borderRadius: 3,
@@ -165,6 +164,7 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                                   controller: _phoneController,
                                   hintText: 'Nhập số điện thoại',
                                   label: 'Số điện thoại',
+                                  maxLength: 11,
                                   requiredField: false,
                                   borderRadius: 3,
                                   paddingBottomLabel: 12,
