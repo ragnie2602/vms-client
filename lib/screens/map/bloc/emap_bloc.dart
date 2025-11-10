@@ -74,7 +74,6 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     if (currentState.emapSelected != event.emap) {
       // Emit state mới với emap đã chọn và clear dragItems
       emit(currentState.copyWith(emapSelected: event.emap, dragItems: []));
-
       // Load danh sách camera của emap mới
       await _onlistCameraEmapInfo(ListCameraEmapInfoEvent(), emit);
     }
@@ -96,7 +95,13 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     res.fold((onFailure) {}, (onSuccess) {
       emaps.add(onSuccess);
       emit(AddEmapSuccessState());
-      emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
+      emit(
+        currentState.copyWith(
+          listEmap: emaps,
+          emapSelected: onSuccess,
+          dragItems: [],
+        ),
+      );
     });
   }
 
@@ -131,22 +136,32 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     Emitter<EmapState> emit,
   ) async {
     final res = await emapRepository.removeEmap(emapId: event.emapId ?? []);
-    res.fold((onFailure) {}, (onSuccess) {
+    res.fold((onFailure) {}, (onSuccess) async {
       if (state is! EmapSuccessState) {
         return;
       }
       final currentState = state as EmapSuccessState;
-      final _listEmap = currentState.listEmap;
-      _listEmap?.removeWhere(
+      final _listEmap = List<EmapEntity>.from(currentState.listEmap ?? []);
+      _listEmap.removeWhere(
         (element) => listEquals(element.emapId, event.emapId),
       );
-      emit(RemoveEmapSucessSate());
+
+      final newEmapSelected = _listEmap.isNotEmpty ? _listEmap.first : null;
+
+      // Emit state với list emap đã xóa và clear dragItems
       emit(
         currentState.copyWith(
           listEmap: _listEmap,
-          emapSelected: _listEmap?.first,
+          emapSelected: newEmapSelected,
+          dragItems: [], // Clear dragItems trước khi load camera mới
         ),
       );
+
+      // Load camera của emap mới được chọn bằng cách dispatch event
+      if (newEmapSelected != null) {
+        // Dispatch event thay vì gọi trực tiếp để có emitter mới
+        add(ListCameraEmapInfoEvent());
+      }
     });
   }
 
