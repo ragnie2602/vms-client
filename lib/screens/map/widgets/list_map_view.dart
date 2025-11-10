@@ -128,6 +128,10 @@ class _ListMapViewState extends State<ListMapView> {
     );
   }
 
+  void _onSearchEmap({required String keyword}) {
+    context.read<EmapBloc>().add(SearchEmapEvent(keyword: keyword));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -175,7 +179,12 @@ class _ListMapViewState extends State<ListMapView> {
                       ),
                       border: UnderlineInputBorder(),
                     ),
-                    onChanged: (value) {},
+                    onChanged: (value) {
+                      _onSearchEmap(keyword: value);
+                    },
+                    onSubmitted: (value) {
+                      _onSearchEmap(keyword: value);
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -224,6 +233,12 @@ class _ListMapViewState extends State<ListMapView> {
                       ToastUtil.toastSuccess(
                         context: context,
                         title: Text('Thêm bản đồ camera thành công!'),
+                      );
+                    }
+                    if (state is EditEmapSuccessState) {
+                      ToastUtil.toastSuccess(
+                        context: context,
+                        title: Text('Cập nhật bản đồ camera thành công!'),
                       );
                     }
                   },
