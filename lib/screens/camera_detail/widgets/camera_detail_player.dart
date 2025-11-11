@@ -16,6 +16,9 @@ import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
+// ignore: depend_on_referenced_packages
+import 'package:vector_math/vector_math_64.dart' show Vector3;
+
 import 'player_full_screen.dart';
 
 enum PlayerMode { liveview, playlist }
@@ -454,19 +457,29 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     if (box == null) return;
 
     final viewportCenter = Offset(box.size.width / 2, box.size.height / 2);
+    final _scale = targetScale / currentScale;
+
+    final Matrix4 inverted = Matrix4.inverted(zoomController.value);
+    final Vector3 v = Vector3(viewportCenter.dx, viewportCenter.dy, 0);
+    final Vector3 contentPoint = inverted.transform3(v);
+    final Offset focalContent = Offset(contentPoint.x, contentPoint.y);
 
     final startMatrix = zoomController.value.clone();
-    final endMatrix = Matrix4.identity()
-      ..translateByDouble(viewportCenter.dx, viewportCenter.dy, 0, 1)
-      ..scaleByDouble(targetScale, targetScale, targetScale, 1)
-      ..translateByDouble(-viewportCenter.dx, -viewportCenter.dy, 0, 1);
+    final Matrix4 focalToOrigin = Matrix4.identity()
+      ..translateByDouble(-focalContent.dx, -focalContent.dy, 0, 1);
+    final Matrix4 zoom = Matrix4.identity()..scaleByDouble(_scale, _scale, _scale, 1);
+    final Matrix4 back = Matrix4.identity()
+      ..translateByDouble(focalContent.dx, focalContent.dy, 0, 1);
+    final Matrix4 endMatrix = startMatrix.multiplied(back * zoom * focalToOrigin);
 
     _zoomAnimationController.reset();
     _zoomAnimation =
         Tween<double>(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(parent: _zoomAnimationController, curve: Curves.easeInOut),
         )..addListener(() {
-          zoomController.value = startMatrix.lerp(endMatrix, _zoomAnimation!.value);
+          zoomController.value = startMatrix
+              .lerp(endMatrix, _zoomAnimation!.value)
+              .clampMatrixToBounds(box.size);
         });
 
     _zoomAnimationController.forward();
