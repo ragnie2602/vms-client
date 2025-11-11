@@ -141,7 +141,7 @@ class _UserProfileState extends State<UserProfile> {
             ),
             if (MultiWindowUtil.isMainWindow(context.read<AppBloc>().windowId))
               _buildMenuItem(
-                title: 'Đa cửa sổ',
+                title: 'Đa màn hình',
                 icon: SvgPicture.asset(AppAssets.icNewWindow),
                 onTap: () => context.read<AppBloc>().add(CreateNewWindow()),
               ),
