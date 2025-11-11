@@ -80,7 +80,10 @@ class _ControlRecordState extends State<ControlRecord> {
 
     _isKilledByUser = true;
     _reset();
-    ToastUtil.toastSuccess(context: context, title: _toastMessage(message ?? 'Đã ghi video'));
+    ToastUtil.toastSuccess(
+      context: context,
+      title: _toastMessage(message ?? 'Ghi hình hoàn tất. Video đã được lưu thành công.'),
+    );
   }
 
   void _onExited(int exitCode) {
