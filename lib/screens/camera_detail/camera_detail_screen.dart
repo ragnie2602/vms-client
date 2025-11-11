@@ -39,7 +39,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
     if ((pre.mode != cur.mode || pre.camera != cur.camera) && cur.camera != null) {
       context.read<HomeBloc>().add(
         ChangePageInfo(
-          title: "${cur.mode == CameraDetailMode.playback ? 'Playback' : ''} ${cur.camera!.name}",
+          title: "${cur.mode == CameraDetailMode.playback ? 'Xem lại' : ''} ${cur.camera!.name}",
         ),
       );
     }
