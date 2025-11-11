@@ -53,7 +53,8 @@ class _ControlRecordState extends State<ControlRecord> {
         ),
       );
     }
-    _process?.kill(ProcessSignal.sigint);
+    _process?.stdin.add([113]); // Gửi 'q' để dừng ffmpeg --> File audio không bị 0 bytes
+    _process?.stdin.close();
     _duration.dispose();
     _timer?.cancel();
     super.dispose();
@@ -111,6 +112,16 @@ class _ControlRecordState extends State<ControlRecord> {
     context.read<CameraDetailBloc>().add(
       OnRecording(
         cb: (Process? process, String? output) {
+          // Trường hợp bị dispose trước khi loading xong --> cb sẽ gọi khi unmouted --> kill process
+          if (!mounted) {
+            process?.stdin.add([113]); // Gửi 'q' để dừng ffmpeg --> File audio không bị 0 bytes
+            process?.stdin.close();
+            ToastUtil.toastSuccess(
+              title: _toastMessage('Quá trình ghi hình đã dừng. Video đã được lưu thành công'),
+            );
+            return;
+          }
+
           setState(() => _isBusy = false);
           _process = process;
 

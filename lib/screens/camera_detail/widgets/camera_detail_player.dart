@@ -44,6 +44,7 @@ class CameraDetailPlayer extends StatefulWidget {
     required this.controller,
     this.onStatusChanged,
     this.onInitializedValues,
+    this.onLostConnection,
   });
   final List<PlaybackVideo> playlist;
   final String source;
@@ -53,6 +54,7 @@ class CameraDetailPlayer extends StatefulWidget {
   final CameraDetailController controller;
   final Function(PlayerStatus)? onStatusChanged;
   final Function({required double volume, required double speed})? onInitializedValues;
+  final Function()? onLostConnection;
 
   factory CameraDetailPlayer.playlist({
     required List<PlaybackVideo> playlist,
@@ -61,6 +63,7 @@ class CameraDetailPlayer extends StatefulWidget {
     required CameraDetailController controller,
     Function(PlayerStatus)? onStatusChanged,
     Function({required double volume, required double speed})? onInitializedValues,
+    Function()? onLostConnection,
   }) {
     return CameraDetailPlayer(
       playlist: playlist,
@@ -72,6 +75,7 @@ class CameraDetailPlayer extends StatefulWidget {
       key: controller.ref,
       onStatusChanged: onStatusChanged,
       onInitializedValues: onInitializedValues,
+      onLostConnection: onLostConnection,
     );
   }
 
@@ -81,6 +85,7 @@ class CameraDetailPlayer extends StatefulWidget {
     required CameraDetailController controller,
     Function(PlayerStatus)? onStatusChanged,
     Function({required double volume, required double speed})? onInitializedValues,
+    Function()? onLostConnection,
   }) {
     return CameraDetailPlayer(
       playlist: [],
@@ -91,6 +96,7 @@ class CameraDetailPlayer extends StatefulWidget {
       key: controller.ref,
       onStatusChanged: onStatusChanged,
       onInitializedValues: onInitializedValues,
+      onLostConnection: onLostConnection,
     );
   }
 
@@ -263,6 +269,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
     Logger.error(error, writeLog: _lastError != error && _lastError != _disconnectedMessage);
     _lastError = error;
+    widget.onLostConnection?.call();
   }
 
   void _onCompleted(bool completed) {
