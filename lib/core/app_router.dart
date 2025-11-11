@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
@@ -50,7 +51,7 @@ enum Routes {
   custom_live_view(
     name: 'custom_live_view',
     path: '/custom_live_view',
-    title: 'Xem lại',
+    title: 'Chế độ tùy biến',
     description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   cameraDetail(name: 'camera_detail', path: '/camera_detail'),
@@ -154,7 +155,10 @@ class AppRouter {
               ),
             ),
             BlocProvider(
-              create: (context) => EmapBloc(emapRepository: context.read()),
+              create: (context) => EmapBloc(
+                emapRepository: context.read(),
+                searchEmapUseCase: context.read<SearchEmapUseCase>(),
+              ),
             ),
             BlocProvider(
               create: (context) => UserManagementBloc(

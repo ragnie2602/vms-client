@@ -266,4 +266,16 @@ const Map<int, Map<String, String>> vi = {
     "USER_EMPTY": "Không tìm thấy tài khoản! Vui lòng thử lại!",
     "USER_NOT_FOUND": "Không tìm thấy tài khoản! Vui lòng thử lại!",
   },
+
+  // updateUserAddress (202)
+  202: {
+    ..._commonErrors,
+    "ERROR_DEFAULT": "Có lỗi xảy ra, vui lòng thử lại sau!",
+    "EMAIL_EMPTY": "Email không được để trống",
+    "EMAIL_INVALID": "Email không hợp lệ",
+    "EMAIL_EXIST": "Email đã tồn tại trên hệ thống. Vui lòng thử lại",
+    "TEL_EMPTY": "Số điện thoại không được để trống",
+    "TEL_INVALID": "Số điện thoại không hợp lệ",
+    "TEL_EXIST": "Số điện thoại đã tồn tại trên hệ thống. Vui lòng thử lại",
+  },
 };

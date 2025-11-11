@@ -234,22 +234,33 @@ class _MapViewState extends State<MapView> {
     }
     if (state is EmapSuccessState) {
       if ((state.listEmap ?? []).isEmpty) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: SvgPicture.asset(AppAssets.icEmptyEmap),
-            ),
-            Text(
-              'Chưa có bản đồ camera nào. Click + để thêm bản đồ camera',
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w400,
-                color: AppColors.grey64748B,
-              ),
-            ),
-          ],
+        return Center(
+          child: state.isSearching == true
+              ? Text(
+                  'Không tìm thấy kết quả phù hợp',
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.grey64748B,
+                  ),
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: SvgPicture.asset(AppAssets.icEmptyEmap),
+                    ),
+                    Text(
+                      'Chưa có bản đồ camera nào. Click + để thêm bản đồ camera',
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.grey64748B,
+                      ),
+                    ),
+                  ],
+                ),
         );
       }
 

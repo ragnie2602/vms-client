@@ -7,6 +7,9 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_input.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_output.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
@@ -14,7 +17,9 @@ import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
   List<CameraEntity> listCamera = [];
   final IEmapRepository emapRepository;
-  EmapBloc({required this.emapRepository}) : super(const EmapState()) {
+  final SearchEmapUseCase searchEmapUseCase;
+  EmapBloc({required this.emapRepository, required this.searchEmapUseCase})
+    : super(const EmapState()) {
     on<GetListEmapEvent>(_onGetListEmap);
     on<ChangeEmapEvent>(_onChangeSelectEmap);
     on<RemoveEmapEvent>(_onRemoveEmap);
@@ -28,6 +33,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     on<UpdateCameraEmapPositionEvent>(_onUpdateCameraEmapPosition);
     on<RemoveCameraEmapEvent>(_onRemoveCameraEmap);
     on<EditEmapEvent>(_onEditEmap);
+    on<SearchEmapEvent>(_onSearchEmap);
   }
 
   FutureOr<void> _onGetListEmap(
@@ -60,6 +66,32 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
     if (shouldLoadCameraInfo) {
       await _onlistCameraEmapInfo(ListCameraEmapInfoEvent(), emit);
     }
+  }
+
+  Future<void> _onSearchEmap(
+    SearchEmapEvent event,
+    Emitter<EmapState> emit,
+  ) async {
+    if ((state is EmapSuccessState) == false) {
+      await _onGetListEmap(GetListEmapEvent(), emit);
+      return;
+    }
+    final currentState = state as EmapSuccessState;
+    final emaps = await emapRepository.listEmap();
+    emaps.fold((onFailure) {}, (onSuccess) {
+      final SearchEmapInput input = SearchEmapInput(
+        keyword: event.keyword,
+        listEmapOrigin: onSuccess,
+      );
+      final SearchEmapOutput output = searchEmapUseCase.execute(input);
+      emit(
+        currentState.copyWith(
+          listEmap: output.listEmapResult,
+          emapSelected: output.listEmapResult?.firstOrNull,
+          isSearching: true,
+        ),
+      );
+    });
   }
 
   FutureOr<void> _onChangeSelectEmap(
