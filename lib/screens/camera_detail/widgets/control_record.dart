@@ -31,12 +31,15 @@ class _ControlRecordState extends State<ControlRecord> {
     super.didUpdateWidget(oldWidget);
 
     // Đang recording --> đổi cam --> bị build lại --> reset
-    if (oldWidget.isRecording != widget.isRecording && _process != null) {
-      Future.delayed(
-        Duration.zero,
-        () => _onStop('Quá trình ghi hình đã dừng. Video đã được lưu thành công'),
-      );
-    }
+    // Case stop --> state đổi --> rebuild lại --> có thể bị duplicate toast
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (oldWidget.isRecording != widget.isRecording && _process != null && !_isKilledByUser) {
+        Future.delayed(
+          Duration.zero,
+          () => _onStop('Quá trình ghi hình đã dừng. Video đã được lưu thành công'),
+        );
+      }
+    });
   }
 
   @override
