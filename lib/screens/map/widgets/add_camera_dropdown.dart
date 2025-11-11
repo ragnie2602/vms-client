@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 class AddCameraDropdown extends StatefulWidget {
@@ -108,6 +109,11 @@ class _AddCameraDropdownState extends State<AddCameraDropdown> {
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Nhập tên camera',
+                          hintStyle: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.grey8F95B2,
+                          ),
                           prefixIcon: Container(
                             padding: const EdgeInsets.symmetric(
                               vertical: 12,
