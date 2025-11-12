@@ -234,33 +234,36 @@ class _MapViewState extends State<MapView> {
     }
     if (state is EmapSuccessState) {
       if ((state.listEmap ?? []).isEmpty) {
-        return Center(
-          child: state.isSearching == true
-              ? Text(
-                  'Không tìm thấy kết quả phù hợp',
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.grey64748B,
-                  ),
-                )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: SvgPicture.asset(AppAssets.icEmptyEmap),
+        return Container(
+          color: AppColors.white,
+          child: Center(
+            child: state.isSearching == true
+                ? Text(
+                    'Không tìm thấy kết quả phù hợp',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.grey64748B,
                     ),
-                    Text(
-                      'Chưa có bản đồ camera nào. Click + để thêm bản đồ camera',
-                      style: AppTypography.style(
-                        14,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.grey64748B,
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: SvgPicture.asset(AppAssets.icEmptyEmap),
                       ),
-                    ),
-                  ],
-                ),
+                      Text(
+                        'Chưa có bản đồ camera nào. Click + để thêm bản đồ camera',
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.grey64748B,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
         );
       }
 
@@ -269,28 +272,38 @@ class _MapViewState extends State<MapView> {
           _buildTopBar(context),
           if (state.emapSelected?.backgroundPath != null)
             Expanded(
-              child: Stack(
-                children: [
-                  // Wrap Image với Container có key để lấy kích thước chính xác
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Container(
-                        key: _imageKey,
-                        child: Image.network(
-                          state.emapSelected?.backgroundPath ?? '',
-                          fit: BoxFit.contain,
-                          loadingBuilder: (context, child, loadingProgress) =>
-                              loadingProgress == null
-                              ? child
-                              : Center(child: CircularProgressIndicator()),
-                        ),
-                      );
-                    },
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.white,
+                child: Center(
+                  child: Stack(
+                    children: [
+                      // Wrap Image với Container có key để lấy kích thước chính xác
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Container(
+                            key: _imageKey,
+                            child: Image.network(
+                              state.emapSelected?.backgroundPath ?? '',
+                              fit: BoxFit.contain,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) =>
+                                      loadingProgress == null
+                                      ? child
+                                      : Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                            ),
+                          );
+                        },
+                      ),
+                      ...(state.dragItems ?? []).map(
+                        (item) => _buildDragItem(item),
+                      ),
+                    ],
                   ),
-                  ...(state.dragItems ?? []).map(
-                    (item) => _buildDragItem(item),
-                  ),
-                ],
+                ),
               ),
             ),
         ],
@@ -306,8 +319,8 @@ class _MapViewState extends State<MapView> {
         borderRadius: BorderRadius.circular(5),
         color: Colors.white,
       ),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
