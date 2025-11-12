@@ -151,7 +151,7 @@ class _UserProfileState extends State<UserProfile> {
             ),
             if (MultiWindowUtil.isMainWindow(context.read<AppBloc>().windowId))
               _buildMenuItem(
-                title: 'Đa cửa sổ',
+                title: 'Đa màn hình',
                 icon: SvgPicture.asset(AppAssets.icNewWindow),
                 onTap: () => context.read<AppBloc>().add(CreateNewWindow()),
               ),
@@ -172,15 +172,16 @@ class _UserProfileState extends State<UserProfile> {
               icon: SvgPicture.asset(AppAssets.icKey),
               title: 'Đổi mật khẩu',
             ),
-            _buildMenuItem(
-              onTap: () {
-                // context.read<SocketApiClient>().disconnect();
-                // context.goNamed(Routes.login.name);
-                showSignOutConfirmationPopup();
-              },
-              icon: SvgPicture.asset(AppAssets.icLogout),
-              title: 'Đăng xuất',
-            ),
+            if (MultiWindowUtil.isMainWindow(context.read<AppBloc>().windowId))
+              _buildMenuItem(
+                onTap: () {
+                  // context.read<SocketApiClient>().disconnect();
+                  // context.goNamed(Routes.login.name);
+                  showSignOutConfirmationPopup();
+                },
+                icon: SvgPicture.asset(AppAssets.icLogout),
+                title: 'Đăng xuất',
+              ),
           ],
         ),
       ),

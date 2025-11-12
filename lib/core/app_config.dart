@@ -8,7 +8,7 @@ import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 class AppConfig {
   const AppConfig._();
 
-  static const INITIAL_ROUTE = Routes.login;
+  static const INITIAL_ROUTE = Routes.splash;
   static const DEFAULT_THEME_MODE = ThemeMode.light;
 
   static const AUTO_LOGIN = false;
