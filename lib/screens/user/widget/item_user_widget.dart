@@ -159,10 +159,12 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                     },
                     tooltip: '',
                     itemBuilder: (BuildContext context) => [
-                       PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'reset_password',
-                         padding:
-                             EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -187,10 +189,12 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                         height: 0.5,
                         color: AppColors.greyE2E8F0,
                       ),
-                       PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'edit',
-                         padding:
-                             EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -215,10 +219,12 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                         height: 0.5,
                         color: AppColors.greyE2E8F0,
                       ),
-                       PopupMenuItem<String>(
+                      PopupMenuItem<String>(
                         value: 'delete',
-                         padding:
-                             EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
