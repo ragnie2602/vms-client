@@ -135,6 +135,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
               flex: 112,
               child: Center(
                 child: PopupMenuButton<String>(
+                  tooltip: '',
                   icon: SvgPicture.asset(AppAssets.icAction),
                   padding: EdgeInsets.zero,
                   splashRadius: 20,
