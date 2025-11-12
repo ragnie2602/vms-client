@@ -1,4 +1,5 @@
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_output.dart';
 import 'package:vms_flutter_client/domain/usecases/future_use_case.dart';
@@ -21,6 +22,13 @@ class SendMultiWindowEventUseCase
       case 'close_window':
         final data = {'windowId': input.data?['windowId']};
         DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
+        break;
+      case 'profile':
+        DesktopMultiWindow.invokeMethod(
+          input.targetWindowID,
+          input.methodName,
+          AppData.instance.profile?.toJson(),
+        );
         break;
       case 'sign_out':
         final List<int> targetIds = [];

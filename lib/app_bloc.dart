@@ -93,10 +93,15 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         );
       }
     } catch (_) {}
+
+    emit(state.copyWith(skipLogin: !MultiWindowUtil.isMainWindow(windowId)));
   }
 
   FutureOr<void> _onCreateNewWindow(CreateNewWindow event, Emitter<AppState> emit) async {
     final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
+    await sendMultiWindowEventUseCase.execute(
+      SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
+    );
     output.windowController.show();
   }
 
@@ -186,6 +191,9 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
       for (var i = 1; i <= subWindowCount; i++) {
         final output = await createNewWindowUseCase.execute(CreateNewWindowInput(windowID: i));
+        await sendMultiWindowEventUseCase.execute(
+          SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
+        );
         output.windowController.show();
       }
     }
@@ -201,12 +209,14 @@ class AppState extends BaseState {
   final bool displayFullScreenLiveView;
   final bool isSignOut;
   final int myProfileUpdatedAt;
+  final bool skipLogin;
 
   AppState(
     this.displayFullScreenLiveView, {
     ThemeMode? themeMode,
     this.isSignOut = false,
     this.myProfileUpdatedAt = 0,
+    this.skipLogin = false,
   }) : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
     AppTheme.currentMode = this.themeMode;
   }
@@ -216,12 +226,14 @@ class AppState extends BaseState {
     bool? displayFullScreenLiveView,
     bool? isSignOut,
     int? myProfileUpdatedAt,
+    bool? skipLogin,
   }) {
     return AppState(
       displayFullScreenLiveView ?? this.displayFullScreenLiveView,
       themeMode: themeMode ?? this.themeMode,
       isSignOut: isSignOut ?? false,
       myProfileUpdatedAt: myProfileUpdatedAt ?? this.myProfileUpdatedAt,
+      skipLogin: skipLogin ?? false,
     );
   }
 
