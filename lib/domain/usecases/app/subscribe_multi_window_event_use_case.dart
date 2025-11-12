@@ -28,7 +28,7 @@ class SubscribeMultiWindowEventUseCase
           );
           break;
         case 'close_window':
-          stream.add(SubscribeMultiWindowEventOutput(MWECloseWindow(sourceId)));
+          stream.add(SubscribeMultiWindowEventOutput(MWECloseWindow(call.arguments['windowId'])));
           break;
         case 'sign_out':
           stream.add(SubscribeMultiWindowEventOutput(const MWESignOut()));

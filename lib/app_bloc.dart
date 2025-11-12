@@ -139,7 +139,9 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     emit(state.copyWith(displayFullScreenLiveView: !state.displayFullScreenLiveView));
   }
 
-  FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) {
+  FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) async {
+    await MultiWindowUtil.save();
+
     isSigningOut = true;
     AppData.instance.profile = null;
 

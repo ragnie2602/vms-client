@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
@@ -40,6 +41,7 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
                 title: Text('Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!', maxLines: 5,),
               );
               context.read<SocketApiClient>().disconnect();
+              context.read<AppBloc>().add(SignOut());
               context.goNamed(Routes.login.name);
 
             } else if (state.errorMessage != null) {
