@@ -357,44 +357,49 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              TextField(
-                                controller: cameraNameController,
-                                onChanged: (_) {
-                                  _onSearch();
-                                },
-                                onSubmitted: (_) {
-                                  _onSearch();
-                                },
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 12,
-                                      horizontal: 12,
+                              SizedBox(
+                                height: 41,
+                                child: TextField(
+                                  controller: cameraNameController,
+                                  onChanged: (_) {
+                                    _onSearch();
+                                  },
+                                  onSubmitted: (_) {
+                                    _onSearch();
+                                  },
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 12,
+                                      ),
+                                      child: SvgPicture.asset(
+                                        AppAssets.icSearch,
+                                      ),
                                     ),
-                                    child: SvgPicture.asset(AppAssets.icSearch),
-                                  ),
 
-                                  hintText: 'Nhập tên camera',
-                                  hintStyle: AppTypography.style(
-                                    14,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppColors.grey64748B,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.greyE2E8F0,
-                                      width: 1,
+                                    hintText: 'Nhập tên camera',
+                                    hintStyle: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.grey64748B,
                                     ),
-                                    borderRadius: BorderRadius.circular(1),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.greyE2E8F0,
-                                      width: 1,
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: AppColors.greyE2E8F0,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(1),
                                     ),
-                                    borderRadius: BorderRadius.circular(1),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: AppColors.greyE2E8F0,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(1),
+                                    ),
+                                    border: UnderlineInputBorder(),
                                   ),
-                                  border: UnderlineInputBorder(),
                                 ),
                               ),
                             ],
@@ -419,6 +424,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                               CustomCommonDropdown<CameraOnlineChecked>(
                                 items: CameraOnlineChecked.values,
                                 value: cameraStatus,
+                                height: 41,
                                 onChanged: (p0) {
                                   setState(() {
                                     if (cameraStatus == p0 ||
@@ -505,6 +511,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                           splashColor: Colors.transparent,
 
                           child: Container(
+                            height: 41,
                             padding: EdgeInsets.symmetric(
                               vertical: 12,
                               horizontal: 12,

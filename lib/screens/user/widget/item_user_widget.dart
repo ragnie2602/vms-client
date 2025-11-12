@@ -141,7 +141,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                   position: PopupMenuPosition.under,
                   offset: Offset(0, 8),
                   elevation: 3,
-                  shadowColor: Color(0x1A000000),
+                  shadowColor: AppColors.black,
                   surfaceTintColor: Colors.transparent,
                   color: Colors.white,
                   menuPadding: EdgeInsets.zero,
@@ -158,6 +158,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                         break;
                     }
                   },
+                  tooltip: '',
                   itemBuilder: (BuildContext context) => [
                     PopupMenuItem<String>(
                       value: 'reset_password',
