@@ -47,6 +47,7 @@ class MultiWindowUtil {
         [];
     _windowBounds.clear();
     _windowBounds.addAll(data);
+    if (_windowBounds.isEmpty) _windowBounds.add(Rect.fromLTWH(10, 10, 1200, 675));
   }
 
   static bool isMainWindow(int windowId) => windowId == 0;
