@@ -17,6 +17,7 @@ class ErrorService {
   ErrorService._();
 
   static File? _logFile;
+  static String? get logPath => _logFile?.path;
   static final List<String> _excludedErrors = [
     "PlatformException(media open error, invalid or unsupported media, null, null)",
   ];

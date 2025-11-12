@@ -35,6 +35,8 @@ class AppConfig {
   static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 30);
   static const SOCKET_CONNECTION_TIMEOUT = 60;
 
+  static const RECORDING_MAX_DURATION = Duration(minutes: 5);
+
   /* Monitoring view */
   static const double MONITOR_GRID_SPACING = 4.0;
   static const int? OVERRIDE_MONITOR_GRID_ROWS = null; // = null;

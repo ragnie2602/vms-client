@@ -5,12 +5,12 @@ import 'package:flutter/services.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as p;
 
+import '../app_config.dart';
+import '../error_service.dart';
 import 'logger.dart';
 
 class FFmpegProcess {
-  FFmpegProcess._internal() {
-    _initJob();
-  }
+  FFmpegProcess._internal();
 
   factory FFmpegProcess() => _instance;
   static final FFmpegProcess _instance = FFmpegProcess._internal();
@@ -18,12 +18,14 @@ class FFmpegProcess {
 
   late final jobChannel = MethodChannel("ffmpeg_job");
 
-  Future<void> _initJob() async {
-    await jobChannel.invokeMethod('initJob');
-  }
-
-  Future<void> _bindPid(int pid) async {
-    await jobChannel.invokeMethod('bindPid', {"pid": pid});
+  Future<void> _bindPid(int pid, {String? tempAudio, String? tempVideo, String? output}) async {
+    await jobChannel.invokeMethod('bindPid', {
+      "pid": pid,
+      if (tempAudio != null) 'temp_audio': tempAudio,
+      if (tempVideo != null) 'temp_video': tempVideo,
+      if (output != null) 'output': output,
+      'log_path': ErrorService.logPath,
+    });
   }
 
   /// PRELOAD (warm-up) camera để tránh mất các giây đầu.
@@ -118,10 +120,18 @@ class FFmpegProcess {
         if (trimmed.isNotEmpty && _shouldWriteLog(trimmed)) logMsg += '$trimmed\n';
       });
 
-      process.exitCode.then((exitCode) async {
-        await mergeVideoWithAudio(tempVideo, tempAudio, output);
-        if (logMsg.isNotEmpty) Logger.warn(logMsg, writeLog: true);
-      });
+      process.exitCode
+          .then((exitCode) async {
+            await mergeVideoWithAudio(tempVideo, tempAudio, output);
+            if (logMsg.isNotEmpty) Logger.warn(logMsg, writeLog: true);
+          })
+          // Set timeout để phòng case chưa đóng --> chạy process này mãi tới khi nào đóng app (thường app sẽ mở mãi)
+          .timeout(
+            AppConfig.RECORDING_MAX_DURATION * 1.5,
+            onTimeout: () {
+              process?.stdin.add([113]); // Gửi 'q' để dừng ffmpeg --> File audio không bị 0 bytes
+            },
+          );
 
       await completer.future.timeout(Duration(seconds: 15), onTimeout: () {});
     } catch (e) {
@@ -131,7 +141,7 @@ class FFmpegProcess {
 
     if (process != null) {
       // Bind pid để khi đóng app/crash ... --> ffmpeg cũng tự động dừng ghi
-      await _bindPid(process.pid);
+      await _bindPid(process.pid, tempAudio: tempAudio, tempVideo: tempVideo, output: output);
     }
 
     return process;
