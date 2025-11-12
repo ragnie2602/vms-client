@@ -25,7 +25,6 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   final SendMultiWindowEventUseCase sendMultiWindowEventUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
 
-  bool isSigningOut = false;
   int windowId = 0; // businessWindowID
 
   StreamSubscription? _multiWindowEventSubscription;
@@ -118,11 +117,13 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     Emitter<AppState> emit,
   ) async {
     if (event.multiWindowEvent is MWECloseWindow) {
-      if (isSigningOut) return;
-
       final bSourceID = (event.multiWindowEvent as MWECloseWindow).windowId; // business ID
+      MultiWindowUtil.clearWindowSetting(bSourceID);
 
-      if (!isSigningOut) MultiWindowUtil.clearWindowSetting(bSourceID);
+      if (MultiWindowUtil.hasClosedAll()) {
+        await windowManager.setPreventClose(false);
+        windowManager.close();
+      }
     }
     if (event.multiWindowEvent is MWESignOut) {
       if (MultiWindowUtil.isMainWindow(windowId)) {
@@ -147,7 +148,6 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) async {
     await MultiWindowUtil.save();
 
-    isSigningOut = true;
     AppData.instance.profile = null;
 
     sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
@@ -165,10 +165,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   }
 
   FutureOr<void> _onCloseWindow(CloseWindow event, Emitter<AppState> emit) async {
-    isSigningOut = true;
-
     if (MultiWindowUtil.isMainWindow(windowId)) {
       await MultiWindowUtil.save();
+
+      MultiWindowUtil.clearWindowSetting(windowId);
 
       for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
         WindowController.fromWindowId(subWindowId).close();
@@ -177,15 +177,14 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       await sendMultiWindowEventUseCase.execute(
         SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
       );
-    }
 
-    await windowManager.setPreventClose(false);
-    windowManager.close();
+      await windowManager.setPreventClose(false);
+      windowManager.close();
+    }
   }
 
   FutureOr<void> _onReopenSubWindow(ReopenSubWindow event, Emitter<AppState> emit) async {
     MultiWindowUtil.init();
-    isSigningOut = false;
 
     if (MultiWindowUtil.isMainWindow(windowId)) {
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
