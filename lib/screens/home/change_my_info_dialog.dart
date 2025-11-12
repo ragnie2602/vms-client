@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
-import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
-import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
+// (removed unused imports)
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/screens/home/bloc/change_my_info_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
@@ -17,16 +16,13 @@ import 'components/components_src.dart';
 Future<bool?> showChangeMyInfoDialog(BuildContext context) {
   final updateMyProfileUseCase = context.read<UpdateMyProfileUseCase>();
   final appBloc = context.read<AppBloc>();
-  final TextEditingController _usernameController =
-      TextEditingController();
-  final TextEditingController _fullNameController =
-      TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController =
-      TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final theme = Theme.of(context);
-  
+
   return showDialog<bool?>(
     context: context,
     barrierDismissible: false,
@@ -75,7 +71,7 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                         // Title
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                            vertical: 20,
+                            vertical: 8,
                             horizontal: 24,
                           ),
                           child: Row(
@@ -101,7 +97,12 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                         Form(
                           key: _formKey,
                           child: Padding(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.only(
+                              top: 20,
+                              left: 24,
+                              right: 24,
+                              bottom: 24,
+                            ),
                             child: Column(
                               children: [
                                 AppField(
@@ -113,7 +114,7 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                                   paddingBottomLabel: 12,
                                   readOnly: true,
                                   validator: (v) {
-                                    if (v == null || v.isEmpty) {
+                                    if (v == null || v.trim().isEmpty) {
                                       return 'Tài khoản không được để trống';
                                     }
                                     return null;
@@ -127,11 +128,11 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                                     controller: _fullNameController,
                                     hintText: 'Nhập họ và tên',
                                     label: 'Họ và tên',
-                                    requiredField: false,
+                                    requiredField: true,
                                     borderRadius: 3,
                                     paddingBottomLabel: 12,
                                     validator: (v) {
-                                      if (v == null || v.isEmpty) {
+                                      if (v == null || v.trim().isEmpty) {
                                         return 'Họ và tên không được để trống';
                                       }
                                       return null;
@@ -170,17 +171,19 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                                   requiredField: false,
                                   borderRadius: 3,
                                   paddingBottomLabel: 12,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(11),
+                                  ],
                                   validator: (v) {
-                                    if (v == null || v.isEmpty) {
+                                    if (v == null || v.trim().isEmpty) {
                                       return null; // Số điện thoại không bắt buộc
                                     }
-                                    // Regex kiểm tra định dạng số điện thoại Việt Nam
-                                    // 84yyyyyyyyy (84 + 9-10 số) hoặc 0yyyyyyyyy (0 + 9-10 số)
-                                    final phoneRegex = RegExp(
-                                      r'^(84|0)(3|5|7|8|9)\d{8,9}$',
-                                    );
-                                    if (!phoneRegex.hasMatch(v)) {
-                                      return 'Số điện thoại không đúng định dạng';
+                                    final s = v.trim();
+                                    final phoneRegex = RegExp(r'^\d{1,11}\$');
+                                    if (!phoneRegex.hasMatch(s)) {
+                                      return 'Số điện thoại chỉ được chứa chữ số';
                                     }
                                     return null;
                                   },
@@ -206,7 +209,7 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                               const SizedBox(width: 16),
                               Expanded(
                                 child: AppButton.filled(
-                                  label: 'Xác nhận',
+                                  label: 'Cập nhật',
                                   onPressed: state.isLoading
                                       ? null
                                       : () {
@@ -214,11 +217,16 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                                               .validate()) {
                                             context.read<ChangeMyInfoBloc>().add(
                                               ChangeMyInfoEvent(
-                                                updateProfile: state.profile?.copyWith(
-                                                  displayName: _fullNameController.text,
-                                                  email: _emailController.text,
-                                                  tel: _phoneController.text,
-                                                ),
+                                                updateProfile: state.profile
+                                                    ?.copyWith(
+                                                      displayName:
+                                                          _fullNameController
+                                                              .text,
+                                                      email:
+                                                          _emailController.text,
+                                                      tel:
+                                                          _phoneController.text,
+                                                    ),
                                               ),
                                             );
                                           }

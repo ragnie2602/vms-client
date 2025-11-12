@@ -80,5 +80,17 @@ fi
 
 echo "=== Exporting build ==="
 cp -u ffmpeg.exe ../
+echo "✅ FFmpeg build done"
+
+# ============================================================
+# 🧩 Build ffmpeg_watchdog sau khi FFmpeg xong
+# ============================================================
+cd ..
+if [ -f "./build_watchdog.sh" ]; then
+  echo "=== Building ffmpeg_watchdog static ==="
+  bash build_watchdog.sh
+else
+  echo "⚠️ build_watchdog.sh not found — skip watchdog build"
+fi
 
 echo "✅ DONE"

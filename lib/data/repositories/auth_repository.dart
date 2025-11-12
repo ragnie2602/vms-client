@@ -9,6 +9,16 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   const AuthRepository({required this.authenticateService});
 
   @override
+  Future<void> connectSocket({
+    required String host,
+    required int port,
+    required List<int> uid,
+    required List<int> sessionId,
+  }) async {
+    await authenticateService.connectSocket(host: host, port: port, uid: uid, sessionId: sessionId);
+  }
+
+  @override
   Future<bool> login(Authentication authentication) async {
     return authenticateService.login(authentication);
   }

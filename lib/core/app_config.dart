@@ -8,7 +8,7 @@ import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 class AppConfig {
   const AppConfig._();
 
-  static const INITIAL_ROUTE = Routes.login;
+  static const INITIAL_ROUTE = Routes.splash;
   static const DEFAULT_THEME_MODE = ThemeMode.light;
 
   static const AUTO_LOGIN = false;
@@ -34,6 +34,8 @@ class AppConfig {
   static const PLAYER_INITIALIZATION_TIMEOUT = Duration(seconds: 30);
   static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 30);
   static const SOCKET_CONNECTION_TIMEOUT = 60;
+
+  static const RECORDING_MAX_DURATION = Duration(minutes: 5);
 
   /* Monitoring view */
   static const double MONITOR_GRID_SPACING = 4.0;

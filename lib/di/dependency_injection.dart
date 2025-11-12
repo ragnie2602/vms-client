@@ -72,7 +72,7 @@ class DependencyInjection {
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
     Provider<SendMultiWindowEventUseCase>(create: (context) => SendMultiWindowEventUseCase()),
     Provider<SubscribeMultiWindowEventUseCase>(
-      create: (context) => SubscribeMultiWindowEventUseCase(),
+      create: (context) => SubscribeMultiWindowEventUseCase(context.read<IAuthRepository>()),
     ),
 
     Provider<LoginUseCase>(

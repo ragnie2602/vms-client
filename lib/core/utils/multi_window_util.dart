@@ -5,68 +5,70 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 
 class MultiWindowUtil {
-  static (String, List<String>) _getFrameSettings() {
-    final _frameKey =
-        '${AppData.instance.read(AppKeys.SP_SERVER_KEY)}|${AppData.instance.read(AppKeys.SP_USERNAME_KEY)}';
-    final dynamic rawData = AppData.instance.read(_frameKey);
-    final List<String> frameSettings =
-        (rawData as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [];
-
-    return (_frameKey, frameSettings);
-  }
+  static final List<Rect?> _windowBounds = [];
 
   static Future<void> clearWindowSetting(int windowId) async {
-    final frameSettings = _getFrameSettings();
-
-    frameSettings.$2[windowId] = jsonEncode({});
-    await AppData.instance.save(frameSettings.$1, frameSettings.$2);
+    _windowBounds[windowId] = null;
   }
 
-  static Rect? getWindowRect(int windowId) {
-    final frameSettings = _getFrameSettings();
+  static int getSubWindowCount() => _windowBounds.length - 1;
 
-    if (windowId < frameSettings.$2.length) {
-      final setting = jsonDecode(frameSettings.$2[windowId].toString());
-      return Rect.fromLTWH(setting['left'], setting['top'], setting['width'], setting['height']);
-    } else {
-      return null;
+  static (int, Rect) getSuitableWindowSetting({int? suggestWindowID}) {
+    if (suggestWindowID != null) {
+      return (
+        suggestWindowID,
+        _windowBounds[suggestWindowID] =
+            _windowBounds[suggestWindowID] ?? Rect.fromLTWH(10, 10, 1200, 675),
+      );
     }
+
+    for (var i = 0; i < _windowBounds.length; i++) {
+      if (_windowBounds[i] == null) return (i, _windowBounds[i] = Rect.fromLTWH(10, 10, 1200, 675));
+    }
+    _windowBounds.add(Rect.fromLTWH(10, 10, 1200, 675));
+    return (_windowBounds.length - 1, Rect.fromLTWH(10, 10, 1200, 675));
   }
 
-  static int getSubWindowCount() {
-    final frameSettings = _getFrameSettings();
-    return frameSettings.$2.length - 1;
+  static void init() {
+    final _frameKey =
+        '${AppData.instance.read(AppKeys.SP_SERVER_KEY)}|${AppData.instance.read(AppKeys.SP_USERNAME_KEY)}';
+
+    final List<Rect> data =
+        (AppData.instance.read(_frameKey) as List<dynamic>?)?.map((e) {
+          final setting = jsonDecode(e.toString());
+
+          return Rect.fromLTWH(
+            setting['left'] ?? 10,
+            setting['top'] ?? 10,
+            setting['width'] ?? 1200,
+            setting['height'] ?? 675,
+          );
+        }).toList() ??
+        [];
+    _windowBounds.clear();
+    _windowBounds.addAll(data);
+    if (_windowBounds.isEmpty) _windowBounds.add(Rect.fromLTWH(10, 10, 1200, 675));
   }
 
   static bool isMainWindow(int windowId) => windowId == 0;
 
-  static Future<Rect> saveWindowRect(int windowId, Rect rect) async {
-    final frameSettings = _getFrameSettings();
+  static Future<void> save() async {
+    final _frameKey =
+        '${AppData.instance.read(AppKeys.SP_SERVER_KEY)}|${AppData.instance.read(AppKeys.SP_USERNAME_KEY)}';
 
-    final setting = {
-      'left': rect.left,
-      'top': rect.top,
-      'width': rect.width,
-      'height': rect.height,
-    };
-
-    if (windowId < frameSettings.$2.length) {
-      frameSettings.$2[windowId] = jsonEncode(setting);
-    } else {
-      frameSettings.$2.add(jsonEncode(setting));
-    }
-
-    await AppData.instance.save(frameSettings.$1, frameSettings.$2);
-
-    return rect;
+    await AppData.instance.save(
+      _frameKey,
+      _windowBounds
+          .where((e) => e != null)
+          .map(
+            (e) =>
+                jsonEncode({'left': e!.left, 'top': e.top, 'width': e.width, 'height': e.height}),
+          )
+          .toList(),
+    );
   }
 
-  static Future<void> windowSettingSweeper() async {
-    final frameSettings = _getFrameSettings();
-
-    final emptySetting = jsonEncode({});
-    frameSettings.$2.removeWhere((element) => element == emptySetting);
-
-    await AppData.instance.save(frameSettings.$1, frameSettings.$2);
+  static Future<Rect> saveWindowRect(int windowId, Rect rect) async {
+    return _windowBounds[windowId] = rect;
   }
 }
