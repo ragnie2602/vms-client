@@ -44,6 +44,7 @@ Future<String?> showResetPasswordDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
+
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Padding(
@@ -53,15 +54,27 @@ Future<String?> showResetPasswordDialog(
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Title
-                      const Text(
-                        'Khôi phục mật khẩu',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        textAlign: TextAlign.center,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Khôi phục mật khẩu',
+                              style: AppTypography.style(
+                                20,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: SvgPicture.asset(AppAssets.icClose),
+                            tooltip: 'Đóng',
+                          ),
+                        ],
                       ),
                       // Boxed area: subtitle + field + hint
                       Container(
@@ -107,7 +120,7 @@ Future<String?> showResetPasswordDialog(
                             AppField(
                               controller: _controller,
                               hintText: 'Nhập mật khẩu',
-                              label: 'Mật khẩu',
+                              // label: 'Mật khẩu',
                               requiredField: true,
                               obscureText: _obscurePassword,
                               validator: (v) {
@@ -135,7 +148,7 @@ Future<String?> showResetPasswordDialog(
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -143,6 +156,8 @@ Future<String?> showResetPasswordDialog(
                                 style: AppTypography.style(
                                   12,
                                   fontWeight: FontWeight.w500,
+                                  isItalic: true,
+
                                   color: AppColors.grey92929D,
                                 ),
                               ),

@@ -32,7 +32,8 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
     return Focus(
       autofocus: true,
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.escape) {
           final appBloc = context.read<AppBloc>();
           if (appBloc.state.displayFullScreenLiveView) {
             appBloc.add(ToggleMonitorDisplayMode());
@@ -54,20 +55,35 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
                   rightController: _rightController,
                 ),
               ),
-              Container(width: double.infinity, height: 1, color: AppColors.scaffoldBg),
+              Container(
+                width: double.infinity,
+                height: 1,
+                color: AppColors.scaffoldBg,
+              ),
               Expanded(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Panel(expandedWidth: widget.leftPanelWidth, controller: _leftController),
+                    Panel(
+                      expandedWidth: widget.leftPanelWidth,
+                      controller: _leftController,
+                    ),
 
                     Expanded(
                       child: !shouldDisplayFullScreen
-                          ? Padding(padding: const EdgeInsets.all(20), child: widget.content)
+                          ? Container(
+                              color: AppColors.greyF2F4FA,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: widget.content,
+                              ),
+                            )
                           : widget.content,
                     ),
-
-                    Panel(expandedWidth: widget.rightPanelWidth, controller: _rightController),
+                    Panel(
+                      expandedWidth: widget.rightPanelWidth,
+                      controller: _rightController,
+                    ),
                   ],
                 ),
               ),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' as ui;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
@@ -146,21 +147,86 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
       return;
     }
     final currentState = state as EmapSuccessState;
-    List<EmapEntity> emaps = List<EmapEntity>.of(currentState.listEmap ?? []);
     emit(EmapLoadingState());
+
     final res = await emapRepository.postEmap(
       emapId: event.emapId,
       emapName: event.emapName,
       imageBytes: event.imageBytes,
       imagePath: event.imagePath,
     );
-    res.fold((onFailure) {}, (onSuccess) {
-      emaps = emaps
-          .map((e) => listEquals(e.emapId, event.emapId) ? onSuccess : e)
-          .toList();
-      emit(EditEmapSuccessState());
-      emit(currentState.copyWith(listEmap: emaps, emapSelected: onSuccess));
-    });
+
+    // Sử dụng match để xử lý Either một cách an toàn và tuần tự
+    await res.fold(
+      (onFailure) {
+        // Xử lý lỗi nếu cần, ví dụ emit một state lỗi
+        // Tạm thời quay lại state cũ để ngưng loading
+        emit(currentState);
+      },
+      (onSuccess) async {
+        var emaps = List<EmapEntity>.from(currentState.listEmap ?? [])
+            .map((e) => listEquals(e.emapId, event.emapId) ? onSuccess : e)
+            .toList();
+
+        var finalDragItems = List<DragItemModel>.from(
+          currentState.dragItems ?? [],
+        );
+
+        // Kiểm tra và xóa các camera ngoài vùng nếu có ảnh mới
+        if (currentState.dragItems?.isNotEmpty == true) {
+          final decodedImage = await ui.decodeImageFromList(event.imageBytes!);
+          final newImageSize = ui.Size(
+            decodedImage.width.toDouble(),
+            decodedImage.height.toDouble(),
+          );
+
+          final itemsToRemove = <DragItemModel>[];
+          final itemsToKeep = <DragItemModel>[];
+
+          for (final item in finalDragItems) {
+            if (item.position.dx >= newImageSize.width ||
+                item.position.dy >= newImageSize.height) {
+              itemsToRemove.add(item);
+            } else {
+              itemsToKeep.add(item);
+            }
+          }
+
+          if (itemsToRemove.isNotEmpty) {
+            debugPrint(
+              '[EMAP BLOC] Removing ${itemsToRemove.length} cameras outside new map bounds.',
+            );
+            finalDragItems = itemsToKeep;
+
+            // Thực hiện xóa camera trên server
+            await Future.wait(
+              itemsToRemove.map((item) {
+                if (item.cameraEmapInfoId != null &&
+                    item.cameraEmapInfoId!.isNotEmpty) {
+                  return emapRepository.deleteCameraEmapInfo(
+                    emapId: onSuccess.emapId ?? [],
+                    cameraEmapInfoId: item.cameraEmapInfoId!,
+                  );
+                }
+                return Future.value();
+              }),
+            );
+          }
+        }
+
+        if (emit.isDone) return;
+        emit(EditEmapSuccessState());
+
+        if (emit.isDone) return;
+        emit(
+          currentState.copyWith(
+            listEmap: emaps as List<EmapEntity>?,
+            emapSelected: onSuccess,
+            dragItems: finalDragItems,
+          ),
+        );
+      },
+    );
   }
 
   FutureOr<void> _onRemoveEmap(
@@ -221,29 +287,30 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
         final cameraList = listCamera.where(
           (element) => listEquals(element.id, onSuccess.cameraId),
         );
-        final camera = (cameraList.isNotEmpty) ? cameraList.first : null;
 
-        // Tạo DragItemModel từ response
-        final newDragItem = DragItemModel(
-          id: onSuccess.cameraId.toString(),
-          position: Offset(
-            onSuccess.xCoordinate.toDouble(),
-            onSuccess.yCoordinate.toDouble(),
-          ),
-          label: camera?.name ?? 'Camera ${onSuccess.cameraId}',
-          cameraId: onSuccess.cameraId.toString(),
-          cameraEmapInfoId:
-              onSuccess.cameraEmapInfoId, // Lưu ID để update sau này
-          source: camera?.subStreamUri.toString() ?? "",
-        );
+        if (cameraList.isNotEmpty) {
+          // Tạo DragItemModel từ response
+          final newDragItem = DragItemModel(
+            id: onSuccess.cameraId.toString(),
+            position: Offset(
+              onSuccess.xCoordinate.toDouble(),
+              onSuccess.yCoordinate.toDouble(),
+            ),
+            label: cameraList.first.name,
+            cameraId: onSuccess.cameraId.toString(),
+            cameraEmapInfoId:
+                onSuccess.cameraEmapInfoId, // Lưu ID để update sau này
+            source: cameraList.first.subStreamUri.toString(),
+          );
 
-        // Thêm vào danh sách dragItems hiện tại
-        final updatedDragItems = List<DragItemModel>.from(
-          currentState.dragItems ?? [],
-        )..add(newDragItem);
+          // Thêm vào danh sách dragItems hiện tại
+          final updatedDragItems = List<DragItemModel>.from(
+            currentState.dragItems ?? [],
+          )..add(newDragItem);
 
-        // Emit EmapSuccessState với dragItems đã cập nhật
-        emit(currentState.copyWith(dragItems: updatedDragItems));
+          // Emit EmapSuccessState với dragItems đã cập nhật
+          emit(currentState.copyWith(dragItems: updatedDragItems));
+        }
       },
     );
   }

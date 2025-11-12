@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -30,6 +31,10 @@ class _MapViewState extends State<MapView> {
   final Map<String, Offset> _dragOffsets = {};
   // Lưu GlobalKey cho mỗi item để lấy kích thước thực tế
   final Map<String, GlobalKey> _itemKeys = {};
+  final Map<String, GlobalKey> _iconKeys = {};
+  final Map<String, GlobalKey> _highlightedIconKeys = {};
+
+  List<int>? _currentEmapId;
 
   @override
   void dispose() {
@@ -132,7 +137,7 @@ class _MapViewState extends State<MapView> {
 
     // Lấy kích thước thực tế của item từ RenderBox
     final itemKey = _itemKeys[itemId];
-    Size itemSize = Size(100, 100); // Kích thước mặc định
+    Size itemSize = const Size(100, 100); // Kích thước mặc định
     if (itemKey?.currentContext != null) {
       final RenderBox? itemBox =
           itemKey!.currentContext!.findRenderObject() as RenderBox?;
@@ -141,14 +146,27 @@ class _MapViewState extends State<MapView> {
       }
     }
 
-    // Giới hạn vị trí trong phạm vi của ảnh
+    // Lấy kích thước icon
+    final iconKey = _iconKeys[itemId];
+    Size iconSize = const Size(40, 40); // Kích thước mặc định, fallback
+    if (iconKey?.currentContext != null) {
+      final RenderBox? iconBox =
+          iconKey!.currentContext!.findRenderObject() as RenderBox?;
+      if (iconBox != null) {
+        iconSize = iconBox.size;
+      }
+    }
+
+    // Giới hạn vị trí trong phạm vi của ảnh, chỉ xét icon
+    final iconOffsetX = (itemSize.width - iconSize.width) / 2;
+
     final clampedX = newPosition.dx.clamp(
-      0.0,
-      imageSize.width - itemSize.width,
+      -iconOffsetX,
+      imageSize.width - iconSize.width - iconOffsetX,
     );
     final clampedY = newPosition.dy.clamp(
       0.0,
-      imageSize.height - itemSize.height,
+      imageSize.height - iconSize.height,
     );
 
     context.read<EmapBloc>().add(
@@ -387,6 +405,16 @@ class _MapViewState extends State<MapView> {
           return true;
         },
         builder: (context, state) {
+          if (state is EmapSuccessState) {
+            final newEmapId = state.emapSelected?.emapId;
+            if (!listEquals(newEmapId, _currentEmapId)) {
+              _itemKeys.clear();
+              _iconKeys.clear();
+              _highlightedIconKeys.clear();
+              _dragOffsets.clear();
+            }
+            _currentEmapId = newEmapId;
+          }
           return _buildContent(context, state);
         },
       ),
@@ -397,6 +425,12 @@ class _MapViewState extends State<MapView> {
     // Tạo hoặc lấy GlobalKey cho item này
     if (!_itemKeys.containsKey(item.id)) {
       _itemKeys[item.id] = GlobalKey();
+    }
+    if (!_iconKeys.containsKey(item.id)) {
+      _iconKeys[item.id] = GlobalKey();
+    }
+    if (!_highlightedIconKeys.containsKey(item.id)) {
+      _highlightedIconKeys[item.id] = GlobalKey();
     }
 
     return Positioned(
@@ -443,10 +477,6 @@ class _MapViewState extends State<MapView> {
                 orElse: () => bloc.listCamera.first, // fallback
               );
 
-              debugPrint(
-                'Updating camera position: ${updatedItem.label} at (${updatedItem.position.dx.toInt()}, ${updatedItem.position.dy.toInt()})',
-              );
-
               // Gọi API update position
               bloc.add(
                 UpdateCameraEmapPositionEvent(
@@ -460,50 +490,67 @@ class _MapViewState extends State<MapView> {
             }
           }
         },
-        child: EmapCameraPortal(
-          item: item,
-          onDelete: () {
-            _onDeleteCameraEmap(item);
-          },
-          highlightChild: Hero(
-            tag: item.id,
-            child: _buildCameraIcon(item, AppColors.blue005AA9),
-          ),
-          child: Hero(
-            tag: item.id,
-            child: _buildCameraIcon(item, AppColors.black),
+        child: IntrinsicWidth(
+          key: _itemKeys[item.id],
+          child: IntrinsicHeight(
+            child: EmapCameraPortal(
+              item: item,
+              onDelete: () {
+                _onDeleteCameraEmap(item);
+              },
+              highlightChild: Hero(
+                tag: '${item.id}_portal',
+                child: _buildCameraIcon(
+                  item,
+                  AppColors.blue005AA9,
+                  iconKey: _highlightedIconKeys[item.id],
+                ),
+              ),
+              child: Hero(
+                tag: item.id,
+                child: _buildCameraIcon(
+                  item,
+                  AppColors.black,
+                  iconKey: _iconKeys[item.id],
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCameraIcon(DragItemModel item, Color backgroundColor) {
+  Widget _buildCameraIcon(
+    DragItemModel item,
+    Color backgroundColor, {
+    Key? iconKey,
+  }) {
     return Material(
       color: Colors.transparent,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Popup
-          IntrinsicWidth(
-            child: Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(100),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
-            ),
-          ),
-          SizedBox(height: 8),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            key: iconKey,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(100),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SvgPicture.asset(AppAssets.icCameraMap),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(3),
               color: backgroundColor,

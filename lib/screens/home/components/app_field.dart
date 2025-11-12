@@ -217,10 +217,7 @@ class _AppFieldState extends State<AppField> {
                     ),
                   ),
                 ),
-                if (widget.trailingButton != null) ...[
-                  const SizedBox(width: 8),
-                  widget.trailingButton!,
-                ],
+                if (widget.trailingButton != null) widget.trailingButton!,
               ],
             ),
             // Custom error message với icon
