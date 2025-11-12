@@ -65,7 +65,7 @@ Future<String?> showResetPasswordDialog(
                               'Khôi phục mật khẩu',
                               style: AppTypography.style(
                                 20,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -148,7 +148,7 @@ Future<String?> showResetPasswordDialog(
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
@@ -156,6 +156,8 @@ Future<String?> showResetPasswordDialog(
                                 style: AppTypography.style(
                                   12,
                                   fontWeight: FontWeight.w500,
+                                  isItalic: true,
+
                                   color: AppColors.grey92929D,
                                 ),
                               ),
