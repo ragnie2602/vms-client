@@ -39,7 +39,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
     if ((pre.mode != cur.mode || pre.camera != cur.camera) && cur.camera != null) {
       context.read<HomeBloc>().add(
         ChangePageInfo(
-          title: "${cur.mode == CameraDetailMode.playback ? 'Playback' : ''} ${cur.camera!.name}",
+          title: "${cur.mode == CameraDetailMode.playback ? 'Xem lại' : ''} ${cur.camera!.name}",
         ),
       );
     }
@@ -128,6 +128,10 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
         context.read<CameraDetailBloc>().add(ChangeVolume(volume));
         context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
         context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
+      },
+      onLostConnection: () {
+        final bloc = context.read<CameraDetailBloc>();
+        if (bloc.state.isRecording) bloc.add(OnRecording(cancel: true));
       },
     );
   }

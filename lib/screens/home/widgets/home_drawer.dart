@@ -126,7 +126,7 @@ class DrawerTile extends StatelessWidget {
       _extra = CameraDetailScreenArgs(
         data: null,
         isPlayback: true,
-        title: 'Playback',
+        title: 'Xem lại',
       );
     }
 

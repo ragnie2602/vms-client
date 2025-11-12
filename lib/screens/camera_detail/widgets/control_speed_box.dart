@@ -27,12 +27,12 @@ class _ControlSpeedBoxState extends State<ControlSpeedBox> {
   late final _menuShowing = ValueNotifier<bool>(false);
 
   late final _map = <double, _SpeedData>{
-    0.5: (label: "0.5", value: 0.5),
+    0.5: (label: "0.5x", value: 0.5),
     1: (label: "Chuẩn", value: 1),
-    2: (label: "2", value: 2),
-    4: (label: "4", value: 4),
-    8: (label: "8", value: 8),
-    16: (label: "16", value: 16),
+    2: (label: "2x", value: 2),
+    4: (label: "4x", value: 4),
+    8: (label: "8x", value: 8),
+    16: (label: "16x", value: 16),
   };
 
   @override
