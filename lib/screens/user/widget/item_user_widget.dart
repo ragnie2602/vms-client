@@ -38,7 +38,9 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeInOut,
         color: _isHovered ? hoverBgColor : Colors.transparent,
-        child: Row(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 15),
+          child: Row(
           children: [
             Expanded(
               flex: 66,
@@ -56,10 +58,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
             Expanded(
               flex: 300,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 10.0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
                   widget.itemUser.account,
                   style: AppTypography.style(
@@ -162,13 +161,8 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                   itemBuilder: (BuildContext context) => [
                     PopupMenuItem<String>(
                       value: 'reset_password',
-                      height: 32,
-                      padding: EdgeInsets.only(
-                        left: 12,
-                        bottom: 8,
-                        right: 16,
-                        top: 8,
-                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -192,13 +186,8 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                     PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                     PopupMenuItem<String>(
                       value: 'edit',
-                      height: 32,
-                      padding: EdgeInsets.only(
-                        left: 12,
-                        bottom: 8,
-                        right: 16,
-                        top: 8,
-                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -222,13 +211,8 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                     PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                     PopupMenuItem<String>(
                       value: 'delete',
-                      height: 32,
-                      padding: EdgeInsets.only(
-                        left: 12,
-                        bottom: 8,
-                        right: 16,
-                        top: 8,
-                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -258,6 +242,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
