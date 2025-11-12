@@ -173,6 +173,12 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
         WindowController.fromWindowId(subWindowId).close();
       }
+
+      // Need to call here because it can be no sub-window to send message to main window
+      if (MultiWindowUtil.hasClosedAll()) {
+        await windowManager.setPreventClose(false);
+        windowManager.close();
+      }
     } else {
       await sendMultiWindowEventUseCase.execute(
         SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
