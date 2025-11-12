@@ -194,6 +194,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
           SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
         );
         output.windowController.show();
+        Future.delayed(const Duration(milliseconds: 200), () {});
       }
     }
   }
