@@ -26,7 +26,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
 
   bool isSigningOut = false;
-  int windowId = 0;
+  int windowId = 0; // businessWindowID
 
   StreamSubscription? _multiWindowEventSubscription;
 
@@ -115,12 +115,14 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     if (event.multiWindowEvent is MWECloseWindow) {
       if (isSigningOut) return;
 
-      final sourceID = (event.multiWindowEvent as MWECloseWindow).windowId;
+      final bSourceID = (event.multiWindowEvent as MWECloseWindow).windowId; // business ID
 
-      if (!isSigningOut) MultiWindowUtil.clearWindowSetting(sourceID);
+      if (!isSigningOut) MultiWindowUtil.clearWindowSetting(bSourceID);
     }
     if (event.multiWindowEvent is MWESignOut) {
       if (MultiWindowUtil.isMainWindow(windowId)) {
+        await MultiWindowUtil.save();
+
         emit(state.copyWith(isSignOut: false)); // Avoid equatable mistake
         emit(state.copyWith(isSignOut: true));
       } else {
@@ -147,7 +149,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) async {
     final rect = await windowManager.getBounds();
     sendMultiWindowEventUseCase.execute(
-      SendMultiWindowEventInput(0, 'change_setting_window', data: {'rect': rect}),
+      SendMultiWindowEventInput(
+        0,
+        'change_setting_window',
+        data: {'bWindowID': windowId, 'rect': rect},
+      ),
     );
   }
 
@@ -155,13 +161,15 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     isSigningOut = true;
 
     if (MultiWindowUtil.isMainWindow(windowId)) {
-      await MultiWindowUtil.windowSettingSweeper();
+      await MultiWindowUtil.save();
 
       for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
         WindowController.fromWindowId(subWindowId).close();
       }
     } else {
-      await sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(0, 'close_window'));
+      await sendMultiWindowEventUseCase.execute(
+        SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
+      );
     }
 
     await windowManager.setPreventClose(false);
@@ -169,22 +177,19 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   }
 
   FutureOr<void> _onReopenSubWindow(ReopenSubWindow event, Emitter<AppState> emit) async {
+    MultiWindowUtil.init();
     isSigningOut = false;
 
     if (MultiWindowUtil.isMainWindow(windowId)) {
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
-      for (var i = 0; i < subWindowCount; i++) {
-        final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
+      for (var i = 1; i <= subWindowCount; i++) {
+        final output = await createNewWindowUseCase.execute(CreateNewWindowInput(windowID: i));
         output.windowController.show();
       }
     }
   }
 
   FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) async {
-    final rect = await windowManager.getBounds();
-    sendMultiWindowEventUseCase.execute(
-      SendMultiWindowEventInput(0, 'change_setting_window', data: {'rect': rect}),
-    );
     emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
   }
 }

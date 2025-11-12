@@ -10,11 +10,16 @@ class SendMultiWindowEventUseCase
     switch (input.methodName) {
       case 'change_setting_window':
         final data = {
+          'bWindowID': input.data?['bWindowID'],
           'left': input.data?['rect']?.left,
           'top': input.data?['rect']?.top,
           'width': input.data?['rect']?.width,
           'height': input.data?['rect']?.height,
         };
+        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
+        break;
+      case 'close_window':
+        final data = {'windowId': input.data?['windowId']};
         DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
         break;
       case 'sign_out':

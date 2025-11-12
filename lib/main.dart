@@ -12,7 +12,6 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
-import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:window_manager/window_manager.dart';
 import 'app_bloc.dart';
 import 'core/app_router.dart';
@@ -25,15 +24,13 @@ Future<int> initialMultiWindowConfig(List<String> args) async {
   await windowManager.ensureInitialized();
 
   if (args.firstOrNull == 'multi_window') {
-    return int.parse(args[1]);
+    return int.parse(args[2]); // businessWindowID
   } else {
     final controller = WindowController.main();
 
-    MultiWindowUtil.getWindowRect(controller.windowId) ??
-        await MultiWindowUtil.saveWindowRect(controller.windowId, Rect.fromLTWH(10, 10, 1200, 675));
     await windowManager.maximize();
 
-    return controller.windowId;
+    return controller.windowId; // Main window ID is always 0
   }
 }
 
@@ -80,14 +77,14 @@ void main(List<String> args) async {
           return event;
         }
       };
-    }, appRunner: () => runApp(MyApp(windowId: windowID)));
+    }, appRunner: () => runApp(MyApp(bWindowID: windowID)));
   });
 }
 
 class MyApp extends StatefulWidget {
-  final int windowId;
+  final int bWindowID; // businessWindowID
 
-  const MyApp({super.key, required this.windowId});
+  const MyApp({super.key, required this.bWindowID});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -110,7 +107,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
     return MultiProvider(
       providers: DependencyInjection.providers,
       child: BlocProvider(
-        create: (context) => (appBloc = context.read<AppBloc>())..add(AppStarted(widget.windowId)),
+        create: (context) => (appBloc = context.read<AppBloc>())..add(AppStarted(widget.bWindowID)),
         child: BlocSelector<AppBloc, AppState, ThemeMode>(
           selector: (state) => state.themeMode,
           builder: (context, theme) => ToastificationWrapper(
@@ -134,16 +131,18 @@ class _MyAppState extends State<MyApp> with WindowListener {
   @override
   void onWindowMoved() {
     _changeSettingWindowTimer?.cancel();
-    _changeSettingWindowTimer = Timer(const Duration(milliseconds: 300), () {
-      appBloc?.add(ChangeSettingWindow());
-    });
+    _changeSettingWindowTimer = Timer(
+      const Duration(milliseconds: 300),
+      () => appBloc?.add(ChangeSettingWindow()),
+    );
   }
 
   @override
   void onWindowResized() {
     _changeSettingWindowTimer?.cancel();
-    _changeSettingWindowTimer = Timer(const Duration(milliseconds: 300), () {
-      appBloc?.add(ChangeSettingWindow());
-    });
+    _changeSettingWindowTimer = Timer(
+      const Duration(milliseconds: 300),
+      () => appBloc?.add(ChangeSettingWindow()),
+    );
   }
 }

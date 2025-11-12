@@ -18,7 +18,7 @@ class SubscribeMultiWindowEventUseCase
       switch (call.method) {
         case 'change_setting_window':
           MultiWindowUtil.saveWindowRect(
-            sourceId,
+            call.arguments['bWindowID'],
             Rect.fromLTWH(
               call.arguments['left'],
               call.arguments['top'],
