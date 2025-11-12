@@ -18,7 +18,7 @@ class MyProfile {
     required this.uid,
     required this.sessionId,
     required this.email,
-    required this.tel
+    required this.tel,
   });
 
   MyProfile copyWith({
@@ -44,4 +44,14 @@ class MyProfile {
       tel: tel ?? this.tel,
     );
   }
+
+  String displayNameLimited({int maxChars = 50, String ellipsis = '...'}) {
+    if (maxChars <= 0) return '';
+    if (displayName.length <= maxChars) return displayName;
+    final contentMax = maxChars - ellipsis.length;
+    if (contentMax <= 0) return displayName.substring(0, maxChars);
+    return displayName.substring(0, contentMax) + ellipsis;
+  }
+
+  String get displayNamePreview => displayNameLimited(maxChars: 50);
 }
