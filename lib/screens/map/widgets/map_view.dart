@@ -24,6 +24,7 @@ class MapView extends StatefulWidget {
 }
 
 class _MapViewState extends State<MapView> {
+  static const double _cameraIconDiameter = 48.0;
   OverlayEntry? _overlayEntry;
   final GlobalKey _imageKey = GlobalKey();
   // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
@@ -132,7 +133,7 @@ class _MapViewState extends State<MapView> {
 
     // Lấy kích thước thực tế của item từ RenderBox
     final itemKey = _itemKeys[itemId];
-    Size itemSize = Size(100, 100); // Kích thước mặc định
+    Size itemSize = const Size(100, 100); // Kích thước mặc định
     if (itemKey?.currentContext != null) {
       final RenderBox? itemBox =
           itemKey!.currentContext!.findRenderObject() as RenderBox?;
@@ -141,14 +142,19 @@ class _MapViewState extends State<MapView> {
       }
     }
 
-    // Giới hạn vị trí trong phạm vi của ảnh
+    // Kích thước icon cố định
+    final Size iconSize = const Size(_cameraIconDiameter, _cameraIconDiameter);
+
+    // Giới hạn vị trí trong phạm vi của ảnh, chỉ xét icon
+    final iconOffsetX = (itemSize.width - iconSize.width) / 2;
+
     final clampedX = newPosition.dx.clamp(
-      0.0,
-      imageSize.width - itemSize.width,
+      -iconOffsetX,
+      imageSize.width - iconSize.width - iconOffsetX,
     );
     final clampedY = newPosition.dy.clamp(
       0.0,
-      imageSize.height - itemSize.height,
+      imageSize.height - iconSize.height,
     );
 
     context.read<EmapBloc>().add(
@@ -270,6 +276,7 @@ class _MapViewState extends State<MapView> {
           if (state.emapSelected?.backgroundPath != null)
             Expanded(
               child: Stack(
+                fit: StackFit.expand,
                 children: [
                   // Wrap Image với Container có key để lấy kích thước chính xác
                   LayoutBuilder(
@@ -390,7 +397,7 @@ class _MapViewState extends State<MapView> {
       left: item.position.dx,
       top: item.position.dy,
       child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+        // Để mặc định theo kích thước của child, tránh ảnh hưởng layout
         onPanStart: (details) {
           // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
           final RenderBox? imageBox =
@@ -448,12 +455,13 @@ class _MapViewState extends State<MapView> {
           }
         },
         child: EmapCameraPortal(
+          key: _itemKeys[item.id],
           item: item,
           onDelete: () {
             _onDeleteCameraEmap(item);
           },
           highlightChild: Hero(
-            tag: item.id,
+            tag: '${item.id}_portal',
             child: _buildCameraIcon(item, AppColors.blue005AA9),
           ),
           child: Hero(
@@ -469,28 +477,29 @@ class _MapViewState extends State<MapView> {
     return Material(
       color: Colors.transparent,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Popup
-          IntrinsicWidth(
-            child: Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(100),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 4,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Center(child: SvgPicture.asset(AppAssets.icCameraMap)),
-            ),
-          ),
-          SizedBox(height: 8),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            width: _cameraIconDiameter,
+            height: _cameraIconDiameter,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(100),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SvgPicture.asset(AppAssets.icCameraMap),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(3),
               color: backgroundColor,
