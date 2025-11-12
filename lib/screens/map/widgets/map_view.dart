@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -24,13 +25,16 @@ class MapView extends StatefulWidget {
 }
 
 class _MapViewState extends State<MapView> {
-  static const double _cameraIconDiameter = 48.0;
   OverlayEntry? _overlayEntry;
   final GlobalKey _imageKey = GlobalKey();
   // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
   final Map<String, Offset> _dragOffsets = {};
   // Lưu GlobalKey cho mỗi item để lấy kích thước thực tế
   final Map<String, GlobalKey> _itemKeys = {};
+  final Map<String, GlobalKey> _iconKeys = {};
+  final Map<String, GlobalKey> _highlightedIconKeys = {};
+
+  List<int>? _currentEmapId;
 
   @override
   void dispose() {
@@ -142,8 +146,16 @@ class _MapViewState extends State<MapView> {
       }
     }
 
-    // Kích thước icon cố định
-    final Size iconSize = const Size(_cameraIconDiameter, _cameraIconDiameter);
+    // Lấy kích thước icon
+    final iconKey = _iconKeys[itemId];
+    Size iconSize = const Size(40, 40); // Kích thước mặc định, fallback
+    if (iconKey?.currentContext != null) {
+      final RenderBox? iconBox =
+          iconKey!.currentContext!.findRenderObject() as RenderBox?;
+      if (iconBox != null) {
+        iconSize = iconBox.size;
+      }
+    }
 
     // Giới hạn vị trí trong phạm vi của ảnh, chỉ xét icon
     final iconOffsetX = (itemSize.width - iconSize.width) / 2;
@@ -276,7 +288,6 @@ class _MapViewState extends State<MapView> {
           if (state.emapSelected?.backgroundPath != null)
             Expanded(
               child: Stack(
-                fit: StackFit.expand,
                 children: [
                   // Wrap Image với Container có key để lấy kích thước chính xác
                   LayoutBuilder(
@@ -381,6 +392,16 @@ class _MapViewState extends State<MapView> {
           return true;
         },
         builder: (context, state) {
+          if (state is EmapSuccessState) {
+            final newEmapId = state.emapSelected?.emapId;
+            if (!listEquals(newEmapId, _currentEmapId)) {
+              _itemKeys.clear();
+              _iconKeys.clear();
+              _highlightedIconKeys.clear();
+              _dragOffsets.clear();
+            }
+            _currentEmapId = newEmapId;
+          }
           return _buildContent(context, state);
         },
       ),
@@ -392,12 +413,18 @@ class _MapViewState extends State<MapView> {
     if (!_itemKeys.containsKey(item.id)) {
       _itemKeys[item.id] = GlobalKey();
     }
+    if (!_iconKeys.containsKey(item.id)) {
+      _iconKeys[item.id] = GlobalKey();
+    }
+    if (!_highlightedIconKeys.containsKey(item.id)) {
+      _highlightedIconKeys[item.id] = GlobalKey();
+    }
 
     return Positioned(
       left: item.position.dx,
       top: item.position.dy,
       child: GestureDetector(
-        // Để mặc định theo kích thước của child, tránh ảnh hưởng layout
+        behavior: HitTestBehavior.opaque,
         onPanStart: (details) {
           // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
           final RenderBox? imageBox =
@@ -437,10 +464,6 @@ class _MapViewState extends State<MapView> {
                 orElse: () => bloc.listCamera.first, // fallback
               );
 
-              debugPrint(
-                'Updating camera position: ${updatedItem.label} at (${updatedItem.position.dx.toInt()}, ${updatedItem.position.dy.toInt()})',
-              );
-
               // Gọi API update position
               bloc.add(
                 UpdateCameraEmapPositionEvent(
@@ -454,26 +477,42 @@ class _MapViewState extends State<MapView> {
             }
           }
         },
-        child: EmapCameraPortal(
+        child: IntrinsicWidth(
           key: _itemKeys[item.id],
-          item: item,
-          onDelete: () {
-            _onDeleteCameraEmap(item);
-          },
-          highlightChild: Hero(
-            tag: '${item.id}_portal',
-            child: _buildCameraIcon(item, AppColors.blue005AA9),
-          ),
-          child: Hero(
-            tag: item.id,
-            child: _buildCameraIcon(item, AppColors.black),
+          child: IntrinsicHeight(
+            child: EmapCameraPortal(
+              item: item,
+              onDelete: () {
+                _onDeleteCameraEmap(item);
+              },
+              highlightChild: Hero(
+                tag: '${item.id}_portal',
+                child: _buildCameraIcon(
+                  item,
+                  AppColors.blue005AA9,
+                  iconKey: _highlightedIconKeys[item.id],
+                ),
+              ),
+              child: Hero(
+                tag: item.id,
+                child: _buildCameraIcon(
+                  item,
+                  AppColors.black,
+                  iconKey: _iconKeys[item.id],
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCameraIcon(DragItemModel item, Color backgroundColor) {
+  Widget _buildCameraIcon(
+    DragItemModel item,
+    Color backgroundColor, {
+    Key? iconKey,
+  }) {
     return Material(
       color: Colors.transparent,
       child: Column(
@@ -481,8 +520,7 @@ class _MapViewState extends State<MapView> {
         children: [
           // Popup
           Container(
-            width: _cameraIconDiameter,
-            height: _cameraIconDiameter,
+            key: iconKey,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: backgroundColor,

@@ -225,7 +225,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
 
         // Tạo DragItemModel từ response
         final newDragItem = DragItemModel(
-          id: onSuccess.cameraEmapInfoId.join('_'),
+          id: onSuccess.cameraId.toString(),
           position: Offset(
             onSuccess.xCoordinate.toDouble(),
             onSuccess.yCoordinate.toDouble(),
@@ -353,7 +353,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
               : null;
 
           return DragItemModel(
-            id: e.cameraEmapInfoId.join('_'),
+            id: e.cameraId.toString(),
             position: Offset(
               e.xCoordinate.toDouble(),
               e.yCoordinate.toDouble(),
