@@ -16,11 +16,6 @@ class PlaybackScreen extends StatefulWidget {
 
 class _PlaybackScreenState extends State<PlaybackScreen> with StateBuilderMixin {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(20),

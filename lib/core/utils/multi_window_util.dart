@@ -7,8 +7,8 @@ import 'package:vms_flutter_client/core/constants/keys.dart';
 class MultiWindowUtil {
   static final List<Rect?> _windowBounds = [];
 
-  static Future<void> clearWindowSetting(int windowId) async {
-    _windowBounds[windowId] = null;
+  static void clearWindowSetting(int windowId) {
+    if (windowId < _windowBounds.length) _windowBounds[windowId] = null;
   }
 
   static int getSubWindowCount() => _windowBounds.length - 1;
@@ -28,6 +28,8 @@ class MultiWindowUtil {
     _windowBounds.add(Rect.fromLTWH(10, 10, 1200, 675));
     return (_windowBounds.length - 1, Rect.fromLTWH(10, 10, 1200, 675));
   }
+
+  static bool hasClosedAll() => _windowBounds.every((e) => e == null);
 
   static void init() {
     final _frameKey =
