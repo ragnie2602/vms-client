@@ -38,81 +38,80 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeInOut,
         color: _isHovered ? hoverBgColor : Colors.transparent,
-        child: Row(
-          children: [
-            Expanded(
-              flex: 66,
-              child: Center(
-                child: Text(
-                  '${widget.index}',
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.black,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 66,
+                child: Center(
+                  child: Text(
+                    '${widget.index}',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.black,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              flex: 300,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 10.0,
-                ),
-                child: Text(
-                  widget.itemUser.account,
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.black171725,
+              Expanded(
+                flex: 300,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    widget.itemUser.account,
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.black171725,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              flex: 300,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  widget.itemUser.fullName,
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.black171725,
+              Expanded(
+                flex: 300,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    widget.itemUser.fullName,
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.black171725,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              flex: 250,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  widget.itemUser.emailAddress,
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.black171725,
+              Expanded(
+                flex: 250,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    widget.itemUser.emailAddress,
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.black171725,
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            Expanded(
-              flex: 150,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  widget.itemUser.telNumber,
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.black171725,
+              Expanded(
+                flex: 150,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    widget.itemUser.telNumber,
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.black171725,
+                    ),
                   ),
                 ),
               ),
-            ),
 
             Expanded(
               flex: 150,
@@ -135,13 +134,14 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
               flex: 112,
               child: Center(
                 child: PopupMenuButton<String>(
+                  tooltip: '',
                   icon: SvgPicture.asset(AppAssets.icAction),
                   padding: EdgeInsets.zero,
                   splashRadius: 20,
                   position: PopupMenuPosition.under,
                   offset: Offset(0, 8),
                   elevation: 3,
-                  shadowColor: Color(0x1A000000),
+                  shadowColor: AppColors.black,
                   surfaceTintColor: Colors.transparent,
                   color: Colors.white,
                   menuPadding: EdgeInsets.zero,
@@ -162,12 +162,10 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                     PopupMenuItem<String>(
                       value: 'reset_password',
                       height: 32,
-                      padding: EdgeInsets.only(
-                        left: 12,
-                        bottom: 8,
-                        right: 16,
-                        top: 8,
-                      ),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -192,12 +190,10 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                     PopupMenuItem<String>(
                       value: 'edit',
                       height: 32,
-                      padding: EdgeInsets.only(
-                        left: 12,
-                        bottom: 8,
-                        right: 16,
-                        top: 8,
-                      ),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -222,12 +218,10 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                     PopupMenuItem<String>(
                       value: 'delete',
                       height: 32,
-                      padding: EdgeInsets.only(
-                        left: 12,
-                        bottom: 8,
-                        right: 16,
-                        top: 8,
-                      ),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

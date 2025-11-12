@@ -114,6 +114,7 @@ class ItemCameraWidget extends StatelessWidget {
       flex: 190,
       child: Center(
         child: PopupMenuButton<String>(
+          tooltip: '',
           icon: SvgPicture.asset(AppAssets.icAction),
           padding: EdgeInsets.zero,
           splashRadius: 20,
@@ -124,7 +125,7 @@ class ItemCameraWidget extends StatelessWidget {
           menuPadding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           elevation: 3,
-          shadowColor: Color(0x1A000000),
+          shadowColor: Colors.black,
           surfaceTintColor: Colors.transparent,
           color: Colors.white,
         ),

@@ -348,6 +348,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
                                             13,
                                             fontWeight: FontWeight.w400,
                                             color: AppColors.grey64748B,
+                                            lineHeight: 1.5,
                                           ),
                                         ),
                                       ),

@@ -41,10 +41,11 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 add_dependencies(${BINARY_NAME} flutter_assemble)
 
 # ============================================================
-# Auto-copy ffmpeg.exe to output folder after build
+# Auto-copy ffmpeg.exe and ffmpeg_watchdog.exe after build
 # ============================================================
 
 set(FFMPEG_SOURCE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../ffmpeg/ffmpeg.exe")
+set(WATCHDOG_SOURCE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../ffmpeg/ffmpeg_watchdog.exe")
 
 if(NOT EXISTS ${FFMPEG_SOURCE_PATH})
     message(FATAL_ERROR
@@ -57,12 +58,18 @@ endif()
 add_custom_command(
     TARGET ${BINARY_NAME}
     POST_BUILD
+
+    # FFmpeg
     COMMAND ${CMAKE_COMMAND} -E echo "📦 Copying ffmpeg.exe to: $<TARGET_FILE_DIR:${BINARY_NAME}>"
-    COMMAND ${CMAKE_COMMAND} -E copy
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${FFMPEG_SOURCE_PATH}"
             "$<TARGET_FILE_DIR:${BINARY_NAME}>/ffmpeg.exe"
-    COMMENT "📌 Attaching FFmpeg after build"
-)
 
-message(STATUS "✅ attach_ffmpeg.cmake loaded")
-message(STATUS "-----------------------------------------------")
+    # Watchdog
+    COMMAND ${CMAKE_COMMAND} -E echo "📦 Copying ffmpeg_watchdog.exe to: $<TARGET_FILE_DIR:${BINARY_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${WATCHDOG_SOURCE_PATH}"
+            "$<TARGET_FILE_DIR:${BINARY_NAME}>/ffmpeg_watchdog.exe"
+
+    COMMENT "📌 Attaching FFmpeg + Watchdog after build"
+)

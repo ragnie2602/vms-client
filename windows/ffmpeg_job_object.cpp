@@ -1,215 +1,269 @@
 #include "ffmpeg_job_object.h"
-
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
 
 #include <windows.h>
 #include <atomic>
-#include <chrono>
-#include <iomanip>
+#include <filesystem>
 #include <iostream>
-#include <memory>
 #include <mutex>
-#include <sstream>
 #include <string>
+#include <thread>
 
 namespace {
 
-std::string Now() {
-    using namespace std::chrono;
-    auto t = system_clock::now();
-    auto tt = system_clock::to_time_t(t);
-
-    std::tm tm{};
-    localtime_s(&tm, &tt);
-
-    char buf[32];
-    std::strftime(buf, sizeof(buf), "%H:%M:%S", &tm);
-    return buf;
-}
+// ======================================================
+// Logging (console only)
+// ======================================================
+std::mutex g_logMutex;
 
 void Log(const std::string& level, const std::string& msg) {
-    std::stringstream ss;
-    ss << "[FFJOB] [" << level << "] " << msg;
+    std::lock_guard<std::mutex> lk(g_logMutex);
 
-    OutputDebugStringA((ss.str() + "\n").c_str());
-    std::cout << ss.str() << std::endl;
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    char buf[512];
+    int len = snprintf(buf, sizeof(buf), "[%02d:%02d:%02d][%s] %s\n",
+                       st.wHour, st.wMinute, st.wSecond,
+                       level.c_str(), msg.c_str());
+    if (len <= 0) return;
+
+    OutputDebugStringA(buf);
+    std::cout << buf;
 }
 
-void LOG_INFO(const std::string& msg)  { Log("INFO",  msg); }
-void LOG_WARN(const std::string& msg)  { Log("WARN",  msg); }
-void LOG_ERROR(const std::string& msg) { Log("ERROR", msg); }
+#define LOGI(x) Log("INFO", x)
+#define LOGW(x) Log("WARN", x)
+#define LOGE(x) Log("ERR",  x)
 
-// ===================================================================
-//  GLOBALS
-// ===================================================================
-HANDLE g_job = NULL;
-std::mutex g_mu;
-std::atomic<bool> g_initialized{false};
+// ======================================================
+// Globals
+// ======================================================
+HANDLE g_appJob = NULL;
+HANDLE g_ffmpegJob = NULL;
+std::mutex g_mutex;
+std::atomic<int> g_ffmpegPid{0};
+std::wstring g_tempAudio, g_tempVideo, g_outputFile, g_logPath;
 
-// ===================================================================
-//  HELPERS
-// ===================================================================
+// ======================================================
+// JobObject Helpers
+// ======================================================
+bool CreateAppJobIfNeeded() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    if (g_appJob) return true;
 
-bool CreateJobIfNeededLocked() {
-    if (g_job != NULL) {
-        LOG_INFO("JobObject existed, handle=" + std::to_string((uint64_t)g_job));
+    g_appJob = CreateJobObjectW(nullptr, nullptr);
+    if (!g_appJob) return false;
+
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION info{};
+    info.BasicLimitInformation.LimitFlags =
+        JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE |
+        JOB_OBJECT_LIMIT_BREAKAWAY_OK |
+        JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK;
+    SetInformationJobObject(g_appJob, JobObjectExtendedLimitInformation, &info, sizeof(info));
+    LOGI("Created AppJob (KILL_ON_JOB_CLOSE)");
+    return true;
+}
+
+bool CreateFFmpegJobIfNeeded() {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    if (g_ffmpegJob) return true;
+
+    g_ffmpegJob = CreateJobObjectW(nullptr, nullptr);
+    if (!g_ffmpegJob) return false;
+
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION info{};
+    info.BasicLimitInformation.LimitFlags = 0;
+    SetInformationJobObject(g_ffmpegJob, JobObjectExtendedLimitInformation, &info, sizeof(info));
+    LOGI("Created FFmpegJob (no auto-kill)");
+    return true;
+}
+
+void AssignCurrentProcessToAppJob() {
+    CreateAppJobIfNeeded();
+    HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, GetCurrentProcessId());
+    if (h) {
+        AssignProcessToJobObject(g_appJob, h);
+        CloseHandle(h);
+        LOGI("Assigned Flutter process to AppJob");
+    }
+}
+
+bool AssignPidToAppJob(int pid) {
+    CreateAppJobIfNeeded();
+    HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, (DWORD)pid);
+    if (!hProc) {
+        LOGE("AssignPidToAppJob: OpenProcess failed for PID=" + std::to_string(pid) +
+             " err=" + std::to_string(GetLastError()));
+        return false;
+    }
+
+    if (!AssignProcessToJobObject(g_appJob, hProc)) {
+        LOGE("AssignPidToAppJob: failed to assign PID=" + std::to_string(pid) +
+             " to AppJob, err=" + std::to_string(GetLastError()));
+        CloseHandle(hProc);
+        return false;
+    }
+
+    CloseHandle(hProc);
+    LOGI("Assigned PID=" + std::to_string(pid) + " to AppJob (auto-kill on close)");
+    return true;
+}
+
+bool AssignPidToFFmpegJob(int pid) {
+    CreateFFmpegJobIfNeeded();
+    HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, (DWORD)pid);
+    if (!h) {
+        LOGE("OpenProcess failed for FFmpeg PID=" + std::to_string(pid));
+        return false;
+    }
+    if (!AssignProcessToJobObject(g_ffmpegJob, h)) {
+        LOGW("AssignProcessToJobObject failed for FFmpegJob (already in parent job?)");
+        CloseHandle(h);
+        return false;
+    }
+    CloseHandle(h);
+    LOGI("Assigned FFmpeg PID to FFmpegJob");
+    return true;
+}
+
+// ======================================================
+// Watchdog Launcher
+// ======================================================
+bool LaunchFFmpegWatchdog(DWORD flutterPid, DWORD ffmpegPid,
+                          const std::wstring& audio, const std::wstring& video,
+                          const std::wstring& output, const std::wstring& logPath) {
+    wchar_t exePath[MAX_PATH];
+    GetModuleFileNameW(NULL, exePath, MAX_PATH);
+    std::filesystem::path base(exePath);
+    auto watchdog = base.parent_path() / "ffmpeg_watchdog.exe";
+
+    if (!std::filesystem::exists(watchdog)) {
+        LOGW("ffmpeg_watchdog.exe not found");
+        return false;
+    }
+
+    std::wstring cmd = L"\"" + watchdog.wstring() + L"\" " +
+                       std::to_wstring(flutterPid) + L" " +
+                       std::to_wstring(ffmpegPid) + L" \"" +
+                       audio + L"\" \"" + video + L"\" \"" + output + L"\"";
+
+    if (!logPath.empty()) {
+        cmd += L" \"" + logPath + L"\"";
+    }
+
+    STARTUPINFOW si{};
+    PROCESS_INFORMATION pi{};
+    si.cb = sizeof(si);
+
+    DWORD flags = CREATE_NO_WINDOW | DETACHED_PROCESS | CREATE_BREAKAWAY_FROM_JOB;
+    std::wstring mutableCmd = cmd;
+
+    if (CreateProcessW(nullptr, &mutableCmd[0], nullptr, nullptr, FALSE, flags,
+                       nullptr, nullptr, &si, &pi)) {
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        LOGI("Spawned ffmpeg_watchdog.exe detached successfully");
         return true;
-    }
-
-    g_job = CreateJobObjectW(nullptr, nullptr);
-    if (!g_job) {
-        LOG_ERROR("CreateJobObjectW FAILED");
+    } else {
+        LOGE("Failed to spawn ffmpeg_watchdog.exe, err=" + std::to_string(GetLastError()));
         return false;
     }
-
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION info;
-    ZeroMemory(&info, sizeof(info));
-    info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-
-    if (!SetInformationJobObject(
-            g_job,
-            JobObjectExtendedLimitInformation,
-            &info,
-            sizeof(info))) {
-        LOG_ERROR("SetInformationJobObject FAILED");
-        CloseHandle(g_job);
-        g_job = NULL;
-        return false;
-    }
-
-    LOG_INFO("✅ Created JobObject (KILL_ON_JOB_CLOSE) with handle: " +
-         std::to_string((uint64_t)g_job));
-    return true;
 }
 
-bool AssignPidToJob(int pid) {
-    std::lock_guard<std::mutex> lk(g_mu);
+// ======================================================
+// Entry Binding
+// ======================================================
+void BindPidAndWatcher(int ffmpegPid,
+                       const std::wstring& audio,
+                       const std::wstring& video,
+                       const std::wstring& output,
+                       const std::wstring& logPath) {
+    g_ffmpegPid.store(ffmpegPid);
+    g_tempAudio = audio;
+    g_tempVideo = video;
+    g_outputFile = output;
+    g_logPath = logPath;
 
-    if (!g_initialized.load()) {
-        LOG_WARN("bindPid called before initJob()");
-        return false;
-    }
+    AssignPidToFFmpegJob(ffmpegPid);
 
-    if (g_job == NULL) {
-        if (!CreateJobIfNeededLocked()) return false;
-    }
-
-    DWORD access =
-        PROCESS_TERMINATE |
-        PROCESS_SET_QUOTA |
-        PROCESS_QUERY_INFORMATION |
-        SYNCHRONIZE;
-
-    HANDLE proc = OpenProcess(access, FALSE, (DWORD)pid);
-    if (!proc) {
-        LOG_ERROR("OpenProcess FAILED for pid=" + std::to_string(pid));
-        return false;
-    }
-
-    if (!AssignProcessToJobObject(g_job, proc)) {
-        LOG_ERROR("AssignProcessToJobObject FAILED for pid=" + std::to_string(pid));
-        CloseHandle(proc);
-        return false;
-    }
-
-    CloseHandle(proc);
-    LOG_INFO("✅ Assigned pid=" + std::to_string(pid) + " into JobObject");
-    return true;
+    DWORD flutterPid = GetCurrentProcessId();
+    LaunchFFmpegWatchdog(flutterPid, ffmpegPid, audio, video, output, logPath);
 }
 
 } // namespace
 
-// ===================================================================
-//  PUBLIC API
-// ===================================================================
+// ======================================================
+// Flutter Channel Registration
+// ======================================================
 namespace ffjob {
 
-void CloseJobObject() {
-    std::lock_guard<std::mutex> lk(g_mu);
-
-    if (g_job) {
-        LOG_INFO("CloseJobObject(), handle=" + std::to_string((uint64_t)g_job));
-        CloseHandle(g_job);
-        g_job = NULL;
-    }
-
-    g_initialized.store(false);
-    LOG_INFO("JobObject closed.");
-}
-
 void RegisterFFmpegJobChannel(flutter::FlutterEngine* engine) {
+    CreateAppJobIfNeeded();
+    AssignCurrentProcessToAppJob();
+
     static std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel;
-
     channel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-        engine->messenger(),
-        "ffmpeg_job",
-        &flutter::StandardMethodCodec::GetInstance());
+        engine->messenger(), "ffmpeg_job", &flutter::StandardMethodCodec::GetInstance());
 
-    channel->SetMethodCallHandler(
-        [](const flutter::MethodCall<flutter::EncodableValue>& call,
-           std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result)
-    {
-        const std::string method = call.method_name();
-
-        if (method == "initJob") {
-            std::lock_guard<std::mutex> lk(g_mu);
-
-            if (!g_initialized.load()) {
-                if (!CreateJobIfNeededLocked()) {
-                    LOG_ERROR("initJob: CreateJobObject failed");
-                    result->Error("job_create_failed", "CreateJobObject failed");
-                    return;
-                }
-                g_initialized.store(true);
-            }
-
-            result->Success(flutter::EncodableValue(true));
-            return;
-        }
-
-        if (method == "bindPid") {
+    channel->SetMethodCallHandler([](const flutter::MethodCall<flutter::EncodableValue>& call,
+                                     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+        if (call.method_name() == "bindPid") {
             const auto* args = std::get_if<flutter::EncodableMap>(call.arguments());
             if (!args) {
-                LOG_ERROR("bindPid: no arguments or not a map");
-                result->Error("bad_args", "Arguments must be a Map");
+                result->Error("bad_args", "Expect map args");
                 return;
             }
 
-            auto it = args->find(flutter::EncodableValue("pid"));
-            if (it == args->end()) {
-                LOG_ERROR("bindPid: missing pid");
-                result->Error("bad_args", "Missing pid");
-                return;
-            }
+            auto getStr = [&](const char* key) -> std::string {
+                auto it = args->find(flutter::EncodableValue(key));
+                if (it == args->end()) return {};
+                if (auto s = std::get_if<std::string>(&it->second)) return *s;
+                return {};
+            };
 
             int pid = 0;
-            if (std::holds_alternative<int32_t>(it->second)) {
-                pid = (int)std::get<int32_t>(it->second);
-            } else if (std::holds_alternative<int64_t>(it->second)) {
-                pid = (int)std::get<int64_t>(it->second);
-            } else {
-                LOG_ERROR("bindPid: pid invalid type");
-                result->Error("bad_args", "pid must be int");
+            auto itPid = args->find(flutter::EncodableValue("pid"));
+            if (itPid != args->end()) {
+                if (std::holds_alternative<int32_t>(itPid->second))
+                    pid = (int)std::get<int32_t>(itPid->second);
+                else if (std::holds_alternative<int64_t>(itPid->second))
+                    pid = (int)std::get<int64_t>(itPid->second);
+            }
+
+            std::string a = getStr("temp_audio");
+            std::string v = getStr("temp_video");
+            std::string o = getStr("output");
+            std::string l = getStr("log_path");
+
+            // 🟢 Case 1: chỉ truyền pid → gán vào AppJob
+            if (pid > 0 && (a.empty() || v.empty() || o.empty())) {
+                if (AssignPidToAppJob(pid))
+                    result->Success(flutter::EncodableValue(true));
+                else
+                    result->Error("assign_fail", "Failed to assign PID to AppJob");
                 return;
             }
 
-            bool ok = AssignPidToJob(pid);
-            result->Success(flutter::EncodableValue(ok));
-            return;
-        }
+            if (pid <= 0 || a.empty() || v.empty() || o.empty()) {
+                result->Error("bad_args", "Missing pid/temp_audio/temp_video/output");
+                return;
+            }
 
-        if (method == "closeJob") {
-            CloseJobObject();
+            BindPidAndWatcher(pid,
+                              std::wstring(a.begin(), a.end()),
+                              std::wstring(v.begin(), v.end()),
+                              std::wstring(o.begin(), o.end()),
+                              std::wstring(l.begin(), l.end()));
+
+            LOGI("Bound FFmpeg PID and launched ffmpeg_watchdog");
             result->Success(flutter::EncodableValue(true));
             return;
         }
-
-        LOG_WARN("Method not implemented: " + method);
         result->NotImplemented();
     });
 
-    LOG_INFO("✅ MethodChannel ffmpeg_job registered successfully");
+    LOGI("Registered ffmpeg_job channel");
 }
 
 } // namespace ffjob
