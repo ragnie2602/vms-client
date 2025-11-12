@@ -281,6 +281,7 @@ class _ListMapViewState extends State<ListMapView> {
                                     ),
                                   ),
                                   PopupMenuButton<ItemMapAction>(
+                                    tooltip: '',
                                     padding: EdgeInsets.zero,
                                     splashRadius: 20,
                                     menuPadding: EdgeInsets.zero,

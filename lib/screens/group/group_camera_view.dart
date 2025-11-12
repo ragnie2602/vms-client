@@ -311,6 +311,7 @@ class _GroupCameraViewState extends State<GroupCameraView> {
                       actionBuilder: widget.enableNodeAction == true
                           ? (node) {
                               return PopupMenuButton<ItemGroupAction>(
+                                tooltip: '',
                                 key: ValueKey(node.data?.groupId),
                                 padding: EdgeInsets.zero,
                                 splashRadius: 20,
