@@ -34,7 +34,10 @@ class SocketApiClient extends BaseApiClient {
     Logger.log(
       "Connection state: ${_state.name.capitalizeFirstLetter}",
       tag: 'SOCKET',
-      writeLog: true,
+      writeLog:
+          value == SocketConnectionState.reconnecting ||
+          value == SocketConnectionState.reauthenticating ||
+          value == SocketConnectionState.unauthenticated,
     );
   }
 
