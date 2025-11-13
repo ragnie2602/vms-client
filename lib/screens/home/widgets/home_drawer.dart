@@ -108,7 +108,12 @@ class DrawerTile extends StatelessWidget {
 
     if (tab.route == Routes.playback) {
       _route = Routes.cameraDetail;
-      _extra = CameraDetailScreenArgs(data: null, isPlayback: true, title: 'Playback');
+      _extra = CameraDetailScreenArgs(
+        data: null,
+        isPlayback: true,
+        title: 'Playback',
+        key: UniqueKey(),
+      );
     }
 
     context.read<HomeBloc>().add(ChangeTab(tab, route: _route, extra: _extra));

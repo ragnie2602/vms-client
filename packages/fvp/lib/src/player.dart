@@ -165,7 +165,7 @@ class Player {
   }
 
   /// Release resources
-  Future<void> dispose({bool synchronized = true}) async {
+  Future<void> dispose({bool synchronized = true, Duration? delay}) async {
     Future<void> fn() async {
       if (_isDisposed) return;
       _isDisposed = true;
@@ -195,6 +195,8 @@ class Player {
       calloc.free(_pp);
       _pp = nullptr;
       textureId.dispose();
+
+      if (delay != null) await Future.delayed(delay);
     }
 
     if (synchronized) {

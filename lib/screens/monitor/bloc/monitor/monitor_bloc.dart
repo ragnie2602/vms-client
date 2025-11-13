@@ -26,6 +26,8 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   final ICameraRepository cameraRepository;
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
+    final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
+
     emit(MonitorLoading());
 
     (await cameraRepository.getAllCamera()).fold(
@@ -36,7 +38,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         emit(
           MonitorSuccess(
             cameras: cameras,
-            mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
+            mode: lastState?.mode ?? ViewMode.v2x2 ,
           ),
         );
       },

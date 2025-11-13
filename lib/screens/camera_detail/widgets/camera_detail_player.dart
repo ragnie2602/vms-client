@@ -207,7 +207,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
       if (position != null) await _waitForBufferingAndSeek(position, timeout: 30);
     } else {
       await _player.open(Media(widget.source));
-      await _player.setAudioTrack(AudioTrack.no());
+      // await _player.setAudioTrack(AudioTrack.no());
       // await _audioPlayer.open(Media(widget.source));
       // await _audioPlayer.setVideoTrack(VideoTrack.no());
     }

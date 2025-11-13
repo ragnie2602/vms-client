@@ -73,6 +73,7 @@ class CameraPlayerState extends State<CameraPlayer> {
     TaskPool.instance.add(() async {
       await _initPlayer();
       await _onConnecting();
+      await Future.delayed(const Duration(milliseconds: 100));
     });
   }
 
@@ -107,7 +108,7 @@ class CameraPlayerState extends State<CameraPlayer> {
 
   Future<void> _tryDisposePlayer() async {
     try {
-      await _player.dispose();
+      await _player.dispose(delay: const Duration(milliseconds: 100));
     } catch (_) {}
   }
 
