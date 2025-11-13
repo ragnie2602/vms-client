@@ -28,6 +28,12 @@ class _MonitorActionsState extends State<MonitorActions> {
   final ValueNotifier<int?> _leftPanelIndex = ValueNotifier(null);
 
   @override
+  void dispose() {
+    _leftPanelIndex.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,

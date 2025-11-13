@@ -83,6 +83,8 @@ class CameraPlayerState extends State<CameraPlayer> {
     _timer?.cancel();
     _debounce?.cancel();
     _debounceUpdateTexture?.cancel();
+    _status.dispose();
+    _state.dispose();
     super.dispose();
   }
 

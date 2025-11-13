@@ -87,7 +87,10 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
 
   @override
   void dispose() {
+    _centralDate.dispose();
+    _time.dispose();
     _debounce?.cancel();
+    _overlayEntry?.remove();
     super.dispose();
   }
 
