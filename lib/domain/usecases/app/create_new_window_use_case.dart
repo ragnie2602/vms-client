@@ -12,7 +12,7 @@ class CreateNewWindowUseCase extends FutureUseCase<CreateNewWindowInput, CreateN
     final controller = await DesktopMultiWindow.createWindow('${setting.$1}');
 
     controller.setFrame(setting.$2);
-    controller.setTitle('VMS Flutter Client - Cửa sổ phụ ${setting.$1}');
+    controller.setTitle('VNPT Secure Vision - Cửa sổ phụ ${setting.$1}');
 
     return CreateNewWindowOutput(controller);
   }
