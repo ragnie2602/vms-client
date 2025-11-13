@@ -91,7 +91,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
   final GlobalKey<VideoState> _videoKey = GlobalKey();
 
   late final Player _player;
-  late final Player _audioPlayer;
+  // late final Player _audioPlayer;
   late final VideoController _controller;
 
   late String name = widget.name;
@@ -146,9 +146,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _player.dispose();
     _status.dispose();
     _state.dispose();
-    try {
-      _audioPlayer.dispose();
-    } catch (_) {}
+    // try {
+    //   _audioPlayer.dispose();
+    // } catch (_) {}
     super.dispose();
   }
 
@@ -168,9 +168,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
         bufferSize: widget.mode == PlayerMode.liveview ? 1 : 15 * 1024 * 1024,
       ),
     );
-    if (widget.mode == PlayerMode.liveview) {
-      _audioPlayer = Player(configuration: PlayerConfiguration(bufferSize: 1));
-    }
+    // if (widget.mode == PlayerMode.liveview) {
+    //   _audioPlayer = Player(configuration: PlayerConfiguration(bufferSize: 1));
+    // }
     _controller = VideoController(_player);
 
     // Open player
@@ -208,8 +208,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     } else {
       await _player.open(Media(widget.source));
       await _player.setAudioTrack(AudioTrack.no());
-      await _audioPlayer.open(Media(widget.source));
-      await _audioPlayer.setVideoTrack(VideoTrack.no());
+      // await _audioPlayer.open(Media(widget.source));
+      // await _audioPlayer.setVideoTrack(VideoTrack.no());
     }
 
     try {
@@ -242,9 +242,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
   }
 
   void _onPositionChanged(Duration position) {
-    if (widget.mode == PlayerMode.liveview) {
-      _audioPlayer.seek(position);
-    }
+    // if (widget.mode == PlayerMode.liveview) {
+    //   _audioPlayer.seek(position);
+    // }
 
     if (_state.value != _PlayerState.error) {
       if (_lastDuration != position && widget.mode == PlayerMode.liveview) {
@@ -360,7 +360,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     if (path != null) {
       final data = await _player.screenshot();
       if (data == null) return;
-      
+
       await File(path).writeAsBytes(data);
     }
   }
@@ -388,29 +388,30 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
   }
 
   Future<void> changeVolume(double volume) async {
-    if (widget.mode == PlayerMode.liveview) {
-      await _audioPlayer.setVolume(volume);
-    } else {
-      await _player.setVolume(volume);
-    }
+    // if (widget.mode == PlayerMode.liveview) {
+    //   await _audioPlayer.setVolume(volume);
+    // } else {
+    //   await _player.setVolume(volume);
+    // }
+    await _player.setVolume(volume);
   }
 
   Future<void> togglePlay() async {
     _shouldSyncPlayerTime = false;
     if (_status.value == PlayerStatus.playing) {
       await _player.pause();
-      if (widget.mode == PlayerMode.liveview) await _audioPlayer.pause();
+      // if (widget.mode == PlayerMode.liveview) await _audioPlayer.pause();
       _status.value = PlayerStatus.paused;
     } else {
       await _player.play();
-      if (widget.mode == PlayerMode.liveview) await _audioPlayer.play();
+      // if (widget.mode == PlayerMode.liveview) await _audioPlayer.play();
       _status.value = PlayerStatus.playing;
     }
     _shouldSyncPlayerTime = true;
   }
 
   Future<void> changeSpeed(double speed) async {
-    if (widget.mode == PlayerMode.liveview) await _audioPlayer.setRate(speed);
+    // if (widget.mode == PlayerMode.liveview) await _audioPlayer.setRate(speed);
     await _player.setRate(speed);
   }
 

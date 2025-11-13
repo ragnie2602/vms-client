@@ -162,6 +162,8 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
                 extra: CameraDetailScreenArgs(data: camera),
               ),
               child: CameraPlayer(
+                belongViewMode: _viewMode,
+                size: size,
                 mode: PlayerMode.monitoring,
                 name: camera.name,
                 source: camera.subStreamUri.toString(),

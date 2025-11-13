@@ -122,7 +122,7 @@ class HomeState extends BaseState {
       selectedTab: selectedTab ?? this.selectedTab,
       pageTitle: pageTitle ?? this.pageTitle,
       pageDescription: pageDescription ?? this.pageDescription,
-      onBack: onBack ?? this.onBack,
+      onBack: onBack,
       expandedSidebar: expandedSidebar ?? this.expandedSidebar,
     );
   }

@@ -24,7 +24,7 @@ class MdkVideoPlayer extends mdk.Player {
   bool _initialized = false;
 
   @override
-  Future<void> dispose() async {
+  Future<void> dispose({bool synchronized = true}) async {
     onMediaStatus(null);
     onEvent(null);
     onStateChanged(null);
