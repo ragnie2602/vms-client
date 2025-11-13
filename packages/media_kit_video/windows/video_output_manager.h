@@ -77,8 +77,9 @@ class VideoOutputManager {
   // Creating a |ThreadPool| with maximum number of worker threads as 1, ensures
   // that all the posted tasks are performed on a single thread orderly. This
   // also makes usage of any |std::mutex| unnecessary (for the good).
-  std::unique_ptr<ThreadPool> thread_pool_ = std::make_unique<ThreadPool>(1);
-  flutter::PluginRegistrarWindows* registrar_ = nullptr;
+  
+  flutter::PluginRegistrarWindows* registrar_;
+  ThreadPool& thread_pool_;
   std::unordered_map<int64_t, std::unique_ptr<VideoOutput>> video_outputs_ = {};
 };
 

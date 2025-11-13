@@ -88,4 +88,9 @@ inline ThreadPool::~ThreadPool() {
   }
 }
 
+inline ThreadPool& MediaKitSharedRenderThreadPool() {
+  static ThreadPool pool(1);
+  return pool;
+}
+
 #endif  // THREAD_POOL_H_

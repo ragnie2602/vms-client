@@ -10,7 +10,7 @@
 
 VideoOutputManager::VideoOutputManager(
     flutter::PluginRegistrarWindows* registrar)
-    : registrar_(registrar) {}
+    : registrar_(registrar), thread_pool_(MediaKitSharedRenderThreadPool()) {}
 
 void VideoOutputManager::Create(
     int64_t handle,
@@ -20,7 +20,7 @@ void VideoOutputManager::Create(
     std::lock_guard<std::mutex> lock(mutex_);
     if (video_outputs_.find(handle) == video_outputs_.end()) {
       auto instance = std::make_unique<VideoOutput>(
-          handle, configuration, registrar_, thread_pool_.get());
+          handle, configuration, registrar_, &thread_pool_);
       instance->SetTextureUpdateCallback(texture_update_callback);
       video_outputs_.insert(std::make_pair(handle, std::move(instance)));
     }
