@@ -136,6 +136,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         windowManager.close();
       }
     }
+    if (event.multiWindowEvent is MWEProfileReady) emit(state.copyWith(profileReady: true));
   }
 
   FutureOr<void> _onToggleMonitorDisplayMode(
@@ -216,6 +217,7 @@ class AppState extends BaseState {
   final bool isSignOut;
   final int myProfileUpdatedAt;
   final bool skipLogin;
+  final bool profileReady;
 
   AppState(
     this.displayFullScreenLiveView, {
@@ -223,6 +225,7 @@ class AppState extends BaseState {
     this.isSignOut = false,
     this.myProfileUpdatedAt = 0,
     this.skipLogin = false,
+    this.profileReady = false,
   }) : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
     AppTheme.currentMode = this.themeMode;
   }
@@ -233,18 +236,27 @@ class AppState extends BaseState {
     bool? isSignOut,
     int? myProfileUpdatedAt,
     bool? skipLogin,
+    bool? profileReady,
   }) {
     return AppState(
       displayFullScreenLiveView ?? this.displayFullScreenLiveView,
       themeMode: themeMode ?? this.themeMode,
       isSignOut: isSignOut ?? false,
       myProfileUpdatedAt: myProfileUpdatedAt ?? this.myProfileUpdatedAt,
-      skipLogin: skipLogin ?? false,
+      skipLogin: skipLogin ?? this.skipLogin,
+      profileReady: profileReady ?? this.profileReady,
     );
   }
 
   @override
-  List<Object?> get props => [themeMode, displayFullScreenLiveView, isSignOut, myProfileUpdatedAt];
+  List<Object?> get props => [
+    themeMode,
+    displayFullScreenLiveView,
+    isSignOut,
+    myProfileUpdatedAt,
+    skipLogin,
+    profileReady,
+  ];
 }
 
 class AppEvent extends BaseEvent {

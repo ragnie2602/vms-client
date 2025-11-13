@@ -62,9 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
           storedServer != null) {
         _login();
       }
-
-      final appBloc = context.read<AppBloc>();
-      if (!MultiWindowUtil.isMainWindow(appBloc.windowId)) _login();
     });
   }
 

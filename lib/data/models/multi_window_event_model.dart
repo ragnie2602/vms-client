@@ -11,3 +11,7 @@ class MWECloseWindow extends MWE {
 class MWESignOut extends MWE {
   const MWESignOut();
 }
+
+class MWEProfileReady extends MWE {
+  const MWEProfileReady();
+}

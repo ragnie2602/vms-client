@@ -45,6 +45,7 @@ class SubscribeMultiWindowEventUseCase
             uid: AppData.instance.profile?.uid ?? [],
             sessionId: AppData.instance.profile?.sessionId ?? [],
           );
+          stream.add(SubscribeMultiWindowEventOutput(const MWEProfileReady()));
           break;
         case 'sign_out':
           stream.add(SubscribeMultiWindowEventOutput(const MWESignOut()));
