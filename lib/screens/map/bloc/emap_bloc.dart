@@ -243,6 +243,8 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
       _listEmap.removeWhere(
         (element) => listEquals(element.emapId, event.emapId),
       );
+      // đánh dấu để toast
+      emit(RemoveEmapSucessSate());
 
       final newEmapSelected = _listEmap.isNotEmpty ? _listEmap.first : null;
 
