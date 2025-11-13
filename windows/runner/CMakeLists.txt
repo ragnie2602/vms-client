@@ -38,3 +38,32 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
+
+# ============================================================
+# 📄 Copy config.ini vào folder cài đặt của app
+# ============================================================
+
+# Đường dẫn tới file config.ini ở ngoài cùng project (cùng cấp pubspec.yaml)
+set(CONFIG_SOURCE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../config.ini")
+
+# Kiểm tra file tồn tại
+if(NOT EXISTS ${CONFIG_SOURCE_PATH})
+    message(WARNING
+        "⚠️  WARNING: config.ini not found at:\n"
+        "   ${CONFIG_SOURCE_PATH}\n"
+        "   → Place config.ini in project root"
+    )
+else()
+    add_custom_command(
+        TARGET ${BINARY_NAME}
+        POST_BUILD
+
+        # Copy file config.ini
+        COMMAND ${CMAKE_COMMAND} -E echo "📦 Copying config.ini to: $<TARGET_FILE_DIR:${BINARY_NAME}>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CONFIG_SOURCE_PATH}"
+                "$<TARGET_FILE_DIR:${BINARY_NAME}>/config.ini"
+
+        COMMENT "📌 Attaching config.ini after build"
+    )
+endif()

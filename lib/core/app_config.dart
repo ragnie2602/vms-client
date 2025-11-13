@@ -1,13 +1,33 @@
 // ignore_for_file: non_constant_identifier_names, unnecessary_nullable_for_final_variable_declarations
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fvp/mdk.dart';
+import 'package:ini/ini.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 
 class AppConfig {
-  const AppConfig._();
+  AppConfig._();
+  static late Config config;
 
+  static String? _getConfig(String? section, String key) {
+    return section != null ? config.get(section, key) : config.defaults()[key];
+  }
+
+  static Future<void> loadConfigs() async {
+    final lines = await File("config.ini").readAsLines();
+    config = Config.fromStrings(lines);
+  }
+
+  /* ======================== ini configs ======================== */
+  static final LiveviewDetailAudioSource LIVEVIEW_DETAIL_AUDIO_SOURCE =
+      LiveviewDetailAudioSource.fromConfig(
+        _getConfig("Camera Detail", "livewiew_detail_audio_source"),
+      );
+
+  /* ======================== default configs ======================== */
   static const INITIAL_ROUTE = Routes.login;
   static const DEFAULT_THEME_MODE = ThemeMode.light;
 
@@ -39,4 +59,20 @@ class AppConfig {
   static const double MONITOR_GRID_SPACING = 4.0;
   static const int? OVERRIDE_MONITOR_GRID_ROWS = null; // = null;
   static const int? OVERRIDE_MONITOR_GRID_COLUMNS = null; // = null;
+}
+
+enum LiveviewDetailAudioSource {
+  on,
+  off,
+  split;
+
+  bool get isOn => this == on;
+  bool get isOff => this == off;
+  bool get isSplit => this == split;
+  factory LiveviewDetailAudioSource.fromConfig(String? value) => value == null
+      ? LiveviewDetailAudioSource.off
+      : LiveviewDetailAudioSource.values.firstWhere(
+          (e) => e.name == value,
+          orElse: () => LiveviewDetailAudioSource.off,
+        );
 }
