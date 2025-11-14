@@ -106,6 +106,7 @@ Future<String?> showResetPasswordDialog(
                                     style: AppTypography.style(
                                       14,
                                       fontWeight: FontWeight.w700,
+                                      lineHeight: 2,
                                     ),
                                   ),
                                 ],
