@@ -42,15 +42,22 @@ class SocketApiClient extends BaseApiClient {
   final Map<int, Completer> _requestCompleters = {};
   Timer? _keepAliveTimer;
 
+  // FutureOr<void> --> Future<void> hoặc void
+  Future<void> _safeCall(FutureOr<void> Function() cb) async {
+    try {
+      await cb();
+    } catch (_) {}
+  }
+
   @override
   Future<bool> connect(SocketConnectionParams params) async {
-    try {
-      _socket.close(); // Close if already initialized
-    } catch (_) {}
+    _safeCall(() => _socket.close());
 
     // Initialize
     serverUrl = "ws://${params.host}:${params.port}";
+    await _safeCall(() => _messageController.close());
     _messageController = StreamController.broadcast();
+    await _safeCall(() => _stateController.close());
     _stateController = StreamController.broadcast();
 
     try {
@@ -80,6 +87,7 @@ class SocketApiClient extends BaseApiClient {
         throw TimeoutException('Connection timeout');
       }
 
+      _keepAliveTimer?.cancel();
       _keepAliveTimer = Timer.periodic(const Duration(seconds: 30), _sendKeepAlive);
 
       return true;

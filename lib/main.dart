@@ -20,6 +20,9 @@ void main() async {
     // WidgetsFlutterBinding.ensureInitialized() --> Đã được gọi trước đó initGlobalErrorHandler
     initializeDateFormatting('vi');
 
+    // Load configs
+    await AppConfig.loadConfigs();
+
     // Initialize media_kit for video playback
     MediaKit.ensureInitialized();
 

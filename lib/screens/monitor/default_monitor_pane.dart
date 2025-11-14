@@ -19,9 +19,14 @@ import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 
-class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
+class DefaultMonitorPane extends StatefulWidget {
   const DefaultMonitorPane({super.key});
 
+  @override
+  State<DefaultMonitorPane> createState() => _DefaultMonitorPaneState();
+}
+
+class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuilderMixin {
   double get spacing => AppConfig.MONITOR_GRID_SPACING;
 
   void onChangePage(BuildContext context, int page) {
@@ -29,9 +34,17 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    if (context.read<MonitorBloc>().state is! MonitorSuccess) {
+      context.read<MonitorBloc>().add(GetAllCamera());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Vì là stateless nên buộc phải viết vào đây, hy vọng nó không bị gọi lung tung :*(
-    context.read<MonitorBloc>().add(GetAllCamera());
     context.read<CustomViewBloc>().add(
       ShowCustomView(
         CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
@@ -76,9 +89,15 @@ class DefaultMonitorPane extends StatelessWidget with StateBuilderMixin {
                                   onTap: isFullScreen
                                       ? null
                                       : () {
-                                          context.pushNamed(
+                                          context.goNamed(
                                             Routes.cameraDetail.name,
-                                            extra: CameraDetailScreenArgs(data: camera),
+                                            extra: CameraDetailScreenArgs(
+                                              data: camera,
+                                              onBack: () => AppRouter
+                                                  .rootNavigatorKey
+                                                  .currentContext
+                                                  ?.goNamed(Routes.monitoring.name),
+                                            ),
                                           );
                                         },
                                   child: CameraPlayer(

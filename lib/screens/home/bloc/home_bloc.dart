@@ -53,7 +53,7 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
   }
 
   FutureOr<void> _onChangeTab(ChangeTab event, Emitter<HomeState> emit) async {
-    if (state.selectedTab == event.tab) return;
+    if (state.selectedTab == event.tab && !event.force) return;
 
     emit(state.copyWith(selectedTab: event.tab));
     if (event.tab.route != null || event.route != null) {
@@ -89,7 +89,8 @@ class ChangeTab extends HomeEvent {
   final HomeTab tab;
   final Routes? route;
   final Object? extra;
-  const ChangeTab(this.tab, {this.route, this.extra});
+  final bool force;
+  const ChangeTab(this.tab, {this.route, this.extra, this.force = false});
 }
 
 class HomeEvent extends BaseEvent {
@@ -122,7 +123,7 @@ class HomeState extends BaseState {
       selectedTab: selectedTab ?? this.selectedTab,
       pageTitle: pageTitle ?? this.pageTitle,
       pageDescription: pageDescription ?? this.pageDescription,
-      onBack: onBack ?? this.onBack,
+      onBack: onBack,
       expandedSidebar: expandedSidebar ?? this.expandedSidebar,
     );
   }
