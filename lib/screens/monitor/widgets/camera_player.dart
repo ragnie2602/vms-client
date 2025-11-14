@@ -71,8 +71,9 @@ class CameraPlayerState extends State<CameraPlayer> {
     super.initState();
 
     TaskPool.instance.add(() async {
-      _initPlayer();
+      await _initPlayer();
       await _onConnecting();
+      await Future.delayed(const Duration(milliseconds: 100));
     });
   }
 
@@ -82,6 +83,8 @@ class CameraPlayerState extends State<CameraPlayer> {
     _timer?.cancel();
     _debounce?.cancel();
     _debounceUpdateTexture?.cancel();
+    _status.dispose();
+    _state.dispose();
     super.dispose();
   }
 
@@ -105,14 +108,14 @@ class CameraPlayerState extends State<CameraPlayer> {
     }
   }
 
-  void _tryDisposePlayer() {
+  Future<void> _tryDisposePlayer() async {
     try {
-      blocRef.add(DisposePlayer(_player, sequentialMode: true));
+      await _player.dispose(delay: const Duration(milliseconds: 100));
     } catch (_) {}
   }
 
-  void _initPlayer() {
-    _tryDisposePlayer();
+  Future<void> _initPlayer() async {
+    await _tryDisposePlayer();
 
     _player = Player();
     // _player.onMediaStatus(_onStatusChanged);

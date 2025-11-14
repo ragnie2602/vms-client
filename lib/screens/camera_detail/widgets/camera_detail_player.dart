@@ -112,7 +112,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   Animation<double>? _zoomAnimation;
 
   late final Player _player;
-  late final Player _audioPlayer;
+  Player? _audioPlayer;
   late final VideoController _controller;
 
   late String name = widget.name;
@@ -130,11 +130,13 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   StreamSubscription<Playlist>? _playlistSub;
   StreamSubscription<void>? _completedSub;
   StreamSubscription<String>? _errorSub;
+  StreamSubscription<bool>? _playingSub;
 
   PlaybackVideo get currentPlayback => widget.playlist[_playlistIndex];
   int get initialIndex => widget.initialIndex;
   bool get isInitialized => _state.value == _PlayerState.initialized;
   String get _disconnectedMessage => "Liveview '${widget.name}' disconnected";
+  LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
   @override
   void initState() {
@@ -165,6 +167,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
   @override
   void dispose() {
+    _playingSub?.cancel();
     _positionSub?.cancel();
     _playlistSub?.cancel();
     _completedSub?.cancel();
@@ -172,13 +175,11 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _reconnectingTimer?.cancel();
     _lostConnectionTimer?.cancel();
     _player.dispose();
+    _audioPlayer?.dispose();
     _status.dispose();
     _state.dispose();
     _zoomAnimationController.dispose();
     zoomController.dispose();
-    try {
-      _audioPlayer.dispose();
-    } catch (_) {}
     super.dispose();
   }
 
@@ -201,7 +202,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
         bufferSize: widget.mode == PlayerMode.liveview ? 1 : 15 * 1024 * 1024,
       ),
     );
-    if (widget.mode == PlayerMode.liveview) {
+    if (widget.mode == PlayerMode.liveview && audioSourceMode.isSplit) {
       _audioPlayer = Player(configuration: PlayerConfiguration(bufferSize: 1));
     }
     _controller = VideoController(_player);
@@ -213,8 +214,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _playlistSub = _player.stream.playlist.listen(_onPlaylistChanged);
     _completedSub = _player.stream.completed.listen(_onCompleted);
     _errorSub = _player.stream.error.listen(_onError);
-
-    _player.stream.playing.listen((playing) {
+    _playingSub = _player.stream.playing.listen((playing) {
       if (!playing) return;
 
       // Đang dừng --> seeking --> tự play --> update status theo player
@@ -240,9 +240,13 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
       if (position != null) await _waitForBufferingAndSeek(position, timeout: 30);
     } else {
       await _player.open(Media(widget.source));
-      await _player.setAudioTrack(AudioTrack.no());
-      await _audioPlayer.open(Media(widget.source));
-      await _audioPlayer.setVideoTrack(VideoTrack.no());
+      if (audioSourceMode.isOff) {
+        await _player.setAudioTrack(AudioTrack.no());
+      } else if (audioSourceMode.isSplit) {
+        await _player.setAudioTrack(AudioTrack.no());
+        await _audioPlayer?.open(Media(widget.source));
+        await _audioPlayer?.setVideoTrack(VideoTrack.no());
+      }
     }
 
     try {
@@ -266,6 +270,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   void _onError(String error) {
     _state.value = _PlayerState.error;
     _player.stop();
+    _audioPlayer?.stop();
 
     Logger.error(error, writeLog: _lastError != error && _lastError != _disconnectedMessage);
     _lastError = error;
@@ -279,8 +284,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   }
 
   void _onPositionChanged(Duration position) {
-    if (widget.mode == PlayerMode.liveview) {
-      _audioPlayer.seek(position);
+    if (widget.mode == PlayerMode.liveview && _audioPlayer != null) {
+      _audioPlayer?.seek(position);
     }
 
     if (_state.value != _PlayerState.error) {
@@ -425,8 +430,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   }
 
   Future<void> changeVolume(double volume) async {
-    if (widget.mode == PlayerMode.liveview) {
-      await _audioPlayer.setVolume(volume);
+    if (widget.mode == PlayerMode.liveview && _audioPlayer != null && audioSourceMode.isSplit) {
+      await _audioPlayer?.setVolume(volume);
     } else {
       await _player.setVolume(volume);
     }
@@ -436,18 +441,18 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _shouldSyncPlayerTime = false;
     if (_status.value == PlayerStatus.playing) {
       await _player.pause();
-      if (widget.mode == PlayerMode.liveview) await _audioPlayer.pause();
+      if (widget.mode == PlayerMode.liveview ) await _audioPlayer?.pause();
       _status.value = PlayerStatus.paused;
     } else {
       await _player.play();
-      if (widget.mode == PlayerMode.liveview) await _audioPlayer.play();
+      if (widget.mode == PlayerMode.liveview) await _audioPlayer?.play();
       _status.value = PlayerStatus.playing;
     }
     _shouldSyncPlayerTime = true;
   }
 
   Future<void> changeSpeed(double speed) async {
-    if (widget.mode == PlayerMode.liveview) await _audioPlayer.setRate(speed);
+    if (widget.mode == PlayerMode.liveview) await _audioPlayer?.setRate(speed);
     await _player.setRate(speed);
   }
 

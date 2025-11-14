@@ -157,11 +157,19 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
         children: [
           Positioned.fill(
             child: GestureDetector(
-              onTap: () => context.pushNamed(
+              onTap: () => context.goNamed(
                 Routes.cameraDetail.name,
-                extra: CameraDetailScreenArgs(data: camera),
+                extra: CameraDetailScreenArgs(
+                  data: camera,
+                  onBack: () => AppRouter
+                      .rootNavigatorKey
+                      .currentContext
+                      ?.goNamed(Routes.monitoring.name),
+                ),
               ),
               child: CameraPlayer(
+                belongViewMode: _viewMode,
+                size: size,
                 mode: PlayerMode.monitoring,
                 name: camera.name,
                 source: camera.subStreamUri.toString(),

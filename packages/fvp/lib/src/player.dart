@@ -10,6 +10,7 @@ import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
+import 'package:synchronized/synchronized.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 import 'fvp_platform_interface.dart';
@@ -26,6 +27,8 @@ class Player {
   final ValueNotifier<int?> textureId = ValueNotifier<int?>(null);
   Completer<void>? _creatingCompleter;
   bool _isDisposed = false;
+
+  static final Lock lock = Lock();
 
   Player() {
     _pp.value = _player;
@@ -162,81 +165,105 @@ class Player {
   }
 
   /// Release resources
-  Future<void> dispose() async {
-    if (_isDisposed) return;
-    _isDisposed = true;
+  Future<void> dispose({bool synchronized = true, Duration? delay}) async {
+    Future<void> fn() async {
+      if (_isDisposed) return;
+      _isDisposed = true;
 
-    if (_pp == nullptr) {
+      if (_pp == nullptr) {
+        textureId.dispose();
+        return;
+      }
+
+      if (_creatingCompleter != null) {
+        // Đợi đến khi tạo xong thì mới thực hiện dispose --> fix crash
+        await _creatingCompleter!.future;
+      }
+
+
+      // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
+      await updateTexture(width: -1, synchronized: false);
+      state = PlaybackState.stopped;
+      Libfvp.unregisterPort(nativeHandle);
+      onEvent(null);
+      onStateChanged(null);
+      onMediaStatus(null);
+
+      _receivePort.close();
+
+      Libmdk.instance.mdkPlayerAPI_delete(_pp);
+      calloc.free(_pp);
+      _pp = nullptr;
       textureId.dispose();
-      return;
+
+      if (delay != null) await Future.delayed(delay);
     }
 
-    if (_creatingCompleter != null) {
-      // Đợi đến khi tạo xong thì mới thực hiện dispose --> fix crash
-      await _creatingCompleter!.future;
+    if (synchronized) {
+      return lock.synchronized(fn);
+    } else {
+      return fn();
     }
-
-    // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
-    await updateTexture(width: -1);
-    state = PlaybackState.stopped;
-    Libfvp.unregisterPort(nativeHandle);
-    onEvent(null);
-    onStateChanged(null);
-    onMediaStatus(null);
-
-    _receivePort.close();
-
-    Libmdk.instance.mdkPlayerAPI_delete(_pp);
-    calloc.free(_pp);
-    _pp = nullptr;
-    textureId.dispose();
   }
 
   /// Release current texture then create a new one for current [media], and update [textureId].
   ///
   /// Texture will be created when media is loaded and mediaInfo.video is not empty.
   /// If both [width] and [height] are null, texture size is video frame size, otherwise is requested size.
-  Future<int> updateTexture(
-      {int? width, int? height, bool? tunnel, bool? fit}) async {
-    if (_creatingCompleter?.isCompleted == false) return textureId.value ?? -1;
+  Future<int> updateTexture({
+    int? width,
+    int? height,
+    bool? tunnel,
+    bool? fit,
+    bool synchronized = true,
+  }) async {
+    Future<int> fn() async {
+      if (_creatingCompleter?.isCompleted == false) return textureId.value ?? -1;
 
-    _creatingCompleter = Completer<void>();
+      _creatingCompleter = Completer<void>();
 
-    if ((textureId.value ?? -1) >= 0) {
-      await FvpPlatform.instance.releaseTexture(nativeHandle, textureId.value!);
-      textureId.value = null;
-    }
+      if ((textureId.value ?? -1) >= 0) {
+        await FvpPlatform.instance.releaseTexture(nativeHandle, textureId.value!);
+        textureId.value = null;
+      }
 
-    final size = await _videoSize.future;
-    if (size == null) {
+      final size = await _videoSize.future;
+      if (size == null) {
+        _creatingCompleter!.complete(null);
+        return -1;
+      }
+      if (width == null && height == null) {
+        // original size
+        textureId.value = await FvpPlatform.instance
+            .createTexture(nativeHandle, size.width.toInt(), size.height.toInt(), tunnel ?? false);
+        _creatingCompleter!.complete(null);
+        return textureId.value!;
+      }
+      if (width != null && height != null && width! > 0 && height! > 0) {
+        if (fit ?? true) {
+          final r = size.width / size.height;
+          final w = (height! * r).toInt();
+          if (w <= width!) {
+            width = w;
+          } else {
+            height = (width! / r).toInt();
+          }
+        }
+        textureId.value = await FvpPlatform.instance
+            .createTexture(nativeHandle, width!, height!, tunnel ?? false);
+        _creatingCompleter!.complete(null);
+        return textureId.value!;
+      }
       _creatingCompleter!.complete(null);
+      // release texture if width or height <= 0
       return -1;
     }
-    if (width == null && height == null) {
-      // original size
-      textureId.value = await FvpPlatform.instance.createTexture(nativeHandle,
-          size.width.toInt(), size.height.toInt(), tunnel ?? false);
-      _creatingCompleter!.complete(null);
-      return textureId.value!;
+
+    if (synchronized) {
+      return lock.synchronized(fn);
+    } else {
+      return fn();
     }
-    if (width != null && height != null && width > 0 && height > 0) {
-      if (fit ?? true) {
-        final r = size.width / size.height;
-        final w = (height * r).toInt();
-        if (w <= width) {
-          width = w;
-        } else {
-          height = (width / r).toInt();
-        }
-      }
-      textureId.value = await FvpPlatform.instance
-          .createTexture(nativeHandle, width, height, tunnel ?? false);
-      _creatingCompleter!.complete(null);
-      return textureId.value!;
-    }
-    _creatingCompleter!.complete(null);
-    // release texture if width or height <= 0
-    return -1;
   }
 
   Future<ui.Size?> get textureSize => _videoSize.future;

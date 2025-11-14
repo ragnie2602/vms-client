@@ -14,11 +14,13 @@ class CameraDetailScreenArgs extends BaseScreenArgs {
   final CameraEntity? data;
   final bool isPlayback;
   final bool openCamerasPanelImmediately;
+  final Key? key;
 
   CameraDetailScreenArgs({
     required this.data,
     this.isPlayback = false,
     this.openCamerasPanelImmediately = false,
+    this.key,
     super.onBack,
     String? title,
     super.description,
@@ -26,10 +28,11 @@ class CameraDetailScreenArgs extends BaseScreenArgs {
 }
 
 class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
-  CameraDetailScreen({super.key, required CameraDetailScreenArgs args})
+  CameraDetailScreen({required CameraDetailScreenArgs args})
     : data = args.data,
       isPlayback = args.isPlayback,
-      openCamerasPanelImmediately = args.openCamerasPanelImmediately;
+      openCamerasPanelImmediately = args.openCamerasPanelImmediately,
+      super(key: args.key);
 
   final CameraEntity? data;
   final bool isPlayback;
@@ -40,6 +43,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
       context.read<HomeBloc>().add(
         ChangePageInfo(
           title: "${cur.mode == CameraDetailMode.playback ? 'Xem lại' : ''} ${cur.camera!.name}",
+          onBack: context.read<HomeBloc>().state.onBack,
         ),
       );
     }
