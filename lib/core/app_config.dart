@@ -13,11 +13,21 @@ class AppConfig {
   static late Config config;
 
   static String? _getConfig(String? section, String key) {
-    return section != null ? config.get(section, key) : config.defaults()[key];
+    try {
+      return section != null ? config.get(section, key) : config.defaults()[key];
+    } catch (e) {
+      return null;
+    }
   }
 
   static Future<void> loadConfigs() async {
-    final lines = await File("config.ini").readAsLines();
+    final file = File("config.ini");
+    if (!file.existsSync()) {
+      config = Config();
+      return;
+    }
+
+    final lines = await file.readAsLines();
     config = Config.fromStrings(lines);
   }
 
@@ -73,6 +83,6 @@ enum LiveviewDetailAudioSource {
       ? LiveviewDetailAudioSource.off
       : LiveviewDetailAudioSource.values.firstWhere(
           (e) => e.name == value,
-          orElse: () => LiveviewDetailAudioSource.off,
+          orElse: () => LiveviewDetailAudioSource.on,
         );
 }
