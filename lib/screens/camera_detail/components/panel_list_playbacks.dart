@@ -97,6 +97,12 @@ class _PlaybackItemState extends State<PlaybackItem> {
   }
 
   @override
+  void dispose() {
+    _progress.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(color: widget.backgroundColor),

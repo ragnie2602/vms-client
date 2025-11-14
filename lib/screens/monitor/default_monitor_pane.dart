@@ -87,13 +87,20 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                                     onTap: isFullScreen
                                         ? null
                                         : () {
-                                            context.pushNamed(
+                                            context.goNamed(
                                               Routes.cameraDetail.name,
-                                              extra: CameraDetailScreenArgs(data: camera),
+                                              extra: CameraDetailScreenArgs(
+                                                data: camera,
+                                                onBack: () => AppRouter
+                                                    .rootNavigatorKey
+                                                    .currentContext
+                                                    ?.goNamed(Routes.monitoring.name),
+                                              ),
                                             );
                                           },
                                     child: CameraPlayer(
-                                      size: state.mode.total == 1 ? null : size,
+                                      belongViewMode: state.mode,
+                                      size: size,
                                       source: camera.subStreamUri.toString(),
                                       name: camera.name,
                                       key: ValueKey("player($index)___${camera.camId}"),

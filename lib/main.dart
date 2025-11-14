@@ -38,6 +38,10 @@ void main(List<String> args) async {
   await ErrorService.initGlobalErrorHandler(() async {
     initializeDateFormatting('vi');
 
+    // Load configs
+    await AppConfig.loadConfigs();
+
+    // Initialize media_kit for video playback
     MediaKit.ensureInitialized();
     fvp.registerWith(
       options: {
