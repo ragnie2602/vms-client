@@ -23,7 +23,7 @@ class AppButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.blue005AA9,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           minimumSize: fullWidth ? const Size(double.infinity, 48) : const Size(150, 48),
           elevation: 0,
@@ -36,7 +36,7 @@ class AppButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.black,
           side: const BorderSide(color: AppColors.greyC3D3D9, width: 1),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           minimumSize: fullWidth ? const Size(double.infinity, 48) : const Size(150, 48),
           backgroundColor: Colors.white,
