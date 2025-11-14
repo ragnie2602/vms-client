@@ -40,7 +40,7 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
                     .cameraDetailController
                     .ref
                     .currentState
-                    ?.jumpToDate(playback.startTime, dateIndex: index),
+                    ?.jumpToDateQueue(playback.startTime, dateIndex: index),
                 child: PlaybackItem(
                   maxWidth: maxWidth,
                   playback: playback,
