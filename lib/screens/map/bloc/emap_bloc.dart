@@ -174,7 +174,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
 
         // Kiểm tra và xóa các camera ngoài vùng nếu có ảnh mới
         if (currentState.dragItems?.isNotEmpty == true) {
-          final decodedImage = await ui.decodeImageFromList(event.imageBytes!);
+          final decodedImage = await ui.decodeImageFromList(event.imageBytes);
           final newImageSize = ui.Size(
             decodedImage.width.toDouble(),
             decodedImage.height.toDouble(),
@@ -412,27 +412,35 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
         // Kiểm tra emit.isDone trước khi emit để tránh lỗi
         if (emit.isDone) return;
 
-        List<DragItemModel> dragItems = onSuccess.map((e) {
-          // Tìm camera trong danh sách, nếu không có thì trả về null
-          final cameraList = currentState.listCamera?.where(
-            (element) => listEquals(element.id, e.cameraId),
-          );
-          final camera = (cameraList != null && cameraList.isNotEmpty)
-              ? cameraList.first
-              : null;
+        final dragItems = onSuccess
+            .map((e) {
+              // Tìm camera tương ứng trong danh sách camera tổng
+              final cameraList = currentState.listCamera?.where(
+                (element) => listEquals(element.id, e.cameraId),
+              );
 
-          return DragItemModel(
-            id: e.cameraId.toString(),
-            position: Offset(
-              e.xCoordinate.toDouble(),
-              e.yCoordinate.toDouble(),
-            ),
-            label: camera?.name ?? 'Camera ${e.cameraId}',
-            cameraId: e.cameraId.toString(),
-            cameraEmapInfoId: e.cameraEmapInfoId, // Lưu ID để update sau này
-            source: camera?.subStreamUri.toString() ?? "",
-          );
-        }).toList();
+              // Nếu tìm thấy camera, tạo DragItemModel
+              if (cameraList != null && cameraList.isNotEmpty) {
+                final camera = cameraList.first;
+                return DragItemModel(
+                  id: e.cameraId.toString(),
+                  position: Offset(
+                    e.xCoordinate.toDouble(),
+                    e.yCoordinate.toDouble(),
+                  ),
+                  label: camera.name,
+                  cameraId: e.cameraId.toString(),
+                  cameraEmapInfoId:
+                      e.cameraEmapInfoId, // Lưu ID để update sau này
+                  source: camera.subStreamUri.toString(),
+                );
+              }
+
+              // Nếu không tìm thấy, trả về null để lọc ra sau
+              return null;
+            })
+            .whereType<DragItemModel>()
+            .toList(); // Lọc bỏ các giá trị null
 
         emit(currentState.copyWith(dragItems: dragItems));
       },

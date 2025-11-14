@@ -83,7 +83,11 @@ class CustomCommonDropdown<T> extends StatelessWidget {
           ),
         ),
       ),
-      popupProps: PopupProps.menu(showSearchBox: false),
+      popupProps: const PopupProps.menu(
+        showSearchBox: false,
+        fit: FlexFit.loose,
+        constraints: BoxConstraints(),
+      ),
     );
 
     Widget wrapped = field;
