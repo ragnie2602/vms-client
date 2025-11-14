@@ -167,6 +167,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
   @override
   void dispose() {
+    _queue.dispose();
     _playingSub?.cancel();
     _positionSub?.cancel();
     _playlistSub?.cancel();
@@ -339,15 +340,36 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     });
   }
 
-  Future<void> jumpToDate(DateTime date, {int? dateIndex}) async {
-    _shouldSyncPlayerTime = false;
-    // Set timeline trước tránh cảm giác delay
+  late final AsyncJobQueue _queue = AsyncJobQueue();
+  bool _newestIsEmpty = false;
+  Future<void> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
+    _shouldSyncPlayerTime = _newestIsEmpty = false;
     widget.controller.onTimeChanged?.call(date.roundToSecond, dateIndex != null);
 
+    final index = dateIndex ?? widget.playlist.atTime(date);
+    widget.controller.onPlaybackChanged?.call(index ?? -1);
+    if (index == null) {
+      _newestIsEmpty = true;
+      _state.value = _PlayerState.empty;
+      await _player.pause();
+      await _queue.cancelAndReset();
+      return;
+    }
+
+    _queue.add(() async {
+      await _jumpToDate(date, dateIndex: index);
+
+      // Spam click và sau đó click ra ngoài --> bị nhảy về cái trước đó
+      _shouldSyncPlayerTime = _queue._queue.isEmpty && !_newestIsEmpty;
+    });
+  }
+
+  Future<void> _jumpToDate(DateTime date, {int? dateIndex}) async {
     final index = dateIndex ?? widget.playlist.atTime(date);
 
     // Click ngoài khoảng playback
     if (index == null) {
+      widget.controller.onPlaybackChanged?.call(-1);
       _state.value = _PlayerState.empty;
       await _player.pause();
       return;
@@ -374,8 +396,6 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
       await _player.jump(index);
       await _waitForBufferingAndSeek(diff);
     }
-
-    _shouldSyncPlayerTime = true;
   }
 
   Future<void> _waitForBufferingAndSeek(Duration diff, {int timeout = 60}) async {
@@ -425,7 +445,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     if (_duration <= _player.state.duration && _duration >= Duration.zero) {
       await _player.seek(_duration);
     } else {
-      await jumpToDate(currentPlayback.startTime.add(_duration));
+      _shouldSyncPlayerTime = false;
+      await _jumpToDate(currentPlayback.startTime.add(_duration));
+      _shouldSyncPlayerTime = true;
     }
   }
 
@@ -441,7 +463,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _shouldSyncPlayerTime = false;
     if (_status.value == PlayerStatus.playing) {
       await _player.pause();
-      if (widget.mode == PlayerMode.liveview ) await _audioPlayer?.pause();
+      if (widget.mode == PlayerMode.liveview) await _audioPlayer?.pause();
       _status.value = PlayerStatus.paused;
     } else {
       await _player.play();
@@ -621,5 +643,65 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
         ],
       ),
     );
+  }
+}
+
+class AsyncJobQueue {
+  final List<Future<void> Function()> _queue = [];
+  bool _isRunning = false;
+  bool _isCancelling = false;
+  bool _isDisposed = false;
+  Completer<void>? _cancelCompleter;
+
+  /// Thêm 1 job vào hàng đợi.
+  /// Nếu queue đang hủy, sẽ đợi hủy xong rồi thêm.
+  Future<void> add(Future<void> Function() job) async {
+    // Nếu đang cancel → chờ cancel xong
+    if (_isCancelling) await _cancelCompleter?.future;
+    if (_isDisposed) return;
+
+    _queue.add(job);
+    _runNext();
+  }
+
+  /// Hủy toàn bộ job, bỏ job đang chờ, reset trạng thái.
+  Future<void> cancelAndReset() async {
+    if (_isCancelling || _isDisposed) return; // tránh trùng cancel
+    _isCancelling = true;
+    _cancelCompleter = Completer<void>();
+
+    _queue.clear(); // clear job chờ
+    _isRunning = false;
+
+    // Đợi 1 microtask để đảm bảo async đang pending được bỏ qua
+    await Future.microtask(() {});
+    _isCancelling = false;
+
+    _cancelCompleter?.complete(); // báo cho add() biết đã hủy xong
+    _cancelCompleter = null;
+  }
+
+  /// Chạy tuần tự các job trong hàng đợi.
+  void _runNext() async {
+    if (_isRunning || _queue.isEmpty || _isCancelling) return;
+    _isRunning = true;
+
+    final job = _queue.removeAt(0);
+    try {
+      await job();
+    } finally {
+      _isRunning = false;
+
+      if (!_isCancelling && _queue.isNotEmpty) {
+        _runNext(); // chạy tiếp job kế
+      }
+    }
+  }
+
+  Future<void> dispose() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _queue.clear();
+    _cancelCompleter = null;
   }
 }
