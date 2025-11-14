@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -105,7 +106,17 @@ class DrawerTile extends StatelessWidget {
   void _handleTap(BuildContext context) {
     Routes? _route;
     Object? _extra;
+    bool _force = false; // Bỏ qua check selectedTab == tab
 
+    // Trường hợp đang mở detail từ tab monitoring --> click lại vào monitoring
+    // --> selectedTab == tab --> bị bỏ qua
+    // --> cần force = true để bỏ qua check selectedTab == tab
+    if (tab.route == Routes.monitoring &&
+        GoRouter.of(context).state.name == Routes.cameraDetail.name) {
+      _force = true;
+    }
+
+    // Mở tab playback <=> mở tab camera detail (với trạng thái empty)
     if (tab.route == Routes.playback) {
       _route = Routes.cameraDetail;
       _extra = CameraDetailScreenArgs(
@@ -116,7 +127,7 @@ class DrawerTile extends StatelessWidget {
       );
     }
 
-    context.read<HomeBloc>().add(ChangeTab(tab, route: _route, extra: _extra));
+    context.read<HomeBloc>().add(ChangeTab(tab, route: _route, extra: _extra, force: _force));
   }
 
   @override
