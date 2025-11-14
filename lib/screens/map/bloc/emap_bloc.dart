@@ -425,7 +425,7 @@ class EmapBloc extends BaseBloc<EmapEvent, EmapState> {
               e.xCoordinate.toDouble(),
               e.yCoordinate.toDouble(),
             ),
-            label: camera?.name ?? 'Camera ${e.cameraId}',
+            label: camera?.name,
             cameraId: e.cameraId.toString(),
             cameraEmapInfoId: e.cameraEmapInfoId, // Lưu ID để update sau này
             source: camera?.subStreamUri.toString() ?? "",
