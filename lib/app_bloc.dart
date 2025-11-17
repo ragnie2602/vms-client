@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
@@ -160,7 +161,13 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       SendMultiWindowEventInput(
         0,
         'change_setting_window',
-        data: {'bWindowID': windowId, 'rect': rect},
+        data: {
+          'bWindowID': windowId,
+          'rect': rect,
+          'viewMode': event.viewMode?.value,
+          'isDefaultMode': event.isDefaultMode,
+          'id': event.id,
+        },
       ),
     );
   }
@@ -290,7 +297,11 @@ class ToggleMonitorDisplayMode extends AppEvent {}
 class SignOut extends AppEvent {}
 
 class ChangeSettingWindow extends AppEvent {
-  const ChangeSettingWindow();
+  final ViewMode? viewMode;
+  final bool? isDefaultMode;
+  final List<int>? id;
+
+  const ChangeSettingWindow({this.viewMode, this.isDefaultMode, this.id});
 }
 
 class CloseWindow extends AppEvent {

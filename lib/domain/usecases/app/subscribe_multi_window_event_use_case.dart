@@ -24,15 +24,19 @@ class SubscribeMultiWindowEventUseCase
     DesktopMultiWindow.setMethodHandler((call, sourceId) async {
       switch (call.method) {
         case 'change_setting_window':
-          MultiWindowUtil.saveWindowRect(
+          MultiWindowUtil.saveWindowSetting(
             call.arguments['bWindowID'],
-            Rect.fromLTWH(
+            rect: Rect.fromLTWH(
               call.arguments['left'],
               call.arguments['top'],
-              call.arguments['width'],
-              call.arguments['height'],
+              call.arguments['width'] ?? 1200,
+              call.arguments['height'] ?? 675,
             ),
+            vmValue: call.arguments['viewMode'],
+            isDefaultMode: call.arguments['isDefaultMode'],
+            id: call.arguments['id'],
           );
+          await MultiWindowUtil.save();
           break;
         case 'close_window':
           stream.add(SubscribeMultiWindowEventOutput(MWECloseWindow(call.arguments['windowId'])));

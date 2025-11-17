@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -77,10 +78,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                           ),
                           labelColor: AppColors.blackOrWhite,
                           unselectedLabelColor: Color(0xFF6F767E),
-                          labelStyle: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
                           unselectedLabelStyle: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w500,
@@ -105,15 +103,8 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                         return IndexedStack(
                           index: tabIndex,
                           children: [
-                            _buildDefaultMode(
-                              constraints.maxWidth,
-                              constraints.maxHeight,
-                            ),
-                            _buildCustomMode(
-                              context,
-                              constraints.maxWidth,
-                              isExpanded,
-                            ),
+                            _buildDefaultMode(constraints.maxWidth, constraints.maxHeight),
+                            _buildCustomMode(context, constraints.maxWidth, isExpanded),
                           ],
                         );
                       },
@@ -131,9 +122,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
 
           final bloc = context.read<CustomViewBloc>();
           if (bloc.preCustomView != null) {
-            bloc.add(
-              ShowCustomView(bloc.preCustomView!, CustomMonitorPaneMode.view),
-            );
+            bloc.add(ShowCustomView(bloc.preCustomView!, CustomMonitorPaneMode.view));
             context.goNamed(
               Routes.custom_live_view.name,
               extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.view),
@@ -195,12 +184,12 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                         onTap: () {
                           onResetCustomViewSelectedItem();
 
-                          if (GoRouterState.of(context).name !=
-                              Routes.monitoring.name) {
+                          if (GoRouterState.of(context).name != Routes.monitoring.name) {
                             context.goNamed(Routes.monitoring.name);
                           }
-                          context.read<MonitorBloc>().add(
-                            ChangeGridMode(value),
+                          context.read<MonitorBloc>().add(ChangeGridMode(value));
+                          context.read<AppBloc>().add(
+                            ChangeSettingWindow(viewMode: value, isDefaultMode: true),
                           );
                         },
                         child: SvgPicture.asset(
@@ -234,20 +223,22 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
           ),
         Expanded(
           child: GroupCameraView(
-            onGetCamerasInGroup:
-                (BuildContext contextTreeGroup, List<int> groupId) {
-                  context.goNamed(Routes.monitoring.name);
-                  context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
-                  onResetCustomViewSelectedItem();
-                },
+            onGetCamerasInGroup: (BuildContext contextTreeGroup, List<int> groupId) {
+              context.goNamed(Routes.monitoring.name);
+              context.read<MonitorBloc>().add(GetAllCameraInGroup(groupId));
+              context.read<AppBloc>().add(ChangeSettingWindow(id: groupId, isDefaultMode: true));
+              onResetCustomViewSelectedItem();
+            },
             onGetAllGroupCamera: (BuildContext contextTreeGroup) {
               context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCamera());
+              context.read<AppBloc>().add(ChangeSettingWindow(isDefaultMode: true, id: [-1]));
               onResetCustomViewSelectedItem();
             },
             onGetNoGroupCamera: (BuildContext contextTreeGroup) {
               context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCameraNoGroup());
+              context.read<AppBloc>().add(ChangeSettingWindow(isDefaultMode: true, id: []));
               onResetCustomViewSelectedItem();
             },
             onAddCameraToGroup:
@@ -262,11 +253,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
     );
   }
 
-  Widget _buildCustomMode(
-    BuildContext context,
-    double currentWidth,
-    bool showing,
-  ) {
+  Widget _buildCustomMode(BuildContext context, double currentWidth, bool showing) {
     final bloc = context.read<CustomViewBloc>();
 
     return Column(
@@ -287,12 +274,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
 
               bloc.add(
                 ShowCustomView(
-                  CustomLiveView(
-                    id: [],
-                    base: ViewMode.v2x2,
-                    positions: [],
-                    name: '',
-                  ),
+                  CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
                   CustomMonitorPaneMode.add,
                 ),
               );
@@ -321,10 +303,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
                     AppAssets.icAdd,
                     width: 20,
                     height: 20,
-                    colorFilter: ColorFilter.mode(
-                      AppColors.blackOrWhite,
-                      BlendMode.srcIn,
-                    ),
+                    colorFilter: ColorFilter.mode(AppColors.blackOrWhite, BlendMode.srcIn),
                   ),
                 showing ? SizedBox(width: 8) : SizedBox(height: 20),
                 Flexible(
