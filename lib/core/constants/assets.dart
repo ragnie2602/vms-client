@@ -90,6 +90,8 @@ class AppAssets {
   static const icVideoOff = '$_svgPath/video_off.svg';
   static const icCheckBox = '$_svgPath/check_box.svg';
   static const icChecked = '$_svgPath/checked.svg';
+  // schedule record
+  static const icSchedule = '$_svgPath/ic_schedule.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';

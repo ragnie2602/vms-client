@@ -22,6 +22,8 @@ import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/schedule_recording_screen.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
@@ -54,7 +56,8 @@ enum Routes {
     name: 'custom_live_view',
     path: '/custom_live_view',
     title: 'Chế độ tùy biến',
-    description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
+    description:
+        'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   cameraDetail(name: 'camera_detail', path: '/camera_detail'),
   playback(
@@ -69,6 +72,12 @@ enum Routes {
     title: 'Bản đồ camera',
     description:
         'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
+  ),
+  schedule(
+    name: 'schedule_record',
+    path: '/schedule_record',
+    title: 'Lập lịch ghi hình',
+    description: 'Lập lịch ghi hình các camera một cách nhanh nhất',
   ),
   users(
     name: 'users',
@@ -166,6 +175,10 @@ class AppRouter {
                 emapRepository: context.read(),
                 searchEmapUseCase: context.read<SearchEmapUseCase>(),
               ),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  ScheduleBloc(cameraRepository: context.read()),
             ),
             BlocProvider(
               create: (context) => UserManagementBloc(
@@ -268,6 +281,17 @@ class AppRouter {
                 context: context,
                 state: state,
                 child: EmapScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.schedule.path,
+            name: Routes.schedule.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: ScheduleRecordingScreen(),
               );
             },
           ),
