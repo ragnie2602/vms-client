@@ -85,19 +85,21 @@ class MultiWindowUtil {
 
   static bool isMainWindow(int windowId) => windowId == 0;
 
-  static void saveWindowSetting(
+  static Future<void> saveWindowSetting(
     int windowId, {
     Rect? rect,
     int? vmValue,
     bool? isDefaultMode,
     List<int>? id,
-  }) {
+  }) async {
     _windowBounds[windowId] = _windowBounds[windowId]?.copyWith(
       id: id,
       isDefaultMode: isDefaultMode,
       rect: rect,
       viewMode: vmValue != null ? ViewMode.fromValue(vmValue) : null,
     );
+
+    await save();
   }
 
   static Future save() async {
@@ -143,8 +145,8 @@ class _WindowSetting {
 
     final isCustomMode = json['custom'] != null;
 
-    final idStr = isCustomMode ? json['custom'] ?? '' : json['default'] ?? '';
-    final id = idStr.isNotEmpty ? idStr.split(',').map(int.parse).toList() : <int>[];
+    final String idStr = isCustomMode ? json['custom'] ?? '' : json['default'] ?? '';
+    final id = idStr.isNotEmpty ? idStr.codeUnits : <int>[];
 
     return _WindowSetting(rect: rect, isDefaultMode: !isCustomMode, viewMode: viewMode, id: id);
   }

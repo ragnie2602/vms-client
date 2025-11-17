@@ -41,9 +41,10 @@ class _MonitorCamerasState extends State<MonitorCameras>
     selectedCamera = widget.selectedCamera;
     super.initState();
 
-    if (mounted)
-      _monitorBloc = MonitorBloc(context.read(), context.read())
+    if (mounted) {
+      _monitorBloc = MonitorBloc(context.read(), context.read(), context.read())
         ..add(GetAllCamera());
+    }
   }
 
   @override

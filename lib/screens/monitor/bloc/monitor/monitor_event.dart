@@ -29,3 +29,9 @@ class ChangeGridMode extends MonitorEvent {
 }
 
 class ResetFilter extends MonitorEvent {}
+
+class MultiWindowEventReceived extends MonitorEvent {
+  final MWE multiWindowEvent;
+
+  MultiWindowEventReceived(this.multiWindowEvent);
+}

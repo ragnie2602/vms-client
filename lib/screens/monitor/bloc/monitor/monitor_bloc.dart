@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_input.dart';
+import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 
@@ -12,7 +15,11 @@ part 'monitor_event.dart';
 part 'monitor_state.dart';
 
 class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
-  MonitorBloc(this.filterCameraNoGroupUseCase, this.cameraRepository) : super(MonitorInitial()) {
+  MonitorBloc(
+    this.filterCameraNoGroupUseCase,
+    this.cameraRepository,
+    this.subscribeMultiWindowEventUseCase,
+  ) : super(MonitorInitial()) {
     on<GetAllCamera>(_onGetAllCamera);
     on<ChangeGridMode>(_onChangeGridMode);
     on<GetCameraAtPage>(_onGetCameraAtPage);
@@ -20,10 +27,26 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     on<GetAllCameraNoGroup>(_onGetAllCameraNoGroup);
 
     on<ResetFilter>(_onResetFilter);
+
+    on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
   }
 
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
+  final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
   final ICameraRepository cameraRepository;
+
+  StreamSubscription? _multiWindowEventSubscription;
+
+  void registerIPCEvents() {
+    _multiWindowEventSubscription?.cancel();
+
+    final mweOuput = subscribeMultiWindowEventUseCase.execute(SubscribeMultiWindowEventInput());
+
+    // In case of call the other usecase(s)
+    _multiWindowEventSubscription = mweOuput.listen((output) {
+      add(MultiWindowEventReceived(output.event));
+    });
+  }
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
     final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
@@ -139,5 +162,27 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
 
   FutureOr<void> _onResetFilter(ResetFilter event, Emitter<MonitorState> emit) {
     emit(MonitorInitial());
+  }
+
+  FutureOr<void> _onMultiWindowEventReceived(
+    MultiWindowEventReceived event,
+    Emitter<MonitorState> emit,
+  ) async {
+    if (event.multiWindowEvent is MWERestoreMonitorMode) {
+      final restoreData = event.multiWindowEvent as MWERestoreMonitorMode;
+      if (restoreData.isDefaultMode) {
+        if (restoreData.id.isEmpty) {
+          await _onGetAllCamera(GetAllCamera(mode: restoreData.viewMode), emit);
+        } else if (restoreData.id.length == 1 && restoreData.id.first == -1) {
+          await _onGetAllCameraNoGroup(GetAllCameraNoGroup(), emit);
+        } else {
+          await _onGetAllCameraInGroup(GetAllCameraInGroup(restoreData.id), emit);
+        }
+
+        if (restoreData.viewMode != ViewMode.v2x2) {
+          await _onChangeGridMode(ChangeGridMode(restoreData.viewMode), emit);
+        }
+      }
+    }
   }
 }
