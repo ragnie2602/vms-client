@@ -202,18 +202,18 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
       for (var i = 1; i <= subWindowCount; i++) {
         final output = await createNewWindowUseCase.execute(CreateNewWindowInput(windowID: i));
-        output.windowController.show();
-        Future.delayed(const Duration(milliseconds: 200), () {});
-        await sendMultiWindowEventUseCase.execute(
-          SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
-        );
-        await sendMultiWindowEventUseCase.execute(
-          SendMultiWindowEventInput(
-            output.windowController.windowId,
-            'restore_monitor_mode',
-            data: {'bWindowID': i},
-          ),
-        );
+        output.windowController.show().then((_) async {
+          await sendMultiWindowEventUseCase.execute(
+            SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
+          );
+          await sendMultiWindowEventUseCase.execute(
+            SendMultiWindowEventInput(
+              output.windowController.windowId,
+              'restore_monitor_mode',
+              data: {'bWindowID': i},
+            ),
+          );
+        });
       }
     }
   }

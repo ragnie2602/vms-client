@@ -29,6 +29,8 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     on<ResetFilter>(_onResetFilter);
 
     on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
+
+    registerIPCEvents();
   }
 
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
@@ -36,6 +38,12 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   final ICameraRepository cameraRepository;
 
   StreamSubscription? _multiWindowEventSubscription;
+
+  @override
+  Future<void> close() {
+    _multiWindowEventSubscription?.cancel();
+    return super.close();
+  }
 
   void registerIPCEvents() {
     _multiWindowEventSubscription?.cancel();
@@ -58,12 +66,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         emit(MonitorFailure(failure.toString()));
       },
       (cameras) {
-        emit(
-          MonitorSuccess(
-            cameras: cameras,
-            mode: lastState?.mode ?? ViewMode.v2x2 ,
-          ),
-        );
+        emit(MonitorSuccess(cameras: cameras, mode: lastState?.mode ?? ViewMode.v2x2));
       },
     );
   }

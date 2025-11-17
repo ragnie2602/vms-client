@@ -21,14 +21,14 @@ class SendMultiWindowEventUseCase
           'isDefaultMode': input.data?['isDefaultMode'],
           'id': input.data?['id'],
         };
-        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
+        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
         break;
       case 'close_window':
         final data = {'windowId': input.data?['windowId']};
-        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
+        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
         break;
       case 'profile':
-        DesktopMultiWindow.invokeMethod(
+        await DesktopMultiWindow.invokeMethod(
           input.targetWindowID,
           input.methodName,
           AppData.instance.profile?.toJson(),
@@ -38,7 +38,7 @@ class SendMultiWindowEventUseCase
         final bWindowID = input.data!['bWindowID'];
         final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: bWindowID);
 
-        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, {
+        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, {
           'viewMode': setting.viewMode.value,
           'isDefaultMode': setting.isDefaultMode,
           'id': setting.id,
