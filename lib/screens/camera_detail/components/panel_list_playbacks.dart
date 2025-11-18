@@ -40,7 +40,7 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
                     .cameraDetailController
                     .ref
                     .currentState
-                    ?.jumpToDate(playback.startTime, dateIndex: index),
+                    ?.jumpToDateQueue(playback.startTime, dateIndex: index),
                 child: PlaybackItem(
                   maxWidth: maxWidth,
                   playback: playback,
@@ -94,6 +94,12 @@ class _PlaybackItemState extends State<PlaybackItem> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _progress.dispose();
+    super.dispose();
   }
 
   @override

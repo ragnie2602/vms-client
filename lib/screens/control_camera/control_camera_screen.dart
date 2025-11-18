@@ -258,20 +258,24 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ControlCameraBloc, ControlCameraState>(
-      listenWhen: (prev, curr) =>
-          curr is DeleteCameraSuccessState ||
-          curr is ListCameraSuccessState ||
-          curr is RemoveCameraFromGroupFailState ||
-          curr is RemoveCameraFromGroupSuccessState ||
-          curr is ListShareCameraSuccessState ||
-          curr is UpdateCameraSuccessState,
+      // listenWhen: (prev, curr) =>
+      //     curr is DeleteCameraSuccessState ||
+      //     curr is ListCameraSuccessState ||
+      //     curr is RemoveCameraFromGroupFailState ||
+      //     curr is RemoveCameraFromGroupSuccessState ||
+      //     curr is ListShareCameraSuccessState ||
+      //     curr is UpdateCameraSuccessState,
       listener: (context, state) {
         if (state is RemoveCameraFromGroupFailState) {
-          showAppMessageDialog(
-            context,
-            message: state.errorMsg,
-            type: AppMessageType.error,
+            ToastUtil.toastFail(
+            context: context,
+            title: Text(state.errorMsg),
           );
+          // showAppMessageDialog(
+          //   context,
+          //   message: state.errorMsg,
+          //   type: AppMessageType.error,
+          // );
         }
         if (state is RemoveCameraFromGroupSuccessState) {
           ToastUtil.toastSuccess(

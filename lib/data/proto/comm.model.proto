@@ -1,7 +1,8 @@
 syntax = "proto3";
 import "google/protobuf/any.proto";
 package comm;
-
+//option optimize_for = LITE_RUNTIME;
+option java_package = "com.vivas.ipcamera.core.protobuf";
 enum ResultType
 {
 	OK = 0;
@@ -17,14 +18,15 @@ enum ResultType
 enum EventType { MOTION_DETECTION = 0; LINE_CROSSING = 1; INTRUSION_DETECTION = 2;IVA_FACE_DETECTION = 3;IVA_SMOKE_DETECTION = 4;IVA_ALPR=5;ALL_TYPE = 98;ALL = 99;}
 enum Quality { AUTO = 0; SD = 1; HD = 2; FHD = 3;}
 enum ProjectTarget {VIVAS = 0;VIVAS_CLOUD = 1;KC01 = 99;}
-enum Box_Type { NONE = 0;RASPBERRY = 1;ORANGEPI = 2;}
+enum Box_Type { BOX_TYPE_UNSPECIFIED = 0;RASPBERRY = 1;ORANGEPI = 2;}
 enum Box_State {VBOX_ACTIVE = 0;VBOX_INACTIVE = 1;VBOX_LOST = 2;}
 enum Language {DEFAULT = 0;VI = 1;EN = 2;}
 enum CameraType {UNKNOW = 0;RTSP = 1;ONVIF = 2;ONEHOME_VNT = 3;RTMP = 4;}
 enum PtzAction {PTZ_STOP = 0;PTZ_UP = 1;PTZ_DOWN = 2;PTZ_LEFT = 3;PTZ_RIGHT = 6;}
+enum UserStatus { ACTIVE = 0; INACTIVE = 1;}
 enum API
 {
-	UNDEFINED = 0;
+	API_UNSPECIFIED = 0;
 	API_VERSION = 111;
 }
 
@@ -130,7 +132,7 @@ message Profile
 
 message BoxInfo
 {
-	enum Box_Type { NONE = 0;RASPBERRY = 1;ORANGEPI = 2;}
+	enum Box_Type { BOX_TYPE_UNSPECIFIED = 0;RASPBERRY = 1;ORANGEPI = 2;}
 	string box_name = 1;
 	string box_serial_number = 2;
 	Box_Type box_type = 3;
@@ -423,11 +425,11 @@ message CameraStream
 	message UrlStream{
 		enum StreamType { HLS = 0; RTSP = 1;UDP = 2; RTSP_PROXY = 3;RTMP = 4;}
 		bool isDefault = 1;
-	  string name_of_stream = 2;
-	  string url_of_stream = 3;  /// sv trả về link full
-	  StreamType stype = 4;
-    bool isMainStream = 5; //TRUE = luồng chính, FALSE = Là các luồng phụ
-    string origin_stream = 6; // Link origin user nhập vào
+	    string name_of_stream = 2;
+	    string url_of_stream = 3;  /// sv trả về link full
+	    StreamType stype = 4;
+        bool isMainStream = 5; //TRUE = luồng chính, FALSE = Là các luồng phụ
+        string origin_stream = 6; // Link origin user nhập vào
 	}
 
 	string stream_origin_url	= 1; // sử dụng với camera other
@@ -483,6 +485,7 @@ message Camera
 	CameraType cameraType = 24;
 	Status status = 25;
 	bool subscribed = 26; //Camera đã được đăng ký sử dụng (Đã mua gói, đã đk gói qua iotGate, đã mua license on-premise)
+	repeated CamTag tags = 27; // danh sách tag
 }
 
 message Alarm
@@ -760,4 +763,10 @@ message InOutCam{
     bytes in = 1;
     bytes out = 2;
     VehicleType type = 3;
+}
+
+message CamTag{
+    bytes tag_id = 1;
+    string tag_name = 2;
+    string tag_color = 3;
 }

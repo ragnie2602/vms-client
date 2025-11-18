@@ -12,10 +12,13 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       body: BlocListener<AppBloc, AppState>(
         listener: (context, state) {
-          if (state.skipLogin) {
-            context.goNamed(Routes.monitoring.name);
-          } else {
+          if (!state.skipLogin) {
             context.goNamed(Routes.login.name);
+            return;
+          }
+
+          if (state.skipLogin && state.profileReady) {
+            context.goNamed(Routes.monitoring.name);
           }
         },
         child: Center(child: CircularProgressIndicator()),

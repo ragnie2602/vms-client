@@ -28,6 +28,12 @@ class _MonitorActionsState extends State<MonitorActions> {
   final ValueNotifier<int?> _leftPanelIndex = ValueNotifier(null);
 
   @override
+  void dispose() {
+    _leftPanelIndex.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -89,11 +95,14 @@ class _MonitorActionsState extends State<MonitorActions> {
                         maxWidth: widget.leftController.expandedWidth,
                         key: ValueKey('monitor_cameras'),
                         onTap: (data) {
-                          context.pushNamed(
+                          context.goNamed(
                             Routes.cameraDetail.name,
                             extra: CameraDetailScreenArgs(
                               data: data,
                               openCamerasPanelImmediately: true,
+                              onBack: () => AppRouter.rootNavigatorKey.currentContext?.goNamed(
+                                Routes.monitoring.name,
+                              ),
                             ),
                           );
                         },

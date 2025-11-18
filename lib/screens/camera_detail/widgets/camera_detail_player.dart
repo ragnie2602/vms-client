@@ -112,13 +112,14 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   Animation<double>? _zoomAnimation;
 
   late final Player _player;
-  late final Player _audioPlayer;
+  Player? _audioPlayer;
   late final VideoController _controller;
 
   late String name = widget.name;
 
   final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
   final ValueNotifier<_PlayerState> _state = ValueNotifier(_PlayerState.initializing);
+  final ValueNotifier<bool> _isSeeking = ValueNotifier(false);
 
   late int _playlistIndex;
   bool _shouldSyncPlayerTime = true;
@@ -130,11 +131,13 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   StreamSubscription<Playlist>? _playlistSub;
   StreamSubscription<void>? _completedSub;
   StreamSubscription<String>? _errorSub;
+  StreamSubscription<bool>? _playingSub;
 
   PlaybackVideo get currentPlayback => widget.playlist[_playlistIndex];
   int get initialIndex => widget.initialIndex;
   bool get isInitialized => _state.value == _PlayerState.initialized;
   String get _disconnectedMessage => "Liveview '${widget.name}' disconnected";
+  LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
   @override
   void initState() {
@@ -165,6 +168,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
   @override
   void dispose() {
+    _queue.dispose();
+    _playingSub?.cancel();
     _positionSub?.cancel();
     _playlistSub?.cancel();
     _completedSub?.cancel();
@@ -172,13 +177,12 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _reconnectingTimer?.cancel();
     _lostConnectionTimer?.cancel();
     _player.dispose();
+    _audioPlayer?.dispose();
     _status.dispose();
     _state.dispose();
     _zoomAnimationController.dispose();
     zoomController.dispose();
-    try {
-      _audioPlayer.dispose();
-    } catch (_) {}
+    _isSeeking.dispose();
     super.dispose();
   }
 
@@ -198,10 +202,10 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _player = Player(
       configuration: PlayerConfiguration(
         title: widget.name,
-        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 15 * 1024 * 1024,
+        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 3 * 1024 * 1024,
       ),
     );
-    if (widget.mode == PlayerMode.liveview) {
+    if (widget.mode == PlayerMode.liveview && audioSourceMode.isSplit) {
       _audioPlayer = Player(configuration: PlayerConfiguration(bufferSize: 1));
     }
     _controller = VideoController(_player);
@@ -213,8 +217,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _playlistSub = _player.stream.playlist.listen(_onPlaylistChanged);
     _completedSub = _player.stream.completed.listen(_onCompleted);
     _errorSub = _player.stream.error.listen(_onError);
-
-    _player.stream.playing.listen((playing) {
+    _playingSub = _player.stream.playing.listen((playing) {
       if (!playing) return;
 
       // Đang dừng --> seeking --> tự play --> update status theo player
@@ -240,9 +243,13 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
       if (position != null) await _waitForBufferingAndSeek(position, timeout: 30);
     } else {
       await _player.open(Media(widget.source));
-      await _player.setAudioTrack(AudioTrack.no());
-      await _audioPlayer.open(Media(widget.source));
-      await _audioPlayer.setVideoTrack(VideoTrack.no());
+      if (audioSourceMode.isOff) {
+        await _player.setAudioTrack(AudioTrack.no());
+      } else if (audioSourceMode.isSplit) {
+        await _player.setAudioTrack(AudioTrack.no());
+        await _audioPlayer?.open(Media(widget.source));
+        await _audioPlayer?.setVideoTrack(VideoTrack.no());
+      }
     }
 
     try {
@@ -266,6 +273,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   void _onError(String error) {
     _state.value = _PlayerState.error;
     _player.stop();
+    _audioPlayer?.stop();
 
     Logger.error(error, writeLog: _lastError != error && _lastError != _disconnectedMessage);
     _lastError = error;
@@ -279,8 +287,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   }
 
   void _onPositionChanged(Duration position) {
-    if (widget.mode == PlayerMode.liveview) {
-      _audioPlayer.seek(position);
+    if (widget.mode == PlayerMode.liveview && _audioPlayer != null) {
+      _audioPlayer?.seek(position);
     }
 
     if (_state.value != _PlayerState.error) {
@@ -334,15 +342,41 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     });
   }
 
-  Future<void> jumpToDate(DateTime date, {int? dateIndex}) async {
-    _shouldSyncPlayerTime = false;
-    // Set timeline trước tránh cảm giác delay
+  late final AsyncJobQueue _queue = AsyncJobQueue();
+  bool _newestIsEmpty = false;
+  Future<void> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
+    _shouldSyncPlayerTime = _newestIsEmpty = false;
+    _isSeeking.value = true;
     widget.controller.onTimeChanged?.call(date.roundToSecond, dateIndex != null);
 
+    final index = dateIndex ?? widget.playlist.atTime(date);
+    widget.controller.onPlaybackChanged?.call(index ?? -1);
+    if (index == null) {
+      _isSeeking.value = false;
+      _newestIsEmpty = true;
+      _state.value = _PlayerState.empty;
+      await _player.pause();
+      await _queue.cancelAndReset();
+      return;
+    }
+
+    _queue.add(() async {
+      await _jumpToDate(date, dateIndex: index);
+
+      // Spam click và sau đó click ra ngoài --> bị nhảy về cái trước đó
+      if (_queue._nextJob == null && !_newestIsEmpty) {
+        _shouldSyncPlayerTime = true;
+        _isSeeking.value = false;
+      }
+    });
+  }
+
+  Future<void> _jumpToDate(DateTime date, {int? dateIndex}) async {
     final index = dateIndex ?? widget.playlist.atTime(date);
 
     // Click ngoài khoảng playback
     if (index == null) {
+      widget.controller.onPlaybackChanged?.call(-1);
       _state.value = _PlayerState.empty;
       await _player.pause();
       return;
@@ -369,20 +403,18 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
       await _player.jump(index);
       await _waitForBufferingAndSeek(diff);
     }
-
-    _shouldSyncPlayerTime = true;
   }
 
   Future<void> _waitForBufferingAndSeek(Duration diff, {int timeout = 60}) async {
-    if (diff != Duration.zero && _state.value != _PlayerState.error) {
+    if (_state.value != _PlayerState.error) {
       try {
-        // Đợi tới khi buffering xong (đã chuyển playback) --> Không bị delay
+        // Đợi tới khi buffering xong (đã chuyển playback) --> Không bị delay + seeking = false chuẩn
         await _player.stream.buffering
             .firstWhere((buffering) => buffering == false)
             .timeout(Duration(seconds: timeout));
 
         // Seek tới điểm click
-        await _player.seek(diff);
+        if (diff != Duration.zero) await _player.seek(diff);
       } catch (_) {
         Logger.error(
           "Timeout khi buffering --> skip seeking to ${currentPlayback.startTime.add(diff)}",
@@ -420,13 +452,17 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     if (_duration <= _player.state.duration && _duration >= Duration.zero) {
       await _player.seek(_duration);
     } else {
-      await jumpToDate(currentPlayback.startTime.add(_duration));
+      _shouldSyncPlayerTime = false;
+      _isSeeking.value = true;
+      await _jumpToDate(currentPlayback.startTime.add(_duration));
+      _shouldSyncPlayerTime = true;
+      _isSeeking.value = false;
     }
   }
 
   Future<void> changeVolume(double volume) async {
-    if (widget.mode == PlayerMode.liveview) {
-      await _audioPlayer.setVolume(volume);
+    if (widget.mode == PlayerMode.liveview && _audioPlayer != null && audioSourceMode.isSplit) {
+      await _audioPlayer?.setVolume(volume);
     } else {
       await _player.setVolume(volume);
     }
@@ -436,18 +472,18 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     _shouldSyncPlayerTime = false;
     if (_status.value == PlayerStatus.playing) {
       await _player.pause();
-      if (widget.mode == PlayerMode.liveview) await _audioPlayer.pause();
+      if (widget.mode == PlayerMode.liveview) await _audioPlayer?.pause();
       _status.value = PlayerStatus.paused;
     } else {
       await _player.play();
-      if (widget.mode == PlayerMode.liveview) await _audioPlayer.play();
+      if (widget.mode == PlayerMode.liveview) await _audioPlayer?.play();
       _status.value = PlayerStatus.playing;
     }
     _shouldSyncPlayerTime = true;
   }
 
   Future<void> changeSpeed(double speed) async {
-    if (widget.mode == PlayerMode.liveview) await _audioPlayer.setRate(speed);
+    if (widget.mode == PlayerMode.liveview) await _audioPlayer?.setRate(speed);
     await _player.setRate(speed);
   }
 
@@ -519,17 +555,38 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
                 height: double.infinity,
                 fit: BoxFit.fitHeight,
                 controller: _controller,
+                subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
                 controls: (state) => Stack(
                   fit: StackFit.expand,
                   children: [
                     Positioned(top: 20, right: 20, child: _buildLabel()),
                     Positioned.fill(child: _buildPlaybackStatus()),
 
+                    ValueListenableBuilder(
+                      valueListenable: _isSeeking,
+                      builder: (context, value, child) {
+                        return Positioned(
+                          top: 0,
+                          right: 0,
+                          left: 0,
+                          bottom: 0,
+                          child: value
+                              ? Container(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  alignment: Alignment.center,
+                                  child: CircularProgressIndicator.adaptive(),
+                                )
+                              : const SizedBox.shrink(),
+                        );
+                      },
+                    ),
+
                     if (_videoKey.currentState?.isFullscreen() == true)
                       PlayerFullScreen(onExit: () => _videoKey.currentState?.exitFullscreen()),
                   ],
                 ),
-                subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
               ),
             ),
           };
@@ -616,5 +673,101 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
         ],
       ),
     );
+  }
+}
+
+/// Queue async chỉ duy trì tối đa 2 job:
+/// - 1 job đang chạy.
+/// - 1 job kế tiếp (job mới nhất, các job trước đó bị bỏ).
+class AsyncJobQueue {
+  Future<void> Function()? _currentJob;
+  Future<void> Function()? _nextJob;
+  bool _isRunning = false;
+  bool _isCancelling = false;
+  bool _isDisposed = false;
+  Completer<void>? _cancelCompleter;
+
+  /// Thêm 1 job vào queue.
+  /// - Nếu đang chạy, job này sẽ thay thế job kế tiếp hiện tại.
+  /// - Nếu idle, job chạy ngay.
+  Future<void> add(Future<void> Function() job) async {
+    if (_isDisposed) return;
+    if (_isCancelling) await _cancelCompleter?.future;
+
+    if (_isRunning) {
+      // 🔹 Giữ lại job mới nhất, bỏ các job trước đó
+      _nextJob = job;
+      return;
+    }
+
+    _currentJob = job;
+    _runNext();
+  }
+
+  /// Hủy toàn bộ job (cả đang chạy và kế tiếp), reset trạng thái.
+  Future<void> cancelAndReset() async {
+    if (_isDisposed || _isCancelling) return;
+    _isCancelling = true;
+    _cancelCompleter = Completer<void>();
+
+    _currentJob = null;
+    _nextJob = null;
+    _isRunning = false;
+
+    // Cho phép các async đang pending thoát ra
+    await Future.microtask(() {});
+    _isCancelling = false;
+
+    _cancelCompleter?.complete();
+    _cancelCompleter = null;
+  }
+
+  /// Hủy job hiện tại và job kế (nhưng vẫn có thể add lại sau).
+  Future<void> cancel() async {
+    if (_isDisposed || _isCancelling) return;
+    _isCancelling = true;
+    _cancelCompleter = Completer<void>();
+
+    _nextJob = null;
+    _currentJob = null;
+    _isRunning = false;
+
+    await Future.microtask(() {});
+    _isCancelling = false;
+
+    _cancelCompleter?.complete();
+    _cancelCompleter = null;
+  }
+
+  /// Dọn dẹp queue và ngăn add mới.
+  Future<void> dispose() async {
+    if (_isDisposed) return;
+    _isDisposed = true;
+
+    await cancelAndReset();
+    _nextJob = null;
+    _currentJob = null;
+  }
+
+  /// Chạy tuần tự: job hiện tại -> job kế nếu có.
+  void _runNext() async {
+    if (_isRunning || _currentJob == null || _isCancelling || _isDisposed) return;
+    _isRunning = true;
+
+    final job = _currentJob!;
+    _currentJob = null;
+
+    try {
+      await job();
+    } finally {
+      _isRunning = false;
+
+      if (!_isCancelling && !_isDisposed && _nextJob != null) {
+        // 🔹 Nếu có job kế, chạy tiếp
+        _currentJob = _nextJob;
+        _nextJob = null;
+        _runNext();
+      }
+    }
   }
 }

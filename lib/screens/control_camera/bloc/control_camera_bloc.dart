@@ -249,7 +249,12 @@ class ControlCameraBloc
       listCamera = output.listCamera;
       emit(DeleteCameraSuccessState(deletedCameraId: event.cameraId));
     } else {
-      emit(AddCameraFailState(output.errorMessage ?? 'Xóa camera thất bại'));
+      emit(
+        RemoveCameraFromGroupFailState(
+          output.errorMessage ?? 'Xóa camera thất bại',
+          timeId: DateTime.now().microsecondsSinceEpoch,
+        ),
+      );
     }
   }
 
@@ -357,7 +362,12 @@ class ControlCameraBloc
       groupId: event.groupId ?? currentGroupId,
     );
     res.fold(
-      (onFailure) => emit(RemoveCameraFromGroupFailState(res.left.toString())),
+      (onFailure) => emit(
+        RemoveCameraFromGroupFailState(
+          res.left.toString(),
+          timeId: DateTime.now().microsecondsSinceEpoch,
+        ),
+      ),
       (onSuccess) {
         // Cập nhật lại danh sách camera sau khi xóa khỏi nhóm.
         final updated = List<CameraEntity>.from(listCamera)

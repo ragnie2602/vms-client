@@ -181,7 +181,7 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                                       return null; // Số điện thoại không bắt buộc
                                     }
                                     final s = v.trim();
-                                    final phoneRegex = RegExp(r'^\d{1,11}\$');
+                                    final phoneRegex = RegExp(r'^\d{1,11}$');
                                     if (!phoneRegex.hasMatch(s)) {
                                       return 'Số điện thoại chỉ được chứa chữ số';
                                     }

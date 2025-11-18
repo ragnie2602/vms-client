@@ -25,7 +25,6 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   final SendMultiWindowEventUseCase sendMultiWindowEventUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
 
-  bool isSigningOut = false;
   int windowId = 0; // businessWindowID
 
   StreamSubscription? _multiWindowEventSubscription;
@@ -118,11 +117,13 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     Emitter<AppState> emit,
   ) async {
     if (event.multiWindowEvent is MWECloseWindow) {
-      if (isSigningOut) return;
-
       final bSourceID = (event.multiWindowEvent as MWECloseWindow).windowId; // business ID
+      MultiWindowUtil.clearWindowSetting(bSourceID);
 
-      if (!isSigningOut) MultiWindowUtil.clearWindowSetting(bSourceID);
+      if (MultiWindowUtil.hasClosedAll()) {
+        await windowManager.setPreventClose(false);
+        windowManager.close();
+      }
     }
     if (event.multiWindowEvent is MWESignOut) {
       if (MultiWindowUtil.isMainWindow(windowId)) {
@@ -135,6 +136,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         windowManager.close();
       }
     }
+    if (event.multiWindowEvent is MWEProfileReady) emit(state.copyWith(profileReady: true));
   }
 
   FutureOr<void> _onToggleMonitorDisplayMode(
@@ -147,7 +149,6 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) async {
     await MultiWindowUtil.save();
 
-    isSigningOut = true;
     AppData.instance.profile = null;
 
     sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
@@ -165,27 +166,32 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   }
 
   FutureOr<void> _onCloseWindow(CloseWindow event, Emitter<AppState> emit) async {
-    isSigningOut = true;
-
     if (MultiWindowUtil.isMainWindow(windowId)) {
       await MultiWindowUtil.save();
 
+      MultiWindowUtil.clearWindowSetting(windowId);
+
       for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
         WindowController.fromWindowId(subWindowId).close();
+      }
+
+      // Need to call here because it can be no sub-window to send message to main window
+      if (MultiWindowUtil.hasClosedAll()) {
+        await windowManager.setPreventClose(false);
+        windowManager.close();
       }
     } else {
       await sendMultiWindowEventUseCase.execute(
         SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
       );
-    }
 
-    await windowManager.setPreventClose(false);
-    windowManager.close();
+      await windowManager.setPreventClose(false);
+      windowManager.close();
+    }
   }
 
   FutureOr<void> _onReopenSubWindow(ReopenSubWindow event, Emitter<AppState> emit) async {
     MultiWindowUtil.init();
-    isSigningOut = false;
 
     if (MultiWindowUtil.isMainWindow(windowId)) {
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
@@ -195,6 +201,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
           SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
         );
         output.windowController.show();
+        Future.delayed(const Duration(milliseconds: 200), () {});
       }
     }
   }
@@ -210,6 +217,7 @@ class AppState extends BaseState {
   final bool isSignOut;
   final int myProfileUpdatedAt;
   final bool skipLogin;
+  final bool profileReady;
 
   AppState(
     this.displayFullScreenLiveView, {
@@ -217,6 +225,7 @@ class AppState extends BaseState {
     this.isSignOut = false,
     this.myProfileUpdatedAt = 0,
     this.skipLogin = false,
+    this.profileReady = false,
   }) : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
     AppTheme.currentMode = this.themeMode;
   }
@@ -227,18 +236,27 @@ class AppState extends BaseState {
     bool? isSignOut,
     int? myProfileUpdatedAt,
     bool? skipLogin,
+    bool? profileReady,
   }) {
     return AppState(
       displayFullScreenLiveView ?? this.displayFullScreenLiveView,
       themeMode: themeMode ?? this.themeMode,
       isSignOut: isSignOut ?? false,
       myProfileUpdatedAt: myProfileUpdatedAt ?? this.myProfileUpdatedAt,
-      skipLogin: skipLogin ?? false,
+      skipLogin: skipLogin ?? this.skipLogin,
+      profileReady: profileReady ?? this.profileReady,
     );
   }
 
   @override
-  List<Object?> get props => [themeMode, displayFullScreenLiveView, isSignOut, myProfileUpdatedAt];
+  List<Object?> get props => [
+    themeMode,
+    displayFullScreenLiveView,
+    isSignOut,
+    myProfileUpdatedAt,
+    skipLogin,
+    profileReady,
+  ];
 }
 
 class AppEvent extends BaseEvent {

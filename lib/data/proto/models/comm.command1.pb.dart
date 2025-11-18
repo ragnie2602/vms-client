@@ -2281,6 +2281,7 @@ class UpdateCamera_Request extends $pb.GeneratedMessage {
     $core.String? xaddr,
     $1.MapLocation? location,
     $core.Iterable<$core.String>? subStreamUrls,
+    $core.Iterable<$core.List<$core.int>>? tagsetId,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -2310,6 +2311,9 @@ class UpdateCamera_Request extends $pb.GeneratedMessage {
     if (subStreamUrls != null) {
       $result.subStreamUrls.addAll(subStreamUrls);
     }
+    if (tagsetId != null) {
+      $result.tagsetId.addAll(tagsetId);
+    }
     return $result;
   }
   UpdateCamera_Request._() : super();
@@ -2326,6 +2330,7 @@ class UpdateCamera_Request extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'xaddr')
     ..aOM<$1.MapLocation>(8, _omitFieldNames ? '' : 'location', subBuilder: $1.MapLocation.create)
     ..pPS(9, _omitFieldNames ? '' : 'subStreamUrls')
+    ..p<$core.List<$core.int>>(10, _omitFieldNames ? '' : 'tagsetId', $pb.PbFieldType.PY)
     ..hasRequiredFields = false
   ;
 
@@ -2426,6 +2431,9 @@ class UpdateCamera_Request extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(9)
   $core.List<$core.String> get subStreamUrls => $_getList(8);
+
+  @$pb.TagNumber(10)
+  $core.List<$core.List<$core.int>> get tagsetId => $_getList(9);
 }
 
 class UpdateCamera_Reply extends $pb.GeneratedMessage {
@@ -8971,6 +8979,7 @@ class AddUser_Request extends $pb.GeneratedMessage {
     $core.String? password,
     $core.bool? changePassDenied,
     $core.bool? addCamDenied,
+    $1.UserStatus? status,
   }) {
     final $result = create();
     if (account != null) {
@@ -9003,6 +9012,9 @@ class AddUser_Request extends $pb.GeneratedMessage {
     if (addCamDenied != null) {
       $result.addCamDenied = addCamDenied;
     }
+    if (status != null) {
+      $result.status = status;
+    }
     return $result;
   }
   AddUser_Request._() : super();
@@ -9020,6 +9032,7 @@ class AddUser_Request extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'password')
     ..aOB(9, _omitFieldNames ? '' : 'changePassDenied', protoName: 'changePassDenied')
     ..aOB(10, _omitFieldNames ? '' : 'addCamDenied', protoName: 'addCamDenied')
+    ..e<$1.UserStatus>(11, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $1.UserStatus.ACTIVE, valueOf: $1.UserStatus.valueOf, enumValues: $1.UserStatus.values)
     ..hasRequiredFields = false
   ;
 
@@ -9133,6 +9146,15 @@ class AddUser_Request extends $pb.GeneratedMessage {
   $core.bool hasAddCamDenied() => $_has(9);
   @$pb.TagNumber(10)
   void clearAddCamDenied() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $1.UserStatus get status => $_getN(10);
+  @$pb.TagNumber(11)
+  set status($1.UserStatus v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasStatus() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearStatus() => clearField(11);
 }
 
 class AddUser_Reply extends $pb.GeneratedMessage {
@@ -9251,6 +9273,7 @@ class EditUser_Request extends $pb.GeneratedMessage {
     $core.String? uidStr,
     $core.bool? changePassDenied,
     $core.bool? addCamDenied,
+    $1.UserStatus? status,
   }) {
     final $result = create();
     if (userId != null) {
@@ -9289,6 +9312,9 @@ class EditUser_Request extends $pb.GeneratedMessage {
     if (addCamDenied != null) {
       $result.addCamDenied = addCamDenied;
     }
+    if (status != null) {
+      $result.status = status;
+    }
     return $result;
   }
   EditUser_Request._() : super();
@@ -9308,6 +9334,7 @@ class EditUser_Request extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'uidStr')
     ..aOB(11, _omitFieldNames ? '' : 'changePassDenied', protoName: 'changePassDenied')
     ..aOB(12, _omitFieldNames ? '' : 'addCamDenied', protoName: 'addCamDenied')
+    ..e<$1.UserStatus>(13, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $1.UserStatus.ACTIVE, valueOf: $1.UserStatus.valueOf, enumValues: $1.UserStatus.values)
     ..hasRequiredFields = false
   ;
 
@@ -9439,6 +9466,15 @@ class EditUser_Request extends $pb.GeneratedMessage {
   $core.bool hasAddCamDenied() => $_has(11);
   @$pb.TagNumber(12)
   void clearAddCamDenied() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $1.UserStatus get status => $_getN(12);
+  @$pb.TagNumber(13)
+  set status($1.UserStatus v) { setField(13, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasStatus() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearStatus() => clearField(13);
 }
 
 class EditUser_Reply extends $pb.GeneratedMessage {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/core/utils/task_pool.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
@@ -26,6 +27,8 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   final ICameraRepository cameraRepository;
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
+    final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
+
     emit(MonitorLoading());
 
     (await cameraRepository.getAllCamera()).fold(
@@ -36,7 +39,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         emit(
           MonitorSuccess(
             cameras: cameras,
-            mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
+            mode: lastState?.mode ?? ViewMode.v2x2 ,
           ),
         );
       },
@@ -47,6 +50,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     GetAllCameraInGroup event,
     Emitter<MonitorState> emit,
   ) async {
+    TaskPool.instance.clean();
     emit(MonitorLoading());
 
     (await cameraRepository.getAllCamerasInGroup(groupId: event.groupId)).fold(
@@ -69,6 +73,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     GetAllCameraNoGroup event,
     Emitter<MonitorState> emit,
   ) async {
+    TaskPool.instance.clean();
     emit(MonitorLoading());
 
     final groups = await cameraRepository.getAllCamera();
@@ -93,6 +98,8 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   }
 
   Future<void> _onGetCameraAtPage(GetCameraAtPage event, Emitter<MonitorState> emit) async {
+    TaskPool.instance.clean();
+
     if (state is MonitorSuccess) {
       final preState = state as MonitorSuccess;
       emit(
@@ -132,7 +139,12 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     }
 
     final preState = state as MonitorSuccess;
-    if (preState.mode != event.mode) emit(preState.copyWith(mode: event.mode, page: 1));
+    if (preState.mode != event.mode) {
+      // Case tăng mode --> clean --> đoạn cuối có thể bị clean (~ loading mãi)
+      // Chỉ clean khi giảm mode
+      if (preState.mode.total > event.mode.total) TaskPool.instance.clean();
+      emit(preState.copyWith(mode: event.mode, page: 1));
+    }
   }
 
   FutureOr<void> _onResetFilter(ResetFilter event, Emitter<MonitorState> emit) {

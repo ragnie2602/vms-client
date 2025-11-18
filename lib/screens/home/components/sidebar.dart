@@ -46,7 +46,6 @@ class _SidebarState extends State<Sidebar> {
     } else {
       tabs.add(HomeTab.tabs[0]);
       tabs.add(HomeTab.tabs[1]);
-      tabs.add(HomeTab.tabs.last);
     }
   }
 
