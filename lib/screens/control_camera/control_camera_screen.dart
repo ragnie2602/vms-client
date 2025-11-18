@@ -1,3 +1,4 @@
+import 'package:easy_onvif/probe.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -468,8 +469,16 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                               );
                               return;
                             }
-                            showAddCameraRtspDialog(
+                            showAddCameraDialog(
                               context,
+                              onCheckDiscovery: () async {
+                                final multicast = MulticastProbe();
+                                await multicast.probe();
+                                for (var device in multicast.onvifDevices) {
+                                  print(device.name);
+                                }
+                                return multicast.onvifDevices;
+                              },
                               onSubmit: (payload) async {
                                 if (payload.method == 'RTSP') {
                                   _onAddCameraRTSP(
@@ -616,10 +625,16 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               itemCamera: cameras[index],
                                               index: index + 1,
                                               onEdit: () {
-                                                showAddCameraRtspDialog(
+                                                showAddCameraDialog(
                                                   context,
                                                   mode: CameraDialogMode.edit,
                                                   cameraData: cameras[index],
+                                                  onCheckDiscovery: () async {
+                                                    await MulticastProbe()
+                                                        .probe();
+                                                    return MulticastProbe()
+                                                        .onvifDevices;
+                                                  },
                                                   onEdit: (payload) async {
                                                     _onUpdateCamera(
                                                       cameraId:
