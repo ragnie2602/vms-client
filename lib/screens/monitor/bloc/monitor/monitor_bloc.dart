@@ -6,7 +6,6 @@ import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
-import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
@@ -28,33 +27,12 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
 
     on<ResetFilter>(_onResetFilter);
 
-    on<MultiWindowEventReceived>(_onMultiWindowEventReceived);
-
-    registerIPCEvents();
+    on<ReopenMonitor>(_onReopenMonitor);
   }
 
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
   final ICameraRepository cameraRepository;
-
-  StreamSubscription? _multiWindowEventSubscription;
-
-  @override
-  Future<void> close() {
-    _multiWindowEventSubscription?.cancel();
-    return super.close();
-  }
-
-  void registerIPCEvents() {
-    _multiWindowEventSubscription?.cancel();
-
-    final mweOuput = subscribeMultiWindowEventUseCase.execute(SubscribeMultiWindowEventInput());
-
-    // In case of call the other usecase(s)
-    _multiWindowEventSubscription = mweOuput.listen((output) {
-      add(MultiWindowEventReceived(output.event));
-    });
-  }
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
     final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
@@ -167,25 +145,17 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     emit(MonitorInitial());
   }
 
-  FutureOr<void> _onMultiWindowEventReceived(
-    MultiWindowEventReceived event,
-    Emitter<MonitorState> emit,
-  ) async {
-    if (event.multiWindowEvent is MWERestoreMonitorMode) {
-      final restoreData = event.multiWindowEvent as MWERestoreMonitorMode;
-      if (restoreData.isDefaultMode) {
-        if (restoreData.id.isEmpty) {
-          await _onGetAllCamera(GetAllCamera(mode: restoreData.viewMode), emit);
-        } else if (restoreData.id.length == 1 && restoreData.id.first == -1) {
-          await _onGetAllCameraNoGroup(GetAllCameraNoGroup(), emit);
-        } else {
-          await _onGetAllCameraInGroup(GetAllCameraInGroup(restoreData.id), emit);
-        }
+  FutureOr<void> _onReopenMonitor(ReopenMonitor event, Emitter<MonitorState> emit) async {
+    if (event.id.isEmpty) {
+      await _onGetAllCamera(GetAllCamera(mode: ViewMode.fromValue(event.mode)), emit);
+    } else if (event.id.length == 1 && event.id.first == -1) {
+      await _onGetAllCameraNoGroup(GetAllCameraNoGroup(), emit);
+    } else {
+      await _onGetAllCameraInGroup(GetAllCameraInGroup(event.id), emit);
+    }
 
-        if (restoreData.viewMode != ViewMode.v2x2) {
-          await _onChangeGridMode(ChangeGridMode(restoreData.viewMode), emit);
-        }
-      }
+    if (event.mode != ViewMode.v2x2.value) {
+      await _onChangeGridMode(ChangeGridMode(ViewMode.fromValue(event.mode)), emit);
     }
   }
 }

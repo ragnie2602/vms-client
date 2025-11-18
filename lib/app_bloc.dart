@@ -28,7 +28,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
 
   int windowId = 0; // businessWindowID
+
+  // Reopen monitor
+  bool isDefaultMode = true;
   List<int> reopenViewId = [];
+  int reopenViewMode = 1;
 
   StreamSubscription? _multiWindowEventSubscription;
 
@@ -142,7 +146,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       final restoreData = event.multiWindowEvent as MWERestoreMonitorMode;
 
       reopenViewId = restoreData.id;
-      if (restoreData.isDefaultMode) {
+      reopenViewMode = restoreData.viewMode.value;
+      isDefaultMode = restoreData.isDefaultMode;
+
+      if (isDefaultMode) {
         emit(state.copyWith(nextRoute: Routes.monitoring.name));
       } else {
         emit(state.copyWith(nextRoute: Routes.custom_live_view.name));

@@ -33,7 +33,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   @override
   void initState() {
     super.initState();
-    if (mounted && context.read<CustomViewBloc>().state is ShowCustomViewSuccess) currentTab = 1;
+    if (mounted) currentTab = context.read<AppBloc>().isDefaultMode ? 0 : 1;
   }
 
   @override

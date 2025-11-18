@@ -125,7 +125,13 @@ class AppRouter {
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(
-              create: (context) => MonitorBloc(context.read(), context.read(), context.read()),
+              create: (context) => MonitorBloc(context.read(), context.read(), context.read())
+                ..add(
+                  ReopenMonitor(
+                    context.read<AppBloc>().reopenViewId,
+                    context.read<AppBloc>().reopenViewMode,
+                  ),
+                ),
             ),
             BlocProvider(
               create: (context) => CustomViewBloc(

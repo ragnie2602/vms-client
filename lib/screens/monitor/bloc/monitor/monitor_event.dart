@@ -35,3 +35,10 @@ class MultiWindowEventReceived extends MonitorEvent {
 
   MultiWindowEventReceived(this.multiWindowEvent);
 }
+
+class ReopenMonitor extends MonitorEvent {
+  final List<int> id;
+  final int mode;
+
+  ReopenMonitor(this.id, this.mode);
+}
