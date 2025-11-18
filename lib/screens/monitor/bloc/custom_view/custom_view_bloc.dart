@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/core/utils/common_util.dart';
+import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
@@ -31,6 +34,8 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
   // Restore when cancel add new custom view
   CustomLiveView? preCustomView;
 
+  StreamSubscription? _multiWindowEventSubscription;
+
   CustomViewBloc(
     this.customLiveViewRepository,
     this.createTempCustomLiveViewUseCase,
@@ -48,6 +53,14 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
     on<DeleteCustomLiveView>(_onDeleteCustomLiveView);
 
     on<UpdateCustomView>(_onUpdateCustomView);
+
+    on<ReopenCustomView>(_onReopenCustomView);
+  }
+
+  @override
+  Future<void> close() {
+    _multiWindowEventSubscription?.cancel();
+    return super.close();
   }
 
   FutureOr<void> _onGetListCustomViews(
@@ -160,5 +173,18 @@ class CustomViewBloc extends Bloc<CustomViewEvent, CustomViewState> {
     Emitter<CustomViewState> emit,
   ) {
     emit(RemovingCameraFromCustomViewSuccess(index: event.index));
+  }
+
+  FutureOr<void> _onReopenCustomView(ReopenCustomView event, Emitter<CustomViewState> emit) async {
+    final listCVs = await getListCustomLiveViewUseCase.execute(GetListCustomLiveViewInput());
+
+    CustomLiveView? cv;
+    if (listCVs.isSuccess) {
+      cv = listCVs.customViews.firstWhereOrNull((cv) => cv.id.equals(event.id));
+    } else {
+      cv = CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: '');
+    }
+
+    _onShowCustomView(ShowCustomView(cv!, CustomMonitorPaneMode.view), emit);
   }
 }

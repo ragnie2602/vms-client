@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fvp/mdk.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
@@ -27,6 +28,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
 
   int windowId = 0; // businessWindowID
+  List<int> reopenViewId = [];
 
   StreamSubscription? _multiWindowEventSubscription;
 
@@ -92,7 +94,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       }
     } catch (_) {}
 
-    emit(state.copyWith(skipLogin: !MultiWindowUtil.isMainWindow(windowId)));
+    if (MultiWindowUtil.isMainWindow(windowId)) emit(state.copyWith(nextRoute: Routes.login.name));
   }
 
   FutureOr<void> _onCreateNewWindow(CreateNewWindow event, Emitter<AppState> emit) async {
@@ -136,6 +138,16 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       }
     }
     if (event.multiWindowEvent is MWEProfileReady) emit(state.copyWith(profileReady: true));
+    if (event.multiWindowEvent is MWERestoreMonitorMode) {
+      final restoreData = event.multiWindowEvent as MWERestoreMonitorMode;
+
+      reopenViewId = restoreData.id;
+      if (restoreData.isDefaultMode) {
+        emit(state.copyWith(nextRoute: Routes.monitoring.name));
+      } else {
+        emit(state.copyWith(nextRoute: Routes.custom_live_view.name));
+      }
+    }
   }
 
   FutureOr<void> _onToggleMonitorDisplayMode(
@@ -228,7 +240,7 @@ class AppState extends BaseState {
   final bool displayFullScreenLiveView;
   final bool isSignOut;
   final int myProfileUpdatedAt;
-  final bool skipLogin;
+  final String nextRoute;
   final bool profileReady;
 
   AppState(
@@ -236,7 +248,7 @@ class AppState extends BaseState {
     ThemeMode? themeMode,
     this.isSignOut = false,
     this.myProfileUpdatedAt = 0,
-    this.skipLogin = false,
+    this.nextRoute = '',
     this.profileReady = false,
   }) : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
     AppTheme.currentMode = this.themeMode;
@@ -247,7 +259,7 @@ class AppState extends BaseState {
     bool? displayFullScreenLiveView,
     bool? isSignOut,
     int? myProfileUpdatedAt,
-    bool? skipLogin,
+    String? nextRoute,
     bool? profileReady,
   }) {
     return AppState(
@@ -255,7 +267,7 @@ class AppState extends BaseState {
       themeMode: themeMode ?? this.themeMode,
       isSignOut: isSignOut ?? false,
       myProfileUpdatedAt: myProfileUpdatedAt ?? this.myProfileUpdatedAt,
-      skipLogin: skipLogin ?? this.skipLogin,
+      nextRoute: nextRoute ?? this.nextRoute,
       profileReady: profileReady ?? this.profileReady,
     );
   }
@@ -266,7 +278,7 @@ class AppState extends BaseState {
     displayFullScreenLiveView,
     isSignOut,
     myProfileUpdatedAt,
-    skipLogin,
+    nextRoute,
     profileReady,
   ];
 }

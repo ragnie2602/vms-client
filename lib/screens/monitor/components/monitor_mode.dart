@@ -31,6 +31,12 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
   int currentTab = 0;
 
   @override
+  void initState() {
+    super.initState();
+    if (mounted && context.read<CustomViewBloc>().state is ShowCustomViewSuccess) currentTab = 1;
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (viewMode == 0) {
       return DefaultTabController(

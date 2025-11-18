@@ -20,6 +20,7 @@ import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.d
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 
 class DependencyInjection {
   static List<SingleChildWidget> providers = [
@@ -42,9 +43,7 @@ class DependencyInjection {
     Provider<UserService>(create: (context) => UserService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
-    Provider<EmapService>(
-      create: (context) => EmapService(context.read(), context.read()),
-    ),
+    Provider<EmapService>(create: (context) => EmapService(context.read(), context.read())),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -64,9 +63,7 @@ class DependencyInjection {
     Provider<ICustomLiveViewRepository>(
       create: (context) => CustomLiveViewRepository(context.read()),
     ),
-    Provider<IEmapRepository>(
-      create: (context) => EmapRepository(context.read()),
-    ),
+    Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
 
     // Use Cases
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),

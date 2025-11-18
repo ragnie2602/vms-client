@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
@@ -133,7 +134,7 @@ class AppRouter {
                 context.read(),
                 context.read(),
                 context.read(),
-              )..add(GetListCustomViews()),
+              )..add(ReopenCustomView(context.read<AppBloc>().reopenViewId)),
               lazy: false,
             ),
             BlocProvider(
