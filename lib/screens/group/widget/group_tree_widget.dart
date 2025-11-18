@@ -1,6 +1,6 @@
 import 'package:animated_tree_view/animated_tree_view.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -136,7 +136,8 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                 TextField(
                   controller: widget.searchController,
                   decoration: InputDecoration(
-                    fillColor: AppColors.greyE2E8F0,
+                    fillColor: AppColors.greyF2F4FA,
+                    filled: true,
                     prefixIcon: Container(
                       padding: EdgeInsets.symmetric(
                         vertical: 12,
@@ -186,7 +187,7 @@ class _TreeGroupWidgetState extends State<TreeGroupWidget> {
                       Padding(
                         padding: const EdgeInsets.all(4),
                         child: SvgPicture.asset(
-                          AppAssets.icExpand,
+                          AppAssets.icAddGroupCamera,
                           width: 24,
                           height: 24,
                         ),

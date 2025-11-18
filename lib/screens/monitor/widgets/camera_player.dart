@@ -353,25 +353,29 @@ class CameraPlayerState extends State<CameraPlayer> {
   }
 
   Widget _buildError() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 14),
-        Icon(Icons.videocam_off, color: Colors.red, size: 36),
-        SizedBox(height: 6),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18),
-          child: Text(
-            widget.mode != PlayerMode.playback
-                ? 'Camera ${widget.name} đang ngoại tuyến'
-                : 'Có lỗi xảy ra khi tải video',
-            style: AppTypography.style(13, color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.videocam_off, color: Colors.red, size: 36),
+            SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                widget.mode != PlayerMode.playback
+                    ? 'Camera ${widget.name} đang ngoại tuyến'
+                    : 'Có lỗi xảy ra khi tải video',
+                style: AppTypography.style(13, color: Colors.white, lineHeight: 1.25),
+                textAlign: TextAlign.center,
+                maxLines: 3,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

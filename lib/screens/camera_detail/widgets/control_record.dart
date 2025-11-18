@@ -1,0 +1,235 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
+
+import '../bloc/camera_detail/camera_detail_bloc.dart';
+
+class ControlRecord extends StatefulWidget {
+  const ControlRecord({super.key, required this.recordingStatus});
+  final int recordingStatus;
+
+  @override
+  State<ControlRecord> createState() => _ControlRecordState();
+}
+
+class _ControlRecordState extends State<ControlRecord> {
+  final ValueNotifier<Duration> _duration = ValueNotifier(Duration.zero);
+  Timer? _timer;
+  bool _isBusy = false;
+  Process? _process;
+  bool _isKilledByUser = false;
+
+  @override
+  void didUpdateWidget(covariant ControlRecord oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Đang recording --> đổi cam --> bị build lại --> reset
+    // Case stop --> state đổi --> rebuild lại --> có thể bị duplicate toast
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (oldWidget.recordingStatus > 0 &&
+          widget.recordingStatus <= 0 &&
+          _process != null &&
+          !_isKilledByUser) {
+        Future.delayed(
+          Duration.zero,
+          () => _onStop(
+            'Quá trình ghi hình đã dừng. Video đã được lưu thành công',
+            widget.recordingStatus == -1,
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Trường hợp đang ghi mà đổi tab/đổi cam/logout ... --> toast
+    if (_process != null) {
+      Future.delayed(
+        Duration.zero,
+        () => ToastUtil.toastSuccess(
+          title: _toastMessage('Quá trình ghi hình đã dừng. Video đã được lưu thành công'),
+        ),
+      );
+    }
+    _process?.stdin.add([113]); // Gửi 'q' để dừng ffmpeg --> File audio không bị 0 bytes
+    _process?.stdin.close();
+    _duration.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _reset([bool? killProcess]) async {
+    if (!mounted) return;
+
+    context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
+    _duration.value = Duration.zero;
+    _timer?.cancel();
+    _process?.stdin.add([113]); // Gửi 'q' để dừng ffmpeg --> File audio không bị 0 bytes
+    await _process?.stdin.close();
+    if (killProcess == true) _process?.kill(ProcessSignal.sigkill);
+    _process = null;
+  }
+
+  void _onStop([String? message, bool? killProcess]) async {
+    // Case chủ động ấn stop thì delay thêm vài giây để đảm bảo kết quả có chứa time lúc ấn dừng
+    // --- Thừa hẳn thay vì bị mất đoạn đầu/cuối lúc ấn ghi/dừng ---
+    if (message == null) {
+      setState(() => _isBusy = true);
+      await Future.delayed(Duration(seconds: 3));
+      setState(() => _isBusy = false);
+    }
+
+    if (!mounted) return;
+
+    _isKilledByUser = true;
+    _reset(killProcess);
+    ToastUtil.toastSuccess(
+      context: context,
+      title: _toastMessage(message ?? 'Ghi hình hoàn tất. Video đã được lưu thành công.'),
+    );
+  }
+
+  void _onExited(int exitCode) {
+    if (!mounted) return;
+
+    _reset();
+
+    if (!_isKilledByUser) {
+      ToastUtil.toastWarning(
+        context: context,
+        title: _toastMessage('Đã dừng ghi video do có lỗi xảy ra'),
+      );
+    }
+  }
+
+  Future<void> _startRecording() async {
+    if (_isBusy || !mounted) return;
+
+    setState(() => _isBusy = true);
+    _isKilledByUser = false;
+
+    context.read<CameraDetailBloc>().add(
+      OnRecording(
+        cb: (Process? process, String? output) {
+          // Trường hợp bị dispose trước khi loading xong --> cb sẽ gọi khi unmouted --> kill process
+          if (!mounted) {
+            process?.stdin.add([113]); // Gửi 'q' để dừng ffmpeg --> File audio không bị 0 bytes
+            process?.stdin.close();
+            ToastUtil.toastSuccess(
+              title: _toastMessage('Quá trình ghi hình đã dừng. Video đã được lưu thành công'),
+            );
+            return;
+          }
+
+          setState(() => _isBusy = false);
+          _process = process;
+
+          if (process != null) {
+            _process!.exitCode.then(_onExited);
+            _duration.value = Duration.zero;
+            _timer?.cancel();
+            _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+              if (_isBusy) return;
+              final future = Duration(seconds: _duration.value.inSeconds + 1);
+              if (future >= AppConfig.RECORDING_MAX_DURATION) {
+                return _onStop("Quá trình ghi video đã dừng do quá thời gian ghi tối đa cho phép!");
+              }
+              _duration.value = future;
+            });
+          } else if (output != null) {
+            ToastUtil.toastFail(
+              context: context,
+              title: _toastMessage('Có lỗi xảy ra trong quá trình ghi video'),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Text _toastMessage(String message) {
+    return Text(
+      message,
+      style: AppTypography.style(13, fontWeight: FontWeight.w500, color: AppColors.white),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.recordingStatus > 0 && _isBusy) return _buildRecordingTimer(isLoading: true);
+
+    return widget.recordingStatus > 0
+        ? _buildRecordingTimer(isLoading: _isBusy)
+        : _buildRecordAction();
+  }
+
+  Widget _buildRecordingTimer({bool isLoading = false}) {
+    return InkWell(
+      onTap: isLoading ? () {} : _onStop,
+      child: Container(
+        constraints: BoxConstraints(minWidth: 80),
+        padding: const EdgeInsets.fromLTRB(5, 4, 5, 4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Color(0xFFFF0000)),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              width: 18,
+              height: 18,
+              decoration: isLoading
+                  ? null
+                  : BoxDecoration(color: Color(0xFFFF0000), borderRadius: BorderRadius.circular(3)),
+              child: isLoading
+                  ? Padding(
+                      padding: const EdgeInsets.all(1.0),
+                      child: CircularProgressIndicator(color: Color(0xFFFF0000), strokeWidth: 3),
+                    )
+                  : null,
+            ),
+
+            ValueListenableBuilder(
+              valueListenable: _duration,
+              builder: (context, value, child) => Text(
+                formatDuration(value),
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.grey64748B,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecordAction() {
+    return InkWell(
+      onTap: _startRecording,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SvgPicture.asset(AppAssets.icRecord, width: 28, height: 28),
+      ),
+    );
+  }
+
+  String formatDuration(Duration duration) {
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+}

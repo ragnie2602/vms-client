@@ -13,11 +13,13 @@ import 'widgets/camera_detail_player.dart';
 class CameraDetailScreenArgs extends BaseScreenArgs {
   final CameraEntity? data;
   final bool isPlayback;
+  final bool openCamerasPanelImmediately;
   final Key? key;
 
   CameraDetailScreenArgs({
     required this.data,
     this.isPlayback = false,
+    this.openCamerasPanelImmediately = false,
     this.key,
     super.onBack,
     String? title,
@@ -29,16 +31,18 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
   CameraDetailScreen({required CameraDetailScreenArgs args})
     : data = args.data,
       isPlayback = args.isPlayback,
+      openCamerasPanelImmediately = args.openCamerasPanelImmediately,
       super(key: args.key);
 
   final CameraEntity? data;
   final bool isPlayback;
+  final bool openCamerasPanelImmediately;
 
   void _handlePageInfo(BuildContext context, CameraDetailState pre, CameraDetailState cur) {
     if ((pre.mode != cur.mode || pre.camera != cur.camera) && cur.camera != null) {
       context.read<HomeBloc>().add(
         ChangePageInfo(
-          title: "${cur.mode == CameraDetailMode.playback ? 'Playback' : ''} ${cur.camera!.name}",
+          title: "${cur.mode == CameraDetailMode.playback ? 'Xem lại' : ''} ${cur.camera!.name}",
           onBack: context.read<HomeBloc>().state.onBack,
         ),
       );
@@ -69,18 +73,20 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           context.read<PlaybackBloc>().add(GetVideoPlaybacks(state.camera!.id, state.playbackDate));
         },
         buildWhen: (previous, current) {
-          return previous.camera?.id != current.camera?.id || previous.mode != current.mode;
+          return previous.camera?.id != current.camera?.id ||
+              previous.mode != current.mode ||
+              previous.stream != current.stream;
         },
         builder: (context, state) {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: CameraDetailDesktopLayout(
-              openCamerasPanelImmediately: isPlayback,
+              openCamerasPanelImmediately: openCamerasPanelImmediately || isPlayback,
               content: state.camera == null
                   ? null
                   : state.mode.isPlayback
                   ? _waitingPlayback(state, context)
-                  : _buildPlayer(state, context),
+                  : _buildLiveview(state, context),
               mode: state.mode,
             ),
           );
@@ -104,18 +110,32 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           onStatusChanged: (status) {
             context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
           },
+          onInitializedValues: ({required double volume, required double speed}) {
+            context.read<CameraDetailBloc>().add(ChangeVolume(volume));
+            context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+            context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
+          },
         ),
       ),
     );
   }
 
-  Widget _buildPlayer(CameraDetailState state, BuildContext context) {
+  Widget _buildLiveview(CameraDetailState state, BuildContext context) {
     return CameraDetailPlayer.liveview(
-      source: state.camera!.mainStreamUri.toString(),
+      source: state.stream?.urlOfStream ?? state.camera!.mainStreamUri.toString(),
       name: state.camera!.name,
       controller: state.cameraDetailController,
       onStatusChanged: (status) {
         context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
+      },
+      onInitializedValues: ({required double volume, required double speed}) {
+        context.read<CameraDetailBloc>().add(ChangeVolume(volume));
+        context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+        context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
+      },
+      onLostConnection: () {
+        final bloc = context.read<CameraDetailBloc>();
+        if (bloc.state.recordingStatus != 0) bloc.add(OnRecording(cancelStatus: -1));
       },
     );
   }

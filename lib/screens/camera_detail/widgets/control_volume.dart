@@ -2,28 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 
-class VolumeWithSlide extends StatefulWidget {
-  const VolumeWithSlide({super.key});
+class ControlVolume extends StatefulWidget {
+  const ControlVolume({super.key, required this.disabled});
+  final bool disabled;
 
   @override
-  State<VolumeWithSlide> createState() => _VolumeWithSlideState();
+  State<ControlVolume> createState() => _ControlVolumeState();
 }
 
-class _VolumeWithSlideState extends State<VolumeWithSlide> {
+class _ControlVolumeState extends State<ControlVolume> {
   bool showSlider = false;
   bool isMuted = false;
 
   double _volumeBeforeMuted = 0;
 
+  void _wrapper(VoidCallback callback) {
+    if (widget.disabled) return;
+    callback.call();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onHover: (event) => setState(() => showSlider = true),
-      onExit: (event) => setState(() => showSlider = false),
+      onHover: (event) => _wrapper(() => setState(() => showSlider = true)),
+      onExit: (event) => _wrapper(() => setState(() => showSlider = false)),
       child: Container(
         height: 60,
         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -33,13 +40,15 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
             return Row(
               children: <Widget>[
                 InkWell(
-                  onTap: () {
-                    isMuted = !isMuted;
-                    if (isMuted) _volumeBeforeMuted = volume;
-                    context.read<CameraDetailBloc>().add(
-                      ChangeVolume(isMuted ? 0 : _volumeBeforeMuted),
-                    );
-                  },
+                  onTap: widget.disabled
+                      ? null
+                      : () => _wrapper(() {
+                          isMuted = !isMuted;
+                          if (isMuted) _volumeBeforeMuted = volume;
+                          context.read<CameraDetailBloc>().add(
+                            ChangeVolume(isMuted ? 0 : _volumeBeforeMuted),
+                          );
+                        }),
                   child: SvgPicture.asset(
                     volume == 100
                         ? AppAssets.icVolumeFull
@@ -48,7 +57,10 @@ class _VolumeWithSlideState extends State<VolumeWithSlide> {
                         : AppAssets.icVolumeHalf,
                     width: 28,
                     height: 28,
-                    colorFilter: ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                    colorFilter: ColorFilter.mode(
+                      widget.disabled ? AppColors.grey64748B : Colors.black,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
 

@@ -85,6 +85,24 @@ class AuthenticateService {
     }
   }
 
+  Future<void> connectSocket({
+    required String host,
+    required int port,
+    required List<int> uid,
+    required List<int> sessionId,
+  }) async {
+    await _socketApiClient.connect(SocketConnectionParams(host, port));
+    await _socketApiClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: Login_Request(uid: uid, sessionId: sessionId).writeToBuffer(),
+          type: PacketType.login,
+        ),
+      ),
+    );
+  }
+
   Future<bool> login(Authentication data) async {
     if (data.uid.isEmpty || data.sessionId.isEmpty || data.host.isEmpty) return false;
 
@@ -124,6 +142,11 @@ class AuthenticateService {
             changePassDenied: loginReply.profile.changePassDenied,
             uid: data.uid,
             sessionId: data.sessionId,
+            email: loginReply.profile.email,
+            tel: loginReply.profile.tel,
+            host: data.host,
+            port: data.port,
+            ssid: data.ssid,
           );
 
           return true;

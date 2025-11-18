@@ -13,7 +13,11 @@ class CameraListPopup extends StatelessWidget {
   final MonitorBloc bloc;
   final Function(CameraEntity) onCameraSelected;
 
-  CameraListPopup({super.key, required this.bloc, required this.onCameraSelected}) {
+  CameraListPopup({
+    super.key,
+    required this.bloc,
+    required this.onCameraSelected,
+  }) {
     bloc.add(GetAllCamera());
   }
 
@@ -48,53 +52,62 @@ class CameraListPopup extends StatelessWidget {
             ],
           ),
           Padding(
-            padding: EdgeInsets.only(left: 24, right: 24, bottom: 20),
-            child: TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                contentPadding: EdgeInsets.all(12),
-                hintText: 'Tìm kiếm',
-                hintStyle: AppTypography.style(
-                  14,
-                  color: Color(0xFF8F95B2),
-                  fontWeight: FontWeight.w400,
-                ),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                prefixIcon: Container(
-                  width: 20,
-                  height: 20,
-                  margin: EdgeInsets.only(right: 16, left: 12),
-                  child: SvgPicture.asset(AppAssets.icSearch),
-                ),
-                prefixIconConstraints: BoxConstraints.tight(Size(20 + 16 + 12, 20)),
-                suffixIcon: ValueListenableBuilder(
-                  valueListenable: searchController,
-                  builder: (context, value, child) => value.text.isEmpty
-                      ? const SizedBox.shrink()
-                      : InkWell(
-                          onTap: () => searchController.clear(),
-                          child: Padding(
-                            padding: EdgeInsets.all(8),
-                            child: SvgPicture.asset(AppAssets.icClose),
+            padding: EdgeInsets.only(left: 24, right: 24, bottom: 8),
+            child: SizedBox(
+              height: 36,
+              child: TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.all(12),
+                  hintText: 'Nhập tên camera',
+                  hintStyle: AppTypography.style(
+                    14,
+                    color: Color(0xFF8F95B2),
+                    fontWeight: FontWeight.w400,
+                  ),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  prefixIcon: Container(
+                    width: 20,
+                    height: 20,
+                    margin: EdgeInsets.only(right: 16, left: 12),
+                    child: SvgPicture.asset(AppAssets.icSearch),
+                  ),
+                  prefixIconConstraints: BoxConstraints.tight(
+                    Size(20 + 16 + 12, 20),
+                  ),
+                  suffixIcon: ValueListenableBuilder(
+                    valueListenable: searchController,
+                    builder: (context, value, child) => value.text.isEmpty
+                        ? const SizedBox.shrink()
+                        : InkWell(
+                            onTap: () => searchController.clear(),
+                            child: Padding(
+                              padding: EdgeInsets.all(8),
+                              child: SvgPicture.asset(AppAssets.icClose),
+                            ),
                           ),
-                        ),
+                  ),
+                  fillColor: Color(0xFFF2F4FA),
+                  filled: true,
                 ),
-                fillColor: Color(0xFFF2F4FA),
-                filled: true,
+                keyboardType: TextInputType.text,
+                style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                textInputAction: TextInputAction.search,
               ),
-              keyboardType: TextInputType.text,
-              style: AppTypography.style(14, fontWeight: FontWeight.w400),
-              textInputAction: TextInputAction.search,
             ),
           ),
           BlocBuilder<MonitorBloc, MonitorState>(
             bloc: bloc,
             builder: (context, state) {
-              if (state is MonitorLoading) return Center(child: CircularProgressIndicator());
-              if (state is MonitorFailure) return Center(child: Text(state.message));
+              if (state is MonitorLoading) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (state is MonitorFailure) {
+                return Center(child: Text(state.message));
+              }
               if (state is MonitorSuccess) {
                 return Flexible(
                   child: ValueListenableBuilder(
@@ -102,14 +115,18 @@ class CameraListPopup extends StatelessWidget {
                     builder: (context, value, child) {
                       final cameras = state.cameras
                           .where(
-                            (camera) => removeDiacritics(
-                              camera.name.toLowerCase(),
-                            ).contains(removeDiacritics(value.text.toLowerCase())),
+                            (camera) =>
+                                removeDiacritics(
+                                  camera.name.toLowerCase(),
+                                ).contains(
+                                  removeDiacritics(value.text.toLowerCase()),
+                                ),
                           )
                           .toList();
 
                       return ListView.builder(
-                        itemBuilder: (context, index) => _cameraItem(cameras[index]),
+                        itemBuilder: (context, index) =>
+                            _cameraItem(cameras[index]),
                         itemCount: cameras.length,
                       );
                     },
@@ -137,7 +154,11 @@ class CameraListPopup extends StatelessWidget {
                   Container(
                     height: 35,
                     alignment: Alignment.topCenter,
-                    child: SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
+                    child: SvgPicture.asset(
+                      AppAssets.icVideoOn,
+                      width: 20,
+                      height: 20,
+                    ),
                   ),
                   SizedBox(width: 16),
                 ],
@@ -163,7 +184,7 @@ class CameraListPopup extends StatelessWidget {
                           style: AppTypography.style(
                             12,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF647488),
+                            color: AppColors.grey64748B,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.visible,
@@ -176,7 +197,9 @@ class CameraListPopup extends StatelessWidget {
                   SizedBox.square(
                     dimension: 8,
                     child: CircleAvatar(
-                      backgroundColor: camera.isOnline ? Color(0xFF21CCC3) : Color(0xFF64748B),
+                      backgroundColor: camera.isOnline
+                          ? Color(0xFF21CCC3)
+                          : Color(0xFF64748B),
                     ),
                   ),
                   SizedBox(width: 8),

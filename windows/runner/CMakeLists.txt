@@ -14,6 +14,7 @@ add_executable(${BINARY_NAME} WIN32
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
   "Runner.rc"
   "runner.exe.manifest"
+  "../ffmpeg_job_object.cpp"
 )
 
 # Apply the standard set of build settings. This can be removed for applications
@@ -40,7 +41,59 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 add_dependencies(${BINARY_NAME} flutter_assemble)
 
 # ============================================================
-# 📄 Copy config.ini vào folder cài đặt của app
+# 📄 Auto-copy ffmpeg.exe vào folder cài đặt của app
+# ============================================================
+
+set(FFMPEG_SOURCE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../ffmpeg/ffmpeg.exe")
+
+if(NOT EXISTS ${FFMPEG_SOURCE_PATH})
+    message(FATAL_ERROR
+        "❌ ERROR: ffmpeg.exe not found at:\n"
+        "   ${FFMPEG_SOURCE_PATH}\n"
+        "   → Place ffmpeg.exe in: <project_root>/ffmpeg/ffmpeg.exe"
+    )
+endif()
+
+add_custom_command(
+    TARGET ${BINARY_NAME}
+    POST_BUILD
+
+    COMMAND ${CMAKE_COMMAND} -E echo "📦 Copying ffmpeg.exe to: $<TARGET_FILE_DIR:${BINARY_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${FFMPEG_SOURCE_PATH}"
+            "$<TARGET_FILE_DIR:${BINARY_NAME}>/ffmpeg.exe"
+
+    COMMENT "📌 Attaching ffmpeg.exe after build"
+)
+
+# ============================================================
+# 📄 Auto-copy ffmpeg_watchdog.exe vào folder cài đặt của app
+# ============================================================
+
+set(WATCHDOG_SOURCE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../ffmpeg/ffmpeg_watchdog.exe")
+
+if(NOT EXISTS ${WATCHDOG_SOURCE_PATH})
+    message(FATAL_ERROR
+        "❌ ERROR: ffmpeg_watchdog.exe not found at:\n"
+        "   ${WATCHDOG_SOURCE_PATH}\n"
+        "   → Place ffmpeg_watchdog.exe in: <project_root>/ffmpeg/ffmpeg_watchdog.exe"
+    )
+endif()
+
+add_custom_command(
+    TARGET ${BINARY_NAME}
+    POST_BUILD
+
+    COMMAND ${CMAKE_COMMAND} -E echo "📦 Copying ffmpeg_watchdog.exe to: $<TARGET_FILE_DIR:${BINARY_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${WATCHDOG_SOURCE_PATH}"
+            "$<TARGET_FILE_DIR:${BINARY_NAME}>/ffmpeg_watchdog.exe"
+
+    COMMENT "📌 Attaching ffmpeg_watchdog.exe after build"
+)
+
+# ============================================================
+# 📄 Auto-copy config.ini vào folder cài đặt của app
 # ============================================================
 
 # Đường dẫn tới file config.ini ở ngoài cùng project (cùng cấp pubspec.yaml)

@@ -99,6 +99,7 @@ class _MonitorActionsState extends State<MonitorActions> {
                             Routes.cameraDetail.name,
                             extra: CameraDetailScreenArgs(
                               data: data,
+                              openCamerasPanelImmediately: true,
                               onBack: () => AppRouter.rootNavigatorKey.currentContext?.goNamed(
                                 Routes.monitoring.name,
                               ),

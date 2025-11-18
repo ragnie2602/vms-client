@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
@@ -13,12 +14,15 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bl
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
+import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
+import 'package:vms_flutter_client/screens/map/emap_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
+import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
 
@@ -30,6 +34,7 @@ import '../screens/login/bloc/login_bloc.dart';
 import '../screens/login/login_screen.dart';
 
 enum Routes {
+  splash(name: 'splash', path: '/splash'),
   controlCamera(name: 'controlCamera', path: '/controlCamera'),
   addGroupCamera(
     name: 'addGroupCamera',
@@ -42,15 +47,14 @@ enum Routes {
   monitoring(
     name: 'monitoring',
     path: '/monitoring',
-    title: 'Liveview',
+    title: 'Xem trực tiếp',
     description: 'Hiển thị các màn hình theo dõi theo thời gian thực',
   ),
   custom_live_view(
     name: 'custom_live_view',
     path: '/custom_live_view',
-    title: 'Custom Live View',
-    description:
-        'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
+    title: 'Chế độ tùy biến',
+    description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   cameraDetail(name: 'camera_detail', path: '/camera_detail'),
   playback(
@@ -58,6 +62,13 @@ enum Routes {
     path: '/playback',
     title: 'Playback',
     description: 'Cho phép truy cập và xem lại các đoạn video đã được ghi',
+  ),
+  emap(
+    name: 'emap',
+    path: '/emap',
+    title: 'Bản đồ camera',
+    description:
+        'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
   ),
   users(
     name: 'users',
@@ -100,6 +111,11 @@ class AppRouter {
     initialLocation: AppConfig.INITIAL_ROUTE.path,
     navigatorKey: rootNavigatorKey,
     routes: [
+      GoRoute(
+        path: Routes.splash.path,
+        name: Routes.splash.name,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: Routes.login.path,
         name: Routes.login.name,
@@ -145,7 +161,12 @@ class AppRouter {
                 deleteCameraUseCase: context.read<DeleteCameraUseCase>(),
               ),
             ),
-
+            BlocProvider(
+              create: (context) => EmapBloc(
+                emapRepository: context.read(),
+                searchEmapUseCase: context.read<SearchEmapUseCase>(),
+              ),
+            ),
             BlocProvider(
               create: (context) => UserManagementBloc(
                 userManagermentRepository: context.read(),
@@ -236,6 +257,17 @@ class AppRouter {
                 context: context,
                 state: state,
                 child: ControlCameraScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.emap.path,
+            name: Routes.emap.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: EmapScreen(),
               );
             },
           ),

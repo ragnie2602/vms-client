@@ -257,20 +257,24 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ControlCameraBloc, ControlCameraState>(
-      listenWhen: (prev, curr) =>
-          curr is DeleteCameraSuccessState ||
-          curr is ListCameraSuccessState ||
-          curr is RemoveCameraFromGroupFailState ||
-          curr is RemoveCameraFromGroupSuccessState ||
-          curr is ListShareCameraSuccessState ||
-          curr is UpdateCameraSuccessState,
+      // listenWhen: (prev, curr) =>
+      //     curr is DeleteCameraSuccessState ||
+      //     curr is ListCameraSuccessState ||
+      //     curr is RemoveCameraFromGroupFailState ||
+      //     curr is RemoveCameraFromGroupSuccessState ||
+      //     curr is ListShareCameraSuccessState ||
+      //     curr is UpdateCameraSuccessState,
       listener: (context, state) {
         if (state is RemoveCameraFromGroupFailState) {
-          showAppMessageDialog(
-            context,
-            message: state.errorMsg,
-            type: AppMessageType.error,
+            ToastUtil.toastFail(
+            context: context,
+            title: Text(state.errorMsg),
           );
+          // showAppMessageDialog(
+          //   context,
+          //   message: state.errorMsg,
+          //   type: AppMessageType.error,
+          // );
         }
         if (state is RemoveCameraFromGroupSuccessState) {
           ToastUtil.toastSuccess(
@@ -357,41 +361,49 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              TextField(
-                                controller: cameraNameController,
-                                onChanged: (_) {
-                                  _onSearch();
-                                },
-                                onSubmitted: (_) {
-                                  _onSearch();
-                                },
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 12,
-                                      horizontal: 12,
+                              SizedBox(
+                                height: 41,
+                                child: TextField(
+                                  controller: cameraNameController,
+                                  onChanged: (_) {
+                                    _onSearch();
+                                  },
+                                  onSubmitted: (_) {
+                                    _onSearch();
+                                  },
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 12,
+                                      ),
+                                      child: SvgPicture.asset(
+                                        AppAssets.icSearch,
+                                      ),
                                     ),
-                                    child: SvgPicture.asset(AppAssets.icSearch),
-                                  ),
-                                  hintText: 'Nhập tên camera',
-                                  hintStyle: AppTypography.style(
-                                    14,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppColors.grey64748B,
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.greyE2E8F0,
-                                      width: 1,
+
+                                    hintText: 'Nhập tên camera',
+                                    hintStyle: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.grey64748B,
                                     ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: AppColors.greyE2E8F0,
-                                      width: 1,
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: AppColors.greyE2E8F0,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(1),
                                     ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: AppColors.greyE2E8F0,
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(1),
+                                    ),
+                                    border: UnderlineInputBorder(),
                                   ),
-                                  border: UnderlineInputBorder(),
                                 ),
                               ),
                             ],
@@ -416,6 +428,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                               CustomCommonDropdown<CameraOnlineChecked>(
                                 items: CameraOnlineChecked.values,
                                 value: cameraStatus,
+                                height: 41,
                                 onChanged: (p0) {
                                   setState(() {
                                     if (cameraStatus == p0 ||
@@ -502,6 +515,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                           splashColor: Colors.transparent,
 
                           child: Container(
+                            height: 41,
                             padding: EdgeInsets.symmetric(
                               vertical: 12,
                               horizontal: 12,
@@ -596,7 +610,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     return Scrollbar(
                                       controller: _cameraListController,
                                       thumbVisibility: true,
-                                      child: ListView.builder(
+                                      child: ListView.separated(
                                         controller: _cameraListController,
                                         primary: false,
                                         physics: const ClampingScrollPhysics(),
@@ -662,6 +676,18 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                                 );
                                               },
                                             ),
+                                        separatorBuilder:
+                                            (BuildContext context, int index) {
+                                              return Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 15,
+                                                ),
+                                                child: Divider(
+                                                  height: 0.5,
+                                                  color: AppColors.greyE2E8F0,
+                                                ),
+                                              );
+                                            },
                                       ),
                                     );
                                   },

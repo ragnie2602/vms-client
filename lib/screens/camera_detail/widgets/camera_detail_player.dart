@@ -7,12 +7,17 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
+
+// ignore: depend_on_referenced_packages
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 import 'player_full_screen.dart';
 
@@ -38,6 +43,8 @@ class CameraDetailPlayer extends StatefulWidget {
     this.initialIndex = 0,
     required this.controller,
     this.onStatusChanged,
+    this.onInitializedValues,
+    this.onLostConnection,
   });
   final List<PlaybackVideo> playlist;
   final String source;
@@ -46,6 +53,8 @@ class CameraDetailPlayer extends StatefulWidget {
   final int initialIndex;
   final CameraDetailController controller;
   final Function(PlayerStatus)? onStatusChanged;
+  final Function({required double volume, required double speed})? onInitializedValues;
+  final Function()? onLostConnection;
 
   factory CameraDetailPlayer.playlist({
     required List<PlaybackVideo> playlist,
@@ -53,6 +62,8 @@ class CameraDetailPlayer extends StatefulWidget {
     required int initialIndex,
     required CameraDetailController controller,
     Function(PlayerStatus)? onStatusChanged,
+    Function({required double volume, required double speed})? onInitializedValues,
+    Function()? onLostConnection,
   }) {
     return CameraDetailPlayer(
       playlist: playlist,
@@ -63,6 +74,8 @@ class CameraDetailPlayer extends StatefulWidget {
       controller: controller,
       key: controller.ref,
       onStatusChanged: onStatusChanged,
+      onInitializedValues: onInitializedValues,
+      onLostConnection: onLostConnection,
     );
   }
 
@@ -71,6 +84,8 @@ class CameraDetailPlayer extends StatefulWidget {
     required String name,
     required CameraDetailController controller,
     Function(PlayerStatus)? onStatusChanged,
+    Function({required double volume, required double speed})? onInitializedValues,
+    Function()? onLostConnection,
   }) {
     return CameraDetailPlayer(
       playlist: [],
@@ -80,6 +95,8 @@ class CameraDetailPlayer extends StatefulWidget {
       controller: controller,
       key: controller.ref,
       onStatusChanged: onStatusChanged,
+      onInitializedValues: onInitializedValues,
+      onLostConnection: onLostConnection,
     );
   }
 
@@ -87,8 +104,12 @@ class CameraDetailPlayer extends StatefulWidget {
   State<CameraDetailPlayer> createState() => CameraDetailPlayerState();
 }
 
-class CameraDetailPlayerState extends State<CameraDetailPlayer> {
+class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProviderStateMixin {
   final GlobalKey<VideoState> _videoKey = GlobalKey();
+
+  late final zoomController = TransformationController();
+  late final AnimationController _zoomAnimationController;
+  Animation<double>? _zoomAnimation;
 
   late final Player _player;
   Player? _audioPlayer;
@@ -114,6 +135,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
 
   PlaybackVideo get currentPlayback => widget.playlist[_playlistIndex];
   int get initialIndex => widget.initialIndex;
+  bool get isInitialized => _state.value == _PlayerState.initialized;
+  String get _disconnectedMessage => "Liveview '${widget.name}' disconnected";
   LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
   @override
@@ -129,12 +152,17 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _state.addListener(() => _tryReconnecting(_state.value == _PlayerState.error));
 
     super.initState();
+    _zoomAnimationController = AnimationController(vsync: this, duration: Durations.medium1);
+
     _initPlayer();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.mode != PlayerMode.playlist) return;
-      widget.controller.onPlaybackChanged?.call(_playlistIndex);
-      widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
+      widget.onInitializedValues?.call(volume: _player.state.volume, speed: _player.state.rate);
+
+      if (widget.mode == PlayerMode.playlist) {
+        widget.controller.onPlaybackChanged?.call(_playlistIndex);
+        widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
+      }
     });
   }
 
@@ -152,6 +180,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _audioPlayer?.dispose();
     _status.dispose();
     _state.dispose();
+    _zoomAnimationController.dispose();
+    zoomController.dispose();
     _isSeeking.dispose();
     super.dispose();
   }
@@ -160,6 +190,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
   void didUpdateWidget(covariant CameraDetailPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
     name = widget.name;
+    if (widget.mode == PlayerMode.liveview && oldWidget.source != widget.source) {
+      _onOpenPlayer();
+    }
   }
 
   Future<void> _initPlayer() async {
@@ -236,11 +269,15 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     }
   }
 
+  String? _lastError;
   void _onError(String error) {
     _state.value = _PlayerState.error;
     _player.stop();
     _audioPlayer?.stop();
-    Logger.error(error);
+
+    Logger.error(error, writeLog: _lastError != error && _lastError != _disconnectedMessage);
+    _lastError = error;
+    widget.onLostConnection?.call();
   }
 
   void _onCompleted(bool completed) {
@@ -300,8 +337,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
         return;
       }
 
-      Logger.warn("Liveview '${widget.name}' disconnected");
-      _onError("Liveview '${widget.name}' disconnected");
+      Logger.warn(_disconnectedMessage);
+      _onError(_disconnectedMessage);
     });
   }
 
@@ -454,6 +491,50 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
     _videoKey.currentState?.enterFullscreen();
   }
 
+  void zoom(int type) {
+    final currentScale = zoomController.value.getMaxScaleOnAxis();
+    final targetScale = (currentScale + type).clamp(1.0, 16.0);
+    if (targetScale == currentScale) return;
+
+    final box = _videoKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+
+    final viewportCenter = Offset(box.size.width / 2, box.size.height / 2);
+    final _scale = targetScale / currentScale;
+
+    final Matrix4 inverted = Matrix4.inverted(zoomController.value);
+    final Vector3 v = Vector3(viewportCenter.dx, viewportCenter.dy, 0);
+    final Vector3 contentPoint = inverted.transform3(v);
+    final Offset focalContent = Offset(contentPoint.x, contentPoint.y);
+
+    final startMatrix = zoomController.value.clone();
+    final Matrix4 focalToOrigin = Matrix4.identity()
+      ..translateByDouble(-focalContent.dx, -focalContent.dy, 0, 1);
+    final Matrix4 zoom = Matrix4.identity()..scaleByDouble(_scale, _scale, _scale, 1);
+    final Matrix4 back = Matrix4.identity()
+      ..translateByDouble(focalContent.dx, focalContent.dy, 0, 1);
+    final Matrix4 endMatrix = startMatrix.multiplied(back * zoom * focalToOrigin);
+
+    _zoomAnimationController.reset();
+    _zoomAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(parent: _zoomAnimationController, curve: Curves.easeInOut),
+        )..addListener(() {
+          zoomController.value = startMatrix
+              .lerp(endMatrix, _zoomAnimation!.value)
+              .clampMatrixToBounds(box.size);
+        });
+
+    _zoomAnimationController.forward();
+  }
+
+  Future<Process?> recording(String output) async {
+    // Preload - tránh bị mất các giây đầu
+    // await FFmpegProcess.instance.preload(widget.source);
+    // Bắt đầu ghi -- time sẽ chuẩn
+    return FFmpegProcess.instance.record(widget.source, output);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -465,45 +546,48 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> {
             _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
             _PlayerState.empty => _buildNoPlayback(),
             _PlayerState.error || _PlayerState.error2 => _buildError(),
-            _PlayerState.initialized => Video(
-              key: _videoKey,
-              height: double.infinity,
-              fit: BoxFit.fitHeight,
-              controller: _controller,
-              controls: (state) => Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (_videoKey.currentState?.isFullscreen() == false)
+            _PlayerState.initialized => InteractiveViewer(
+              minScale: 0.1,
+              maxScale: 16.0,
+              transformationController: zoomController,
+              child: Video(
+                key: _videoKey,
+                height: double.infinity,
+                fit: BoxFit.fitHeight,
+                controller: _controller,
+                subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
+                controls: (state) => Stack(
+                  fit: StackFit.expand,
+                  children: [
                     Positioned(top: 20, right: 20, child: _buildLabel()),
+                    Positioned.fill(child: _buildPlaybackStatus()),
 
-                  Positioned.fill(child: _buildPlaybackStatus()),
+                    ValueListenableBuilder(
+                      valueListenable: _isSeeking,
+                      builder: (context, value, child) {
+                        return Positioned(
+                          top: 0,
+                          right: 0,
+                          left: 0,
+                          bottom: 0,
+                          child: value
+                              ? Container(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  alignment: Alignment.center,
+                                  child: CircularProgressIndicator.adaptive(),
+                                )
+                              : const SizedBox.shrink(),
+                        );
+                      },
+                    ),
 
-                  ValueListenableBuilder(
-                    valueListenable: _isSeeking,
-                    builder: (context, value, child) {
-                      return Positioned(
-                        top: 0,
-                        right: 0,
-                        left: 0,
-                        bottom: 0,
-                        child: value
-                            ? Container(
-                                color: Colors.black.withValues(alpha: 0.15),
-                                width: double.infinity,
-                                height: double.infinity,
-                                alignment: Alignment.center,
-                                child: CircularProgressIndicator.adaptive(),
-                              )
-                            : const SizedBox.shrink(),
-                      );
-                    },
-                  ),
-
-                  if (_videoKey.currentState?.isFullscreen() == true)
-                    PlayerFullScreen(onExit: () => _videoKey.currentState?.exitFullscreen()),
-                ],
+                    if (_videoKey.currentState?.isFullscreen() == true)
+                      PlayerFullScreen(onExit: () => _videoKey.currentState?.exitFullscreen()),
+                  ],
+                ),
               ),
-              subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
             ),
           };
         },

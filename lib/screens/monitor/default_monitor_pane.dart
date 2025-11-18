@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
@@ -36,22 +37,17 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
   @override
   void initState() {
     super.initState();
-
-    if (context.read<MonitorBloc>().state is! MonitorSuccess) {
-      context.read<MonitorBloc>().add(GetAllCamera());
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Vì là stateless nên buộc phải viết vào đây, hy vọng nó không bị gọi lung tung :*(
+    context.read<MonitorBloc>().add(GetAllCamera());
     context.read<CustomViewBloc>().add(
       ShowCustomView(
         CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
         CustomMonitorPaneMode.view,
       ),
     );
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return BlocBuilder<MonitorBloc, MonitorState>(
       builder: (context, blocState) => stateBuilder<MonitorSuccess>(
         blocState,
@@ -72,89 +68,93 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                   );
                   final wrapWidth =
                       (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: wrapWidth,
-                        child: Wrap(
-                          spacing: spacing,
-                          runSpacing: spacing,
-                          children: List.generate(state.mode.total, (index) {
-                            if (index < state.paginatedCameras.length) {
-                              final camera = state.paginatedCameras[index];
-                              return SizedBox.fromSize(
-                                size: size,
-                                child: InkWell(
-                                  onTap: isFullScreen
-                                      ? null
-                                      : () {
-                                          context.goNamed(
-                                            Routes.cameraDetail.name,
-                                            extra: CameraDetailScreenArgs(
-                                              data: camera,
-                                              onBack: () => AppRouter
-                                                  .rootNavigatorKey
-                                                  .currentContext
-                                                  ?.goNamed(Routes.monitoring.name),
-                                            ),
-                                          );
-                                        },
-                                  child: CameraPlayer(
-                                    size: state.mode.total == 1 ? null : size,
-                                    source: camera.subStreamUri.toString(),
-                                    name: camera.name,
-                                    key: ValueKey("player($index)___${camera.camId}"),
-                                    mode: PlayerMode.monitoring,
-                                    builder: (player, status) =>
-                                        _buildCameraView(context, player, camera, size),
-                                  ),
-                                ),
-                              );
-                            } else {
-                              // Empty placeholder for missing cameras
-                              return SizedBox.fromSize(
-                                size: size,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              );
-                            }
-                          }),
-                        ),
-                      ),
-                      Spacer(),
-                      Visibility(
-                        visible: !isFullScreen,
-                        child: SizedBox(
+                  return Container(
+                    color: AppColors.greyF2F4FA,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
                           width: wrapWidth,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Hiển thị ${state.paginatedCameras.length} trong số ${state.cameras.length} camera",
-                                style: AppTypography.style(
-                                  fontWeight: FontWeight.w400,
-                                  13,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              ConstrainedBox(
-                                constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
-                                child: TablePaginator(
-                                  (state.cameras.length / state.mode.total).ceil(),
-                                  state.page - 1,
-                                  (page) => onChangePage(context, page),
-                                ),
-                              ),
-                            ],
+                          child: Wrap(
+                            spacing: spacing,
+                            runSpacing: spacing,
+                            children: List.generate(state.mode.total, (index) {
+                              if (index < state.paginatedCameras.length) {
+                                final camera = state.paginatedCameras[index];
+                                return SizedBox.fromSize(
+                                  size: size,
+                                  child: InkWell(
+                                    onTap: isFullScreen
+                                        ? null
+                                        : () {
+                                            context.goNamed(
+                                              Routes.cameraDetail.name,
+                                              extra: CameraDetailScreenArgs(
+                                                data: camera,
+                                                onBack: () => AppRouter
+                                                    .rootNavigatorKey
+                                                    .currentContext
+                                                    ?.goNamed(Routes.monitoring.name),
+                                              ),
+                                            );
+                                          },
+                                    child: CameraPlayer(
+                                      belongViewMode: state.mode,
+                                      size: size,
+                                      source: camera.subStreamUri.toString(),
+                                      name: camera.name,
+                                      key: ValueKey("player($index)___${camera.camId}"),
+                                      mode: PlayerMode.monitoring,
+                                      builder: (player, status) =>
+                                          _buildCameraView(context, player, camera, size),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // Empty placeholder for missing cameras
+                                return SizedBox.fromSize(
+                                  size: size,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }),
                           ),
                         ),
-                      ),
-                    ],
+                        Spacer(),
+                        Visibility(
+                          visible: !isFullScreen,
+                          child: SizedBox(
+                            width: wrapWidth,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Hiển thị ${state.paginatedCameras.length} trong số ${state.cameras.length} camera",
+                                  style: AppTypography.style(
+                                    fontWeight: FontWeight.w400,
+                                    13,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
+                                  child: TablePaginator(
+                                    (state.cameras.length / state.mode.total).ceil(),
+                                    state.page - 1,
+                                    (page) => onChangePage(context, page),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               );
@@ -166,7 +166,6 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
   }
 
   // Getters
-
   Size _initPlayerSize(
     BoxConstraints constraints,
     int paginatorHeight, [
@@ -205,11 +204,7 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
           right: 10,
           child: Container(
             constraints: BoxConstraints(maxWidth: size.width - 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(3),
-              boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
-            ),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
             padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
             child: Row(
               mainAxisSize: MainAxisSize.min,

@@ -6,23 +6,23 @@ import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repos
 import '../../../core/base_bloc.dart';
 
 // States
-class MyAccountState extends BaseState {
+class ChangeMyPasswordState extends BaseState {
   final bool isLoading;
   final bool isSuccess;
   final String? errorMessage;
 
-  MyAccountState({
+  ChangeMyPasswordState({
     this.isLoading = false,
     this.isSuccess = false,
     this.errorMessage,
   });
 
-  MyAccountState copyWith({
+  ChangeMyPasswordState copyWith({
     bool? isLoading,
     bool? isSuccess,
     String? errorMessage,
   }) {
-    return MyAccountState(
+    return ChangeMyPasswordState(
       isLoading: isLoading ?? this.isLoading,
       isSuccess: isSuccess ?? this.isSuccess,
       errorMessage: errorMessage,
@@ -34,11 +34,7 @@ class MyAccountState extends BaseState {
 }
 
 // Events
-class MyAccountEvent extends BaseEvent {
-  const MyAccountEvent();
-}
-
-class ChangeMyPasswordEvent extends MyAccountEvent {
+class ChangeMyPasswordEvent extends BaseEvent {
   final String currentPassword;
   final String newPassword;
   final bool kickOthers;
@@ -51,16 +47,16 @@ class ChangeMyPasswordEvent extends MyAccountEvent {
 }
 
 // Bloc
-class MyAccountBloc extends BaseBloc<MyAccountEvent, MyAccountState> {
+class ChangeMyPasswordBloc extends BaseBloc<ChangeMyPasswordEvent, ChangeMyPasswordState> {
   final IUserManagementRepository repository;
 
-  MyAccountBloc(this.repository) : super(MyAccountState()) {
+  ChangeMyPasswordBloc(this.repository) : super(ChangeMyPasswordState()) {
     on<ChangeMyPasswordEvent>(_onChangeMyPassword);
   }
 
   FutureOr<void> _onChangeMyPassword(
     ChangeMyPasswordEvent event,
-    Emitter<MyAccountState> emit,
+    Emitter<ChangeMyPasswordState> emit,
   ) async {
     emit(state.copyWith(isLoading: true, isSuccess: false, errorMessage: null));
 

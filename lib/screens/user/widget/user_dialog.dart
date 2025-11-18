@@ -44,6 +44,7 @@ Future<String?> showResetPasswordDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
+
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Padding(
@@ -53,56 +54,117 @@ Future<String?> showResetPasswordDialog(
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Title
-                      const Text(
-                        'Khôi phục mật khẩu',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      // Subtitle
-                      Text(
-                        'Vui lòng nhập mật khẩu mới cho tài khoản:\n$username',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      AppField(
-                        controller: _controller,
-                        hintText: 'Nhập mật khẩu',
-                        label: 'Mật khẩu',
-                        requiredField: true,
-                        obscureText: _obscurePassword,
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Mật khẩu không được để trống';
-                          }
-                          if (v.contains(' ')) {
-                            return 'Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng';
-                          }
-                          if (v.length < 8 || v.length > 16) {
-                            return 'Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng';
-                          }
-                          return null;
-                        },
-                        suffix: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: AppColors.black,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Khôi phục mật khẩu',
+                              style: AppTypography.style(
+                                20,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                          iconSize: 20,
-                          onPressed: () => setState(
-                            () => _obscurePassword = !_obscurePassword,
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: SvgPicture.asset(AppAssets.icClose),
+                            tooltip: 'Đóng',
                           ),
+                        ],
+                      ),
+                      // Boxed area: subtitle + field + hint
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: const Border(
+                            top: BorderSide(color: Color(0xFFF2F4FA), width: 1),
+                            bottom: BorderSide(
+                              color: Color(0xFFF2F4FA),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(height: 27),
+
+                            // Subtitle
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  const TextSpan(
+                                    text:
+                                        'Vui lòng nhập mật khẩu mới cho tài khoản:\n',
+                                  ),
+                                  TextSpan(
+                                    text: username,
+                                    style: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w700,
+                                      lineHeight: 2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              style: AppTypography.style(
+                                14,
+                                color: AppColors.black,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            AppField(
+                              controller: _controller,
+                              hintText: 'Nhập mật khẩu',
+                              // label: 'Mật khẩu',
+                              requiredField: true,
+                              obscureText: _obscurePassword,
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return 'Mật khẩu không được để trống';
+                                }
+                                if (v.contains(' ')) {
+                                  return 'Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng';
+                                }
+                                if (v.length < 8 || v.length > 16) {
+                                  return 'Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng';
+                                }
+                                return null;
+                              },
+                              suffix: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: AppColors.black,
+                                ),
+                                iconSize: 20,
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Mật khẩu 8-16 ký tự, bao gồm ký tự đặc biệt, in hoa và in thường',
+                                style: AppTypography.style(
+                                  12,
+                                  fontWeight: FontWeight.w500,
+                                  isItalic: true,
+
+                                  color: AppColors.grey92929D,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 27),
+                          ],
                         ),
                       ),
 
@@ -111,18 +173,28 @@ Future<String?> showResetPasswordDialog(
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AppButton.outline(
-                            label: 'Hủy',
-                            onPressed: () => Navigator.pop(context),
+                          Expanded(
+                            child: SizedBox(
+                              height: 44,
+                              child: AppButton.outline(
+                                label: 'Hủy',
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 12),
-                          AppButton.filled(
-                            label: 'Khôi phục',
-                            onPressed: () {
-                              if (_form.currentState?.validate() ?? false) {
-                                onSubmit!.call(_controller.text.toString());
-                              }
-                            },
+                          Expanded(
+                            child: SizedBox(
+                              height: 44,
+                              child: AppButton.filled(
+                                label: 'Khôi phục',
+                                onPressed: () {
+                                  if (_form.currentState?.validate() ?? false) {
+                                    onSubmit!.call(_controller.text.toString());
+                                  }
+                                },
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -750,7 +822,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
 
       child: AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
         contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
         actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -766,12 +838,18 @@ class _EditUserDialogState extends State<_EditUserDialog> {
             ),
             IconButton(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
+              icon: SvgPicture.asset(AppAssets.icClose),
               tooltip: 'Đóng',
             ),
           ],
         ),
-        content: SizedBox(
+        content: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+              bottom: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+            ),
+          ),
           width: MediaQuery.of(context).size.width * 0.35,
           child: SingleChildScrollView(
             child: Form(
@@ -969,49 +1047,62 @@ class _EditUserDialogState extends State<_EditUserDialog> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AppButton.outline(
-                  label: 'Hủy',
-                  onPressed: _isSubmitting
-                      ? null
-                      : () => Navigator.pop(context),
+                Expanded(
+                  child: SizedBox(
+                    height: 44,
+                    child: AppButton.outline(
+                      label: 'Hủy',
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => Navigator.pop(context),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: _hasChanges && !_isSubmitting
-                        ? AppColors.blue005AA9
-                        : AppColors.grey64748B,
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _hasChanges && !_isSubmitting
-                          ? _handleSubmit
-                          : null,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 34,
-                          vertical: 10,
-                        ),
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : Text(
-                                'Cập nhật',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                Expanded(
+                  child: SizedBox(
+                    height: 44,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: _hasChanges && !_isSubmitting
+                            ? AppColors.blue005AA9
+                            : AppColors.grey64748B,
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _hasChanges && !_isSubmitting
+                              ? _handleSubmit
+                              : null,
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 34,
+                                vertical: 10,
                               ),
+                              child: _isSubmitting
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    )
+                                  : Text(
+                                      'Cập nhật',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),

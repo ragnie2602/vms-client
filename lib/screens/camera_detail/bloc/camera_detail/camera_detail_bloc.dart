@@ -1,9 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 
 import '../../components/player_timeline.dart';
@@ -20,6 +25,7 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
           camera: camera,
           playbackDate: DateTime.now(),
           cameraDetailController: CameraDetailController(),
+          stream: camera?.stream.streamLinks.firstWhereOrNull((e) => e.isMainStream),
         ),
       ) {
     on<ChangeViewMode>(_onChaneViewMode);
@@ -30,6 +36,8 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     on<ChangeSpeed>(_onChangeSpeed, transformer: sequential());
     on<ChangePlaybackDate>(_onChangePlaybackDate);
     on<ChangeTimelineDisplayMode>(_onChangeTimelineDisplayMode);
+    on<OnRecording>(_onOnRecording);
+    on<ChangeStream>(_onChangeStream);
   }
 
   FutureOr<void> _onChaneViewMode(ChangeViewMode event, Emitter<CameraDetailState> emit) async {
@@ -40,6 +48,7 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
         mode: event.mode,
         volume: 100,
         speed: 1,
+        recordingStatus: 0,
         status: PlayerStatus.playing,
         playbackDate: DateTime.now(),
         cameraDetailController: CameraDetailController(), // Instance mới
@@ -53,6 +62,7 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     emit(
       state.copyWith(
         camera: event.camera,
+        stream: event.camera.stream.streamLinks.firstWhereOrNull((e) => e.isMainStream),
         volume: 100,
         speed: 1,
         status: PlayerStatus.playing,
@@ -99,5 +109,35 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     if (state.timelineDisplayMode == event.mode) return;
 
     emit(state.copyWith(timelineDisplayMode: event.mode));
+  }
+
+  FutureOr<void> _onOnRecording(OnRecording event, Emitter<CameraDetailState> emit) async {
+    if (event.cancelStatus != null) {
+      return emit(state.copyWith(recordingStatus: event.cancelStatus));
+    }
+
+    if (state.isRecording == true) return;
+
+    if (state.cameraDetailController.ref.currentState?.isInitialized != true) {
+      return event.cb?.call(null, null);
+    }
+
+    final output = await FileUtil.selectSaveLocation(
+      'record_${DateTime.now().format('yyyyMMdd_HHmmss')}',
+      'mp4',
+    );
+    if (output == null) return event.cb?.call(null, null);
+
+    emit(state.copyWith(recordingStatus: 1));
+    final res = await state.cameraDetailController.ref.currentState?.recording(output);
+
+    event.cb?.call(res, output);
+    emit(state.copyWith(recordingStatus: res != null ? 1 : 0));
+  }
+
+  FutureOr<void> _onChangeStream(ChangeStream event, Emitter<CameraDetailState> emit) async {
+    if (state.stream == event.stream) return;
+
+    emit(state.copyWith(stream: event.stream));
   }
 }

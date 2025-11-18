@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.profile.pb.dart';
 
 import '../proto/models/comm.command1.pb.dart';
+import '../proto/models/comm.command2.pb.dart';
 import '../proto/models/comm.model.pb.dart';
 import 'socket_api_client.dart';
 
@@ -213,6 +214,45 @@ class UserService {
 
     return responseBuffer.fold(
       (failure) => throw failure.toMessageFailure(ChangePassword_Error.valueOf, PacketType.changePassword.value),
+      (buffer) => true,
+    );
+  }
+
+  Future<bool> updateMyProfile({
+    String? displayName,
+    String? email,
+    String? tel,
+    String? address,
+  }) async {
+    final updateRequest = updateUserAddress_Request();
+    if (displayName != null) {
+      updateRequest.newDisplayName = displayName;
+    }
+    if (email != null) {
+      updateRequest.email = email;
+    }
+    if (tel != null) {
+      updateRequest.tel = tel;
+    }
+    if (address != null) {
+      updateRequest.newAddress = address;
+    }
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: updateRequest.writeToBuffer(),
+          type: PacketType.updateUserAddress,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(
+        updateUserAddress_Error.valueOf,
+        PacketType.updateUserAddress.value,
+      ),
       (buffer) => true,
     );
   }

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
-import 'package:vms_flutter_client/screens/home/bloc/my_account_bloc.dart';
+import 'package:vms_flutter_client/screens/home/bloc/change_my_password_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import 'components/components_src.dart';
@@ -30,8 +31,8 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
     barrierColor: Colors.black.withOpacity(0.5),
     builder: (ctx) {
       return BlocProvider(
-        create: (context) => MyAccountBloc(repository),
-        child: BlocConsumer<MyAccountBloc, MyAccountState>(
+        create: (context) => ChangeMyPasswordBloc(repository),
+        child: BlocConsumer<ChangeMyPasswordBloc, ChangeMyPasswordState>(
           listener: (context, state) {
             if (state.isSuccess) {
               Navigator.pop(context, true);
@@ -40,6 +41,7 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
                 title: Text('Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!', maxLines: 5,),
               );
               context.read<SocketApiClient>().disconnect();
+              context.read<AppBloc>().add(SignOut());
               context.goNamed(Routes.login.name);
 
             } else if (state.errorMessage != null) {
@@ -202,7 +204,7 @@ Future<bool?> showChangeMyPasswordDialog(BuildContext context) {
                                 ? null
                                 : () {
                                     if (_formKey.currentState!.validate()) {
-                                      context.read<MyAccountBloc>().add(
+                                      context.read<ChangeMyPasswordBloc>().add(
                                             ChangeMyPasswordEvent(
                                               currentPassword: _currentPasswordController.text,
                                               newPassword: _newPasswordController.text,
