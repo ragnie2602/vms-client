@@ -45,9 +45,9 @@ class ChangeTimelineDisplayMode extends CameraDetailEvent {
 }
 
 class OnRecording extends CameraDetailEvent {
-  final bool? cancel;
+  final int? cancelStatus;
   final Function(Process?, String? output)? cb;
-  const OnRecording({this.cb, this.cancel});
+  const OnRecording({this.cb, this.cancelStatus});
 }
 
 class ChangeStream extends CameraDetailEvent {
