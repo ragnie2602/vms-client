@@ -229,6 +229,7 @@ message UpdateCamera // done
     string xaddr = 7 ;
     MapLocation location = 8; /// location của camera => nếu ko cập nhật gửi location cũ , xoá location không gửi gì
     repeated string sub_stream_urls = 9; // Gửi danh sách luồng phụ của camera
+    repeated bytes tagset_id = 10; // danh sách tag
   }
   message Reply
   {
@@ -1056,6 +1057,7 @@ message AddUser
     string password = 8;
     bool changePassDenied = 9; //TRUE: User nay KHÔNG co quyen doi mat khau, FALSE: dc doi mk
     bool addCamDenied = 10; //TRUE: User nay KHÔNG co quyen them camera, FALSE: dc add cam
+    UserStatus status = 11; // DEFAULT ACTIVE
   }
   message Reply
   {
@@ -1094,6 +1096,7 @@ message EditUser
     string uid_str = 10;
     bool changePassDenied = 11; //TRUE: User nay KHÔNG co quyen doi mat khau, FALSE: dc doi mk
     bool addCamDenied = 12; //TRUE: User nay KHÔNG co quyen them camera, FALSE: dc add cam
+    UserStatus status = 13; // DEFAULT ACTIVE
   }
   message Reply
   {
