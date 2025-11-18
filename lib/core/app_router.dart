@@ -23,7 +23,6 @@ import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/schedule_recording_screen.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';

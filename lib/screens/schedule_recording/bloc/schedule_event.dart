@@ -1,13 +1,12 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
 
 class ScheduleEvent extends BaseEvent {}
 
-class GetListCameraEvent extends ScheduleEvent {
-  // tag
-}
-class ChangeCameraEvent extends ScheduleEvent {
-  final CameraEntity newCamera;
+class InitScheduleEvent extends ScheduleEvent {}
 
-  ChangeCameraEvent(this.newCamera);
+class ChangeTabEvent extends ScheduleEvent {
+  final ConfigCameraTab newTab;
+
+  ChangeTabEvent(this.newTab);
 }
