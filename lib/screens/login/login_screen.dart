@@ -105,8 +105,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     appBloc.add(ReopenSubWindow());
                   }
 
+                  MultiWindowUtil.init();
+                  final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: 0);
                   context.goNamed(
-                    appBloc.isDefaultMode ? Routes.monitoring.name : Routes.custom_live_view.name,
+                    setting.isDefaultMode ? Routes.monitoring.name : Routes.custom_live_view.name,
                   );
                 } else if (state.isLoading == false && state.errorMessage != null) {
                   showAppMessageDialog(
