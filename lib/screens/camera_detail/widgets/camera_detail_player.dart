@@ -555,6 +555,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
                 height: double.infinity,
                 fit: BoxFit.fitHeight,
                 controller: _controller,
+                subtitleViewConfiguration: SubtitleViewConfiguration(visible: false),
                 controls: (state) => Stack(
                   fit: StackFit.expand,
                   children: [
