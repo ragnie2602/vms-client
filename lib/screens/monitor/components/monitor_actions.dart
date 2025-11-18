@@ -95,9 +95,14 @@ class _MonitorActionsState extends State<MonitorActions> {
                         maxWidth: widget.leftController.expandedWidth,
                         key: ValueKey('monitor_cameras'),
                         onTap: (data) {
-                          context.pushNamed(
+                          context.goNamed(
                             Routes.cameraDetail.name,
-                            extra: CameraDetailScreenArgs(data: data),
+                            extra: CameraDetailScreenArgs(
+                              data: data,
+                              onBack: () => AppRouter.rootNavigatorKey.currentContext?.goNamed(
+                                Routes.monitoring.name,
+                              ),
+                            ),
                           );
                         },
                       ),
