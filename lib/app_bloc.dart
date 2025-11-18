@@ -107,7 +107,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
     );
     await sendMultiWindowEventUseCase.execute(
-      SendMultiWindowEventInput(output.windowController.windowId, 'restore_monitor_mode', data: {}),
+      SendMultiWindowEventInput(
+        output.windowController.windowId,
+        'restore_monitor_mode',
+        data: {'bWindowID': output.bWindowId},
+      ),
     );
     output.windowController.show();
   }

@@ -14,6 +14,6 @@ class CreateNewWindowUseCase extends FutureUseCase<CreateNewWindowInput, CreateN
     controller.setFrame(setting.$2.rect);
     controller.setTitle('VNPT Secure Vision - Cửa sổ phụ ${setting.$1}');
 
-    return CreateNewWindowOutput(controller);
+    return CreateNewWindowOutput(controller, setting.$1);
   }
 }
