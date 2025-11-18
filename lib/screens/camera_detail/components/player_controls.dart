@@ -36,9 +36,11 @@ class PlayerControls extends StatelessWidget {
           ),
         ],
       ),
-      child: BlocSelector<CameraDetailBloc, CameraDetailState, bool>(
-        selector: (state) => state.isRecording,
-        builder: (context, isRecording) {
+      child: BlocSelector<CameraDetailBloc, CameraDetailState, int>(
+        selector: (state) => state.recordingStatus,
+        builder: (context, status) {
+          final isRecording = status > 0;
+
           return Row(
             children: <Widget>[
               Expanded(
@@ -80,7 +82,7 @@ class PlayerControls extends StatelessWidget {
                         }),
 
                       /* Record */
-                      if (mode.isLive) ControlRecord(isRecording: isRecording),
+                      if (mode.isLive) ControlRecord(recordingStatus: status),
 
                       /* Camera */
                       _controlItem(

@@ -169,8 +169,11 @@ class FFmpegProcess {
     await _bindPid(process.pid);
 
     final code = await process.exitCode;
-    await File(videoPath).delete();
-    await File(audioPath).delete();
+
+    final tempVideoFile = File(videoPath);
+    if (tempVideoFile.existsSync()) tempVideoFile.deleteSync();
+    final tempAudioFile = File(audioPath);
+    if (tempAudioFile.existsSync()) tempAudioFile.deleteSync();
 
     return code;
   }

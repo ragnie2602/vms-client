@@ -13,8 +13,8 @@ import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 
 class ControlRecord extends StatefulWidget {
-  const ControlRecord({super.key, required this.isRecording});
-  final bool isRecording;
+  const ControlRecord({super.key, required this.recordingStatus});
+  final int recordingStatus;
 
   @override
   State<ControlRecord> createState() => _ControlRecordState();
@@ -34,10 +34,16 @@ class _ControlRecordState extends State<ControlRecord> {
     // Đang recording --> đổi cam --> bị build lại --> reset
     // Case stop --> state đổi --> rebuild lại --> có thể bị duplicate toast
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (oldWidget.isRecording != widget.isRecording && _process != null && !_isKilledByUser) {
+      if (oldWidget.recordingStatus > 0 &&
+          widget.recordingStatus <= 0 &&
+          _process != null &&
+          !_isKilledByUser) {
         Future.delayed(
           Duration.zero,
-          () => _onStop('Quá trình ghi hình đã dừng. Video đã được lưu thành công'),
+          () => _onStop(
+            'Quá trình ghi hình đã dừng. Video đã được lưu thành công',
+            widget.recordingStatus == -1,
+          ),
         );
       }
     });
@@ -61,18 +67,19 @@ class _ControlRecordState extends State<ControlRecord> {
     super.dispose();
   }
 
-  void _reset() async {
+  void _reset([bool? killProcess]) async {
     if (!mounted) return;
 
-    context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
+    context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
     _duration.value = Duration.zero;
     _timer?.cancel();
     _process?.stdin.add([113]); // Gửi 'q' để dừng ffmpeg --> File audio không bị 0 bytes
     await _process?.stdin.close();
+    if (killProcess == true) _process?.kill(ProcessSignal.sigkill);
     _process = null;
   }
 
-  void _onStop([String? message]) async {
+  void _onStop([String? message, bool? killProcess]) async {
     // Case chủ động ấn stop thì delay thêm vài giây để đảm bảo kết quả có chứa time lúc ấn dừng
     // --- Thừa hẳn thay vì bị mất đoạn đầu/cuối lúc ấn ghi/dừng ---
     if (message == null) {
@@ -84,7 +91,7 @@ class _ControlRecordState extends State<ControlRecord> {
     if (!mounted) return;
 
     _isKilledByUser = true;
-    _reset();
+    _reset(killProcess);
     ToastUtil.toastSuccess(
       context: context,
       title: _toastMessage(message ?? 'Ghi hình hoàn tất. Video đã được lưu thành công.'),
@@ -158,9 +165,11 @@ class _ControlRecordState extends State<ControlRecord> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isRecording && _isBusy) return _buildRecordingTimer(isLoading: true);
+    if (widget.recordingStatus > 0 && _isBusy) return _buildRecordingTimer(isLoading: true);
 
-    return widget.isRecording ? _buildRecordingTimer(isLoading: _isBusy) : _buildRecordAction();
+    return widget.recordingStatus > 0
+        ? _buildRecordingTimer(isLoading: _isBusy)
+        : _buildRecordAction();
   }
 
   Widget _buildRecordingTimer({bool isLoading = false}) {
