@@ -92,20 +92,20 @@ class CameraPlayerState extends State<CameraPlayer> {
   void didUpdateWidget(covariant CameraPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Thay đổi chế độ xem
-    if (widget.mode == PlayerMode.monitoring &&
-        oldWidget.belongViewMode != null &&
-        widget.belongViewMode != null &&
-        widget.belongViewMode != oldWidget.belongViewMode &&
-        oldWidget.size != widget.size) {
-      _debounceUpdateTexture?.cancel();
-      _debounceUpdateTexture = Timer(const Duration(milliseconds: 300), () {
-        final data = widget.size?.let(
-          (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
-        );
-        _player.updateTexture(width: data?.width, height: data?.height);
-      });
-    }
+    // // Thay đổi chế độ xem
+    // if (widget.mode == PlayerMode.monitoring &&
+    //     oldWidget.belongViewMode != null &&
+    //     widget.belongViewMode != null &&
+    //     widget.belongViewMode != oldWidget.belongViewMode &&
+    //     oldWidget.size != widget.size) {
+    //   _debounceUpdateTexture?.cancel();
+    //   _debounceUpdateTexture = Timer(const Duration(milliseconds: 300), () {
+    //     final data = widget.size?.let(
+    //       (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
+    //     );
+    //     _player.updateTexture(width: data?.width, height: data?.height);
+    //   });
+    // }
   }
 
   Future<void> _tryDisposePlayer() async {

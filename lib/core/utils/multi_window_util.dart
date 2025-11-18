@@ -11,7 +11,7 @@ class MultiWindowUtil {
     if (windowId < _windowBounds.length) _windowBounds[windowId] = null;
   }
 
-  static int getSubWindowCount() => _windowBounds.length - 1;
+  static int getSubWindowCount() => _windowBounds.where((e) => e != null).length - 1;
 
   static (int, Rect) getSuitableWindowSetting({int? suggestWindowID}) {
     if (suggestWindowID != null) {
