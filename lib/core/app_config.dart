@@ -37,6 +37,10 @@ class AppConfig {
         _getConfig("Camera Detail", "livewiew_detail_audio_source"),
       );
 
+  static final int MAXIMUM_SUB_WINDOWS = _getConfig("Window", "maximum_sub_windows") != null
+      ? int.parse(_getConfig("Window", "maximum_sub_windows")!)
+      : 3;
+
   /* ======================== default configs ======================== */
   static const INITIAL_ROUTE = Routes.splash;
   static const DEFAULT_THEME_MODE = ThemeMode.light;

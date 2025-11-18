@@ -48,7 +48,7 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
         mode: event.mode,
         volume: 100,
         speed: 1,
-        isRecording: false,
+        recordingStatus: 0,
         status: PlayerStatus.playing,
         playbackDate: DateTime.now(),
         cameraDetailController: CameraDetailController(), // Instance mới
@@ -112,7 +112,10 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
   }
 
   FutureOr<void> _onOnRecording(OnRecording event, Emitter<CameraDetailState> emit) async {
-    if (event.cancel == true) return emit(state.copyWith(isRecording: false));
+    if (event.cancelStatus != null) {
+      return emit(state.copyWith(recordingStatus: event.cancelStatus));
+    }
+
     if (state.isRecording == true) return;
 
     if (state.cameraDetailController.ref.currentState?.isInitialized != true) {
@@ -125,11 +128,11 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     );
     if (output == null) return event.cb?.call(null, null);
 
-    emit(state.copyWith(isRecording: true));
+    emit(state.copyWith(recordingStatus: 1));
     final res = await state.cameraDetailController.ref.currentState?.recording(output);
 
     event.cb?.call(res, output);
-    emit(state.copyWith(isRecording: res != null));
+    emit(state.copyWith(recordingStatus: res != null ? 1 : 0));
   }
 
   FutureOr<void> _onChangeStream(ChangeStream event, Emitter<CameraDetailState> emit) async {

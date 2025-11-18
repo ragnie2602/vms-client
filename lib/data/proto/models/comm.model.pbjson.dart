@@ -90,7 +90,7 @@ final $typed_data.Uint8List projectTargetDescriptor = $convert.base64Decode(
 const Box_Type$json = {
   '1': 'Box_Type',
   '2': [
-    {'1': 'NONE', '2': 0},
+    {'1': 'BOX_TYPE_UNSPECIFIED', '2': 0},
     {'1': 'RASPBERRY', '2': 1},
     {'1': 'ORANGEPI', '2': 2},
   ],
@@ -98,7 +98,8 @@ const Box_Type$json = {
 
 /// Descriptor for `Box_Type`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List box_TypeDescriptor = $convert.base64Decode(
-    'CghCb3hfVHlwZRIICgROT05FEAASDQoJUkFTUEJFUlJZEAESDAoIT1JBTkdFUEkQAg==');
+    'CghCb3hfVHlwZRIYChRCT1hfVFlQRV9VTlNQRUNJRklFRBAAEg0KCVJBU1BCRVJSWRABEgwKCE'
+    '9SQU5HRVBJEAI=');
 
 @$core.Deprecated('Use box_StateDescriptor instead')
 const Box_State$json = {
@@ -163,18 +164,31 @@ final $typed_data.Uint8List ptzActionDescriptor = $convert.base64Decode(
     'CglQdHpBY3Rpb24SDAoIUFRaX1NUT1AQABIKCgZQVFpfVVAQARIMCghQVFpfRE9XThACEgwKCF'
     'BUWl9MRUZUEAMSDQoJUFRaX1JJR0hUEAY=');
 
+@$core.Deprecated('Use userStatusDescriptor instead')
+const UserStatus$json = {
+  '1': 'UserStatus',
+  '2': [
+    {'1': 'ACTIVE', '2': 0},
+    {'1': 'INACTIVE', '2': 1},
+  ],
+};
+
+/// Descriptor for `UserStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List userStatusDescriptor = $convert.base64Decode(
+    'CgpVc2VyU3RhdHVzEgoKBkFDVElWRRAAEgwKCElOQUNUSVZFEAE=');
+
 @$core.Deprecated('Use aPIDescriptor instead')
 const API$json = {
   '1': 'API',
   '2': [
-    {'1': 'UNDEFINED', '2': 0},
+    {'1': 'API_UNSPECIFIED', '2': 0},
     {'1': 'API_VERSION', '2': 111},
   ],
 };
 
 /// Descriptor for `API`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List aPIDescriptor = $convert.base64Decode(
-    'CgNBUEkSDQoJVU5ERUZJTkVEEAASDwoLQVBJX1ZFUlNJT04Qbw==');
+    'CgNBUEkSEwoPQVBJX1VOU1BFQ0lGSUVEEAASDwoLQVBJX1ZFUlNJT04Qbw==');
 
 @$core.Deprecated('Use networkTypeDescriptor instead')
 const NetworkType$json = {
@@ -482,7 +496,7 @@ const BoxInfo$json = {
 const BoxInfo_Box_Type$json = {
   '1': 'Box_Type',
   '2': [
-    {'1': 'NONE', '2': 0},
+    {'1': 'BOX_TYPE_UNSPECIFIED', '2': 0},
     {'1': 'RASPBERRY', '2': 1},
     {'1': 'ORANGEPI', '2': 2},
   ],
@@ -493,8 +507,9 @@ final $typed_data.Uint8List boxInfoDescriptor = $convert.base64Decode(
     'CgdCb3hJbmZvEhkKCGJveF9uYW1lGAEgASgJUgdib3hOYW1lEioKEWJveF9zZXJpYWxfbnVtYm'
     'VyGAIgASgJUg9ib3hTZXJpYWxOdW1iZXISMQoIYm94X3R5cGUYAyABKA4yFi5jb21tLkJveElu'
     'Zm8uQm94X1R5cGVSB2JveFR5cGUSIgoNb3duZXJfdXNlcl9pZBgEIAEoDFILb3duZXJVc2VySW'
-    'QSLAoJYm94X1N0YXRlGAUgASgOMg8uY29tbS5Cb3hfU3RhdGVSCGJveFN0YXRlIjEKCEJveF9U'
-    'eXBlEggKBE5PTkUQABINCglSQVNQQkVSUlkQARIMCghPUkFOR0VQSRAC');
+    'QSLAoJYm94X1N0YXRlGAUgASgOMg8uY29tbS5Cb3hfU3RhdGVSCGJveFN0YXRlIkEKCEJveF9U'
+    'eXBlEhgKFEJPWF9UWVBFX1VOU1BFQ0lGSUVEEAASDQoJUkFTUEJFUlJZEAESDAoIT1JBTkdFUE'
+    'kQAg==');
 
 @$core.Deprecated('Use scheduleTimeDescriptor instead')
 const ScheduleTime$json = {
@@ -1292,6 +1307,7 @@ const Camera$json = {
     {'1': 'cameraType', '3': 24, '4': 1, '5': 14, '6': '.comm.CameraType', '10': 'cameraType'},
     {'1': 'status', '3': 25, '4': 1, '5': 14, '6': '.comm.Camera.Status', '10': 'status'},
     {'1': 'subscribed', '3': 26, '4': 1, '5': 8, '10': 'subscribed'},
+    {'1': 'tags', '3': 27, '4': 3, '5': 11, '6': '.comm.CamTag', '10': 'tags'},
   ],
   '4': [Camera_Type$json, Camera_Role$json, Camera_Status$json],
 };
@@ -1342,9 +1358,10 @@ final $typed_data.Uint8List cameraDescriptor = $convert.base64Decode(
     '5hbWUSIAoMYm94X293bmVyX2lkGBYgASgMUgpib3hPd25lcklkEhUKBmNhbV9pZBgXIAEoCVIF'
     'Y2FtSWQSMAoKY2FtZXJhVHlwZRgYIAEoDjIQLmNvbW0uQ2FtZXJhVHlwZVIKY2FtZXJhVHlwZR'
     'IrCgZzdGF0dXMYGSABKA4yEy5jb21tLkNhbWVyYS5TdGF0dXNSBnN0YXR1cxIeCgpzdWJzY3Jp'
-    'YmVkGBogASgIUgpzdWJzY3JpYmVkIi8KBFR5cGUSCQoFT1dORVIQABIKCgZTSEFSRUQQARIQCg'
-    'xHUk9VUF9TSEFSRUQQAiIZCgRSb2xlEggKBFZJRVcQABIHCgNBTEwQASIiCgZTdGF0dXMSDAoI'
-    'SU5BQ1RJVkUQABIKCgZBQ1RJVkUQAQ==');
+    'YmVkGBogASgIUgpzdWJzY3JpYmVkEiAKBHRhZ3MYGyADKAsyDC5jb21tLkNhbVRhZ1IEdGFncy'
+    'IvCgRUeXBlEgkKBU9XTkVSEAASCgoGU0hBUkVEEAESEAoMR1JPVVBfU0hBUkVEEAIiGQoEUm9s'
+    'ZRIICgRWSUVXEAASBwoDQUxMEAEiIgoGU3RhdHVzEgwKCElOQUNUSVZFEAASCgoGQUNUSVZFEA'
+    'E=');
 
 @$core.Deprecated('Use alarmDescriptor instead')
 const Alarm$json = {
@@ -2042,4 +2059,19 @@ final $typed_data.Uint8List inOutCamDescriptor = $convert.base64Decode(
     'CghJbk91dENhbRIOCgJpbhgBIAEoDFICaW4SEAoDb3V0GAIgASgMUgNvdXQSLgoEdHlwZRgDIA'
     'EoDjIaLmNvbW0uSW5PdXRDYW0uVmVoaWNsZVR5cGVSBHR5cGUiIAoLVmVoaWNsZVR5cGUSBwoD'
     'Q0FSEAASCAoEQklLRRAB');
+
+@$core.Deprecated('Use camTagDescriptor instead')
+const CamTag$json = {
+  '1': 'CamTag',
+  '2': [
+    {'1': 'tag_id', '3': 1, '4': 1, '5': 12, '10': 'tagId'},
+    {'1': 'tag_name', '3': 2, '4': 1, '5': 9, '10': 'tagName'},
+    {'1': 'tag_color', '3': 3, '4': 1, '5': 9, '10': 'tagColor'},
+  ],
+};
+
+/// Descriptor for `CamTag`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List camTagDescriptor = $convert.base64Decode(
+    'CgZDYW1UYWcSFQoGdGFnX2lkGAEgASgMUgV0YWdJZBIZCgh0YWdfbmFtZRgCIAEoCVIHdGFnTm'
+    'FtZRIbCgl0YWdfY29sb3IYAyABKAlSCHRhZ0NvbG9y');
 
