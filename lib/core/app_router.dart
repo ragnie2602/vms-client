@@ -73,12 +73,6 @@ enum Routes {
     description:
         'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
   ),
-  schedule(
-    name: 'schedule_record',
-    path: '/schedule_record',
-    title: 'Lập lịch ghi hình',
-    description: 'Lập lịch ghi hình các camera một cách nhanh nhất',
-  ),
   users(
     name: 'users',
     path: '/users',
@@ -281,17 +275,6 @@ class AppRouter {
                 context: context,
                 state: state,
                 child: EmapScreen(),
-              );
-            },
-          ),
-          GoRoute(
-            path: Routes.schedule.path,
-            name: Routes.schedule.name,
-            pageBuilder: (context, state) {
-              return fadeTransition(
-                context: context,
-                state: state,
-                child: ScheduleRecordingScreen(),
               );
             },
           ),
