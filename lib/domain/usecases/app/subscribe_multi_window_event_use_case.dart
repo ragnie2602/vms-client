@@ -39,7 +39,9 @@ class SubscribeMultiWindowEventUseCase
               ),
               vmValue: call.arguments['viewMode'],
               isDefaultMode: call.arguments['isDefaultMode'],
-              id: call.arguments['id'],
+              id:
+                  (call.arguments['id'] as List<dynamic>?)?.map((e) => e as int).toList() ??
+                  <int>[],
             );
             break;
           case 'close_window':

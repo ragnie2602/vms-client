@@ -148,7 +148,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   FutureOr<void> _onReopenMonitor(ReopenMonitor event, Emitter<MonitorState> emit) async {
     if (event.id.isEmpty) {
       await _onGetAllCamera(GetAllCamera(mode: ViewMode.fromValue(event.mode)), emit);
-    } else if (event.id.length == 1 && event.id.first == -1) {
+    } else if (event.id.length == 1) {
       await _onGetAllCameraNoGroup(GetAllCameraNoGroup(), emit);
     } else {
       await _onGetAllCameraInGroup(GetAllCameraInGroup(event.id), emit);

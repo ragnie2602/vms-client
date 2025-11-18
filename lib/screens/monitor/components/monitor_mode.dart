@@ -244,7 +244,7 @@ class _MonitorModeState extends State<MonitorMode> with StateBuilderMixin {
             onGetNoGroupCamera: (BuildContext contextTreeGroup) {
               context.goNamed(Routes.monitoring.name);
               context.read<MonitorBloc>().add(GetAllCameraNoGroup());
-              context.read<AppBloc>().add(ChangeSettingWindow(isDefaultMode: true, id: [-1]));
+              context.read<AppBloc>().add(ChangeSettingWindow(isDefaultMode: true, id: [48]));
               onResetCustomViewSelectedItem();
             },
             onAddCameraToGroup:
