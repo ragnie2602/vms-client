@@ -218,6 +218,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     MultiWindowUtil.init();
 
     if (MultiWindowUtil.isMainWindow(windowId)) {
+      final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: windowId);
+      reopenViewId = setting.id;
+      reopenViewMode = setting.viewMode.value;
+      isDefaultMode = setting.isDefaultMode;
+
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
       for (var i = 1; i <= subWindowCount; i++) {
         final output = await createNewWindowUseCase.execute(CreateNewWindowInput(windowID: i));

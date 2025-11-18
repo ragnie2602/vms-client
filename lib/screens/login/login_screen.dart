@@ -105,7 +105,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     appBloc.add(ReopenSubWindow());
                   }
 
-                  context.goNamed(AppConfig.INITIAL_HOME_TAB.route?.name ?? Routes.monitoring.name);
+                  context.goNamed(
+                    appBloc.isDefaultMode ? Routes.monitoring.name : Routes.custom_live_view.name,
+                  );
                 } else if (state.isLoading == false && state.errorMessage != null) {
                   showAppMessageDialog(
                     context,
@@ -131,17 +133,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               flex: 237,
                               child: Center(
                                 child: SvgPicture.asset(
-                                  height:
-                                      MediaQuery.heightOf(context) *
-                                      76.84 /
-                                      1024,
+                                  height: MediaQuery.heightOf(context) * 76.84 / 1024,
                                   AppAssets.logoFull,
                                 ),
                               ),
                             ),
-                            SizedBox(
-                              height: MediaQuery.heightOf(context) * 60 / 1024,
-                            ),
+                            SizedBox(height: MediaQuery.heightOf(context) * 60 / 1024),
                             Expanded(
                               flex: 727,
                               child: Form(
@@ -152,18 +149,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       alignment: Alignment.topLeft,
                                       child: Text(
                                         'Đăng nhập',
-                                        style: AppTypography.style(
-                                          30,
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                                        style: AppTypography.style(30, fontWeight: FontWeight.w700),
                                       ),
                                     ),
-                                    SizedBox(
-                                      height:
-                                          MediaQuery.heightOf(context) *
-                                          44 /
-                                          1024,
-                                    ),
+                                    SizedBox(height: MediaQuery.heightOf(context) * 44 / 1024),
                                     AppField(
                                       controller: serverController,
                                       label: 'Địa chỉ máy chủ',
@@ -174,39 +163,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                         }
                                         return null;
                                       },
-                                      paddingBottomLabel:
-                                          MediaQuery.heightOf(context) *
-                                          16 /
-                                          1024,
+                                      paddingBottomLabel: MediaQuery.heightOf(context) * 16 / 1024,
                                     ),
-                                    SizedBox(
-                                      height:
-                                          MediaQuery.heightOf(context) *
-                                          24 /
-                                          1024,
-                                    ),
+                                    SizedBox(height: MediaQuery.heightOf(context) * 24 / 1024),
                                     AppField(
                                       controller: usernameController,
                                       label: 'Tên đăng nhập',
                                       hintText: 'Nhập tên đăng nhập',
                                       validator: (value) {
-                                        if (value == null ||
-                                            value.trim().isEmpty) {
+                                        if (value == null || value.trim().isEmpty) {
                                           return 'Tên đăng nhập không được để trống.';
                                         }
                                         return null;
                                       },
-                                      paddingBottomLabel:
-                                          MediaQuery.heightOf(context) *
-                                          16 /
-                                          1024,
+                                      paddingBottomLabel: MediaQuery.heightOf(context) * 16 / 1024,
                                     ),
-                                    SizedBox(
-                                      height:
-                                          MediaQuery.heightOf(context) *
-                                          24 /
-                                          1024,
-                                    ),
+                                    SizedBox(height: MediaQuery.heightOf(context) * 24 / 1024),
                                     StatefulBuilder(
                                       builder: (context, setState) => AppField(
                                         controller: passwordController,
@@ -214,18 +186,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                         hintText: 'Nhập mật khẩu',
                                         obscureText: obscure,
                                         inputFormatters: [
-                                          FilteringTextInputFormatter.deny(
-                                            RegExp(r'\s'),
-                                          ),
+                                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
                                         ],
                                         suffix: IconButton(
-                                          onPressed: () => setState(
-                                            () => obscure = !obscure,
-                                          ),
+                                          onPressed: () => setState(() => obscure = !obscure),
                                           icon: Icon(
-                                            obscure
-                                                ? Icons.visibility
-                                                : Icons.visibility_off,
+                                            obscure ? Icons.visibility : Icons.visibility_off,
                                             color: AppColors.black,
                                           ),
                                           iconSize: 20,
@@ -240,23 +206,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                           return null;
                                         },
                                         paddingBottomLabel:
-                                            MediaQuery.heightOf(context) *
-                                            16 /
-                                            1024,
+                                            MediaQuery.heightOf(context) * 16 / 1024,
                                       ),
                                     ),
-                                    SizedBox(
-                                      height:
-                                          MediaQuery.heightOf(context) *
-                                          44 /
-                                          1024,
-                                    ),
+                                    SizedBox(height: MediaQuery.heightOf(context) * 44 / 1024),
                                     BlocBuilder<LoginBloc, LoginState>(
                                       builder: (context, state) {
                                         if (state.isLoading) {
                                           return const Center(
-                                            child:
-                                                CircularProgressIndicator.adaptive(),
+                                            child: CircularProgressIndicator.adaptive(),
                                           );
                                         }
                                         return AppButton.filled(
@@ -280,10 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     flex: 1,
                     child: SizedBox(
                       height: double.infinity,
-                      child: Image.asset(
-                        'assets/images/login_illustration.png',
-                        fit: BoxFit.cover,
-                      ),
+                      child: Image.asset('assets/images/login_illustration.png', fit: BoxFit.cover),
                     ),
                   ),
                 ],
