@@ -68,15 +68,16 @@ class ConfigScheduleRecordWidget extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
               Flexible(
                 child: GridView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 24,
-                    mainAxisSpacing: 2,
+                    mainAxisSpacing: 10,
                     crossAxisSpacing: 2,
-                    // childAspectRatio: 0.35, // adjust height
+                    childAspectRatio: 1, // adjust height
                   ),
                   itemCount: DaysOfWeek.values.length * 24,
                   itemBuilder: (context, column) {
@@ -92,6 +93,54 @@ class ConfigScheduleRecordWidget extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: 13),
+        // check box cả ngày
+        Expanded(
+          flex: 50,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Cả ngày',
+                style: AppTypography.style(
+                  12,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.redFF0000,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (_, __) {
+                    return SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Checkbox(
+                        side: BorderSide(
+                          color: AppColors.greyE2E8F0,
+                          width: 1.0,
+                        ),
+                        activeColor: AppColors.blue005AA9,
+                        value: true,
+                        onChanged: (_) {},
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    );
+                  },
+                  itemCount: DaysOfWeek.values.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // padding right
+        const SizedBox(width: 5),
       ],
     );
   }
