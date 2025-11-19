@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 
 import '../../shared/panel.dart';
 import '../bloc/camera_detail/camera_detail_bloc.dart';
@@ -64,6 +65,15 @@ class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
                         width: double.infinity,
                         height: double.infinity,
                         margin: const EdgeInsets.all(20),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Vui lòng chọn Camera từ danh sách để xem lại.",
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
                       )
                     : Container(
                         margin: const EdgeInsets.all(20),

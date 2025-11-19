@@ -215,7 +215,8 @@ class Player {
     int? height,
     bool? tunnel,
     bool? fit,
-    bool synchronized = true,
+    bool synchronized = false,
+    Duration? timeout,
   }) async {
     Future<int> fn() async {
       if (_creatingCompleter?.isCompleted == false) return textureId.value ?? -1;
@@ -227,11 +228,13 @@ class Player {
         textureId.value = null;
       }
 
-      final size = await _videoSize.future;
+      final size =
+          await _videoSize.future.timeout(timeout ?? Duration(seconds: 30), onTimeout: () => null);
       if (size == null) {
         _creatingCompleter!.complete(null);
         return -1;
       }
+
       if (width == null && height == null) {
         // original size
         textureId.value = await FvpPlatform.instance

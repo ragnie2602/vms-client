@@ -1,10 +1,10 @@
 [Setup]
 AppName=VNPT Secure Vision
-AppVersion=1.0.4
+AppVersion=1.0.5
 DefaultDirName={pf}\VNPT Secure Vision
 DefaultGroupName=VNPT Secure Vision
 OutputDir=output
-OutputBaseFilename=VNPTSecureVisionInstaller_1.0.4_6
+OutputBaseFilename=VNPTSecureVisionInstaller_1.0.5_6
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -21,9 +21,9 @@ Source: "VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: dontcopy
 
 [Icons]
 ; Start menu shortcut
-Name: "{group}\VMS Flutter Client"; Filename: "{app}\vnpt_secure_vision.exe"
+Name: "{group}\VNPT Secure Vision"; Filename: "{app}\vnpt_secure_vision.exe"
 ; Desktop shortcut
-Name: "{commondesktop}\VMS Flutter Client"; Filename: "{app}\vnpt_secure_vision.exe"
+Name: "{commondesktop}\VNPT Secure Vision"; Filename: "{app}\vnpt_secure_vision.exe"
 
 [Run]
 ; Install VC++ Redistributable silently if not installed

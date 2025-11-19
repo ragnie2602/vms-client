@@ -1,0 +1,128 @@
+syntax = "proto3";
+import "comm.model.proto";
+import "google/protobuf/any.proto";
+package comm;
+//ID: [2000-2020]
+option java_package = "com.vivas.ipcamera.core.protobuf";
+
+message ListTag
+{
+	message Request
+	{}
+	message Reply
+	{
+		repeated CamTag tags = 1;
+	}
+	uint32 ID = 2000;
+}
+message AddTag
+{
+	message Request
+	{
+		CamTag tag = 1;
+	}
+	message Reply
+	{
+	    CamTag tag = 1;
+	}
+	enum Error
+    {
+        ERROR_DEFAULT = 0;
+        TAG_NAME_EMPTY = 1;
+        TAG_NAME_INVALID = 2;
+        TAG_NAME_EXIST = 3;
+        PERMISSION_DENIED = 5;
+    }
+	uint32 ID = 2001;
+}
+message DelTag
+{
+	message Request
+	{
+		bytes tag_id = 1;
+	}
+	message Reply
+	{}
+	enum Error
+	{
+		ERROR_DEFAULT = 0;
+		PERMISSION_DENIED = 1;
+		TAG_ID_INVALID = 2;
+	}
+	uint32 ID = 2002;
+}
+message UpdateTag
+{
+	message Request
+	{
+		CamTag tag = 1;
+	}
+	message Reply
+	{
+	    CamTag tag = 1;
+	}
+    enum Error
+    {
+        ERROR_DEFAULT = 0;
+        TAG_NAME_EMPTY = 1;
+        TAG_NAME_INVALID = 2;
+        TAG_NAME_EXIST = 3;
+        PERMISSION_DENIED = 5;
+        TAG_ID_INVALID = 6;
+    }
+	uint32 ID = 2003;
+}
+message ImportCamera
+{
+	message ImportCell
+	{
+		uint32 index_numer = 1; // số thứ tự
+		CameraType camera_type = 2; // bắt buộc
+		string camera_name = 3; // bắt buộc
+		string onvif_xaadr = 4; /// cần trường này nếu là camera onvif
+		string user_name = 5; // gửi lên nếu có
+		string password = 6; // gửi lên nếu có
+		string main_stream = 7; // bắt buộc
+		string sub_stream = 8; // gửi lên nếu có
+		uint32 error = 9; /// khi import lỗi thì trường này đc server set trả về là camera import này lỗi gì theo bảng mã lỗi bên dưới
+	}
+	message Request
+	{
+		repeated ImportCell cameras = 1;
+	}
+	message Reply
+	{
+		repeated Camera caneras = 1;
+		repeated ImportCell camera_error = 2;
+	}
+	enum Error
+	{
+		ERROR_DEFAULT = 0;
+		MAIN_STREAM_INVALID = 1;
+		ONVIF_XADR_INVALID = 2;
+		CAMERA_NAME_INVALID = 3;
+		CAMERA_NAME_EXIST = 4;
+		MAIN_STREAM_EXIST = 5;
+		INVALID_CAMERA_TYPE = 6;
+	}
+	uint32 ID = 2005;
+}
+message GetCameraInfo
+{
+    message Request
+    {
+        bytes cameras_id = 1;
+    }
+    message Reply
+    {
+    	repeated string info_data = 1;
+    	repeated string value_data = 2;
+    }
+    enum Error
+    {
+    	ERROR_DEFAULT = 0;
+    	CAMERA_ID_INVALID = 1;
+    	CAMERA_NOT_EXIST = 2;
+    }
+    uint32 ID = 2006;
+}

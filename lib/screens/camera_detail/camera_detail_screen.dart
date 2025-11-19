@@ -113,7 +113,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           onInitializedValues: ({required double volume, required double speed}) {
             context.read<CameraDetailBloc>().add(ChangeVolume(volume));
             context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
-            context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
+            context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
           },
         ),
       ),
@@ -131,11 +131,11 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
       onInitializedValues: ({required double volume, required double speed}) {
         context.read<CameraDetailBloc>().add(ChangeVolume(volume));
         context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
-        context.read<CameraDetailBloc>().add(OnRecording(cancel: true));
+        context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
       },
       onLostConnection: () {
         final bloc = context.read<CameraDetailBloc>();
-        if (bloc.state.isRecording) bloc.add(OnRecording(cancel: true));
+        if (bloc.state.recordingStatus != 0) bloc.add(OnRecording(cancelStatus: -1));
       },
     );
   }

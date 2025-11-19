@@ -1,5 +1,6 @@
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_output.dart';
 import 'package:vms_flutter_client/domain/usecases/future_use_case.dart';
@@ -16,19 +17,32 @@ class SendMultiWindowEventUseCase
           'top': input.data?['rect']?.top,
           'width': input.data?['rect']?.width,
           'height': input.data?['rect']?.height,
+          'viewMode': input.data?['viewMode'],
+          'isDefaultMode': input.data?['isDefaultMode'],
+          'id': input.data?['id'],
         };
-        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
+        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
         break;
       case 'close_window':
         final data = {'windowId': input.data?['windowId']};
-        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
+        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
         break;
       case 'profile':
-        DesktopMultiWindow.invokeMethod(
+        await DesktopMultiWindow.invokeMethod(
           input.targetWindowID,
           input.methodName,
           AppData.instance.profile?.toJson(),
         );
+        break;
+      case 'restore_monitor_mode':
+        final bWindowID = input.data!['bWindowID'];
+        final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: bWindowID);
+
+        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, {
+          'viewMode': setting.viewMode.value,
+          'isDefaultMode': setting.isDefaultMode,
+          'id': setting.id,
+        });
         break;
       case 'sign_out':
         final List<int> targetIds = [];

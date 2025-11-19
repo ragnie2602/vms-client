@@ -319,6 +319,7 @@ message AddCameraRTSP
 		bytes box_id = 6; /// gửi lên nếu add 1 camera qua vbox
 		bytes group_id = 7; ///Thêm camera vào 1 nhóm (ko truyền hoặc truyền rỗng --> add bình thường
 		repeated string sub_stream_urls = 8; // Gửi danh sách luồng phụ của camera
+		repeated bytes tagset_id = 9; // danh sách tag
 	}
 	message Reply
 	{
@@ -362,6 +363,7 @@ message AddCameraOnVif
 		bytes group_id = 9; ///Thêm camera vào 1 nhóm (ko truyền hoặc truyền rỗng --> add bình thường
 		string urn = 10; ///urn của cam onvif khi scan (= giá tri urn:uuid khi scan)
 		repeated string sub_stream_urls = 11; // Gửi danh sách luồng phụ của camera
+		repeated bytes tagset_id = 12; // danh sách tag
 	}
 	message Reply
 	{

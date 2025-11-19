@@ -8,7 +8,6 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
-
 import '../../shared/action_item.dart';
 import '../../shared/panel.dart';
 import '../bloc/monitor/monitor_bloc.dart';
@@ -95,11 +94,14 @@ class _MonitorActionsState extends State<MonitorActions> {
                         maxWidth: widget.leftController.expandedWidth,
                         key: ValueKey('monitor_cameras'),
                         onTap: (data) {
-                          context.pushNamed(
+                          context.goNamed(
                             Routes.cameraDetail.name,
                             extra: CameraDetailScreenArgs(
                               data: data,
                               openCamerasPanelImmediately: true,
+                              onBack: () => AppRouter.rootNavigatorKey.currentContext?.goNamed(
+                                Routes.monitoring.name,
+                              ),
                             ),
                           );
                         },

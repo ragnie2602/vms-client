@@ -106,12 +106,12 @@ class ProjectTarget extends $pb.ProtobufEnum {
 }
 
 class Box_Type extends $pb.ProtobufEnum {
-  static const Box_Type NONE = Box_Type._(0, _omitEnumNames ? '' : 'NONE');
+  static const Box_Type UNDEFINED = Box_Type._(0, _omitEnumNames ? '' : 'UNDEFINED');
   static const Box_Type RASPBERRY = Box_Type._(1, _omitEnumNames ? '' : 'RASPBERRY');
   static const Box_Type ORANGEPI = Box_Type._(2, _omitEnumNames ? '' : 'ORANGEPI');
 
   static const $core.List<Box_Type> values = <Box_Type> [
-    NONE,
+    UNDEFINED,
     RASPBERRY,
     ORANGEPI,
   ];
@@ -198,12 +198,27 @@ class PtzAction extends $pb.ProtobufEnum {
   const PtzAction._($core.int v, $core.String n) : super(v, n);
 }
 
+class UserStatus extends $pb.ProtobufEnum {
+  static const UserStatus ACTIVE = UserStatus._(0, _omitEnumNames ? '' : 'ACTIVE');
+  static const UserStatus INACTIVE = UserStatus._(1, _omitEnumNames ? '' : 'INACTIVE');
+
+  static const $core.List<UserStatus> values = <UserStatus> [
+    ACTIVE,
+    INACTIVE,
+  ];
+
+  static final $core.Map<$core.int, UserStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static UserStatus? valueOf($core.int value) => _byValue[value];
+
+  const UserStatus._($core.int v, $core.String n) : super(v, n);
+}
+
 class API extends $pb.ProtobufEnum {
-  static const API UNDEFINED = API._(0, _omitEnumNames ? '' : 'UNDEFINED');
+  static const API API_UNDEFINED = API._(0, _omitEnumNames ? '' : 'API_UNDEFINED');
   static const API API_VERSION = API._(111, _omitEnumNames ? '' : 'API_VERSION');
 
   static const $core.List<API> values = <API> [
-    UNDEFINED,
+    API_UNDEFINED,
     API_VERSION,
   ];
 
@@ -323,12 +338,12 @@ class Profile_Type extends $pb.ProtobufEnum {
 }
 
 class BoxInfo_Box_Type extends $pb.ProtobufEnum {
-  static const BoxInfo_Box_Type NONE = BoxInfo_Box_Type._(0, _omitEnumNames ? '' : 'NONE');
+  static const BoxInfo_Box_Type UNDEFINED = BoxInfo_Box_Type._(0, _omitEnumNames ? '' : 'UNDEFINED');
   static const BoxInfo_Box_Type RASPBERRY = BoxInfo_Box_Type._(1, _omitEnumNames ? '' : 'RASPBERRY');
   static const BoxInfo_Box_Type ORANGEPI = BoxInfo_Box_Type._(2, _omitEnumNames ? '' : 'ORANGEPI');
 
   static const $core.List<BoxInfo_Box_Type> values = <BoxInfo_Box_Type> [
-    NONE,
+    UNDEFINED,
     RASPBERRY,
     ORANGEPI,
   ];

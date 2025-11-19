@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -144,10 +145,15 @@ class _UserProfileState extends State<UserProfile> {
               icon: SvgPicture.asset(AppAssets.icUserInfo),
               title: 'Thông tin cá nhân',
             ),
-            _buildMenuItem(
+            _buildMenuItemWithTooltip(
               title: 'Đa màn hình',
               icon: SvgPicture.asset(AppAssets.icNewWindow),
-              onTap: () => context.read<AppBloc>().add(CreateNewWindow()),
+              onTap: () {
+                context.read<AppBloc>().add(CreateNewWindow());
+              },
+              showTooltip: MultiWindowUtil.getSubWindowCount() >= AppConfig.MAXIMUM_SUB_WINDOWS,
+              tooltipMessage: 'Bạn chỉ được hiển thị tối đa 3 cửa sổ phụ',
+              enabled: MultiWindowUtil.getSubWindowCount() < AppConfig.MAXIMUM_SUB_WINDOWS,
             ),
             _buildMenuItem(
               onTap: () {
@@ -182,9 +188,11 @@ class _UserProfileState extends State<UserProfile> {
     required String title,
     required Widget icon,
     required VoidCallback? onTap,
+    bool enabled = true,
   }) {
     return ListTile(
       onTap: onTap,
+      enabled: enabled,
       leading: icon,
       title: Text(
         title,
@@ -195,6 +203,29 @@ class _UserProfileState extends State<UserProfile> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
       ),
+    );
+  }
+
+  Widget _buildMenuItemWithTooltip({
+    required String title,
+    required Widget icon,
+    required VoidCallback? onTap,
+    required bool showTooltip,
+    required String tooltipMessage,
+    bool enabled = true,
+  }) {
+    final menuItem = _buildMenuItem(title: title, icon: icon, onTap: onTap, enabled: enabled);
+
+    if (!showTooltip) return menuItem;
+
+    return Tooltip(
+      message: tooltipMessage,
+      preferBelow: false,
+      verticalOffset: 10,
+      waitDuration: Duration(milliseconds: 100),
+      decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(4)),
+      textStyle: TextStyle(color: Colors.white, fontSize: 12),
+      child: menuItem,
     );
   }
 

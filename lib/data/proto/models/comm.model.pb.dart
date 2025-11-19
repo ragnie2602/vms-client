@@ -1231,7 +1231,7 @@ class BoxInfo extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BoxInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'boxName')
     ..aOS(2, _omitFieldNames ? '' : 'boxSerialNumber')
-    ..e<BoxInfo_Box_Type>(3, _omitFieldNames ? '' : 'boxType', $pb.PbFieldType.OE, defaultOrMaker: BoxInfo_Box_Type.NONE, valueOf: BoxInfo_Box_Type.valueOf, enumValues: BoxInfo_Box_Type.values)
+    ..e<BoxInfo_Box_Type>(3, _omitFieldNames ? '' : 'boxType', $pb.PbFieldType.OE, defaultOrMaker: BoxInfo_Box_Type.UNDEFINED, valueOf: BoxInfo_Box_Type.valueOf, enumValues: BoxInfo_Box_Type.values)
     ..a<$core.List<$core.int>>(4, _omitFieldNames ? '' : 'ownerUserId', $pb.PbFieldType.OY)
     ..e<Box_State>(5, _omitFieldNames ? '' : 'boxState', $pb.PbFieldType.OE, protoName: 'box_State', defaultOrMaker: Box_State.VBOX_ACTIVE, valueOf: Box_State.valueOf, enumValues: Box_State.values)
     ..hasRequiredFields = false
@@ -5193,6 +5193,7 @@ class Camera extends $pb.GeneratedMessage {
     CameraType? cameraType,
     Camera_Status? status,
     $core.bool? subscribed,
+    $core.Iterable<CamTag>? tags,
   }) {
     final $result = create();
     if (id != null) {
@@ -5273,6 +5274,9 @@ class Camera extends $pb.GeneratedMessage {
     if (subscribed != null) {
       $result.subscribed = subscribed;
     }
+    if (tags != null) {
+      $result.tags.addAll(tags);
+    }
     return $result;
   }
   Camera._() : super();
@@ -5306,6 +5310,7 @@ class Camera extends $pb.GeneratedMessage {
     ..e<CameraType>(24, _omitFieldNames ? '' : 'cameraType', $pb.PbFieldType.OE, protoName: 'cameraType', defaultOrMaker: CameraType.UNKNOW, valueOf: CameraType.valueOf, enumValues: CameraType.values)
     ..e<Camera_Status>(25, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: Camera_Status.INACTIVE, valueOf: Camera_Status.valueOf, enumValues: Camera_Status.values)
     ..aOB(26, _omitFieldNames ? '' : 'subscribed')
+    ..pc<CamTag>(27, _omitFieldNames ? '' : 'tags', $pb.PbFieldType.PM, subBuilder: CamTag.create)
     ..hasRequiredFields = false
   ;
 
@@ -5569,6 +5574,9 @@ class Camera extends $pb.GeneratedMessage {
   $core.bool hasSubscribed() => $_has(25);
   @$pb.TagNumber(26)
   void clearSubscribed() => clearField(26);
+
+  @$pb.TagNumber(27)
+  $core.List<CamTag> get tags => $_getList(26);
 }
 
 class Alarm extends $pb.GeneratedMessage {
@@ -7222,7 +7230,7 @@ class Vbox extends $pb.GeneratedMessage {
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'boxId', $pb.PbFieldType.OY)
     ..aOS(2, _omitFieldNames ? '' : 'boxName')
     ..aOS(3, _omitFieldNames ? '' : 'boxSerialNumber')
-    ..e<Box_Type>(4, _omitFieldNames ? '' : 'boxType', $pb.PbFieldType.OE, defaultOrMaker: Box_Type.NONE, valueOf: Box_Type.valueOf, enumValues: Box_Type.values)
+    ..e<Box_Type>(4, _omitFieldNames ? '' : 'boxType', $pb.PbFieldType.OE, defaultOrMaker: Box_Type.UNDEFINED, valueOf: Box_Type.valueOf, enumValues: Box_Type.values)
     ..e<Box_State>(5, _omitFieldNames ? '' : 'boxState', $pb.PbFieldType.OE, protoName: 'box_State', defaultOrMaker: Box_State.VBOX_ACTIVE, valueOf: Box_State.valueOf, enumValues: Box_State.values)
     ..a<$core.List<$core.int>>(6, _omitFieldNames ? '' : 'ownerUserId', $pb.PbFieldType.OY)
     ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'timeAdded', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
@@ -8745,6 +8753,84 @@ class InOutCam extends $pb.GeneratedMessage {
   $core.bool hasType() => $_has(2);
   @$pb.TagNumber(3)
   void clearType() => clearField(3);
+}
+
+class CamTag extends $pb.GeneratedMessage {
+  factory CamTag({
+    $core.List<$core.int>? tagId,
+    $core.String? tagName,
+    $core.String? tagColor,
+  }) {
+    final $result = create();
+    if (tagId != null) {
+      $result.tagId = tagId;
+    }
+    if (tagName != null) {
+      $result.tagName = tagName;
+    }
+    if (tagColor != null) {
+      $result.tagColor = tagColor;
+    }
+    return $result;
+  }
+  CamTag._() : super();
+  factory CamTag.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CamTag.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CamTag', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'tagId', $pb.PbFieldType.OY)
+    ..aOS(2, _omitFieldNames ? '' : 'tagName')
+    ..aOS(3, _omitFieldNames ? '' : 'tagColor')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CamTag clone() => CamTag()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CamTag copyWith(void Function(CamTag) updates) => super.copyWith((message) => updates(message as CamTag)) as CamTag;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CamTag create() => CamTag._();
+  CamTag createEmptyInstance() => create();
+  static $pb.PbList<CamTag> createRepeated() => $pb.PbList<CamTag>();
+  @$core.pragma('dart2js:noInline')
+  static CamTag getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CamTag>(create);
+  static CamTag? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get tagId => $_getN(0);
+  @$pb.TagNumber(1)
+  set tagId($core.List<$core.int> v) { $_setBytes(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTagId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTagId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get tagName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set tagName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTagName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTagName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get tagColor => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set tagColor($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTagColor() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTagColor() => clearField(3);
 }
 
 
