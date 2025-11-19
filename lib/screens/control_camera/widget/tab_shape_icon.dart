@@ -5,19 +5,11 @@ class TagShapeIcon extends StatelessWidget {
   final double width;
   final double height;
 
-  const TagShapeIcon({
-    Key? key,
-    required this.color,
-    this.width = 36,
-    this.height = 20,
-  }) : super(key: key);
+  const TagShapeIcon({super.key, required this.color, this.width = 36, this.height = 20});
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(width, height),
-      painter: _TagShapePainter(color),
-    );
+    return CustomPaint(size: Size(width, height), painter: _TagShapePainter(color));
   }
 }
 
@@ -44,6 +36,5 @@ class _TagShapePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TagShapePainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(_TagShapePainter oldDelegate) => oldDelegate.color != color;
 }

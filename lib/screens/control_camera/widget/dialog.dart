@@ -121,25 +121,11 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   bool _isChecking = false;
   bool _isSubmitting = false;
   Timer? _passwordVisibilityTimer;
-  OverlayEntry? _overlayEntry;
-  List<TagEntity> _tags = [];
-  List<TagEntity> get _selectedTags => _tags.where((tag) => tag.isSelected).toList();
 
   @override
   void initState() {
     super.initState();
     _initializeData();
-    _initTags();
-  }
-
-  void _initTags() {
-    _tags = [
-      TagEntity(id: '1', name: 'Camera an ninh', color: const Color(0xFFEF4444)),
-      TagEntity(id: '2', name: 'Camera ngoài trời', color: const Color(0xFF10B981)),
-      TagEntity(id: '3', name: 'Camera hành lang', color: const Color(0xFFF59E0B)),
-      TagEntity(id: '4', name: 'Camera lớp học', color: const Color(0xFF8B5CF6)),
-      TagEntity(id: '5', name: 'Camera sảnh cầu thang', color: const Color(0xFFEAB308)),
-    ];
   }
 
   void _initializeData() {
@@ -193,55 +179,6 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       // Nếu đang ẩn mật khẩu, hủy timer
       _passwordVisibilityTimer?.cancel();
     }
-  }
-
-  void _showAddCameraDropdown(
-    BuildContext context,
-    BuildContext buttonContext,
-    List<CameraEntity> listCamera,
-  ) {
-    final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
-    final size = renderBox.size;
-    final offset = renderBox.localToGlobal(Offset.zero);
-
-    final excludedCameraNames = <String>{};
-    _overlayEntry?.remove();
-    _overlayEntry = OverlayEntry(
-      builder: (context) => AddTagDropdown(
-        listTags: _tags,
-        excludedCameraNames: excludedCameraNames, // Truyền danh sách camera đã có
-        position: Offset(offset.dx, offset.dy + size.height),
-        onClose: () {
-          _overlayEntry?.remove();
-          _overlayEntry = null;
-        },
-        onManageTagsClicked: (currentTags) async {
-          // Đóng AlertDialog trước
-          //   Navigator.of(context).pop();
-          // Chờ một chút để dialog đóng hoàn toàn
-          await Future.delayed(const Duration(milliseconds: 150));
-          // Mở TagManagementDialog từ root context
-          if (context.mounted) {
-            final result = await showDialog<List<TagEntity>>(
-              context: context,
-              builder: (context) => TagManagementDialog(tags: currentTags),
-            );
-            if (result != null && mounted) {
-              setState(() {
-                _tags = result;
-              });
-            }
-          }
-        },
-        onTagsUpdated: (updatedTags) {
-          setState(() {
-            _tags = updatedTags;
-          });
-        },
-      ),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
   }
 
   @override
@@ -376,11 +313,11 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       requiredField: true,
                       maxLength: 50,
                     ),
-                    SizedBox(height: 24),
+                    SizedBox(height: 20),
                     // Phương thức selection
                     _buildMethodCamera(),
                     _buildAccountCamera(),
-                    SizedBox(height: 24),
+                    SizedBox(height: 20),
                     AppField(
                       controller: _rtsp,
                       hintText: 'Nhập địa chỉ RTSP',
@@ -390,7 +327,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? 'Địa chỉ RTSP không được để trống' : null,
                     ),
-                    SizedBox(height: 24),
+                    SizedBox(height: 20),
                     AppField(
                       controller: _sub,
                       hintText: 'Nhập địa chỉ luồng phụ',
@@ -399,14 +336,14 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       //     ? 'Địa chỉ luồng phụ không được để trống'
                       //     : null,
                     ),
-                    // const SizedBox(height: 24),
+                    // const SizedBox(height: 20),
                     // AppField(
                     //   controller: _desc,
                     //   hintText: 'Nhập địa chỉ khu vực',
                     //   label: "Địa chỉ khu vực",
                     //   maxLength: 50,
                     // ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     Text(
                       'Tags',
                       style: AppTypography.style(
@@ -416,76 +353,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    InkWell(
-                      onTap: () async {
-                        _showAddCameraDropdown(context, context, []);
-                      },
-
-                      //check tag
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.greyE2E8F0, width: 1),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _selectedTags.isEmpty
-                                  ? Text(
-                                      'Chọn tags',
-                                      style: AppTypography.style(
-                                        14,
-                                        fontWeight: FontWeight.w400,
-                                        color: AppColors.grey92929D,
-                                      ),
-                                    )
-                                  : Wrap(
-                                      spacing: 8,
-                                      runSpacing: 8,
-                                      children: _selectedTags.map((tag) {
-                                        return Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: tag.color.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(4),
-                                            border: Border.all(color: tag.color, width: 1),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Container(
-                                                width: 8,
-                                                height: 8,
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: tag.color,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                tag.name,
-                                                style: AppTypography.style(
-                                                  12,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: AppColors.black,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(Icons.arrow_drop_down, color: AppColors.grey92929D),
-                          ],
-                        ),
-                      ),
-                    ),
+                    _TagField(),
                   ],
                 ),
               ),
@@ -494,7 +362,6 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         ),
         actions: [
           Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               Expanded(
                 child: SizedBox(
@@ -505,7 +372,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: SizedBox(
                   height: 44,
@@ -682,7 +549,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       children: [
         RichText(
           text: TextSpan(
-            text: 'Phương thức',
+            text: 'Giao thức',
             style: AppTypography.style(14, fontWeight: FontWeight.w500, color: Color(0xFF000000)),
             children: [
               TextSpan(
@@ -692,33 +559,211 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             ],
           ),
         ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            CustomRadioButton(
-              title: 'ONVIF',
-              value: 'ONVIF',
-              readonly: widget.mode == CameraDialogMode.edit,
-              groupValue: _method,
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() => _method = value);
-              },
-            ),
-            const SizedBox(width: 24),
-            CustomRadioButton(
-              title: 'RTSP',
-              value: 'RTSP',
-              readonly: widget.mode == CameraDialogMode.edit,
-              groupValue: _method,
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() => _method = value);
-              },
-            ),
-          ],
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 17,
+          child: Row(
+            children: [
+              CustomRadioButton(
+                title: 'ONVIF',
+                value: 'ONVIF',
+                readonly: widget.mode == CameraDialogMode.edit,
+                groupValue: _method,
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _method = value);
+                },
+                textStyle: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.black,
+                ),
+              ),
+              const SizedBox(width: 24),
+              CustomRadioButton(
+                title: 'RTSP',
+                value: 'RTSP',
+                readonly: widget.mode == CameraDialogMode.edit,
+                groupValue: _method,
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() => _method = value);
+                },
+                textStyle: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.black,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
+  }
+}
+
+class _TagField extends StatefulWidget {
+  @override
+  State<_TagField> createState() => _TagFieldState();
+}
+
+class _TagFieldState extends State<_TagField> {
+  final List<TagEntity> _tags = [];
+  final List<TagEntity> _selected = [];
+
+  final LayerLink layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+
+  @override
+  void initState() {
+    super.initState();
+    _tags.addAll([
+      TagEntity(id: '1', name: 'Camera an ninh', color: const Color(0xFFEF4444)),
+      TagEntity(id: '2', name: 'Camera ngoài trời', color: const Color(0xFF10B981)),
+      TagEntity(id: '3', name: 'Camera hành lang', color: const Color(0xFFF59E0B)),
+      TagEntity(id: '4', name: 'Camera lớp học', color: const Color(0xFF8B5CF6)),
+      TagEntity(id: '5', name: 'Camera sảnh cầu thang', color: const Color(0xFFEAB308)),
+    ]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformTarget(
+      link: layerLink,
+      child: Builder(
+        builder: (buttonContext) => InkWell(
+          onTap: () => _showAddCameraDropdown(context, buttonContext, []),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.greyE2E8F0, width: 1),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _selected.isEmpty
+                      ? Text(
+                          'Chọn tags',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.grey92929D,
+                          ),
+                        )
+                      : Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _selected.map((tag) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: tag.color, width: 1),
+                                borderRadius: BorderRadius.circular(4),
+                                color: tag.color.withOpacity(0.1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: tag.color,
+                                    ),
+                                    height: 8,
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    width: 8,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Text(
+                                      tag.name,
+                                      style: AppTypography.style(
+                                        12,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.close,
+                                        color: AppColors.grey92929D,
+                                        size: 10,
+                                      ),
+                                      onPressed: () => setState(() => _selected.remove(tag)),
+                                      padding: EdgeInsets.all(3),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.arrow_drop_down, color: AppColors.grey92929D),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddCameraDropdown(
+    BuildContext context,
+    BuildContext buttonContext,
+    List<CameraEntity> listCamera,
+  ) {
+    final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    final excludedCameraNames = <String>{};
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder: (context) => AddTagDropdown(
+        excludedCameraNames: excludedCameraNames, // Truyền danh sách camera đã có
+        listTags: _tags,
+        onClose: () {
+          _overlayEntry?.remove();
+          _overlayEntry = null;
+        },
+        onManageTagsClicked: (currentTags) async {
+          // Đóng AlertDialog trước
+          //   Navigator.of(context).pop();
+          // Chờ một chút để dialog đóng hoàn toàn
+          await Future.delayed(const Duration(milliseconds: 150));
+          // Mở TagManagementDialog từ root context
+          if (context.mounted) {
+            final result = await showDialog<List<TagEntity>>(
+              context: context,
+              builder: (context) => TagManagementDialog(tags: currentTags),
+            );
+            if (result != null && mounted) {
+              setState(() {
+                _tags.clear();
+                _tags.addAll(result);
+              });
+            }
+          }
+        },
+        onTagSelected: (tag) {
+          setState(() => _selected.add(tag));
+          _overlayEntry?.remove();
+          _overlayEntry = null;
+        },
+        selectedTags: _selected,
+        targeterOffset: Offset(offset.dx, offset.dy + size.height),
+        tagLayerLink: layerLink,
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
   }
 }

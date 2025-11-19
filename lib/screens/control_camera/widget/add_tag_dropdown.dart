@@ -8,22 +8,27 @@ import 'package:vms_flutter_client/screens/control_camera/widget/tab_shape_icon.
 import 'package:vms_flutter_client/screens/control_camera/widget/tag_management_dialog.dart';
 
 class AddTagDropdown extends StatefulWidget {
-  final Offset position;
-  final VoidCallback? onClose;
+  final Set<String> excludedCameraNames;
   final List<TagEntity> listTags;
-  final Set<String> excludedCameraNames; // Camera đã có
-  final Function(List<TagEntity>)? onTagsUpdated;
-  final Function(List<TagEntity>)?
-  onManageTagsClicked; // Callback khi click quản lý tags, truyền tags hiện tại
+  final List<TagEntity> selectedTags;
+
+  final VoidCallback? onClose;
+  final Function(TagEntity)? onTagSelected;
+  final Function(List<TagEntity>)? onManageTagsClicked;
+
+  final LayerLink tagLayerLink;
+  final Offset targeterOffset;
 
   const AddTagDropdown({
     super.key,
-    required this.position,
-    this.onClose,
-    required this.listTags,
-    this.onTagsUpdated,
-    this.onManageTagsClicked,
     this.excludedCameraNames = const {},
+    required this.listTags,
+    this.onClose,
+    this.onManageTagsClicked,
+    this.onTagSelected,
+    required this.selectedTags,
+    required this.targeterOffset,
+    required this.tagLayerLink,
   });
 
   @override
@@ -35,34 +40,166 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
   bool _isLoading = false;
   List<TagEntity> _tags = [];
 
-  // Lưu trạng thái chọn của camera
-  final Set<String> _selectedCameras = {};
-
-  List<TagEntity> get _filteredCameras {
+  List<TagEntity> get _filteredTags {
     final query = _searchController.text.toLowerCase();
     // Lọc bỏ các camera đã được chọn trong session và camera đã có trên map
-    final availableCameras = _tags
-        .where(
-          (camera) =>
-              !_selectedCameras.contains(camera.name) &&
-              !widget.excludedCameraNames.contains(camera.name),
-        )
+    final availableTags = _tags
+        .where((camera) => !widget.excludedCameraNames.contains(camera.name))
         .toList();
 
-    if (query.isEmpty) return availableCameras;
-    return availableCameras
-        .where((camera) => camera.name.toString().toLowerCase().contains(query))
-        .toList();
+    if (query.isEmpty) return availableTags;
+    return availableTags.where((tag) => tag.name.toString().toLowerCase().contains(query)).toList();
   }
 
-  void _toggleTag(int index) {
-    setState(() {
-      final actualIndex = _tags.indexWhere((tag) => tag.id == _tags[index].id);
-      if (actualIndex != -1) {
-        _tags[actualIndex].isSelected = !_tags[actualIndex].isSelected;
-        _tags[index].isSelected = _tags[actualIndex].isSelected;
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    _tags = widget.listTags;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: widget.onClose,
+          child: Container(color: Colors.transparent),
+        ),
+        CompositedTransformFollower(
+          targetAnchor: Alignment.bottomLeft,
+          link: widget.tagLayerLink,
+          child: Material(
+            elevation: 8,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height - widget.targeterOffset.dy,
+              ),
+              width: MediaQuery.of(context).size.width * 613 / 1600 - 48,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 40,
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Nhập tên tag',
+                        hintStyle: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.grey8F95B2,
+                        ),
+                        prefixIcon: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                          child: SvgPicture.asset(AppAssets.icSearch),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onChanged: (value) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_isLoading)
+                    const Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator())
+                  else if (_filteredTags.isEmpty)
+                    Center(
+                      child: Text(
+                        'Không tìm thấy tags',
+                        style: AppTypography.style(14, color: AppColors.grey92929D),
+                      ),
+                    )
+                  else
+                    Flexible(
+                      child: ListView.builder(
+                        itemCount: _filteredTags.length,
+                        itemBuilder: (context, index) {
+                          final tag = _filteredTags[index];
+                          return Material(
+                            child: InkWell(
+                              onTap: () {
+                                widget.onTagSelected?.call(tag);
+                                widget.onClose?.call();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                child: Row(
+                                  children: [
+                                    TagShapeIcon(color: tag.color, width: 18, height: 12),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        tag.name,
+                                        style: AppTypography.style(
+                                          14,
+                                          fontWeight: FontWeight.w400,
+                                          color: AppColors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        shrinkWrap: true,
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: AppColors.greyE2E8F0),
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () {
+                      widget.onClose?.call();
+                      _openTagManagement();
+                    },
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          AppAssets.tabSettings,
+                          color: AppColors.blue085DA8,
+                          height: 13,
+                          width: 13,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Quản lý thẻ phân loại',
+                          style: AppTypography.style(
+                            13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.blue085DA8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _openTagManagement() async {
@@ -76,271 +213,5 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
         _tags = result;
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _tags = widget.listTags;
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        GestureDetector(
-          onTap: widget.onClose,
-          child: Container(color: Colors.transparent),
-        ),
-        Positioned(
-          right: MediaQuery.of(context).size.width * 0.3,
-          top: MediaQuery.of(context).size.height * 0.5,
-          child: Material(
-            elevation: 8,
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.4,
-              height:
-                  MediaQuery.of(context).size.height *
-                  0.4, // Chiều cao cố định cho container
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18.0,
-                      vertical: 16.0,
-                    ),
-                    child: SizedBox(
-                      height: 40,
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'Nhập tên tag',
-                          hintStyle: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.grey8F95B2,
-                          ),
-                          prefixIcon: Container(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 12,
-                            ),
-                            child: SvgPicture.asset(AppAssets.icSearch),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey[100],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                        ),
-                        onChanged: (value) => setState(() {}),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (_isLoading)
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: CircularProgressIndicator(),
-                    )
-                  else
-                    Expanded(
-                      child: Column(
-                        children: [
-                          // Tags list
-                          Flexible(
-                            child: _filteredCameras.isEmpty
-                                ? Center(
-                                    child: Text(
-                                      'Không tìm thấy tags',
-                                      style: AppTypography.style(
-                                        14,
-                                        color: AppColors.grey92929D,
-                                      ),
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    shrinkWrap: true,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    itemCount: _filteredCameras.length,
-                                    itemBuilder: (context, index) {
-                                      final tag = _filteredCameras[index];
-                                      return InkWell(
-                                        onTap: () => _toggleTag(index),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 8,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              TagShapeIcon(
-                                                color: tag.color,
-                                                width: 22,
-                                                height: 12,
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Text(
-                                                  tag.name,
-                                                  style: AppTypography.style(
-                                                    14,
-                                                    fontWeight: FontWeight.w400,
-                                                    color: AppColors.black,
-                                                  ),
-                                                ),
-                                              ),
-                                              Checkbox(
-                                                value: tag.isSelected,
-                                                onChanged: (value) =>
-                                                    _toggleTag(index),
-                                                activeColor:
-                                                    AppColors.secondary,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                          ),
-                          const Divider(height: 1, color: AppColors.greyE2E8F0),
-
-                          // Footer
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Quản lý thẻ phân loại button
-                                InkWell(
-                                  onTap: () {
-                                    // Đóng overlay trước
-                                    widget.onClose?.call();
-                                    // Gọi callback để đóng AlertDialog và mở TagManagementDialog từ widget cha
-                                    _openTagManagement();
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                        Icons.settings,
-                                        size: 20,
-                                        color: AppColors.secondary,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Quản lý thẻ phân loại',
-                                        style: AppTypography.style(
-                                          14,
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors.secondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Action buttons
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: OutlinedButton(
-                                        onPressed: () => widget.onClose?.call(),
-                                        style: OutlinedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                          ),
-                                          side: const BorderSide(
-                                            color: AppColors.greyE2E8F0,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Hủy',
-                                          style: AppTypography.style(
-                                            14,
-                                            fontWeight: FontWeight.w500,
-                                            color: AppColors.grey92929D,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          widget.onTagsUpdated?.call(_tags);
-                                          widget.onClose?.call();
-                                          ;
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.secondary,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 12,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          'Xác nhận',
-                                          style: AppTypography.style(
-                                            14,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          // InkWell(
-                          //   onTap: () async {
-                          //     await showDialog<List<TagEntity>>(
-                          //       context: context,
-                          //       builder: (context) =>
-                          //           TagManagementDialog(tags: _tags),
-                          //     );
-                          //   },
-                          //   child: Text("Quản lý thẻ tag"),
-                          // ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
   }
 }
