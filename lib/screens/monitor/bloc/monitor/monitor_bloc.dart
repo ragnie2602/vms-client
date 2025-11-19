@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
+import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 
@@ -13,7 +15,11 @@ part 'monitor_event.dart';
 part 'monitor_state.dart';
 
 class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
-  MonitorBloc(this.filterCameraNoGroupUseCase, this.cameraRepository) : super(MonitorInitial()) {
+  MonitorBloc(
+    this.filterCameraNoGroupUseCase,
+    this.cameraRepository,
+    this.subscribeMultiWindowEventUseCase,
+  ) : super(MonitorInitial()) {
     on<GetAllCamera>(_onGetAllCamera);
     on<ChangeGridMode>(_onChangeGridMode);
     on<GetCameraAtPage>(_onGetCameraAtPage);
@@ -21,9 +27,12 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     on<GetAllCameraNoGroup>(_onGetAllCameraNoGroup);
 
     on<ResetFilter>(_onResetFilter);
+
+    on<ReopenMonitor>(_onReopenMonitor);
   }
 
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
+  final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
   final ICameraRepository cameraRepository;
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
@@ -36,12 +45,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         emit(MonitorFailure(failure.toString()));
       },
       (cameras) {
-        emit(
-          MonitorSuccess(
-            cameras: cameras,
-            mode: lastState?.mode ?? ViewMode.v2x2 ,
-          ),
-        );
+        emit(MonitorSuccess(cameras: cameras, mode: lastState?.mode ?? ViewMode.v2x2));
       },
     );
   }
@@ -149,5 +153,19 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
 
   FutureOr<void> _onResetFilter(ResetFilter event, Emitter<MonitorState> emit) {
     emit(MonitorInitial());
+  }
+
+  FutureOr<void> _onReopenMonitor(ReopenMonitor event, Emitter<MonitorState> emit) async {
+    if (event.id.isEmpty) {
+      await _onGetAllCamera(GetAllCamera(mode: ViewMode.fromValue(event.mode)), emit);
+    } else if (event.id.length == 1) {
+      await _onGetAllCameraNoGroup(GetAllCameraNoGroup(), emit);
+    } else {
+      await _onGetAllCameraInGroup(GetAllCameraInGroup(event.id), emit);
+    }
+
+    if (event.mode != ViewMode.v2x2.value) {
+      await _onChangeGridMode(ChangeGridMode(ViewMode.fromValue(event.mode)), emit);
+    }
   }
 }
