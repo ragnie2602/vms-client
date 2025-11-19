@@ -244,3 +244,47 @@ final $typed_data.Uint8List importCameraDescriptor = $convert.base64Decode(
     '9OQU1FX0lOVkFMSUQQAxIVChFDQU1FUkFfTkFNRV9FWElTVBAEEhUKEU1BSU5fU1RSRUFNX0VY'
     'SVNUEAUSFwoTSU5WQUxJRF9DQU1FUkFfVFlQRRAG');
 
+@$core.Deprecated('Use getCameraInfoDescriptor instead')
+const GetCameraInfo$json = {
+  '1': 'GetCameraInfo',
+  '2': [
+    {'1': 'ID', '3': 2006, '4': 1, '5': 13, '10': 'ID'},
+  ],
+  '3': [GetCameraInfo_Request$json, GetCameraInfo_Reply$json],
+  '4': [GetCameraInfo_Error$json],
+};
+
+@$core.Deprecated('Use getCameraInfoDescriptor instead')
+const GetCameraInfo_Request$json = {
+  '1': 'Request',
+  '2': [
+    {'1': 'cameras_id', '3': 1, '4': 1, '5': 12, '10': 'camerasId'},
+  ],
+};
+
+@$core.Deprecated('Use getCameraInfoDescriptor instead')
+const GetCameraInfo_Reply$json = {
+  '1': 'Reply',
+  '2': [
+    {'1': 'info_data', '3': 1, '4': 3, '5': 9, '10': 'infoData'},
+    {'1': 'value_data', '3': 2, '4': 3, '5': 9, '10': 'valueData'},
+  ],
+};
+
+@$core.Deprecated('Use getCameraInfoDescriptor instead')
+const GetCameraInfo_Error$json = {
+  '1': 'Error',
+  '2': [
+    {'1': 'ERROR_DEFAULT', '2': 0},
+    {'1': 'CAMERA_ID_INVALID', '2': 1},
+    {'1': 'CAMERA_NOT_EXIST', '2': 2},
+  ],
+};
+
+/// Descriptor for `GetCameraInfo`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCameraInfoDescriptor = $convert.base64Decode(
+    'Cg1HZXRDYW1lcmFJbmZvEg8KAklEGNYPIAEoDVICSUQaKAoHUmVxdWVzdBIdCgpjYW1lcmFzX2'
+    'lkGAEgASgMUgljYW1lcmFzSWQaQwoFUmVwbHkSGwoJaW5mb19kYXRhGAEgAygJUghpbmZvRGF0'
+    'YRIdCgp2YWx1ZV9kYXRhGAIgAygJUgl2YWx1ZURhdGEiRwoFRXJyb3ISEQoNRVJST1JfREVGQV'
+    'VMVBAAEhUKEUNBTUVSQV9JRF9JTlZBTElEEAESFAoQQ0FNRVJBX05PVF9FWElTVBAC');
+
