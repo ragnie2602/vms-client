@@ -3,11 +3,17 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
 
 class GeneralConfigCameraWidget extends StatelessWidget {
-  const GeneralConfigCameraWidget({super.key, required this.camera});
+  const GeneralConfigCameraWidget({
+    super.key,
+    required this.camera,
+    this.cameraInfo,
+  });
   final CameraEntity camera;
+  final CameraInfoEntity? cameraInfo;
   @override
   Widget build(BuildContext context) {
     final subStreamUrl =
@@ -44,6 +50,19 @@ class GeneralConfigCameraWidget extends StatelessWidget {
             color: AppColors.greyE2E8F0,
           ),
           // lấy thông tin từ server
+          Flexible(
+            child: cameraInfo != null
+                ? ListView.builder(
+                    itemBuilder: (_, index) {
+                      return LineInforWidget(
+                        title: cameraInfo!.infoData[index],
+                        content: cameraInfo!.valueData[index],
+                      );
+                    },
+                    itemCount: cameraInfo?.infoData.length,
+                  )
+                : const SizedBox(),
+          ),
         ],
       ),
     );
@@ -65,54 +84,64 @@ class LineInforWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 5),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: EdgeInsetsGeometry.symmetric(vertical: 6),
-              child: Text(
-                title,
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.black,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          if (isOnline != null) ...[
+      child: SelectionArea(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Expanded(
-              flex: 8,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CameraStatusWidget(isOnline: isOnline!),
-                  Spacer(),
-                ],
-              ),
-            ),
-          ] else ...[
-            Expanded(
-              flex: 8,
+              flex: 2,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Text(
-                  content,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                padding: EdgeInsetsGeometry.symmetric(vertical: 6),
+                child: SelectableText(
+                  title,
                   style: AppTypography.style(
                     14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                     color: AppColors.black,
+                    lineHeight: 17 / 14,
                   ),
                 ),
               ),
             ),
+            const SizedBox(width: 10),
+            if (isOnline != null) ...[
+              Expanded(
+                flex: 8,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CameraStatusWidget(isOnline: isOnline!),
+                    Spacer(),
+                  ],
+                ),
+              ),
+            ] else ...[
+              Expanded(
+                flex: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: SelectableText(
+                    content,
+                    textAlign: TextAlign.start,
+                    textHeightBehavior: TextHeightBehavior(
+                      applyHeightToFirstAscent: false,
+                      applyHeightToLastDescent: false,
+                    ),
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.black,
+                      textOverflow: TextOverflow.ellipsis,
+                      lineHeight: 17 / 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

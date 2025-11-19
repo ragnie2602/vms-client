@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.2.pbserver.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 
 import '../proto/models/comm.command2.pb.dart';
@@ -431,6 +432,28 @@ class CameraService {
         PacketType.deleteShareCamera.value,
       ),
       (buffer) => DeleteShareCamera_Reply.fromBuffer(buffer),
+    );
+  }
+
+  // get camera info
+  Future<GetCameraInfo_Reply> getCameraInfo({required List<int> cameraId}) async {
+    final request = GetCameraInfo_Request()..camerasId = cameraId;
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: request.writeToBuffer(),
+          type: PacketType.getCameraInfo,
+        ),
+      ),
+    );
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(
+        GetCameraInfo_Error.valueOf,
+        PacketType.getCameraInfo.value,
+      ),
+      (buffer) => GetCameraInfo_Reply.fromBuffer(buffer),
     );
   }
 }
