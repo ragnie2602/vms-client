@@ -39,7 +39,7 @@ class GeneralConfigCameraWidget extends StatelessWidget {
                 )
               : const SizedBox(),
           LineInforWidget(
-            title: 'Trạng thái kết nối',
+            title: 'Trạng thái kết nối:',
             content: camera.isOnline ? 'Online' : 'Offline',
             isOnline: camera.isOnline,
           ),
@@ -55,7 +55,7 @@ class GeneralConfigCameraWidget extends StatelessWidget {
                 ? ListView.builder(
                     itemBuilder: (_, index) {
                       return LineInforWidget(
-                        title: cameraInfo!.infoData[index],
+                        title: '${cameraInfo!.infoData[index]}:',
                         content: cameraInfo!.valueData[index],
                       );
                     },
