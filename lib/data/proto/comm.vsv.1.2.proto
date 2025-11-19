@@ -107,3 +107,22 @@ message ImportCamera
 	}
 	uint32 ID = 2005;
 }
+message GetCameraInfo
+{
+    message Request
+    {
+        bytes cameras_id = 1;
+    }
+    message Reply
+    {
+    	repeated string info_data = 1;
+    	repeated string value_data = 2;
+    }
+    enum Error
+    {
+    	ERROR_DEFAULT = 0;
+    	CAMERA_ID_INVALID = 1;
+    	CAMERA_NOT_EXIST = 2;
+    }
+    uint32 ID = 2006;
+}

@@ -52,6 +52,7 @@ class AppAssets {
   static const icDotHorizontal = '$_svgPath/dot_horizontal.svg';
   static const icAction = '$_svgPath/ic_action.svg';
   static const icEdit = '$_svgPath/ic_edit.svg';
+  static const icConfig = '$_svgPath/ic_config.svg';
   static const icReset = '$_svgPath/ic_reset.svg';
   static const icDelete = '$_svgPath/ic_delete.svg';
   static const icDeleteLight = '$_svgPath/ic_delete_light.svg';
@@ -90,6 +91,8 @@ class AppAssets {
   static const icVideoOff = '$_svgPath/video_off.svg';
   static const icCheckBox = '$_svgPath/check_box.svg';
   static const icChecked = '$_svgPath/checked.svg';
+  // schedule record
+  static const icSchedule = '$_svgPath/ic_schedule.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';

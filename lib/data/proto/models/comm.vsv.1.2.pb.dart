@@ -892,6 +892,158 @@ class ImportCamera extends $pb.GeneratedMessage {
   void clearID() => clearField(2005);
 }
 
+class GetCameraInfo_Request extends $pb.GeneratedMessage {
+  factory GetCameraInfo_Request({
+    $core.List<$core.int>? camerasId,
+  }) {
+    final $result = create();
+    if (camerasId != null) {
+      $result.camerasId = camerasId;
+    }
+    return $result;
+  }
+  GetCameraInfo_Request._() : super();
+  factory GetCameraInfo_Request.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCameraInfo_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCameraInfo.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'camerasId', $pb.PbFieldType.OY)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCameraInfo_Request clone() => GetCameraInfo_Request()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCameraInfo_Request copyWith(void Function(GetCameraInfo_Request) updates) => super.copyWith((message) => updates(message as GetCameraInfo_Request)) as GetCameraInfo_Request;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCameraInfo_Request create() => GetCameraInfo_Request._();
+  GetCameraInfo_Request createEmptyInstance() => create();
+  static $pb.PbList<GetCameraInfo_Request> createRepeated() => $pb.PbList<GetCameraInfo_Request>();
+  @$core.pragma('dart2js:noInline')
+  static GetCameraInfo_Request getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCameraInfo_Request>(create);
+  static GetCameraInfo_Request? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get camerasId => $_getN(0);
+  @$pb.TagNumber(1)
+  set camerasId($core.List<$core.int> v) { $_setBytes(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCamerasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCamerasId() => clearField(1);
+}
+
+class GetCameraInfo_Reply extends $pb.GeneratedMessage {
+  factory GetCameraInfo_Reply({
+    $core.Iterable<$core.String>? infoData,
+    $core.Iterable<$core.String>? valueData,
+  }) {
+    final $result = create();
+    if (infoData != null) {
+      $result.infoData.addAll(infoData);
+    }
+    if (valueData != null) {
+      $result.valueData.addAll(valueData);
+    }
+    return $result;
+  }
+  GetCameraInfo_Reply._() : super();
+  factory GetCameraInfo_Reply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCameraInfo_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCameraInfo.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
+    ..pPS(1, _omitFieldNames ? '' : 'infoData')
+    ..pPS(2, _omitFieldNames ? '' : 'valueData')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCameraInfo_Reply clone() => GetCameraInfo_Reply()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCameraInfo_Reply copyWith(void Function(GetCameraInfo_Reply) updates) => super.copyWith((message) => updates(message as GetCameraInfo_Reply)) as GetCameraInfo_Reply;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCameraInfo_Reply create() => GetCameraInfo_Reply._();
+  GetCameraInfo_Reply createEmptyInstance() => create();
+  static $pb.PbList<GetCameraInfo_Reply> createRepeated() => $pb.PbList<GetCameraInfo_Reply>();
+  @$core.pragma('dart2js:noInline')
+  static GetCameraInfo_Reply getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCameraInfo_Reply>(create);
+  static GetCameraInfo_Reply? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.String> get infoData => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.List<$core.String> get valueData => $_getList(1);
+}
+
+class GetCameraInfo extends $pb.GeneratedMessage {
+  factory GetCameraInfo({
+    $core.int? iD,
+  }) {
+    final $result = create();
+    if (iD != null) {
+      $result.iD = iD;
+    }
+    return $result;
+  }
+  GetCameraInfo._() : super();
+  factory GetCameraInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCameraInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCameraInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
+    ..a<$core.int>(2006, _omitFieldNames ? '' : 'ID', $pb.PbFieldType.OU3, protoName: 'ID')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCameraInfo clone() => GetCameraInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCameraInfo copyWith(void Function(GetCameraInfo) updates) => super.copyWith((message) => updates(message as GetCameraInfo)) as GetCameraInfo;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetCameraInfo create() => GetCameraInfo._();
+  GetCameraInfo createEmptyInstance() => create();
+  static $pb.PbList<GetCameraInfo> createRepeated() => $pb.PbList<GetCameraInfo>();
+  @$core.pragma('dart2js:noInline')
+  static GetCameraInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCameraInfo>(create);
+  static GetCameraInfo? _defaultInstance;
+
+  @$pb.TagNumber(2006)
+  $core.int get iD => $_getIZ(0);
+  @$pb.TagNumber(2006)
+  set iD($core.int v) { $_setUnsignedInt32(0, v); }
+  @$pb.TagNumber(2006)
+  $core.bool hasID() => $_has(0);
+  @$pb.TagNumber(2006)
+  void clearID() => clearField(2006);
+}
+
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
 const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
