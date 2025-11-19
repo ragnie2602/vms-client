@@ -92,7 +92,6 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
                 id: tag.id,
                 name: name,
                 color: color,
-                isSelected: tag.isSelected,
               );
               _filterTags(_searchController.text);
             }

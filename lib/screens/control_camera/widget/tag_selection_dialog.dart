@@ -56,8 +56,8 @@ class _TagSelectionDialogState extends State<TagSelectionDialog> {
         (tag) => tag.id == _filteredTags[index].id,
       );
       if (actualIndex != -1) {
-        _tags[actualIndex].isSelected = !_tags[actualIndex].isSelected;
-        _filteredTags[index].isSelected = _tags[actualIndex].isSelected;
+        _tags[actualIndex] = _tags[actualIndex].copyWith(); // TODO:rewrite this
+        _filteredTags[index] = _filteredTags[index].copyWith(); // TODO:rewrite this
       }
     });
   }
@@ -167,7 +167,7 @@ class _TagSelectionDialogState extends State<TagSelectionDialog> {
                                         ),
                                       ),
                                       Checkbox(
-                                        value: tag.isSelected,
+                                        value: false,
                                         onChanged: (value) => _toggleTag(index),
                                         activeColor: AppColors.secondary,
                                       ),

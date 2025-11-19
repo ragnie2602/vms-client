@@ -609,23 +609,10 @@ class _TagField extends StatefulWidget {
 }
 
 class _TagFieldState extends State<_TagField> {
-  final List<TagEntity> _tags = [];
-  final List<TagEntity> _selected = [];
+  final Set<TagEntity> _selected = {};
 
   final LayerLink layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
-
-  @override
-  void initState() {
-    super.initState();
-    _tags.addAll([
-      TagEntity(id: '1', name: 'Camera an ninh', color: const Color(0xFFEF4444)),
-      TagEntity(id: '2', name: 'Camera ngoài trời', color: const Color(0xFF10B981)),
-      TagEntity(id: '3', name: 'Camera hành lang', color: const Color(0xFFF59E0B)),
-      TagEntity(id: '4', name: 'Camera lớp học', color: const Color(0xFF8B5CF6)),
-      TagEntity(id: '5', name: 'Camera sảnh cầu thang', color: const Color(0xFFEAB308)),
-    ]);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -716,7 +703,7 @@ class _TagFieldState extends State<_TagField> {
   }
 
   void _showAddCameraDropdown(
-    BuildContext context,
+    BuildContext mainContext,
     BuildContext buttonContext,
     List<CameraEntity> listCamera,
   ) {
@@ -727,40 +714,35 @@ class _TagFieldState extends State<_TagField> {
     final excludedCameraNames = <String>{};
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(
-      builder: (context) => AddTagDropdown(
-        excludedCameraNames: excludedCameraNames, // Truyền danh sách camera đã có
-        listTags: _tags,
-        onClose: () {
-          _overlayEntry?.remove();
-          _overlayEntry = null;
-        },
-        onManageTagsClicked: (currentTags) async {
-          // Đóng AlertDialog trước
-          //   Navigator.of(context).pop();
-          // Chờ một chút để dialog đóng hoàn toàn
-          await Future.delayed(const Duration(milliseconds: 150));
-          // Mở TagManagementDialog từ root context
-          if (context.mounted) {
-            final result = await showDialog<List<TagEntity>>(
-              context: context,
-              builder: (context) => TagManagementDialog(tags: currentTags),
-            );
-            if (result != null && mounted) {
-              setState(() {
-                _tags.clear();
-                _tags.addAll(result);
-              });
+      builder: (context) => BlocProvider.value(
+        value: mainContext.read<ControlCameraBloc>(),
+        child: AddTagDropdown(
+          excludedCameraNames: excludedCameraNames, // Truyền danh sách camera đã có
+          onClose: () {
+            _overlayEntry?.remove();
+            _overlayEntry = null;
+          },
+          onManageTagsClicked: (currentTags) async {
+            await Future.delayed(const Duration(milliseconds: 150));
+            if (context.mounted) {
+              final result = await showDialog<List<TagEntity>>(
+                context: context,
+                builder: (context) => TagManagementDialog(tags: currentTags),
+              );
+              if (result != null && mounted) {
+                setState(() {});
+              }
             }
-          }
-        },
-        onTagSelected: (tag) {
-          setState(() => _selected.add(tag));
-          _overlayEntry?.remove();
-          _overlayEntry = null;
-        },
-        selectedTags: _selected,
-        targeterOffset: Offset(offset.dx, offset.dy + size.height),
-        tagLayerLink: layerLink,
+          },
+          onTagSelected: (tag) {
+            setState(() => _selected.add(tag));
+            _overlayEntry?.remove();
+            _overlayEntry = null;
+          },
+          selectedTags: _selected,
+          tagLayerLink: layerLink,
+          targeterOffset: Offset(offset.dx, offset.dy + size.height),
+        ),
       ),
     );
 

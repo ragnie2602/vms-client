@@ -115,6 +115,12 @@ enum PacketType {
   requestUrlDownload(231),
   getCurrentRecoding(244),
 
+  // Camera tag
+  getAllTag(2000),
+  addTag(2001),
+  deleteTag(2002),
+  updateTag(2003),
+
   // Emap
   postEmap(215),
   listEmap(216),

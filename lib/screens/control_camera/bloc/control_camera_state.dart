@@ -4,6 +4,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 class ControlCameraState extends BaseState {
   final CameraStatus? status;
@@ -148,4 +149,31 @@ class RemoveCameraFromGroupSuccessState extends ControlCameraState {
   StateType get type => StateType.success;
   @override
   List<Object?> get props => [cameras];
+}
+
+class GetAllTagsSuccessState extends ControlCameraState {
+  final List<TagEntity> tags;
+  const GetAllTagsSuccessState({required this.tags});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [tags];
+}
+
+class GetAllTagsFailState extends ControlCameraState {
+  final String message;
+  const GetAllTagsFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+  @override
+  List<Object?> get props => [message];
+}
+
+class GetAllTagsLoadingState extends ControlCameraState {
+  @override
+  StateType get type => StateType.loading;
+  @override
+  List<Object?> get props => [hashCode];
 }

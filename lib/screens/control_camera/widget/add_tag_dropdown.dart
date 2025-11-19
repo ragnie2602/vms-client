@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
+import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/tab_shape_icon.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/tag_management_dialog.dart';
 
 class AddTagDropdown extends StatefulWidget {
   final Set<String> excludedCameraNames;
-  final List<TagEntity> listTags;
-  final List<TagEntity> selectedTags;
+  final Set<TagEntity> selectedTags;
 
   final VoidCallback? onClose;
   final Function(TagEntity)? onTagSelected;
@@ -22,7 +25,6 @@ class AddTagDropdown extends StatefulWidget {
   const AddTagDropdown({
     super.key,
     this.excludedCameraNames = const {},
-    required this.listTags,
     this.onClose,
     this.onManageTagsClicked,
     this.onTagSelected,
@@ -37,8 +39,8 @@ class AddTagDropdown extends StatefulWidget {
 
 class _AddCameraDropdownState extends State<AddTagDropdown> {
   final TextEditingController _searchController = TextEditingController();
-  bool _isLoading = false;
-  List<TagEntity> _tags = [];
+  bool _isLoading = true;
+  final List<TagEntity> _tags = [];
 
   List<TagEntity> get _filteredTags {
     final query = _searchController.text.toLowerCase();
@@ -54,7 +56,9 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
   @override
   void initState() {
     super.initState();
-    _tags = widget.listTags;
+    if (mounted) {
+      context.read<ControlCameraBloc>().add(GetAllTagsEvent());
+    }
   }
 
   @override
@@ -82,7 +86,6 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
               ),
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
@@ -112,53 +115,70 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (_isLoading)
-                    const Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator())
-                  else if (_filteredTags.isEmpty)
-                    Center(
-                      child: Text(
-                        'Không tìm thấy tags',
-                        style: AppTypography.style(14, color: AppColors.grey92929D),
-                      ),
-                    )
-                  else
-                    Flexible(
-                      child: ListView.builder(
-                        itemCount: _filteredTags.length,
-                        itemBuilder: (context, index) {
-                          final tag = _filteredTags[index];
-                          return Material(
-                            child: InkWell(
-                              onTap: () {
-                                widget.onTagSelected?.call(tag);
-                                widget.onClose?.call();
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 6),
-                                child: Row(
-                                  children: [
-                                    TagShapeIcon(color: tag.color, width: 18, height: 12),
-                                    const SizedBox(width: 8),
-                                    Flexible(
-                                      child: Text(
-                                        tag.name,
-                                        style: AppTypography.style(
-                                          14,
-                                          fontWeight: FontWeight.w400,
-                                          color: AppColors.black,
+                  BlocBuilder<ControlCameraBloc, ControlCameraState>(
+                    buildWhen: (previous, current) =>
+                        current is GetAllTagsSuccessState ||
+                        current is GetAllTagsLoadingState ||
+                        current is GetAllTagsFailState,
+                    builder: (context, state) {
+                      if (state is GetAllTagsLoadingState) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (state is GetAllTagsSuccessState) {
+                        _tags.clear();
+                        _tags.addAll(state.tags);
+                      }
+                      if (state is GetAllTagsFailState || _filteredTags.isEmpty) {
+                        return Center(
+                          child: Text(
+                            "Không tìm thấy kết quả phù hợp",
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.black,
+                            ),
+                          ),
+                        );
+                      }
+                      return Flexible(
+                        child: ListView.builder(
+                          itemCount: _filteredTags.length,
+                          itemBuilder: (context, index) {
+                            final tag = _filteredTags[index];
+                            return Material(
+                              child: InkWell(
+                                onTap: () {
+                                  widget.onTagSelected?.call(tag);
+                                  widget.onClose?.call();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  child: Row(
+                                    children: [
+                                      TagShapeIcon(color: tag.color, width: 18, height: 12),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          tag.name,
+                                          style: AppTypography.style(
+                                            14,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppColors.black,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        shrinkWrap: true,
-                      ),
-                    ),
+                            );
+                          },
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          shrinkWrap: true,
+                        ),
+                      );
+                    },
+                  ),
                   const SizedBox(height: 12),
                   const Divider(height: 1, color: AppColors.greyE2E8F0),
                   const SizedBox(height: 12),
@@ -210,7 +230,8 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
 
     if (result != null) {
       setState(() {
-        _tags = result;
+        _tags.clear();
+        _tags.addAll(result);
       });
     }
   }

@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart'
     show InviteMessageEntity;
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 import '../entities/camera/add_camera.dart';
 
@@ -99,4 +100,7 @@ abstract class IControlCameraRepository {
     required String accountB,
     required List<int> shareId,
   });
+
+  // Camera tags
+  Future<Either<Failure, List<TagEntity>>> getAllTag();
 }

@@ -178,3 +178,10 @@ class RemoveCameraFromGroupEvent extends ControlCameraEvent {
   final List<int>? groupId;
   const RemoveCameraFromGroupEvent({required this.cameraId, this.groupId});
 }
+
+class GetAllTagsEvent extends ControlCameraEvent {
+  const GetAllTagsEvent();
+
+  @override
+  List<Object?> get props => [hashCode];
+}
