@@ -23,6 +23,7 @@ import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/system_configuration_screen.dart';
@@ -57,7 +58,8 @@ enum Routes {
     name: 'custom_live_view',
     path: '/custom_live_view',
     title: 'Chế độ tùy biến',
-    description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
+    description:
+        'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   cameraDetail(name: 'camera_detail', path: '/camera_detail'),
   playback(
@@ -175,6 +177,10 @@ class AppRouter {
                 emapRepository: context.read(),
                 searchEmapUseCase: context.read<SearchEmapUseCase>(),
               ),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  ScheduleBloc(cameraRepository: context.read()),
             ),
             BlocProvider(
               create: (context) => UserManagementBloc(
