@@ -13,6 +13,7 @@ class ItemCameraWidget extends StatelessWidget {
     required this.index,
     this.onAdd,
     this.onEdit,
+    this.onConfig,
     this.onDelete,
     this.onShare,
     this.onRemoveFromGroup,
@@ -22,6 +23,7 @@ class ItemCameraWidget extends StatelessWidget {
   final int index;
   final VoidCallback? onAdd;
   final VoidCallback? onEdit;
+  final VoidCallback? onConfig;
   final VoidCallback? onDelete;
   final VoidCallback? onShare;
   final VoidCallback? onRemoveFromGroup;
@@ -138,6 +140,9 @@ class ItemCameraWidget extends StatelessWidget {
       case 'edit':
         onEdit?.call();
         break;
+      case 'config':
+        onConfig?.call();
+        break;
       case 'delete':
         onDelete?.call();
         break;
@@ -160,6 +165,8 @@ class ItemCameraWidget extends StatelessWidget {
 
     return [
       _buildEditMenuItem(),
+      _buildDivider(),
+      _buildConfigMenuItem(),
       _buildDivider(),
       _buildShareMenuItem(),
       _buildDivider(),
@@ -204,7 +211,16 @@ class ItemCameraWidget extends StatelessWidget {
       value: 'edit',
       icon: AppAssets.icEdit,
       label: 'Sửa',
-      textColor: AppColors.black171725,
+      textColor: AppColors.black,
+    );
+  }
+
+  PopupMenuItem<String> _buildConfigMenuItem() {
+    return _buildMenuItem(
+      value: 'config',
+      icon: AppAssets.icConfig,
+      label: 'Cấu hình',
+      textColor: AppColors.black,
     );
   }
 
@@ -213,6 +229,7 @@ class ItemCameraWidget extends StatelessWidget {
       value: 'share',
       icon: AppAssets.iconShare,
       label: 'Chia sẻ',
+      textColor: AppColors.black,
     );
   }
 
@@ -221,6 +238,7 @@ class ItemCameraWidget extends StatelessWidget {
       value: 'remove_from_group',
       icon: AppAssets.icDelete,
       label: 'Xóa khỏi nhóm',
+      textColor: AppColors.black,
     );
   }
 
