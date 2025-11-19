@@ -14,6 +14,26 @@ class StorageFolderState extends BaseState {
   @override
   List<Object> get props => [videoFolder, snapshotFolder, vmsLibraryFolder];
 
+  Future<String> ensureSnapshotFolder(String folderName, String fileName) async {
+    String path = snapshotFolder;
+    if (path.isEmpty) path = (await FileUtil.ensureConfigurationFolders()).snapshots;
+
+    path = path.joinPath(folderName, fileName);
+    await FileUtil.ensureFolderExists(path);
+
+    return path;
+  }
+
+  Future<String> ensureVideoFolder(String folderName, String fileName) async {
+    String path = videoFolder;
+    if (path.isEmpty) path = (await FileUtil.ensureConfigurationFolders()).video;
+
+    path = path.joinPath(folderName, fileName);
+    await FileUtil.ensureFolderExists(path);
+
+    return path;
+  }
+
   StorageFolderState copyWith({
     String? videoFolder,
     String? snapshotFolder,
