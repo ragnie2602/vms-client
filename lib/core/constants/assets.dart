@@ -20,6 +20,7 @@ class AppAssets {
   static const tabSettings = '$_svgPath/settings.svg';
   static const tabMap = '$_svgPath/ic_map.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
+  static const tabSystemConfig = '$_svgPath/tab_setting.svg';
 
   static const icCamera = '$_svgPath/camera.svg';
   static const icClose = '$_svgPath/close.svg';
