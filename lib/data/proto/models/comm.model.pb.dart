@@ -1231,7 +1231,7 @@ class BoxInfo extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BoxInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'boxName')
     ..aOS(2, _omitFieldNames ? '' : 'boxSerialNumber')
-    ..e<BoxInfo_Box_Type>(3, _omitFieldNames ? '' : 'boxType', $pb.PbFieldType.OE, defaultOrMaker: BoxInfo_Box_Type.BOX_TYPE_UNSPECIFIED, valueOf: BoxInfo_Box_Type.valueOf, enumValues: BoxInfo_Box_Type.values)
+    ..e<BoxInfo_Box_Type>(3, _omitFieldNames ? '' : 'boxType', $pb.PbFieldType.OE, defaultOrMaker: BoxInfo_Box_Type.UNDEFINED, valueOf: BoxInfo_Box_Type.valueOf, enumValues: BoxInfo_Box_Type.values)
     ..a<$core.List<$core.int>>(4, _omitFieldNames ? '' : 'ownerUserId', $pb.PbFieldType.OY)
     ..e<Box_State>(5, _omitFieldNames ? '' : 'boxState', $pb.PbFieldType.OE, protoName: 'box_State', defaultOrMaker: Box_State.VBOX_ACTIVE, valueOf: Box_State.valueOf, enumValues: Box_State.values)
     ..hasRequiredFields = false
@@ -7230,7 +7230,7 @@ class Vbox extends $pb.GeneratedMessage {
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'boxId', $pb.PbFieldType.OY)
     ..aOS(2, _omitFieldNames ? '' : 'boxName')
     ..aOS(3, _omitFieldNames ? '' : 'boxSerialNumber')
-    ..e<Box_Type>(4, _omitFieldNames ? '' : 'boxType', $pb.PbFieldType.OE, defaultOrMaker: Box_Type.BOX_TYPE_UNSPECIFIED, valueOf: Box_Type.valueOf, enumValues: Box_Type.values)
+    ..e<Box_Type>(4, _omitFieldNames ? '' : 'boxType', $pb.PbFieldType.OE, defaultOrMaker: Box_Type.UNDEFINED, valueOf: Box_Type.valueOf, enumValues: Box_Type.values)
     ..e<Box_State>(5, _omitFieldNames ? '' : 'boxState', $pb.PbFieldType.OE, protoName: 'box_State', defaultOrMaker: Box_State.VBOX_ACTIVE, valueOf: Box_State.valueOf, enumValues: Box_State.values)
     ..a<$core.List<$core.int>>(6, _omitFieldNames ? '' : 'ownerUserId', $pb.PbFieldType.OY)
     ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'timeAdded', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)

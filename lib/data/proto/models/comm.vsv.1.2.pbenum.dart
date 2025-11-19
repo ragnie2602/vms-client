@@ -99,5 +99,22 @@ class ImportCamera_Error extends $pb.ProtobufEnum {
   const ImportCamera_Error._($core.int v, $core.String n) : super(v, n);
 }
 
+class GetCameraInfo_Error extends $pb.ProtobufEnum {
+  static const GetCameraInfo_Error ERROR_DEFAULT = GetCameraInfo_Error._(0, _omitEnumNames ? '' : 'ERROR_DEFAULT');
+  static const GetCameraInfo_Error CAMERA_ID_INVALID = GetCameraInfo_Error._(1, _omitEnumNames ? '' : 'CAMERA_ID_INVALID');
+  static const GetCameraInfo_Error CAMERA_NOT_EXIST = GetCameraInfo_Error._(2, _omitEnumNames ? '' : 'CAMERA_NOT_EXIST');
+
+  static const $core.List<GetCameraInfo_Error> values = <GetCameraInfo_Error> [
+    ERROR_DEFAULT,
+    CAMERA_ID_INVALID,
+    CAMERA_NOT_EXIST,
+  ];
+
+  static final $core.Map<$core.int, GetCameraInfo_Error> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static GetCameraInfo_Error? valueOf($core.int value) => _byValue[value];
+
+  const GetCameraInfo_Error._($core.int v, $core.String n) : super(v, n);
+}
+
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');
