@@ -135,6 +135,7 @@ flutter:
     - assets/svgs/
     - assets/fonts/
     - assets/images/
+    - assets/discovery.dll
   fonts:
     - family: Inter
       fonts:
