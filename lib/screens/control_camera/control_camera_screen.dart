@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:isolate';
+
 import 'package:easy_onvif/probe.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -480,12 +484,22 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             showAddCameraDialog(
                               context,
                               onCheckDiscovery: () async {
-                                final multicast = MulticastProbe();
-                                await multicast.probe();
-                                for (var device in multicast.onvifDevices) {
-                                  print(device.name);
+                                Future<List<ProbeMatch>> runProbe() async {
+                                  final probe = MulticastProbe(
+                                    releaseMode: kReleaseMode,
+                                  );
+                                  await probe.probe();
+                                  return List<ProbeMatch>.from(
+                                    probe.onvifDevices,
+                                  );
                                 }
-                                return multicast.onvifDevices;
+
+                                if (!kIsWeb && Platform.isWindows) {
+                                  return Isolate.run(
+                                    runProbe,
+                                  ); // hoặc compute(_probeIsolate, null)
+                                }
+                                return runProbe();
                               },
                               onSubmit: (payload) async {
                                 if (payload.method == 'RTSP') {
@@ -638,10 +652,28 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                                   mode: CameraDialogMode.edit,
                                                   cameraData: cameras[index],
                                                   onCheckDiscovery: () async {
-                                                    await MulticastProbe()
-                                                        .probe();
-                                                    return MulticastProbe()
-                                                        .onvifDevices;
+                                                    Future<List<ProbeMatch>>
+                                                    runProbe() async {
+                                                      final probe =
+                                                          MulticastProbe(
+                                                            releaseMode:
+                                                                kReleaseMode,
+                                                          );
+                                                      await probe.probe();
+                                                      return List<
+                                                        ProbeMatch
+                                                      >.from(
+                                                        probe.onvifDevices,
+                                                      );
+                                                    }
+
+                                                    if (!kIsWeb &&
+                                                        Platform.isWindows) {
+                                                      return Isolate.run(
+                                                        runProbe,
+                                                      ); // hoặc compute(_probeIsolate, null)
+                                                    }
+                                                    return runProbe();
                                                   },
                                                   onEdit: (payload) async {
                                                     _onUpdateCamera(
