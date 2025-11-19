@@ -46,3 +46,9 @@ class UpdateCustomView extends CustomViewEvent {
 
   const UpdateCustomView({required this.customView, this.index});
 }
+
+class ReopenCustomView extends CustomViewEvent {
+  final List<int> id;
+
+  const ReopenCustomView(this.id);
+}

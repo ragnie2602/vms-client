@@ -56,7 +56,7 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
   FutureOr<void> _onChangeTab(ChangeTab event, Emitter<HomeState> emit) async {
     if (state.selectedTab == event.tab && !event.force) return;
 
-    emit(state.copyWith(selectedTab: event.tab));
+    emit(state.copyWith(selectedTab: event.tab, onBackCanNull: true));
     if (event.tab.route != null || event.route != null) {
       AppRouter.router.goNamed(event.route?.name ?? event.tab.route!.name, extra: event.extra);
     }
@@ -68,6 +68,7 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
         pageTitle: event.title,
         pageDescription: event.description,
         onBack: event.onBack,
+        onBackCanNull: true,
       ),
     );
   }
@@ -119,12 +120,13 @@ class HomeState extends BaseState {
     String? pageDescription,
     void Function()? onBack,
     bool? expandedSidebar,
+    bool onBackCanNull = false,
   }) {
     return HomeState(
       selectedTab: selectedTab ?? this.selectedTab,
       pageTitle: pageTitle ?? this.pageTitle,
       pageDescription: pageDescription ?? this.pageDescription,
-      onBack: onBack,
+      onBack: onBackCanNull ? onBack : onBack ?? this.onBack,
       expandedSidebar: expandedSidebar ?? this.expandedSidebar,
     );
   }

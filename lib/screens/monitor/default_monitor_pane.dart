@@ -9,13 +9,9 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
-import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
-import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
@@ -32,18 +28,6 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
 
   void onChangePage(BuildContext context, int page) {
     context.read<MonitorBloc>().add(GetCameraAtPage(page + 1));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    context.read<MonitorBloc>().add(GetAllCamera());
-    context.read<CustomViewBloc>().add(
-      ShowCustomView(
-        CustomLiveView(id: [], base: ViewMode.v2x2, positions: [], name: ''),
-        CustomMonitorPaneMode.view,
-      ),
-    );
   }
 
   @override

@@ -42,9 +42,7 @@ class DependencyInjection {
     Provider<UserService>(create: (context) => UserService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
-    Provider<EmapService>(
-      create: (context) => EmapService(context.read(), context.read()),
-    ),
+    Provider<EmapService>(create: (context) => EmapService(context.read(), context.read())),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -64,9 +62,7 @@ class DependencyInjection {
     Provider<ICustomLiveViewRepository>(
       create: (context) => CustomLiveViewRepository(context.read()),
     ),
-    Provider<IEmapRepository>(
-      create: (context) => EmapRepository(context.read()),
-    ),
+    Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
 
     // Use Cases
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),

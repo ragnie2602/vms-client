@@ -11,9 +11,9 @@ class CreateNewWindowUseCase extends FutureUseCase<CreateNewWindowInput, CreateN
 
     final controller = await DesktopMultiWindow.createWindow('${setting.$1}');
 
-    controller.setFrame(setting.$2);
+    controller.setFrame(setting.$2.rect);
     controller.setTitle('VNPT Secure Vision - Cửa sổ phụ ${setting.$1}');
 
-    return CreateNewWindowOutput(controller);
+    return CreateNewWindowOutput(controller, setting.$1);
   }
 }
