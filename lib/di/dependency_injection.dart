@@ -4,7 +4,9 @@ import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
+import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
@@ -55,6 +57,7 @@ class DependencyInjection {
     ),
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
     Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
+    Provider<IScheduleRepository>(create: (context) => ScheduleRepository(cameraService: context.read())),
     Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
     Provider<IUserManagementRepository>(
       create: (context) => UserManagementRepository(context.read()),

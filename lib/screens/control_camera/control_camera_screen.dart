@@ -21,7 +21,7 @@ import 'package:vms_flutter_client/screens/control_camera/widget/remove_camera_w
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/group/widget/share_group_camera_widget.dart';
-import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
   const ControlCameraScreen({super.key});
@@ -197,6 +197,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
+  Future<void> _onShowDialogConfigCamera({
+    required BuildContext configContext,
+    required CameraEntity camera,
+  }) async {
+    showDialogConfig(configContext, camera: camera);
+  }
+
   Future<void> _onShowDialogShareCamera({
     required BuildContext c,
     required CameraEntity camera,
@@ -266,10 +273,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       //     curr is UpdateCameraSuccessState,
       listener: (context, state) {
         if (state is RemoveCameraFromGroupFailState) {
-            ToastUtil.toastFail(
-            context: context,
-            title: Text(state.errorMsg),
-          );
+          ToastUtil.toastFail(context: context, title: Text(state.errorMsg));
           // showAppMessageDialog(
           //   context,
           //   message: state.errorMsg,
@@ -653,6 +657,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                                           boxId: boxId,
                                                         );
                                                       },
+                                                );
+                                              },
+                                              onConfig: () async {
+                                                // show dialog config
+                                                await _onShowDialogConfigCamera(
+                                                  camera: cameras[index],
+                                                  configContext: context,
                                                 );
                                               },
                                               onDelete: () => _onDeleteCamera(
