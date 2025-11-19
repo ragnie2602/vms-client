@@ -10,7 +10,10 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
+import 'package:vms_flutter_client/screens/control_camera/widget/add_tag_dropdown.dart';
+import 'package:vms_flutter_client/screens/control_camera/widget/tag_management_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import '../../home/components/components_src.dart';
@@ -130,11 +133,46 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   bool _isChecking = false;
   bool _isSubmitting = false;
   Timer? _passwordVisibilityTimer;
+  OverlayEntry? _overlayEntry;
+  List<TagEntity> _tags = [];
+  List<TagEntity> get _selectedTags =>
+      _tags.where((tag) => tag.isSelected).toList();
 
   @override
   void initState() {
     super.initState();
     _initializeData();
+    _initTags();
+  }
+
+  void _initTags() {
+    _tags = [
+      TagEntity(
+        id: '1',
+        name: 'Camera an ninh',
+        color: const Color(0xFFEF4444),
+      ),
+      TagEntity(
+        id: '2',
+        name: 'Camera ngoài trời',
+        color: const Color(0xFF10B981),
+      ),
+      TagEntity(
+        id: '3',
+        name: 'Camera hành lang',
+        color: const Color(0xFFF59E0B),
+      ),
+      TagEntity(
+        id: '4',
+        name: 'Camera lớp học',
+        color: const Color(0xFF8B5CF6),
+      ),
+      TagEntity(
+        id: '5',
+        name: 'Camera sảnh cầu thang',
+        color: const Color(0xFFEAB308),
+      ),
+    ];
   }
 
   void _initializeData() {
@@ -188,6 +226,56 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       // Nếu đang ẩn mật khẩu, hủy timer
       _passwordVisibilityTimer?.cancel();
     }
+  }
+
+  void _showAddCameraDropdown(
+    BuildContext context,
+    BuildContext buttonContext,
+    List<CameraEntity> listCamera,
+  ) {
+    final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    final excludedCameraNames = <String>{};
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder: (context) => AddTagDropdown(
+        listTags: _tags,
+        excludedCameraNames:
+            excludedCameraNames, // Truyền danh sách camera đã có
+        position: Offset(offset.dx, offset.dy + size.height),
+        onClose: () {
+          _overlayEntry?.remove();
+          _overlayEntry = null;
+        },
+        onManageTagsClicked: (currentTags) async {
+          // Đóng AlertDialog trước
+          //   Navigator.of(context).pop();
+          // Chờ một chút để dialog đóng hoàn toàn
+          await Future.delayed(const Duration(milliseconds: 150));
+          // Mở TagManagementDialog từ root context
+          if (context.mounted) {
+            final result = await showDialog<List<TagEntity>>(
+              context: context,
+              builder: (context) => TagManagementDialog(tags: currentTags),
+            );
+            if (result != null && mounted) {
+              setState(() {
+                _tags = result;
+              });
+            }
+          }
+        },
+        onTagsUpdated: (updatedTags) {
+          setState(() {
+            _tags = updatedTags;
+          });
+        },
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
   }
 
   @override
@@ -373,6 +461,96 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                     //   maxLength: 50,
                     // ),
                     const SizedBox(height: 24),
+                    Text(
+                      'Tags',
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: () async {
+                        _showAddCameraDropdown(context, context, []);
+                      },
+
+                      //check tag
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppColors.greyE2E8F0,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _selectedTags.isEmpty
+                                  ? Text(
+                                      'Chọn tags',
+                                      style: AppTypography.style(
+                                        14,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors.grey92929D,
+                                      ),
+                                    )
+                                  : Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: _selectedTags.map((tag) {
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: tag.color.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                            border: Border.all(
+                                              color: tag.color,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 8,
+                                                height: 8,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: tag.color,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                tag.name,
+                                                style: AppTypography.style(
+                                                  12,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: AppColors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.arrow_drop_down,
+                              color: AppColors.grey92929D,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
