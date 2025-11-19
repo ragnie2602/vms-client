@@ -140,7 +140,7 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
                                     ),
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
+                                        vertical: 12,
                                         horizontal: 20,
                                       ),
                                       child: Text(

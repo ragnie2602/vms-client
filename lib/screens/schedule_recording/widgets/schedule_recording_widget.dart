@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/config_schedule_record_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/general_config_camera_widget.dart';
 
 class ScheduleRecordingWidget extends StatefulWidget {
@@ -16,6 +17,14 @@ class ScheduleRecordingWidget extends StatefulWidget {
 
 class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
   ScheduleRecordType? typeSelected = ScheduleRecordType.always;
+
+  // get init data schedule record
+  @override
+  void initState() {
+    super.initState();
+  }
+  //
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -84,6 +93,9 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
               ],
             ),
           ),
+          typeSelected == ScheduleRecordType.customize
+              ? ConfigScheduleRecordWidget()
+              : SizedBox.shrink(),
         ],
       ),
     );
