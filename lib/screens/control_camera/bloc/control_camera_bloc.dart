@@ -49,6 +49,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     on<GetAllTagsEvent>(_onGetAllTags);
     on<CreateTagEvent>(_onCreateTag);
     on<DeleteTagEvent>(_onDeleteTag);
+    on<UpdateTagEvent>(_onUpdateTag);
   }
 
   // list camera
@@ -374,6 +375,15 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     res.fold(
       (onFailure) => emit(DeleteTagFailState(res.left.toString())),
       (onSuccess) => emit(DeleteTagSuccessState(event.id)),
+    );
+  }
+
+  FutureOr<void> _onUpdateTag(UpdateTagEvent event, Emitter<ControlCameraState> emit) async {
+    emit(UpdateTagLoadingState(event.tag.id));
+    final res = await controlGroupRepository.updateTag(tag: event.tag);
+    res.fold(
+      (onFailure) => emit(UpdateTagFailState(res.left.toString())),
+      (onSuccess) => emit(UpdateTagSuccessState(tag: onSuccess)),
     );
   }
 }

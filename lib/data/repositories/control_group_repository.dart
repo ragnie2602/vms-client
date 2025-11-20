@@ -278,4 +278,12 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
       return Right(reply);
     });
   }
+
+  @override
+  Future<Either<Failure, TagEntity>> updateTag({required TagEntity tag}) async {
+    return await catchError<TagEntity>(() async {
+      final tagResponse = await controlCameraService.updateTag(tag: tag);
+      return Right(tagResponse);
+    });
+  }
 }

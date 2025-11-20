@@ -225,3 +225,31 @@ class DeleteTagLoadingState extends ControlCameraState {
   @override
   StateType get type => StateType.loading;
 }
+
+class UpdateTagSuccessState extends ControlCameraState {
+  final TagEntity tag;
+  const UpdateTagSuccessState({required this.tag});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [tag];
+}
+
+class UpdateTagFailState extends ControlCameraState {
+  final String message;
+  const UpdateTagFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+  @override
+  List<Object?> get props => [message];
+}
+
+class UpdateTagLoadingState extends ControlCameraState {
+  final List<int> id;
+
+  const UpdateTagLoadingState(this.id);
+  @override
+  StateType get type => StateType.loading;
+}

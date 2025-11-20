@@ -98,4 +98,5 @@ abstract class IControlCameraRepository {
   Future<Either<Failure, List<TagEntity>>> getAllTag();
   Future<Either<Failure, TagEntity>> createTag({required TagEntity tag});
   Future<Either<Failure, List<int>>> deleteTag({required List<int> id});
+  Future<Either<Failure, TagEntity>> updateTag({required TagEntity tag});
 }
