@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 class ControlCameraEvent extends BaseEvent {
   const ControlCameraEvent();
@@ -190,4 +191,14 @@ class FilterTagCameraEvent extends ControlCameraEvent {
   final String? tagName;
   final String? keyWord;
   const FilterTagCameraEvent({this.tagName, this.keyWord});
+}
+
+class CreateTagEvent extends ControlCameraEvent {
+  final TagEntity tag;
+  const CreateTagEvent(this.tag);
+}
+
+class DeleteTagEvent extends ControlCameraEvent {
+  final List<int> id;
+  const DeleteTagEvent(this.id);
 }

@@ -722,22 +722,13 @@ class _TagFieldState extends State<_TagField> {
             _overlayEntry?.remove();
             _overlayEntry = null;
           },
-          onManageTagsClicked: (currentTags) async {
-            await Future.delayed(const Duration(milliseconds: 150));
-            if (context.mounted) {
-              final result = await showDialog<List<TagEntity>>(
-                context: context,
-                builder: (context) => TagManagementDialog(tags: currentTags),
-              );
-              if (result != null && mounted) {
-                setState(() {});
-              }
-            }
+          onOpenTagManagement: (tags) {
+            _overlayEntry?.remove();
+            _overlayEntry = null;
+            _showTagManagementDialog(mainContext, tags);
           },
           onTagSelected: (tag) {
             setState(() => _selected.add(tag));
-            _overlayEntry?.remove();
-            _overlayEntry = null;
           },
           selectedTags: _selected,
           tagLayerLink: layerLink,
@@ -747,5 +738,15 @@ class _TagFieldState extends State<_TagField> {
     );
 
     Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _showTagManagementDialog(BuildContext mainContext, List<TagEntity> tags) {
+    showDialog(
+      context: mainContext,
+      builder: (context) => BlocProvider.value(
+        value: mainContext.read<ControlCameraBloc>(),
+        child: TagManagementDialog(tags: tags),
+      ),
+    );
   }
 }
