@@ -1,5 +1,4 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
 
