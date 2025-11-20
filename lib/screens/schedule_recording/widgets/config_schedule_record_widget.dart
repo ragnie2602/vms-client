@@ -31,6 +31,10 @@ class _ConfigScheduleRecordWidgetState
     (e) => false,
   );
 
+  // drag state
+  bool? _isDraggingToAdd;
+  final Set<int> _draggedIndices = {};
+
   @override
   void initState() {
     super.initState();
@@ -92,9 +96,13 @@ class _ConfigScheduleRecordWidgetState
   }
 
   void _updateGridviewItem(int gridviewIndex) {
+    _setGridviewItem(gridviewIndex, !listGridviewItemValue[gridviewIndex]);
+  }
+
+  void _setGridviewItem(int gridviewIndex, bool value) {
     setState(() {
-      listGridviewItemValue[gridviewIndex] =
-          !listGridviewItemValue[gridviewIndex];
+      listGridviewItemValue[gridviewIndex] = value;
+
       // update checkbox cả ngày
       // tính row index
       int rowIndex = getRowIndex(gridviewIndex);
@@ -204,33 +212,90 @@ class _ConfigScheduleRecordWidgetState
               ),
               const SizedBox(height: 12),
               Flexible(
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 24,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 2,
-                    childAspectRatio: 1, // adjust height
-                  ),
-                  itemCount: gridItemCount,
-                  itemBuilder: (context, index) {
-                    int columnIndex = getColumnIndex(index);
-                    return InkWell(
-                      onTap: () {
-                        _updateGridviewItem(index);
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    // 24 columns, 23 gaps of 2px
+                    // width = 24 * cellWidth + 23 * 2
+                    // cellWidth = (width - 46) / 24
+                    final cellWidth = (width - 46) / 24;
+                    // cellHeight = cellWidth / childAspectRatio (1) = cellWidth
+                    // mainAxisSpacing = 10
+                    final cellHeight = cellWidth;
+
+                    return GestureDetector(
+                      onPanStart: (details) {
+                        // calculate index
+                        final localPosition = details.localPosition;
+                        final x = localPosition.dx;
+                        final y = localPosition.dy;
+
+                        int col = (x / (cellWidth + 2)).floor();
+                        int row = (y / (cellHeight + 10)).floor();
+
+                        if (col >= 0 && col < 24 && row >= 0) {
+                          int index = row * 24 + col;
+                          if (index >= 0 && index < gridItemCount) {
+                            _isDraggingToAdd = !listGridviewItemValue[index];
+                            _draggedIndices.clear();
+                            _setGridviewItem(index, _isDraggingToAdd!);
+                            _draggedIndices.add(index);
+                          }
+                        }
                       },
-                      child: Tooltip(
-                        message:
-                            '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: listGridviewItemValue[index] == true
-                                ? AppColors.primary
-                                : AppColors.greyE9E9E9,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
+                      onPanUpdate: (details) {
+                        if (_isDraggingToAdd == null) return;
+                        final localPosition = details.localPosition;
+                        final x = localPosition.dx;
+                        final y = localPosition.dy;
+
+                        int col = (x / (cellWidth + 2)).floor();
+                        int row = (y / (cellHeight + 10)).floor();
+
+                        if (col >= 0 && col < 24 && row >= 0) {
+                          int index = row * 24 + col;
+                          if (index >= 0 &&
+                              index < gridItemCount &&
+                              !_draggedIndices.contains(index)) {
+                            _setGridviewItem(index, _isDraggingToAdd!);
+                            _draggedIndices.add(index);
+                          }
+                        }
+                      },
+                      onPanEnd: (details) {
+                        _isDraggingToAdd = null;
+                        _draggedIndices.clear();
+                      },
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 24,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 2,
+                          childAspectRatio: 1, // adjust height
                         ),
+                        itemCount: gridItemCount,
+                        itemBuilder: (context, index) {
+                          int columnIndex = getColumnIndex(index);
+                          return InkWell(
+                            onTap: () {
+                              _updateGridviewItem(index);
+                            },
+                            child: Tooltip(
+                              message:
+                                  '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: listGridviewItemValue[index] == true
+                                      ? AppColors.primary
+                                      : AppColors.greyE9E9E9,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
