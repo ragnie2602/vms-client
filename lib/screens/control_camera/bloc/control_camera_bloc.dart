@@ -46,6 +46,8 @@ class ControlCameraBloc
     // on<ListShareCameraEvent>(_onListShareCamera);
     // on<DeleteShareCameraEvent>(_onDeleteShareCamera);
     on<RemoveCameraFromGroupEvent>(_onRemoveCameraFromGroup);
+
+    on<GetAllTagsEvent>(_onGetAllTags);
   }
 
   // list camera
@@ -382,6 +384,16 @@ class ControlCameraBloc
           ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)),
         );
       },
+    );
+  }
+
+  FutureOr<void> _onGetAllTags(GetAllTagsEvent event, Emitter<ControlCameraState> emit) async {
+    emit(GetAllTagsLoadingState());
+
+    final res = await controlGroupRepository.getAllTag();
+    res.fold(
+      (onFailure) => emit(GetAllTagsFailState(res.left.toString())),
+      (onSuccess) => emit(GetAllTagsSuccessState(tags: onSuccess)),
     );
   }
 }
