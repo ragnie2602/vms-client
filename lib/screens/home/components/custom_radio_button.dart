@@ -10,6 +10,7 @@ class CustomRadioButton<T> extends StatelessWidget {
     required this.groupValue,
     required this.onChanged,
     this.readonly = false,
+    this.textStyle,
   });
 
   final String title;
@@ -17,6 +18,7 @@ class CustomRadioButton<T> extends StatelessWidget {
   final T? groupValue;
   final ValueChanged<T?> onChanged;
   final bool readonly;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +47,13 @@ class CustomRadioButton<T> extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF000000),
-              ),
+              style:
+                  textStyle ??
+                  const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF000000),
+                  ),
             ),
           ],
         ),

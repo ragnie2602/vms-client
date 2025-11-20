@@ -39,6 +39,7 @@ class DependencyInjection {
       ),
     ),
     Provider<CameraService>(create: (context) => CameraService(context.read())),
+    Provider<ControlCameraService>(create: (context) => ControlCameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
     Provider<EmapService>(create: (context) => EmapService(context.read(), context.read())),
     Provider<UserService>(create: (context) => UserService(context.read())),
@@ -53,11 +54,13 @@ class DependencyInjection {
     Provider<ICameraRepository>(create: (context) => CameraRepository(context.read())),
     Provider<SearchGroupUseCase>(create: (context) => SearchGroupUseCase()),
     Provider<IControlCameraRepository>(
-      create: (context) => ControlCameraRepository(context.read()),
+      create: (context) => ControlCameraRepository(context.read(), context.read()),
     ),
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
     Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
-    Provider<IScheduleRepository>(create: (context) => ScheduleRepository(cameraService: context.read())),
+    Provider<IScheduleRepository>(
+      create: (context) => ScheduleRepository(cameraService: context.read()),
+    ),
     Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
     Provider<IUserManagementRepository>(
       create: (context) => UserManagementRepository(context.read()),

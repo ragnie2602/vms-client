@@ -1,5 +1,6 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/camera_service.dart';
+import 'package:vms_flutter_client/data/datasources/control_camera_service.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/data/mappers/invite_message_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
@@ -9,6 +10,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart'
     show InviteMessageEntity;
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 
 import 'base_repository.dart';
@@ -16,8 +18,9 @@ import 'base_repository.dart';
 class ControlCameraRepository extends BaseRepository
     implements IControlCameraRepository {
   final CameraService service;
-
-  const ControlCameraRepository(this.service);
+  final ControlCameraService controlCameraService;
+  
+  const ControlCameraRepository(this.service, this.controlCameraService);
 
   @override
   Future<Either<Failure, CameraOnvif?>> validateCamera({String? message}) {
@@ -267,6 +270,15 @@ class ControlCameraRepository extends BaseRepository
         shareId: shareId,
       );
       return Right(reply.shareId);
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<TagEntity>>> getAllTag() async {
+    return await catchError<List<TagEntity>>(() async {
+      final tags = await controlCameraService.getAllTag();
+
+      return Right(tags);
     });
   }
 }
