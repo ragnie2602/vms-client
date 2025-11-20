@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -34,10 +35,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final TextEditingController cameraNameController = TextEditingController();
   CameraOnlineChecked? cameraStatus;
   final ScrollController _cameraListController = ScrollController();
+  TagEntity? tagSelected;
 
   void _onClearSearch() {
     cameraNameController.clear();
     cameraStatus = null;
+    tagSelected = null;
   }
 
   void _onGetListCamera({
@@ -64,6 +67,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
+  void _onGetAllTags({required BuildContext context}) {
+    context.read<ControlCameraBloc>().add(GetAllTagsEvent());
+  }
+
   void _onCheckOnvif({
     required String xaddrs,
     required String userName,
@@ -85,6 +92,15 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       FilterCameraEvent(
         cameraName: cameraNameController.text,
         isOnline: cameraStatus?.getValue,
+      ),
+    );
+  }
+
+  void _onFilterTag() {
+    context.read<ControlCameraBloc>().add(
+      FilterTagCameraEvent(
+        tagName: cameraNameController.text,
+        keyWord: cameraNameController.text,
       ),
     );
   }
@@ -251,6 +267,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
 
   @override
   void initState() {
+    _onGetAllTags(context: context);
     _onGetListCamera(c: context);
     super.initState();
   }
@@ -445,6 +462,52 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   });
                                 },
                                 itemAsString: (p0) => p0.getName(),
+                                contentTextStyle: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.grey64748B,
+                                ),
+                                hint: Text(
+                                  'Tất cả',
+                                  style: AppTypography.style(
+                                    14,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.grey64748B,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Flexible(
+                          flex: 1,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Thẻ Tag',
+                                style: AppTypography.style(
+                                  13,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              CustomCommonDropdown<TagEntity>(
+                                items: context
+                                    .read<ControlCameraBloc>()
+                                    .listTag,
+                                value: tagSelected,
+                                height: 41,
+                                onChanged: (p0) {
+                                  setState(() {
+                                    tagSelected = p0;
+                                    _onFilterTag();
+                                  });
+                                },
+                                itemAsString: (p0) => p0.name,
                                 contentTextStyle: AppTypography.style(
                                   14,
                                   fontWeight: FontWeight.w400,

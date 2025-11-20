@@ -185,3 +185,9 @@ class GetAllTagsEvent extends ControlCameraEvent {
   @override
   List<Object?> get props => [hashCode];
 }
+
+class FilterTagCameraEvent extends ControlCameraEvent {
+  final String? tagName;
+  final String? keyWord;
+  const FilterTagCameraEvent({this.tagName, this.keyWord});
+}
