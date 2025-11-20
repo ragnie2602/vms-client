@@ -202,3 +202,8 @@ class DeleteTagEvent extends ControlCameraEvent {
   final List<int> id;
   const DeleteTagEvent(this.id);
 }
+
+class UpdateTagEvent extends ControlCameraEvent {
+  final TagEntity tag;
+  const UpdateTagEvent(this.tag);
+}

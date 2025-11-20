@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/common_util.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
@@ -86,9 +87,12 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
         width: MediaQuery.widthOf(context) * 500 / 1600,
         child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
           builder: (context, state) {
-            if (state is CreateTagSuccessState) widget.tags.add(state.tag);
-            if (state is DeleteTagSuccessState) {
+            if (state is CreateTagSuccessState) {
+              widget.tags.add(state.tag);
+            } else if (state is DeleteTagSuccessState) {
               widget.tags.removeWhere((tag) => tag.id == state.id);
+            } else if (state is UpdateTagSuccessState) {
+              widget.tags[widget.tags.indexWhere((tag) => tag.id.equals(state.tag.id))] = state.tag;
             }
 
             return widget.tags.isEmpty
@@ -153,7 +157,11 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
   void _deleteTag(List<int> id) => context.read<ControlCameraBloc>().add(DeleteTagEvent(id));
 
   void _saveTag(TagEntity tag) {
-    context.read<ControlCameraBloc>().add(CreateTagEvent(tag));
+    if (tag.id.isEmpty) {
+      context.read<ControlCameraBloc>().add(CreateTagEvent(tag));
+    } else {
+      context.read<ControlCameraBloc>().add(UpdateTagEvent(tag));
+    }
   }
 
   Color _getSuggestColor() {
@@ -192,12 +200,6 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
   void initState() {
     super.initState();
     _nameController.text = widget.tag?.name ?? '';
-    _nameController.addListener(
-      () => setState(
-        () =>
-            canSave = (_nameController.text.isNotEmpty && _nameController.text != widget.tag?.name),
-      ),
-    );
   }
 
   @override
@@ -229,6 +231,15 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
                 isDense: true,
               ),
               maxLines: 1,
+              onChanged: (value) =>
+                  setState(() => canSave = value.isNotEmpty && value != widget.tag?.name),
+              onSubmitted: (value) => widget.onSave(
+                TagEntity(
+                  id: widget.tag?.id ?? [],
+                  name: value,
+                  color: widget.tag?.color ?? widget.suggestColor!,
+                ),
+              ),
               style: AppTypography.style(14, fontWeight: FontWeight.w400),
             ),
           ),
@@ -236,7 +247,10 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
           if (canSave)
             BlocBuilder<ControlCameraBloc, ControlCameraState>(
               builder: (context, state) {
-                if (state is CreateTagLoadingState) return const CircularProgressIndicator();
+                if (state is CreateTagLoadingState ||
+                    (state is UpdateTagLoadingState && state.id == widget.tag?.id)) {
+                  return const CircularProgressIndicator();
+                }
 
                 return ElevatedButton(
                   onPressed: () => widget.onSave(

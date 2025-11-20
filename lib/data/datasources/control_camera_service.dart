@@ -105,4 +105,27 @@ class ControlCameraService {
 
     return responseBuffer.fold((failure) => throw failure.toMessageFailure(), (buffer) => id);
   }
+
+  Future<TagEntity> updateTag({required TagEntity tag}) async {
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: UpdateTag_Request(
+            tag: CamTag(tagId: tag.id, tagName: tag.name, tagColor: tag.color.value.toString()),
+          ).writeToBuffer(),
+          type: PacketType.updateTag,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold((failure) => throw failure.toMessageFailure(), (buffer) {
+      final tagResponse = UpdateTag_Reply.fromBuffer(buffer).tag;
+      return TagEntity(
+        id: tagResponse.tagId,
+        name: tagResponse.tagName,
+        color: Color(int.parse(tagResponse.tagColor)),
+      );
+    });
+  }
 }
