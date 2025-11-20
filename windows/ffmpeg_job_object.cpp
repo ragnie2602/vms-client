@@ -17,6 +17,15 @@ namespace {
 // ======================================================
 std::mutex g_logMutex;
 
+std::wstring Utf8ToWide(const std::string& s) {
+    if (s.empty()) return L"";
+    int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
+    if (len <= 0) return L"";
+    std::wstring result(len - 1, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, result.data(), len);
+    return result;
+}
+
 void Log(const std::string& level, const std::string& msg) {
     std::lock_guard<std::mutex> lk(g_logMutex);
 
@@ -251,10 +260,11 @@ void RegisterFFmpegJobChannel(flutter::FlutterEngine* engine) {
             }
 
             BindPidAndWatcher(pid,
-                              std::wstring(a.begin(), a.end()),
-                              std::wstring(v.begin(), v.end()),
-                              std::wstring(o.begin(), o.end()),
-                              std::wstring(l.begin(), l.end()));
+                Utf8ToWide(a),
+                Utf8ToWide(v),
+                Utf8ToWide(o),
+                Utf8ToWide(l)
+            );
 
             LOGI("Bound FFmpeg PID and launched ffmpeg_watchdog");
             result->Success(flutter::EncodableValue(true));

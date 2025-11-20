@@ -5,8 +5,6 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
-import 'package:vms_flutter_client/core/utils/date_util.dart';
-import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
@@ -122,10 +120,7 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
       return event.cb?.call(null, null);
     }
 
-    final output = await FileUtil.selectSaveLocation(
-      'record_${DateTime.now().format('yyyyMMdd_HHmmss')}',
-      'mp4',
-    );
+    final output = await event.buildPath?.call();
     if (output == null) return event.cb?.call(null, null);
 
     emit(state.copyWith(recordingStatus: 1));

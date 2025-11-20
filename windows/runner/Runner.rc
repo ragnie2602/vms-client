@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
+            VALUE "CompanyName", "Vivas" "\0"                                               // Cần đồng bộ lại với setup.iss
             VALUE "FileDescription", "vnpt_secure_vision" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "vnpt_secure_vision" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 VIVAS All rights reserved." "\0"
             VALUE "OriginalFilename", "vnpt_secure_vision.exe" "\0"
-            VALUE "ProductName", "vnpt_secure_vision" "\0"
+            VALUE "ProductName", "VNPT Secure Vision" "\0"                                  // Cần đồng bộ lại với setup.iss
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

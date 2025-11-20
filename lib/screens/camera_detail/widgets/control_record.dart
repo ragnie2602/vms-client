@@ -8,7 +8,9 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 
@@ -119,6 +121,10 @@ class _ControlRecordState extends State<ControlRecord> {
 
     context.read<CameraDetailBloc>().add(
       OnRecording(
+        buildPath: () => context.read<StorageFolderBloc>().state.ensureVideoFolder(
+          context.read<CameraDetailBloc>().state.camera?.name ?? 'camera',
+          '${DateTime.now().add(Duration(seconds: 3)).format("yyyyMMdd_HHmmss")}.mp4',
+        ),
         cb: (Process? process, String? output) {
           // Trường hợp bị dispose trước khi loading xong --> cb sẽ gọi khi unmouted --> kill process
           if (!mounted) {
@@ -165,7 +171,7 @@ class _ControlRecordState extends State<ControlRecord> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.recordingStatus > 0 && _isBusy) return _buildRecordingTimer(isLoading: true);
+    if (widget.recordingStatus <= 0 && _isBusy) return _buildRecordingTimer(isLoading: true);
 
     return widget.recordingStatus > 0
         ? _buildRecordingTimer(isLoading: _isBusy)

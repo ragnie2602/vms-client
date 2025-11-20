@@ -40,7 +40,9 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
   }
 
   void _initData() {
-    context.read<ScheduleBloc>().add(InitScheduleEvent());
+    context.read<ScheduleBloc>().add(
+      InitScheduleEvent(cameraId: widget.camera.id),
+    );
   }
 
   void _onChangeTab(ConfigCameraTab tab) {
@@ -167,7 +169,10 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
                   Expanded(
                     flex: 8,
                     child: state.selectedTab == ConfigCameraTab.generalConfig
-                        ? GeneralConfigCameraWidget(camera: widget.camera)
+                        ? GeneralConfigCameraWidget(
+                            camera: widget.camera,
+                            cameraInfo: state.cameraInfo,
+                          )
                         : ScheduleRecordingWidget(camera: widget.camera),
                   ),
                 ],
