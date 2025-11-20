@@ -316,9 +316,13 @@ class _MapViewState extends State<MapView> {
                           );
                         },
                       ),
-                      ...(state.dragItems ?? []).map(
-                        (item) => _buildDragItem(item),
-                      ),
+                      ...(state.dragItems ?? [])
+                          .fold<Map<String, DragItemModel>>({}, (map, item) {
+                            map[item.id] = item;
+                            return map;
+                          })
+                          .values
+                          .map((item) => _buildDragItem(item)),
                     ],
                   ),
                 ),
