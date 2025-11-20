@@ -5,6 +5,8 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_entity.dart';
 
+const int durationTime = 24;
+
 class ConfigScheduleRecordWidget extends StatefulWidget {
   const ConfigScheduleRecordWidget({super.key, required this.camera});
   final CameraEntity camera;
@@ -22,7 +24,12 @@ class _ConfigScheduleRecordWidgetState
     ScheduleTimeDay.values.length,
     (index) => false,
   );
-  int gridItemCount = ScheduleTimeDay.values.length * 24;
+  int gridItemCount = ScheduleTimeDay.values.length * durationTime;
+  // list value in gridview
+  List<bool> listGridviewItemValue = List.generate(
+    ScheduleTimeDay.values.length * durationTime,
+    (e) => false,
+  );
 
   @override
   void initState() {
@@ -30,6 +37,7 @@ class _ConfigScheduleRecordWidgetState
     scheduleTimeSelected =
         widget.camera.cameraConfig?.recording?.schedules ?? [];
     _initCheckAllDay();
+    _initGridviewItemValue();
   }
 
   void _initCheckAllDay() {
@@ -42,12 +50,44 @@ class _ConfigScheduleRecordWidgetState
     }
   }
 
+  void _initGridviewItemValue() {
+    if ((scheduleTimeSelected ?? []).isEmpty) {
+      return;
+    }
+    for (ScheduleTimeEntity e in scheduleTimeSelected!) {
+      // schedule time day (t2 -> CN)
+      ScheduleTimeDay? _day = e.dayRecord;
+      // start time
+      int? _startTime = e.startTime;
+      if (_day != null && _startTime != null) {
+        // tính row index = dayRecord (t2-CN)
+        // tính column index = start time
+        // update giá trị cho gridview
+        int _rIndex = _day.getIndex;
+        int _cIndex = _startTime;
+
+        int indexOfGridView = _rIndex * durationTime + _cIndex;
+
+        if (indexOfGridView >= 0 &&
+            indexOfGridView < listGridviewItemValue.length) {
+          listGridviewItemValue[indexOfGridView] = true;
+        }
+      }
+    }
+  }
+
+  void _updateCheckBox(int index) {
+    setState(() {
+      // listCheckAllDay[index] = !listCheckAllDay[index];
+    });
+  }
+
   int getRowIndex(int gridItem) {
-    return gridItem ~/ 24;
+    return gridItem ~/ durationTime;
   }
 
   int getColumnIndex(int gridItem) {
-    return gridItem % 24;
+    return gridItem % durationTime;
   }
 
   @override
@@ -144,15 +184,15 @@ class _ConfigScheduleRecordWidgetState
                   ),
                   itemCount: gridItemCount,
                   itemBuilder: (context, index) {
-                    // Calculate row (i) and column (j)
-                    int rowIndex = index ~/ 24;
-                    int columnIndex = index % 24;
+                    int columnIndex = getColumnIndex(index);
                     return Tooltip(
                       message:
                           '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.greyE2E8F0,
+                          color: listGridviewItemValue[index] == true
+                              ? AppColors.blue005AA9
+                              : AppColors.greyE2E8F0,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -196,7 +236,9 @@ class _ConfigScheduleRecordWidgetState
                         ),
                         activeColor: AppColors.blue005AA9,
                         value: listCheckAllDay[index],
-                        onChanged: (_) {},
+                        onChanged: (_) {
+                          _updateCheckBox(index);
+                        },
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                       ),

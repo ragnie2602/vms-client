@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_entity.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/config_schedule_record_widget.dart';
 
 class RecordingEntity {
   final bool? turnOnRecording;
@@ -20,6 +21,6 @@ class RecordingEntity {
       return false;
     }
     // đếm số lượng khung giờ đã được chọn trong ngày (nếu đủ 24 khung giờ thì trả về true)
-    return schedules?.where((element) => element.dayRecord == day).length == 24;
+    return schedules?.where((element) => element.dayRecord == day).length == durationTime;
   }
 }
