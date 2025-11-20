@@ -56,6 +56,8 @@ class AddCameraRTSPEvent extends ControlCameraEvent {
   final List<int> boxId;
   final List<int> groupId;
   final List<String> subStreamUrls;
+  final Set<TagEntity> tags;
+
   const AddCameraRTSPEvent({
     required this.name,
     required this.username,
@@ -65,6 +67,7 @@ class AddCameraRTSPEvent extends ControlCameraEvent {
     required this.boxId,
     required this.groupId,
     required this.subStreamUrls,
+    required this.tags,
   });
 }
 
@@ -80,6 +83,8 @@ class AddCameraOnvifEvent extends ControlCameraEvent {
   final List<int> groupId;
   final String urn;
   final List<String> subStreamUrls;
+  final Set<TagEntity> tags;
+
   const AddCameraOnvifEvent({
     required this.rtspUrl,
     required this.serialNumber,
@@ -92,6 +97,7 @@ class AddCameraOnvifEvent extends ControlCameraEvent {
     required this.username,
     required this.password,
     required this.onvifDeviceIp,
+    required this.tags,
   });
 }
 
@@ -104,6 +110,7 @@ class UpdateCameraEvent extends ControlCameraEvent {
   final String? xaddr;
   final CameraMap? location;
   final List<String>? subStreamUrls;
+  final Set<TagEntity> tags;
   const UpdateCameraEvent({
     required this.cameraId,
     this.name,
@@ -113,6 +120,7 @@ class UpdateCameraEvent extends ControlCameraEvent {
     this.xaddr,
     this.location,
     this.subStreamUrls,
+    required this.tags,
   });
 }
 

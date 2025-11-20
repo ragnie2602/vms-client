@@ -1,3 +1,4 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -48,7 +49,13 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
         .toList();
 
     if (query.isEmpty) return availableTags;
-    return availableTags.where((tag) => tag.name.toString().toLowerCase().contains(query)).toList();
+    return availableTags
+        .where(
+          (tag) => removeDiacritics(
+            tag.name.toString().toLowerCase(),
+          ).contains(removeDiacritics(query.toLowerCase())),
+        )
+        .toList();
   }
 
   @override

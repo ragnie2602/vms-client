@@ -183,6 +183,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       boxId: event.boxId,
       groupId: currentGroupId,
       subStreamUrls: event.subStreamUrls,
+      tags: event.tags,
     );
     addCameraRTSP.fold(
       (onFailure) => emit(AddCameraFailState(addCameraRTSP.left.toString())),
@@ -208,6 +209,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       groupId: currentGroupId,
       urn: event.urn,
       subStreamUrls: event.subStreamUrls,
+      tags: event.tags,
     );
     addCameraOnvif.fold(
       (onFailure) => emit(AddCameraFailState(addCameraOnvif.left.toString())),
@@ -226,6 +228,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       xaddr: event.xaddr,
       location: event.location,
       subStreamUrls: event.subStreamUrls,
+      tags: event.tags,
     );
     res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) {
       emit(UpdateCameraSuccessState(cameraEntity: onSuccess));
