@@ -5,7 +5,11 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_role.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
+
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+
+import 'package:vms_flutter_client/domain/entities/schedule/camera_config_entity.dart';
+
 
 class CameraEntity {
   final String name;
@@ -22,7 +26,11 @@ class CameraEntity {
   final CameraEntityOnvif onvif;
   final CameraRole cameraRole;
   final bool isOnline;
+
   final Set<TagEntity> tags;
+
+  final CameraConfigEntity? cameraConfig;
+
 
   /// streamHlsUrl: http://ipcam.vivas.vn:8080/record01/EfCSykeCNyi-VwJCrB4AAg/EfCSykeCNyi-VwJCrB4AAg.m3u8
   /// streamOriginUrl: rtsp://any:1@10.3.3.162:8081/mystream7
@@ -55,7 +63,10 @@ class CameraEntity {
     required this.onvif,
     required this.cameraRole,
     required this.isOnline,
+
     required this.tags,
+
+    this.cameraConfig
   });
 
   Uri parseUri(String url) {

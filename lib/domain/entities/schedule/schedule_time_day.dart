@@ -16,6 +16,7 @@ enum ScheduleTimeDay {
     );
   }
 }
+
 extension ScheduleTimeDayExtension on ScheduleTimeDay {
   String get displayName {
     switch (this) {
@@ -35,5 +36,9 @@ extension ScheduleTimeDayExtension on ScheduleTimeDay {
         return 'Chủ Nhật';
     }
   }
-  
+
+  int get getIndex {
+    // map with row index from 0 to 6 (for gridview schedule time)
+    return ScheduleTimeDay.values.indexOf(this);
+  }
 }
