@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_entity.dart';
 
 class ConfigScheduleRecordWidget extends StatefulWidget {
-  const ConfigScheduleRecordWidget({super.key});
-
+  const ConfigScheduleRecordWidget({super.key, required this.camera});
+  final CameraEntity camera;
   @override
   State<ConfigScheduleRecordWidget> createState() =>
       _ConfigScheduleRecordWidgetState();
@@ -13,10 +15,39 @@ class ConfigScheduleRecordWidget extends StatefulWidget {
 
 class _ConfigScheduleRecordWidgetState
     extends State<ConfigScheduleRecordWidget> {
+  // init list schedule time
+  List<ScheduleTimeEntity>? scheduleTimeSelected;
+  // check box cả ngày
+  List<bool> listCheckAllDay = List.generate(
+    ScheduleTimeDay.values.length,
+    (index) => false,
+  );
+  int gridItemCount = ScheduleTimeDay.values.length * 24;
+
   @override
   void initState() {
     super.initState();
-    // init data đầu vào
+    scheduleTimeSelected =
+        widget.camera.cameraConfig?.recording?.schedules ?? [];
+    _initCheckAllDay();
+  }
+
+  void _initCheckAllDay() {
+    for (int i = 0; i < ScheduleTimeDay.values.length; i++) {
+      // get day
+      final day = ScheduleTimeDay.values[i];
+      // check all day
+      listCheckAllDay[i] =
+          widget.camera.cameraConfig?.recording?.checkAllDay(day) ?? false;
+    }
+  }
+
+  int getRowIndex(int gridItem) {
+    return gridItem ~/ 24;
+  }
+
+  int getColumnIndex(int gridItem) {
+    return gridItem % 24;
   }
 
   @override
@@ -111,7 +142,7 @@ class _ConfigScheduleRecordWidgetState
                     crossAxisSpacing: 2,
                     childAspectRatio: 1, // adjust height
                   ),
-                  itemCount: ScheduleTimeDay.values.length * 24,
+                  itemCount: gridItemCount,
                   itemBuilder: (context, index) {
                     // Calculate row (i) and column (j)
                     int rowIndex = index ~/ 24;
@@ -154,7 +185,7 @@ class _ConfigScheduleRecordWidgetState
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (_, __) {
+                  itemBuilder: (_, index) {
                     return SizedBox(
                       width: 20,
                       height: 20,
@@ -164,7 +195,7 @@ class _ConfigScheduleRecordWidgetState
                           width: 1.0,
                         ),
                         activeColor: AppColors.blue005AA9,
-                        value: true,
+                        value: listCheckAllDay[index],
                         onChanged: (_) {},
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
