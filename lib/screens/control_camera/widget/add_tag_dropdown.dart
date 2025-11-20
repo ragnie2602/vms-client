@@ -147,10 +147,7 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
                             final tag = _filteredTags[index];
                             return Material(
                               child: InkWell(
-                                onTap: () {
-                                  widget.onTagSelected?.call(tag);
-                                  widget.onClose?.call();
-                                },
+                                onTap: () => widget.onTagSelected?.call(tag),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 6),
                                   child: Row(
