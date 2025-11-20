@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/system_configuration/components/osd_view.dart';
 
 import 'components/storage_folder_view.dart';
 
@@ -11,6 +12,7 @@ class SystemConfigurationScreen extends StatelessWidget {
 
   static final _tabs = <_TabItem>[
     (title: 'Thư mục lưu trữ', content: StorageFolderView()),
+    (title: 'Cài đặt OSD', content: OsdView()),
     // (title: 'Video & Audio setting', content: Center(child: Text("Video & Audio setting"))),
     // (title: 'Network setting', content: Center(child: Text("Network setting"))),
     // (title: 'Thông báo', content: Center(child: Text("Thông báo"))),
