@@ -106,12 +106,12 @@ class ProjectTarget extends $pb.ProtobufEnum {
 }
 
 class Box_Type extends $pb.ProtobufEnum {
-  static const Box_Type UNDEFINED = Box_Type._(0, _omitEnumNames ? '' : 'UNDEFINED');
+  static const Box_Type BOX_UNDEFINED = Box_Type._(0, _omitEnumNames ? '' : 'BOX_UNDEFINED');
   static const Box_Type RASPBERRY = Box_Type._(1, _omitEnumNames ? '' : 'RASPBERRY');
   static const Box_Type ORANGEPI = Box_Type._(2, _omitEnumNames ? '' : 'ORANGEPI');
 
   static const $core.List<Box_Type> values = <Box_Type> [
-    UNDEFINED,
+    BOX_UNDEFINED,
     RASPBERRY,
     ORANGEPI,
   ];
@@ -214,11 +214,11 @@ class UserStatus extends $pb.ProtobufEnum {
 }
 
 class API extends $pb.ProtobufEnum {
-  static const API API_UNDEFINED = API._(0, _omitEnumNames ? '' : 'API_UNDEFINED');
+  static const API UNDEFINED = API._(0, _omitEnumNames ? '' : 'UNDEFINED');
   static const API API_VERSION = API._(111, _omitEnumNames ? '' : 'API_VERSION');
 
   static const $core.List<API> values = <API> [
-    API_UNDEFINED,
+    UNDEFINED,
     API_VERSION,
   ];
 
@@ -338,12 +338,12 @@ class Profile_Type extends $pb.ProtobufEnum {
 }
 
 class BoxInfo_Box_Type extends $pb.ProtobufEnum {
-  static const BoxInfo_Box_Type UNDEFINED = BoxInfo_Box_Type._(0, _omitEnumNames ? '' : 'UNDEFINED');
+  static const BoxInfo_Box_Type BOX_UNDEFINED = BoxInfo_Box_Type._(0, _omitEnumNames ? '' : 'BOX_UNDEFINED');
   static const BoxInfo_Box_Type RASPBERRY = BoxInfo_Box_Type._(1, _omitEnumNames ? '' : 'RASPBERRY');
   static const BoxInfo_Box_Type ORANGEPI = BoxInfo_Box_Type._(2, _omitEnumNames ? '' : 'ORANGEPI');
 
   static const $core.List<BoxInfo_Box_Type> values = <BoxInfo_Box_Type> [
-    UNDEFINED,
+    BOX_UNDEFINED,
     RASPBERRY,
     ORANGEPI,
   ];
