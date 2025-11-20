@@ -48,6 +48,7 @@ extension CameraConfigExtion on CameraConfig {
       flip: flip,
       nightvision: nightvision,
       brightness: brightness,
+      recording: recording.toDomain(),
     );
   }
 }
