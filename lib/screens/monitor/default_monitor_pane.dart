@@ -7,7 +7,6 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
@@ -15,9 +14,10 @@ import 'package:vms_flutter_client/screens/home/components/table_paginator.dart'
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
-import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import 'package:vms_flutter_client/screens/shared/platform_widget.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
+
+import '../shared/player/sources.dart';
 
 class DefaultMonitorPane extends StatefulWidget {
   const DefaultMonitorPane({super.key});
@@ -100,14 +100,13 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                                             ),
                                           );
                                         },
-                                  child: CameraPlayer(
-                                    size: state.mode.total == 1 ? null : size,
+                                  child: MonitorPlayer(
+                                    size: size,
                                     source: camera.subStreamUri.toString(),
                                     name: camera.name,
                                     key: ValueKey("player($index)___${camera.camId}"),
-                                    mode: PlayerMode.monitoring,
-                                    builder: (player, status) =>
-                                        _buildCameraView(context, player, camera, size),
+                                    mode: MonitorMode.monitoring,
+                                    labelBuilder: (name) => _buildLabel(name, size),
                                   ),
                                 ),
                               );
@@ -196,42 +195,33 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
     return Size(width, height);
   }
 
-  Widget _buildCameraView(BuildContext context, Widget player, CameraEntity data, Size size) {
-    return Stack(
-      children: [
-        player,
-        Positioned(
-          bottom: 10,
-          right: 10,
-          child: Container(
-            constraints: BoxConstraints(maxWidth: size.width - 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(3),
-              boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
-            ),
-            padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
-                SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    data.name,
-                    style: AppTypography.style(
-                      color: Colors.black,
-                      9,
-                      fontWeight: FontWeight.w600,
-                      textOverflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+  Widget _buildLabel(String label, Size size) {
+    return Positioned(
+      bottom: 10,
+      right: 10,
+      child: Container(
+        constraints: BoxConstraints(maxWidth: size.width - 10),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
+        padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
+            SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                style: AppTypography.style(
+                  color: Colors.black,
+                  9,
+                  fontWeight: FontWeight.w600,
+                  textOverflow: TextOverflow.ellipsis,
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

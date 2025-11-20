@@ -1,21 +1,43 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
+import 'package:vms_flutter_client/core/utils/file_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 
+import '../../shared/player/sources.dart';
 import '../bloc/camera_detail/camera_detail_bloc.dart';
-import '../widgets/camera_detail_player.dart';
 import '../widgets/volume_with_slide.dart';
 
 class PlayerControls extends StatelessWidget {
   const PlayerControls({super.key, required this.mode});
   final CameraDetailMode mode;
 
-  CameraDetailPlayerState? playerState(BuildContext context) {
-    return context.read<CameraDetailBloc>().state.cameraDetailController.ref.currentState;
+  PlayerController? playerController(BuildContext context) {
+    return context.read<CameraDetailBloc>().state.playerController;
+  }
+
+  Future<void> takeSnapshot(BuildContext context) async {
+    final path = await FileUtil.selectSaveLocation('image', 'JPG');
+    if (path == null) return;
+
+    // ignore: use_build_context_synchronously
+    final data = await playerController(context)?.snapshot?.call();
+    if (data == null) return;
+
+    await File(path).writeAsBytes(data);
+    ToastUtil.toastSuccess(
+      // ignore: use_build_context_synchronously
+      context: context,
+      title: Text(
+        "Đã chụp hình",
+        style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+      ),
+    );
   }
 
   @override
@@ -56,7 +78,7 @@ class PlayerControls extends StatelessWidget {
                     selector: (state) => state.status,
                     builder: (context, status) => _controlItem(
                       status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
-                      () => playerState(context)?.togglePlay(),
+                      () => playerController(context)?.togglePlay?.call(),
                     ),
                   ),
 
@@ -70,7 +92,7 @@ class PlayerControls extends StatelessWidget {
                   // _controlItem(AppAssets.icRecord, () {}),
 
                   /* Camera */
-                  _controlItem(AppAssets.icCamera, () => playerState(context)?.snapshot()),
+                  _controlItem(AppAssets.icCamera, () => takeSnapshot(context)),
 
                   /* Speed */
                   // if (mode.isPlayback) _buildSpeedDropdown(),
@@ -82,7 +104,7 @@ class PlayerControls extends StatelessWidget {
                   /* Fullscreen */
                   _controlItem(
                     AppAssets.icFullscreen,
-                    () => playerState(context)?.toggleFullscreen(),
+                    () => playerController(context)?.toggleFullscreen?.call(),
                   ),
                 ],
               ),

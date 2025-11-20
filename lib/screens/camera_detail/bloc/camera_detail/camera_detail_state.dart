@@ -18,7 +18,9 @@ class CameraDetailState extends BaseState {
     this.speed = 1,
     required this.playbackDate,
     this.timelineDisplayMode = TimelineDisplayMode.h8,
-    required this.cameraDetailController,
+    required this.playerController,
+    this.recordingStatus = 0,
+    this.stream,
   });
 
   final CameraDetailMode mode;
@@ -28,7 +30,9 @@ class CameraDetailState extends BaseState {
   final double speed;
   final DateTime playbackDate;
   final TimelineDisplayMode timelineDisplayMode;
-  final CameraDetailController cameraDetailController;
+  final PlayerController playerController;
+  final int recordingStatus;
+  final CameraStreamUrlStream? stream;
 
   @override
   List<Object?> get props => [mode, camera, status, volume, speed, playbackDate, timelineDisplayMode];
@@ -41,7 +45,9 @@ class CameraDetailState extends BaseState {
     double? speed,
     DateTime? playbackDate,
     TimelineDisplayMode? timelineDisplayMode,
-    CameraDetailController? cameraDetailController,
+    PlayerController? playerController,
+    int? recordingStatus,
+    CameraStreamUrlStream? stream,
   }) {
     return CameraDetailState(
       mode: mode ?? this.mode,
@@ -51,7 +57,9 @@ class CameraDetailState extends BaseState {
       speed: speed ?? this.speed,
       playbackDate: playbackDate ?? this.playbackDate,
       timelineDisplayMode: timelineDisplayMode ?? this.timelineDisplayMode,
-      cameraDetailController: cameraDetailController ?? this.cameraDetailController,
+      playerController: playerController ?? this.playerController,
+      recordingStatus: recordingStatus ?? this.recordingStatus,
+      stream: stream ?? this.stream,
     );
   }
 }

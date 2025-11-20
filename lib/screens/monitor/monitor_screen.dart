@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
 
+import 'bloc/monitor/monitor_bloc.dart';
 import 'layout/monitor_desktop_layout.dart';
 
 class MonitorScreen extends StatefulWidget {
@@ -13,6 +15,14 @@ class MonitorScreen extends StatefulWidget {
 }
 
 class _MonitorScreenState extends State<MonitorScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Mỗi lần mở lại tab monitoring thì load lại danh sách --> Đồng bộ khi xóa/thêm camera
+    context.read<MonitorBloc>().add(GetAllCamera());
+  }
+
   @override
   void dispose() {
     TaskPool.instance.clean();

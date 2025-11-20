@@ -17,8 +17,9 @@ import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.da
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/camera_list_popup.dart';
-import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
 import 'package:vms_flutter_client/screens/shared/utils.dart';
+
+import '../shared/player/sources.dart';
 
 enum CustomMonitorPaneMode { add, edit, view }
 
@@ -167,49 +168,43 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
                       ?.goNamed(Routes.monitoring.name),
                 ),
               ),
-              child: CameraPlayer(
-                belongViewMode: _viewMode,
+              child: MonitorPlayer(
                 size: size,
-                mode: PlayerMode.monitoring,
+                mode: MonitorMode.monitoring,
                 name: camera.name,
                 source: camera.subStreamUri.toString(),
-                builder: (player, status) => Stack(
-                  children: [
-                    player,
-                    Positioned(
-                      bottom: 10,
-                      right: 10,
-                      child: Container(
-                        constraints: BoxConstraints(maxWidth: size.width - 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: [
-                            BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6)),
-                          ],
-                        ),
-                        padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
-                            SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                camera.name,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w600,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                labelBuilder: (name) => Positioned(
+                  bottom: 10,
+                  right: 10,
+                  child: Container(
+                    constraints: BoxConstraints(maxWidth: size.width - 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6)),
+                      ],
                     ),
-                  ],
+                    padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
+                        SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            camera.name,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
