@@ -9,15 +9,14 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bl
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/tab_shape_icon.dart';
-import 'package:vms_flutter_client/screens/control_camera/widget/tag_management_dialog.dart';
 
 class AddTagDropdown extends StatefulWidget {
   final Set<String> excludedCameraNames;
   final Set<TagEntity> selectedTags;
 
   final VoidCallback? onClose;
+  final Function(List<TagEntity>)? onOpenTagManagement;
   final Function(TagEntity)? onTagSelected;
-  final Function(List<TagEntity>)? onManageTagsClicked;
 
   final LayerLink tagLayerLink;
   final Offset targeterOffset;
@@ -26,7 +25,7 @@ class AddTagDropdown extends StatefulWidget {
     super.key,
     this.excludedCameraNames = const {},
     this.onClose,
-    this.onManageTagsClicked,
+    this.onOpenTagManagement,
     this.onTagSelected,
     required this.selectedTags,
     required this.targeterOffset,
@@ -34,12 +33,11 @@ class AddTagDropdown extends StatefulWidget {
   });
 
   @override
-  State<AddTagDropdown> createState() => _AddCameraDropdownState();
+  State<AddTagDropdown> createState() => _AddTagDropdownState();
 }
 
-class _AddCameraDropdownState extends State<AddTagDropdown> {
+class _AddTagDropdownState extends State<AddTagDropdown> {
   final TextEditingController _searchController = TextEditingController();
-  bool _isLoading = true;
   final List<TagEntity> _tags = [];
 
   List<TagEntity> get _filteredTags {
@@ -147,10 +145,7 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
                             final tag = _filteredTags[index];
                             return Material(
                               child: InkWell(
-                                onTap: () {
-                                  widget.onTagSelected?.call(tag);
-                                  widget.onClose?.call();
-                                },
+                                onTap: () => widget.onTagSelected?.call(tag),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 6),
                                   child: Row(
@@ -173,8 +168,6 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
                               ),
                             );
                           },
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          shrinkWrap: true,
                         ),
                       );
                     },
@@ -183,10 +176,7 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
                   const Divider(height: 1, color: AppColors.greyE2E8F0),
                   const SizedBox(height: 12),
                   InkWell(
-                    onTap: () {
-                      widget.onClose?.call();
-                      _openTagManagement();
-                    },
+                    onTap: () => widget.onOpenTagManagement?.call(_tags),
                     child: Row(
                       children: [
                         SvgPicture.asset(
@@ -220,19 +210,5 @@ class _AddCameraDropdownState extends State<AddTagDropdown> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _openTagManagement() async {
-    final result = await showDialog<List<TagEntity>>(
-      context: context,
-      builder: (context) => TagManagementDialog(tags: _tags),
-    );
-
-    if (result != null) {
-      setState(() {
-        _tags.clear();
-        _tags.addAll(result);
-      });
-    }
   }
 }

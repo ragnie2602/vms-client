@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 class ControlCameraEvent extends BaseEvent {
   const ControlCameraEvent();
@@ -124,11 +125,7 @@ class ShareCameraEvent extends ControlCameraEvent {
   final List<int> cameraId;
   final int role; // 0 VIEW, 1 FULL
   final String accountInvite;
-  const ShareCameraEvent({
-    required this.cameraId,
-    required this.role,
-    required this.accountInvite,
-  });
+  const ShareCameraEvent({required this.cameraId, required this.role, required this.accountInvite});
 }
 
 class CheckAccountShareEvent extends ControlCameraEvent {
@@ -184,4 +181,14 @@ class GetAllTagsEvent extends ControlCameraEvent {
 
   @override
   List<Object?> get props => [hashCode];
+}
+
+class CreateTagEvent extends ControlCameraEvent {
+  final TagEntity tag;
+  const CreateTagEvent(this.tag);
+}
+
+class DeleteTagEvent extends ControlCameraEvent {
+  final List<int> id;
+  const DeleteTagEvent(this.id);
 }
