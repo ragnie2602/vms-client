@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_entity.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/button_config_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/check_box_all_day_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/schedule_time_day_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/time_slot_widget.dart';
@@ -263,17 +264,7 @@ class _ConfigScheduleRecordWidgetState
             const SizedBox(width: 5),
           ],
         ),
-        Padding(
-          padding: EdgeInsetsGeometry.symmetric(vertical: 30),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(width: 10, height: 10, color: Colors.amber),
-              const SizedBox(width: 16),
-              Container(width: 10, height: 10, color: Colors.amber),
-            ],
-          ),
-        ),
+        ButtonConfigWidget(),
       ],
     );
   }

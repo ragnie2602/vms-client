@@ -90,7 +90,7 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
             ),
             content: Container(
               width: MediaQuery.of(context).size.width * 0.65,
-              height: MediaQuery.of(context).size.height * 0.6,
+              height: MediaQuery.of(context).size.height * 0.65,
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(width: 1, color: AppColors.greyE2E8F0),
