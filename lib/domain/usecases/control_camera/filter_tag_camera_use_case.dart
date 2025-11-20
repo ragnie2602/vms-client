@@ -12,24 +12,25 @@ class FilterTagCameraUseCase
     List<CameraEntity> listCameraOrigin = input.listCameraOrigin ?? [];
     List<CameraEntity> listCameraAfterFilter = listCameraOrigin;
     // nếu ko có dữ liệu filter => return list cũ
-    if (input.keyWord == null && (input.tagName ?? '').isEmpty) {
+    if (input.keyWord == null && ((input.tagName ?? '').isEmpty) ||
+        (input.tagName == 'Tất cả')) {
       return FilterTagCameraOutput(listCamera: listCameraOrigin);
     }
     // lọc theo tên camera
-    if ((input.tagName ?? '').isNotEmpty) {
-      String _key = removeDiacritics(
-        (input.tagName ?? '').trim().toLowerCase(),
-      );
-      listCameraAfterFilter = listCameraAfterFilter
-          .where(
-            (e) => removeDiacritics(e.name.toLowerCase().trim()).contains(_key),
-          )
-          .toList();
-    }
+    // if ((input.tagName ?? '').isNotEmpty) {
+    //   String _key = removeDiacritics(
+    //     (input.tagName ?? '').trim().toLowerCase(),
+    //   );
+    //   listCameraAfterFilter = listCameraAfterFilter
+    //       .where(
+    //         (e) => removeDiacritics(e.name.toLowerCase().trim()).contains(_key),
+    //       )
+    //       .toList();
+    // }
     // lọc theo trạng thái
     if (input.tagName != null) {
       listCameraAfterFilter = listCameraAfterFilter
-          .where((e) => e.name == input.tagName)
+          .where((e) => e.tags.any((tag) => tag.name == input.tagName))
           .toList();
     }
     return FilterTagCameraOutput(listCamera: listCameraAfterFilter);
