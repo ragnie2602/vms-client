@@ -56,11 +56,8 @@ class ControlCameraService {
       (failure) => throw failure.toMessageFailure(),
       (buffer) => ListTag_Reply.fromBuffer(buffer).tags
           .map(
-            (tag) => TagEntity(
-              id: tag.tagId.toString(),
-              name: tag.tagName,
-              color: Color(int.parse(tag.tagColor)),
-            ),
+            (tag) =>
+                TagEntity(id: tag.tagId, name: tag.tagName, color: Color(int.parse(tag.tagColor))),
           )
           .toList(),
     );
