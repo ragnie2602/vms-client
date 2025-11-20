@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -11,7 +12,6 @@ import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
-import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
@@ -424,14 +424,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     }
   }
 
-  Future<void> snapshot() async {
-    final path = await FileUtil.selectSaveLocation('image', 'JPG');
-    if (path != null) {
-      final data = await _player.screenshot();
-      if (data == null) return;
-
-      await File(path).writeAsBytes(data);
-    }
+  Future<Uint8List?> snapshot({String? format = 'image/jpeg'}) {
+    return _player.screenshot(format: format);
   }
 
   Future<void> seek(Duration duration) async {
