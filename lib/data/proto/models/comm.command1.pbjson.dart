@@ -791,6 +791,7 @@ const ScheduleRecordingCamera_Reply$json = {
   '1': 'Reply',
   '2': [
     {'1': 'camera_id', '3': 1, '4': 1, '5': 12, '10': 'cameraId'},
+    {'1': 'camera', '3': 2, '4': 1, '5': 11, '6': '.comm.Camera', '10': 'camera'},
   ],
 };
 
@@ -810,10 +811,11 @@ const ScheduleRecordingCamera_Error$json = {
 final $typed_data.Uint8List scheduleRecordingCameraDescriptor = $convert.base64Decode(
     'ChdTY2hlZHVsZVJlY29yZGluZ0NhbWVyYRIPCgJJRBiSASABKA1SAklEGlUKB1JlcXVlc3QSGw'
     'oJY2FtZXJhX2lkGAEgASgMUghjYW1lcmFJZBItCglyZWNvcmRpbmcYAiABKAsyDy5jb21tLlJl'
-    'Y29yZGluZ1IJcmVjb3JkaW5nGiQKBVJlcGx5EhsKCWNhbWVyYV9pZBgBIAEoDFIIY2FtZXJhSW'
-    'QilgEKBUVycm9yEhEKDUVSUk9SX0RFRkFVTFQQABISCg5DQU1FUkFfT0ZGTElORRABEiEKHVJU'
-    'U1BfVVJMX0lOVkFMSURfT1JfTk9UX0ZPVU5EEAISKwonUkVDT1JEX0NMT1VEX1NUT1JBR0VfSU'
-    '5WQUxJRF9PUl9FWFBJUkVEEAMSFgoSUkVTT0xVVElPTl9JTlZBTElEEAQ=');
+    'Y29yZGluZ1IJcmVjb3JkaW5nGkoKBVJlcGx5EhsKCWNhbWVyYV9pZBgBIAEoDFIIY2FtZXJhSW'
+    'QSJAoGY2FtZXJhGAIgASgLMgwuY29tbS5DYW1lcmFSBmNhbWVyYSKWAQoFRXJyb3ISEQoNRVJS'
+    'T1JfREVGQVVMVBAAEhIKDkNBTUVSQV9PRkZMSU5FEAESIQodUlRTUF9VUkxfSU5WQUxJRF9PUl'
+    '9OT1RfRk9VTkQQAhIrCidSRUNPUkRfQ0xPVURfU1RPUkFHRV9JTlZBTElEX09SX0VYUElSRUQQ'
+    'AxIWChJSRVNPTFVUSU9OX0lOVkFMSUQQBA==');
 
 @$core.Deprecated('Use restartCameraDescriptor instead')
 const RestartCamera$json = {

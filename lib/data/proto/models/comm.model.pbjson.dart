@@ -90,7 +90,7 @@ final $typed_data.Uint8List projectTargetDescriptor = $convert.base64Decode(
 const Box_Type$json = {
   '1': 'Box_Type',
   '2': [
-    {'1': 'UNDEFINED', '2': 0},
+    {'1': 'BOX_UNDEFINED', '2': 0},
     {'1': 'RASPBERRY', '2': 1},
     {'1': 'ORANGEPI', '2': 2},
   ],
@@ -98,7 +98,8 @@ const Box_Type$json = {
 
 /// Descriptor for `Box_Type`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List box_TypeDescriptor = $convert.base64Decode(
-    'CghCb3hfVHlwZRINCglVTkRFRklORUQQABINCglSQVNQQkVSUlkQARIMCghPUkFOR0VQSRAC');
+    'CghCb3hfVHlwZRIRCg1CT1hfVU5ERUZJTkVEEAASDQoJUkFTUEJFUlJZEAESDAoIT1JBTkdFUE'
+    'kQAg==');
 
 @$core.Deprecated('Use box_StateDescriptor instead')
 const Box_State$json = {
@@ -180,14 +181,14 @@ final $typed_data.Uint8List userStatusDescriptor = $convert.base64Decode(
 const API$json = {
   '1': 'API',
   '2': [
-    {'1': 'API_UNDEFINED', '2': 0},
+    {'1': 'UNDEFINED', '2': 0},
     {'1': 'API_VERSION', '2': 111},
   ],
 };
 
 /// Descriptor for `API`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List aPIDescriptor = $convert.base64Decode(
-    'CgNBUEkSEQoNQVBJX1VOREVGSU5FRBAAEg8KC0FQSV9WRVJTSU9OEG8=');
+    'CgNBUEkSDQoJVU5ERUZJTkVEEAASDwoLQVBJX1ZFUlNJT04Qbw==');
 
 @$core.Deprecated('Use networkTypeDescriptor instead')
 const NetworkType$json = {
@@ -495,7 +496,7 @@ const BoxInfo$json = {
 const BoxInfo_Box_Type$json = {
   '1': 'Box_Type',
   '2': [
-    {'1': 'UNDEFINED', '2': 0},
+    {'1': 'BOX_UNDEFINED', '2': 0},
     {'1': 'RASPBERRY', '2': 1},
     {'1': 'ORANGEPI', '2': 2},
   ],
@@ -506,8 +507,8 @@ final $typed_data.Uint8List boxInfoDescriptor = $convert.base64Decode(
     'CgdCb3hJbmZvEhkKCGJveF9uYW1lGAEgASgJUgdib3hOYW1lEioKEWJveF9zZXJpYWxfbnVtYm'
     'VyGAIgASgJUg9ib3hTZXJpYWxOdW1iZXISMQoIYm94X3R5cGUYAyABKA4yFi5jb21tLkJveElu'
     'Zm8uQm94X1R5cGVSB2JveFR5cGUSIgoNb3duZXJfdXNlcl9pZBgEIAEoDFILb3duZXJVc2VySW'
-    'QSLAoJYm94X1N0YXRlGAUgASgOMg8uY29tbS5Cb3hfU3RhdGVSCGJveFN0YXRlIjYKCEJveF9U'
-    'eXBlEg0KCVVOREVGSU5FRBAAEg0KCVJBU1BCRVJSWRABEgwKCE9SQU5HRVBJEAI=');
+    'QSLAoJYm94X1N0YXRlGAUgASgOMg8uY29tbS5Cb3hfU3RhdGVSCGJveFN0YXRlIjoKCEJveF9U'
+    'eXBlEhEKDUJPWF9VTkRFRklORUQQABINCglSQVNQQkVSUlkQARIMCghPUkFOR0VQSRAC');
 
 @$core.Deprecated('Use scheduleTimeDescriptor instead')
 const ScheduleTime$json = {

@@ -2786,10 +2786,14 @@ class ScheduleRecordingCamera_Request extends $pb.GeneratedMessage {
 class ScheduleRecordingCamera_Reply extends $pb.GeneratedMessage {
   factory ScheduleRecordingCamera_Reply({
     $core.List<$core.int>? cameraId,
+    $1.Camera? camera,
   }) {
     final $result = create();
     if (cameraId != null) {
       $result.cameraId = cameraId;
+    }
+    if (camera != null) {
+      $result.camera = camera;
     }
     return $result;
   }
@@ -2799,6 +2803,7 @@ class ScheduleRecordingCamera_Reply extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScheduleRecordingCamera.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
+    ..aOM<$1.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -2831,6 +2836,17 @@ class ScheduleRecordingCamera_Reply extends $pb.GeneratedMessage {
   $core.bool hasCameraId() => $_has(0);
   @$pb.TagNumber(1)
   void clearCameraId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $1.Camera get camera => $_getN(1);
+  @$pb.TagNumber(2)
+  set camera($1.Camera v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCamera() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCamera() => clearField(2);
+  @$pb.TagNumber(2)
+  $1.Camera ensureCamera() => $_ensure(1);
 }
 
 class ScheduleRecordingCamera extends $pb.GeneratedMessage {
