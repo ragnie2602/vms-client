@@ -78,7 +78,38 @@ class _ConfigScheduleRecordWidgetState
 
   void _updateCheckBox(int index) {
     setState(() {
-      // listCheckAllDay[index] = !listCheckAllDay[index];
+      listCheckAllDay[index] = !listCheckAllDay[index];
+      // update gridview theo checkbox cả ngày
+      // index = row index từ t2 - CN (0-6)
+      // update cả row theo giá trị mới của checkbox
+      for (int i = 0; i < durationTime; i++) {
+        int gridIndex = index * durationTime + i;
+        if (gridIndex < listGridviewItemValue.length) {
+          listGridviewItemValue[gridIndex] = listCheckAllDay[index];
+        }
+      }
+    });
+  }
+
+  void _updateGridviewItem(int gridviewIndex) {
+    setState(() {
+      listGridviewItemValue[gridviewIndex] =
+          !listGridviewItemValue[gridviewIndex];
+      // update checkbox cả ngày
+      // tính row index
+      int rowIndex = getRowIndex(gridviewIndex);
+      // check tất cả giá trị của row đó
+      // nếu tồn tại 1 ô = false => checkbox cả ngày sẽ = false
+      bool isAllDay = true;
+      for (int i = 0; i < durationTime; i++) {
+        int currentIndex = rowIndex * durationTime + i;
+        if (currentIndex < listGridviewItemValue.length &&
+            listGridviewItemValue[currentIndex] == false) {
+          isAllDay = false;
+          break;
+        }
+      }
+      listCheckAllDay[rowIndex] = isAllDay;
     });
   }
 
@@ -185,15 +216,20 @@ class _ConfigScheduleRecordWidgetState
                   itemCount: gridItemCount,
                   itemBuilder: (context, index) {
                     int columnIndex = getColumnIndex(index);
-                    return Tooltip(
-                      message:
-                          '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: listGridviewItemValue[index] == true
-                              ? AppColors.blue005AA9
-                              : AppColors.greyE2E8F0,
-                          borderRadius: BorderRadius.circular(2),
+                    return InkWell(
+                      onTap: () {
+                        _updateGridviewItem(index);
+                      },
+                      child: Tooltip(
+                        message:
+                            '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: listGridviewItemValue[index] == true
+                                ? AppColors.primary
+                                : AppColors.greyE9E9E9,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
                       ),
                     );
