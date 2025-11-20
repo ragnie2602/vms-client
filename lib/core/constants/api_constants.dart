@@ -65,6 +65,8 @@ enum PacketType {
 
   configSendEmail(209),
   scheduleRecordingCamera(146),
+  getCameraInfo(2006),
+
 
   configOnOffBarrier(291),
   listVehicle(292),

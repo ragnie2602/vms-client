@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 
-class ConfigScheduleRecordWidget extends StatelessWidget {
+class ConfigScheduleRecordWidget extends StatefulWidget {
   const ConfigScheduleRecordWidget({super.key});
+
+  @override
+  State<ConfigScheduleRecordWidget> createState() =>
+      _ConfigScheduleRecordWidgetState();
+}
+
+class _ConfigScheduleRecordWidgetState
+    extends State<ConfigScheduleRecordWidget> {
+  @override
+  void initState() {
+    super.initState();
+    // init data đầu vào
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +33,7 @@ class ConfigScheduleRecordWidget extends StatelessWidget {
               padding: EdgeInsets.zero,
               shrinkWrap: true,
               itemBuilder: (_, index) {
-                final day = DaysOfWeek.values[index];
+                final day = ScheduleTimeDay.values[index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2.5),
                   child: Text(
@@ -33,7 +47,7 @@ class ConfigScheduleRecordWidget extends StatelessWidget {
                 );
               },
               separatorBuilder: (_, __) => SizedBox(height: 15),
-              itemCount: DaysOfWeek.values.length,
+              itemCount: ScheduleTimeDay.values.length,
             ),
           ),
         ),
@@ -46,44 +60,70 @@ class ConfigScheduleRecordWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Flexible(
-                child: SizedBox(
-                  height: 14,
-                  child: ListView.separated(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (_, index) {
-                      final timeSlot = TimeSlots.values[index];
-                      return Text(
-                        timeSlot.displayName,
-                        style: AppTypography.style(
-                          12,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.redFF0000,
-                        ),
-                      );
-                    },
-                    separatorBuilder: (_, __) => SizedBox(width: 20),
-                    itemCount: TimeSlots.values.length,
-                  ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // width available for the grid area
+                    final gridWidth = constraints.maxWidth;
+
+                    // lấy khoảng cách giữa các mốc/2 (tránh mốc cuối bị overflow)
+                    final cellWidth =
+                        gridWidth / ((TimeSlots.values.length - 1) * 2);
+                    return SizedBox(
+                      height: 14,
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (_, index) {
+                          final timeSlot = TimeSlots.values[index];
+                          return Container(
+                            width: index < TimeSlots.values.length - 2
+                                ? 2 * cellWidth
+                                : cellWidth,
+                            alignment: index < TimeSlots.values.length - 1
+                                ? Alignment.centerLeft
+                                : Alignment.centerRight,
+
+                            child: Text(
+                              timeSlot.displayName,
+                              style: AppTypography.style(
+                                12,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.redFF0000,
+                              ),
+                            ),
+                          );
+                        },
+                        itemCount: TimeSlots.values.length,
+                      ),
+                    );
+                  },
                 ),
               ),
+              const SizedBox(height: 12),
               Flexible(
                 child: GridView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 24,
-                    mainAxisSpacing: 2,
+                    mainAxisSpacing: 10,
                     crossAxisSpacing: 2,
-                    // childAspectRatio: 0.35, // adjust height
+                    childAspectRatio: 1, // adjust height
                   ),
-                  itemCount: DaysOfWeek.values.length * 24,
-                  itemBuilder: (context, column) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.blue005AA9,
-                        borderRadius: BorderRadius.circular(2),
+                  itemCount: ScheduleTimeDay.values.length * 24,
+                  itemBuilder: (context, index) {
+                    // Calculate row (i) and column (j)
+                    int rowIndex = index ~/ 24;
+                    int columnIndex = index % 24;
+                    return Tooltip(
+                      message:
+                          '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.greyE2E8F0,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     );
                   },
@@ -92,39 +132,56 @@ class ConfigScheduleRecordWidget extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: 13),
+        // check box cả ngày
+        Expanded(
+          flex: 50,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Cả ngày',
+                style: AppTypography.style(
+                  12,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.redFF0000,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Flexible(
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (_, __) {
+                    return SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Checkbox(
+                        side: BorderSide(
+                          color: AppColors.greyE2E8F0,
+                          width: 1.0,
+                        ),
+                        activeColor: AppColors.blue005AA9,
+                        value: true,
+                        onChanged: (_) {},
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    );
+                  },
+                  itemCount: ScheduleTimeDay.values.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // padding right
+        const SizedBox(width: 5),
       ],
     );
-  }
-}
-
-enum DaysOfWeek {
-  monday,
-  tuesday,
-  wednesday,
-  thursday,
-  friday,
-  saturday,
-  sunday,
-}
-
-extension DaysOfWeekExt on DaysOfWeek {
-  String get displayName {
-    switch (this) {
-      case DaysOfWeek.monday:
-        return 'Thứ 2';
-      case DaysOfWeek.tuesday:
-        return 'Thứ 3';
-      case DaysOfWeek.wednesday:
-        return 'Thứ 4';
-      case DaysOfWeek.thursday:
-        return 'Thứ 5';
-      case DaysOfWeek.friday:
-        return 'Thứ 6';
-      case DaysOfWeek.saturday:
-        return 'Thứ 7';
-      case DaysOfWeek.sunday:
-        return 'Chủ nhật';
-    }
   }
 }
 

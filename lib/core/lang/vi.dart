@@ -278,4 +278,11 @@ const Map<int, Map<String, String>> vi = {
     "TEL_INVALID": "Số điện thoại không hợp lệ",
     "TEL_EXIST": "Số điện thoại đã tồn tại trên hệ thống. Vui lòng thử lại",
   },
+  // getCameraInfo (2006)
+  2006: {
+    ..._commonErrors,
+    'ERROR_DEFAULT': 'Lỗi hệ thống',
+    'CAMERA_ID_INVALID': 'Camera không hợp lệ',
+    'CAMERA_NOT_EXIST': 'Camera không tồn tại',
+  },
 };

@@ -14,8 +14,30 @@ class ScheduleBloc extends BaseBloc<ScheduleEvent, ScheduleState> {
     on<InitScheduleEvent>(_initSchedule);
     on<ChangeTabEvent>(_changeTab);
   }
-  void _initSchedule(InitScheduleEvent event, Emitter<ScheduleState> emit) {
-    emit(ScheduleSuccessState(selectedTab: ConfigCameraTab.generalConfig));
+  FutureOr<void> _initSchedule(
+    InitScheduleEvent event,
+    Emitter<ScheduleState> emit,
+  ) async {
+    // loading
+    emit(ScheduleLoadingState());
+    // res API
+    final cameraInfo = await cameraRepository.getCameraInfo(
+      cameraId: event.cameraId,
+    );
+    cameraInfo.fold(
+      (failure) {
+        emit(ScheduleErrorState(message: failure.toString()));
+      },
+      (succsess) {
+        // emit success
+        emit(
+          ScheduleSuccessState(
+            selectedTab: ConfigCameraTab.generalConfig,
+            cameraInfo: succsess,
+          ),
+        );
+      },
+    );
   }
 
   FutureOr<void> _changeTab(

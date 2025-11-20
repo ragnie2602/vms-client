@@ -2,6 +2,7 @@ import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/camera_service.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 
@@ -84,7 +85,19 @@ class CameraRepository extends BaseRepository implements ICameraRepository {
         urn: urn,
         subStreamUrls: subStreamUrls,
       );
-      return Right(AddCameraEntity(cameraId: reply.cameraId, camera: reply.camera));
+      return Right(
+        AddCameraEntity(cameraId: reply.cameraId, camera: reply.camera),
+      );
+    });
+  }
+
+  @override
+  Future<Either<Failure, CameraInfoEntity>> getCameraInfo({
+    required List<int> cameraId,
+  }) async {
+    return await catchError<CameraInfoEntity>(() async {
+      final cameraInfo = await service.getCameraInfo(cameraId: cameraId);
+      return Right(cameraInfo.toDomain());
     });
   }
 }

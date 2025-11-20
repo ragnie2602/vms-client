@@ -1,9 +1,11 @@
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command2.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart' as pb;
+import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.2.pb.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity_onvif.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_role.dart';
@@ -23,8 +25,9 @@ extension CameraStatusMapper on pb.Camera_Status {
     return CameraStatus.fromValue(value);
   }
 }
-extension CameraRoleMapper on pb.Camera_Role{
-  CameraRole toDomain(){
+
+extension CameraRoleMapper on pb.Camera_Role {
+  CameraRole toDomain() {
     return CameraRole.fromValue(value);
   }
 }
@@ -134,7 +137,7 @@ extension CameraMapper on pb.Camera {
       stream: streamUrl.toDomain(),
       onvif: onvif.toDomain(),
       cameraRole: role.toDomain(),
-      isOnline: on
+      isOnline: on,
     );
   }
 }
@@ -174,5 +177,11 @@ extension RemoveCameraFromGroupMapper on RemoveCameraFormGroup_Reply {
       groupId: groupId,
       groupLevel: groupLevel,
     );
+  }
+}
+
+extension CameraInfoExt on GetCameraInfo_Reply {
+  CameraInfoEntity toDomain() {
+    return CameraInfoEntity(infoData: infoData, valueData: valueData);
   }
 }
