@@ -36,6 +36,7 @@ abstract class IControlCameraRepository {
     List<int>? boxId,
     List<int>? groupId,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   });
   Future<Either<Failure, AddCameraEntity>> addCameraOnvif({
     required String name,
@@ -49,6 +50,7 @@ abstract class IControlCameraRepository {
     List<int>? groupId,
     String? urn,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   });
 
   Future<Either<Failure, CameraEntity>> updateCamera({

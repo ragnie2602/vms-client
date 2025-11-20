@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.2.pbserver.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 import '../proto/models/comm.command2.pb.dart';
 import '../proto/models/comm.model.pb.dart';
@@ -24,6 +25,7 @@ class CameraService {
     List<int>? boxId,
     List<int>? groupId,
     List<String>? subStreamUrls,
+    List<List<int>>? tagIds,
   }) async {
     final request = AddCameraRTSP_Request()
       ..name = name
@@ -36,6 +38,7 @@ class CameraService {
     if (subStreamUrls != null && subStreamUrls.isNotEmpty) {
       request.subStreamUrls.addAll(subStreamUrls);
     }
+    if (tagIds != null && tagIds.isNotEmpty) request.tagsetId.addAll(tagIds);
 
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
@@ -68,6 +71,7 @@ class CameraService {
     List<int>? groupId,
     String? urn,
     List<String>? subStreamUrls,
+    List<List<int>>? tagIds,
   }) async {
     final request = AddCameraOnVif_Request()
       ..name = name
@@ -83,6 +87,7 @@ class CameraService {
     if (subStreamUrls != null && subStreamUrls.isNotEmpty) {
       request.subStreamUrls.addAll(subStreamUrls);
     }
+    if (tagIds != null && tagIds.isNotEmpty) request.tagsetId.addAll(tagIds);
 
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
@@ -135,10 +140,8 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        UpdateCamera_Error.valueOf,
-        PacketType.updateCamera.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(UpdateCamera_Error.valueOf, PacketType.updateCamera.value),
       (buffer) => UpdateCamera_Reply.fromBuffer(buffer).camera,
     );
   }
@@ -174,11 +177,7 @@ class CameraService {
     );
   }
 
-  Future<List<Camera>> getAllCamera({
-    List<int>? cameraId,
-    int? status,
-    int? ivaType,
-  }) async {
+  Future<List<Camera>> getAllCamera({List<int>? cameraId, int? status, int? ivaType}) async {
     final request = GetAllCamera_Request();
     if (cameraId != null) request.cameraId = cameraId;
     if (status != null) request.status = GetAllCamera_Status.valueOf(status)!;
@@ -197,17 +196,13 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        GetAllCamera_Error.valueOf,
-        PacketType.getAllCamera.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(GetAllCamera_Error.valueOf, PacketType.getAllCamera.value),
       (buffer) => GetAllCamera_Reply.fromBuffer(buffer).cameras,
     );
   }
 
-  Future<List<Camera>> getAllCamerasInGroup({
-    required List<int> groupId,
-  }) async {
+  Future<List<Camera>> getAllCamerasInGroup({required List<int> groupId}) async {
     final request = GetCameraInGroup_Request(groupId: groupId);
 
     final responseBuffer = await socketClient.send<List<int>>(
@@ -270,10 +265,8 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        ShareCamera_Error.valueOf,
-        PacketType.shareCamera.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(ShareCamera_Error.valueOf, PacketType.shareCamera.value),
       (buffer) => ShareCamera_Reply.fromBuffer(buffer).cameraId,
     );
   }
@@ -385,9 +378,7 @@ class CameraService {
   //   );
   // }
 
-  Future<List<InviteMessage>> listShareCamera({
-    required List<int> cameraId,
-  }) async {
+  Future<List<InviteMessage>> listShareCamera({required List<int> cameraId}) async {
     final request = ListShareCamera_Request()..cameraId = cameraId;
 
     final responseBuffer = await socketClient.send<List<int>>(

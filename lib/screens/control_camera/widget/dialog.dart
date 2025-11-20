@@ -66,6 +66,7 @@ class AddCameraPayload {
   final List<String> subStreamUrls;
   // final String urn;
   // final String serialNumber;
+  final Set<TagEntity> tags;
 
   const AddCameraPayload({
     required this.name,
@@ -82,6 +83,7 @@ class AddCameraPayload {
     required this.subStreamUrls,
     // required this.urn,
     // required this.serialNumber,
+    required this.tags,
   });
 }
 
@@ -121,6 +123,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   bool _isChecking = false;
   bool _isSubmitting = false;
   Timer? _passwordVisibilityTimer;
+  final Set<TagEntity> _tags = {};
 
   @override
   void initState() {
@@ -152,6 +155,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
       // Xác định method dựa trên camera type hoặc URL
       _method = _determineCameraMethod(camera);
+
+      _tags.addAll(camera.tags);
     }
   }
 
@@ -353,7 +358,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _TagField(),
+                    _TagField(_tags),
                   ],
                 ),
               ),
@@ -403,6 +408,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                                 subStreamUrls: _sub.text.isEmpty ? [] : _sub.text.trim().split(','),
                                 // urn: _urn.text.trim(),
                                 // serialNumber: _serialNumber.text.trim(),
+                                tags: _tags,
                               );
 
                               // Gọi callback tương ứng với mode
@@ -604,13 +610,14 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 }
 
 class _TagField extends StatefulWidget {
+  final Set<TagEntity> tags;
+
+  const _TagField(this.tags);
   @override
   State<_TagField> createState() => _TagFieldState();
 }
 
 class _TagFieldState extends State<_TagField> {
-  final Set<TagEntity> _selected = {};
-
   final LayerLink layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
 
@@ -630,7 +637,7 @@ class _TagFieldState extends State<_TagField> {
             child: Row(
               children: [
                 Expanded(
-                  child: _selected.isEmpty
+                  child: widget.tags.isEmpty
                       ? Text(
                           'Chọn tags',
                           style: AppTypography.style(
@@ -642,7 +649,7 @@ class _TagFieldState extends State<_TagField> {
                       : Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: _selected.map((tag) {
+                          children: widget.tags.map((tag) {
                             return Container(
                               decoration: BoxDecoration(
                                 border: Border.all(color: tag.color, width: 1),
@@ -682,7 +689,7 @@ class _TagFieldState extends State<_TagField> {
                                         color: AppColors.grey92929D,
                                         size: 10,
                                       ),
-                                      onPressed: () => setState(() => _selected.remove(tag)),
+                                      onPressed: () => setState(() => widget.tags.remove(tag)),
                                       padding: EdgeInsets.all(3),
                                     ),
                                   ),
@@ -728,9 +735,9 @@ class _TagFieldState extends State<_TagField> {
             _showTagManagementDialog(mainContext, tags);
           },
           onTagSelected: (tag) {
-            setState(() => _selected.add(tag));
+            setState(() => widget.tags.add(tag));
           },
-          selectedTags: _selected,
+          selectedTags: widget.tags,
           tagLayerLink: layerLink,
           targeterOffset: Offset(offset.dx, offset.dy + size.height),
         ),

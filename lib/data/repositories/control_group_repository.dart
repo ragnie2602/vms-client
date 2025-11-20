@@ -83,6 +83,7 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
     List<int>? groupId,
     String? urn,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   }) async {
     return await catchError<AddCameraEntity>(() async {
       final checkCameraOnvif = await service.addCameraOnVif(
@@ -97,6 +98,7 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
         groupId: groupId,
         urn: urn,
         subStreamUrls: subStreamUrls,
+        tagIds: tags?.map((e) => e.id).toList(),
       );
       return Right(checkCameraOnvif);
     });
@@ -112,6 +114,7 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
     List<int>? boxId,
     List<int>? groupId,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   }) async {
     return await catchError<AddCameraEntity>(() async {
       final addCameraRTSP = await service.addCameraRTSP(
@@ -123,6 +126,7 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
         boxId: boxId,
         groupId: groupId,
         subStreamUrls: subStreamUrls,
+        tagIds: tags?.map((e) => e.id).toList(),
       );
       return Right(addCameraRTSP);
     });
