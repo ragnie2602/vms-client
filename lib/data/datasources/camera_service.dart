@@ -117,6 +117,7 @@ class CameraService {
     String? xaddr,
     MapLocation? location,
     List<String>? subStreamUrls,
+    List<List<int>>? tagIds,
   }) async {
     final request = UpdateCamera_Request()..cameraId = cameraId;
     if (name != null) request.name = name;
@@ -128,6 +129,7 @@ class CameraService {
     if (subStreamUrls != null && subStreamUrls.isNotEmpty) {
       request.subStreamUrls.addAll(subStreamUrls);
     }
+    if (tagIds != null && tagIds.isNotEmpty) request.tagsetId.addAll(tagIds);
 
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(

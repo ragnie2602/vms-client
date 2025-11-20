@@ -142,6 +142,7 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
     String? xaddr,
     CameraMap? location,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   }) async {
     return await catchError<CameraEntity>(() async {
       final camera = await service.updateCamera(
@@ -153,6 +154,7 @@ class ControlCameraRepository extends BaseRepository implements IControlCameraRe
         xaddr: xaddr,
         location: location?.toMapper(),
         subStreamUrls: subStreamUrls,
+        tagIds: tags?.map((e) => e.id).toList(),
       );
       return Right(camera.toDomain());
     });

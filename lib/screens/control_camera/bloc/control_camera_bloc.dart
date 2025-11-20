@@ -218,6 +218,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       xaddr: event.xaddr,
       location: event.location,
       subStreamUrls: event.subStreamUrls,
+      tags: event.tags,
     );
     res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) {
       emit(UpdateCameraSuccessState(cameraEntity: onSuccess));

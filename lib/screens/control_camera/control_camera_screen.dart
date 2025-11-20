@@ -139,6 +139,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     CameraMap? location,
     required List<String> subStreamUrls,
     required String xaddr,
+    required Set<TagEntity> tags,
   }) {
     context.read<ControlCameraBloc>().add(
       UpdateCameraEvent(
@@ -150,6 +151,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         location: location,
         subStreamUrls: subStreamUrls,
         xaddr: xaddr,
+        tags: tags,
       ),
     );
   }
@@ -567,6 +569,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                               password: payload.password,
                                               subStreamUrls: payload.subStreamUrls,
                                               xaddr: payload.xaddr,
+                                              tags: payload.tags,
                                             );
                                           },
                                           onCheck: (xaddrs, userName, password, boxId) {

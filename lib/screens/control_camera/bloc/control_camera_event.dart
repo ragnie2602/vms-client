@@ -110,6 +110,7 @@ class UpdateCameraEvent extends ControlCameraEvent {
   final String? xaddr;
   final CameraMap? location;
   final List<String>? subStreamUrls;
+  final Set<TagEntity> tags;
   const UpdateCameraEvent({
     required this.cameraId,
     this.name,
@@ -119,6 +120,7 @@ class UpdateCameraEvent extends ControlCameraEvent {
     this.xaddr,
     this.location,
     this.subStreamUrls,
+    required this.tags,
   });
 }
 

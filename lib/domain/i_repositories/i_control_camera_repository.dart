@@ -62,6 +62,7 @@ abstract class IControlCameraRepository {
     String? xaddr,
     CameraMap? location,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   });
 
   Future<Either<Failure, List<int>>> deleteCamera({required List<int> cameraId});
