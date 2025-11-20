@@ -25,6 +25,8 @@ import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
+import 'package:vms_flutter_client/screens/system_configuration/system_configuration_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
 
@@ -79,7 +81,12 @@ enum Routes {
     description:
         'Cho phép quản trị viên kiểm soát ai có thể xem camera của mình và cách thức họ truy cập',
   ),
-  setting(name: 'setting', path: '/setting'),
+  configuration(
+    name: 'system_configuration',
+    path: '/system_configuration',
+    title: 'Cấu hình hệ thống',
+    description: 'Cho phép quản trị viên cấu hình hệ thống quản lý camera',
+  ),
   about(name: 'about', path: '/about');
 
   final String name;
@@ -126,6 +133,10 @@ class AppRouter {
         builder: (context, state, child) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
+            BlocProvider(
+              create: (context) => StorageFolderBloc()..add(StorageFolderStarted()),
+              lazy: false,
+            ),
             BlocProvider(
               create: (context) => MonitorBloc(context.read(), context.read(), context.read())
                 ..add(
@@ -217,6 +228,7 @@ class AppRouter {
               );
             },
           ),
+
           GoRoute(
             path: Routes.playback.path,
             name: Routes.playback.name,
@@ -224,6 +236,7 @@ class AppRouter {
               return fadeTransition(context: context, state: state, child: PlaybackScreen());
             },
           ),
+
           GoRoute(
             path: Routes.about.path,
             name: Routes.about.name,
@@ -231,13 +244,19 @@ class AppRouter {
               return fadeTransition(context: context, state: state, child: AboutScreen());
             },
           ),
-          // GoRoute(
-          //   path: Routes.controlCamera.path,
-          //   name: Routes.controlCamera.name,
-          //   pageBuilder: (context, state) {
-          //     return fadeTransition(context: context, state: state, child: ControlCameraScreen());
-          //   },
-          // ),
+
+          GoRoute(
+            path: Routes.configuration.path,
+            name: Routes.configuration.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: SystemConfigurationScreen(),
+              );
+            },
+          ),
+
           GoRoute(
             path: Routes.addGroupCamera.path,
             name: Routes.addGroupCamera.name,
@@ -245,6 +264,7 @@ class AppRouter {
               return fadeTransition(context: context, state: state, child: ControlCameraScreen());
             },
           ),
+
           GoRoute(
             path: Routes.emap.path,
             name: Routes.emap.name,
@@ -252,6 +272,7 @@ class AppRouter {
               return fadeTransition(context: context, state: state, child: EmapScreen());
             },
           ),
+
           GoRoute(
             path: Routes.users.path,
             name: Routes.users.name,

@@ -1,4 +1,4 @@
-// ignore_for_file: depend_on_referenced_packages
+// ignore_for_file: depend_on_referenced_packages, unused_import
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -6,6 +6,13 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:image/image.dart' as img;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
+extension PathExtension on String {
+  String joinPath(String part1, [String? part2, String? part3, String? part4, String? part5]) =>
+      p.join(this, part1, part2, part3, part4, part5);
+}
 
 class FileUtil {
   const FileUtil._();
@@ -47,6 +54,14 @@ class FileUtil {
     ).writeAsBytes(data);
   }
 
+  static Future<String?> selectFolderLocation({String? title, String? initialPath}) async {
+    return await FilePicker.platform.getDirectoryPath(
+      dialogTitle: title,
+      initialDirectory: initialPath,
+      lockParentWindow: true,
+    );
+  }
+
   static Future<String?> selectSaveLocation(String fileName, String extension) async {
     try {
       // Use file_picker for Windows to prevent UI freezing with lockParentWindow
@@ -81,4 +96,62 @@ class FileUtil {
       return null;
     }
   }
+
+  static Future<bool> ensureFolderExists(String path) async {
+    try {
+      final isFilePath = p.extension(path).isNotEmpty;
+
+      // Path là file → tạo folder chứa file
+      if (isFilePath) {
+        final dir = Directory(p.dirname(path));
+        if (!await dir.exists()) await dir.create(recursive: true);
+      }
+      // Path là folder
+      else {
+        final dir = Directory(path);
+        if (!await dir.exists()) await dir.create(recursive: true);
+      }
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  static Future<ConfigurationFolders> ensureConfigurationFolders() async {
+    final vmsLibraryPath = await getVMSLibraryDirectory();
+    final videoFolderPath = p.join(vmsLibraryPath, "Video");
+    final snapshotFolderPath = p.join(vmsLibraryPath, "Snapshots");
+
+    await ensureFolderExists(videoFolderPath);
+    await ensureFolderExists(snapshotFolderPath);
+
+    return ConfigurationFolders(
+      vmsLibrary: vmsLibraryPath,
+      video: videoFolderPath,
+      snapshots: snapshotFolderPath,
+    );
+  }
+
+  static Future<String> getVMSLibraryDirectory() async {
+    final documentDirectory = await getApplicationDocumentsDirectory(); // C:\Users\admin\Documents
+
+    final vmsLibraryPath = p.join(documentDirectory.path, 'VMSLibrary');
+    await ensureFolderExists(vmsLibraryPath);
+    return vmsLibraryPath;
+  }
+}
+
+class ConfigurationFolders {
+  final String vmsLibrary;
+  final String video;
+  final String snapshots;
+
+  const ConfigurationFolders({
+    required this.vmsLibrary,
+    required this.video,
+    required this.snapshots,
+  });
+  factory ConfigurationFolders.empty() =>
+      ConfigurationFolders(vmsLibrary: '', video: '', snapshots: '');
 }

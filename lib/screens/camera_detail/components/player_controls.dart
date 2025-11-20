@@ -1,10 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 import '../widgets/camera_detail_player.dart';
@@ -19,6 +24,28 @@ class PlayerControls extends StatelessWidget {
 
   CameraDetailPlayerState? playerState(BuildContext context) {
     return context.read<CameraDetailBloc>().state.cameraDetailController.ref.currentState;
+  }
+
+  Future<void> takeSnapshot(BuildContext context) async {
+    final storageFolderState = context.read<StorageFolderBloc>().state;
+    final cameraName = context.read<CameraDetailBloc>().state.camera?.name ?? 'camera';
+
+    final data = await playerState(context)?.snapshot();
+    if (data == null) return;
+
+    // C:\Users\admin\Documents\VMSLibrary\Snapshots\ten_camera\yyyyMMdd_HHmmss.jpg
+    String path = await storageFolderState.ensureSnapshotFolder(
+      cameraName,
+      '${DateTime.now().format("yyyyMMdd_HHmmss")}.jpg',
+    );
+
+    await File(path).writeAsBytes(data);
+    ToastUtil.toastSuccess(
+      title: Text(
+        "Đã chụp hình",
+        style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+      ),
+    );
   }
 
   @override
@@ -51,10 +78,11 @@ class PlayerControls extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       /* Sources */
-                      if (mode.isLive) Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: ControlSource(disabled: isRecording),
-                      ),
+                      if (mode.isLive)
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: ControlSource(disabled: isRecording),
+                        ),
 
                       /* Volumne */
                       ControlVolume(disabled: isRecording),
@@ -88,7 +116,7 @@ class PlayerControls extends StatelessWidget {
                       _controlItem(
                         disabled: isRecording,
                         AppAssets.icCamera,
-                        () => playerState(context)?.snapshot(),
+                        () => takeSnapshot(context),
                       ),
 
                       /* Speed */
@@ -198,7 +226,7 @@ class PlayerControls extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 8),
-                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Liveview')),
+                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Trực tiếp')),
                     ],
                   ),
                 ),
@@ -216,7 +244,7 @@ class PlayerControls extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 8),
-                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Playback')),
+                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Xem lại')),
                     ],
                   ),
                 ),

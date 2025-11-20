@@ -74,6 +74,8 @@ class CameraPlayerState extends State<CameraPlayer> {
       await _initPlayer();
       await _onConnecting();
       await Future.delayed(const Duration(milliseconds: 100));
+
+      if (!mounted) _tryDisposePlayer();
     });
   }
 

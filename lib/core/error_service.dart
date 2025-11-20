@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:path/path.dart' as p;
 
 import 'utils/logger.dart';
 
@@ -122,7 +123,7 @@ class ErrorService {
 
   static Future<void> _initLogFile() async {
     final appDocDir = await getApplicationSupportDirectory(); // created automatically
-    final logFile = File('${appDocDir.path}/vms.log');
+    final logFile = File(p.join(appDocDir.path, 'vms.log'));
 
     bool createOrReplace = true;
 
