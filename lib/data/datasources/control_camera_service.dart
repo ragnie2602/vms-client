@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/data/models/check_camera_onvif_model.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
+import 'package:vms_flutter_client/data/proto/models/comm.model.pbserver.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.2.pb.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
@@ -61,5 +62,47 @@ class ControlCameraService {
           )
           .toList(),
     );
+  }
+
+  Future<TagEntity> createTag({required TagEntity tag}) async {
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: AddTag_Request(
+            tag: CamTag(tagName: tag.name, tagColor: tag.color.value.toString()),
+          ).writeToBuffer(),
+          type: PacketType.addTag,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) {
+        throw failure.toMessageFailure();
+      },
+      (buffer) {
+        final tagResponse = AddTag_Reply.fromBuffer(buffer).tag;
+        return TagEntity(
+          id: tagResponse.tagId,
+          name: tagResponse.tagName,
+          color: Color(int.parse(tagResponse.tagColor)),
+        );
+      },
+    );
+  }
+
+  Future<List<int>> deleteTag({required List<int> id}) async {
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: DelTag_Request(tagId: id).writeToBuffer(),
+          type: PacketType.deleteTag,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold((failure) => throw failure.toMessageFailure(), (buffer) => id);
   }
 }

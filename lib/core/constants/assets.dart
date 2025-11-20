@@ -24,6 +24,7 @@ class AppAssets {
 
   static const icCamera = '$_svgPath/camera.svg';
   static const icClose = '$_svgPath/close.svg';
+  static const icCloseSolid = '$_svgPath/close_solid.svg';
   static const icFullscreen = '$_svgPath/full_screen.svg';
   static const icFullTv = '$_svgPath/ic_full_tv.svg';
   static const icPauseCircle = '$_svgPath/pause_circle.svg';
