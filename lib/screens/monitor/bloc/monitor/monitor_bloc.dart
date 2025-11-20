@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
@@ -14,7 +15,7 @@ part 'monitor_state.dart';
 
 class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   MonitorBloc(this.filterCameraNoGroupUseCase, this.cameraRepository) : super(MonitorInitial()) {
-    on<GetAllCamera>(_onGetAllCamera);
+    on<GetAllCamera>(_onGetAllCamera, transformer: droppable());
     on<ChangeGridMode>(_onChangeGridMode);
     on<GetCameraAtPage>(_onGetCameraAtPage);
     on<GetAllCameraInGroup>(_onGetAllCameraInGroup);
