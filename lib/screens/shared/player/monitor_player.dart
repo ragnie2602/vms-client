@@ -161,7 +161,10 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   Future<void> _tryDisposePlayer() async {
     try {
-      await _player.dispose(delay: const Duration(milliseconds: 100));
+      await _player.dispose(
+        delay: const Duration(milliseconds: 100),
+        synchronized: widget.mode == MonitorMode.monitoring,
+      );
     } catch (_) {}
   }
 
