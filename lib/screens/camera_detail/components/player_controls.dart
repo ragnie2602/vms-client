@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -26,18 +24,17 @@ class PlayerControls extends StatelessWidget {
     if (path == null) return;
 
     // ignore: use_build_context_synchronously
-    final data = await playerController(context)?.snapshot?.call();
-    if (data == null) return;
-
-    await File(path).writeAsBytes(data);
-    ToastUtil.toastSuccess(
-      // ignore: use_build_context_synchronously
-      context: context,
-      title: Text(
-        "Đã chụp hình",
-        style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
-      ),
-    );
+    final data = await playerController(context)?.snapshot?.call(path);
+    if (data == true) {
+      ToastUtil.toastSuccess(
+        // ignore: use_build_context_synchronously
+        context: context,
+        title: Text(
+          "Đã chụp hình",
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+        ),
+      );
+    }
   }
 
   @override

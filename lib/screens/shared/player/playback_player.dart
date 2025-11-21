@@ -1,7 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:async';
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -326,8 +326,12 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     }
   }
 
-  Future<Uint8List?> snapshot({String? format = 'image/jpeg'}) {
-    return _player.screenshot(format: format);
+  Future<bool> snapshot(String path) async {
+    final data = await _player.screenshot();
+    if (data == null) return false;
+
+    await File(path).writeAsBytes(data);
+    return true;
   }
 
   bool isInitialized() => _state.value == PlayerState.initialized;

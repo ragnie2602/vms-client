@@ -1,5 +1,3 @@
-import 'dart:typed_data' show Uint8List;
-
 import 'package:flutter/material.dart' show GlobalKey;
 
 enum MonitorMode { liveview, monitoring }
@@ -29,7 +27,7 @@ class PlayerController {
   Future<void> Function(Duration duration)? seek;
   Future<void> Function(double speed)? changeSpeed;
   Future<void> Function()? togglePlay;
-  Future<Uint8List?> Function()? snapshot;
+  Future<bool> Function(String path)? snapshot;
   Future<void> Function(DateTime date, {int? dateIndex})? jumpToDate;
   bool Function()? isInitialized;
 }
