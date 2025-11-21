@@ -66,6 +66,17 @@ class _TagDropdownState extends State<TagDropdown> {
     }
   }
 
+  void _toggleTag(TagEntity tag) {
+    setState(() {
+      final actualIndex = _tags.indexWhere((t) => t == tag);
+      if (actualIndex != -1) {
+        _tags[actualIndex].isSelected = !_tags[actualIndex].isSelected;
+        // Notify parent
+        widget.onTagSelected?.call(_tags[actualIndex]);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -75,16 +86,14 @@ class _TagDropdownState extends State<TagDropdown> {
           child: Container(color: Colors.transparent),
         ),
         CompositedTransformFollower(
-          targetAnchor: Alignment.bottomLeft,
+          offset: Offset(0, 8),
+          targetAnchor: Alignment.bottomCenter,
           link: widget.tagLayerLink,
           child: Material(
             elevation: 8,
             borderRadius: BorderRadius.circular(8),
             child: Container(
-              constraints: BoxConstraints(
-                maxHeight:
-                    200,
-              ),
+              constraints: BoxConstraints(maxHeight: 300),
               width: 300,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -105,7 +114,20 @@ class _TagDropdownState extends State<TagDropdown> {
                       }
                       if (state is GetAllTagsSuccessState) {
                         _tags.clear();
-                        _tags.addAll(state.tags);
+                        // Deep copy or just copy? TagEntity seems mutable (isSelected is not final).
+                        // We need to sync with widget.selectedTags
+                        for (var tag in state.tags) {
+                          // Check if this tag is in selectedTags
+                          // Using contains which uses TagEntity.== (based on ID)
+                          final isSelected = widget.selectedTags.contains(tag);
+                          // Create a copy to avoid modifying the state directly if it's shared (though state.tags usually new)
+                          // But TagEntity has isSelected which is mutable.
+                          // Let's assume we can modify it or copy it.
+                          // Best to copy if we are modifying.
+                          var newTag = tag.copyWith();
+                          newTag.isSelected = isSelected;
+                          _tags.add(newTag);
+                        }
                       }
                       if (state is GetAllTagsFailState ||
                           _filteredTags.isEmpty) {
@@ -127,32 +149,32 @@ class _TagDropdownState extends State<TagDropdown> {
                             final tag = _filteredTags[index];
                             return Material(
                               child: InkWell(
-                                onTap: () => widget.onTagSelected?.call(tag),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 6,
-                                  ),
-                                  child: Row(
-                                    
-                                    children: [
-                                      TagShapeIcon(
-                                        color: tag.color,
-                                        width: 18,
-                                        height: 12,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: Text(
-                                          tag.name,
-                                          style: AppTypography.style(
-                                            14,
-                                            fontWeight: FontWeight.w400,
-                                            color: AppColors.black,
-                                          ),
+                                onTap: () => _toggleTag(tag),
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      
+                                      value: tag.isSelected,
+                                      onChanged: (value) => _toggleTag(tag),
+                                      activeColor: AppColors.secondary,
+                                    ),
+                                    TagShapeIcon(
+                                      color: tag.color,
+                                      width: 18,
+                                      height: 12,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        tag.name,
+                                        style: AppTypography.style(
+                                          14,
+                                          fontWeight: FontWeight.w400,
+                                          color: AppColors.black,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );

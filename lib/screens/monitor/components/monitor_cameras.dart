@@ -9,7 +9,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
-import 'package:vms_flutter_client/screens/control_camera/widget/tag_dropdowndart';
+import 'package:vms_flutter_client/screens/control_camera/widget/tag_dropdown.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/tag_management_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 
@@ -40,6 +40,7 @@ class _MonitorCamerasState extends State<MonitorCameras>
 
   late final MonitorBloc _monitorBloc;
   final LayerLink layerLink = LayerLink();
+  final Set<TagEntity> _selectedTags = {};
   OverlayEntry? _overlayEntry;
 
   @override
@@ -69,11 +70,22 @@ class _MonitorCamerasState extends State<MonitorCameras>
   }
 
   bool _filterFunc(CameraEntity camera) {
-    if (_searchController.text.isEmpty) return true;
+    bool matchesSearch = true;
+    if (_searchController.text.isNotEmpty) {
+      matchesSearch = removeDiacritics(
+        camera.name.toLowerCase(),
+      ).contains(removeDiacritics(_searchController.text.toLowerCase()));
+    }
 
-    return removeDiacritics(
-      camera.name.toLowerCase(),
-    ).contains(removeDiacritics(_searchController.text.toLowerCase()));
+    bool matchesTags = true;
+    if (_selectedTags.isNotEmpty) {
+      // Check if camera has ANY of the selected tags
+      matchesTags = camera.tags.any(
+        (cameraTag) => _selectedTags.contains(cameraTag),
+      );
+    }
+
+    return matchesSearch && matchesTags;
   }
 
   @override
@@ -134,13 +146,51 @@ class _MonitorCamerasState extends State<MonitorCameras>
               ),
             ),
             SizedBox(height: 14),
-            CompositedTransformTarget(
-              link: layerLink,
-              child: InkWell(
-                onTap: () {
-                  _showAddCameraDropdownTag(context, context, []);
-                },
-                child: Text("Thẻ Tag"),
+            InkWell(
+              onTap: () {
+                _showAddCameraDropdownTag(context, context, []);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: CompositedTransformTarget(
+                  link: layerLink,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        _selectedTags.isEmpty
+                            ? "Thẻ Tags"
+                            : _selectedTags.length == 1
+                            ? _selectedTags.first.name
+                            : "${_selectedTags.length} thẻ",
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w500,
+                          color: _selectedTags.isEmpty
+                              ? AppColors.black
+                              : AppColors.blue005AA9,
+                        ),
+                      ),
+                      if (_selectedTags.isNotEmpty) ...[
+                        const SizedBox(width: 4),
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _selectedTags.clear();
+                            });
+                          },
+                          child: Icon(
+                            Icons.cancel,
+                            size: 16,
+                            color: AppColors.blue005AA9,
+                          ),
+                        ),
+                      ],
+                      if (_selectedTags.isEmpty)
+                        Icon(Icons.arrow_drop_down, color: AppColors.black),
+                    ],
+                  ),
+                ),
               ),
             ),
             SizedBox(height: 20 - 6),
@@ -153,7 +203,8 @@ class _MonitorCamerasState extends State<MonitorCameras>
                     builder: (context, value, child) {
                       final cameras = state.cameras.where(_filterFunc).toList();
 
-                      if (cameras.isEmpty && value.text.isNotEmpty) {
+                      if (cameras.isEmpty &&
+                          (value.text.isNotEmpty || _selectedTags.isNotEmpty)) {
                         return _buildSearchEmpty();
                       }
 
@@ -215,9 +266,15 @@ class _MonitorCamerasState extends State<MonitorCameras>
             _showTagManagementDialog(mainContext, tags);
           },
           onTagSelected: (tag) {
-            // setState(() => widget.tags.add(tag));
+            setState(() {
+              if (_selectedTags.contains(tag)) {
+                _selectedTags.remove(tag);
+              } else {
+                _selectedTags.add(tag);
+              }
+            });
           },
-          selectedTags: {},
+          selectedTags: _selectedTags,
           tagLayerLink: layerLink,
           targeterOffset: Offset(offset.dx, offset.dy + size.height),
         ),
