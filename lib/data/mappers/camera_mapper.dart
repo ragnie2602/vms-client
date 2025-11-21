@@ -1,9 +1,6 @@
-
 import 'dart:ui';
 
-
 import 'package:vms_flutter_client/data/mappers/schedule_mapper.dart';
-
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command2.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart' as pb;
@@ -140,13 +137,10 @@ extension CameraMapper on pb.Camera {
       onvif: onvif.toDomain(),
       cameraRole: role.toDomain(),
       isOnline: on,
-
       tags: tags
           .map((e) => TagEntity(id: e.tagId, name: e.tagName, color: Color(int.parse(e.tagColor))))
           .toSet(),
-
-      cameraConfig: config.toDomain()
-
+      cameraConfig: config.toDomain(),
     );
   }
 }

@@ -334,13 +334,12 @@ CustomTransitionPage fadeTransition<T>({
   return CustomTransitionPage<T>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 250),
-    reverseTransitionDuration: const Duration(milliseconds: 250),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-        FadeTransition(
-          opacity: CurveTween(curve: Curves.easeIn).animate(animation),
-          child: child,
-        ),
+    transitionDuration: const Duration(milliseconds: 0),
+    reverseTransitionDuration: const Duration(milliseconds: 0),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
+      opacity: CurveTween(curve: Curves.easeIn).animate(animation),
+      child: child,
+    ),
   );
 }
 
