@@ -76,7 +76,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
         if (_deviceMatches != null)
           _deviceMatches!.isEmpty
               ? Text(
-                  'Không tìm thấy camera nào trong mạng.',
+                  'Không tìm thấy camera ONVIF nào.',
                   style: AppTypography.style(
                     13,
                     fontWeight: FontWeight.w400,
@@ -106,7 +106,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
 
     final uri = Uri.tryParse(match.xAddr);
     final ip = uri?.host.isNotEmpty == true ? uri!.host : match.xAddr;
-    final model = match.hardware.isNotEmpty ? match.hardware : 'Không rõ';
+    final model = match.hardware.isNotEmpty ? match.hardware : '';
 
     Widget buildHeader(TextStyle textStyle) {
       return Row(
@@ -115,7 +115,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              '$ip - Model: $model',
+              model != '' ? '$ip - Model: $model' : ip,
               style: textStyle,
               overflow: TextOverflow.ellipsis,
             ),
@@ -173,6 +173,9 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
   }
 
   Widget _buildDiscoveryItemForm(DiscoveredDevice match) {
+    final uri = Uri.tryParse(match.xAddr);
+    final ip = uri?.host.isNotEmpty == true ? uri!.host : match.xAddr;
+
     return Form(
       key: _discoveryFormKey,
       child: Column(
@@ -194,7 +197,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${Uri.tryParse(match.xAddr)?.host ?? match.xAddr} - Model: ${match.hardware.isNotEmpty ? match.hardware : 'Không rõ'}',
+                    '${Uri.tryParse(match.xAddr)?.host ?? match.xAddr} - Model: ${match.hardware.isNotEmpty ? match.hardware : ''}',
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
@@ -273,7 +276,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                     if (_discoveryFormKey.currentState?.validate() ?? false) {
                       updateState(() {
                         _isAddingDiscoveryCamera = true;
-                        _name.text = match.name;
+                        _name.text = ip;
                       });
                       _onCheckPassword();
                     }
