@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_entity.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/button_config_widget.dart';
@@ -58,6 +59,13 @@ class _ConfigScheduleRecordWidgetState
         widget.camera.cameraConfig?.recording?.schedules ?? [];
     _initCheckAllDay();
     _initGridviewItemValue();
+  }
+  @override
+  void dispose() {
+    scheduleTimeSelected?.clear();
+    listCheckAllDay.clear();
+    listGridviewItemValue.clear();
+    super.dispose();
   }
 
   void _initCheckAllDay() {
@@ -165,7 +173,7 @@ class _ConfigScheduleRecordWidgetState
     }
     newRecording = RecordingEntity(
       turnOnRecording: currentRecording?.turnOnRecording,
-      typeScheduleRecording: currentRecording?.typeScheduleRecording,
+      typeScheduleRecording: RecordingTypeSchedule.customizeRecord,
       prefixPath: currentRecording?.prefixPath,
       schedules: schedules,
     );

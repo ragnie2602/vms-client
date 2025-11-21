@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/button_config_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/config_schedule_record_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/general_config_camera_widget.dart';
 
@@ -45,6 +46,7 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
       padding: EdgeInsets.symmetric(vertical: 20, horizontal: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // tên
           LineInforWidget(title: 'Tên camera:', content: widget.camera.name),
@@ -114,7 +116,19 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
                     widget.onSave.call(value);
                   },
                 )
-              : SizedBox.shrink(),
+              : ButtonConfigWidget(
+                  onSave: () {
+                    // lưu luôn với record type là always
+                    RecordingEntity? currentRecord =
+                        widget.camera.cameraConfig?.recording;
+                    RecordingEntity? record = RecordingEntity(
+                      turnOnRecording: currentRecord?.turnOnRecording,
+                      prefixPath: currentRecord?.prefixPath,
+                      typeScheduleRecording: RecordingTypeSchedule.alwaysRecord,
+                    );
+                    widget.onSave.call(record);
+                  },
+                ),
         ],
       ),
     );
