@@ -17,23 +17,30 @@ class ScheduleSuccessState extends ScheduleState {
   //
   final ConfigCameraTab? selectedTab;
   final CameraInfoEntity? cameraInfo;
+  final bool isSaving; // lưu trạng thái loading của button lưu
 
   //
 
-  const ScheduleSuccessState({this.selectedTab, this.cameraInfo});
+  const ScheduleSuccessState({
+    this.selectedTab,
+    this.cameraInfo,
+    this.isSaving = false,
+  });
   @override
   StateType get type => StateType.success;
 
   @override
-  List<Object?> get props => [selectedTab, cameraInfo];
+  List<Object?> get props => [selectedTab, cameraInfo, isSaving];
 
   ScheduleSuccessState copyWith({
     final ConfigCameraTab? selectedTab,
     CameraInfoEntity? cameraInfo,
+    bool? isSaving,
   }) {
     return ScheduleSuccessState(
       selectedTab: selectedTab ?? this.selectedTab,
       cameraInfo: cameraInfo ?? this.cameraInfo,
+      isSaving: isSaving ?? this.isSaving,
     );
   }
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -14,9 +13,11 @@ class ScheduleRecordingWidget extends StatefulWidget {
     super.key,
     required this.camera,
     required this.onSave,
+    this.isSaving = false,
   });
   final CameraEntity camera;
   final Function(RecordingEntity?) onSave;
+  final bool isSaving;
 
   @override
   State<ScheduleRecordingWidget> createState() =>
@@ -108,8 +109,9 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
           typeSelected == RecordingTypeSchedule.customizeRecord
               ? ConfigScheduleRecordWidget(
                   camera: widget.camera,
+                  isSaving: widget.isSaving,
                   onSave: (value) {
-                   widget.onSave.call(value);
+                    widget.onSave.call(value);
                   },
                 )
               : SizedBox.shrink(),

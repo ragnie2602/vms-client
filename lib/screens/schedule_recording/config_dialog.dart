@@ -201,6 +201,7 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
                           )
                         : ScheduleRecordingWidget(
                             camera: widget.camera,
+                            isSaving: state.isSaving,
                             onSave: (value) {
                               _configSchedule(newRecording: value);
                             },

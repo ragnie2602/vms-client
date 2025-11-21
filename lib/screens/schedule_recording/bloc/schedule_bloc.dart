@@ -64,6 +64,7 @@ class ScheduleBloc extends BaseBloc<ScheduleEvent, ScheduleState> {
     var currentState = state;
     if (state is ScheduleSuccessState) {
       currentState = state as ScheduleSuccessState;
+      emit((currentState as ScheduleSuccessState).copyWith(isSaving: true));
     }
     // res API
     final newCam = await scheduleRepository.configScheduleRecording(
@@ -73,11 +74,19 @@ class ScheduleBloc extends BaseBloc<ScheduleEvent, ScheduleState> {
     newCam.fold(
       (onFailure) {
         emit(UpdateConfigFailState(message: onFailure.toString()));
-        emit(currentState);
+        if (currentState is ScheduleSuccessState) {
+          emit(currentState.copyWith(isSaving: false));
+        } else {
+          emit(currentState);
+        }
       },
       (onSuccess) {
         emit(UpdateConfigSuccessState());
-        emit(currentState);
+        if (currentState is ScheduleSuccessState) {
+          emit(currentState.copyWith(isSaving: false));
+        } else {
+          emit(currentState);
+        }
       },
     );
   }

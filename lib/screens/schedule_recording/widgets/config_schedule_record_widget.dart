@@ -16,10 +16,12 @@ class ConfigScheduleRecordWidget extends StatefulWidget {
     super.key,
     required this.camera,
     required this.onSave,
+    this.isSaving = false,
   });
 
   final CameraEntity camera;
   final Function(RecordingEntity?) onSave;
+  final bool isSaving;
 
   @override
   State<ConfigScheduleRecordWidget> createState() =>
@@ -302,6 +304,7 @@ class _ConfigScheduleRecordWidgetState
           ],
         ),
         ButtonConfigWidget(
+          isLoading: widget.isSaving,
           onSave: () {
             _updateRecord();
             widget.onSave.call(newRecording);
