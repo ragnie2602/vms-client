@@ -7,7 +7,6 @@ extension AddCameraDialogForm on _AddCameraDialogState {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 12),
           AppField(
             controller: _name,
             hintText: 'Nhập tên camera',
@@ -21,11 +20,11 @@ extension AddCameraDialogForm on _AddCameraDialogState {
             requiredField: true,
             maxLength: 50,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 20),
           // Phương thức selection
           _buildMethodCamera(),
           _buildAccountCamera(),
-          const SizedBox(height: 24),
+          SizedBox(height: 20),
           AppField(
             controller: _rtsp,
             hintText: 'Nhập địa chỉ RTSP',
@@ -36,7 +35,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
                 ? 'Địa chỉ RTSP không được để trống'
                 : null,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 20),
           AppField(
             controller: _sub,
             hintText: 'Nhập địa chỉ luồng phụ',
@@ -45,7 +44,24 @@ extension AddCameraDialogForm on _AddCameraDialogState {
             //     ? 'Địa chỉ luồng phụ không được để trống'
             //     : null,
           ),
-          const SizedBox(height: 24),
+          // const SizedBox(height: 20),
+          // AppField(
+          //   controller: _desc,
+          //   hintText: 'Nhập địa chỉ khu vực',
+          //   label: "Địa chỉ khu vực",
+          //   maxLength: 50,
+          // ),
+          const SizedBox(height: 20),
+          Text(
+            'Tags',
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.black,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _TagField(_tags),
         ],
       ),
     );

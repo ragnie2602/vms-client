@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 enum CameraDialogMode { add, edit }
 
@@ -26,6 +27,7 @@ class AddCameraPayload {
   final List<String> subStreamUrls;
   // final String urn;
   // final String serialNumber;
+  final Set<TagEntity> tags;
 
   const AddCameraPayload({
     required this.name,
@@ -42,5 +44,6 @@ class AddCameraPayload {
     required this.subStreamUrls,
     // required this.urn,
     // required this.serialNumber,
+    required this.tags,
   });
 }

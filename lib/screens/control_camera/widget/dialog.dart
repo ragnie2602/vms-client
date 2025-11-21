@@ -13,9 +13,9 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
+import 'package:vms_flutter_client/screens/control_camera/utils/custom_onvif_discovery.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/add_tag_dropdown.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/tag_management_dialog.dart';
-import 'package:vms_flutter_client/screens/control_camera/utils/custom_onvif_discovery.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import '../../home/components/components_src.dart';
@@ -35,7 +35,13 @@ Future<T?> showAddCameraDialog<T>(
   Future<void> Function(AddCameraPayload value)? onEdit,
   Future<List<DiscoveredDevice>> Function()? onCheckDiscovery,
   VoidCallback? onBack,
-  final Function(String xaddrs, String userName, String password, List<int>? boxId)? onCheck,
+  final Function(
+    String xaddrs,
+    String userName,
+    String password,
+    List<int>? boxId,
+  )?
+  onCheck,
 }) {
   final controlCameraBloc = context.read<ControlCameraBloc>();
   return showDialog<T>(
@@ -56,43 +62,6 @@ Future<T?> showAddCameraDialog<T>(
   );
 }
 
-/// Data model to return from the dialog
-class AddCameraPayload {
-  final String name;
-  final String method; // 'RTSP' hoặc 'ONVIF'
-  final String rtsp;
-  final String onifDeviceIp;
-  final String username;
-  final String password;
-  final String subStream;
-  final CameraMap location;
-  final String xaddr;
-  // final List<int> boxId;
-  // final List<int> groupId;
-  final List<String> subStreamUrls;
-  // final String urn;
-  // final String serialNumber;
-  final Set<TagEntity> tags;
-
-  const AddCameraPayload({
-    required this.name,
-    required this.method,
-    required this.rtsp,
-    required this.onifDeviceIp,
-    required this.username,
-    required this.password,
-    required this.subStream,
-    required this.location,
-    required this.xaddr,
-    // required this.boxId,
-    // required this.groupId,
-    required this.subStreamUrls,
-    // required this.urn,
-    // required this.serialNumber,
-    required this.tags,
-  });
-}
-
 class _AddCameraDialog extends StatefulWidget {
   const _AddCameraDialog({
     required this.mode,
@@ -109,7 +78,13 @@ class _AddCameraDialog extends StatefulWidget {
   final Future<void> Function(AddCameraPayload value)? onEdit;
   final Future<List<DiscoveredDevice>> Function()? onCheckDiscovery;
   final VoidCallback? onBack;
-  final Function(String xaddrs, String userName, String password, List<int>? boxId)? onCheck;
+  final Function(
+    String xaddrs,
+    String userName,
+    String password,
+    List<int>? boxId,
+  )?
+  onCheck;
 
   @override
   State<_AddCameraDialog> createState() => _AddCameraDialogState();
@@ -263,7 +238,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         ),
         content: Container(
           decoration: BoxDecoration(
-            border: Border.symmetric(horizontal: BorderSide(color: AppColors.greyF2F4FA, width: 1)),
+            border: Border.symmetric(
+              horizontal: BorderSide(color: AppColors.greyF2F4FA, width: 1),
+            ),
           ),
           padding: const EdgeInsets.all(24),
           width: MediaQuery.of(context).size.width * 613 / 1600,
@@ -282,43 +259,46 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                   height: 44,
                   child: AppButton.outline(
                     label: 'Hủy',
-                    onPressed: (_isChecking || _isSubmitting) ? null : () => Navigator.pop(context),
+                    onPressed: (_isChecking || _isSubmitting)
+                        ? null
+                        : () => Navigator.pop(context),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: SizedBox(
-                    height: 44,
-                    child: AppButton.filled(
-                      label: _isSubmitting
-                          ? ''
-                          : _step == AddCameraStep.manualForm
-                          ? 'Xác nhận'
-                          : 'Tiếp tục',
-                      onPressed:
-                          _isSubmitting ||
-                              (_step == AddCameraStep.selectMode &&
-                                  _selectedAddStep == null)
-                          ? null
-                          : () async {
-                              // Bước chọn phương thức -> chuyển sang bước tương ứng
-                              if (_step == AddCameraStep.selectMode) {
-                                if (_selectedAddStep == null) return;
-                                setState(() {
-                                  _step = _selectedAddStep!;
-                                });
-                                return;
-                              }
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: AppButton.filled(
+                    label: _isSubmitting
+                        ? ''
+                        : _step == AddCameraStep.manualForm
+                        ? 'Xác nhận'
+                        : 'Tiếp tục',
+                    onPressed:
+                        _isSubmitting ||
+                            (_step == AddCameraStep.selectMode &&
+                                _selectedAddStep == null)
+                        ? null
+                        : () async {
+                            // Bước chọn phương thức -> chuyển sang bước tương ứng
+                            if (_step == AddCameraStep.selectMode) {
+                              if (_selectedAddStep == null) return;
+                              setState(() {
+                                _step = _selectedAddStep!;
+                              });
+                              return;
+                            }
 
-                              // Các bước không phải form thủ công hiện tại: placeholder, chỉ đóng dialog
-                              if (_step != AddCameraStep.manualForm) {
-                                Navigator.pop(context);
-                                return;
-                              }
+                            // Các bước không phải form thủ công hiện tại: placeholder, chỉ đóng dialog
+                            if (_step != AddCameraStep.manualForm) {
+                              Navigator.pop(context);
+                              return;
+                            }
 
-                              // Bước form thủ công: giữ nguyên logic submit cũ
-                              if (_form.currentState?.validate() ?? false) {
-                                setState(() => _isSubmitting = true);
+                            // Bước form thủ công: giữ nguyên logic submit cũ
+                            if (_form.currentState?.validate() ?? false) {
+                              setState(() => _isSubmitting = true);
 
                               final payload = AddCameraPayload(
                                 name: _name.text.trim(),
@@ -329,14 +309,24 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                                 password: _onvifPassword.text.trim(),
                                 subStream: _sub.text.trim(),
                                 location: CameraMap(
-                                  lat: double.tryParse(_lat.text.replaceAll(',', '.')) ?? 0,
-                                  log: double.tryParse(_lon.text.replaceAll(',', '.')) ?? 0,
+                                  lat:
+                                      double.tryParse(
+                                        _lat.text.replaceAll(',', '.'),
+                                      ) ??
+                                      0,
+                                  log:
+                                      double.tryParse(
+                                        _lon.text.replaceAll(',', '.'),
+                                      ) ??
+                                      0,
                                   locationDes: _desc.text.trim(),
                                 ),
                                 xaddr: _onvifXaddrs.text.trim(),
                                 // boxId: _boxId.text.trim(),
                                 // groupId: _groupId.text.trim(),
-                                subStreamUrls: _sub.text.isEmpty ? [] : _sub.text.trim().split(','),
+                                subStreamUrls: _sub.text.isEmpty
+                                    ? []
+                                    : _sub.text.trim().split(','),
                                 // urn: _urn.text.trim(),
                                 // serialNumber: _serialNumber.text.trim(),
                                 tags: _tags,
@@ -357,7 +347,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : null,
@@ -435,6 +427,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             location: CameraMap(lat: 0, log: 0, locationDes: ''),
             xaddr: _onvifXaddrs.text,
             subStreamUrls: _sub.text.isEmpty ? [] : _sub.text.split(','),
+            tags: _tags,
           );
           widget.onSubmit?.call(payload);
         } else {
@@ -576,7 +569,10 @@ class _TagFieldState extends State<_TagField> {
                                       color: tag.color,
                                     ),
                                     height: 8,
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
                                     width: 8,
                                   ),
                                   Padding(
@@ -599,7 +595,9 @@ class _TagFieldState extends State<_TagField> {
                                         color: AppColors.grey92929D,
                                         size: 10,
                                       ),
-                                      onPressed: () => setState(() => widget.tags.remove(tag)),
+                                      onPressed: () => setState(
+                                        () => widget.tags.remove(tag),
+                                      ),
                                       padding: EdgeInsets.all(3),
                                     ),
                                   ),
@@ -634,7 +632,8 @@ class _TagFieldState extends State<_TagField> {
       builder: (context) => BlocProvider.value(
         value: mainContext.read<ControlCameraBloc>(),
         child: AddTagDropdown(
-          excludedCameraNames: excludedCameraNames, // Truyền danh sách camera đã có
+          excludedCameraNames:
+              excludedCameraNames, // Truyền danh sách camera đã có
           onClose: () {
             _overlayEntry?.remove();
             _overlayEntry = null;
@@ -657,7 +656,10 @@ class _TagFieldState extends State<_TagField> {
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _showTagManagementDialog(BuildContext mainContext, List<TagEntity> tags) {
+  void _showTagManagementDialog(
+    BuildContext mainContext,
+    List<TagEntity> tags,
+  ) {
     showDialog(
       context: mainContext,
       builder: (context) => BlocProvider.value(
