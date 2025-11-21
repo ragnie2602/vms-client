@@ -15,11 +15,10 @@ import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_reposi
 
 import 'base_repository.dart';
 
-class ControlCameraRepository extends BaseRepository
-    implements IControlCameraRepository {
+class ControlCameraRepository extends BaseRepository implements IControlCameraRepository {
   final CameraService service;
   final ControlCameraService controlCameraService;
-  
+
   const ControlCameraRepository(this.service, this.controlCameraService);
 
   @override
@@ -45,13 +44,9 @@ class ControlCameraRepository extends BaseRepository
   }
 
   @override
-  Future<Either<Failure, List<CameraEntity>>> getCamerasInGroup({
-    List<int>? groupId,
-  }) async {
+  Future<Either<Failure, List<CameraEntity>>> getCamerasInGroup({List<int>? groupId}) async {
     return await catchError<List<CameraEntity>>(() async {
-      final cameras = await service.getAllCamerasInGroup(
-        groupId: groupId ?? [],
-      );
+      final cameras = await service.getAllCamerasInGroup(groupId: groupId ?? []);
 
       return Right(cameras.map((e) => e.toDomain()).toList());
     });
@@ -88,6 +83,7 @@ class ControlCameraRepository extends BaseRepository
     List<int>? groupId,
     String? urn,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   }) async {
     return await catchError<AddCameraEntity>(() async {
       final checkCameraOnvif = await service.addCameraOnVif(
@@ -102,6 +98,7 @@ class ControlCameraRepository extends BaseRepository
         groupId: groupId,
         urn: urn,
         subStreamUrls: subStreamUrls,
+        tagIds: tags?.map((e) => e.id).toList(),
       );
       return Right(checkCameraOnvif);
     });
@@ -117,6 +114,7 @@ class ControlCameraRepository extends BaseRepository
     List<int>? boxId,
     List<int>? groupId,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   }) async {
     return await catchError<AddCameraEntity>(() async {
       final addCameraRTSP = await service.addCameraRTSP(
@@ -128,6 +126,7 @@ class ControlCameraRepository extends BaseRepository
         boxId: boxId,
         groupId: groupId,
         subStreamUrls: subStreamUrls,
+        tagIds: tags?.map((e) => e.id).toList(),
       );
       return Right(addCameraRTSP);
     });
@@ -143,6 +142,7 @@ class ControlCameraRepository extends BaseRepository
     String? xaddr,
     CameraMap? location,
     List<String>? subStreamUrls,
+    Set<TagEntity>? tags,
   }) async {
     return await catchError<CameraEntity>(() async {
       final camera = await service.updateCamera(
@@ -154,15 +154,14 @@ class ControlCameraRepository extends BaseRepository
         xaddr: xaddr,
         location: location?.toMapper(),
         subStreamUrls: subStreamUrls,
+        tagIds: tags?.map((e) => e.id).toList(),
       );
       return Right(camera.toDomain());
     });
   }
 
   @override
-  Future<Either<Failure, List<int>>> deleteCamera({
-    required List<int> cameraId,
-  }) async {
+  Future<Either<Failure, List<int>>> deleteCamera({required List<int> cameraId}) async {
     return await catchError<List<int>>(() async {
       final deletedCameraId = await service.deleteCamera(cameraId: cameraId);
       return Right(deletedCameraId);
@@ -186,27 +185,21 @@ class ControlCameraRepository extends BaseRepository
   }
 
   @override
-  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>>
-  checkAccountShare({
+  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>> checkAccountShare({
     List<int>? cameraId,
     required String account,
     required int shareType,
     List<int>? groupId,
   }) async {
-    return await catchError<({bool isExists, List<int> accountInviteId})>(
-      () async {
-        final reply = await service.checkAccountShare(
-          cameraId: cameraId,
-          account: account,
-          shareType: shareType,
-          groupId: groupId,
-        );
-        return Right((
-          isExists: reply.isExists,
-          accountInviteId: reply.accountInviteId,
-        ));
-      },
-    );
+    return await catchError<({bool isExists, List<int> accountInviteId})>(() async {
+      final reply = await service.checkAccountShare(
+        cameraId: cameraId,
+        account: account,
+        shareType: shareType,
+        groupId: groupId,
+      );
+      return Right((isExists: reply.isExists, accountInviteId: reply.accountInviteId));
+    });
   }
 
   @override
@@ -215,10 +208,7 @@ class ControlCameraRepository extends BaseRepository
     required List<int> groupId,
   }) async {
     return await catchError<List<CameraEntity>>(() async {
-      final cameras = await service.addCameraToGroup(
-        cameraIds: cameraIds,
-        groupId: groupId,
-      );
+      final cameras = await service.addCameraToGroup(cameraIds: cameraIds, groupId: groupId);
       return Right(cameras.map((e) => e.toDomain()).toList());
     });
   }
@@ -229,10 +219,7 @@ class ControlCameraRepository extends BaseRepository
     required List<int> groupId,
   }) async {
     return await catchError<RemoveCameraFromGroupEntity>(() async {
-      final reply = await service.removeCameraFromGroup(
-        cameraIds: cameraId,
-        groupId: groupId,
-      );
+      final reply = await service.removeCameraFromGroup(cameraIds: cameraId, groupId: groupId);
       return Right(reply.toDomain());
     });
   }
@@ -279,6 +266,30 @@ class ControlCameraRepository extends BaseRepository
       final tags = await controlCameraService.getAllTag();
 
       return Right(tags);
+    });
+  }
+
+  @override
+  Future<Either<Failure, TagEntity>> createTag({required TagEntity tag}) async {
+    return await catchError<TagEntity>(() async {
+      final tagResponse = await controlCameraService.createTag(tag: tag);
+      return Right(tagResponse);
+    });
+  }
+
+  @override
+  Future<Either<Failure, List<int>>> deleteTag({required List<int> id}) async {
+    return await catchError<List<int>>(() async {
+      final reply = await controlCameraService.deleteTag(id: id);
+      return Right(reply);
+    });
+  }
+
+  @override
+  Future<Either<Failure, TagEntity>> updateTag({required TagEntity tag}) async {
+    return await catchError<TagEntity>(() async {
+      final tagResponse = await controlCameraService.updateTag(tag: tag);
+      return Right(tagResponse);
     });
   }
 }
