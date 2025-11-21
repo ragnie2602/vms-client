@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_event.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_state.dart';
@@ -18,7 +20,10 @@ Future<T?> showDialogConfig<T>(
     barrierDismissible: false,
     builder: (BuildContext context) {
       return BlocProvider(
-        create: (_) => ScheduleBloc(cameraRepository: context.read()),
+        create: (_) => ScheduleBloc(
+          cameraRepository: context.read(),
+          scheduleRepository: context.read(),
+        ),
         child: ConfigCameraWidget(camera: camera),
       );
     },
@@ -49,9 +54,30 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
     context.read<ScheduleBloc>().add(ChangeTabEvent(tab));
   }
 
+  void _configSchedule({RecordingEntity? newRecording}) {
+    context.read<ScheduleBloc>().add(
+      SubmitNewScheduleRecordEvent(
+        cameraId: widget.camera.id,
+        newRecording: newRecording,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ScheduleBloc, ScheduleState>(
+      listener: (context, state) {
+        if (state is UpdateConfigFailState) {
+          ToastUtil.toastFail(context: context, title: Text(state.message));
+        }
+        if (state is UpdateConfigSuccessState) {
+          ToastUtil.toastSuccess(
+            context: context,
+            title: Text('Lập lịch ghi hình thành công!'),
+          );
+          Navigator.pop(context, state.updatedCamera);
+        }
+      },
       builder: (context, state) {
         if (state is ScheduleLoadingState) {
           return const Center(child: CircularProgressIndicator());
@@ -90,7 +116,7 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
             ),
             content: Container(
               width: MediaQuery.of(context).size.width * 0.65,
-              height: MediaQuery.of(context).size.height * 0.6,
+              height: MediaQuery.of(context).size.height * 0.65,
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(width: 1, color: AppColors.greyE2E8F0),
@@ -173,7 +199,13 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
                             camera: widget.camera,
                             cameraInfo: state.cameraInfo,
                           )
-                        : ScheduleRecordingWidget(camera: widget.camera),
+                        : ScheduleRecordingWidget(
+                            camera: widget.camera,
+                            isSaving: state.isSaving,
+                            onSave: (value) {
+                              _configSchedule(newRecording: value);
+                            },
+                          ),
                   ),
                 ],
               ),
@@ -182,7 +214,6 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
         }
         return const SizedBox.shrink();
       },
-      listener: (context, state) {},
     );
   }
 }
@@ -193,7 +224,7 @@ extension ConfigCameraTabExtension on ConfigCameraTab {
   String get title {
     switch (this) {
       case ConfigCameraTab.generalConfig:
-        return 'Cấu hình chung';
+        return 'Thông tin camera';
       case ConfigCameraTab.scheduleRecording:
         return 'Lập lịch ghi hình';
     }

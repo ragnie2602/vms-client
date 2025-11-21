@@ -223,7 +223,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     required BuildContext configContext,
     required CameraEntity camera,
   }) async {
-    showDialogConfig(configContext, camera: camera);
+    final res = await showDialogConfig(configContext, camera: camera);
+    if (res != null && res is CameraEntity) {
+      if (!mounted) return;
+      context.read<ControlCameraBloc>().add(ReplaceCameraEvent(newCamera: res));
+    }
   }
 
   Future<void> _onShowDialogShareCamera({

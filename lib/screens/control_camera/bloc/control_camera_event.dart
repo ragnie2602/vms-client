@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
@@ -122,6 +123,13 @@ class UpdateCameraEvent extends ControlCameraEvent {
     this.subStreamUrls,
     required this.tags,
   });
+}
+
+class ReplaceCameraEvent extends ControlCameraEvent {
+  final CameraEntity newCamera;
+  const ReplaceCameraEvent({required this.newCamera});
+  @override
+  List<Object?> get props => [newCamera];
 }
 
 class DeleteCameraEvent extends ControlCameraEvent {

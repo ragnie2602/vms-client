@@ -54,6 +54,7 @@ class ControlCameraBloc
     // on<ListShareCameraEvent>(_onListShareCamera);
     // on<DeleteShareCameraEvent>(_onDeleteShareCamera);
     on<RemoveCameraFromGroupEvent>(_onRemoveCameraFromGroup);
+    on<ReplaceCameraEvent>(_onReplaceNewCamera);
 
     on<GetAllTagsEvent>(_onGetAllTags);
     on<CreateTagEvent>(_onCreateTag);
@@ -368,6 +369,21 @@ class ControlCameraBloc
       }
       return <int>[];
     }, (onSuccess) => onSuccess);
+  }
+
+  FutureOr<void> _onReplaceNewCamera(
+    ReplaceCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    // update lại cam theo id
+    listCamera = List<CameraEntity>.from(listCamera);
+    final index = listCamera.indexWhere(
+      (element) => listEquals(element.id, event.newCamera.id),
+    );
+    if (index != -1) {
+      listCamera[index] = event.newCamera;
+      emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)));
+    }
   }
 
   FutureOr<void> _onRemoveCameraFromGroup(
