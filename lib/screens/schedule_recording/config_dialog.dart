@@ -75,7 +75,7 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
             context: context,
             title: Text('Lập lịch ghi hình thành công!'),
           );
-          Navigator.pop(context);
+          Navigator.pop(context, state.updatedCamera);
         }
       },
       builder: (context, state) {

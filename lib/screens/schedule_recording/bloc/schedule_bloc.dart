@@ -81,7 +81,7 @@ class ScheduleBloc extends BaseBloc<ScheduleEvent, ScheduleState> {
         }
       },
       (onSuccess) {
-        emit(UpdateConfigSuccessState());
+        emit(UpdateConfigSuccessState(updatedCamera: onSuccess));
         if (currentState is ScheduleSuccessState) {
           emit(currentState.copyWith(isSaving: false));
         } else {

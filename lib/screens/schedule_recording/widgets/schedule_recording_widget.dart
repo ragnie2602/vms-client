@@ -125,6 +125,7 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
                       turnOnRecording: currentRecord?.turnOnRecording,
                       prefixPath: currentRecord?.prefixPath,
                       typeScheduleRecording: RecordingTypeSchedule.alwaysRecord,
+                      schedules: []
                     );
                     widget.onSave.call(record);
                   },

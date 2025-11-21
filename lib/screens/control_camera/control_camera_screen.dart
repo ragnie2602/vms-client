@@ -185,7 +185,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     required BuildContext configContext,
     required CameraEntity camera,
   }) async {
-    showDialogConfig(configContext, camera: camera);
+    final res = await showDialogConfig(configContext, camera: camera);
+    if (res != null && res is CameraEntity) {
+      if (!mounted) return;
+      context.read<ControlCameraBloc>().add(ReplaceCameraEvent(newCamera: res));
+    }
   }
 
   Future<void> _onShowDialogShareCamera({
@@ -514,109 +518,141 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                         children: [
                           TitleWidget(),
                           Expanded(
-                            child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
-                              buildWhen: (previous, current) =>
-                                  current is ListCameraSuccessState ||
-                                  current is ControlCameraLoadingState ||
-                                  current is ListCameraFailState,
-                              builder: (context, state) {
-                                if (state is ControlCameraLoadingState) {
-                                  return Center(child: CircularProgressIndicator());
-                                } else if (state is ListCameraFailState) {
-                                  return Center(
-                                    child: Text(state.errorMsg, style: AppTypography.style(14)),
-                                  );
-                                }
-                                // case success
-                                final cameras = state is ListCameraSuccessState
-                                    ? state.cameras
-                                    : context.read<ControlCameraBloc>().listCamera;
-
-                                if (cameras.isEmpty) {
-                                  return Center(
-                                    child: Text(
-                                      'Danh sách trống',
-                                      style: AppTypography.style(
-                                        14,
-                                        color: AppColors.black,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return Scrollbar(
-                                  controller: _cameraListController,
-                                  thumbVisibility: true,
-                                  child: ListView.separated(
-                                    controller: _cameraListController,
-                                    primary: false,
-                                    physics: const ClampingScrollPhysics(),
-                                    itemCount: cameras.length,
-                                    itemBuilder: (context, index) => ItemCameraWidget(
-                                      itemCamera: cameras[index],
-                                      index: index + 1,
-                                      onEdit: () {
-                                        showAddCameraRtspDialog(
-                                          context,
-                                          mode: CameraDialogMode.edit,
-                                          cameraData: cameras[index],
-                                          onEdit: (payload) async {
-                                            _onUpdateCamera(
-                                              cameraId: cameras[index].id,
-                                              name: payload.name,
-                                              rtspUrl: payload.rtsp,
-                                              userName: payload.username,
-                                              password: payload.password,
-                                              subStreamUrls: payload.subStreamUrls,
-                                              xaddr: payload.xaddr,
-                                              tags: payload.tags,
-                                            );
-                                          },
-                                          onCheck: (xaddrs, userName, password, boxId) {
-                                            _onCheckOnvif(
-                                              xaddrs: xaddrs,
-                                              userName: userName,
-                                              password: password,
-                                              boxId: boxId,
-                                            );
-                                          },
-                                        );
-                                      },
-                                      onConfig: () async {
-                                        // show dialog config
-                                        await _onShowDialogConfigCamera(
-                                          camera: cameras[index],
-                                          configContext: context,
-                                        );
-                                      },
-                                      onDelete: () => _onDeleteCamera(
-                                        cameraId: cameras[index].id,
-                                        cameraName: cameras[index].name,
-                                      ),
-                                      onShare: () async {
-                                        await _onShowDialogShareCamera(
-                                          c: context,
-                                          camera: cameras[index],
-                                        );
-                                      },
-                                      onRemoveFromGroup: () {
-                                        _showDialogRemoveCameraFromGroup(
-                                          c: context,
-                                          cameraId: cameras[index].id,
-                                          groupOwnerId: cameras[index].groupOwnerId ?? [],
-                                        );
-                                      },
-                                    ),
-                                    separatorBuilder: (BuildContext context, int index) {
-                                      return Padding(
-                                        padding: EdgeInsets.symmetric(horizontal: 15),
-                                        child: Divider(height: 0.5, color: AppColors.greyE2E8F0),
+                            child:
+                                BlocBuilder<
+                                  ControlCameraBloc,
+                                  ControlCameraState
+                                >(
+                                  buildWhen: (previous, current) =>
+                                      current is ListCameraSuccessState ||
+                                      current is ControlCameraLoadingState ||
+                                      current is ListCameraFailState,
+                                  builder: (context, state) {
+                                    if (state is ControlCameraLoadingState) {
+                                      return Center(
+                                        child: CircularProgressIndicator(),
                                       );
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
+                                    } else if (state is ListCameraFailState) {
+                                      return Center(
+                                        child: Text(
+                                          state.errorMsg,
+                                          style: AppTypography.style(14),
+                                        ),
+                                      );
+                                    }
+                                    // case success
+                                    final cameras =
+                                        state is ListCameraSuccessState
+                                        ? state.cameras
+                                        : context
+                                              .read<ControlCameraBloc>()
+                                              .listCamera;
+
+                                    if (cameras.isEmpty) {
+                                      return Center(
+                                        child: Text(
+                                          'Danh sách trống',
+                                          style: AppTypography.style(
+                                            14,
+                                            color: AppColors.black,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return Scrollbar(
+                                      controller: _cameraListController,
+                                      thumbVisibility: true,
+                                      child: ListView.separated(
+                                        controller: _cameraListController,
+                                        primary: false,
+                                        physics: const ClampingScrollPhysics(),
+                                        itemCount: cameras.length,
+                                        itemBuilder: (context, index) =>
+                                            ItemCameraWidget(
+                                              itemCamera: cameras[index],
+                                              index: index + 1,
+                                              onEdit: () {
+                                                showAddCameraRtspDialog(
+                                                  context,
+                                                  mode: CameraDialogMode.edit,
+                                                  cameraData: cameras[index],
+                                                  onEdit: (payload) async {
+                                                    _onUpdateCamera(
+                                                      cameraId:
+                                                          cameras[index].id,
+                                                      name: payload.name,
+                                                      rtspUrl: payload.rtsp,
+                                                      userName:
+                                                          payload.username,
+                                                      password:
+                                                          payload.password,
+                                                      subStreamUrls:
+                                                          payload.subStreamUrls,
+                                                      xaddr: payload.xaddr,
+                                                      tags: payload.tags,
+                                                    );
+                                                  },
+                                                  onCheck:
+                                                      (
+                                                        xaddrs,
+                                                        userName,
+                                                        password,
+                                                        boxId,
+                                                      ) {
+                                                        _onCheckOnvif(
+                                                          xaddrs: xaddrs,
+                                                          userName: userName,
+                                                          password: password,
+                                                          boxId: boxId,
+                                                        );
+                                                      },
+                                                );
+                                              },
+                                              onConfig: () async {
+                                                // show dialog config
+                                                await _onShowDialogConfigCamera(
+                                                  camera: cameras[index],
+                                                  configContext: context,
+                                                );
+                                              },
+                                              onDelete: () => _onDeleteCamera(
+                                                cameraId: cameras[index].id,
+                                                cameraName: cameras[index].name,
+                                              ),
+                                              onShare: () async {
+                                                await _onShowDialogShareCamera(
+                                                  c: context,
+                                                  camera: cameras[index],
+                                                );
+                                              },
+                                              onRemoveFromGroup: () {
+                                                _showDialogRemoveCameraFromGroup(
+                                                  c: context,
+                                                  cameraId: cameras[index].id,
+                                                  groupOwnerId:
+                                                      cameras[index]
+                                                          .groupOwnerId ??
+                                                      [],
+                                                );
+                                              },
+                                            ),
+                                        separatorBuilder:
+                                            (BuildContext context, int index) {
+                                              return Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 15,
+                                                ),
+                                                child: Divider(
+                                                  height: 0.5,
+                                                  color: AppColors.greyE2E8F0,
+                                                ),
+                                              );
+                                            },
+                                      ),
+                                    );
+                                  },
+                                ),
                           ),
                         ],
                       ),

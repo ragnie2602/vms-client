@@ -60,6 +60,7 @@ class _ConfigScheduleRecordWidgetState
     _initCheckAllDay();
     _initGridviewItemValue();
   }
+
   @override
   void dispose() {
     scheduleTimeSelected?.clear();

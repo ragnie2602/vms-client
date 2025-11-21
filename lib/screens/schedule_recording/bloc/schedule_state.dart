@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
 
@@ -58,8 +59,12 @@ class ScheduleErrorState extends ScheduleState {
 }
 
 class UpdateConfigSuccessState extends ScheduleState {
+  final CameraEntity? updatedCamera;
+  const UpdateConfigSuccessState({this.updatedCamera});
   @override
   StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [updatedCamera];
 }
 
 class UpdateConfigFailState extends ScheduleState {
