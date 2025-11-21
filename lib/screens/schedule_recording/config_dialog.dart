@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_event.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_state.dart';
@@ -18,7 +19,10 @@ Future<T?> showDialogConfig<T>(
     barrierDismissible: false,
     builder: (BuildContext context) {
       return BlocProvider(
-        create: (_) => ScheduleBloc(cameraRepository: context.read()),
+        create: (_) => ScheduleBloc(
+          cameraRepository: context.read(),
+          scheduleRepository: context.read(),
+        ),
         child: ConfigCameraWidget(camera: camera),
       );
     },
@@ -47,6 +51,15 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
 
   void _onChangeTab(ConfigCameraTab tab) {
     context.read<ScheduleBloc>().add(ChangeTabEvent(tab));
+  }
+
+  void _configSchedule({RecordingEntity? newRecording}) {
+    context.read<ScheduleBloc>().add(
+      SubmitNewScheduleRecordEvent(
+        cameraId: widget.camera.id,
+        newRecording: newRecording,
+      ),
+    );
   }
 
   @override
@@ -173,7 +186,12 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
                             camera: widget.camera,
                             cameraInfo: state.cameraInfo,
                           )
-                        : ScheduleRecordingWidget(camera: widget.camera),
+                        : ScheduleRecordingWidget(
+                            camera: widget.camera,
+                            onSave: (value) {
+                              _configSchedule(newRecording: value);
+                            },
+                          ),
                   ),
                 ],
               ),
@@ -193,7 +211,7 @@ extension ConfigCameraTabExtension on ConfigCameraTab {
   String get title {
     switch (this) {
       case ConfigCameraTab.generalConfig:
-        return 'Cấu hình chung';
+        return 'Thông tin camera';
       case ConfigCameraTab.scheduleRecording:
         return 'Lập lịch ghi hình';
     }

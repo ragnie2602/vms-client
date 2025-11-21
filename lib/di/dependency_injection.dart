@@ -2,6 +2,7 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
+import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
@@ -41,6 +42,7 @@ class DependencyInjection {
     Provider<CameraService>(create: (context) => CameraService(context.read())),
     Provider<ControlCameraService>(create: (context) => ControlCameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
+    Provider<ScheduleRecordService>(create: (context) => ScheduleRecordService(context.read())),
     Provider<EmapService>(create: (context) => EmapService(context.read(), context.read())),
     Provider<UserService>(create: (context) => UserService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
@@ -59,7 +61,7 @@ class DependencyInjection {
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
     Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
     Provider<IScheduleRepository>(
-      create: (context) => ScheduleRepository(cameraService: context.read()),
+      create: (context) => ScheduleRepository( context.read()),
     ),
     Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
     Provider<IUserManagementRepository>(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_entity.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/button_config_widget.dart';
@@ -11,8 +12,15 @@ import 'package:vms_flutter_client/screens/schedule_recording/widgets/time_slot_
 const int durationTime = 24;
 
 class ConfigScheduleRecordWidget extends StatefulWidget {
-  const ConfigScheduleRecordWidget({super.key, required this.camera});
+  const ConfigScheduleRecordWidget({
+    super.key,
+    required this.camera,
+    required this.onSave,
+  });
+
   final CameraEntity camera;
+  final Function(RecordingEntity?) onSave;
+
   @override
   State<ConfigScheduleRecordWidget> createState() =>
       _ConfigScheduleRecordWidgetState();
@@ -37,6 +45,9 @@ class _ConfigScheduleRecordWidgetState
   // drag state
   bool? _isDraggingToAdd;
   final Set<int> _draggedIndices = {};
+
+  // lưu record
+  RecordingEntity? newRecording;
 
   @override
   void initState() {
@@ -130,6 +141,32 @@ class _ConfigScheduleRecordWidgetState
 
   int getColumnIndex(int gridItem) {
     return gridItem % durationTime;
+  }
+
+  // update record theo các ô được đánh dấu trong gridview
+  void _updateRecord() {
+    final currentRecording = widget.camera.cameraConfig?.recording;
+    List<ScheduleTimeEntity> schedules = [];
+    for (int i = 0; i < listGridviewItemValue.length; i++) {
+      if (listGridviewItemValue[i]) {
+        int rowIndex = getRowIndex(i);
+        int colIndex = getColumnIndex(i);
+        schedules.add(
+          ScheduleTimeEntity(
+            startTime: colIndex,
+            endTime: colIndex + 1,
+            dayRecord: ScheduleTimeDay.values[rowIndex],
+            scheduleTimeEnable: true,
+          ),
+        );
+      }
+    }
+    newRecording = RecordingEntity(
+      turnOnRecording: currentRecording?.turnOnRecording,
+      typeScheduleRecording: currentRecording?.typeScheduleRecording,
+      prefixPath: currentRecording?.prefixPath,
+      schedules: schedules,
+    );
   }
 
   @override
@@ -264,7 +301,12 @@ class _ConfigScheduleRecordWidgetState
             const SizedBox(width: 5),
           ],
         ),
-        ButtonConfigWidget(),
+        ButtonConfigWidget(
+          onSave: () {
+            _updateRecord();
+            widget.onSave.call(newRecording);
+          },
+        ),
       ],
     );
   }

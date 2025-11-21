@@ -1,15 +1,22 @@
+
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/config_schedule_record_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/general_config_camera_widget.dart';
 
 class ScheduleRecordingWidget extends StatefulWidget {
-  const ScheduleRecordingWidget({super.key, required this.camera});
+  const ScheduleRecordingWidget({
+    super.key,
+    required this.camera,
+    required this.onSave,
+  });
   final CameraEntity camera;
+  final Function(RecordingEntity?) onSave;
 
   @override
   State<ScheduleRecordingWidget> createState() =>
@@ -99,7 +106,12 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
             ),
           ),
           typeSelected == RecordingTypeSchedule.customizeRecord
-              ? ConfigScheduleRecordWidget(camera: widget.camera)
+              ? ConfigScheduleRecordWidget(
+                  camera: widget.camera,
+                  onSave: (value) {
+                   widget.onSave.call(value);
+                  },
+                )
               : SizedBox.shrink(),
         ],
       ),

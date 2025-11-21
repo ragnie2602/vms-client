@@ -180,7 +180,7 @@ class AppRouter {
             ),
             BlocProvider(
               create: (context) =>
-                  ScheduleBloc(cameraRepository: context.read()),
+                  ScheduleBloc(cameraRepository: context.read(), scheduleRepository: context.read()),
             ),
             BlocProvider(
               create: (context) => UserManagementBloc(

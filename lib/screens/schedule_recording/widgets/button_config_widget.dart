@@ -1,9 +1,12 @@
+
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
 class ButtonConfigWidget extends StatelessWidget {
-  const ButtonConfigWidget({super.key});
+  const ButtonConfigWidget({super.key, required this.onSave});
+
+  final Function() onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -12,37 +15,47 @@ class ButtonConfigWidget extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(width: 1, color: AppColors.greyE2E8F0),
-            ),
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 40),
-            child: Center(
-              child: Text(
-                'Hủy',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.black,
+          InkWell(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(width: 1, color: AppColors.greyE2E8F0),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 40),
+              child: Center(
+                child: Text(
+                  'Hủy',
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.black,
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 16),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(5),
-              color: AppColors.blue005AA9,
-            ),
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 45),
-            child: Center(
-              child: Text(
-                'Lưu',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.white,
+          InkWell(
+            onTap: () {
+              onSave.call();
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                color: AppColors.blue005AA9,
+              ),
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 45),
+              child: Center(
+                child: Text(
+                  'Lưu',
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.white,
+                  ),
                 ),
               ),
             ),
