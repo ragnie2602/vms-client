@@ -242,7 +242,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
               horizontal: BorderSide(color: AppColors.greyF2F4FA, width: 1),
             ),
           ),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           width: MediaQuery.of(context).size.width * 613 / 1600,
           child: ScrollConfiguration(
             behavior: ScrollConfiguration.of(

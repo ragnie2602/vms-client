@@ -73,7 +73,6 @@ extension AddCameraDialogForm on _AddCameraDialogState {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 12),
         Text(
           'Chọn phương thức thêm camera',
           style: AppTypography.style(
@@ -95,7 +94,6 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           label: 'Thêm bằng file',
           value: AddCameraStep.importFile,
         ),
-        const SizedBox(height: 12),
       ],
     );
   }

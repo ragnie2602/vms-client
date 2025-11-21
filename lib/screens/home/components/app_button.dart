@@ -5,17 +5,11 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 class AppButton extends StatelessWidget {
   const AppButton._(
     this.label,
-
     this.onPressed,
-
     this.filled,
-
     this.fullWidth, {
-
     super.key,
-
     this.child,
-
     this.borderColor,
   });
   final String label;

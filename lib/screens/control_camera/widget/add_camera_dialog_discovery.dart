@@ -6,16 +6,6 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 12),
-        Text(
-          'Dò tìm camera',
-          style: AppTypography.style(
-            16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.black,
-          ),
-        ),
-        const SizedBox(height: 8),
         Text(
           'Nhấn để tìm camera ONVIF trong cùng mạng và thêm vào hệ thống. Vui lòng đảm bảo đã bật camera',
           style: AppTypography.style(
