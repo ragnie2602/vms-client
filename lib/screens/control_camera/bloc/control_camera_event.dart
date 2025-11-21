@@ -133,7 +133,11 @@ class ShareCameraEvent extends ControlCameraEvent {
   final List<int> cameraId;
   final int role; // 0 VIEW, 1 FULL
   final String accountInvite;
-  const ShareCameraEvent({required this.cameraId, required this.role, required this.accountInvite});
+  const ShareCameraEvent({
+    required this.cameraId,
+    required this.role,
+    required this.accountInvite,
+  });
 }
 
 class CheckAccountShareEvent extends ControlCameraEvent {
@@ -189,6 +193,12 @@ class GetAllTagsEvent extends ControlCameraEvent {
 
   @override
   List<Object?> get props => [hashCode];
+}
+
+class FilterTagCameraEvent extends ControlCameraEvent {
+  final String? tagName;
+  final String? keyWord;
+  const FilterTagCameraEvent({this.tagName, this.keyWord});
 }
 
 class CreateTagEvent extends ControlCameraEvent {
