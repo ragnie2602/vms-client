@@ -32,6 +32,14 @@ std::wstring Utf8ToWide(const std::string& s) {
     MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, result.data(), len);
     return result;
 }
+std::string WideToUtf8(const std::wstring& w) {
+    if (w.empty()) return std::string();
+    int len = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    if (len <= 0) return std::string();
+    std::string result(len - 1, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, w.c_str(), -1, &result[0], len, nullptr, nullptr);
+    return result;
+}
 
 // ====================== File Helpers =======================
 bool FileExists(const wchar_t* path) {
@@ -85,38 +93,40 @@ void SendQuitToFFmpeg(DWORD pid) {
 
 // ========================== Main ===========================
 int main(int argc, char* argv[]) {
-    // Args:
-    // 1: flutterPid
-    // 2: ffmpegPid
-    // 3: audioPath
-    // 4: videoPath
-    // 5: outputPath
-    // 6: (optional) logPath
-
-    if (argc < 6) {
-        printf("❌ Invalid args.\nUsage: cleanup_watchdog <flutterPid> <ffmpegPid> <audio> <video> <output> [logPath]\n");
+    // Parse wide command line to preserve Unicode arguments
+    LPWSTR* wargv = nullptr;
+    int wargc = 0;
+    LPWSTR cmdline = GetCommandLineW();
+    wargv = CommandLineToArgvW(cmdline, &wargc);
+    if (!wargv || wargc < 6) {
+        OutputDebugStringW(L"\u274C Invalid args (wide parsing).\nUsage: cleanup_watchdog <flutterPid> <ffmpegPid> <audio> <video> <output> [logPath]\n");
+        if (wargv) LocalFree(wargv);
         return 1;
     }
 
-    int flutterPid = std::stoi(argv[1]);
-    int ffmpegPid  = std::stoi(argv[2]);
+    int flutterPid = _wtoi(wargv[1]);
+    int ffmpegPid  = _wtoi(wargv[2]);
 
-    std::wstring audio  = Utf8ToWide(argv[3]);
-    std::wstring video  = Utf8ToWide(argv[4]);
-    std::wstring output = Utf8ToWide(argv[5]);
+    std::wstring audio  = wargv[3];
+    std::wstring video  = wargv[4];
+    std::wstring output = wargv[5];
 
-    if (argc >= 7) {
-        g_logPath = Utf8ToWide(argv[6]);
+    if (wargc >= 7) {
+        g_logPath = wargv[6];
     }
 
     // Wait for Flutter app to exit
     HANDLE hApp = OpenProcess(SYNCHRONIZE, FALSE, flutterPid);
-    if (!hApp) return 1;
+    if (!hApp) {
+        LocalFree(wargv);
+        return 1;
+    }
 
     while (true) {
         // Check if FFmpeg is still alive
         if (!IsAlive(ffmpegPid)) {
             CloseHandle(hApp);
+            LocalFree(wargv);
             return 0;
         }
 
@@ -127,6 +137,8 @@ int main(int argc, char* argv[]) {
             break; // app exited → cleanup
         }
     }
+
+    LocalFree(wargv);
 
     {
         SYSTEMTIME st;
@@ -193,7 +205,10 @@ int main(int argc, char* argv[]) {
         else
             Log("⚠️ Failed to delete temp audio, err=" + std::to_string(GetLastError()));
     } else {
-        Log("⚠️ Temp files missing, skip merge");
+        // Ghi rõ file nào bị thiếu (in đường dẫn bằng UTF-8)
+        std::string videoPathUtf8 = WideToUtf8(video);
+        std::string audioPathUtf8 = WideToUtf8(audio);
+        Log("⚠️ Temp files missing, skip merge (video=" + videoPathUtf8 + ", audio=" + audioPathUtf8 + ")");
     }
 
     Log("✅ Cleanup complete");

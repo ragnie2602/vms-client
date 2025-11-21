@@ -15,6 +15,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -46,12 +47,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     cameraStatus = null;
   }
 
-  void _onGetListCamera({
-    List<int>? cameraId,
-    int? status,
-    int? ivaType,
-    required BuildContext c,
-  }) {
+  void _onGetListCamera({List<int>? cameraId, int? status, int? ivaType, required BuildContext c}) {
     c.read<ControlCameraBloc>().add(
       GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType),
     );
@@ -61,13 +57,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     c.read<ControlCameraBloc>().add(GetListCameraNoGroupEvent());
   }
 
-  void _onGetCameraInGroup({
-    required List<int> groupId,
-    required BuildContext context,
-  }) {
-    context.read<ControlCameraBloc>().add(
-      GetListCameraInGroupEvent(groupId: groupId),
-    );
+  void _onGetCameraInGroup({required List<int> groupId, required BuildContext context}) {
+    context.read<ControlCameraBloc>().add(GetListCameraInGroupEvent(groupId: groupId));
   }
 
   void _onCheckOnvif({
@@ -77,21 +68,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     List<int>? boxId,
   }) {
     context.read<ControlCameraBloc>().add(
-      CheckOnvifEvent(
-        xaddrs: xaddrs,
-        userName: userName,
-        password: password,
-        boxId: boxId,
-      ),
+      CheckOnvifEvent(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId),
     );
   }
 
   void _onSearch() {
     context.read<ControlCameraBloc>().add(
-      FilterCameraEvent(
-        cameraName: cameraNameController.text,
-        isOnline: cameraStatus?.getValue,
-      ),
+      FilterCameraEvent(cameraName: cameraNameController.text, isOnline: cameraStatus?.getValue),
     );
   }
 
@@ -104,6 +87,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     required List<int> boxId,
     required List<int> groupId,
     required List<String> subStreamUrls,
+    required Set<TagEntity> tags,
   }) {
     context.read<ControlCameraBloc>().add(
       AddCameraRTSPEvent(
@@ -115,6 +99,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         boxId: boxId,
         groupId: groupId,
         subStreamUrls: subStreamUrls,
+        tags: tags,
       ),
     );
   }
@@ -131,6 +116,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     required List<int> groupId,
     required String urn,
     required List<String> subStreamUrls,
+    required Set<TagEntity> tags,
   }) {
     context.read<ControlCameraBloc>().add(
       AddCameraOnvifEvent(
@@ -145,6 +131,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         groupId: groupId,
         urn: urn,
         subStreamUrls: subStreamUrls,
+        tags: tags,
       ),
     );
   }
@@ -158,6 +145,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     CameraMap? location,
     required List<String> subStreamUrls,
     required String xaddr,
+    required Set<TagEntity> tags,
   }) {
     context.read<ControlCameraBloc>().add(
       UpdateCameraEvent(
@@ -169,21 +157,17 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         location: location,
         subStreamUrls: subStreamUrls,
         xaddr: xaddr,
+        tags: tags,
       ),
     );
   }
 
-  void _onDeleteCamera({
-    required List<int> cameraId,
-    required String cameraName,
-  }) {
+  void _onDeleteCamera({required List<int> cameraId, required String cameraName}) {
     showDialogRemoveCameraFromGroup(
       context,
       title: 'camera này khỏi hệ thống?',
       onConfirm: () {
-        context.read<ControlCameraBloc>().add(
-          DeleteCameraEvent(cameraId: cameraId),
-        );
+        context.read<ControlCameraBloc>().add(DeleteCameraEvent(cameraId: cameraId));
       },
     );
   }
@@ -215,9 +199,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     required CameraEntity camera,
   }) async {
     List<InviteMessageEntity>? invites;
-    invites = await c.read<ControlCameraBloc>().getListShareCamera(
-      camId: camera.id,
-    );
+    invites = await c.read<ControlCameraBloc>().getListShareCamera(camId: camera.id);
     if (!c.mounted) return;
 
     showShareGroupCameraDialog(
@@ -225,9 +207,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       shareType: ShareType.camera,
       currentCamera: camera,
       onReloadData: () async {
-        return await c.read<ControlCameraBloc>().getListShareCamera(
-          camId: camera.id,
-        );
+        return await c.read<ControlCameraBloc>().getListShareCamera(camId: camera.id);
       },
       onDeleteShareCamera: (_inviteId, _accName) {
         return context.read<ControlCameraBloc>().deleteShareCamera(
@@ -235,19 +215,14 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           accountB: _accName,
           shareId: _inviteId,
           onToastFail: ({messageFail}) {
-            ToastUtil.toastFail(
-              context: c,
-              title: Text(messageFail ?? 'Thất bại'),
-            );
+            ToastUtil.toastFail(context: c, title: Text(messageFail ?? 'Thất bại'));
           },
         );
       },
       onShareCamera: (_accountNameInvite) {
         return context.read<ControlCameraBloc>().shareCamera(
           camId: camera.id,
-          role: ShareCameraRoleExtension.getShareCameraRoleValue(
-            ShareCameraRole.VIEW,
-          ),
+          role: ShareCameraRoleExtension.getShareCameraRoleValue(ShareCameraRole.VIEW),
           accountInvite: _accountNameInvite,
         );
       },
@@ -287,17 +262,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           // );
         }
         if (state is RemoveCameraFromGroupSuccessState) {
-          ToastUtil.toastSuccess(
-            context: context,
-            title: Text('Xóa thành công'),
-          );
+          ToastUtil.toastSuccess(context: context, title: Text('Xóa thành công'));
         }
         if (state is DeleteCameraSuccessState) {
           _onGetListCamera(c: context);
-          ToastUtil.toastSuccess(
-            context: context,
-            title: Text('Xóa thành công'),
-          );
+          ToastUtil.toastSuccess(context: context, title: Text('Xóa thành công'));
         } else if (state is ListCameraSuccessState) {
           setState(() {});
         }
@@ -327,15 +296,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                 c.read<ControlCameraBloc>().currentGroupId.clear();
                 _onGetListCamera(c: c);
               },
-              onAddCameraToGroup:
-                  ({required c, required cameraIds, required currentGroupId}) {
-                    context.read<ControlCameraBloc>().add(
-                      AddCameraToGroupEvent(
-                        cameraIds: cameraIds,
-                        groupId: currentGroupId,
-                      ),
-                    );
-                  },
+              onAddCameraToGroup: ({required c, required cameraIds, required currentGroupId}) {
+                context.read<ControlCameraBloc>().add(
+                  AddCameraToGroupEvent(cameraIds: cameraIds, groupId: currentGroupId),
+                );
+              },
             ),
           ),
           Flexible(
@@ -383,13 +348,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   },
                                   decoration: InputDecoration(
                                     prefixIcon: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 12,
-                                        horizontal: 12,
-                                      ),
-                                      child: SvgPicture.asset(
-                                        AppAssets.icSearch,
-                                      ),
+                                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                                      child: SvgPicture.asset(AppAssets.icSearch),
                                     ),
 
                                     hintText: 'Nhập tên camera',
@@ -399,17 +359,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                       color: AppColors.grey64748B,
                                     ),
                                     enabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: AppColors.greyE2E8F0,
-                                        width: 1,
-                                      ),
+                                      borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                                       borderRadius: BorderRadius.circular(1),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        color: AppColors.greyE2E8F0,
-                                        width: 1,
-                                      ),
+                                      borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                                       borderRadius: BorderRadius.circular(1),
                                     ),
                                     border: UnderlineInputBorder(),
@@ -441,8 +395,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 height: 41,
                                 onChanged: (p0) {
                                   setState(() {
-                                    if (cameraStatus == p0 ||
-                                        p0 == CameraOnlineChecked.all) {
+                                    if (cameraStatus == p0 || p0 == CameraOnlineChecked.all) {
                                       cameraStatus = null;
                                     } else {
                                       cameraStatus = p0;
@@ -471,8 +424,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                         const SizedBox(width: 25),
                         InkWell(
                           onTap: () {
-                            if (AppData.instance.profile?.addCamDenied ??
-                                false) {
+                            if (AppData.instance.profile?.addCamDenied ?? false) {
                               ToastUtil.toastFail(
                                 context: context,
                                 title: Text(
@@ -503,6 +455,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     boxId: const [],
                                     groupId: const [],
                                     subStreamUrls: payload.subStreamUrls,
+                                    tags: payload.tags,
                                   );
                                 } else {
                                   _onAddCameraOnvif(
@@ -517,6 +470,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     groupId: const [],
                                     urn: '',
                                     subStreamUrls: payload.subStreamUrls,
+                                    tags: payload.tags,
                                   );
                                 }
                               },
@@ -534,16 +488,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
 
                           child: Container(
                             height: 41,
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 12,
-                            ),
+                            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(3),
-                              border: Border.all(
-                                width: 1,
-                                color: AppColors.secondary,
-                              ),
+                              border: Border.all(width: 1, color: AppColors.secondary),
                             ),
                             child: Center(
                               child: Row(
@@ -573,10 +521,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                         borderRadius: BorderRadius.circular(5),
                         color: Colors.white,
                       ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 15,
-                      ),
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,53 +535,47 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   current is ListCameraFailState,
                               builder: (context, state) {
                                 if (state is ControlCameraLoadingState) {
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
+                                  return Center(child: CircularProgressIndicator());
                                 } else if (state is ListCameraFailState) {
                                   return Center(
-                                    child: Text(
-                                      state.errorMsg,
-                                      style: AppTypography.style(14),
-                                    ),
+                                    child: Text(state.errorMsg, style: AppTypography.style(14)),
                                   );
                                 }
                                 // case success
                                 final cameras = state is ListCameraSuccessState
                                     ? state.cameras
-                                    : context
-                                          .read<ControlCameraBloc>()
-                                          .listCamera;
+                                    : context.read<ControlCameraBloc>().listCamera;
 
-                                if (cameras.isEmpty) {
-                                  return Center(
-                                    child: Text(
-                                      'Danh sách trống',
-                                      style: AppTypography.style(
-                                        14,
-                                        color: AppColors.black,
-                                        fontWeight: FontWeight.w400,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                return Scrollbar(
-                                  controller: _cameraListController,
-                                  thumbVisibility: true,
-                                  child: ListView.separated(
-                                    controller: _cameraListController,
-                                    primary: false,
-                                    physics: const ClampingScrollPhysics(),
-                                    itemCount: cameras.length,
-                                    itemBuilder: (context, index) => ItemCameraWidget(
-                                      itemCamera: cameras[index],
-                                      index: index + 1,
-                                      onEdit: () {
-                                        showAddCameraDialog(
-                                          context,
-                                          mode: CameraDialogMode.edit,
-                                          cameraData: cameras[index],
-                                          onCheckDiscovery: () async {
+                                    if (cameras.isEmpty) {
+                                      return Center(
+                                        child: Text(
+                                          'Danh sách trống',
+                                          style: AppTypography.style(
+                                            14,
+                                            color: AppColors.black,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return Scrollbar(
+                                      controller: _cameraListController,
+                                      thumbVisibility: true,
+                                      child: ListView.separated(
+                                        controller: _cameraListController,
+                                        primary: false,
+                                        physics: const ClampingScrollPhysics(),
+                                        itemCount: cameras.length,
+                                        itemBuilder: (context, index) =>
+                                            ItemCameraWidget(
+                                              itemCamera: cameras[index],
+                                              index: index + 1,
+                                              onEdit: () {
+                                                showAddCameraRtspDialog(
+                                                  context,
+                                                  mode: CameraDialogMode.edit,
+                                                  cameraData: cameras[index],
+                                                  onCheckDiscovery: () async {
                                             if (!kIsWeb && Platform.isWindows) {
                                               return Isolate.run(
                                                 CustomOnvifDiscovery.scan,
@@ -644,76 +583,82 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                             }
                                             return CustomOnvifDiscovery.scan();
                                           },
-                                          onEdit: (payload) async {
-                                            _onUpdateCamera(
-                                              cameraId: cameras[index].id,
-                                              name: payload.name,
-                                              rtspUrl: payload.rtsp,
-                                              userName: payload.username,
-                                              password: payload.password,
-                                              subStreamUrls:
-                                                  payload.subStreamUrls,
-                                              xaddr: payload.xaddr,
-                                            );
-                                          },
-                                          onCheck:
-                                              (
-                                                xaddrs,
-                                                userName,
-                                                password,
-                                                boxId,
-                                              ) {
-                                                _onCheckOnvif(
-                                                  xaddrs: xaddrs,
-                                                  userName: userName,
-                                                  password: password,
-                                                  boxId: boxId,
+                                                  onEdit: (payload) async {
+                                                    _onUpdateCamera(
+                                                      cameraId:
+                                                          cameras[index].id,
+                                                      name: payload.name,
+                                                      rtspUrl: payload.rtsp,
+                                                      userName:
+                                                          payload.username,
+                                                      password:
+                                                          payload.password,
+                                                      subStreamUrls:
+                                                          payload.subStreamUrls,
+                                                      xaddr: payload.xaddr,
+                                                      tags: payload.tags,
+                                                    );
+                                                  },
+                                                  onCheck:
+                                                      (
+                                                        xaddrs,
+                                                        userName,
+                                                        password,
+                                                        boxId,
+                                                      ) {
+                                                        _onCheckOnvif(
+                                                          xaddrs: xaddrs,
+                                                          userName: userName,
+                                                          password: password,
+                                                          boxId: boxId,
+                                                        );
+                                                      },
                                                 );
                                               },
-                                        );
-                                      },
-                                      onConfig: () async {
-                                        // show dialog config
-                                        await _onShowDialogConfigCamera(
-                                          camera: cameras[index],
-                                          configContext: context,
-                                        );
-                                      },
-                                      onDelete: () => _onDeleteCamera(
-                                        cameraId: cameras[index].id,
-                                        cameraName: cameras[index].name,
+                                              onConfig: () async {
+                                                // show dialog config
+                                                await _onShowDialogConfigCamera(
+                                                  camera: cameras[index],
+                                                  configContext: context,
+                                                );
+                                              },
+                                              onDelete: () => _onDeleteCamera(
+                                                cameraId: cameras[index].id,
+                                                cameraName: cameras[index].name,
+                                              ),
+                                              onShare: () async {
+                                                await _onShowDialogShareCamera(
+                                                  c: context,
+                                                  camera: cameras[index],
+                                                );
+                                              },
+                                              onRemoveFromGroup: () {
+                                                _showDialogRemoveCameraFromGroup(
+                                                  c: context,
+                                                  cameraId: cameras[index].id,
+                                                  groupOwnerId:
+                                                      cameras[index]
+                                                          .groupOwnerId ??
+                                                      [],
+                                                );
+                                              },
+                                            ),
+                                        separatorBuilder:
+                                            (BuildContext context, int index) {
+                                              return Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: 15,
+                                                ),
+                                                child: Divider(
+                                                  height: 0.5,
+                                                  color: AppColors.greyE2E8F0,
+                                                ),
+                                              );
+                                            },
                                       ),
-                                      onShare: () async {
-                                        await _onShowDialogShareCamera(
-                                          c: context,
-                                          camera: cameras[index],
-                                        );
-                                      },
-                                      onRemoveFromGroup: () {
-                                        _showDialogRemoveCameraFromGroup(
-                                          c: context,
-                                          cameraId: cameras[index].id,
-                                          groupOwnerId:
-                                              cameras[index].groupOwnerId ?? [],
-                                        );
-                                      },
-                                    ),
-                                    separatorBuilder:
-                                        (BuildContext context, int index) {
-                                          return Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 15,
-                                            ),
-                                            child: Divider(
-                                              height: 0.5,
-                                              color: AppColors.greyE2E8F0,
-                                            ),
-                                          );
-                                        },
-                                  ),
-                                );
-                              },
-                            ),
+                                    );
+                                  },
+                                ),
                           ),
                         ],
                       ),

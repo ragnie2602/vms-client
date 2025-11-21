@@ -297,6 +297,7 @@ message ScheduleRecordingCamera // done
   message Reply
   {
     bytes camera_id = 1;
+    Camera camera = 2;
   }
   enum Error
   {

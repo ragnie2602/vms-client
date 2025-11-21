@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/config_schedule_record_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/general_config_camera_widget.dart';
@@ -16,14 +17,18 @@ class ScheduleRecordingWidget extends StatefulWidget {
 }
 
 class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
-  ScheduleRecordType? typeSelected = ScheduleRecordType.always;
+  RecordingTypeSchedule? typeSelected;
 
   // get init data schedule record
   @override
   void initState() {
     super.initState();
+    // init type record
+    typeSelected =
+        widget.camera.cameraConfig?.recording?.typeScheduleRecording ??
+        RecordingTypeSchedule.alwaysRecord;
+    // init data schedule record
   }
-  //
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +66,8 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
                       SizedBox(
                         height: 50,
                         width: 250,
-                        child: CustomCommonDropdown<ScheduleRecordType>(
-                          items: ScheduleRecordType.values,
+                        child: CustomCommonDropdown<RecordingTypeSchedule>(
+                          items: RecordingTypeSchedule.values,
                           value: typeSelected,
                           height: 41,
                           onChanged: (p0) {
@@ -93,24 +98,11 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
               ],
             ),
           ),
-          typeSelected == ScheduleRecordType.customize
-              ? ConfigScheduleRecordWidget()
+          typeSelected == RecordingTypeSchedule.customizeRecord
+              ? ConfigScheduleRecordWidget(camera: widget.camera)
               : SizedBox.shrink(),
         ],
       ),
     );
-  }
-}
-
-enum ScheduleRecordType { always, customize }
-
-extension ScheduleRecordTypeExtension on ScheduleRecordType {
-  String get displayName {
-    switch (this) {
-      case ScheduleRecordType.always:
-        return 'Luôn ghi';
-      case ScheduleRecordType.customize:
-        return 'Tùy chọn';
-    }
   }
 }
