@@ -2,20 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
 class AppButton extends StatelessWidget {
-  const AppButton._(this.label, this.onPressed, this.filled, this.fullWidth, {super.key, this.child});
+  const AppButton._(
+    this.label,
+    this.onPressed,
+    this.filled,
+    this.fullWidth, {
+    super.key,
+    this.child,
+    this.borderColor,
+  });
   final String label;
   final VoidCallback? onPressed;
   final bool filled;
   final Widget? child;
   final bool fullWidth;
+  final Color? borderColor;
 
-  factory AppButton.filled({Key? key, required String label, VoidCallback? onPressed, Widget? child, bool fullWidth = false}) =>
-      AppButton._(label, onPressed, true, fullWidth , key: key, child: child);
-  factory AppButton.outline({Key? key, required String label, VoidCallback? onPressed, bool fullWidth = false}) => AppButton._(label, onPressed, false, fullWidth, key: key);
+  factory AppButton.filled({
+    Key? key,
+    required String label,
+    VoidCallback? onPressed,
+    Widget? child,
+    bool fullWidth = false,
+  }) => AppButton._(label, onPressed, true, fullWidth, key: key, child: child);
+  factory AppButton.outline({
+    Key? key,
+    required String label,
+    VoidCallback? onPressed,
+    bool fullWidth = false,
+    Color? borderColor,
+    Widget? child,
+  }) => AppButton._(
+    label,
+    onPressed,
+    false,
+    fullWidth,
+    key: key,
+    borderColor: borderColor,
+    child: child,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final buttonChild = child ?? Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500));
+    final buttonChild =
+        child ?? Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500));
 
     if (filled) {
       return ElevatedButton(
@@ -35,7 +65,7 @@ class AppButton extends StatelessWidget {
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.black,
-          side: const BorderSide(color: AppColors.greyC3D3D9, width: 1),
+          side: BorderSide(color: borderColor ?? AppColors.greyC3D3D9, width: 1),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           minimumSize: fullWidth ? const Size(double.infinity, 48) : const Size(150, 48),

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:vms_flutter_client/data/mappers/schedule_mapper.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command2.pb.dart';
@@ -14,6 +16,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 extension CameraTypeMapper on pb.CameraType {
   CameraType toDomain() {
@@ -58,11 +61,7 @@ extension CameraStreamPtzRangeValueMapper on pb.CameraStream_PtzRange_range {
 
 extension CameraStreamPtzRangeMapper on pb.CameraStream_PtzRange {
   CameraStreamPtzRange toDomain() {
-    return CameraStreamPtzRange(
-      x: x.toDomain(),
-      y: y.toDomain(),
-      z: z.toDomain(),
-    );
+    return CameraStreamPtzRange(x: x.toDomain(), y: y.toDomain(), z: z.toDomain());
   }
 }
 
@@ -72,8 +71,7 @@ extension CameraStreamDefaultURLMapper on pb.CameraStream_DefaultURL {
   }
 }
 
-extension CameraStreamUrlStreamTypeMapper
-    on pb.CameraStream_UrlStream_StreamType {
+extension CameraStreamUrlStreamTypeMapper on pb.CameraStream_UrlStream_StreamType {
   CameraStreamUrlStreamType toDomain() {
     return CameraStreamUrlStreamType.fromValue(value);
   }
@@ -139,7 +137,10 @@ extension CameraMapper on pb.Camera {
       onvif: onvif.toDomain(),
       cameraRole: role.toDomain(),
       isOnline: on,
-      cameraConfig: config.toDomain()
+      tags: tags
+          .map((e) => TagEntity(id: e.tagId, name: e.tagName, color: Color(int.parse(e.tagColor))))
+          .toSet(),
+      cameraConfig: config.toDomain(),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 class ControlCameraEvent extends BaseEvent {
   const ControlCameraEvent();
@@ -55,6 +56,8 @@ class AddCameraRTSPEvent extends ControlCameraEvent {
   final List<int> boxId;
   final List<int> groupId;
   final List<String> subStreamUrls;
+  final Set<TagEntity> tags;
+
   const AddCameraRTSPEvent({
     required this.name,
     required this.username,
@@ -64,6 +67,7 @@ class AddCameraRTSPEvent extends ControlCameraEvent {
     required this.boxId,
     required this.groupId,
     required this.subStreamUrls,
+    required this.tags,
   });
 }
 
@@ -79,6 +83,8 @@ class AddCameraOnvifEvent extends ControlCameraEvent {
   final List<int> groupId;
   final String urn;
   final List<String> subStreamUrls;
+  final Set<TagEntity> tags;
+
   const AddCameraOnvifEvent({
     required this.rtspUrl,
     required this.serialNumber,
@@ -91,6 +97,7 @@ class AddCameraOnvifEvent extends ControlCameraEvent {
     required this.username,
     required this.password,
     required this.onvifDeviceIp,
+    required this.tags,
   });
 }
 
@@ -103,6 +110,7 @@ class UpdateCameraEvent extends ControlCameraEvent {
   final String? xaddr;
   final CameraMap? location;
   final List<String>? subStreamUrls;
+  final Set<TagEntity> tags;
   const UpdateCameraEvent({
     required this.cameraId,
     this.name,
@@ -112,6 +120,7 @@ class UpdateCameraEvent extends ControlCameraEvent {
     this.xaddr,
     this.location,
     this.subStreamUrls,
+    required this.tags,
   });
 }
 
@@ -124,11 +133,7 @@ class ShareCameraEvent extends ControlCameraEvent {
   final List<int> cameraId;
   final int role; // 0 VIEW, 1 FULL
   final String accountInvite;
-  const ShareCameraEvent({
-    required this.cameraId,
-    required this.role,
-    required this.accountInvite,
-  });
+  const ShareCameraEvent({required this.cameraId, required this.role, required this.accountInvite});
 }
 
 class CheckAccountShareEvent extends ControlCameraEvent {
@@ -184,4 +189,19 @@ class GetAllTagsEvent extends ControlCameraEvent {
 
   @override
   List<Object?> get props => [hashCode];
+}
+
+class CreateTagEvent extends ControlCameraEvent {
+  final TagEntity tag;
+  const CreateTagEvent(this.tag);
+}
+
+class DeleteTagEvent extends ControlCameraEvent {
+  final List<int> id;
+  const DeleteTagEvent(this.id);
+}
+
+class UpdateTagEvent extends ControlCameraEvent {
+  final TagEntity tag;
+  const UpdateTagEvent(this.tag);
 }
