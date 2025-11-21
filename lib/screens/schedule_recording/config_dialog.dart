@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
@@ -65,6 +66,18 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ScheduleBloc, ScheduleState>(
+      listener: (context, state) {
+        if (state is UpdateConfigFailState) {
+          ToastUtil.toastFail(context: context, title: Text(state.message));
+        }
+        if (state is UpdateConfigSuccessState) {
+          ToastUtil.toastSuccess(
+            context: context,
+            title: Text('Lập lịch ghi hình thành công!'),
+          );
+          // Navigator.pop(context);
+        }
+      },
       builder: (context, state) {
         if (state is ScheduleLoadingState) {
           return const Center(child: CircularProgressIndicator());
@@ -200,7 +213,6 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
         }
         return const SizedBox.shrink();
       },
-      listener: (context, state) {},
     );
   }
 }

@@ -49,3 +49,20 @@ class ScheduleErrorState extends ScheduleState {
   @override
   List<Object?> get props => [message];
 }
+
+class UpdateConfigSuccessState extends ScheduleState {
+  @override
+  StateType get type => StateType.success;
+}
+
+class UpdateConfigFailState extends ScheduleState {
+  //
+  final String message;
+  @override
+  StateType get type => StateType.failure;
+
+  const UpdateConfigFailState({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

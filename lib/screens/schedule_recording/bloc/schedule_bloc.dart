@@ -65,8 +65,6 @@ class ScheduleBloc extends BaseBloc<ScheduleEvent, ScheduleState> {
     if (state is ScheduleSuccessState) {
       currentState = state as ScheduleSuccessState;
     }
-    // loading
-    // emit(ScheduleLoadingState());
     // res API
     final newCam = await scheduleRepository.configScheduleRecording(
       cameraId: event.cameraId,
@@ -74,10 +72,12 @@ class ScheduleBloc extends BaseBloc<ScheduleEvent, ScheduleState> {
     );
     newCam.fold(
       (onFailure) {
-        print(onFailure);
+        emit(UpdateConfigFailState(message: onFailure.toString()));
+        emit(currentState);
       },
       (onSuccess) {
-        print(onSuccess);
+        emit(UpdateConfigSuccessState());
+        emit(currentState);
       },
     );
   }
