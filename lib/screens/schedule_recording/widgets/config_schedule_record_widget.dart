@@ -55,8 +55,9 @@ class _ConfigScheduleRecordWidgetState
   @override
   void initState() {
     super.initState();
-    scheduleTimeSelected =
-        widget.camera.cameraConfig?.recording?.schedules ?? [];
+    scheduleTimeSelected = List.from(
+      widget.camera.cameraConfig?.recording?.schedules ?? [],
+    );
     _initCheckAllDay();
     _initGridviewItemValue();
   }
