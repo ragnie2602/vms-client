@@ -50,6 +50,5 @@ begin
   Result := not exists;
 end;
 
-; Khi uninstaller --> Xóa shared_preferences config (%appdata%\CompanyName\ProductName\shared_preferences.json)
 [UninstallDelete]
 Type: files; Name: "{userappdata}\Vivas\VNPT Secure Vision\shared_preferences.json"
