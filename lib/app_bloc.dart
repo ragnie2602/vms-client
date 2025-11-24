@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -62,9 +63,13 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   }
 
   void registerIPCEvents() {
+    if (Platform.isAndroid || Platform.isIOS) return;
+
     _multiWindowEventSubscription?.cancel();
 
-    final mweOuput = subscribeMultiWindowEventUseCase.execute(SubscribeMultiWindowEventInput());
+    final mweOuput = subscribeMultiWindowEventUseCase.execute(
+      SubscribeMultiWindowEventInput(),
+    );
 
     // In case of call the other usecase(s)
     _multiWindowEventSubscription = mweOuput.listen((output) {
@@ -72,7 +77,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     });
   }
 
-  FutureOr<void> _onChangeTheme(ChangeTheme event, Emitter<AppState> emit) async {
+  FutureOr<void> _onChangeTheme(
+    ChangeTheme event,
+    Emitter<AppState> emit,
+  ) async {
     if (state.themeMode == event.themeMode) return;
 
     emit(state.copyWith(themeMode: event.themeMode));
@@ -98,10 +106,17 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       }
     } catch (_) {}
 
-    if (MultiWindowUtil.isMainWindow(windowId)) emit(state.copyWith(nextRoute: Routes.login.name));
+    if (MultiWindowUtil.isMainWindow(windowId)) {
+      emit(state.copyWith(nextRoute: Routes.login.name));
+    }
   }
 
-  FutureOr<void> _onCreateNewWindow(CreateNewWindow event, Emitter<AppState> emit) async {
+  FutureOr<void> _onCreateNewWindow(
+    CreateNewWindow event,
+    Emitter<AppState> emit,
+  ) async {
+    if (Platform.isAndroid || Platform.isIOS) return;
+
     final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
     await sendMultiWindowEventUseCase.execute(
       SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
@@ -116,7 +131,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     output.windowController.show();
   }
 
-  FutureOr<void> _onDisposePlayer(DisposePlayer event, Emitter<AppState> emit) async {
+  FutureOr<void> _onDisposePlayer(
+    DisposePlayer event,
+    Emitter<AppState> emit,
+  ) async {
     if (event.sequentialMode) {
       await event.player.dispose();
     } else {
@@ -129,12 +147,15 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     Emitter<AppState> emit,
   ) async {
     if (event.multiWindowEvent is MWECloseWindow) {
-      final bSourceID = (event.multiWindowEvent as MWECloseWindow).windowId; // business ID
+      final bSourceID =
+          (event.multiWindowEvent as MWECloseWindow).windowId; // business ID
       MultiWindowUtil.clearWindowSetting(bSourceID);
 
       if (MultiWindowUtil.hasClosedAll()) {
-        await windowManager.setPreventClose(false);
-        windowManager.close();
+        if (!Platform.isAndroid && !Platform.isIOS) {
+          await windowManager.setPreventClose(false);
+          windowManager.close();
+        }
       }
     }
     if (event.multiWindowEvent is MWESignOut) {
@@ -144,11 +165,14 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         emit(state.copyWith(isSignOut: false)); // Avoid equatable mistake
         emit(state.copyWith(isSignOut: true));
       } else {
-        await windowManager.setPreventClose(false);
-        windowManager.close();
+        if (!Platform.isAndroid && !Platform.isIOS) {
+          await windowManager.setPreventClose(false);
+          windowManager.close();
+        }
       }
     }
-    if (event.multiWindowEvent is MWEProfileReady) emit(state.copyWith(profileReady: true));
+    if (event.multiWindowEvent is MWEProfileReady)
+      emit(state.copyWith(profileReady: true));
     if (event.multiWindowEvent is MWERestoreMonitorMode) {
       final restoreData = event.multiWindowEvent as MWERestoreMonitorMode;
 
@@ -168,7 +192,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     ToggleMonitorDisplayMode event,
     Emitter<AppState> emit,
   ) async {
-    emit(state.copyWith(displayFullScreenLiveView: !state.displayFullScreenLiveView));
+    emit(
+      state.copyWith(
+        displayFullScreenLiveView: !state.displayFullScreenLiveView,
+      ),
+    );
   }
 
   FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) async {
@@ -176,10 +204,19 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
     AppData.instance.profile = null;
 
-    sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      sendMultiWindowEventUseCase.execute(
+        SendMultiWindowEventInput(-1, 'sign_out'),
+      );
+    }
   }
 
-  FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) async {
+  FutureOr<void> _onChangeSettingWindow(
+    ChangeSettingWindow event,
+    Emitter<AppState> emit,
+  ) async {
+    if (Platform.isAndroid || Platform.isIOS) return;
+
     final rect = await windowManager.getBounds();
     sendMultiWindowEventUseCase.execute(
       SendMultiWindowEventInput(
@@ -196,46 +233,71 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     );
   }
 
-  FutureOr<void> _onCloseWindow(CloseWindow event, Emitter<AppState> emit) async {
+  FutureOr<void> _onCloseWindow(
+    CloseWindow event,
+    Emitter<AppState> emit,
+  ) async {
     if (MultiWindowUtil.isMainWindow(windowId)) {
       await MultiWindowUtil.save();
 
       MultiWindowUtil.clearWindowSetting(windowId);
 
-      for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
-        WindowController.fromWindowId(subWindowId).close();
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
+          WindowController.fromWindowId(subWindowId).close();
+        }
       }
 
       // Need to call here because it can be no sub-window to send message to main window
       if (MultiWindowUtil.hasClosedAll()) {
+        if (!Platform.isAndroid && !Platform.isIOS) {
+          await windowManager.setPreventClose(false);
+          windowManager.close();
+        }
+      }
+    } else {
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        await sendMultiWindowEventUseCase.execute(
+          SendMultiWindowEventInput(
+            0,
+            'close_window',
+            data: {'windowId': windowId},
+          ),
+        );
+
         await windowManager.setPreventClose(false);
         windowManager.close();
       }
-    } else {
-      await sendMultiWindowEventUseCase.execute(
-        SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
-      );
-
-      await windowManager.setPreventClose(false);
-      windowManager.close();
     }
   }
 
-  FutureOr<void> _onReopenSubWindow(ReopenSubWindow event, Emitter<AppState> emit) async {
+  FutureOr<void> _onReopenSubWindow(
+    ReopenSubWindow event,
+    Emitter<AppState> emit,
+  ) async {
+    if (Platform.isAndroid || Platform.isIOS) return;
+
     MultiWindowUtil.init();
 
     if (MultiWindowUtil.isMainWindow(windowId)) {
-      final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: windowId);
+      final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(
+        suggestWindowID: windowId,
+      );
       reopenViewId = setting.id;
       reopenViewMode = setting.viewMode.value;
       isDefaultMode = setting.isDefaultMode;
 
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
       for (var i = 1; i <= subWindowCount; i++) {
-        final output = await createNewWindowUseCase.execute(CreateNewWindowInput(windowID: i));
+        final output = await createNewWindowUseCase.execute(
+          CreateNewWindowInput(windowID: i),
+        );
         output.windowController.show().then((_) async {
           await sendMultiWindowEventUseCase.execute(
-            SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
+            SendMultiWindowEventInput(
+              output.windowController.windowId,
+              'profile',
+            ),
           );
           await sendMultiWindowEventUseCase.execute(
             SendMultiWindowEventInput(
@@ -249,8 +311,13 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     }
   }
 
-  FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) async {
-    emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
+  FutureOr<void> _onMyProfileChanged(
+    MyProfileInfoChanged event,
+    Emitter<AppState> emit,
+  ) async {
+    emit(
+      state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch),
+    );
   }
 }
 
