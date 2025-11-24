@@ -83,9 +83,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
   @override
   void initState() {
     _state.addListener(() => _tryReconnecting(_state.value.isError));
-    if (widget.onStatusChanged != null) {
-      _status.addListener(() => widget.onStatusChanged?.call(_status.value));
-    }
+    _status.addListener(() => widget.onStatusChanged?.call(_status.value));
 
     _initZoom();
     _attachController();
