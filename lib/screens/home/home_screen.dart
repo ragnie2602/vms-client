@@ -10,13 +10,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: PlatformBuilder.builder(
-          onDesktop: (context) => HomeDesktopLayout(content: body),
-          onMobile: (context) => HomeMobileLayout(content: body),
-        ),
-      ),
+    return PlatformBuilder.builder(
+      onDesktop: (context) => HomeDesktopLayout(content: body),
+      onMobile: (context) => HomeMobileLayout(content: body),
     );
   }
 }
