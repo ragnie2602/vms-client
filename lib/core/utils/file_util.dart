@@ -1,11 +1,9 @@
 // ignore_for_file: depend_on_referenced_packages, unused_import
 
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -27,32 +25,6 @@ class FileUtil {
     'WEBM': XTypeGroup(label: 'webm', extensions: <String>['webm']),
     'M3U8': XTypeGroup(label: 'm3u8', extensions: <String>['m3u8']),
   };
-
-  /// Convert raw RGBA snapshot bytes to displayable PNG
-  static img.Image rgbaToImage(Uint8List rgbaBytes, int width, int height) {
-    return img.Image.fromBytes(
-      width: width,
-      height: height,
-      bytes: rgbaBytes.buffer,
-      order: img.ChannelOrder.rgba,
-    );
-  }
-
-  static Future<void> saveImageToSelectedLocation(
-    Uint8List data, {
-    String fileName = 'image',
-    String extension = 'JPG',
-  }) async {
-    final result = await getSaveLocation(
-      acceptedTypeGroups: [_typeGroupMapper[extension.toUpperCase()] ?? _typeGroupMapper['JPG']!],
-      suggestedName: fileName,
-    );
-    if (result == null) return;
-
-    await File(
-      '${result.path}.${result.activeFilter?.extensions?.firstOrNull ?? 'jpg'}',
-    ).writeAsBytes(data);
-  }
 
   static Future<String?> selectFolderLocation({String? title, String? initialPath}) async {
     return await FilePicker.platform.getDirectoryPath(

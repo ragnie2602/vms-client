@@ -37,10 +37,9 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
                 onTap: () => context
                     .read<CameraDetailBloc>()
                     .state
-                    .cameraDetailController
-                    .ref
-                    .currentState
-                    ?.jumpToDateQueue(playback.startTime, dateIndex: index),
+                    .playerController
+                    .jumpToDate
+                    ?.call(playback.startTime, dateIndex: index),
                 child: PlaybackItem(
                   maxWidth: maxWidth,
                   playback: playback,

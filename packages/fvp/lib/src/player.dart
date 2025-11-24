@@ -303,6 +303,8 @@ class Player {
 
   /// Set media, can be url, file path, assets://path etc.
   set media(String value) {
+    if (_isDisposed) return;
+
     if (_media != value) {
       if (!_videoSize.isCompleted) {
         _videoSize.complete(null);
@@ -362,6 +364,8 @@ class Player {
   /// Set playback state to start, pause and stop the media.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setstateplaybackstate-value
   set state(PlaybackState value) {
+    if (_isDisposed) return;
+
     _state = value;
     _player.ref.setState.asFunction<void Function(Pointer<mdkPlayer>, int)>()(
         _player.ref.object, value.rawValue);
