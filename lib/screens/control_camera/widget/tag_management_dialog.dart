@@ -126,7 +126,7 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
                 ),
         ),
       ),
-      contentPadding: EdgeInsets.only(bottom: 10, left: 24, right: 24, top: 24),
+      contentPadding: EdgeInsets.only(bottom: 10, left: 24, right: 8, top: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: Container(
         decoration: BoxDecoration(
@@ -220,7 +220,7 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
             border: Border.all(color: AppColors.greyE2E8F0),
             borderRadius: BorderRadius.circular(8),
           ),
-          margin: EdgeInsets.only(top: 10),
+          margin: EdgeInsets.only(right: widget.tag != null ? 16 : 0, top: 10),
           padding: EdgeInsets.all(12),
           child: Row(
             children: [
