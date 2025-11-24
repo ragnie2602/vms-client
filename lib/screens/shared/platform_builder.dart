@@ -5,14 +5,14 @@ enum PlatformStyle { material, cupertino }
 
 enum PlatformType { android, ios, macos, windows, web }
 
-class PlatformWidget extends StatelessWidget {
-  const PlatformWidget._internal({super.key, this.onDesktop, this.onMobile});
+class PlatformBuilder extends StatelessWidget {
+  const PlatformBuilder._internal({super.key, this.onDesktop, this.onMobile});
 
-  factory PlatformWidget.builder({
+  factory PlatformBuilder.builder({
     Key? key,
     required Function(BuildContext) onDesktop,
     required Function(BuildContext) onMobile,
-  }) => PlatformWidget._internal(
+  }) => PlatformBuilder._internal(
     key: key,
     onDesktop: onDesktop,
     onMobile: onMobile,
@@ -24,11 +24,12 @@ class PlatformWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (defaultTargetPlatform) {
-      TargetPlatform.android ||
-      TargetPlatform.iOS => onMobile?.call(context) ?? _error(),
-      TargetPlatform.linux ||
-      TargetPlatform.macOS ||
-      TargetPlatform.windows => onDesktop?.call(context) ?? _error(),
+      (TargetPlatform.android || TargetPlatform.iOS) =>
+        onMobile?.call(context) ?? _error(),
+      (TargetPlatform.linux ||
+          TargetPlatform.macOS ||
+          TargetPlatform.windows) =>
+        onDesktop?.call(context) ?? _error(),
       _ => _error("Unsupported platform ($defaultTargetPlatform)"),
     };
   }
