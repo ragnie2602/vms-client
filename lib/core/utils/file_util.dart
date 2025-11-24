@@ -28,30 +28,16 @@ class FileUtil {
     'M3U8': XTypeGroup(label: 'm3u8', extensions: <String>['m3u8']),
   };
 
-  /// Convert raw RGBA snapshot bytes to displayable PNG
-  static img.Image rgbaToImage(Uint8List rgbaBytes, int width, int height) {
-    return img.Image.fromBytes(
+  /// Convert raw RGBA snapshot bytes to displayable JPG
+  static Uint8List rawRGBAToJPGBytes(Uint8List rgbaBytes, int width, int height) {
+    final image = img.Image.fromBytes(
       width: width,
       height: height,
       bytes: rgbaBytes.buffer,
       order: img.ChannelOrder.rgba,
     );
-  }
 
-  static Future<void> saveImageToSelectedLocation(
-    Uint8List data, {
-    String fileName = 'image',
-    String extension = 'JPG',
-  }) async {
-    final result = await getSaveLocation(
-      acceptedTypeGroups: [_typeGroupMapper[extension.toUpperCase()] ?? _typeGroupMapper['JPG']!],
-      suggestedName: fileName,
-    );
-    if (result == null) return;
-
-    await File(
-      '${result.path}.${result.activeFilter?.extensions?.firstOrNull ?? 'jpg'}',
-    ).writeAsBytes(data);
+    return img.encodeJpg(image);
   }
 
   static Future<String?> selectFolderLocation({String? title, String? initialPath}) async {

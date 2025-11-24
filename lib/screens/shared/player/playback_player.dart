@@ -1,130 +1,69 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:media_kit/media_kit.dart';
+import 'package:media_kit/media_kit.dart' hide PlayerState;
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
-import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
-import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
-
-// ignore: depend_on_referenced_packages
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 
-import 'player_full_screen.dart';
+import 'components/dual_task_queue.dart';
+import 'player_controller.dart';
+import 'components/fullscreen_portal.dart';
 
-enum PlayerMode { liveview, playlist }
-
-// error2 <=> error (để trigger được listener khi từ error --> error)
-enum _PlayerState { initializing, initialized, empty, error, error2 }
-
-class CameraDetailController {
-  GlobalKey<CameraDetailPlayerState> ref = GlobalKey();
-
-  Function(int)? onPlaybackChanged;
-  Function(DateTime, [bool])? onTimeChanged;
-}
-
-class CameraDetailPlayer extends StatefulWidget {
-  const CameraDetailPlayer({
-    super.key,
+class PlaybackPlayer extends StatefulWidget {
+  PlaybackPlayer({
     required this.playlist,
     required this.name,
-    required this.mode,
-    required this.source,
     this.initialIndex = 0,
     required this.controller,
     this.onStatusChanged,
     this.onInitializedValues,
     this.onLostConnection,
-  });
+    this.labelBuilder,
+    this.enableZoom = false,
+  }) : super(key: controller.ref);
+
   final List<PlaybackVideo> playlist;
-  final String source;
   final String name;
-  final PlayerMode mode;
   final int initialIndex;
-  final CameraDetailController controller;
+  final PlayerController controller;
   final Function(PlayerStatus)? onStatusChanged;
   final Function({required double volume, required double speed})? onInitializedValues;
   final Function()? onLostConnection;
-
-  factory CameraDetailPlayer.playlist({
-    required List<PlaybackVideo> playlist,
-    required String name,
-    required int initialIndex,
-    required CameraDetailController controller,
-    Function(PlayerStatus)? onStatusChanged,
-    Function({required double volume, required double speed})? onInitializedValues,
-    Function()? onLostConnection,
-  }) {
-    return CameraDetailPlayer(
-      playlist: playlist,
-      name: name,
-      mode: PlayerMode.playlist,
-      source: '',
-      initialIndex: initialIndex,
-      controller: controller,
-      key: controller.ref,
-      onStatusChanged: onStatusChanged,
-      onInitializedValues: onInitializedValues,
-      onLostConnection: onLostConnection,
-    );
-  }
-
-  factory CameraDetailPlayer.liveview({
-    required String source,
-    required String name,
-    required CameraDetailController controller,
-    Function(PlayerStatus)? onStatusChanged,
-    Function({required double volume, required double speed})? onInitializedValues,
-    Function()? onLostConnection,
-  }) {
-    return CameraDetailPlayer(
-      playlist: [],
-      source: source,
-      name: name,
-      mode: PlayerMode.liveview,
-      controller: controller,
-      key: controller.ref,
-      onStatusChanged: onStatusChanged,
-      onInitializedValues: onInitializedValues,
-      onLostConnection: onLostConnection,
-    );
-  }
+  final Function(String name)? labelBuilder;
+  final bool enableZoom;
 
   @override
-  State<CameraDetailPlayer> createState() => CameraDetailPlayerState();
+  State<PlaybackPlayer> createState() => PlaybackPlayerState();
 }
 
-class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProviderStateMixin {
+class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderStateMixin {
   final GlobalKey<VideoState> _videoKey = GlobalKey();
 
-  late final zoomController = TransformationController();
-  late final AnimationController _zoomAnimationController;
+  TransformationController? _zoomController;
+  AnimationController? _zoomAnimationController;
   Animation<double>? _zoomAnimation;
 
   late final Player _player;
-  Player? _audioPlayer;
   late final VideoController _controller;
 
-  late String name = widget.name;
-
   final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
-  final ValueNotifier<_PlayerState> _state = ValueNotifier(_PlayerState.initializing);
+  final ValueNotifier<PlayerState> _state = ValueNotifier(PlayerState.initializing);
   final ValueNotifier<bool> _isSeeking = ValueNotifier(false);
 
   late int _playlistIndex;
   bool _shouldSyncPlayerTime = true;
   Timer? _reconnectingTimer;
-  Timer? _lostConnectionTimer;
   Duration _lastDuration = Duration.zero;
 
   StreamSubscription<Duration>? _positionSub;
@@ -135,21 +74,18 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
   PlaybackVideo get currentPlayback => widget.playlist[_playlistIndex];
   int get initialIndex => widget.initialIndex;
-  bool get isInitialized => _state.value == _PlayerState.initialized;
-  String get _disconnectedMessage => "Liveview '${widget.name}' disconnected";
-  LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
   @override
   void initState() {
+    _initZoom();
+    _attachController();
     _playlistIndex = widget.initialIndex;
 
     if (widget.onStatusChanged != null) {
-      _status.addListener(() {
-        widget.onStatusChanged?.call(_status.value);
-      });
+      _status.addListener(() => widget.onStatusChanged?.call(_status.value));
     }
 
-    _state.addListener(() => _tryReconnecting(_state.value == _PlayerState.error));
+    _state.addListener(() => _tryReconnecting(_state.value.isError));
 
     super.initState();
     _zoomAnimationController = AnimationController(vsync: this, duration: Durations.medium1);
@@ -158,41 +94,55 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onInitializedValues?.call(volume: _player.state.volume, speed: _player.state.rate);
-
-      if (widget.mode == PlayerMode.playlist) {
-        widget.controller.onPlaybackChanged?.call(_playlistIndex);
-        widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
-      }
+      widget.controller.onPlaybackChanged?.call(_playlistIndex);
+      widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
     });
   }
 
   @override
   void dispose() {
-    _queue.dispose();
+    _dualQueue.dispose();
     _playingSub?.cancel();
     _positionSub?.cancel();
     _playlistSub?.cancel();
     _completedSub?.cancel();
     _errorSub?.cancel();
     _reconnectingTimer?.cancel();
-    _lostConnectionTimer?.cancel();
     _player.dispose();
-    _audioPlayer?.dispose();
     _status.dispose();
     _state.dispose();
-    _zoomAnimationController.dispose();
-    zoomController.dispose();
+    _zoomAnimationController?.dispose();
+    _zoomController?.dispose();
     _isSeeking.dispose();
     super.dispose();
   }
 
   @override
-  void didUpdateWidget(covariant CameraDetailPlayer oldWidget) {
+  void didUpdateWidget(covariant PlaybackPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    name = widget.name;
-    if (widget.mode == PlayerMode.liveview && oldWidget.source != widget.source) {
-      _onOpenPlayer();
+    if (widget.enableZoom != oldWidget.enableZoom) _initZoom();
+    _attachController();
+  }
+
+  void _initZoom() {
+    _zoomController?.dispose();
+    _zoomAnimationController?.dispose();
+    if (widget.enableZoom) {
+      _zoomController = TransformationController();
+      _zoomAnimationController = AnimationController(vsync: this, duration: Durations.medium1);
     }
+  }
+
+  void _attachController() {
+    widget.controller.changeVolume = changeVolume;
+    widget.controller.seek = seek;
+    widget.controller.changeSpeed = changeSpeed;
+    widget.controller.togglePlay = togglePlay;
+    widget.controller.snapshot = snapshot;
+    widget.controller.zoom = zoom;
+    widget.controller.toggleFullscreen = toggleFullscreen;
+    widget.controller.jumpToDate = jumpToDateQueue;
+    widget.controller.isInitialized = isInitialized;
   }
 
   Future<void> _initPlayer() async {
@@ -200,14 +150,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
     // Initialize player
     _player = Player(
-      configuration: PlayerConfiguration(
-        title: widget.name,
-        bufferSize: widget.mode == PlayerMode.liveview ? 1 : 3 * 1024 * 1024,
-      ),
+      configuration: PlayerConfiguration(title: widget.name, bufferSize: 3 * 1024 * 1024),
     );
-    if (widget.mode == PlayerMode.liveview && audioSourceMode.isSplit) {
-      _audioPlayer = Player(configuration: PlayerConfiguration(bufferSize: 1));
-    }
     _controller = VideoController(_player);
 
     // Open player
@@ -225,32 +169,20 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
 
       // Lỗi --> stop --> position = 0
       // case đang show lỗi - hiển thị màn đen --> vài s sau lại hiển thị lỗi -- <lặp lại>
-      if (_player.state.position != Duration.zero && _state.value == _PlayerState.error) {
-        _state.value = _PlayerState.initialized;
+      if (_player.state.position != Duration.zero && _state.value == PlayerState.error) {
+        _state.value = PlayerState.initialized;
       }
     });
   }
 
   Future<void> _onOpenPlayer({Duration? position, bool showLoading = true}) async {
-    _state.value = showLoading ? _PlayerState.initializing : _PlayerState.error2;
+    _state.value = showLoading ? PlayerState.initializing : PlayerState.error_again;
 
-    if (widget.mode == PlayerMode.playlist) {
-      await _player.open(
-        Playlist(widget.playlist.map((e) => Media(e.urlPlayback)).toList(), index: _playlistIndex),
-      );
-
-      await _player.setPlaylistMode(PlaylistMode.none);
-      if (position != null) await _waitForBufferingAndSeek(position, timeout: 30);
-    } else {
-      await _player.open(Media(widget.source));
-      if (audioSourceMode.isOff) {
-        await _player.setAudioTrack(AudioTrack.no());
-      } else if (audioSourceMode.isSplit) {
-        await _player.setAudioTrack(AudioTrack.no());
-        await _audioPlayer?.open(Media(widget.source));
-        await _audioPlayer?.setVideoTrack(VideoTrack.no());
-      }
-    }
+    await _player.open(
+      Playlist(widget.playlist.map((e) => Media(e.urlPlayback)).toList(), index: _playlistIndex),
+    );
+    await _player.setPlaylistMode(PlaylistMode.none);
+    if (position != null) await _waitForBufferingAndSeek(position, timeout: 30);
 
     try {
       final size = await Future.wait([
@@ -258,26 +190,28 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
         _player.stream.height.firstWhere((height) => height != null),
       ]).timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT, onTimeout: () => [null, null]);
 
-      if (size[0] != null && size[1] != null) {
-        _state.value = _PlayerState.initialized;
-      } else {
-        _state.value = _PlayerState.error;
-      }
+      _state.value = (size[0] != null && size[1] != null)
+          ? PlayerState.initialized
+          : PlayerState.error;
     } catch (e) {
       // Case stream bị dispose bên thư viện (đổi cam ...) --> Error "Bad state: No element"
-      if (mounted) _state.value = _PlayerState.error;
+      if (mounted) _state.value = PlayerState.error;
     }
   }
 
-  String? _lastError;
+  final List<String> _loggedErrors = [];
   void _onError(String error) {
-    _state.value = _PlayerState.error;
+    _state.value = PlayerState.error;
     _player.stop();
-    _audioPlayer?.stop();
 
-    Logger.error(error, writeLog: _lastError != error && _lastError != _disconnectedMessage);
-    _lastError = error;
     widget.onLostConnection?.call();
+
+    if (!_loggedErrors.contains(error)) {
+      _loggedErrors.add(error);
+      Logger.error(error, writeLog: true);
+    } else {
+      Logger.error(error, writeLog: false);
+    }
   }
 
   void _onCompleted(bool completed) {
@@ -287,18 +221,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   }
 
   void _onPositionChanged(Duration position) {
-    if (widget.mode == PlayerMode.liveview && _audioPlayer != null) {
-      _audioPlayer?.seek(position);
-    }
-
-    if (_state.value != _PlayerState.error) {
-      if (_lastDuration != position && widget.mode == PlayerMode.liveview) {
-        _debounceConnectionLost();
-      }
-      _lastDuration = position;
-    }
-
-    if (_shouldSyncPlayerTime == true && widget.mode == PlayerMode.playlist) {
+    if (_shouldSyncPlayerTime == true) {
       widget.controller.onTimeChanged?.call(currentPlayback.startTime.add(position).roundToSecond);
     }
   }
@@ -306,7 +229,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   void _onPlaylistChanged(Playlist playlist) {
     // Delay một chút do nhiều lúc stop không kịp nên index bị nhảy lên 1
     Future.delayed(Durations.short3, () {
-      if (_state.value == _PlayerState.error) return;
+      if (_state.value == PlayerState.error) return;
 
       _playlistIndex = playlist.index;
       widget.controller.onPlaybackChanged?.call(_playlistIndex);
@@ -325,24 +248,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     });
   }
 
-  void _debounceConnectionLost() {
-    _lostConnectionTimer?.cancel();
-    _lostConnectionTimer = Timer(AppConfig.PLAYER_DISCONNECTION_THRESHOLD, () {
-      // Dừng hoặc hết video
-      if (!mounted ||
-          widget.mode != PlayerMode.liveview ||
-          _status.value == PlayerStatus.finished ||
-          _status.value == PlayerStatus.paused ||
-          _state.value == _PlayerState.error) {
-        return;
-      }
-
-      Logger.warn(_disconnectedMessage);
-      _onError(_disconnectedMessage);
-    });
-  }
-
-  late final AsyncJobQueue _queue = AsyncJobQueue();
+  late final DualTaskQueue _dualQueue = DualTaskQueue();
   bool _newestIsEmpty = false;
   Future<void> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
     _shouldSyncPlayerTime = _newestIsEmpty = false;
@@ -354,17 +260,17 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     if (index == null) {
       _isSeeking.value = false;
       _newestIsEmpty = true;
-      _state.value = _PlayerState.empty;
+      _state.value = PlayerState.empty;
       await _player.pause();
-      await _queue.cancelAndReset();
+      await _dualQueue.cancelAndReset();
       return;
     }
 
-    _queue.add(() async {
+    _dualQueue.add(() async {
       await _jumpToDate(date, dateIndex: index);
 
       // Spam click và sau đó click ra ngoài --> bị nhảy về cái trước đó
-      if (_queue._nextJob == null && !_newestIsEmpty) {
+      if (_dualQueue.nextJobIsEmpty && !_newestIsEmpty) {
         _shouldSyncPlayerTime = true;
         _isSeeking.value = false;
       }
@@ -377,13 +283,13 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     // Click ngoài khoảng playback
     if (index == null) {
       widget.controller.onPlaybackChanged?.call(-1);
-      _state.value = _PlayerState.empty;
+      _state.value = PlayerState.empty;
       await _player.pause();
       return;
     }
 
-    if (_state.value == _PlayerState.empty) {
-      _state.value = _PlayerState.initialized;
+    if (_state.value == PlayerState.empty) {
+      _state.value = PlayerState.initialized;
       // đổi initialized trước play do có thể bị đổi từ error --> initialized
       await _player.play();
     }
@@ -406,7 +312,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   }
 
   Future<void> _waitForBufferingAndSeek(Duration diff, {int timeout = 60}) async {
-    if (_state.value != _PlayerState.error) {
+    if (_state.value != PlayerState.error) {
       try {
         // Đợi tới khi buffering xong (đã chuyển playback) --> Không bị delay + seeking = false chuẩn
         await _player.stream.buffering
@@ -427,6 +333,8 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   Future<Uint8List?> snapshot({String? format = 'image/jpeg'}) {
     return _player.screenshot(format: format);
   }
+
+  bool isInitialized() => _state.value == PlayerState.initialized;
 
   Future<void> seek(Duration duration) async {
     final _duration = _player.state.position + duration;
@@ -454,30 +362,24 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     }
   }
 
-  Future<void> changeVolume(double volume) async {
-    if (widget.mode == PlayerMode.liveview && _audioPlayer != null && audioSourceMode.isSplit) {
-      await _audioPlayer?.setVolume(volume);
-    } else {
+  // Dual task queue
+  void changeVolume(double volume) {
+    _dualQueue.add(() async {
       await _player.setVolume(volume);
-    }
+    });
   }
 
   Future<void> togglePlay() async {
-    _shouldSyncPlayerTime = false;
     if (_status.value == PlayerStatus.playing) {
       await _player.pause();
-      if (widget.mode == PlayerMode.liveview) await _audioPlayer?.pause();
       _status.value = PlayerStatus.paused;
     } else {
       await _player.play();
-      if (widget.mode == PlayerMode.liveview) await _audioPlayer?.play();
       _status.value = PlayerStatus.playing;
     }
-    _shouldSyncPlayerTime = true;
   }
 
   Future<void> changeSpeed(double speed) async {
-    if (widget.mode == PlayerMode.liveview) await _audioPlayer?.setRate(speed);
     await _player.setRate(speed);
   }
 
@@ -486,7 +388,9 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
   }
 
   void zoom(int type) {
-    final currentScale = zoomController.value.getMaxScaleOnAxis();
+    if (_zoomController == null || _zoomAnimationController == null) return;
+
+    final currentScale = _zoomController!.value.getMaxScaleOnAxis();
     final targetScale = (currentScale + type).clamp(1.0, 16.0);
     if (targetScale == currentScale) return;
 
@@ -496,12 +400,12 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     final viewportCenter = Offset(box.size.width / 2, box.size.height / 2);
     final _scale = targetScale / currentScale;
 
-    final Matrix4 inverted = Matrix4.inverted(zoomController.value);
+    final Matrix4 inverted = Matrix4.inverted(_zoomController!.value);
     final Vector3 v = Vector3(viewportCenter.dx, viewportCenter.dy, 0);
     final Vector3 contentPoint = inverted.transform3(v);
     final Offset focalContent = Offset(contentPoint.x, contentPoint.y);
 
-    final startMatrix = zoomController.value.clone();
+    final startMatrix = _zoomController!.value.clone();
     final Matrix4 focalToOrigin = Matrix4.identity()
       ..translateByDouble(-focalContent.dx, -focalContent.dy, 0, 1);
     final Matrix4 zoom = Matrix4.identity()..scaleByDouble(_scale, _scale, _scale, 1);
@@ -509,25 +413,25 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
       ..translateByDouble(focalContent.dx, focalContent.dy, 0, 1);
     final Matrix4 endMatrix = startMatrix.multiplied(back * zoom * focalToOrigin);
 
-    _zoomAnimationController.reset();
+    _zoomAnimationController!.reset();
     _zoomAnimation =
         Tween<double>(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(parent: _zoomAnimationController, curve: Curves.easeInOut),
+          CurvedAnimation(parent: _zoomAnimationController!, curve: Curves.easeInOut),
         )..addListener(() {
-          zoomController.value = startMatrix
+          _zoomController!.value = startMatrix
               .lerp(endMatrix, _zoomAnimation!.value)
               .clampMatrixToBounds(box.size);
         });
 
-    _zoomAnimationController.forward();
+    _zoomAnimationController!.forward();
   }
 
-  Future<Process?> recording(String output) async {
-    // Preload - tránh bị mất các giây đầu
-    // await FFmpegProcess.instance.preload(widget.source);
-    // Bắt đầu ghi -- time sẽ chuẩn
-    return FFmpegProcess.instance.record(widget.source, output);
-  }
+  // Future<Process?> recording(String output) async {
+  //   // Preload - tránh bị mất các giây đầu
+  //   // await FFmpegProcess.instance.preload(widget.source);
+  //   // Bắt đầu ghi -- time sẽ chuẩn
+  //   return FFmpegProcess.instance.record(widget.source, output);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -537,14 +441,11 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
         valueListenable: _state,
         builder: (context, value, child) {
           return switch (value) {
-            _PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
-            _PlayerState.empty => _buildNoPlayback(),
-            _PlayerState.error || _PlayerState.error2 => _buildError(),
-            _PlayerState.initialized => InteractiveViewer(
-              minScale: 0.1,
-              maxScale: 16.0,
-              transformationController: zoomController,
-              child: Video(
+            PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
+            PlayerState.empty => _buildNoPlayback(),
+            PlayerState.error || PlayerState.error_again => _buildError(),
+            PlayerState.initialized => _wrapWithInteractiveViewer(
+              Video(
                 key: _videoKey,
                 height: double.infinity,
                 fit: BoxFit.fitHeight,
@@ -553,7 +454,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
                 controls: (state) => Stack(
                   fit: StackFit.expand,
                   children: [
-                    Positioned(top: 20, right: 20, child: _buildLabel()),
+                    if (widget.labelBuilder != null) widget.labelBuilder!.call(widget.name),
                     Positioned.fill(child: _buildPlaybackStatus()),
 
                     ValueListenableBuilder(
@@ -578,7 +479,7 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
                     ),
 
                     if (_videoKey.currentState?.isFullscreen() == true)
-                      PlayerFullScreen(onExit: () => _videoKey.currentState?.exitFullscreen()),
+                      FullScreenActions(onExit: () => _videoKey.currentState?.exitFullscreen()),
                   ],
                 ),
               ),
@@ -589,6 +490,17 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
     );
   }
 
+  Widget _wrapWithInteractiveViewer(Widget child) {
+    if (!widget.enableZoom) return child;
+
+    return InteractiveViewer(
+      minScale: 0.1,
+      maxScale: 16.0,
+      transformationController: _zoomController,
+      child: child,
+    );
+  }
+
   Widget _buildError() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -596,18 +508,12 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
       mainAxisSize: MainAxisSize.min,
       children: [
         const SizedBox(height: 14),
-        Icon(
-          widget.mode == PlayerMode.liveview ? Icons.videocam_off : Icons.error,
-          color: Colors.red,
-          size: 36,
-        ),
+        Icon(Icons.error, color: Colors.red, size: 36),
         SizedBox(height: 6),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Text(
-            widget.mode == PlayerMode.liveview
-                ? 'Camera ${widget.name} đang ngoại tuyến'
-                : 'Có lỗi xảy ra trong quá trình tải bản ghi',
+            'Có lỗi xảy ra trong quá trình tải bản ghi',
             style: AppTypography.style(13, color: Colors.white),
             textAlign: TextAlign.center,
           ),
@@ -646,122 +552,5 @@ class CameraDetailPlayerState extends State<CameraDetailPlayer> with TickerProvi
         style: AppTypography.style(13, color: Colors.white, fontWeight: FontWeight.w600),
       ),
     );
-  }
-
-  Widget _buildLabel() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(3),
-        boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
-      ),
-      padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-      child: Row(
-        children: [
-          SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
-          SizedBox(width: 4),
-          Text(
-            name,
-            style: AppTypography.style(11, color: Colors.black, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Queue async chỉ duy trì tối đa 2 job:
-/// - 1 job đang chạy.
-/// - 1 job kế tiếp (job mới nhất, các job trước đó bị bỏ).
-class AsyncJobQueue {
-  Future<void> Function()? _currentJob;
-  Future<void> Function()? _nextJob;
-  bool _isRunning = false;
-  bool _isCancelling = false;
-  bool _isDisposed = false;
-  Completer<void>? _cancelCompleter;
-
-  /// Thêm 1 job vào queue.
-  /// - Nếu đang chạy, job này sẽ thay thế job kế tiếp hiện tại.
-  /// - Nếu idle, job chạy ngay.
-  Future<void> add(Future<void> Function() job) async {
-    if (_isDisposed) return;
-    if (_isCancelling) await _cancelCompleter?.future;
-
-    if (_isRunning) {
-      // 🔹 Giữ lại job mới nhất, bỏ các job trước đó
-      _nextJob = job;
-      return;
-    }
-
-    _currentJob = job;
-    _runNext();
-  }
-
-  /// Hủy toàn bộ job (cả đang chạy và kế tiếp), reset trạng thái.
-  Future<void> cancelAndReset() async {
-    if (_isDisposed || _isCancelling) return;
-    _isCancelling = true;
-    _cancelCompleter = Completer<void>();
-
-    _currentJob = null;
-    _nextJob = null;
-    _isRunning = false;
-
-    // Cho phép các async đang pending thoát ra
-    await Future.microtask(() {});
-    _isCancelling = false;
-
-    _cancelCompleter?.complete();
-    _cancelCompleter = null;
-  }
-
-  /// Hủy job hiện tại và job kế (nhưng vẫn có thể add lại sau).
-  Future<void> cancel() async {
-    if (_isDisposed || _isCancelling) return;
-    _isCancelling = true;
-    _cancelCompleter = Completer<void>();
-
-    _nextJob = null;
-    _currentJob = null;
-    _isRunning = false;
-
-    await Future.microtask(() {});
-    _isCancelling = false;
-
-    _cancelCompleter?.complete();
-    _cancelCompleter = null;
-  }
-
-  /// Dọn dẹp queue và ngăn add mới.
-  Future<void> dispose() async {
-    if (_isDisposed) return;
-    _isDisposed = true;
-
-    await cancelAndReset();
-    _nextJob = null;
-    _currentJob = null;
-  }
-
-  /// Chạy tuần tự: job hiện tại -> job kế nếu có.
-  void _runNext() async {
-    if (_isRunning || _currentJob == null || _isCancelling || _isDisposed) return;
-    _isRunning = true;
-
-    final job = _currentJob!;
-    _currentJob = null;
-
-    try {
-      await job();
-    } finally {
-      _isRunning = false;
-
-      if (!_isCancelling && !_isDisposed && _nextJob != null) {
-        // 🔹 Nếu có job kế, chạy tiếp
-        _currentJob = _nextJob;
-        _nextJob = null;
-        _runNext();
-      }
-    }
   }
 }
