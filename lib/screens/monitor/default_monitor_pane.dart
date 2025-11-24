@@ -25,7 +25,8 @@ class DefaultMonitorPane extends StatefulWidget {
   State<DefaultMonitorPane> createState() => _DefaultMonitorPaneState();
 }
 
-class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuilderMixin {
+class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
+    with StateBuilderMixin {
   final OSDPosition _position = OsdUtil.getOSDPositions();
 
   double get spacing => AppConfig.MONITOR_GRID_SPACING;
@@ -40,7 +41,7 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
       builder: (context, blocState) => stateBuilder<MonitorSuccess>(
         blocState,
         onReload: () => context.read<MonitorBloc>().add(GetAllCamera()),
-        child: (state) => PlatformWidget.groupBuilder(
+        child: (state) => PlatformWidget.builder(
           onMobile: (context) => Container(),
           onDesktop: (context) => BlocSelector<AppBloc, AppState, bool>(
             selector: (state) => state.displayFullScreenLiveView,
@@ -55,7 +56,8 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                     state.mode.columns,
                   );
                   final wrapWidth =
-                      (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
+                      (size.width * state.mode.columns) +
+                      (spacing * (state.mode.columns - 1));
                   return Container(
                     color: AppColors.greyF2F4FA,
                     child: Column(
@@ -82,7 +84,9 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                                                 onBack: () => AppRouter
                                                     .rootNavigatorKey
                                                     .currentContext
-                                                    ?.goNamed(Routes.monitoring.name),
+                                                    ?.goNamed(
+                                                      Routes.monitoring.name,
+                                                    ),
                                               ),
                                             );
                                           },
@@ -92,7 +96,8 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                                       name: camera.name,
                                       key: ValueKey(camera.camId),
                                       mode: MonitorMode.monitoring,
-                                      labelBuilder: (name) => _buildLabel(name, size),
+                                      labelBuilder: (name) =>
+                                          _buildLabel(name, size),
                                     ),
                                   ),
                                 );
@@ -102,7 +107,11 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                                   size: size,
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+                                      border: Border.all(
+                                        color: Colors.grey.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -128,9 +137,13 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                                   ),
                                 ),
                                 ConstrainedBox(
-                                  constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
+                                  constraints: BoxConstraints(
+                                    maxWidth: 280,
+                                    maxHeight: 32,
+                                  ),
                                   child: TablePaginator(
-                                    (state.cameras.length / state.mode.total).ceil(),
+                                    (state.cameras.length / state.mode.total)
+                                        .ceil(),
                                     state.page - 1,
                                     (page) => onChangePage(context, page),
                                   ),
@@ -161,9 +174,11 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
     rows = AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? rows;
     columns = AppConfig.OVERRIDE_MONITOR_GRID_COLUMNS ?? columns;
 
-    final availableWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+    final availableWidth =
+        (constraints.maxWidth - spacing * (columns - 1)) / columns;
     final availableHeight =
-        ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (paginatorHeight / rows);
+        ((constraints.maxHeight - spacing * (rows - 1)) / rows) -
+        (paginatorHeight / rows);
 
     // Maintain 16:9 aspect ratio - always use width as the constraint
     // This ensures players grow/shrink when drawer opens/closes
@@ -189,7 +204,10 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
       top: (_position.value & 1) == 0 ? 10 : null,
       child: Container(
         constraints: BoxConstraints(maxWidth: size.width - 10),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(3),
+        ),
         padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
         child: Row(
           mainAxisSize: MainAxisSize.min,

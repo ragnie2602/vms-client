@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'dart:io';
+
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
@@ -13,8 +15,13 @@ import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_ev
 import 'package:vms_flutter_client/domain/usecases/stream_use_case.dart';
 
 class SubscribeMultiWindowEventUseCase
-    extends StreamUseCase<SubscribeMultiWindowEventInput, SubscribeMultiWindowEventOutput> {
-  static final stream = StreamController<SubscribeMultiWindowEventOutput>.broadcast();
+    extends
+        StreamUseCase<
+          SubscribeMultiWindowEventInput,
+          SubscribeMultiWindowEventOutput
+        > {
+  static final stream =
+      StreamController<SubscribeMultiWindowEventOutput>.broadcast();
   static bool isInitialized = false; // Avoid setMethodHandler multiple times
 
   final IAuthRepository authRepository;
@@ -22,7 +29,11 @@ class SubscribeMultiWindowEventUseCase
   const SubscribeMultiWindowEventUseCase(this.authRepository);
 
   @override
-  Stream<SubscribeMultiWindowEventOutput> buildUseCase(SubscribeMultiWindowEventInput input) {
+  Stream<SubscribeMultiWindowEventOutput> buildUseCase(
+    SubscribeMultiWindowEventInput input,
+  ) {
+    if (Platform.isAndroid || Platform.isIOS) return const Stream.empty();
+
     if (!isInitialized) {
       isInitialized = true;
 
@@ -40,12 +51,18 @@ class SubscribeMultiWindowEventUseCase
               vmValue: call.arguments['viewMode'],
               isDefaultMode: call.arguments['isDefaultMode'],
               id:
-                  (call.arguments['id'] as List<dynamic>?)?.map((e) => e as int).toList() ??
+                  (call.arguments['id'] as List<dynamic>?)
+                      ?.map((e) => e as int)
+                      .toList() ??
                   <int>[],
             );
             break;
           case 'close_window':
-            stream.add(SubscribeMultiWindowEventOutput(MWECloseWindow(call.arguments['windowId'])));
+            stream.add(
+              SubscribeMultiWindowEventOutput(
+                MWECloseWindow(call.arguments['windowId']),
+              ),
+            );
             break;
           case 'profile':
             AppData.instance.profile = MyProfile.fromJson(call.arguments);
@@ -55,16 +72,25 @@ class SubscribeMultiWindowEventUseCase
               uid: AppData.instance.profile?.uid ?? [],
               sessionId: AppData.instance.profile?.sessionId ?? [],
             );
-            stream.add(SubscribeMultiWindowEventOutput(const MWEProfileReady()));
+            stream.add(
+              SubscribeMultiWindowEventOutput(const MWEProfileReady()),
+            );
             break;
           case 'restore_monitor_mode':
-            final viewMode = ViewMode.fromValue(call.arguments['viewMode'] ?? 1);
+            final viewMode = ViewMode.fromValue(
+              call.arguments['viewMode'] ?? 1,
+            );
             final isDefaultMode = call.arguments['isDefaultMode'] ?? true;
             final id =
-                (call.arguments['id'] as List<dynamic>?)?.map((e) => e as int).toList() ?? <int>[];
+                (call.arguments['id'] as List<dynamic>?)
+                    ?.map((e) => e as int)
+                    .toList() ??
+                <int>[];
 
             stream.add(
-              SubscribeMultiWindowEventOutput(MWERestoreMonitorMode(viewMode, isDefaultMode, id)),
+              SubscribeMultiWindowEventOutput(
+                MWERestoreMonitorMode(viewMode, isDefaultMode, id),
+              ),
             );
             break;
           case 'sign_out':

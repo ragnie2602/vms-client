@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
@@ -6,9 +8,15 @@ import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_o
 import 'package:vms_flutter_client/domain/usecases/future_use_case.dart';
 
 class SendMultiWindowEventUseCase
-    extends FutureUseCase<SendMultiWindowEventInput, SendMultiWindowEventOutput> {
+    extends
+        FutureUseCase<SendMultiWindowEventInput, SendMultiWindowEventOutput> {
   @override
-  Future<SendMultiWindowEventOutput> buildUseCase(SendMultiWindowEventInput input) async {
+  Future<SendMultiWindowEventOutput> buildUseCase(
+    SendMultiWindowEventInput input,
+  ) async {
+    if (Platform.isAndroid || Platform.isIOS)
+      return SendMultiWindowEventOutput();
+
     switch (input.methodName) {
       case 'change_setting_window':
         final data = {
@@ -21,11 +29,19 @@ class SendMultiWindowEventUseCase
           'isDefaultMode': input.data?['isDefaultMode'],
           'id': input.data?['id'],
         };
-        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
+        await DesktopMultiWindow.invokeMethod(
+          input.targetWindowID,
+          input.methodName,
+          data,
+        );
         break;
       case 'close_window':
         final data = {'windowId': input.data?['windowId']};
-        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, data);
+        await DesktopMultiWindow.invokeMethod(
+          input.targetWindowID,
+          input.methodName,
+          data,
+        );
         break;
       case 'profile':
         await DesktopMultiWindow.invokeMethod(
@@ -36,13 +52,19 @@ class SendMultiWindowEventUseCase
         break;
       case 'restore_monitor_mode':
         final bWindowID = input.data!['bWindowID'];
-        final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: bWindowID);
+        final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(
+          suggestWindowID: bWindowID,
+        );
 
-        await DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, {
-          'viewMode': setting.viewMode.value,
-          'isDefaultMode': setting.isDefaultMode,
-          'id': setting.id,
-        });
+        await DesktopMultiWindow.invokeMethod(
+          input.targetWindowID,
+          input.methodName,
+          {
+            'viewMode': setting.viewMode.value,
+            'isDefaultMode': setting.isDefaultMode,
+            'id': setting.id,
+          },
+        );
         break;
       case 'sign_out':
         final List<int> targetIds = [];
@@ -58,7 +80,11 @@ class SendMultiWindowEventUseCase
         }
         break;
       default:
-        DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, input.data);
+        DesktopMultiWindow.invokeMethod(
+          input.targetWindowID,
+          input.methodName,
+          input.data,
+        );
     }
 
     return SendMultiWindowEventOutput();
