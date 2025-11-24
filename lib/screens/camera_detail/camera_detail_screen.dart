@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/osd.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/osd_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 
@@ -40,6 +42,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
   final CameraEntity? data;
   final bool isPlayback;
   final bool openCamerasPanelImmediately;
+  final OSDPosition _position = OsdUtil.getOSDPositions();
 
   void _handlePageInfo(BuildContext context, CameraDetailState pre, CameraDetailState cur) {
     if ((pre.mode != cur.mode || pre.camera != cur.camera) && cur.camera != null) {
@@ -150,8 +153,10 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
 
   Widget _buildLabel(String name) {
     return Positioned(
-      top: 20,
-      right: 20,
+      bottom: (_position.value & 1) == 1 ? 20 : null,
+      left: (_position.value & 2) == 0 ? 20 : null,
+      right: (_position.value & 2) == 2 ? 20 : null,
+      top: (_position.value & 1) == 0 ? 20 : null,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.6),
