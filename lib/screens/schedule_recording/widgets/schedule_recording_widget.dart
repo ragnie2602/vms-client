@@ -130,6 +130,7 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
                     widget.onSave.call(record);
                   },
                 ),
+          Spacer(),
         ],
       ),
     );

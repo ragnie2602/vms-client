@@ -117,10 +117,16 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
             content: Container(
               width: MediaQuery.of(context).size.width * 0.65,
               height: MediaQuery.of(context).size.height * 0.65,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(width: 1, color: AppColors.greyE2E8F0),
                 ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(15),
+                  bottomRight: Radius.circular(15),
+                ),
+                color: AppColors.greyFBFBFB,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -158,12 +164,12 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
                                               : Colors.transparent,
                                           width: 3,
                                         ),
-                                        right: BorderSide(
-                                          color: isSelected
-                                              ? Colors.transparent
-                                              : AppColors.greyE3F0FF,
-                                          width: 1,
-                                        ),
+                                        // right: BorderSide(
+                                        //   color: isSelected
+                                        //       ? Colors.transparent
+                                        //       : AppColors.greyE3F0FF,
+                                        //   width: 1,
+                                        // ),
                                       ),
                                     ),
                                     child: Padding(
