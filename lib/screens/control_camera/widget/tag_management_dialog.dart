@@ -43,76 +43,36 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      actionsPadding: EdgeInsets.only(bottom: 24, left: 24, right: 24),
-      actions: [
-        const Divider(height: 1, color: AppColors.greyF2F4FA),
-        if (isAdding)
-          SizedBox(
-            width: double.infinity,
-            child: _AddEditTagItem(
-              onCheckDuplicate: (name) => _checkDuplicateTag(name),
-              onSave: (tag) => setState(() {
-                isAdding = false;
-                _saveTag(tag);
-              }),
-              suggestColor: _getSuggestColor(),
-            ),
-          ),
-        SizedBox(height: 10),
-        Material(
-          child: InkWell(
-            hoverColor: AppColors.blue005AA9.withOpacity(0.05),
-            onTap: _addTempTag,
-            splashColor: AppColors.blue005AA9.withOpacity(0.05),
-            child: Container(
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              width: double.infinity,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, color: AppColors.blue005AA9),
-                  Text(
-                    'Thêm phân loại',
-                    style: AppTypography.style(14, color: AppColors.blue005AA9),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
       content: Container(
         constraints: BoxConstraints(maxHeight: MediaQuery.heightOf(context) * 480 / 1080),
         width: MediaQuery.widthOf(context) * 500 / 1600,
-        child: BlocListener<ControlCameraBloc, ControlCameraState>(
-          listener: (context, state) => setState(() {
-            if (state is CreateTagSuccessState) {
-              widget.tags.add(state.tag);
-            } else if (state is DeleteTagSuccessState) {
-              widget.tags.removeWhere((tag) => tag.id == state.id);
-            } else if (state is UpdateTagSuccessState) {
-              widget.tags[widget.tags.indexWhere((tag) => tag.id.equals(state.tag.id))] = state.tag;
-            }
-          }),
-          child: widget.tags.isEmpty
-              ? Center(
-                  child: Text(
-                    'Chưa có thẻ phân loại nào',
-                    style: AppTypography.style(14, color: AppColors.grey92929D),
-                  ),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Danh sách thẻ phân loại',
-                      style: AppTypography.style(16, fontWeight: FontWeight.w700),
-                    ),
-                    Flexible(
-                      child: ListView.builder(
-                        itemCount: widget.tags.length,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Danh sách thẻ phân loại',
+              style: AppTypography.style(16, fontWeight: FontWeight.w700),
+            ),
+            Expanded(
+              child: BlocListener<ControlCameraBloc, ControlCameraState>(
+                listener: (context, state) => setState(() {
+                  if (state is CreateTagSuccessState) {
+                    widget.tags.add(state.tag);
+                  } else if (state is DeleteTagSuccessState) {
+                    widget.tags.removeWhere((tag) => tag.id == state.id);
+                  } else if (state is UpdateTagSuccessState) {
+                    widget.tags[widget.tags.indexWhere((tag) => tag.id.equals(state.tag.id))] =
+                        state.tag;
+                  }
+                }),
+                child: widget.tags.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Chưa có thẻ phân loại nào',
+                          style: AppTypography.style(14, color: AppColors.grey92929D),
+                        ),
+                      )
+                    : ListView.builder(
                         itemBuilder: (context, index) => _AddEditTagItem(
                           key: UniqueKey(),
                           onCheckDuplicate: (name) => _checkDuplicateTag(name),
@@ -120,10 +80,50 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
                           onSave: (tag) => _saveTag(tag),
                           tag: widget.tags[index],
                         ),
+                        itemCount: widget.tags.length,
                       ),
-                    ),
-                  ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 16, top: 10),
+              child: const Divider(height: 1, color: AppColors.greyF2F4FA),
+            ),
+            if (isAdding)
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: _AddEditTagItem(
+                  onCheckDuplicate: (name) => _checkDuplicateTag(name),
+                  onSave: (tag) => setState(() {
+                    isAdding = false;
+                    _saveTag(tag);
+                  }),
+                  suggestColor: _getSuggestColor(),
                 ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(right: 16, top: 6),
+              child: Material(
+                child: InkWell(
+                  hoverColor: AppColors.blue005AA9.withOpacity(0.05),
+                  onTap: _addTempTag,
+                  splashColor: AppColors.blue005AA9.withOpacity(0.05),
+                  child: Container(
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add, color: AppColors.blue005AA9),
+                        Text(
+                          'Thêm phân loại',
+                          style: AppTypography.style(14, color: AppColors.blue005AA9),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       contentPadding: EdgeInsets.only(bottom: 10, left: 24, right: 8, top: 24),
@@ -135,6 +135,7 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Quản lý thẻ phân loại',
@@ -221,46 +222,49 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
             borderRadius: BorderRadius.circular(3),
           ),
           margin: EdgeInsets.only(right: widget.tag != null ? 16 : 0, top: 10),
-          padding: EdgeInsets.all(12),
+          padding: EdgeInsets.only(left: 12, right: 5, top: 5, bottom: 5),
           child: Row(
             children: [
               TagShapeIcon(color: widget.tag?.color ?? widget.suggestColor!, width: 18, height: 12),
               const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                    counterText: '',
-                    hintStyle: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.grey92929D,
-                    ),
-                    hintText: 'Nhập tên phân loại',
-                    isDense: true,
-                  ),
-                  maxLength: 50,
-                  maxLines: 1,
-                  onChanged: (value) => setState(() {
-                    canSave = value.isNotEmpty && value != widget.tag?.name;
-                    isDuplicate = false;
-                  }),
-                  onSubmitted: (value) {
-                    if (widget.onCheckDuplicate(_nameController.text)) {
-                      setState(() => isDuplicate = true);
-                      return;
-                    }
-                    widget.onSave(
-                      TagEntity(
-                        id: widget.tag?.id ?? [],
-                        name: value,
-                        color: widget.tag?.color ?? widget.suggestColor!,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  child: TextField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                      counterText: '',
+                      hintStyle: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.grey92929D,
                       ),
-                    );
-                  },
-                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                      hintText: 'Nhập tên phân loại',
+                      isDense: true,
+                    ),
+                    maxLength: 50,
+                    maxLines: 1,
+                    onChanged: (value) => setState(() {
+                      canSave = value.isNotEmpty && value != widget.tag?.name;
+                      isDuplicate = false;
+                    }),
+                    onSubmitted: (value) {
+                      if (widget.onCheckDuplicate(_nameController.text)) {
+                        setState(() => isDuplicate = true);
+                        return;
+                      }
+                      widget.onSave(
+                        TagEntity(
+                          id: widget.tag?.id ?? [],
+                          name: value,
+                          color: widget.tag?.color ?? widget.suggestColor!,
+                        ),
+                      );
+                    },
+                    style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -288,7 +292,7 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondary,
-                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                       ),
                       child: Text(
