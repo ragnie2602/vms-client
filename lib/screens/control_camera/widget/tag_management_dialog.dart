@@ -247,7 +247,7 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
                     maxLength: 50,
                     maxLines: 1,
                     onChanged: (value) => setState(() {
-                      canSave = value.isNotEmpty && value != widget.tag?.name;
+                      canSave = value.trim().isNotEmpty && value != widget.tag?.name;
                       isDuplicate = false;
                     }),
                     onSubmitted: (value) {
