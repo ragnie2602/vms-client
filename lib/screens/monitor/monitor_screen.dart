@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
+import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
 
 import 'bloc/monitor/monitor_bloc.dart';
 import 'layout/monitor_desktop_layout.dart';
@@ -34,7 +35,11 @@ class _MonitorScreenState extends State<MonitorScreen> {
     return Container(
       // Có Theme.of(context) --> build lại child khi đổi theme
       color: Theme.of(context).scaffoldBackgroundColor,
-      child: MonitorDesktopLayout(content: widget.child),
+      child: PlatformBuilder.builder(
+        onDesktop: (context) => MonitorDesktopLayout(content: widget.child),
+        onMobile: (context) =>
+            Center(child: Text("Anh chỉ muốn qua nhà em tặng 1 đóa hoa")),
+      ),
     );
   }
 }

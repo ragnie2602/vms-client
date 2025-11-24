@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:vms_flutter_client/core/app_data.dart';
@@ -12,9 +13,12 @@ class MultiWindowUtil {
     if (windowId < _windowBounds.length) _windowBounds[windowId] = null;
   }
 
-  static int getSubWindowCount() => _windowBounds.where((e) => e != null).length - 1;
+  static int getSubWindowCount() =>
+      _windowBounds.where((e) => e != null).length - 1;
 
-  static (int, _WindowSetting) getSuitableWindowSetting({int? suggestWindowID}) {
+  static (int, _WindowSetting) getSuitableWindowSetting({
+    int? suggestWindowID,
+  }) {
     // Specify business window ID
     if (suggestWindowID != null) {
       return (
@@ -83,7 +87,8 @@ class MultiWindowUtil {
     }
   }
 
-  static bool isMainWindow(int windowId) => windowId == 0;
+  static bool isMainWindow(int windowId) =>
+      windowId == 0 || Platform.isAndroid || Platform.isIOS;
 
   static Future<void> saveWindowSetting(
     int windowId, {
@@ -107,7 +112,10 @@ class MultiWindowUtil {
         '${AppData.instance.read(AppKeys.SP_SERVER_KEY)}|${AppData.instance.read(AppKeys.SP_USERNAME_KEY)}';
     await AppData.instance.save(
       _frameKey,
-      _windowBounds.where((e) => e != null).map((e) => jsonEncode(e!.toJson())).toList(),
+      _windowBounds
+          .where((e) => e != null)
+          .map((e) => jsonEncode(e!.toJson()))
+          .toList(),
     );
   }
 }
@@ -125,7 +133,12 @@ class _WindowSetting {
     required this.id,
   });
 
-  _WindowSetting copyWith({Rect? rect, bool? isDefaultMode, ViewMode? viewMode, List<int>? id}) {
+  _WindowSetting copyWith({
+    Rect? rect,
+    bool? isDefaultMode,
+    ViewMode? viewMode,
+    List<int>? id,
+  }) {
     return _WindowSetting(
       rect: rect ?? this.rect,
       isDefaultMode: isDefaultMode ?? this.isDefaultMode,
@@ -145,10 +158,17 @@ class _WindowSetting {
 
     final isCustomMode = json['custom'] != null;
 
-    final String idStr = isCustomMode ? json['custom'] ?? '' : json['default'] ?? '';
+    final String idStr = isCustomMode
+        ? json['custom'] ?? ''
+        : json['default'] ?? '';
     final id = idStr.isNotEmpty ? idStr.codeUnits : <int>[];
 
-    return _WindowSetting(rect: rect, isDefaultMode: !isCustomMode, viewMode: viewMode, id: id);
+    return _WindowSetting(
+      rect: rect,
+      isDefaultMode: !isCustomMode,
+      viewMode: viewMode,
+      id: id,
+    );
   }
 
   Map<String, dynamic> toJson() {
