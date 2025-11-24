@@ -136,7 +136,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                       if (state is GetAllTagsFailState || _filteredTags.isEmpty) {
                         return Center(
                           child: Text(
-                            "Không tìm thấy kết quả phù hợp",
+                            "Không có dữ liệu",
                             style: AppTypography.style(
                               14,
                               fontWeight: FontWeight.w400,

@@ -150,31 +150,56 @@ class _TagDropdownState extends State<TagDropdown> {
                             return Material(
                               child: InkWell(
                                 onTap: () => _toggleTag(tag),
-                                child: Row(
-                                  children: [
-                                    Checkbox(
-                                      
-                                      value: tag.isSelected,
-                                      onChanged: (value) => _toggleTag(tag),
-                                      activeColor: AppColors.secondary,
-                                    ),
-                                    TagShapeIcon(
-                                      color: tag.color,
-                                      width: 18,
-                                      height: 12,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Flexible(
-                                      child: Text(
-                                        tag.name,
-                                        style: AppTypography.style(
-                                          14,
-                                          fontWeight: FontWeight.w400,
-                                          color: AppColors.black,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 20,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: tag.isSelected
+                                              ? AppColors.blue085DA8
+                                              : Colors.white,
+                                          border: Border.all(
+                                            color: tag.isSelected
+                                                ? AppColors.blue085DA8
+                                                : AppColors.greyE2E8F0,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: tag.isSelected
+                                            ? const Icon(
+                                                Icons.check,
+                                                size: 14,
+                                                color: Colors.white,
+                                              )
+                                            : null,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      TagShapeIcon(
+                                        color: tag.color,
+                                        width: 18,
+                                        height: 12,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          tag.name,
+                                          style: AppTypography.style(
+                                            14,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppColors.black,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             );
