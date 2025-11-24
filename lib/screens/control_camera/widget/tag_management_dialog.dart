@@ -218,7 +218,7 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.greyE2E8F0),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(3),
           ),
           margin: EdgeInsets.only(right: widget.tag != null ? 16 : 0, top: 10),
           padding: EdgeInsets.all(12),
