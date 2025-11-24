@@ -82,18 +82,8 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           ),
         ),
         const SizedBox(height: 12),
-        _buildSelectModeOption(
-          label: 'Thêm thủ công',
-          value: AddCameraStep.manualForm,
-        ),
-        _buildSelectModeOption(
-          label: 'Dò tìm camera',
-          value: AddCameraStep.discovery,
-        ),
-        _buildSelectModeOption(
-          label: 'Thêm bằng file',
-          value: AddCameraStep.importFile,
-        ),
+        _buildSelectModeOption(label: 'Thêm thủ công', value: AddCameraStep.manualForm),
+        _buildSelectModeOption(label: 'Dò tìm camera', value: AddCameraStep.discovery),
       ],
     );
   }
