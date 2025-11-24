@@ -2,31 +2,39 @@ import 'dart:async';
 
 import 'package:easy_onvif/probe.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_output.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_input.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_output.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 
-class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState> {
+class ControlCameraBloc
+    extends BaseBloc<ControlCameraEvent, ControlCameraState> {
   final IControlCameraRepository controlGroupRepository;
   final FilterCameraUseCase filterCameraUseCase;
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
+  final FilterTagCameraUseCase filterTagCameraUseCase;
 
   final DeleteCameraUseCase deleteCameraUseCase;
   ControlCameraBloc({
     required this.controlGroupRepository,
     required this.filterCameraUseCase,
     required this.filterCameraNoGroupUseCase,
+    required this.filterTagCameraUseCase,
     required this.deleteCameraUseCase,
   }) : super(const ControlCameraState()) {
     on<ValidateCameraEvent>(_onValidateCamera);
@@ -35,6 +43,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     on<GetListCameraInGroupEvent>(_onGetCameraInGroup);
     on<CheckOnvifEvent>(_onCheckOnvif);
     on<FilterCameraEvent>(_onFilterCamera);
+    on<FilterTagCameraEvent>(_onFilterTagCamera);
     on<AddCameraRTSPEvent>(_onAddCameraRTSP);
     on<AddCameraOnvifEvent>(_onAddCameraOnvif);
     on<UpdateCameraEvent>(_onUpdateCamera);
@@ -46,6 +55,7 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     // on<ListShareCameraEvent>(_onListShareCamera);
     // on<DeleteShareCameraEvent>(_onDeleteShareCamera);
     on<RemoveCameraFromGroupEvent>(_onRemoveCameraFromGroup);
+    on<ReplaceCameraEvent>(_onReplaceNewCamera);
 
     on<GetAllTagsEvent>(_onGetAllTags);
     on<CreateTagEvent>(_onCreateTag);
@@ -57,6 +67,9 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
   List<CameraEntity> listCamera = [];
   List<int> currentGroupId = [];
   bool isNoGroup = false;
+
+  //list tag
+  List<TagEntity> listTagOrigin = [];
 
   FutureOr<void> _onGetListCamera(
     GetListCameraEvent event,
@@ -107,7 +120,9 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     currentGroupId.clear();
     currentGroupId.addAll(event.groupId ?? []);
     isNoGroup = false;
-    final groups = await controlGroupRepository.getCamerasInGroup(groupId: event.groupId);
+    final groups = await controlGroupRepository.getCamerasInGroup(
+      groupId: event.groupId,
+    );
     groups.fold(
       (onFailure) {
         listCamera = [];
@@ -125,15 +140,21 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     Emitter<ControlCameraState> emit,
   ) async {
     emit(ControlCameraState());
-    final validateCamera = await controlGroupRepository.validateCamera(message: event.message);
-    validateCamera.fold((onFailure) => emit(ValidateCameraState(validateCamera.left.toString())), (
-      onSuccess,
-    ) {
-      emit(ValidateCameraState(validateCamera.left.toString()));
-    });
+    final validateCamera = await controlGroupRepository.validateCamera(
+      message: event.message,
+    );
+    validateCamera.fold(
+      (onFailure) => emit(ValidateCameraState(validateCamera.left.toString())),
+      (onSuccess) {
+        emit(ValidateCameraState(validateCamera.left.toString()));
+      },
+    );
   }
 
-  FutureOr<void> _onCheckOnvif(CheckOnvifEvent event, Emitter<ControlCameraState> emit) async {
+  FutureOr<void> _onCheckOnvif(
+    CheckOnvifEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
     // Reset state trước khi check để đảm bảo listener luôn được trigger
     emit(const ControlCameraState());
 
@@ -149,7 +170,10 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     );
   }
 
-  void _onFilterCamera(FilterCameraEvent event, Emitter<ControlCameraState> emit) {
+  void _onFilterCamera(
+    FilterCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) {
     final FilterCameraInput input = FilterCameraInput(
       nameCamera: event.cameraName,
       isOnline: event.isOnline,
@@ -208,7 +232,10 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     );
   }
 
-  FutureOr<void> _onUpdateCamera(UpdateCameraEvent event, Emitter<ControlCameraState> emit) async {
+  FutureOr<void> _onUpdateCamera(
+    UpdateCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
     emit(const ControlCameraState());
     final res = await controlGroupRepository.updateCamera(
       cameraId: event.cameraId,
@@ -221,13 +248,21 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       subStreamUrls: event.subStreamUrls,
       tags: event.tags,
     );
-    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) {
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
+      onSuccess,
+    ) {
       emit(UpdateCameraSuccessState(cameraEntity: onSuccess));
     });
   }
 
-  FutureOr<void> _onDeleteCamera(DeleteCameraEvent event, Emitter<ControlCameraState> emit) async {
-    final input = DeleteCameraInput(cameraId: event.cameraId, currentList: listCamera);
+  FutureOr<void> _onDeleteCamera(
+    DeleteCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    final input = DeleteCameraInput(
+      cameraId: event.cameraId,
+      currentList: listCamera,
+    );
     final output = await deleteCameraUseCase.execute(input);
 
     if (output.isSuccess) {
@@ -283,18 +318,33 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       cameraIds: event.cameraIds,
       groupId: event.groupId,
     );
-    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (onSuccess) {
+    res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
+      onSuccess,
+    ) {
       listCamera = List<CameraEntity>.from(listCamera)..addAll(onSuccess);
-      emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)));
+      emit(
+        ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)),
+      );
     });
   }
 
-  Future<List<InviteMessageEntity>> getListShareCamera({List<int>? camId}) async {
-    final res = await controlGroupRepository.listShareCamera(cameraId: camId ?? []);
-    return res.fold((onFailure) => <InviteMessageEntity>[], (onSuccess) => onSuccess);
+  Future<List<InviteMessageEntity>> getListShareCamera({
+    List<int>? camId,
+  }) async {
+    final res = await controlGroupRepository.listShareCamera(
+      cameraId: camId ?? [],
+    );
+    return res.fold(
+      (onFailure) => <InviteMessageEntity>[],
+      (onSuccess) => onSuccess,
+    );
   }
 
-  Future<List<int>> shareCamera({List<int>? camId, int? role, String? accountInvite}) async {
+  Future<List<int>> shareCamera({
+    List<int>? camId,
+    int? role,
+    String? accountInvite,
+  }) async {
     final res = await controlGroupRepository.shareCamera(
       cameraId: camId ?? [],
       role: role ?? 1,
@@ -320,6 +370,21 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
       }
       return <int>[];
     }, (onSuccess) => onSuccess);
+  }
+
+  FutureOr<void> _onReplaceNewCamera(
+    ReplaceCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    // update lại cam theo id
+    listCamera = List<CameraEntity>.from(listCamera);
+    final index = listCamera.indexWhere(
+      (element) => listEquals(element.id, event.newCamera.id),
+    );
+    if (index != -1) {
+      listCamera[index] = event.newCamera;
+      emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)));
+    }
   }
 
   FutureOr<void> _onRemoveCameraFromGroup(
@@ -349,22 +414,54 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
         }
         // emit state succes
         emit(RemoveCameraFromGroupSuccessState(listCamera));
-        emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)));
+        emit(
+          ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)),
+        );
       },
     );
   }
 
-  FutureOr<void> _onGetAllTags(GetAllTagsEvent event, Emitter<ControlCameraState> emit) async {
+  FutureOr<void> _onGetAllTags(
+    GetAllTagsEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
     emit(GetAllTagsLoadingState());
 
     final res = await controlGroupRepository.getAllTag();
     res.fold(
-      (onFailure) => emit(GetAllTagsFailState(res.left.toString())),
-      (onSuccess) => emit(GetAllTagsSuccessState(tags: onSuccess)),
+      (onFailure) {
+        listTagOrigin = [];
+        emit(GetAllTagsFailState(res.left.toString()));
+      },
+      (onSuccess) {
+        listTagOrigin = [];
+        listTagOrigin.add(
+          TagEntity(name: 'Tất cả', id: [], color: Colors.transparent),
+        );
+        listTagOrigin.addAll(onSuccess);
+
+        emit(GetAllTagsSuccessState(tags: onSuccess));
+      },
     );
   }
 
-  FutureOr<void> _onCreateTag(CreateTagEvent event, Emitter<ControlCameraState> emit) async {
+  void _onFilterTagCamera(
+    FilterTagCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) {
+    final FilterTagCameraInput input = FilterTagCameraInput(
+      tagName: event.tagName,
+      keyWord: event.keyWord,
+      listCameraOrigin: listCamera,
+    );
+    final FilterTagCameraOutput output = filterTagCameraUseCase.execute(input);
+    emit(ListCameraSuccessState(cameras: output.listCamera ?? []));
+  }
+
+  FutureOr<void> _onCreateTag(
+    CreateTagEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
     emit(CreateTagLoadingState());
     final res = await controlGroupRepository.createTag(tag: event.tag);
     res.fold(
@@ -373,7 +470,10 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     );
   }
 
-  FutureOr<void> _onDeleteTag(DeleteTagEvent event, Emitter<ControlCameraState> emit) async {
+  FutureOr<void> _onDeleteTag(
+    DeleteTagEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
     emit(DeleteTagLoadingState(event.id));
     final res = await controlGroupRepository.deleteTag(id: event.id);
     res.fold(
@@ -382,7 +482,10 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     );
   }
 
-  FutureOr<void> _onUpdateTag(UpdateTagEvent event, Emitter<ControlCameraState> emit) async {
+  FutureOr<void> _onUpdateTag(
+    UpdateTagEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
     emit(UpdateTagLoadingState(event.tag.id));
     final res = await controlGroupRepository.updateTag(tag: event.tag);
     res.fold(

@@ -41,12 +41,20 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final TextEditingController cameraNameController = TextEditingController();
   CameraOnlineChecked? cameraStatus;
   final ScrollController _cameraListController = ScrollController();
+  TagEntity? tagSelected;
 
   void _onClearSearch() {
     cameraNameController.clear();
     cameraStatus = null;
+    tagSelected = null;
   }
 
+  void _onGetListCamera({
+    List<int>? cameraId,
+    int? status,
+    int? ivaType,
+    required BuildContext c,
+  }) {
   void _onGetListCamera({
     List<int>? cameraId,
     int? status,
@@ -71,6 +79,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     );
   }
 
+  void _onGetAllTags({required BuildContext context}) {
+    context.read<ControlCameraBloc>().add(GetAllTagsEvent());
+  }
+
   void _onCheckOnvif({
     required String xaddrs,
     required String userName,
@@ -92,6 +104,15 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       FilterCameraEvent(
         cameraName: cameraNameController.text,
         isOnline: cameraStatus?.getValue,
+      ),
+    );
+  }
+
+  void _onFilterTag() {
+    context.read<ControlCameraBloc>().add(
+      FilterTagCameraEvent(
+        tagName: tagSelected?.name,
+        keyWord: cameraNameController.text,
       ),
     );
   }
@@ -214,7 +235,11 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
     required BuildContext configContext,
     required CameraEntity camera,
   }) async {
-    showDialogConfig(configContext, camera: camera);
+    final res = await showDialogConfig(configContext, camera: camera);
+    if (res != null && res is CameraEntity) {
+      if (!mounted) return;
+      context.read<ControlCameraBloc>().add(ReplaceCameraEvent(newCamera: res));
+    }
   }
 
   Future<void> _onShowDialogShareCamera({
@@ -264,6 +289,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
 
   @override
   void initState() {
+    _onGetAllTags(context: context);
     _onGetListCamera(c: context);
     super.initState();
   }
@@ -475,6 +501,52 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                             ],
                           ),
                         ),
+                        const SizedBox(width: 15),
+                        Flexible(
+                          flex: 1,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Thẻ Tag',
+                                style: AppTypography.style(
+                                  13,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              CustomCommonDropdown<TagEntity>(
+                                items: context
+                                    .read<ControlCameraBloc>()
+                                    .listTagOrigin,
+                                value: tagSelected,
+                                height: 41,
+                                onChanged: (p0) {
+                                  setState(() {
+                                    tagSelected = p0;
+                                    _onFilterTag();
+                                  });
+                                },
+                                itemAsString: (p0) => p0.name,
+                                contentTextStyle: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.grey64748B,
+                                ),
+                                hint: Text(
+                                  'Tất cả',
+                                  style: AppTypography.style(
+                                    14,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.grey64748B,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(width: 25),
                         InkWell(
                           onTap: () {
@@ -592,30 +664,35 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                         children: [
                           TitleWidget(),
                           Expanded(
-                            child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
-                              buildWhen: (previous, current) =>
-                                  current is ListCameraSuccessState ||
-                                  current is ControlCameraLoadingState ||
-                                  current is ListCameraFailState,
-                              builder: (context, state) {
-                                if (state is ControlCameraLoadingState) {
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                } else if (state is ListCameraFailState) {
-                                  return Center(
-                                    child: Text(
-                                      state.errorMsg,
-                                      style: AppTypography.style(14),
-                                    ),
-                                  );
-                                }
-                                // case success
-                                final cameras = state is ListCameraSuccessState
-                                    ? state.cameras
-                                    : context
-                                          .read<ControlCameraBloc>()
-                                          .listCamera;
+                            child:
+                                BlocBuilder<
+                                  ControlCameraBloc,
+                                  ControlCameraState
+                                >(
+                                  buildWhen: (previous, current) =>
+                                      current is ListCameraSuccessState ||
+                                      current is ControlCameraLoadingState ||
+                                      current is ListCameraFailState,
+                                  builder: (context, state) {
+                                    if (state is ControlCameraLoadingState) {
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    } else if (state is ListCameraFailState) {
+                                      return Center(
+                                        child: Text(
+                                          state.errorMsg,
+                                          style: AppTypography.style(14),
+                                        ),
+                                      );
+                                    }
+                                    // case success
+                                    final cameras =
+                                        state is ListCameraSuccessState
+                                        ? state.cameras
+                                        : context
+                                              .read<ControlCameraBloc>()
+                                              .listCamera;
 
                                 if (cameras.isEmpty) {
                                   return Center(

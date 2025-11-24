@@ -1,15 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
-import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
+import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_entity.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/button_config_widget.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/check_box_all_day_widget.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/schedule_time_day_widget.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/time_slot_widget.dart';
 
 const int durationTime = 24;
 
 class ConfigScheduleRecordWidget extends StatefulWidget {
-  const ConfigScheduleRecordWidget({super.key, required this.camera});
+  const ConfigScheduleRecordWidget({
+    super.key,
+    required this.camera,
+    required this.onSave,
+    this.isSaving = false,
+  });
+
   final CameraEntity camera;
+  final Function(RecordingEntity?) onSave;
+  final bool isSaving;
+
   @override
   State<ConfigScheduleRecordWidget> createState() =>
       _ConfigScheduleRecordWidgetState();
@@ -35,13 +49,25 @@ class _ConfigScheduleRecordWidgetState
   bool? _isDraggingToAdd;
   final Set<int> _draggedIndices = {};
 
+  // lưu record
+  RecordingEntity? newRecording;
+
   @override
   void initState() {
     super.initState();
-    scheduleTimeSelected =
-        widget.camera.cameraConfig?.recording?.schedules ?? [];
+    scheduleTimeSelected = List.from(
+      widget.camera.cameraConfig?.recording?.schedules ?? [],
+    );
     _initCheckAllDay();
     _initGridviewItemValue();
+  }
+
+  @override
+  void dispose() {
+    scheduleTimeSelected?.clear();
+    listCheckAllDay.clear();
+    listGridviewItemValue.clear();
+    super.dispose();
   }
 
   void _initCheckAllDay() {
@@ -129,231 +155,171 @@ class _ConfigScheduleRecordWidgetState
     return gridItem % durationTime;
   }
 
+  // update record theo các ô được đánh dấu trong gridview
+  void _updateRecord() {
+    final currentRecording = widget.camera.cameraConfig?.recording;
+    List<ScheduleTimeEntity> schedules = [];
+    for (int i = 0; i < listGridviewItemValue.length; i++) {
+      if (listGridviewItemValue[i]) {
+        int rowIndex = getRowIndex(i);
+        int colIndex = getColumnIndex(i);
+        schedules.add(
+          ScheduleTimeEntity(
+            startTime: colIndex,
+            endTime: colIndex + 1,
+            dayRecord: ScheduleTimeDay.values[rowIndex],
+            scheduleTimeEnable: true,
+          ),
+        );
+      }
+    }
+    newRecording = RecordingEntity(
+      turnOnRecording: currentRecording?.turnOnRecording,
+      typeScheduleRecording: RecordingTypeSchedule.customizeRecord,
+      prefixPath: currentRecording?.prefixPath,
+      schedules: schedules,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // column chứa thứ
-        Expanded(
-          flex: 77,
-          child: Padding(
-            padding: EdgeInsetsGeometry.only(top: 29),
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              itemBuilder: (_, index) {
-                final day = ScheduleTimeDay.values[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2.5),
-                  child: Text(
-                    day.displayName,
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.black0D0D0D,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // column chứa thứ
+            Expanded(flex: 77, child: ScheduleTimeDayWidget()),
+            Container(width: 12),
+            // colum chưa giờ + gridview
+            Expanded(
+              flex: 648,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Flexible(child: TimeSlotWidget()),
+                  const SizedBox(height: 12),
+                  Flexible(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final width = constraints.maxWidth;
+                        // 24 columns, 23 gaps of 2px
+                        // width = 24 * cellWidth + 23 * 2
+                        // cellWidth = (width - 46) / 24
+                        final cellWidth = (width - 46) / 24;
+                        // cellHeight = cellWidth / childAspectRatio (1) = cellWidth
+                        // mainAxisSpacing = 10
+                        final cellHeight = cellWidth;
+
+                        return GestureDetector(
+                          onPanStart: (details) {
+                            // calculate index
+                            final localPosition = details.localPosition;
+                            final x = localPosition.dx;
+                            final y = localPosition.dy;
+
+                            int col = (x / (cellWidth + 2)).floor();
+                            int row = (y / (cellHeight + 10)).floor();
+
+                            if (col >= 0 && col < 24 && row >= 0) {
+                              int index = row * 24 + col;
+                              if (index >= 0 && index < gridItemCount) {
+                                _isDraggingToAdd =
+                                    !listGridviewItemValue[index];
+                                _draggedIndices.clear();
+                                _setGridviewItem(index, _isDraggingToAdd!);
+                                _draggedIndices.add(index);
+                              }
+                            }
+                          },
+                          onPanUpdate: (details) {
+                            if (_isDraggingToAdd == null) return;
+                            final localPosition = details.localPosition;
+                            final x = localPosition.dx;
+                            final y = localPosition.dy;
+
+                            int col = (x / (cellWidth + 2)).floor();
+                            int row = (y / (cellHeight + 10)).floor();
+
+                            if (col >= 0 && col < 24 && row >= 0) {
+                              int index = row * 24 + col;
+                              if (index >= 0 &&
+                                  index < gridItemCount &&
+                                  !_draggedIndices.contains(index)) {
+                                _setGridviewItem(index, _isDraggingToAdd!);
+                                _draggedIndices.add(index);
+                              }
+                            }
+                          },
+                          onPanEnd: (details) {
+                            _isDraggingToAdd = null;
+                            _draggedIndices.clear();
+                          },
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 24,
+                                  mainAxisSpacing: 10,
+                                  crossAxisSpacing: 2,
+                                  childAspectRatio: 1, // adjust height
+                                ),
+                            itemCount: gridItemCount,
+                            itemBuilder: (context, index) {
+                              int columnIndex = getColumnIndex(index);
+                              return InkWell(
+                                onTap: () {
+                                  _updateGridviewItem(index);
+                                },
+                                child: Tooltip(
+                                  message:
+                                      '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color:
+                                          listGridviewItemValue[index] == true
+                                          ? AppColors.primary
+                                          : AppColors.greyE9E9E9,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
-                );
-              },
-              separatorBuilder: (_, __) => SizedBox(height: 15),
-              itemCount: ScheduleTimeDay.values.length,
+                ],
+              ),
             ),
-          ),
+            const SizedBox(width: 13),
+            // check box cả ngày
+            Expanded(
+              flex: 50,
+              child: CheckBoxAllDayWidget(
+                listCheckAllDay: listCheckAllDay,
+                updateCheckBox: (value) {
+                  _updateCheckBox(value);
+                },
+              ),
+            ),
+            // padding right
+            const SizedBox(width: 5),
+          ],
         ),
-        Container(width: 12),
-        // colum chưa giờ + gridview
-        Expanded(
-          flex: 648,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Flexible(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // width available for the grid area
-                    final gridWidth = constraints.maxWidth;
-
-                    // lấy khoảng cách giữa các mốc/2 (tránh mốc cuối bị overflow)
-                    final cellWidth =
-                        gridWidth / ((TimeSlots.values.length - 1) * 2);
-                    return SizedBox(
-                      height: 14,
-                      child: ListView.builder(
-                        padding: EdgeInsets.zero,
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemBuilder: (_, index) {
-                          final timeSlot = TimeSlots.values[index];
-                          return Container(
-                            width: index < TimeSlots.values.length - 2
-                                ? 2 * cellWidth
-                                : cellWidth,
-                            alignment: index < TimeSlots.values.length - 1
-                                ? Alignment.centerLeft
-                                : Alignment.centerRight,
-
-                            child: Text(
-                              timeSlot.displayName,
-                              style: AppTypography.style(
-                                12,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.redFF0000,
-                              ),
-                            ),
-                          );
-                        },
-                        itemCount: TimeSlots.values.length,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-              Flexible(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final width = constraints.maxWidth;
-                    // 24 columns, 23 gaps of 2px
-                    // width = 24 * cellWidth + 23 * 2
-                    // cellWidth = (width - 46) / 24
-                    final cellWidth = (width - 46) / 24;
-                    // cellHeight = cellWidth / childAspectRatio (1) = cellWidth
-                    // mainAxisSpacing = 10
-                    final cellHeight = cellWidth;
-
-                    return GestureDetector(
-                      onPanStart: (details) {
-                        // calculate index
-                        final localPosition = details.localPosition;
-                        final x = localPosition.dx;
-                        final y = localPosition.dy;
-
-                        int col = (x / (cellWidth + 2)).floor();
-                        int row = (y / (cellHeight + 10)).floor();
-
-                        if (col >= 0 && col < 24 && row >= 0) {
-                          int index = row * 24 + col;
-                          if (index >= 0 && index < gridItemCount) {
-                            _isDraggingToAdd = !listGridviewItemValue[index];
-                            _draggedIndices.clear();
-                            _setGridviewItem(index, _isDraggingToAdd!);
-                            _draggedIndices.add(index);
-                          }
-                        }
-                      },
-                      onPanUpdate: (details) {
-                        if (_isDraggingToAdd == null) return;
-                        final localPosition = details.localPosition;
-                        final x = localPosition.dx;
-                        final y = localPosition.dy;
-
-                        int col = (x / (cellWidth + 2)).floor();
-                        int row = (y / (cellHeight + 10)).floor();
-
-                        if (col >= 0 && col < 24 && row >= 0) {
-                          int index = row * 24 + col;
-                          if (index >= 0 &&
-                              index < gridItemCount &&
-                              !_draggedIndices.contains(index)) {
-                            _setGridviewItem(index, _isDraggingToAdd!);
-                            _draggedIndices.add(index);
-                          }
-                        }
-                      },
-                      onPanEnd: (details) {
-                        _isDraggingToAdd = null;
-                        _draggedIndices.clear();
-                      },
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 24,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 2,
-                          childAspectRatio: 1, // adjust height
-                        ),
-                        itemCount: gridItemCount,
-                        itemBuilder: (context, index) {
-                          int columnIndex = getColumnIndex(index);
-                          return InkWell(
-                            onTap: () {
-                              _updateGridviewItem(index);
-                            },
-                            child: Tooltip(
-                              message:
-                                  '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: listGridviewItemValue[index] == true
-                                      ? AppColors.primary
-                                      : AppColors.greyE9E9E9,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        ButtonConfigWidget(
+          isLoading: widget.isSaving,
+          onSave: () {
+            _updateRecord();
+            widget.onSave.call(newRecording);
+          },
         ),
-        const SizedBox(width: 13),
-        // check box cả ngày
-        Expanded(
-          flex: 50,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Cả ngày',
-                style: AppTypography.style(
-                  12,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.redFF0000,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Flexible(
-                child: ListView.separated(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (_, index) {
-                    return SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Checkbox(
-                        side: BorderSide(
-                          color: AppColors.greyE2E8F0,
-                          width: 1.0,
-                        ),
-                        activeColor: AppColors.blue005AA9,
-                        value: listCheckAllDay[index],
-                        onChanged: (_) {
-                          _updateCheckBox(index);
-                        },
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    );
-                  },
-                  itemCount: ScheduleTimeDay.values.length,
-                  separatorBuilder: (context, index) => SizedBox(height: 13),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // padding right
-        const SizedBox(width: 5),
       ],
     );
   }

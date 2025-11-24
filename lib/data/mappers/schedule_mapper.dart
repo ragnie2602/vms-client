@@ -30,6 +30,19 @@ extension ScheduleTimeExtension on ScheduleTime {
   }
 }
 
+extension ScheduleTimeEntityExt on ScheduleTimeEntity {
+  ScheduleTime toMapper() {
+    return ScheduleTime(
+      startTime: startTime,
+      endTime: endTime,
+      scheduleTimeEnable: scheduleTimeEnable,
+      dayRecord: dayRecord == null
+          ? null
+          : ScheduleTime_Day.valueOf(dayRecord!.value),
+    );
+  }
+}
+
 extension RecordingExtion on Recording {
   RecordingEntity toDomain() {
     return RecordingEntity(
@@ -37,6 +50,19 @@ extension RecordingExtion on Recording {
       typeScheduleRecording: typeScheduleRecording.toDomain(),
       prefixPath: prefixPath,
       schedules: schedules.map((schedule) => schedule.toDomain()).toList(),
+    );
+  }
+}
+
+extension RecordingEntityExt on RecordingEntity {
+  Recording toMapper() {
+    return Recording(
+      turnOnRecording: turnOnRecording,
+      prefixPath: prefixPath,
+      typeScheduleRecording: typeScheduleRecording == null
+          ? null
+          : Recording_TypeSchedule.valueOf(typeScheduleRecording!.value),
+      schedules: schedules?.map((e) => e.toMapper()).toList(),
     );
   }
 }

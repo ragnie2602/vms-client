@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
@@ -124,6 +125,13 @@ class UpdateCameraEvent extends ControlCameraEvent {
   });
 }
 
+class ReplaceCameraEvent extends ControlCameraEvent {
+  final CameraEntity newCamera;
+  const ReplaceCameraEvent({required this.newCamera});
+  @override
+  List<Object?> get props => [newCamera];
+}
+
 class DeleteCameraEvent extends ControlCameraEvent {
   final List<int> cameraId;
   const DeleteCameraEvent({required this.cameraId});
@@ -133,7 +141,11 @@ class ShareCameraEvent extends ControlCameraEvent {
   final List<int> cameraId;
   final int role; // 0 VIEW, 1 FULL
   final String accountInvite;
-  const ShareCameraEvent({required this.cameraId, required this.role, required this.accountInvite});
+  const ShareCameraEvent({
+    required this.cameraId,
+    required this.role,
+    required this.accountInvite,
+  });
 }
 
 class CheckAccountShareEvent extends ControlCameraEvent {
@@ -189,6 +201,12 @@ class GetAllTagsEvent extends ControlCameraEvent {
 
   @override
   List<Object?> get props => [hashCode];
+}
+
+class FilterTagCameraEvent extends ControlCameraEvent {
+  final String? tagName;
+  final String? keyWord;
+  const FilterTagCameraEvent({this.tagName, this.keyWord});
 }
 
 class CreateTagEvent extends ControlCameraEvent {
