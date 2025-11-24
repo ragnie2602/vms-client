@@ -201,7 +201,7 @@ class _ConfigScheduleRecordWidgetState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Flexible(child: TimeSlotWidget()),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 6),
                   Flexible(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -214,83 +214,113 @@ class _ConfigScheduleRecordWidgetState
                         // mainAxisSpacing = 10
                         final cellHeight = cellWidth;
 
-                        return GestureDetector(
-                          onPanStart: (details) {
-                            // calculate index
-                            final localPosition = details.localPosition;
-                            final x = localPosition.dx;
-                            final y = localPosition.dy;
+                        return Stack(
+                          children: [
+                            Container(
+                              // color: Colors.pink,
+                              padding: EdgeInsets.only(top: 8),
+                              child: GestureDetector(
+                                onPanStart: (details) {
+                                  // calculate index
+                                  final localPosition = details.localPosition;
+                                  final x = localPosition.dx;
+                                  final y = localPosition.dy;
 
-                            int col = (x / (cellWidth + 2)).floor();
-                            int row = (y / (cellHeight + 10)).floor();
+                                  int col = (x / (cellWidth + 2)).floor();
+                                  int row = (y / (cellHeight + 10)).floor();
 
-                            if (col >= 0 && col < 24 && row >= 0) {
-                              int index = row * 24 + col;
-                              if (index >= 0 && index < gridItemCount) {
-                                _isDraggingToAdd =
-                                    !listGridviewItemValue[index];
-                                _draggedIndices.clear();
-                                _setGridviewItem(index, _isDraggingToAdd!);
-                                _draggedIndices.add(index);
-                              }
-                            }
-                          },
-                          onPanUpdate: (details) {
-                            if (_isDraggingToAdd == null) return;
-                            final localPosition = details.localPosition;
-                            final x = localPosition.dx;
-                            final y = localPosition.dy;
-
-                            int col = (x / (cellWidth + 2)).floor();
-                            int row = (y / (cellHeight + 10)).floor();
-
-                            if (col >= 0 && col < 24 && row >= 0) {
-                              int index = row * 24 + col;
-                              if (index >= 0 &&
-                                  index < gridItemCount &&
-                                  !_draggedIndices.contains(index)) {
-                                _setGridviewItem(index, _isDraggingToAdd!);
-                                _draggedIndices.add(index);
-                              }
-                            }
-                          },
-                          onPanEnd: (details) {
-                            _isDraggingToAdd = null;
-                            _draggedIndices.clear();
-                          },
-                          child: GridView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 24,
-                                  mainAxisSpacing: 10,
-                                  crossAxisSpacing: 2,
-                                  childAspectRatio: 1, // adjust height
-                                ),
-                            itemCount: gridItemCount,
-                            itemBuilder: (context, index) {
-                              int columnIndex = getColumnIndex(index);
-                              return InkWell(
-                                onTap: () {
-                                  _updateGridviewItem(index);
+                                  if (col >= 0 && col < 24 && row >= 0) {
+                                    int index = row * 24 + col;
+                                    if (index >= 0 && index < gridItemCount) {
+                                      _isDraggingToAdd =
+                                          !listGridviewItemValue[index];
+                                      _draggedIndices.clear();
+                                      _setGridviewItem(
+                                        index,
+                                        _isDraggingToAdd!,
+                                      );
+                                      _draggedIndices.add(index);
+                                    }
+                                  }
                                 },
-                                child: Tooltip(
-                                  message:
-                                      '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color:
-                                          listGridviewItemValue[index] == true
-                                          ? AppColors.primary
-                                          : AppColors.greyE9E9E9,
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
+                                onPanUpdate: (details) {
+                                  if (_isDraggingToAdd == null) return;
+                                  final localPosition = details.localPosition;
+                                  final x = localPosition.dx;
+                                  final y = localPosition.dy;
+
+                                  int col = (x / (cellWidth + 2)).floor();
+                                  int row = (y / (cellHeight + 10)).floor();
+
+                                  if (col >= 0 && col < 24 && row >= 0) {
+                                    int index = row * 24 + col;
+                                    if (index >= 0 &&
+                                        index < gridItemCount &&
+                                        !_draggedIndices.contains(index)) {
+                                      _setGridviewItem(
+                                        index,
+                                        _isDraggingToAdd!,
+                                      );
+                                      _draggedIndices.add(index);
+                                    }
+                                  }
+                                },
+                                onPanEnd: (details) {
+                                  _isDraggingToAdd = null;
+                                  _draggedIndices.clear();
+                                },
+                                child: GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 24,
+                                        mainAxisSpacing: 10,
+                                        crossAxisSpacing: 2,
+                                        childAspectRatio: 1, // adjust height
+                                      ),
+                                  itemCount: gridItemCount,
+                                  itemBuilder: (context, index) {
+                                    int columnIndex = getColumnIndex(index);
+                                    return InkWell(
+                                      onTap: () {
+                                        _updateGridviewItem(index);
+                                      },
+                                      child: Tooltip(
+                                        message:
+                                            '${columnIndex < 9 ? '0' : ''}$columnIndex:00',
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color:
+                                                listGridviewItemValue[index] ==
+                                                    true
+                                                ? AppColors.primary
+                                                : AppColors.greyE9E9E9,
+                                            borderRadius: BorderRadius.circular(
+                                              2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: CustomPaint(
+                                  painter: GridLinePainter(
+                                    cellWidth: cellWidth,
+                                    spacing: 2,
+                                    // color: Colors.amber,
+                                    color: AppColors.greyE2E8F0,
+                                    // color: AppColors.black,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -342,4 +372,47 @@ extension TimeSlotsExt on TimeSlots {
         return '24h00';
     }
   }
+}
+
+class GridLinePainter extends CustomPainter {
+  final double cellWidth;
+  final double spacing;
+  final Color color;
+
+  GridLinePainter({
+    required this.cellWidth,
+    required this.spacing,
+    this.color = AppColors.greyE2E8F0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    // 0h (start)
+    canvas.drawLine(Offset(0, 0), Offset(0, size.height), paint);
+
+    // 6, 12, 18 (middle)
+    final cols = [6, 12, 18];
+    for (var col in cols) {
+      // Calculate x to be in the middle of the spacing before the column
+      // Start of column 'col' is: col * (cellWidth + spacing)
+      // Spacing is 'spacing' wide.
+      // Center of spacing is: col * (cellWidth + spacing) - spacing / 2
+      double x = col * (cellWidth + spacing) - spacing / 2;
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+
+    // 24h (end)
+    canvas.drawLine(
+      Offset(size.width, 0),
+      Offset(size.width, size.height),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

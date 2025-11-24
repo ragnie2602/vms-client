@@ -9,7 +9,7 @@ class ScheduleTimeDayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsGeometry.only(top: 29),
+      padding: EdgeInsetsGeometry.only(top: 31),
       child: ListView.separated(
         padding: EdgeInsets.zero,
         shrinkWrap: true,

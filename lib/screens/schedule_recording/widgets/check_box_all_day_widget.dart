@@ -27,7 +27,7 @@ class CheckBoxAllDayWidget extends StatelessWidget {
             color: AppColors.redFF0000,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
         Flexible(
           child: ListView.separated(
             padding: EdgeInsets.zero,
@@ -51,6 +51,7 @@ class CheckBoxAllDayWidget extends StatelessWidget {
             },
             itemCount: ScheduleTimeDay.values.length,
             separatorBuilder: (context, index) => SizedBox(height: 13),
+            // height của sizedbox cũng phải resize
           ),
         ),
       ],
