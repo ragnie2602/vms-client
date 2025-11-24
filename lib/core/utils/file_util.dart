@@ -1,11 +1,9 @@
 // ignore_for_file: depend_on_referenced_packages, unused_import
 
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart';
-import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -27,18 +25,6 @@ class FileUtil {
     'WEBM': XTypeGroup(label: 'webm', extensions: <String>['webm']),
     'M3U8': XTypeGroup(label: 'm3u8', extensions: <String>['m3u8']),
   };
-
-  /// Convert raw RGBA snapshot bytes to displayable JPG
-  static Uint8List rawRGBAToJPGBytes(Uint8List rgbaBytes, int width, int height) {
-    final image = img.Image.fromBytes(
-      width: width,
-      height: height,
-      bytes: rgbaBytes.buffer,
-      order: img.ChannelOrder.rgba,
-    );
-
-    return img.encodeJpg(image);
-  }
 
   static Future<String?> selectFolderLocation({String? title, String? initialPath}) async {
     return await FilePicker.platform.getDirectoryPath(

@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:io' show Process;
-import 'dart:typed_data' show Uint8List;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -14,7 +13,7 @@ import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
-import 'package:vms_flutter_client/core/utils/file_util.dart';
+import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
@@ -161,13 +160,16 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
     // Đổi source
     if (widget.source != oldWidget.source) {
-      _dualQueue.add(() async => await _connecting());
+      _dualQueue.add(() async => await _connecting(shortDelay: true));
     }
   }
 
   Future<void> _tryDisposePlayer() async {
     try {
-      await _player.dispose(delay: const Duration(milliseconds: 100));
+      await _player.dispose(
+        delay: const Duration(milliseconds: 100),
+        synchronized: widget.mode == MonitorMode.monitoring,
+      );
     } catch (_) {}
   }
 
@@ -188,7 +190,6 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     });
 
     // Properties
-    _player.setProperty('video.decoder', 'shader_resource=0');
     _player.setProperty('avformat.strict', 'experimental');
     _player.setProperty('avformat.safe', '0');
     _player.setProperty('avio.reconnect', '1');
@@ -198,10 +199,21 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     _player.setProperty('avformat.allowed_segment_extensions', 'ALL');
     _player.videoDecoders = AppConfig.MDK_DECODERS;
 
+    _player.setProperty("avcodec.skip_frame", "1");
+    _player.setProperty("avcodec.threads", "1");
+    _player.setProperty("avcodec.skip_loop_filter", "all"); // Tắt lọc nhiễu
+    // Cho phép decoder bỏ qua một số quy chuẩn khắt khe để giải mã nhanh hơn, tốn ít CPU hơn.
+    _player.setProperty("avcodec.flags2", "+fast");
+    // Xóa frame khi dừng
+    _player.setProperty("video.clear_on_stop", "1");
+
     // Reduce latency:
     _player.setProperty('avformat.fflags', '+nobuffer');
     _player.setProperty('avformat.fpsprobesize', '0');
-    _player.setProperty('avformat.analyzeduration', '100000');
+    _player.setProperty("avformat.probesize", "32");
+    _player.setProperty("avformat.formatprobesize", "0");
+    // Không cần phân tích thời lượng vì là live stream
+    _player.setProperty('avformat.analyzeduration', '0');
 
     // No cache
     _player.setBufferRange(min: 0, max: 1, drop: true);
@@ -209,6 +221,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
     if (widget.mode == MonitorMode.monitoring || audioSourceMode.isOff) {
       _player.activeAudioTracks = [];
+      _player.audioDecoders = [];
     }
   }
 
@@ -225,7 +238,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     });
   }
 
-  Future<void> _connecting({bool showLoading = true}) async {
+  Future<void> _connecting({bool showLoading = true, bool shortDelay = false}) async {
     if (!mounted) return;
 
     _timer?.cancel();
@@ -264,6 +277,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
       onTimeout: () => false,
     );
     if (res != true) textureId = -1;
+    if (res == true && shortDelay) await Future.delayed(const Duration(milliseconds: 500));
     _waitForFirstFrame = null;
 
     // Một vài trường hợp loading lâu nên khi tới đây thì widget có thể đã bị dispose
@@ -340,19 +354,23 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     }
   }
 
-  // TODO: Thực thi trong luồng khác --> tránh bị đứng hình giây lát (~ media_kit)
-  Future<Uint8List?> snapshot() async {
+  Future<bool> snapshot(String path) async {
     final videoData = _player.mediaInfo.video?.firstOrNull;
-    if (videoData == null) return null;
+    if (videoData == null) return false;
 
     final res = await _player.snapshot(
       width: videoData.codec.width,
       height: videoData.codec.height,
     );
 
-    return res != null
-        ? FileUtil.rawRGBAToJPGBytes(res, videoData.codec.width, videoData.codec.height)
-        : null;
+    if (res == null) return false;
+
+    return await BackgroundTask.encodeRgbaToJpegFile(
+      path: path,
+      bytes: res,
+      width: videoData.codec.width,
+      height: videoData.codec.height,
+    );
   }
 
   void zoom(int type) {

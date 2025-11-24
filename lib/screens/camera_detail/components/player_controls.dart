@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -29,22 +27,22 @@ class PlayerControls extends StatelessWidget {
     final storageFolderState = context.read<StorageFolderBloc>().state;
     final cameraName = context.read<CameraDetailBloc>().state.camera?.name ?? 'camera';
 
-    final data = await playerController(context)?.snapshot?.call();
-    if (data == null) return;
-
     // C:\Users\admin\Documents\VMSLibrary\Snapshots\ten_camera\yyyyMMdd_HHmmss.jpg
     String path = await storageFolderState.ensureSnapshotFolder(
       cameraName,
       '${DateTime.now().format("yyyyMMdd_HHmmss")}.jpg',
     );
 
-    await File(path).writeAsBytes(data);
-    ToastUtil.toastSuccess(
-      title: Text(
-        "Đã chụp hình",
-        style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
-      ),
-    );
+    // ignore: use_build_context_synchronously
+    final res = await playerController(context)?.snapshot?.call(path);
+    if (res == true) {
+      ToastUtil.toastSuccess(
+        title: Text(
+          "Đã chụp hình",
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+        ),
+      );
+    }
   }
 
   @override
