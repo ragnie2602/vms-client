@@ -58,7 +58,6 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
               suggestColor: _getSuggestColor(),
             ),
           ),
-
         SizedBox(height: 10),
         Material(
           child: InkWell(
@@ -86,8 +85,8 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
       content: Container(
         constraints: BoxConstraints(maxHeight: MediaQuery.heightOf(context) * 480 / 1080),
         width: MediaQuery.widthOf(context) * 500 / 1600,
-        child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
-          builder: (context, state) {
+        child: BlocListener<ControlCameraBloc, ControlCameraState>(
+          listener: (context, state) => setState(() {
             if (state is CreateTagSuccessState) {
               widget.tags.add(state.tag);
             } else if (state is DeleteTagSuccessState) {
@@ -95,37 +94,36 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
             } else if (state is UpdateTagSuccessState) {
               widget.tags[widget.tags.indexWhere((tag) => tag.id.equals(state.tag.id))] = state.tag;
             }
-
-            return widget.tags.isEmpty
-                ? Center(
-                    child: Text(
-                      'Chưa có thẻ phân loại nào',
-                      style: AppTypography.style(14, color: AppColors.grey92929D),
+          }),
+          child: widget.tags.isEmpty
+              ? Center(
+                  child: Text(
+                    'Chưa có thẻ phân loại nào',
+                    style: AppTypography.style(14, color: AppColors.grey92929D),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Danh sách thẻ phân loại',
+                      style: AppTypography.style(16, fontWeight: FontWeight.w700),
                     ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Danh sách thẻ phân loại',
-                        style: AppTypography.style(16, fontWeight: FontWeight.w700),
-                      ),
-                      Flexible(
-                        child: ListView.builder(
-                          itemCount: widget.tags.length,
-                          itemBuilder: (context, index) => _AddEditTagItem(
-                            key: UniqueKey(),
-                            onCheckDuplicate: (name) => _checkDuplicateTag(name),
-                            onRemove: (id) => _deleteTag(id),
-                            onSave: (tag) => _saveTag(tag),
-                            tag: widget.tags[index],
-                          ),
+                    Flexible(
+                      child: ListView.builder(
+                        itemCount: widget.tags.length,
+                        itemBuilder: (context, index) => _AddEditTagItem(
+                          key: UniqueKey(),
+                          onCheckDuplicate: (name) => _checkDuplicateTag(name),
+                          onRemove: (id) => _deleteTag(id),
+                          onSave: (tag) => _saveTag(tag),
+                          tag: widget.tags[index],
                         ),
                       ),
-                    ],
-                  );
-          },
+                    ),
+                  ],
+                ),
         ),
       ),
       contentPadding: EdgeInsets.only(bottom: 10, left: 24, right: 24, top: 24),
