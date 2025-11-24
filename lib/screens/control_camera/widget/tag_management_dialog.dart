@@ -50,6 +50,7 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
           SizedBox(
             width: double.infinity,
             child: _AddEditTagItem(
+              onCheckDuplicate: (name) => _checkDuplicateTag(name),
               onSave: (tag) => setState(() {
                 isAdding = false;
                 _saveTag(tag);
@@ -115,6 +116,7 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
                           itemCount: widget.tags.length,
                           itemBuilder: (context, index) => _AddEditTagItem(
                             key: UniqueKey(),
+                            onCheckDuplicate: (name) => _checkDuplicateTag(name),
                             onRemove: (id) => _deleteTag(id),
                             onSave: (tag) => _saveTag(tag),
                             tag: widget.tags[index],
@@ -154,6 +156,10 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
 
   void _addTempTag() => setState(() => isAdding = true);
 
+  bool _checkDuplicateTag(String name) {
+    return widget.tags.any((tag) => tag.name == name);
+  }
+
   void _deleteTag(List<int> id) => context.read<ControlCameraBloc>().add(DeleteTagEvent(id));
 
   void _saveTag(TagEntity tag) {
@@ -175,17 +181,19 @@ class _TagManagementDialogState extends State<TagManagementDialog> {
 }
 
 class _AddEditTagItem extends StatefulWidget {
-  final TagEntity? tag;
-  final Color? suggestColor;
+  final Function(String name) onCheckDuplicate;
   final Function(List<int> id)? onRemove;
   final Function(TagEntity tag) onSave;
+  final Color? suggestColor;
+  final TagEntity? tag;
 
   const _AddEditTagItem({
     super.key,
-    this.tag,
-    this.suggestColor,
+    required this.onCheckDuplicate,
     this.onRemove,
     required this.onSave,
+    this.suggestColor,
+    this.tag,
   });
   @override
   State<_AddEditTagItem> createState() => _AddEditTagItemState();
@@ -195,6 +203,7 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
   final TextEditingController _nameController = TextEditingController();
 
   bool canSave = false;
+  bool isDuplicate = false;
 
   @override
   void initState() {
@@ -204,92 +213,120 @@ class _AddEditTagItemState extends State<_AddEditTagItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: MediaQuery.widthOf(context) * 500 / 1600 - 48),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.greyE2E8F0),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      margin: EdgeInsets.only(top: 10),
-      padding: EdgeInsets.all(12),
-      child: Row(
-        children: [
-          TagShapeIcon(color: widget.tag?.color ?? widget.suggestColor!, width: 18, height: 12),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-                hintStyle: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.grey92929D,
-                ),
-                hintText: 'Nhập tên phân loại',
-                isDense: true,
-              ),
-              maxLines: 1,
-              onChanged: (value) =>
-                  setState(() => canSave = value.isNotEmpty && value != widget.tag?.name),
-              onSubmitted: (value) => widget.onSave(
-                TagEntity(
-                  id: widget.tag?.id ?? [],
-                  name: value,
-                  color: widget.tag?.color ?? widget.suggestColor!,
-                ),
-              ),
-              style: AppTypography.style(14, fontWeight: FontWeight.w400),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.greyE2E8F0),
+            borderRadius: BorderRadius.circular(8),
           ),
-          const SizedBox(width: 8),
-          if (canSave)
-            BlocBuilder<ControlCameraBloc, ControlCameraState>(
-              builder: (context, state) {
-                if (state is CreateTagLoadingState ||
-                    (state is UpdateTagLoadingState && state.id == widget.tag?.id)) {
-                  return const CircularProgressIndicator();
-                }
-
-                return ElevatedButton(
-                  onPressed: () => widget.onSave(
-                    TagEntity(
-                      id: widget.tag?.id ?? [],
-                      name: _nameController.text,
-                      color: widget.tag?.color ?? widget.suggestColor!,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                  ),
-                  child: Text(
-                    'Lưu',
-                    style: AppTypography.style(
+          margin: EdgeInsets.only(top: 10),
+          padding: EdgeInsets.all(12),
+          child: Row(
+            children: [
+              TagShapeIcon(color: widget.tag?.color ?? widget.suggestColor!, width: 18, height: 12),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    counterText: '',
+                    hintStyle: AppTypography.style(
                       14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.grey92929D,
                     ),
+                    hintText: 'Nhập tên phân loại',
+                    isDense: true,
                   ),
-                );
-              },
-            ),
-          if (widget.tag != null && !canSave)
-            SizedBox(
-              height: 20,
-              width: 20,
-              child: IconButton(
-                icon: SvgPicture.asset(AppAssets.icCloseSolid, width: 20, height: 20),
-                iconSize: 20,
-                onPressed: () => widget.onRemove?.call(widget.tag!.id),
-                padding: EdgeInsets.zero,
-                style: IconButton.styleFrom(padding: EdgeInsets.zero),
+                  maxLength: 50,
+                  maxLines: 1,
+                  onChanged: (value) => setState(() {
+                    canSave = value.isNotEmpty && value != widget.tag?.name;
+                    isDuplicate = false;
+                  }),
+                  onSubmitted: (value) {
+                    if (widget.onCheckDuplicate(_nameController.text)) {
+                      setState(() => isDuplicate = true);
+                      return;
+                    }
+                    widget.onSave(
+                      TagEntity(
+                        id: widget.tag?.id ?? [],
+                        name: value,
+                        color: widget.tag?.color ?? widget.suggestColor!,
+                      ),
+                    );
+                  },
+                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              if (canSave)
+                BlocBuilder<ControlCameraBloc, ControlCameraState>(
+                  builder: (context, state) {
+                    if (state is CreateTagLoadingState ||
+                        (state is UpdateTagLoadingState && state.id == widget.tag?.id)) {
+                      return const CircularProgressIndicator();
+                    }
+
+                    return ElevatedButton(
+                      onPressed: () {
+                        if (widget.onCheckDuplicate(_nameController.text)) {
+                          setState(() => isDuplicate = true);
+                          return;
+                        }
+                        widget.onSave(
+                          TagEntity(
+                            id: widget.tag?.id ?? [],
+                            name: _nameController.text,
+                            color: widget.tag?.color ?? widget.suggestColor!,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                      ),
+                      child: Text(
+                        'Lưu',
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              if (widget.tag != null && !canSave)
+                SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: IconButton(
+                    icon: SvgPicture.asset(AppAssets.icCloseSolid, width: 20, height: 20),
+                    iconSize: 20,
+                    onPressed: () => widget.onRemove?.call(widget.tag!.id),
+                    padding: EdgeInsets.zero,
+                    style: IconButton.styleFrom(padding: EdgeInsets.zero),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (isDuplicate) ...[
+          const SizedBox(height: 10),
+          Text(
+            'Phân loại đã tồn tại',
+            style: AppTypography.style(12, fontWeight: FontWeight.w400, color: AppColors.redFF0004),
+          ),
         ],
-      ),
+      ],
     );
   }
 }
