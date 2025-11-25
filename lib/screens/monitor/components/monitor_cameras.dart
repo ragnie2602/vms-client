@@ -148,49 +148,71 @@ class _MonitorCamerasState extends State<MonitorCameras>
               ),
             ),
             SizedBox(height: 14),
-            InkWell(
-              onTap: () {
-                _showAddCameraDropdownTag(context, context, []);
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: CompositedTransformTarget(
-                  link: layerLink,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        _selectedTags.isEmpty
-                            ? "Thẻ Tags"
-                            : _selectedTags.length == 1
-                            ? _selectedTags.first.name
-                            : "${_selectedTags.length} thẻ",
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w500,
-                          color: _selectedTags.isEmpty
-                              ? AppColors.black
-                              : AppColors.blue005AA9,
-                        ),
+            Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: CompositedTransformTarget(
+                link: layerLink,
+                child: Builder(
+                  builder: (buttonContext) => InkWell(
+                    onTap: () {
+                      _showAddCameraDropdownTag(context, buttonContext, []);
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
                       ),
-                      if (_selectedTags.isNotEmpty) ...[
-                        const SizedBox(width: 4),
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedTags.clear();
-                            });
-                          },
-                          child: Icon(
-                            Icons.cancel,
-                            size: 16,
-                            color: AppColors.blue005AA9,
+                      decoration: BoxDecoration(
+                        color: _selectedTags.isEmpty
+                            ? AppColors.greyEFEFEF
+                            : AppColors.blueE7F3FF,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              _selectedTags.isEmpty
+                                  ? "Thẻ Tags"
+                                  : _selectedTags.length == 1
+                                  ? _selectedTags.first.name
+                                  : "${_selectedTags.length} thẻ",
+                              style: AppTypography.style(
+                                13,
+                                fontWeight: FontWeight.w400,
+                                color: _selectedTags.isEmpty
+                                    ? AppColors.black
+                                    : AppColors.blue005AA9,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
-                      if (_selectedTags.isEmpty)
-                        Icon(Icons.arrow_drop_down, color: AppColors.black),
-                    ],
+                          if (_selectedTags.isNotEmpty) ...[
+                            const SizedBox(width: 4),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedTags.clear();
+                                });
+                              },
+                              child: Icon(
+                                Icons.cancel,
+                                size: 16,
+                                color: AppColors.blue005AA9,
+                              ),
+                            ),
+                          ],
+                          if (_selectedTags.isEmpty) ...[
+                            const SizedBox(width: 4),
+                            SvgPicture.asset(AppAssets.icArrowdown),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
