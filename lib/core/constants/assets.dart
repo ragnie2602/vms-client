@@ -43,6 +43,7 @@ class AppAssets {
   static const icArrowLeft = '$_svgPath/arrow_left.svg';
   static const icBell = '$_svgPath/bell.svg';
   static const icSearch = '$_svgPath/search.svg';
+  static const icSearchMobile = '$_svgPath/ic_search_mobile.svg';
   static const icDarkMode = '$_svgPath/dark_mode.svg';
   static const icLightMode = '$_svgPath/light_mode.svg';
   static const icAlertTriangle = '$_svgPath/alert_triangle.svg';
@@ -112,4 +113,13 @@ class AppAssets {
   static const icKey = '$_svgPath/ic_key.svg';
   static const icCameraMap = '$_svgPath/ic_camera_map.svg';
   static const icUserInfo = '$_svgPath/ic_user_info.svg';
+
+  // Mobile
+  static const icFilterAltLight = '$_svgPath/ic_filter_alt_light.svg';
+  static const icHome = '$_svgPath/ic_home.svg';
+  static const icHomeFilled = '$_svgPath/ic_home_filled.svg';
+  static const icUser = '$_svgPath/ic_user.svg';
+  static const icUserFilled = '$_svgPath/ic_user_filled.svg';
+  static const icVideoOnline = '$_svgPath/ic_camera_online_mobile.svg';
+  static const icVideoOffline = '$_svgPath/ic_camera_offline_mobile.svg';
 }
