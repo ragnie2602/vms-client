@@ -26,6 +26,16 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                   _expandedDiscoveryIndex = null;
                 });
                 _deviceMatches = await widget.onCheckDiscovery?.call();
+                print(widget.deviceFounded);
+                print(_deviceMatches?.length);
+                if (widget.deviceFounded != null) {
+                  _deviceMatches?.removeWhere(
+                    (element) => widget.deviceFounded!.any(
+                      (e) => e.xAddr == element.xAddr,
+                    ),
+                  );
+                }
+                print(_deviceMatches?.length);
                 updateState(() {
                   _isCheckingDiscovery = false;
                 });
@@ -129,7 +139,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
             },
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.all(16),
               child: buildHeader(
                 AppTypography.style(
                   14,
@@ -241,9 +251,11 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               SizedBox(
-                height: 36,
+                height: 23,
                 child: AppButton.outline(
                   label: 'Thêm và Sửa',
+                  borderColor: AppColors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   onPressed: () {
                     updateState(() {
                       _step = AddCameraStep.manualForm;
@@ -259,9 +271,11 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
               ),
               const SizedBox(width: 8),
               SizedBox(
-                height: 36,
+                height: 23,
                 child: AppButton.filled(
                   label: 'Thêm',
+                  backgroundColor: AppColors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   onPressed: () {
                     if (_discoveryFormKey.currentState?.validate() ?? false) {
                       updateState(() {
