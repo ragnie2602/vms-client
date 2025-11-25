@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 import '../../shared/state_builder_mixin.dart';
 import '../bloc/camera_detail/camera_detail_bloc.dart';
@@ -82,7 +83,11 @@ class _PlaybackItemState extends State<PlaybackItem> {
 
     context.read<PlaybackBloc>().add(
       DownloadPlayback(
-        widget.playback,
+        url: widget.playback.urlPlayback,
+        getSavedPath: () => context.read<StorageFolderBloc>().state.ensureVideoFolder(
+          context.read<CameraDetailBloc>().state.camera?.name ?? 'camera',
+          '${widget.playback.startTime.format("yyyyMMdd_HHmmss")}.mp4',
+        ),
         onProgress: (progress) => _progress.value = progress,
         onError: (error) {
           _progress.value = null;

@@ -5,12 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
-import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/datasources/protobuf_http_client.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
-import 'package:path/path.dart' as p;
 
 part 'playback_event.dart';
 part 'playback_state.dart';
@@ -63,15 +61,12 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
 
   FutureOr<void> _onDownloadPlayback(DownloadPlayback event, Emitter<PlaybackState> emit) async {
     try {
-      final extension = p.extension(event.playback.urlPlayback);
-      final fileName = p.basenameWithoutExtension(event.playback.urlPlayback);
-
-      final saveLocation = await FileUtil.selectSaveLocation(fileName, extension);
-      if (saveLocation == null) return;
+      final savedPath = await event.getSavedPath();
+      if (savedPath == null) return;
 
       BackgroundTask.download(
-        url: event.playback.urlPlayback,
-        savePath: saveLocation,
+        url: event.url,
+        savePath: savedPath,
         onProgress: event.onProgress,
         onComplete: () => event.onProgress?.call(null),
         onError: (error) => event.onError?.call(error.toString()),
