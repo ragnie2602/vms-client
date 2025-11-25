@@ -4,7 +4,14 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 
 class ScheduleTimeDayWidget extends StatelessWidget {
-  const ScheduleTimeDayWidget({super.key});
+  const ScheduleTimeDayWidget({
+    super.key,
+    required this.rowHeight,
+    required this.spacing,
+  });
+
+  final double rowHeight;
+  final double spacing;
 
   @override
   Widget build(BuildContext context) {
@@ -13,10 +20,12 @@ class ScheduleTimeDayWidget extends StatelessWidget {
       child: ListView.separated(
         padding: EdgeInsets.zero,
         shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
         itemBuilder: (_, index) {
           final day = ScheduleTimeDay.values[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.5),
+          return Container(
+            height: rowHeight,
+            alignment: Alignment.centerLeft,
             child: Text(
               day.displayName,
               style: AppTypography.style(
@@ -27,7 +36,7 @@ class ScheduleTimeDayWidget extends StatelessWidget {
             ),
           );
         },
-        separatorBuilder: (_, __) => SizedBox(height: 15),
+        separatorBuilder: (_, __) => SizedBox(height: spacing),
         itemCount: ScheduleTimeDay.values.length,
       ),
     );
