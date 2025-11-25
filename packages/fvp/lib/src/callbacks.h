@@ -38,6 +38,7 @@ enum CallbackType {
     Snapshot,   // no register, one time callback
     SubtitleText,
     Count,
+    MediaChanged,
 };
 
 // Callback data from dart if callback has return type or out parameters
