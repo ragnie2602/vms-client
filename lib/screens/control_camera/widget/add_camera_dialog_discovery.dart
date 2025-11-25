@@ -26,8 +26,6 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                   _expandedDiscoveryIndex = null;
                 });
                 _deviceMatches = await widget.onCheckDiscovery?.call();
-                print(widget.deviceFounded);
-                print(_deviceMatches?.length);
                 if (widget.deviceFounded != null) {
                   _deviceMatches?.removeWhere(
                     (element) => widget.deviceFounded!.any(
@@ -35,7 +33,6 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                     ),
                   );
                 }
-                print(_deviceMatches?.length);
                 updateState(() {
                   _isCheckingDiscovery = false;
                 });
