@@ -21,6 +21,7 @@ class ErrorService {
   static String? get logPath => _logFile?.path;
   static final List<String> _excludedErrors = [
     "PlatformException(media open error, invalid or unsupported media, null, null)",
+    "A RenderFlex overflowed by"
   ];
 
   static Future<void> initGlobalErrorHandler(Future<void> Function() app) async {
@@ -73,7 +74,7 @@ class ErrorService {
     StackTrace? stack, {
     String level = 'ERROR',
   }) async {
-    if (_excludedErrors.contains(error.toString())) return;
+    if (_excludedErrors.any((e) => error.toString().contains(e))) return;
     if (_logFile == null) await _initLogFile();
 
     final timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
