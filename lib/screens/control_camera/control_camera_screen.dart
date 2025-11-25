@@ -80,13 +80,20 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
 
   void _onSearch() {
     context.read<ControlCameraBloc>().add(
-      FilterCameraEvent(cameraName: cameraNameController.text, isOnline: cameraStatus?.getValue),
+      FilterCameraEvent(
+        cameraName: cameraNameController.text,
+        isOnline: cameraStatus?.getValue,
+        tagName: tagSelected?.name,
+      ),
     );
   }
 
   void _onFilterTag() {
     context.read<ControlCameraBloc>().add(
-      FilterTagCameraEvent(tagName: tagSelected?.name, keyWord: cameraNameController.text),
+      FilterTagCameraEvent(
+        tagName: tagSelected?.name,
+        keyWord: cameraNameController.text,
+      ),
     );
   }
 
@@ -461,7 +468,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 onChanged: (p0) {
                                   setState(() {
                                     tagSelected = p0;
-                                    _onFilterTag();
+                                    // _onFilterTag();
+                                    _onSearch();
                                   });
                                 },
                                 itemAsString: (p0) => p0.name,

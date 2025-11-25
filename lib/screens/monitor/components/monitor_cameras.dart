@@ -59,6 +59,8 @@ class _MonitorCamerasState extends State<MonitorCameras>
   @override
   void dispose() {
     _searchController.dispose();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
     super.dispose();
   }
 

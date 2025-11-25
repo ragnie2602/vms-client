@@ -157,8 +157,8 @@ class _TagDropdownState extends State<TagDropdown> {
                                   child: Row(
                                     children: [
                                       Container(
-                                        width: 20,
-                                        height: 20,
+                                        width: 18,
+                                        height: 18,
                                         decoration: BoxDecoration(
                                           color: tag.isSelected
                                               ? AppColors.blue085DA8
