@@ -82,7 +82,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   @override
   void initState() {
-    _state.addListener(() => _tryReconnecting(_state.value.isError));
+    _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
     _status.addListener(() => widget.onStatusChanged?.call(_status.value));
 
     _initZoom();
@@ -320,7 +320,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
       if (!mounted ||
           _status.value == PlayerStatus.finished ||
           _status.value == PlayerStatus.paused ||
-          _state.value == PlayerState.error) {
+          _state.value.isError) {
         return;
       }
 
