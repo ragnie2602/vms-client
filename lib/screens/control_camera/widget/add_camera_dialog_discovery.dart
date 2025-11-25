@@ -12,7 +12,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
             13,
             fontWeight: FontWeight.w400,
             isItalic: true,
-            color: AppColors.grey64748B,
+            color: AppColors.grey334155,
           ),
           overflow: TextOverflow.visible,
         ),
@@ -47,7 +47,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                   'Tìm kiếm',
                   style: AppTypography.style(
                     13,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.blue005AA9,
                   ),
                 ),
@@ -108,7 +108,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
     Widget buildHeader(TextStyle textStyle) {
       return Row(
         children: [
-          const Icon(Icons.videocam_outlined, size: 18, color: AppColors.black),
+          SvgPicture.asset(AppAssets.icVideoOn),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -130,7 +130,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                 _expandedDiscoveryIndex = index;
                 _onvifXaddrs.text = match.xAddr;
                 if (_onvifUserName.text.isEmpty) {
-                  _onvifUserName.text = 'Admin';
+                  _onvifUserName.text = 'admin';
                 }
               });
             },

@@ -267,7 +267,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       child: SizedBox(
         height: 44,
         child: AppButton.outline(
-          label: 'Hủy',
+          label: _step == AddCameraStep.discovery ? 'Đóng' : 'Hủy',
           onPressed: (_isChecking || _isSubmitting)
               ? null
               : () => Navigator.pop(context),
