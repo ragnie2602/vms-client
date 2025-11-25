@@ -8,10 +8,15 @@ class CheckBoxAllDayWidget extends StatelessWidget {
     super.key,
     required this.updateCheckBox,
     required this.listCheckAllDay,
+    required this.rowHeight,
+    required this.spacing,
   });
 
   final Function(int) updateCheckBox;
   final List<bool> listCheckAllDay;
+
+  final double rowHeight;
+  final double spacing;
 
   @override
   Widget build(BuildContext context) {
@@ -27,30 +32,35 @@ class CheckBoxAllDayWidget extends StatelessWidget {
             color: AppColors.redFF0000,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
         Flexible(
           child: ListView.separated(
             padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
             itemBuilder: (_, index) {
-              return SizedBox(
-                width: 20,
-                height: 20,
-                child: Checkbox(
-                  side: BorderSide(color: AppColors.greyE2E8F0, width: 1.0),
-                  activeColor: AppColors.blue005AA9,
-                  value: listCheckAllDay[index],
-                  onChanged: (_) {
-                    updateCheckBox(index);
-                  },
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
+              return Container(
+                height: rowHeight,
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: Checkbox(
+                    side: BorderSide(color: AppColors.greyE2E8F0, width: 1.0),
+                    activeColor: AppColors.blue005AA9,
+                    value: listCheckAllDay[index],
+                    onChanged: (_) {
+                      updateCheckBox(index);
+                    },
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
+                  ),
                 ),
               );
             },
             itemCount: ScheduleTimeDay.values.length,
-            separatorBuilder: (context, index) => SizedBox(height: 13),
+            separatorBuilder: (context, index) => SizedBox(height: spacing),
+            // height của sizedbox cũng phải resize
           ),
         ),
       ],
