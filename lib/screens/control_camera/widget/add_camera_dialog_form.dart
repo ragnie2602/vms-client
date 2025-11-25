@@ -1,7 +1,7 @@
 part of 'dialog.dart';
 
 extension AddCameraDialogForm on _AddCameraDialogState {
-  Widget _buildManualForm() {
+  Widget _buildManualForm({required VoidCallback onScroll}) {
     return Form(
       key: _form,
       child: Column(
@@ -64,12 +64,14 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           const SizedBox(height: 12),
           _TagField(
             _tags,
-            scrollController,
             onTap: () {
               // Khi user click vào _TagField để mở dropdown, thêm spacing
               if (_additionalSpacing == 0) {
                 updateState(() {
-                  _additionalSpacing = 300;
+                  _additionalSpacing = 150;
+                });
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  onScroll.call();
                 });
               }
             },

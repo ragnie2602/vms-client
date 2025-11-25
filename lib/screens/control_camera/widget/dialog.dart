@@ -250,7 +250,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             behavior: ScrollConfiguration.of(
               context,
             ).copyWith(scrollbars: false),
-            child: SingleChildScrollView(child: _buildStepContent()),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: _buildStepContent()),
           ),
         ),
         actions: [
@@ -375,6 +377,14 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     );
   }
 
+  void _scrollToBottom() {
+    if (scrollController.hasClients) {
+      // Use the maxScrollExtent property for the maximum scroll position
+      final double maxScroll = scrollController.position.maxScrollExtent;
+      scrollController.jumpTo(maxScroll);
+    }
+  }
+
   /// Đổi title dialog theo mode/bước hiện tại
   String _buildDialogTitle() {
     if (widget.mode == CameraDialogMode.edit) {
@@ -399,7 +409,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       case AddCameraStep.selectMode:
         return _buildSelectMode();
       case AddCameraStep.manualForm:
-        return _buildManualForm();
+        return _buildManualForm(onScroll: _scrollToBottom);
       case AddCameraStep.discovery:
         return _buildDiscoveryContent();
       case AddCameraStep.importFile:
@@ -516,11 +526,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
 class _TagField extends StatefulWidget {
   final Set<TagEntity> tags;
-  final ScrollController scrollController;
   final VoidCallback? onTap;
   final VoidCallback? onClose;
 
-  const _TagField(this.tags, this.scrollController, {this.onTap, this.onClose});
+  const _TagField(this.tags, {this.onTap, this.onClose});
   @override
   State<_TagField> createState() => _TagFieldState();
 }
