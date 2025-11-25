@@ -20,6 +20,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [SizedBox.shrink()],
         leadingWidth: 0,
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -75,7 +76,9 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
               children: [
                 Text('Các camera', style: AppTypography.style(13, fontWeight: FontWeight.w500)),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Scaffold.of(context).openEndDrawer();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.greyF5F5F5,
                     elevation: 0,
@@ -104,14 +107,14 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
               child: BlocBuilder<MonitorBloc, MonitorState>(
                 builder: (context, state) {
                   if (state is MonitorLoading) return Center(child: CircularProgressIndicator());
-                  if (state is MonitorSuccess) {
+                  if (state is MonitorSuccess && state.cameras.isNotEmpty) {
                     return ListView.builder(
                       itemBuilder: (context, index) => AspectRatio(
                         aspectRatio: 345 / 200,
                         child: Container(
                           decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.black),
                           margin: const EdgeInsets.symmetric(vertical: 7.5),
-                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+                          // padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
                           child: Stack(
                             children: [
                               Center(
@@ -140,13 +143,13 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                                   ],
                                 ),
                               ),
-                              Align(
-                                alignment: AlignmentGeometry.bottomCenter,
+                              Positioned(
+                                bottom: 7,
+                                left: 15,
+                                right: 15,
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 2),
+                                    Expanded(
                                       child: Text(
                                         state.cameras[index].name,
                                         style: AppTypography.style(
@@ -156,9 +159,9 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                                         ),
                                       ),
                                     ),
-                                    IconButton(
-                                      onPressed: () {},
-                                      icon: SvgPicture.asset(
+                                    InkWell(
+                                      onTap: () {},
+                                      child: SvgPicture.asset(
                                         AppAssets.tabSettings,
                                         color: AppColors.white,
                                         height: 24,

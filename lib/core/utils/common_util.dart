@@ -6,4 +6,8 @@ extension ListExtension<T> on List<T> {
     }
     return true;
   }
+
+  List<T> copy() {
+    return List.from(this);
+  }
 }

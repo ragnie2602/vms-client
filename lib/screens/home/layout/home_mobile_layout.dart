@@ -6,11 +6,19 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 
-class HomeMobileLayout extends StatelessWidget {
+class HomeMobileLayout extends StatefulWidget {
   final Widget content;
 
   const HomeMobileLayout({super.key, required this.content});
+
+  @override
+  State<HomeMobileLayout> createState() => _HomeMobileLayoutState();
+}
+
+class _HomeMobileLayoutState extends State<HomeMobileLayout> {
+  final FilterDrawerController _filterDrawerController = FilterDrawerController();
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +27,7 @@ class HomeMobileLayout extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Expanded(
-            child: Padding(padding: const EdgeInsets.only(left: 1, top: 1), child: content),
+            child: Padding(padding: const EdgeInsets.only(left: 1, top: 1), child: widget.content),
           ),
         ],
       ),
@@ -42,6 +50,7 @@ class HomeMobileLayout extends StatelessWidget {
         selectedLabelStyle: AppTypography.style(11, fontWeight: FontWeight.w500, color: AppColors.blue15ABFF),
         unselectedLabelStyle: AppTypography.style(11, fontWeight: FontWeight.w500, color: AppColors.grey666666),
       ),
+      endDrawer: FilterDrawer(controller: _filterDrawerController),
     );
   }
 
