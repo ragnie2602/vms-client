@@ -117,6 +117,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
   bool _isAddingDiscoveryCamera = false;
   final _discoveryFormKey = GlobalKey<FormState>();
+  ScrollController scrollController = ScrollController();
+  double _additionalSpacing = 0;
 
   @override
   void initState() {
@@ -514,8 +516,11 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
 class _TagField extends StatefulWidget {
   final Set<TagEntity> tags;
+  final ScrollController scrollController;
+  final VoidCallback? onTap;
+  final VoidCallback? onClose;
 
-  const _TagField(this.tags);
+  const _TagField(this.tags, this.scrollController, {this.onTap, this.onClose});
   @override
   State<_TagField> createState() => _TagFieldState();
 }
@@ -530,7 +535,10 @@ class _TagFieldState extends State<_TagField> {
       link: layerLink,
       child: Builder(
         builder: (buttonContext) => InkWell(
-          onTap: () => _showAddCameraDropdown(context, buttonContext, []),
+          onTap: () {
+            widget.onTap?.call();
+            _showAddCameraDropdown(context, buttonContext, []);
+          },
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -637,6 +645,7 @@ class _TagFieldState extends State<_TagField> {
           onClose: () {
             _overlayEntry?.remove();
             _overlayEntry = null;
+            widget.onClose?.call();
           },
           onOpenTagManagement: (tags) {
             _overlayEntry?.remove();

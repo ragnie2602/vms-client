@@ -5,6 +5,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
     return Form(
       key: _form,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppField(
@@ -61,7 +62,25 @@ extension AddCameraDialogForm on _AddCameraDialogState {
             ),
           ),
           const SizedBox(height: 12),
-          _TagField(_tags),
+          _TagField(
+            _tags,
+            scrollController,
+            onTap: () {
+              // Khi user click vào _TagField để mở dropdown, thêm spacing
+              if (_additionalSpacing == 0) {
+                updateState(() {
+                  _additionalSpacing = 300;
+                });
+              }
+            },
+            onClose: () {
+              // Khi đóng dropdown, xóa spacing
+              updateState(() {
+                _additionalSpacing = 0;
+              });
+            },
+          ),
+          SizedBox(height: _additionalSpacing),
         ],
       ),
     );
@@ -82,8 +101,14 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           ),
         ),
         const SizedBox(height: 12),
-        _buildSelectModeOption(label: 'Thêm thủ công', value: AddCameraStep.manualForm),
-        _buildSelectModeOption(label: 'Dò tìm camera', value: AddCameraStep.discovery),
+        _buildSelectModeOption(
+          label: 'Thêm thủ công',
+          value: AddCameraStep.manualForm,
+        ),
+        _buildSelectModeOption(
+          label: 'Dò tìm camera',
+          value: AddCameraStep.discovery,
+        ),
       ],
     );
   }
