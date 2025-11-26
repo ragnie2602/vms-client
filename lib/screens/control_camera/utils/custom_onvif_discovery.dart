@@ -57,36 +57,50 @@ class CustomOnvifDiscovery {
       socket.broadcastEnabled = true;
       socket.readEventsEnabled = true;
 
-      socket.listen((RawSocketEvent event) {
-        if (event == RawSocketEvent.read) {
-          final datagram = socket?.receive();
-          if (datagram != null) {
-            final response = utf8.decode(datagram.data);
-            final match = _parseProbeMatch(response, datagram.address.address);
-            if (match != null && !foundAddresses.contains(match.xAddr)) {
-              foundAddresses.add(match.xAddr);
-              devices.add(match);
+      socket.listen(
+        (RawSocketEvent event) {
+          if (event == RawSocketEvent.read) {
+            try {
+              final datagram = socket?.receive();
+              if (datagram != null) {
+                final response = utf8.decode(datagram.data);
+                final match = _parseProbeMatch(response, datagram.address.address);
+                if (match != null && !foundAddresses.contains(match.xAddr)) {
+                  foundAddresses.add(match.xAddr);
+                  devices.add(match);
+                }
+              }
+            } catch (e) {
+              // Ignore receive/parse errors
             }
           }
-        }
-      });
+        },
+        onError: (error) {
+          // Ignore socket errors during listening
+        },
+        cancelOnError: false,
+      );
 
       final probeMessage = _buildProbeMessage();
       final data = utf8.encode(probeMessage);
 
       // Send to Multicast Group
-      socket.send(
-        data,
-        InternetAddress(_multicastAddress),
-        _onvifDiscoveryPort,
-      );
+      try {
+        socket.send(
+          data,
+          InternetAddress(_multicastAddress),
+          _onvifDiscoveryPort,
+        );
+      } catch (e) {
+        // Ignore multicast send errors
+      }
 
       // Send to broadcast address of each interface (sometimes helps)
       try {
         final interfaces = await NetworkInterface.list();
         for (var interface in interfaces) {
           for (var addr in interface.addresses) {
-            if (addr.type == InternetAddressType.IPv4) {
+            if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
               // Try to send to the broadcast address of the subnet if possible
               // Since we can't easily get broadcast addr, we rely on multicast
             }
@@ -98,9 +112,16 @@ class CustomOnvifDiscovery {
 
       await Future.delayed(timeout);
     } catch (e) {
-      print('Multicast probe error: $e');
+      // Only log unexpected errors
+      if (!e.toString().contains('No route to host')) {
+        print('Multicast probe error: $e');
+      }
     } finally {
-      socket?.close();
+      try {
+        socket?.close();
+      } catch (e) {
+        // Ignore close errors
+      }
     }
   }
 
@@ -139,44 +160,75 @@ class CustomOnvifDiscovery {
 
     RawDatagramSocket? socket;
     try {
-      socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+      // Bind to the specific local interface instead of anyIPv4
+      socket = await RawDatagramSocket.bind(localIp, 0);
       socket.broadcastEnabled = true;
 
-      socket.listen((RawSocketEvent event) {
-        if (event == RawSocketEvent.read) {
-          final datagram = socket?.receive();
-          if (datagram != null) {
-            final response = utf8.decode(datagram.data);
-            final match = _parseProbeMatch(response, datagram.address.address);
-            if (match != null && !foundAddresses.contains(match.xAddr)) {
-              foundAddresses.add(match.xAddr);
-              devices.add(match);
+      bool isSocketClosed = false;
+
+      socket.listen(
+        (RawSocketEvent event) {
+          if (event == RawSocketEvent.read) {
+            try {
+              final datagram = socket?.receive();
+              if (datagram != null) {
+                final response = utf8.decode(datagram.data);
+                final match = _parseProbeMatch(response, datagram.address.address);
+                if (match != null && !foundAddresses.contains(match.xAddr)) {
+                  foundAddresses.add(match.xAddr);
+                  devices.add(match);
+                }
+              }
+            } catch (e) {
+              // Ignore receive errors
             }
+          } else if (event == RawSocketEvent.closed) {
+            isSocketClosed = true;
           }
-        }
-      });
+        },
+        onError: (error) {
+          // Ignore socket errors during listening
+        },
+        cancelOnError: false,
+      );
 
       // Send unicast probes to all IPs in subnet
       // We scan 1-254.
       for (int i = 1; i < 255; i++) {
+        if (isSocketClosed) break;
+        
         final targetIp = '$prefix.$i';
         if (targetIp == ip) continue;
 
         try {
-          socket.send(data, InternetAddress(targetIp), _onvifDiscoveryPort);
+          // Check if socket is still valid before sending
+          if (!isSocketClosed) {
+            final targetAddr = InternetAddress(targetIp);
+            socket.send(data, targetAddr, _onvifDiscoveryPort);
+          }
         } catch (e) {
-          // Ignore send errors
+          // Silently ignore send errors for individual IPs
+          // This is expected for unreachable hosts
         }
 
         // Small delay to avoid flooding network buffer
-        if (i % 10 == 0) await Future.delayed(const Duration(milliseconds: 5));
+        if (i % 20 == 0) {
+          await Future.delayed(const Duration(milliseconds: 10));
+        }
       }
 
       await Future.delayed(timeout);
     } catch (e) {
-      print('Subnet scan socket error: $e');
+      // Only log critical socket errors, not individual send failures
+      if (!e.toString().contains('No route to host')) {
+        print('Subnet scan socket error: $e');
+      }
     } finally {
-      socket?.close();
+      try {
+        socket?.close();
+      } catch (e) {
+        // Ignore close errors
+      }
     }
   }
 

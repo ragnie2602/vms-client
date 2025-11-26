@@ -34,6 +34,7 @@ Future<T?> showAddCameraDialog<T>(
   Future<void> Function(AddCameraPayload value)? onSubmit,
   Future<void> Function(AddCameraPayload value)? onEdit,
   Future<List<DiscoveredDevice>> Function()? onCheckDiscovery,
+  List<DiscoveredDevice>? deviceFounded,
   VoidCallback? onBack,
   final Function(
     String xaddrs,
@@ -57,6 +58,7 @@ Future<T?> showAddCameraDialog<T>(
         onBack: onBack,
         onCheck: onCheck,
         onCheckDiscovery: onCheckDiscovery,
+        deviceFounded: deviceFounded,
       ),
     ),
   );
@@ -71,12 +73,14 @@ class _AddCameraDialog extends StatefulWidget {
     this.onBack,
     this.onCheck,
     this.onCheckDiscovery,
+    this.deviceFounded,
   });
   final CameraDialogMode mode;
   final CameraEntity? cameraData;
   final Future<void> Function(AddCameraPayload value)? onSubmit;
   final Future<void> Function(AddCameraPayload value)? onEdit;
   final Future<List<DiscoveredDevice>> Function()? onCheckDiscovery;
+  final List<DiscoveredDevice>? deviceFounded;
   final VoidCallback? onBack;
   final Function(
     String xaddrs,
@@ -252,113 +256,113 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
           ),
         ),
         actions: [
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 44,
-                  child: AppButton.outline(
-                    label: 'Hủy',
-                    onPressed: (_isChecking || _isSubmitting)
-                        ? null
-                        : () => Navigator.pop(context),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: SizedBox(
-                  height: 44,
-                  child: AppButton.filled(
-                    label: _isSubmitting
-                        ? ''
-                        : _step == AddCameraStep.manualForm
-                        ? 'Xác nhận'
-                        : 'Tiếp tục',
-                    onPressed:
-                        _isSubmitting ||
-                            (_step == AddCameraStep.selectMode &&
-                                _selectedAddStep == null)
-                        ? null
-                        : () async {
-                            // Bước chọn phương thức -> chuyển sang bước tương ứng
-                            if (_step == AddCameraStep.selectMode) {
-                              if (_selectedAddStep == null) return;
-                              setState(() {
-                                _step = _selectedAddStep!;
-                              });
-                              return;
-                            }
-
-                            // Các bước không phải form thủ công hiện tại: placeholder, chỉ đóng dialog
-                            if (_step != AddCameraStep.manualForm) {
-                              Navigator.pop(context);
-                              return;
-                            }
-
-                            // Bước form thủ công: giữ nguyên logic submit cũ
-                            if (_form.currentState?.validate() ?? false) {
-                              setState(() => _isSubmitting = true);
-
-                              final payload = AddCameraPayload(
-                                name: _name.text.trim(),
-                                method: _method,
-                                rtsp: _rtsp.text.trim(),
-                                onifDeviceIp: _onvifXaddrs.text.trim(),
-                                username: _onvifUserName.text.trim(),
-                                password: _onvifPassword.text.trim(),
-                                subStream: _sub.text.trim(),
-                                location: CameraMap(
-                                  lat:
-                                      double.tryParse(
-                                        _lat.text.replaceAll(',', '.'),
-                                      ) ??
-                                      0,
-                                  log:
-                                      double.tryParse(
-                                        _lon.text.replaceAll(',', '.'),
-                                      ) ??
-                                      0,
-                                  locationDes: _desc.text.trim(),
-                                ),
-                                xaddr: _onvifXaddrs.text.trim(),
-                                // boxId: _boxId.text.trim(),
-                                // groupId: _groupId.text.trim(),
-                                subStreamUrls: _sub.text.isEmpty
-                                    ? []
-                                    : _sub.text.trim().split(','),
-                                // urn: _urn.text.trim(),
-                                // serialNumber: _serialNumber.text.trim(),
-                                tags: _tags,
-                              );
-
-                              // Gọi callback tương ứng với mode
-                              if (widget.mode == CameraDialogMode.add) {
-                                await widget.onSubmit?.call(payload);
-                              } else {
-                                await widget.onEdit?.call(payload);
-                              }
-                              // Không pop ở đây, sẽ pop trong BlocListener khi API hoàn thành
-                            }
-                          },
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : null,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          Row(children: [_buildBackButton(context), _buildNextButton(context)]),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return Expanded(
+      child: SizedBox(
+        height: 44,
+        child: AppButton.outline(
+          label: _step == AddCameraStep.discovery ? 'Đóng' : 'Hủy',
+          onPressed: (_isChecking || _isSubmitting)
+              ? null
+              : () => Navigator.pop(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNextButton(BuildContext context) {
+    return Visibility(
+      visible: _step == AddCameraStep.selectMode,
+      child: Expanded(
+        child: Container(
+          height: 44,
+          padding: EdgeInsets.only(left: 16),
+          child: AppButton.filled(
+            label: _isSubmitting
+                ? ''
+                : _step == AddCameraStep.manualForm
+                ? 'Xác nhận'
+                : 'Tiếp tục',
+            onPressed:
+                _isSubmitting ||
+                    (_step == AddCameraStep.selectMode &&
+                        _selectedAddStep == null)
+                ? null
+                : () async {
+                    // Bước chọn phương thức -> chuyển sang bước tương ứng
+                    if (_step == AddCameraStep.selectMode) {
+                      if (_selectedAddStep == null) return;
+                      setState(() {
+                        _step = _selectedAddStep!;
+                      });
+                      return;
+                    }
+
+                    // Các bước không phải form thủ công hiện tại: placeholder, chỉ đóng dialog
+                    if (_step != AddCameraStep.manualForm) {
+                      Navigator.pop(context);
+                      return;
+                    }
+
+                    // Bước form thủ công: giữ nguyên logic submit cũ
+                    if (_form.currentState?.validate() ?? false) {
+                      setState(() => _isSubmitting = true);
+
+                      final payload = AddCameraPayload(
+                        name: _name.text.trim(),
+                        method: _method,
+                        rtsp: _rtsp.text.trim(),
+                        onifDeviceIp: _onvifXaddrs.text.trim(),
+                        username: _onvifUserName.text.trim(),
+                        password: _onvifPassword.text.trim(),
+                        subStream: _sub.text.trim(),
+                        location: CameraMap(
+                          lat:
+                              double.tryParse(_lat.text.replaceAll(',', '.')) ??
+                              0,
+                          log:
+                              double.tryParse(_lon.text.replaceAll(',', '.')) ??
+                              0,
+                          locationDes: _desc.text.trim(),
+                        ),
+                        xaddr: _onvifXaddrs.text.trim(),
+                        // boxId: _boxId.text.trim(),
+                        // groupId: _groupId.text.trim(),
+                        subStreamUrls: _sub.text.isEmpty
+                            ? []
+                            : _sub.text.trim().split(','),
+                        // urn: _urn.text.trim(),
+                        // serialNumber: _serialNumber.text.trim(),
+                        tags: _tags,
+                      );
+
+                      // Gọi callback tương ứng với mode
+                      if (widget.mode == CameraDialogMode.add) {
+                        await widget.onSubmit?.call(payload);
+                      } else {
+                        await widget.onEdit?.call(payload);
+                      }
+                      // Không pop ở đây, sẽ pop trong BlocListener khi API hoàn thành
+                    }
+                  },
+            child: _isSubmitting
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : null,
+          ),
+        ),
       ),
     );
   }
