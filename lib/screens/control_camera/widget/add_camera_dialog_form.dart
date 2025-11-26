@@ -107,6 +107,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           label: 'Thêm thủ công',
           value: AddCameraStep.manualForm,
         ),
+        const SizedBox(height: 12),
         _buildSelectModeOption(
           label: 'Dò tìm camera',
           value: AddCameraStep.discovery,
@@ -125,30 +126,16 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           _selectedAddStep = value;
         });
       },
-      child: Row(
-        children: [
-          Radio<AddCameraStep>(
-            value: value,
-            groupValue: _selectedAddStep,
-            onChanged: (v) {
-              if (v == null) return;
-              updateState(() {
-                _selectedAddStep = v;
-              });
-            },
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w400,
-                color: AppColors.black,
-              ),
-            ),
-          ),
-        ],
+      child: CustomRadioButton(
+        value: value,
+        title: label,
+        groupValue: _selectedAddStep,
+        onChanged: (v) {
+          if (v == null) return;
+          updateState(() {
+            _selectedAddStep = v;
+          });
+        },
       ),
     );
   }

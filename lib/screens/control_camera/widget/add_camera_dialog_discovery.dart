@@ -12,7 +12,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
             13,
             fontWeight: FontWeight.w400,
             isItalic: true,
-            color: AppColors.grey64748B,
+            color: AppColors.grey334155,
           ),
           overflow: TextOverflow.visible,
         ),
@@ -26,6 +26,13 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                   _expandedDiscoveryIndex = null;
                 });
                 _deviceMatches = await widget.onCheckDiscovery?.call();
+                if (widget.deviceFounded != null) {
+                  _deviceMatches?.removeWhere(
+                    (element) => widget.deviceFounded!.any(
+                      (e) => e.xAddr == element.xAddr,
+                    ),
+                  );
+                }
                 updateState(() {
                   _isCheckingDiscovery = false;
                 });
@@ -40,7 +47,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                   'Tìm kiếm',
                   style: AppTypography.style(
                     13,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.blue005AA9,
                   ),
                 ),
@@ -101,7 +108,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
     Widget buildHeader(TextStyle textStyle) {
       return Row(
         children: [
-          const Icon(Icons.videocam_outlined, size: 18, color: AppColors.black),
+          SvgPicture.asset(AppAssets.icVideoOn),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -123,13 +130,13 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                 _expandedDiscoveryIndex = index;
                 _onvifXaddrs.text = match.xAddr;
                 if (_onvifUserName.text.isEmpty) {
-                  _onvifUserName.text = 'Admin';
+                  _onvifUserName.text = 'admin';
                 }
               });
             },
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.all(16),
               child: buildHeader(
                 AppTypography.style(
                   14,
@@ -241,9 +248,11 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               SizedBox(
-                height: 36,
+                height: 23,
                 child: AppButton.outline(
                   label: 'Thêm và Sửa',
+                  borderColor: AppColors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   onPressed: () {
                     updateState(() {
                       _step = AddCameraStep.manualForm;
@@ -259,9 +268,11 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
               ),
               const SizedBox(width: 8),
               SizedBox(
-                height: 36,
+                height: 23,
                 child: AppButton.filled(
                   label: 'Thêm',
+                  backgroundColor: AppColors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   onPressed: () {
                     if (_discoveryFormKey.currentState?.validate() ?? false) {
                       updateState(() {

@@ -18,13 +18,20 @@ class FFmpegProcess {
 
   late final jobChannel = MethodChannel("ffmpeg_job");
 
-  Future<void> _bindPid(int pid, {String? tempAudio, String? tempVideo, String? output}) async {
+  Future<void> _bindPid(
+    int pid, {
+    String? tempAudio,
+    String? tempVideo,
+    String? output,
+    bool useWatcher = false,
+  }) async {
     await jobChannel.invokeMethod('bindPid', {
       "pid": pid,
       if (tempAudio != null) 'temp_audio': tempAudio,
       if (tempVideo != null) 'temp_video': tempVideo,
       if (output != null) 'output': output,
       'log_path': ErrorService.logPath,
+      'use_watcher': useWatcher,
     });
   }
 
@@ -55,38 +62,40 @@ class FFmpegProcess {
   }
 
   Future<Process?> record(String source, String output) async {
-    final extension = p.extension(output);
+    final title = p.basename(output);
+    // final extension = p.extension(output);
 
-    final tempVideo = output.replaceFirst(extension, '_temp.ts');
-    final tempAudio = output.replaceFirst(extension, '_temp.aac');
+    // final tempVideo = output.replaceFirst(extension, '_temp.ts');
+    // final tempAudio = output.replaceFirst(extension, '_temp.aac');
 
     final args = [
-      '-hide_banner',
-      '-y',
-      '-rtsp_transport',
-      'tcp',
-      '-fflags',
-      '+genpts',
-      '-use_wallclock_as_timestamps',
-      '1',
-      '-avoid_negative_ts',
-      'make_zero',
-      '-i',
-      source,
-      '-map',
-      '0:v:0',
-      '-c:v',
-      'copy',
-      tempVideo,
-      '-map',
-      '0:a:0',
-      '-c:a',
-      'aac',
-      '-b:a',
-      '128k',
-      '-f',
-      'adts',
-      tempAudio,
+      '-hide_banner', // Ẩn banner phiên bản, build config ...
+      '-y', // Tự động overwrite file output nếu file đã tồn tại
+      '-rtsp_transport', 'tcp', // Sử dụng transport TCP thay vì UDP (tốt hơn với RTSP)
+      '-fflags', '+genpts', // Tự sinh PTS nếu stream thiếu PTS
+      '-use_wallclock_as_timestamps', '1', // Lấy timestamp theo đồng hồ hệ thống để ghi vào output
+      '-avoid_negative_ts', 'make_zero', // Loại timestamp âm + ép frame đầu tiên có timestamp = 0
+      '-i', source, // Input stream RTSP
+      '-metadata', 'title=$title', // Metadata title (Mở file = vlc sẽ hiển thị dạng subtitle)
+      '-c:v', 'copy', // Video: copy nguyên gốc
+      '-c:a', 'aac', // Audio: chuyển pcm_alaw -> AAC (hợp lệ với MP4)
+      output,
+
+      // Case: Tách 2 luồng riêng biệt
+      // '-map',
+      // '0:v:0',
+      // '-c:v',
+      // 'copy',
+      // tempVideo,
+      // '-map',
+      // '0:a:0',
+      // '-c:a',
+      // 'aac',
+      // '-b:a',
+      // '128k',
+      // '-f',
+      // 'adts',
+      // tempAudio,
     ];
     Process? process;
 
@@ -122,7 +131,7 @@ class FFmpegProcess {
 
       process.exitCode
           .then((exitCode) async {
-            await mergeVideoWithAudio(tempVideo, tempAudio, output);
+            // await mergeVideoWithAudio(tempVideo, tempAudio, output);
             if (logMsg.isNotEmpty) Logger.warn(logMsg, writeLog: true);
           })
           // Set timeout để phòng case chưa đóng --> chạy process này mãi tới khi nào đóng app (thường app sẽ mở mãi)
@@ -141,7 +150,7 @@ class FFmpegProcess {
 
     if (process != null) {
       // Bind pid để khi đóng app/crash ... --> ffmpeg cũng tự động dừng ghi
-      await _bindPid(process.pid, tempAudio: tempAudio, tempVideo: tempVideo, output: output);
+      await _bindPid(process.pid, useWatcher: true);
     }
 
     return process;
@@ -180,14 +189,7 @@ class FFmpegProcess {
 
   bool _shouldWriteLog(String msg) {
     return ![
-      'ffmpeg version',
-      ' Copyright (c)',
       'frame=',
-      'libavformat    ',
-      'libavdevice    ',
-      'libavfilter    ',
-      'libswscale      ',
-      'libswresample   ',
       'Metadata:',
       'Input #',
       'Stream mapping:',
@@ -195,6 +197,11 @@ class FFmpegProcess {
       'Press [q] to stop, [?] for help',
       'Session streamed by',
       'Output #0, matroska, to',
+      'aac @ 000',
+      'Too many bits',
+      'Output #0, mp4, to',
+      '[out#0/mp4 @ 000',
+      '[q] command received',
     ].any((pattern) => msg.contains(pattern));
   }
 }

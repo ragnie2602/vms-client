@@ -26,7 +26,7 @@ class PlayerController {
   void Function(double volume)? changeVolume;
   void Function(int type)? zoom;
   void Function()? toggleFullscreen;
-  Future<void> Function(Duration duration)? seek;
+  void Function(Duration duration)? seek;
   Future<void> Function(double speed)? changeSpeed;
   Future<void> Function()? togglePlay;
   Future<void> Function(DateTime date, {int? dateIndex})? jumpToDate;
