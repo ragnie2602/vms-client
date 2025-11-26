@@ -236,9 +236,9 @@ class _AddMapDialogState extends State<_AddMapDialog> {
       actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       title: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
-              'Thêm bản đồ camera',
+              isEditEmap() == true ? 'Sửa bản đồ camera' : 'Thêm bản đồ camera',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
           ),
