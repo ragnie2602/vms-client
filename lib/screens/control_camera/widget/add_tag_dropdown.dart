@@ -22,6 +22,8 @@ class AddTagDropdown extends StatefulWidget {
   final LayerLink tagLayerLink;
   final Offset targeterOffset;
 
+  final double? height;
+
   const AddTagDropdown({
     super.key,
     this.excludedCameraNames = const {},
@@ -31,6 +33,7 @@ class AddTagDropdown extends StatefulWidget {
     required this.selectedTags,
     required this.targeterOffset,
     required this.tagLayerLink,
+    this.height,
   });
 
   @override
@@ -81,6 +84,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
             elevation: 8,
             borderRadius: BorderRadius.circular(8),
             child: Container(
+              height: widget.height,
               constraints: BoxConstraints(
                 maxHeight:
                     MediaQuery.of(context).size.height -

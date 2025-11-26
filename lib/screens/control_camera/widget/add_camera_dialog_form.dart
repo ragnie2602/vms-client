@@ -64,6 +64,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           const SizedBox(height: 12),
           _TagField(
             _tags,
+            dropdownHeight: _additionalSpacing,
             onTap: () {
               // Khi user click vào _TagField để mở dropdown, thêm spacing
               if (_additionalSpacing == 0) {
