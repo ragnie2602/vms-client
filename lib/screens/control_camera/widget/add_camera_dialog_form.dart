@@ -69,7 +69,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
               // Khi user click vào _TagField để mở dropdown, thêm spacing
               if (_additionalSpacing == 0) {
                 updateState(() {
-                  _additionalSpacing = 150;
+                  _additionalSpacing = 220;
                 });
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   onScroll.call();
