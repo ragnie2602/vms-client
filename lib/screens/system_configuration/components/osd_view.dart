@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/osd.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/osd_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 
 class OsdView extends StatefulWidget {
   const OsdView({super.key});
@@ -130,6 +131,7 @@ class _OsdViewState extends State<OsdView> {
                       onPressed: () => setState(() {
                         hasChange = false;
                         OsdUtil.saveOSDPositions(_position);
+                        ToastUtil.toastSuccess(title: Text('Cài đặt OSD thành công!'));
                       }),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondary,

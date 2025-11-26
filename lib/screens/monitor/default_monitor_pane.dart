@@ -13,7 +13,6 @@ import 'package:vms_flutter_client/core/utils/osd_util.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
-import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 
 import '../shared/player/sources.dart';
@@ -25,8 +24,7 @@ class DefaultMonitorPane extends StatefulWidget {
   State<DefaultMonitorPane> createState() => _DefaultMonitorPaneState();
 }
 
-class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
-    with StateBuilderMixin {
+class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuilderMixin {
   final OSDPosition _position = OsdUtil.getOSDPositions();
 
   double get spacing => AppConfig.MONITOR_GRID_SPACING;
@@ -47,15 +45,8 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
             return LayoutBuilder(
               builder: (context, constraints) {
                 final paginatorHeight = isFullScreen ? 4 : 48;
-                final size = _initPlayerSize(
-                  constraints,
-                  paginatorHeight,
-                  state.mode.rows,
-                  state.mode.columns,
-                );
-                final wrapWidth =
-                    (size.width * state.mode.columns) +
-                    (spacing * (state.mode.columns - 1));
+                final size = _initPlayerSize(constraints, paginatorHeight, state.mode.rows, state.mode.columns);
+                final wrapWidth = (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
                 return Container(
                   color: AppColors.greyF2F4FA,
                   child: Column(
@@ -79,12 +70,9 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
                                             Routes.cameraDetail.name,
                                             extra: CameraDetailScreenArgs(
                                               data: camera,
-                                              onBack: () => AppRouter
-                                                  .rootNavigatorKey
-                                                  .currentContext
-                                                  ?.goNamed(
-                                                    Routes.monitoring.name,
-                                                  ),
+                                              onBack: () => AppRouter.rootNavigatorKey.currentContext?.goNamed(
+                                                Routes.monitoring.name,
+                                              ),
                                             ),
                                           );
                                         },
@@ -94,8 +82,7 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
                                     name: camera.name,
                                     key: ValueKey(camera.camId),
                                     mode: MonitorMode.monitoring,
-                                    labelBuilder: (name) =>
-                                        _buildLabel(name, size),
+                                    labelBuilder: (name) => _buildLabel(name, size),
                                   ),
                                 ),
                               );
@@ -105,9 +92,7 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
                                 size: size,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.grey.withValues(alpha: 0.3),
-                                    ),
+                                    border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
@@ -126,20 +111,12 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
                             children: [
                               Text(
                                 "Hiển thị ${state.paginatedCameras.length} trong số ${state.cameras.length} camera",
-                                style: AppTypography.style(
-                                  fontWeight: FontWeight.w400,
-                                  13,
-                                  color: Colors.black,
-                                ),
+                                style: AppTypography.style(fontWeight: FontWeight.w400, 13, color: Colors.black),
                               ),
                               ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: 280,
-                                  maxHeight: 32,
-                                ),
+                                constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
                                 child: TablePaginator(
-                                  (state.cameras.length / state.mode.total)
-                                      .ceil(),
+                                  (state.cameras.length / state.mode.total).ceil(),
                                   state.page - 1,
                                   (page) => onChangePage(context, page),
                                 ),
@@ -160,20 +137,12 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
   }
 
   // Getters
-  Size _initPlayerSize(
-    BoxConstraints constraints,
-    int paginatorHeight, [
-    int rows = 6,
-    int columns = 6,
-  ]) {
+  Size _initPlayerSize(BoxConstraints constraints, int paginatorHeight, [int rows = 6, int columns = 6]) {
     rows = AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? rows;
     columns = AppConfig.OVERRIDE_MONITOR_GRID_COLUMNS ?? columns;
 
-    final availableWidth =
-        (constraints.maxWidth - spacing * (columns - 1)) / columns;
-    final availableHeight =
-        ((constraints.maxHeight - spacing * (rows - 1)) / rows) -
-        (paginatorHeight / rows);
+    final availableWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+    final availableHeight = ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (paginatorHeight / rows);
 
     // Maintain 16:9 aspect ratio - always use width as the constraint
     // This ensures players grow/shrink when drawer opens/closes
@@ -199,10 +168,7 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane>
       top: (_position.value & 1) == 0 ? 10 : null,
       child: Container(
         constraints: BoxConstraints(maxWidth: size.width - 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(3),
-        ),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
         padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
