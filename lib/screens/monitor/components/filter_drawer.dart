@@ -113,15 +113,13 @@ class _FilterDrawerState extends State<FilterDrawer> {
                                 return TagItem(
                                   tag: tag,
                                   isChecked: isChecked,
-                                  onChecked: (checked) {
-                                    setState(() {
-                                      if (checked) {
-                                        widget.controller.selectedTags.add(tag);
-                                      } else {
-                                        widget.controller.selectedTags.remove(tag);
-                                      }
-                                    });
-                                  },
+                                  onChecked: (checked) => setState(() {
+                                    if (checked) {
+                                      widget.controller.selectedTags.add(tag);
+                                    } else {
+                                      widget.controller.selectedTags.remove(tag);
+                                    }
+                                  }),
                                 );
                               },
                               itemCount: state.tags.length,
@@ -194,11 +192,11 @@ class _FilterDrawerState extends State<FilterDrawer> {
     final selectedId = widget.controller.selectedGroupIdChain.last;
 
     if (selectedId.equals([0])) {
-      bloc.add(GetAllCameraNoGroup());
+      bloc.add(GetAllCameraNoGroup(tags: widget.controller.selectedTags));
     } else if (selectedId.equals([-1])) {
-      bloc.add(GetAllCamera());
+      bloc.add(GetAllCamera(tags: widget.controller.selectedTags));
     } else {
-      bloc.add(GetAllCameraInGroup(selectedId));
+      bloc.add(GetAllCameraInGroup(selectedId, tags: widget.controller.selectedTags));
     }
 
     Scaffold.of(context).closeEndDrawer();
