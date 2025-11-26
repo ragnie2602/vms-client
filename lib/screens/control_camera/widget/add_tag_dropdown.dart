@@ -22,6 +22,8 @@ class AddTagDropdown extends StatefulWidget {
   final LayerLink tagLayerLink;
   final Offset targeterOffset;
 
+  final double? height;
+
   const AddTagDropdown({
     super.key,
     this.excludedCameraNames = const {},
@@ -31,6 +33,7 @@ class AddTagDropdown extends StatefulWidget {
     required this.selectedTags,
     required this.targeterOffset,
     required this.tagLayerLink,
+    this.height,
   });
 
   @override
@@ -77,169 +80,176 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
         CompositedTransformFollower(
           targetAnchor: Alignment.bottomLeft,
           link: widget.tagLayerLink,
-          child: Material(
-            elevation: 8,
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              constraints: BoxConstraints(
-                maxHeight:
-                    MediaQuery.of(context).size.height -
-                    widget.targeterOffset.dy,
-              ),
-              width: MediaQuery.of(context).size.width * 613 / 1600 - 48,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    height: 40,
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Nhập tên tag',
-                        hintStyle: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.grey8F95B2,
-                        ),
-                        prefixIcon: Container(
-                          padding: const EdgeInsets.symmetric(
+          child: Container(
+            margin: const EdgeInsets.only(top: 4.0),
+            child: Material(
+              elevation: 2,
+              borderRadius: BorderRadius.circular(3),
+              child: Container(
+                height: widget.height ?? 285,
+                constraints: BoxConstraints(
+                  maxHeight:
+                      MediaQuery.of(context).size.height -
+                      widget.targeterOffset.dy,
+                ),
+                width: MediaQuery.of(context).size.width * 613 / 1600 - 48,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: 41,
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Nhập tên tag',
+                          hintStyle: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.grey92929D,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.white,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(3),
+                            borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(3),
+                            borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(3),
+                            borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
                             vertical: 12,
-                            horizontal: 12,
                           ),
-                          child: SvgPicture.asset(AppAssets.icSearch),
                         ),
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
+                        onChanged: (value) => setState(() {}),
                       ),
-                      onChanged: (value) => setState(() {}),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  BlocBuilder<ControlCameraBloc, ControlCameraState>(
-                    buildWhen: (previous, current) =>
-                        current is GetAllTagsSuccessState ||
-                        current is GetAllTagsLoadingState ||
-                        current is GetAllTagsFailState,
-                    builder: (context, state) {
-                      if (state is GetAllTagsLoadingState) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (state is GetAllTagsSuccessState) {
-                        _tags.clear();
-                        _tags.addAll(state.tags);
-                        // Đồng bộ trạng thái isSelected dựa trên selectedTags
-                        for (var tag in _tags) {
-                          tag.isSelected = widget.selectedTags.contains(tag);
+                    const SizedBox(height: 12),
+                    BlocBuilder<ControlCameraBloc, ControlCameraState>(
+                      buildWhen: (previous, current) =>
+                          current is GetAllTagsSuccessState ||
+                          current is GetAllTagsLoadingState ||
+                          current is GetAllTagsFailState,
+                      builder: (context, state) {
+                        if (state is GetAllTagsLoadingState) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         }
-                      }
-                      if (state is GetAllTagsFailState ||
-                          _filteredTags.isEmpty) {
-                        return Center(
-                          child: Text(
-                            "Không có dữ liệu",
-                            style: AppTypography.style(
-                              14,
-                              fontWeight: FontWeight.w400,
-                              color: AppColors.black,
+                        if (state is GetAllTagsSuccessState) {
+                          _tags.clear();
+                          _tags.addAll(state.tags);
+                          // Đồng bộ trạng thái isSelected dựa trên selectedTags
+                          for (var tag in _tags) {
+                            tag.isSelected = widget.selectedTags.contains(tag);
+                          }
+                        }
+                        if (state is GetAllTagsFailState ||
+                            _filteredTags.isEmpty) {
+                          return Center(
+                            child: Text(
+                              "Không có dữ liệu",
+                              style: AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.black,
+                              ),
                             ),
-                          ),
-                        );
-                      }
-                      return Flexible(
-                        child: ListView.builder(
-                          itemCount: _filteredTags.length,
-                          itemBuilder: (context, index) {
-                            final tag = _filteredTags[index];
-                            return Material(
-                              child: InkWell(
-                                onTap: () {
-                                  tag.isSelected = !tag.isSelected;
-                                  widget.onTagSelected?.call(tag);
-                                  setState(() {});
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 3,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      TagShapeIcon(
-                                        color: tag.color,
-                                        width: 18,
-                                        height: 12,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          tag.name,
-                                          style: AppTypography.style(
-                                            14,
-                                            fontWeight: FontWeight.w400,
-                                            color: AppColors.black,
+                          );
+                        }
+                        return Flexible(
+                          child: ListView.builder(
+                            itemCount: _filteredTags.length,
+                            itemBuilder: (context, index) {
+                              final tag = _filteredTags[index];
+                              return Material(
+                                child: InkWell(
+                                  onTap: () {
+                                    tag.isSelected = !tag.isSelected;
+                                    widget.onTagSelected?.call(tag);
+                                    setState(() {});
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 3,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        TagShapeIcon(
+                                          color: tag.color,
+                                          width: 18,
+                                          height: 12,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            tag.name,
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w400,
+                                              color: AppColors.black,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      tag.isSelected
-                                          ? SvgPicture.asset(
-                                              AppAssets.icCheck,
-                                              color: AppColors.secondary,
-                                              height: 22,
-                                              width: 22,
-                                            )
-                                          : const SizedBox(
-                                              width: 22,
-                                              height: 22,
-                                            ),
-                                    ],
+                                        const SizedBox(width: 8),
+                                        tag.isSelected
+                                            ? SvgPicture.asset(
+                                                AppAssets.icCheck,
+                                                color: AppColors.secondary,
+                                                height: 22,
+                                                width: 22,
+                                              )
+                                            : const SizedBox(
+                                                width: 22,
+                                                height: 22,
+                                              ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  const Divider(height: 1, color: AppColors.greyE2E8F0),
-                  const SizedBox(height: 12),
-                  InkWell(
-                    onTap: () => widget.onOpenTagManagement?.call(_tags),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          AppAssets.tabSettings,
-                          color: AppColors.blue085DA8,
-                          height: 17,
-                          width: 17,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Quản lý thẻ phân loại',
-                          style: AppTypography.style(
-                            13,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.blue085DA8,
+                              );
+                            },
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    const Divider(height: 1, color: AppColors.greyE2E8F0),
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: () => widget.onOpenTagManagement?.call(_tags),
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            AppAssets.tabSettings,
+                            color: AppColors.blue085DA8,
+                            height: 17,
+                            width: 17,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Quản lý thẻ phân loại',
+                            style: AppTypography.style(
+                              13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.blue085DA8,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

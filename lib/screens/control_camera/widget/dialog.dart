@@ -256,7 +256,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             ).copyWith(scrollbars: false),
             child: SingleChildScrollView(
               controller: scrollController,
-              child: _buildStepContent()),
+              child: _buildStepContent(),
+            ),
           ),
         ),
         actions: [
@@ -534,8 +535,9 @@ class _TagField extends StatefulWidget {
   final Set<TagEntity> tags;
   final VoidCallback? onTap;
   final VoidCallback? onClose;
+  final double? dropdownHeight;
 
-  const _TagField(this.tags, {this.onTap, this.onClose});
+  const _TagField(this.tags, {this.onTap, this.onClose, this.dropdownHeight});
   @override
   State<_TagField> createState() => _TagFieldState();
 }
@@ -552,7 +554,16 @@ class _TagFieldState extends State<_TagField> {
         builder: (buttonContext) => InkWell(
           onTap: () {
             widget.onTap?.call();
-            _showAddCameraDropdown(context, buttonContext, []);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _showAddCameraDropdown(
+                  context,
+                  buttonContext,
+                  [],
+                  height: widget.dropdownHeight,
+                );
+              }
+            });
           },
           child: Container(
             padding: const EdgeInsets.all(12),
@@ -643,8 +654,9 @@ class _TagFieldState extends State<_TagField> {
   void _showAddCameraDropdown(
     BuildContext mainContext,
     BuildContext buttonContext,
-    List<CameraEntity> listCamera,
-  ) {
+    List<CameraEntity> listCamera, {
+    double? height,
+  }) {
     final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
