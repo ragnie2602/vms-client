@@ -282,7 +282,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
   Widget _buildNextButton(BuildContext context) {
     return Visibility(
-      visible: _step == AddCameraStep.selectMode,
+      visible:
+          _step == AddCameraStep.selectMode ||
+          _step == AddCameraStep.manualForm,
       child: Expanded(
         child: Container(
           height: 44,

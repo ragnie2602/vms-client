@@ -37,9 +37,9 @@ class AppButton extends StatelessWidget {
     true,
     fullWidth,
     key: key,
-    child: child,
     backgroundColor: backgroundColor,
     padding: padding,
+    child: child,
   );
   factory AppButton.outline({
     Key? key,
@@ -56,8 +56,8 @@ class AppButton extends StatelessWidget {
     fullWidth,
     key: key,
     borderColor: borderColor,
-    child: child,
     padding: padding,
+    child: child,
   );
 
   @override
