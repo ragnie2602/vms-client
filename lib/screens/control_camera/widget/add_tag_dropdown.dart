@@ -140,6 +140,10 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                       if (state is GetAllTagsSuccessState) {
                         _tags.clear();
                         _tags.addAll(state.tags);
+                        // Đồng bộ trạng thái isSelected dựa trên selectedTags
+                        for (var tag in _tags) {
+                          tag.isSelected = widget.selectedTags.contains(tag);
+                        }
                       }
                       if (state is GetAllTagsFailState ||
                           _filteredTags.isEmpty) {
@@ -168,25 +172,17 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 6,
+                                    vertical: 3,
                                   ),
                                   child: Row(
                                     children: [
-                                      tag.isSelected
-                                          ? SvgPicture.asset(
-                                              AppAssets.icCheck,
-                                              color: AppColors.black,
-                                              height: 12,
-                                              width: 12,
-                                            )
-                                          : const SizedBox(),
                                       TagShapeIcon(
                                         color: tag.color,
                                         width: 18,
                                         height: 12,
                                       ),
                                       const SizedBox(width: 8),
-                                      Flexible(
+                                      Expanded(
                                         child: Text(
                                           tag.name,
                                           style: AppTypography.style(
@@ -197,6 +193,17 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
+                                      tag.isSelected
+                                          ? SvgPicture.asset(
+                                              AppAssets.icCheck,
+                                              color: AppColors.black,
+                                              height: 22,
+                                              width: 22,
+                                            )
+                                          : const SizedBox(
+                                              width: 22,
+                                              height: 22,
+                                            ),
                                     ],
                                   ),
                                 ),

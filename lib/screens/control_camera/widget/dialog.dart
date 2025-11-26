@@ -662,7 +662,13 @@ class _TagFieldState extends State<_TagField> {
             _showTagManagementDialog(mainContext, tags);
           },
           onTagSelected: (tag) {
-            setState(() => widget.tags.add(tag));
+            setState(() {
+              if (tag.isSelected) {
+                widget.tags.add(tag);
+              } else {
+                widget.tags.remove(tag);
+              }
+            });
           },
           selectedTags: widget.tags,
           tagLayerLink: layerLink,
