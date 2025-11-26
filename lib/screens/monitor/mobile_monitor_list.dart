@@ -1,3 +1,4 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -14,7 +15,7 @@ class MobileMonitorList extends StatefulWidget {
 }
 
 class _MobileMonitorListState extends State<MobileMonitorList> {
-  final TextEditingController _searchController = TextEditingController();
+  final ValueNotifier<String> _searchValue = ValueNotifier("");
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,6 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
         child: Column(
           children: [
             TextField(
-              controller: _searchController,
               decoration: InputDecoration(
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(100), borderSide: BorderSide.none),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -68,6 +68,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 22),
               ),
+              onChanged: (value) => _searchValue.value = value,
               style: AppTypography.style(14, fontWeight: FontWeight.w400),
             ),
             const SizedBox(height: 10),
@@ -108,74 +109,88 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                 builder: (context, state) {
                   if (state is MonitorLoading) return Center(child: CircularProgressIndicator());
                   if (state is MonitorSuccess && state.cameras.isNotEmpty) {
-                    return ListView.builder(
-                      itemBuilder: (context, index) => AspectRatio(
-                        aspectRatio: 345 / 200,
-                        child: Container(
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.black),
-                          margin: const EdgeInsets.symmetric(vertical: 7.5),
-                          // padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
-                          child: Stack(
-                            children: [
-                              Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SvgPicture.asset(
-                                      state.cameras[index].isOnline
-                                          ? AppAssets.icVideoOnline
-                                          : AppAssets.icVideoOffline,
-                                      color: AppColors.white,
-                                      height: 40,
-                                      width: 40,
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      state.cameras[index].isOnline
-                                          ? 'Xem camera'
-                                          : 'Ngoại tuyến', // TODO: reimplement text when offline
-                                      style: AppTypography.style(
-                                        13,
-                                        color: AppColors.white,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                    return ValueListenableBuilder(
+                      valueListenable: _searchValue,
+                      builder: (context, value, child) {
+                        final _cameras = state.cameras
+                            .where(
+                              (c) => removeDiacritics(
+                                c.name.toLowerCase(),
+                              ).contains(removeDiacritics(value.trim().toLowerCase())),
+                            )
+                            .toList();
+
+                        return ListView.builder(
+                          itemBuilder: (context, index) => AspectRatio(
+                            aspectRatio: 345 / 200,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: AppColors.black,
                               ),
-                              Positioned(
-                                bottom: 7,
-                                left: 15,
-                                right: 15,
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        state.cameras[index].name,
-                                        style: AppTypography.style(
-                                          13,
+                              margin: const EdgeInsets.symmetric(vertical: 7.5),
+                              // padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+                              child: Stack(
+                                children: [
+                                  Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SvgPicture.asset(
+                                          _cameras[index].isOnline ? AppAssets.icVideoOnline : AppAssets.icVideoOffline,
                                           color: AppColors.white,
-                                          fontWeight: FontWeight.w600,
+                                          height: 40,
+                                          width: 40,
                                         ),
-                                      ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          _cameras[index].isOnline
+                                              ? 'Xem camera'
+                                              : 'Ngoại tuyến', // TODO: reimplement text when offline
+                                          style: AppTypography.style(
+                                            13,
+                                            color: AppColors.white,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    InkWell(
-                                      onTap: () {},
-                                      child: SvgPicture.asset(
-                                        AppAssets.tabSettings,
-                                        color: AppColors.white,
-                                        height: 24,
-                                        width: 24,
-                                      ),
+                                  ),
+                                  Positioned(
+                                    bottom: 7,
+                                    left: 15,
+                                    right: 15,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            _cameras[index].name,
+                                            style: AppTypography.style(
+                                              13,
+                                              color: AppColors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                        InkWell(
+                                          onTap: () {},
+                                          child: SvgPicture.asset(
+                                            AppAssets.tabSettings,
+                                            color: AppColors.white,
+                                            height: 24,
+                                            width: 24,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                      itemCount: state.cameras.length,
+                          itemCount: _cameras.length,
+                        );
+                      },
                     );
                   }
                   return Center(
@@ -191,5 +206,11 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchValue.dispose();
+    super.dispose();
   }
 }
