@@ -2,9 +2,12 @@ import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 class MobileMonitorList extends StatefulWidget {
@@ -121,9 +124,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                 children: [
                   Text('Các camera', style: AppTypography.style(13, fontWeight: FontWeight.w500)),
                   ElevatedButton(
-                    onPressed: () {
-                      Scaffold.of(context).openEndDrawer();
-                    },
+                    onPressed: () => Scaffold.of(context).openEndDrawer(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.greyF5F5F5,
                       elevation: 0,
@@ -175,28 +176,34 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                                 margin: const EdgeInsets.symmetric(vertical: 7.5),
                                 child: Stack(
                                   children: [
-                                    Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            _cameras[index].isOnline
-                                                ? AppAssets.icVideoOnline
-                                                : AppAssets.icVideoOffline,
-                                            color: AppColors.white,
-                                            height: 40,
-                                            width: 40,
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Text(
-                                            _cameras[index].isOnline ? 'Xem camera' : 'Ngoại tuyến',
-                                            style: AppTypography.style(
-                                              13,
+                                    InkWell(
+                                      onTap: () => context.pushNamed(
+                                        Routes.cameraDetail.name,
+                                        extra: CameraDetailScreenArgs(data: _cameras[index]),
+                                      ),
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SvgPicture.asset(
+                                              _cameras[index].isOnline
+                                                  ? AppAssets.icVideoOnline
+                                                  : AppAssets.icVideoOffline,
                                               color: AppColors.white,
-                                              fontWeight: FontWeight.w500,
+                                              height: 40,
+                                              width: 40,
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(height: 5),
+                                            Text(
+                                              _cameras[index].isOnline ? 'Xem camera' : 'Camera đang ngoại tuyến',
+                                              style: AppTypography.style(
+                                                13,
+                                                color: AppColors.white,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                     Positioned(

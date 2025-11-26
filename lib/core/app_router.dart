@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/fi
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
+import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
@@ -25,6 +26,7 @@ import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
+import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/system_configuration_screen.dart';
@@ -170,7 +172,7 @@ class AppRouter {
               ),
             ),
           ],
-          child: HomeScreen(body: child),
+          child: HomeScreen(body: child, currentPath: state.uri.path),
         ),
         routes: [
           ShellRoute(
@@ -205,7 +207,10 @@ class AppRouter {
               return fadeTransition(
                 context: context,
                 state: state,
-                child: CameraDetailScreen(args: state.extra as CameraDetailScreenArgs),
+                child: PlatformBuilder.builder(
+                  onDesktop: (_) => CameraDetailScreen(args: state.extra as CameraDetailScreenArgs),
+                  onMobile: (_) => MobileCameraDetailScreen(args: state.extra as CameraDetailScreenArgs),
+                ),
               );
             },
           ),
