@@ -196,7 +196,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                                       tag.isSelected
                                           ? SvgPicture.asset(
                                               AppAssets.icCheck,
-                                              color: AppColors.black,
+                                              color: AppColors.secondary,
                                               height: 22,
                                               width: 22,
                                             )
