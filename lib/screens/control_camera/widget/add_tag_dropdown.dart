@@ -161,13 +161,25 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                             final tag = _filteredTags[index];
                             return Material(
                               child: InkWell(
-                                onTap: () => widget.onTagSelected?.call(tag),
+                                onTap: () {
+                                  tag.isSelected = !tag.isSelected;
+                                  widget.onTagSelected?.call(tag);
+                                  setState(() {});
+                                },
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 6,
                                   ),
                                   child: Row(
                                     children: [
+                                      tag.isSelected
+                                          ? SvgPicture.asset(
+                                              AppAssets.icCheck,
+                                              color: AppColors.black,
+                                              height: 12,
+                                              width: 12,
+                                            )
+                                          : const SizedBox(),
                                       TagShapeIcon(
                                         color: tag.color,
                                         width: 18,
@@ -184,6 +196,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(width: 8),
                                     ],
                                   ),
                                 ),
