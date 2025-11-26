@@ -112,4 +112,7 @@ class AppAssets {
   static const icKey = '$_svgPath/ic_key.svg';
   static const icCameraMap = '$_svgPath/ic_camera_map.svg';
   static const icUserInfo = '$_svgPath/ic_user_info.svg';
+
+  static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
+  static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
 }

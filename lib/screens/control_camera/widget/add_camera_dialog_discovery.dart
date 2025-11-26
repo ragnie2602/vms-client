@@ -186,11 +186,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
             },
             child: Row(
               children: [
-                const Icon(
-                  Icons.videocam_outlined,
-                  size: 18,
-                  color: AppColors.black,
-                ),
+                SvgPicture.asset(AppAssets.icVideoOn),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -216,7 +212,13 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
             ),
           ),
           const SizedBox(height: 8),
-          AppField(controller: _onvifUserName, hintText: 'Admin', label: ''),
+          AppField(
+            controller: _onvifUserName,
+            hintText: 'admin',
+            label: '',
+            isFilled: true,
+            fillColor: AppColors.white,
+          ),
           const SizedBox(height: 16),
           Text(
             'Mật khẩu camera',
@@ -232,12 +234,14 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
             hintText: '********',
             label: '',
             obscureText: _obscure,
+            isFilled: true,
+            fillColor: AppColors.white,
             validator: (v) => v == null || v.trim().isEmpty
                 ? 'Mật khẩu camera không được để trống'
                 : null,
             suffix: IconButton(
               icon: Icon(
-                _obscure ? Icons.visibility_off : Icons.visibility,
+                _obscure ? Icons.visibility : Icons.visibility_off,
                 color: AppColors.black,
               ),
               onPressed: _togglePasswordVisibility,
@@ -252,6 +256,7 @@ extension AddCameraDialogDiscovery on _AddCameraDialogState {
                 child: AppButton.outline(
                   label: 'Thêm và Sửa',
                   borderColor: AppColors.black,
+                  // backgroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   onPressed: () {
                     updateState(() {
