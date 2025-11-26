@@ -121,6 +121,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
   bool _isAddingDiscoveryCamera = false;
   final _discoveryFormKey = GlobalKey<FormState>();
+  ScrollController scrollController = ScrollController();
+  double _additionalSpacing = 0;
 
   @override
   void initState() {
@@ -252,7 +254,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             behavior: ScrollConfiguration.of(
               context,
             ).copyWith(scrollbars: false),
-            child: SingleChildScrollView(child: _buildStepContent()),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: _buildStepContent()),
           ),
         ),
         actions: [
@@ -379,6 +383,14 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     );
   }
 
+  void _scrollToBottom() {
+    if (scrollController.hasClients) {
+      // Use the maxScrollExtent property for the maximum scroll position
+      final double maxScroll = scrollController.position.maxScrollExtent;
+      scrollController.jumpTo(maxScroll);
+    }
+  }
+
   /// Đổi title dialog theo mode/bước hiện tại
   String _buildDialogTitle() {
     if (widget.mode == CameraDialogMode.edit) {
@@ -403,7 +415,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       case AddCameraStep.selectMode:
         return _buildSelectMode();
       case AddCameraStep.manualForm:
-        return _buildManualForm();
+        return _buildManualForm(onScroll: _scrollToBottom);
       case AddCameraStep.discovery:
         return _buildDiscoveryContent();
       case AddCameraStep.importFile:
@@ -520,8 +532,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
 class _TagField extends StatefulWidget {
   final Set<TagEntity> tags;
+  final VoidCallback? onTap;
+  final VoidCallback? onClose;
 
-  const _TagField(this.tags);
+  const _TagField(this.tags, {this.onTap, this.onClose});
   @override
   State<_TagField> createState() => _TagFieldState();
 }
@@ -536,7 +550,10 @@ class _TagFieldState extends State<_TagField> {
       link: layerLink,
       child: Builder(
         builder: (buttonContext) => InkWell(
-          onTap: () => _showAddCameraDropdown(context, buttonContext, []),
+          onTap: () {
+            widget.onTap?.call();
+            _showAddCameraDropdown(context, buttonContext, []);
+          },
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -643,6 +660,7 @@ class _TagFieldState extends State<_TagField> {
           onClose: () {
             _overlayEntry?.remove();
             _overlayEntry = null;
+            widget.onClose?.call();
           },
           onOpenTagManagement: (tags) {
             _overlayEntry?.remove();
@@ -650,7 +668,13 @@ class _TagFieldState extends State<_TagField> {
             _showTagManagementDialog(mainContext, tags);
           },
           onTagSelected: (tag) {
-            setState(() => widget.tags.add(tag));
+            setState(() {
+              if (tag.isSelected) {
+                widget.tags.add(tag);
+              } else {
+                widget.tags.remove(tag);
+              }
+            });
           },
           selectedTags: widget.tags,
           tagLayerLink: layerLink,

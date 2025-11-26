@@ -157,8 +157,8 @@ class _TagDropdownState extends State<TagDropdown> {
                                   child: Row(
                                     children: [
                                       Container(
-                                        width: 20,
-                                        height: 20,
+                                        width: 16,
+                                        height: 16,
                                         decoration: BoxDecoration(
                                           color: tag.isSelected
                                               ? AppColors.blue085DA8
@@ -218,14 +218,14 @@ class _TagDropdownState extends State<TagDropdown> {
                         SvgPicture.asset(
                           AppAssets.tabSettings,
                           color: AppColors.blue085DA8,
-                          height: 13,
-                          width: 13,
+                          height: 20,
+                          width: 20,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Quản lý thẻ phân loại',
                           style: AppTypography.style(
-                            13,
+                            15,
                             fontWeight: FontWeight.w500,
                             color: AppColors.blue085DA8,
                           ),

@@ -82,7 +82,9 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
             borderRadius: BorderRadius.circular(8),
             child: Container(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height - widget.targeterOffset.dy,
+                maxHeight:
+                    MediaQuery.of(context).size.height -
+                    widget.targeterOffset.dy,
               ),
               width: MediaQuery.of(context).size.width * 613 / 1600 - 48,
               decoration: BoxDecoration(
@@ -105,7 +107,10 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                           color: AppColors.grey8F95B2,
                         ),
                         prefixIcon: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 12,
+                          ),
                           child: SvgPicture.asset(AppAssets.icSearch),
                         ),
                         filled: true,
@@ -114,7 +119,10 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                       onChanged: (value) => setState(() {}),
                     ),
@@ -132,8 +140,13 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                       if (state is GetAllTagsSuccessState) {
                         _tags.clear();
                         _tags.addAll(state.tags);
+                        // Đồng bộ trạng thái isSelected dựa trên selectedTags
+                        for (var tag in _tags) {
+                          tag.isSelected = widget.selectedTags.contains(tag);
+                        }
                       }
-                      if (state is GetAllTagsFailState || _filteredTags.isEmpty) {
+                      if (state is GetAllTagsFailState ||
+                          _filteredTags.isEmpty) {
                         return Center(
                           child: Text(
                             "Không có dữ liệu",
@@ -152,14 +165,24 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                             final tag = _filteredTags[index];
                             return Material(
                               child: InkWell(
-                                onTap: () => widget.onTagSelected?.call(tag),
+                                onTap: () {
+                                  tag.isSelected = !tag.isSelected;
+                                  widget.onTagSelected?.call(tag);
+                                  setState(() {});
+                                },
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 3,
+                                  ),
                                   child: Row(
                                     children: [
-                                      TagShapeIcon(color: tag.color, width: 18, height: 12),
+                                      TagShapeIcon(
+                                        color: tag.color,
+                                        width: 18,
+                                        height: 12,
+                                      ),
                                       const SizedBox(width: 8),
-                                      Flexible(
+                                      Expanded(
                                         child: Text(
                                           tag.name,
                                           style: AppTypography.style(
@@ -169,6 +192,18 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                                           ),
                                         ),
                                       ),
+                                      const SizedBox(width: 8),
+                                      tag.isSelected
+                                          ? SvgPicture.asset(
+                                              AppAssets.icCheck,
+                                              color: AppColors.secondary,
+                                              height: 22,
+                                              width: 22,
+                                            )
+                                          : const SizedBox(
+                                              width: 22,
+                                              height: 22,
+                                            ),
                                     ],
                                   ),
                                 ),
@@ -189,8 +224,8 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                         SvgPicture.asset(
                           AppAssets.tabSettings,
                           color: AppColors.blue085DA8,
-                          height: 13,
-                          width: 13,
+                          height: 17,
+                          width: 17,
                         ),
                         const SizedBox(width: 8),
                         Text(
