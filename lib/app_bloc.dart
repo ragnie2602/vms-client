@@ -234,11 +234,12 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       }
     } else {
       if (!Platform.isAndroid && !Platform.isIOS) {
-        await sendMultiWindowEventUseCase.execute(
+        await windowManager.setPreventClose(false);
+
+        sendMultiWindowEventUseCase.execute(
           SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
         );
 
-        await windowManager.setPreventClose(false);
         windowManager.close();
       }
     }
