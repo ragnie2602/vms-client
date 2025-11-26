@@ -32,28 +32,32 @@ class MonitorCameras extends StatefulWidget {
   State<MonitorCameras> createState() => _MonitorCamerasState();
 }
 
-class _MonitorCamerasState extends State<MonitorCameras>
-    with StateBuilderMixin {
-  final _searchController = TextEditingController();
+class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin {
   late Function(CameraEntity) onTap;
   late CameraEntity? selectedCamera;
 
-  late final MonitorBloc _monitorBloc;
+  late final _searchController = TextEditingController(text: _monitorBloc.filterData.searchText);
+  late final MonitorBloc _monitorBloc = context.read<MonitorBloc>();
+
   final LayerLink layerLink = LayerLink();
-  final Set<TagEntity> _selectedTags = {};
   OverlayEntry? _overlayEntry;
+
+  Set<TagEntity> get _selectedTags => _monitorBloc.filterData.selectedTags;
 
   @override
   void initState() {
     context.read<ControlCameraBloc>().add(GetAllTagsEvent());
     onTap = widget.onTap ?? (_) {};
     selectedCamera = widget.selectedCamera;
+
+    // Lưu lại search data
+    _searchController.addListener(
+      () => _monitorBloc.filterData.searchText = _searchController.text,
+    );
+
     super.initState();
 
-    if (mounted) {
-      _monitorBloc = MonitorBloc(context.read(), context.read(), context.read())
-        ..add(GetAllCamera());
-    }
+    if (mounted && _monitorBloc.state is! MonitorSuccess) _monitorBloc.add(GetAllCamera());
   }
 
   @override

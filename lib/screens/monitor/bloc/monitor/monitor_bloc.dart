@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/core/utils/task_pool.dart';
 import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
@@ -14,6 +15,11 @@ import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_grou
 
 part 'monitor_event.dart';
 part 'monitor_state.dart';
+
+class FilterData {
+  Set<TagEntity> selectedTags = {};
+  String searchText = '';
+}
 
 class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   MonitorBloc(
@@ -35,6 +41,8 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
   final ICameraRepository cameraRepository;
+
+  late final filterData = FilterData();
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
     final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
