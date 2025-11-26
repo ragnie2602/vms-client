@@ -302,10 +302,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     // Chưa có texture --> tạo lại
     if (textureId < 0) {
-      textureId = await _player.updateTexture().timeout(
-        AppConfig.PLAYER_INITIALIZATION_TIMEOUT,
-        onTimeout: () => -1,
-      );
+      textureId = await _player.updateTexture(timeout: AppConfig.PLAYER_INITIALIZATION_TIMEOUT);
+
+      // Lỗi thì complete _waitForFirstFrame luôn đỡ phải đợi thêm [PLAYER_INITIALIZATION_TIMEOUT]
+      if (textureId < 0) _waitForFirstFrame?.safeComplete(false);
     }
 
     final res = await _waitForFirstFrame?.future.timeout(

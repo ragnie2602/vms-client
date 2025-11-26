@@ -9,6 +9,7 @@ import 'package:fvp/mdk.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/common_extensions.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -265,9 +266,14 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
       final textureConstraints = widget.size?.let(
         (size) => StandardResolution.snapFromSize(size, mode: RoundMode.up),
       );
-      textureId = await _player
-          .updateTexture(width: textureConstraints?.width, height: textureConstraints?.height)
-          .timeout(AppConfig.PLAYER_INITIALIZATION_TIMEOUT, onTimeout: () => -1);
+      textureId = await _player.updateTexture(
+        width: textureConstraints?.width,
+        height: textureConstraints?.height,
+        timeout: AppConfig.PLAYER_INITIALIZATION_TIMEOUT,
+      );
+
+      // Lỗi thì complete _waitForFirstFrame luôn đỡ phải đợi thêm [PLAYER_INITIALIZATION_TIMEOUT]
+      if (textureId < 0) _waitForFirstFrame?.safeComplete(false);
     }
 
     final res = await _waitForFirstFrame?.future.timeout(
