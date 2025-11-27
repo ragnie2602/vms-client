@@ -677,6 +677,7 @@ class _TagFieldState extends State<_TagField> {
           onOpenTagManagement: (tags) {
             _overlayEntry?.remove();
             _overlayEntry = null;
+            widget.onClose?.call();
             _showTagManagementDialog(mainContext, tags);
           },
           onTagSelected: (tag) {
