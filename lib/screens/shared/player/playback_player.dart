@@ -14,6 +14,7 @@ import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 
 import 'components/accumulating_seek_queue.dart';
@@ -67,6 +68,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   Completer<bool>? _waitForFirstFrame;
   // Trường hợp đổi sang media mới thì có thể trigger status (unloaded + end) --> bị trigger thành lỗi
   Completer<void> _waitForUnloadedOldMedia = Completer<void>()..safeComplete();
+  Timer? _completerTimeoutTimer;
 
   double _aspectRatio = 1.0;
   int _lastPosition = -1;
@@ -125,6 +127,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     _playlistIndex.dispose();
     _dualQueue.dispose();
     _cancelTimers();
+    _completerTimeoutTimer?.cancel();
     try {
       _player.dispose();
     } catch (_) {}
@@ -208,6 +211,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
           cur.test(MediaStatus.end) &&
           !(currentIndex == widget.playlist.length - 1 &&
               _player.position + 1000 >= _player.mediaInfo.duration)) {
+        Logger.warn("Camera '${widget.name}' disconnected ($pre -> $cur)");
         _state.value = PlayerState.error;
       }
 
@@ -218,6 +222,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
       // Case bị lỗi
       if (!pre.test(MediaStatus.invalid) && cur.test(MediaStatus.invalid)) {
+        Logger.warn("Camera '${widget.name}' invalid ($pre -> $cur)");
         _state.value = PlayerState.error;
       }
 
@@ -380,7 +385,17 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     // Gần hết đoạn playback hiện tại thì setNext tiếp theo để không bị gián đoạn
     if (_player.position + 3000 >= _player.mediaInfo.duration) {
       if (_player.nextMedia.isEmpty && nextPlayback?.urlPlayback != null) {
+        // setNext <=> đổi media <=> status từ [unloaded+end] sau đó sang [loading+loaded/invalid]
+        // --> FIX: khi hết playback hiện tại và chuyển sang playback tiếp theo --> báo lỗi
+        _waitForUnloadedOldMedia = Completer<void>();
         _player.setNext(nextPlayback!.urlPlayback);
+
+        // Sau 10s mà chưa complete thì mark complete luôn (đề phòng)
+        _completerTimeoutTimer?.cancel();
+        _completerTimeoutTimer = Timer(
+          Duration(seconds: 10),
+          () => _waitForUnloadedOldMedia.safeComplete(),
+        );
       }
     } else if (_player.nextMedia.isNotEmpty) {
       _player.setNext("", from: -1);
