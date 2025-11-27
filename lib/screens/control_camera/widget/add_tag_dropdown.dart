@@ -2,10 +2,12 @@ import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -88,9 +90,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
               child: Container(
                 height: widget.height ?? 285,
                 constraints: BoxConstraints(
-                  maxHeight:
-                      MediaQuery.of(context).size.height -
-                      widget.targeterOffset.dy,
+                  maxHeight: MediaQuery.of(context).size.height - widget.targeterOffset.dy,
                 ),
                 width: MediaQuery.of(context).size.width * 613 / 1600 - 48,
                 decoration: BoxDecoration(
@@ -126,10 +126,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                             borderRadius: BorderRadius.circular(3),
                             borderSide: BorderSide(color: AppColors.greyE2E8F0),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         ),
                         onChanged: (value) => setState(() {}),
                       ),
@@ -142,9 +139,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                           current is GetAllTagsFailState,
                       builder: (context, state) {
                         if (state is GetAllTagsLoadingState) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
+                          return const Center(child: CircularProgressIndicator());
                         }
                         if (state is GetAllTagsSuccessState) {
                           _tags.clear();
@@ -154,8 +149,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                             tag.isSelected = widget.selectedTags.contains(tag);
                           }
                         }
-                        if (state is GetAllTagsFailState ||
-                            _filteredTags.isEmpty) {
+                        if (state is GetAllTagsFailState || _filteredTags.isEmpty) {
                           return Center(
                             child: Text(
                               "Không có dữ liệu",
@@ -180,16 +174,10 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                                     setState(() {});
                                   },
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 3,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 3),
                                     child: Row(
                                       children: [
-                                        TagShapeIcon(
-                                          color: tag.color,
-                                          width: 18,
-                                          height: 12,
-                                        ),
+                                        TagShapeIcon(color: tag.color, width: 18, height: 12),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
@@ -209,10 +197,7 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                                                 height: 22,
                                                 width: 22,
                                               )
-                                            : const SizedBox(
-                                                width: 22,
-                                                height: 22,
-                                              ),
+                                            : const SizedBox(width: 22, height: 22),
                                       ],
                                     ),
                                   ),
@@ -223,31 +208,33 @@ class _AddTagDropdownState extends State<AddTagDropdown> {
                         );
                       },
                     ),
-                    const SizedBox(height: 12),
-                    const Divider(height: 1, color: AppColors.greyE2E8F0),
-                    const SizedBox(height: 12),
-                    InkWell(
-                      onTap: () => widget.onOpenTagManagement?.call(_tags),
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(
-                            AppAssets.tabSettings,
-                            color: AppColors.blue085DA8,
-                            height: 17,
-                            width: 17,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Quản lý thẻ phân loại',
-                            style: AppTypography.style(
-                              13,
-                              fontWeight: FontWeight.w500,
+                    if (AppData.instance.profile?.userType != UserType.user) ...[
+                      const SizedBox(height: 12),
+                      const Divider(height: 1, color: AppColors.greyE2E8F0),
+                      const SizedBox(height: 12),
+                      InkWell(
+                        onTap: () => widget.onOpenTagManagement?.call(_tags),
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(
+                              AppAssets.tabSettings,
                               color: AppColors.blue085DA8,
+                              height: 17,
+                              width: 17,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Text(
+                              'Quản lý thẻ phân loại',
+                              style: AppTypography.style(
+                                13,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.blue085DA8,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
