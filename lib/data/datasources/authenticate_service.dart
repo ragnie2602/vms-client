@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
 import 'package:vms_flutter_client/domain/entities/user/my_profile.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 import 'package:vms_flutter_client/screens/login/login_screen.dart';
 
 import '../models/packet.dart';
@@ -147,6 +148,7 @@ class AuthenticateService {
             host: data.host,
             port: data.port,
             ssid: data.ssid,
+            userType: UserType.fromValue(loginReply.profile.userType.value),
           );
 
           return true;

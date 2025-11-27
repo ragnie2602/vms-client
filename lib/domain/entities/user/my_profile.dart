@@ -1,3 +1,5 @@
+import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
+
 class MyProfile {
   final String avatar;
   final String displayName;
@@ -11,6 +13,7 @@ class MyProfile {
   final String host;
   final int port;
   final String ssid;
+  final UserType userType;
 
   MyProfile({
     required this.avatar,
@@ -25,6 +28,7 @@ class MyProfile {
     required this.host,
     required this.port,
     required this.ssid,
+    required this.userType,
   });
 
   MyProfile copyWith({
@@ -40,6 +44,7 @@ class MyProfile {
     String? host,
     int? port,
     String? ssid,
+    UserType? userType,
   }) {
     return MyProfile(
       avatar: avatar ?? this.avatar,
@@ -54,6 +59,7 @@ class MyProfile {
       host: host ?? this.host,
       port: port ?? this.port,
       ssid: ssid ?? this.ssid,
+      userType: userType ?? this.userType,
     );
   }
 
@@ -71,6 +77,7 @@ class MyProfile {
       host: json['host'],
       port: json['port'],
       ssid: json['ssid'],
+      userType: UserType.fromValue(json['userType']),
     );
   }
 
@@ -88,6 +95,7 @@ class MyProfile {
       'host': host,
       'port': port,
       'ssid': ssid,
+      'userType': userType.value,
     };
   }
 
