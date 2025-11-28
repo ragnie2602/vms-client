@@ -115,11 +115,18 @@ class AppAssets {
   static const icUserInfo = '$_svgPath/ic_user_info.svg';
 
   // Mobile
+  static const icCamera01 = '$_svgPath/ic_camera-01.svg';
   static const icFilterAltLight = '$_svgPath/ic_filter_alt_light.svg';
+  static const icFullAltRight = '$_svgPath/ic_full_alt_right.svg';
   static const icHome = '$_svgPath/ic_home.svg';
   static const icHomeFilled = '$_svgPath/ic_home_filled.svg';
+  static const icPauseMobile = '$_svgPath/ic_pause_mobile.svg';
+  static const icPlayback = '$_svgPath/tab_playback.svg';
+  static const icPlaybackFilled = '$_svgPath/ic_playback_filled.svg';
   static const icUser = '$_svgPath/ic_user.svg';
   static const icUserFilled = '$_svgPath/ic_user_filled.svg';
-  static const icVideoOnline = '$_svgPath/ic_camera_online_mobile.svg';
   static const icVideoOffline = '$_svgPath/ic_camera_offline_mobile.svg';
+  static const icVideoOnline = '$_svgPath/ic_camera_online_mobile.svg';
+  static const icVideoOnlineFilled = '$_svgPath/video_on_filled.svg';
+  static const icVolume = '$_svgPath/ic_volume.svg';
 }

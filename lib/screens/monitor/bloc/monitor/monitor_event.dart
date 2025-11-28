@@ -4,17 +4,23 @@ class MonitorEvent extends BaseEvent {}
 
 class GetAllCamera extends MonitorEvent {
   final ViewMode? mode;
+  final Set<TagEntity>? tags;
 
-  GetAllCamera({this.mode});
+  GetAllCamera({this.mode, this.tags});
 }
 
 class GetAllCameraInGroup extends MonitorEvent {
   final List<int> groupId;
+  final Set<TagEntity>? tags;
 
-  GetAllCameraInGroup(this.groupId);
+  GetAllCameraInGroup(this.groupId, {this.tags});
 }
 
-class GetAllCameraNoGroup extends MonitorEvent {}
+class GetAllCameraNoGroup extends MonitorEvent {
+  final Set<TagEntity>? tags;
+
+  GetAllCameraNoGroup({this.tags});
+}
 
 class GetCameraAtPage extends MonitorEvent {
   final int page;
