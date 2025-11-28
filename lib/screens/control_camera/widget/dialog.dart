@@ -583,62 +583,79 @@ class _TagFieldState extends State<_TagField> {
                             color: AppColors.grey92929D,
                           ),
                         )
-                      : Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: widget.tags.map((tag) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: tag.color, width: 1),
-                                borderRadius: BorderRadius.circular(4),
-                                color: tag.color.withOpacity(0.1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: tag.color,
-                                    ),
-                                    height: 8,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    width: 8,
+                      : BlocListener<ControlCameraBloc, ControlCameraState>(
+                          listener: (context, state) => setState(() {
+                            if (state is DeleteTagSuccessState) {
+                              widget.tags.removeWhere(
+                                (tag) => tag.id.equals(state.id),
+                              );
+                            } else if (state is UpdateTagSuccessState) {
+                              widget.tags.removeWhere(
+                                (tag) => tag.id.equals(state.tag.id),
+                              );
+                              widget.tags.add(state.tag);
+                            }
+                          }),
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: widget.tags.map((tag) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: tag.color,
+                                    width: 1,
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: Text(
-                                      tag.name,
-                                      style: AppTypography.style(
-                                        12,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.black,
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: tag.color.withOpacity(0.1),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: tag.color,
+                                      ),
+                                      height: 8,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      width: 8,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(4),
+                                      child: Text(
+                                        tag.name,
+                                        style: AppTypography.style(
+                                          12,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: IconButton(
-                                      icon: Icon(
-                                        Icons.close,
-                                        color: AppColors.grey92929D,
-                                        size: 10,
+                                    SizedBox(
+                                      height: 16,
+                                      width: 16,
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.close,
+                                          color: AppColors.grey92929D,
+                                          size: 10,
+                                        ),
+                                        onPressed: () => setState(
+                                          () => widget.tags.remove(tag),
+                                        ),
+                                        padding: EdgeInsets.all(3),
                                       ),
-                                      onPressed: () => setState(
-                                        () => widget.tags.remove(tag),
-                                      ),
-                                      padding: EdgeInsets.all(3),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
                 ),
                 const SizedBox(width: 8),
