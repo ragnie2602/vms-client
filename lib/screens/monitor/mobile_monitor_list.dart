@@ -151,7 +151,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                 child: BlocBuilder<MonitorBloc, MonitorState>(
                   builder: (context, state) {
                     if (state is MonitorLoading) return Center(child: CircularProgressIndicator());
-                    if (state is MonitorSuccess && state.cameras.isNotEmpty) {
+                    if (state is MonitorSuccess) {
                       return ValueListenableBuilder(
                         valueListenable: _searchValue,
                         builder: (context, value, child) {
@@ -163,17 +163,31 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                               )
                               .toList();
 
-                          return ListView.builder(
-                            itemBuilder: (context, index) => MobileCameraItem(_cameras[index]),
-                            itemCount: _cameras.length,
-                          );
+                          return _cameras.isNotEmpty
+                              ? ListView.builder(
+                                  itemBuilder: (context, index) => MobileCameraItem(_cameras[index]),
+                                  itemCount: _cameras.length,
+                                )
+                              : Center(
+                                  child: Text(
+                                    'Không có dữ liệu',
+                                    style: AppTypography.style(
+                                      13,
+                                      color: AppColors.grey666666,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                );
                         },
                       );
                     }
                     return Center(
-                      child: Text(
-                        'Không có dữ liệu',
-                        style: AppTypography.style(13, color: AppColors.grey666666, fontWeight: FontWeight.w600),
+                      child: Container(
+                        color: Colors.amber,
+                        child: Text(
+                          'Không có dữ liệu',
+                          style: AppTypography.style(13, color: AppColors.grey666666, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     );
                   },
