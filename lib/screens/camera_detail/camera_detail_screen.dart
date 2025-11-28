@@ -152,6 +152,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
   }
 
   Widget _buildLabel(String name) {
+    if (_position.value == -1) return SizedBox.shrink();
     return Positioned(
       bottom: (_position.value & 1) == 1 ? 20 : null,
       left: (_position.value & 2) == 0 ? 20 : null,

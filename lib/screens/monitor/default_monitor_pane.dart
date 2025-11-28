@@ -178,6 +178,7 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
   }
 
   Widget _buildLabel(String label, Size size) {
+    if (_position.value == -1) return SizedBox.shrink();
     return Positioned(
       bottom: (_position.value & 1) == 1 ? 10 : null,
       left: (_position.value & 2) == 0 ? 10 : null,
