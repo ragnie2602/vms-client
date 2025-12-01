@@ -13,7 +13,7 @@ review-source:
     - echo "=== MR MỚI ĐƯỢC TẠO ==="
     - |
       echo "Writing Claude CLI settings..."
-      mkdir -p ~/.claude
+      mkdir -p ./.claude
       cat <<EOF > "./.claude/settings.json"
       $CLAUDE_SETTINGS
       EOF
