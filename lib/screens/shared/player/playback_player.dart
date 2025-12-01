@@ -282,6 +282,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     _cancelTimers();
     _state.value = showLoading ? PlayerState.initializing : PlayerState.error_again;
+    _waitForFirstFrame = Completer<bool>();
 
     // disable next media (nếu đang có next media)
     _player.setNext("", from: -1);
@@ -295,7 +296,6 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       _waitForUnloadedOldMedia.safeComplete();
     }
 
-    _waitForFirstFrame = Completer<bool>();
     _player
       ..media = currentPlayback.urlPlayback
       ..state = PlaybackState.playing;
@@ -403,6 +403,29 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   }
 
   /* =============================== CONTROL FUNCTIONS =============================== */
+  Future<void> _ensureConnectingFinished() async {
+    /// Trường hợp đang load (mới mở) hoặc reconnecting --> đợi xong mới thực hiện jump
+    /// await updateTexture (~ await textureSize) --> change media --> textureSize sẽ được complete (null) và khởi tạo lại
+    /// --> return -1 --> Hiển thị lỗi
+    if (_waitForFirstFrame?.isCompleted == false) {
+      final success = await _waitForFirstFrame?.future;
+
+      // Thành công thì đợi state sang initialized (sau khi có textureSize) --> để seek chuẩn
+      if (success == true) {
+        await _player.textureSize.timeout(
+          AppConfig.PLAYER_INITIALIZATION_TIMEOUT,
+          onTimeout: () => null,
+        );
+      }
+      // Lỗi --> cancel retry (Tránh reconnecting sau 5s) --> Seek (lỗi/thành công thì sẽ được thực hiện theo date mới)
+      else {
+        _cancelTimers();
+      }
+
+      await Future.delayed(Duration(milliseconds: 150));
+    }
+  }
+
   bool _newestIsEmpty = false;
   Future<void> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
     if (!mounted) return;
@@ -423,6 +446,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     }
 
     _dualQueue.add(() async {
+      await _ensureConnectingFinished();
       await _jumpToDate(date, dateIndex: index);
 
       // Spam click và sau đó click ra ngoài --> bị nhảy về cái trước đó
