@@ -33,7 +33,10 @@ Future<void> defaultExitNativeFullscreen() async {
     if (Platform.isAndroid || Platform.isIOS) {
       await Future.wait([
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values),
-        SystemChrome.setPreferredOrientations([]),
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]),
       ]);
     } else if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
       await const MethodChannel(

@@ -126,6 +126,7 @@ class AppAssets {
   static const icLanguage = '$_svgPath/ic_language.svg';
   static const icLogOut = '$_svgPath/ic_log_out.svg';
   static const icPauseMobile = '$_svgPath/ic_pause_mobile.svg';
+  static const icPlayMobile = '$_svgPath/ic_play_mobile.svg';
   static const icPlayback = '$_svgPath/tab_playback.svg';
   static const icPlaybackFilled = '$_svgPath/ic_playback_filled.svg';
   static const icUser = '$_svgPath/ic_user.svg';

@@ -136,4 +136,10 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
 
     emit(state.copyWith(stream: event.stream));
   }
+
+  // @override
+  // Future<void> close() {
+  //   state.playerController.dispose();
+  //   return super.close();
+  // }
 }
