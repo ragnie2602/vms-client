@@ -1,0 +1,26 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger" && $TRI_TYPE == "merge_request"
+stages:
+  - review
+
+review-source:
+  stage: review
+  image: ipcam.vivas.vn:5086/pdc.flutter.claude.cli/v0.9.0
+  tags:
+    - pdc.flutter.3.38.3 # Tags for runner
+  script:
+    - echo "=== MR MỚI ĐƯỢC TẠO ==="
+    - |
+      echo "Writing Claude CLI settings..."
+      mkdir -p ~/.claude
+      cat <<EOF > "~/.claude/settings.json"
+      $CLAUDE_SETTINGS
+      EOF
+    - echo "Indexing branch with Serena..."
+    - uvx --from git+https://github.com/oraios/serena serena project index
+    - claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context ide-assistant --project "$(pwd)"
+    - claude mcp list  
+    - echo "=== Reviewing Source Code with Claude ==="
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger" && $TRI_TYPE == "merge_request"
