@@ -183,144 +183,190 @@ class _ConfigScheduleRecordWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 1. tính tổng width của cả view
+        // 2. tính width của gridview = (tổng width - các sizedbox fix cứng width) * tỉ lệ của flex
+        // 3. => tính được width, height của từng ô trong grid (vì childAspectRatio = 1 => width = height)
+        // 4.1. từ height của ô => set khoảng cách cho cột thứ (thứ 2-CN) và cho checkbox cả ngày
+        // 4.2. từ width và height của ô => tính vị trí khi thao tác kéo ô trong grid
+
+        final totalWidth = constraints.maxWidth;
+        // Calculate the width of the grid column (flex 648)
+        // Fixed widths: 12 + 13 + 5 = 30
+        // Total flex: 77 + 648 + 50 = 775
+        final availableWidth = totalWidth - 30;
+        final gridColumnWidth = availableWidth * 648 / 775;
+
+        // 24 cột, 23 khoảng cách mỗi khoảng 2px -> 46px spacing
+        final cellWidth = (gridColumnWidth - 46) / 24;
+        final cellHeight = cellWidth;
+
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // column chứa thứ
-            Expanded(flex: 77, child: ScheduleTimeDayWidget()),
-            Container(width: 12),
-            // colum chưa giờ + gridview
-            Expanded(
-              flex: 648,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Flexible(child: TimeSlotWidget()),
-                  const SizedBox(height: 12),
-                  Flexible(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final width = constraints.maxWidth;
-                        // 24 columns, 23 gaps of 2px
-                        // width = 24 * cellWidth + 23 * 2
-                        // cellWidth = (width - 46) / 24
-                        final cellWidth = (width - 46) / 24;
-                        // cellHeight = cellWidth / childAspectRatio (1) = cellWidth
-                        // mainAxisSpacing = 10
-                        final cellHeight = cellWidth;
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // column chứa thứ
+                Expanded(
+                  flex: 77,
+                  child: ScheduleTimeDayWidget(
+                    rowHeight: cellHeight,
+                    spacing: 10,
+                  ),
+                ),
+                Container(width: 12),
+                // colum chưa giờ + gridview
+                Expanded(
+                  flex: 648,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(child: TimeSlotWidget()),
+                      const SizedBox(height: 6),
+                      Flexible(
+                        child: Stack(
+                          children: [
+                            Container(
+                              // color: Colors.pink,
+                              padding: EdgeInsets.only(top: 8),
+                              child: GestureDetector(
+                                onPanStart: (details) {
+                                  // calculate index
+                                  final localPosition = details.localPosition;
+                                  final x = localPosition.dx;
+                                  final y = localPosition.dy;
 
-                        return GestureDetector(
-                          onPanStart: (details) {
-                            // calculate index
-                            final localPosition = details.localPosition;
-                            final x = localPosition.dx;
-                            final y = localPosition.dy;
+                                  int col = (x / (cellWidth + 2)).floor();
+                                  int row = (y / (cellHeight + 10)).floor();
 
-                            int col = (x / (cellWidth + 2)).floor();
-                            int row = (y / (cellHeight + 10)).floor();
-
-                            if (col >= 0 && col < 24 && row >= 0) {
-                              int index = row * 24 + col;
-                              if (index >= 0 && index < gridItemCount) {
-                                _isDraggingToAdd =
-                                    !listGridviewItemValue[index];
-                                _draggedIndices.clear();
-                                _setGridviewItem(index, _isDraggingToAdd!);
-                                _draggedIndices.add(index);
-                              }
-                            }
-                          },
-                          onPanUpdate: (details) {
-                            if (_isDraggingToAdd == null) return;
-                            final localPosition = details.localPosition;
-                            final x = localPosition.dx;
-                            final y = localPosition.dy;
-
-                            int col = (x / (cellWidth + 2)).floor();
-                            int row = (y / (cellHeight + 10)).floor();
-
-                            if (col >= 0 && col < 24 && row >= 0) {
-                              int index = row * 24 + col;
-                              if (index >= 0 &&
-                                  index < gridItemCount &&
-                                  !_draggedIndices.contains(index)) {
-                                _setGridviewItem(index, _isDraggingToAdd!);
-                                _draggedIndices.add(index);
-                              }
-                            }
-                          },
-                          onPanEnd: (details) {
-                            _isDraggingToAdd = null;
-                            _draggedIndices.clear();
-                          },
-                          child: GridView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 24,
-                                  mainAxisSpacing: 10,
-                                  crossAxisSpacing: 2,
-                                  childAspectRatio: 1, // adjust height
-                                ),
-                            itemCount: gridItemCount,
-                            itemBuilder: (context, index) {
-                              int columnIndex = getColumnIndex(index);
-                              return InkWell(
-                                onTap: () {
-                                  _updateGridviewItem(index);
+                                  if (col >= 0 && col < 24 && row >= 0) {
+                                    int index = row * 24 + col;
+                                    if (index >= 0 && index < gridItemCount) {
+                                      _isDraggingToAdd =
+                                          !listGridviewItemValue[index];
+                                      _draggedIndices.clear();
+                                      _setGridviewItem(
+                                        index,
+                                        _isDraggingToAdd!,
+                                      );
+                                      _draggedIndices.add(index);
+                                    }
+                                  }
                                 },
-                                child: Tooltip(
-                                  message:
-                                      '${columnIndex < 9 ? '0' : ''}${columnIndex}h:00',
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color:
-                                          listGridviewItemValue[index] == true
-                                          ? AppColors.primary
-                                          : AppColors.greyE9E9E9,
-                                      borderRadius: BorderRadius.circular(2),
-                                    ),
+                                onPanUpdate: (details) {
+                                  if (_isDraggingToAdd == null) return;
+                                  final localPosition = details.localPosition;
+                                  final x = localPosition.dx;
+                                  final y = localPosition.dy;
+
+                                  int col = (x / (cellWidth + 2)).floor();
+                                  int row = (y / (cellHeight + 10)).floor();
+
+                                  if (col >= 0 && col < 24 && row >= 0) {
+                                    int index = row * 24 + col;
+                                    if (index >= 0 &&
+                                        index < gridItemCount &&
+                                        !_draggedIndices.contains(index)) {
+                                      _setGridviewItem(
+                                        index,
+                                        _isDraggingToAdd!,
+                                      );
+                                      _draggedIndices.add(index);
+                                    }
+                                  }
+                                },
+                                onPanEnd: (details) {
+                                  _isDraggingToAdd = null;
+                                  _draggedIndices.clear();
+                                },
+                                child: GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 24,
+                                        mainAxisSpacing: 10,
+                                        crossAxisSpacing: 2,
+                                        childAspectRatio: 1, // adjust height
+                                      ),
+                                  itemCount: gridItemCount,
+                                  itemBuilder: (context, index) {
+                                    int columnIndex = getColumnIndex(index);
+                                    return InkWell(
+                                      onTap: () {
+                                        _updateGridviewItem(index);
+                                      },
+                                      child: Tooltip(
+                                        message:
+                                            '${columnIndex < 9 ? '0' : ''}$columnIndex:00',
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color:
+                                                listGridviewItemValue[index] ==
+                                                    true
+                                                ? AppColors.primary
+                                                : AppColors.greyE9E9E9,
+                                            borderRadius: BorderRadius.circular(
+                                              2,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: CustomPaint(
+                                  painter: GridLinePainter(
+                                    cellWidth: cellWidth,
+                                    spacing: 2,
+                                    // color: Colors.amber,
+                                    color: AppColors.greyE2E8F0,
+                                    // color: AppColors.black,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 13),
+                // check box cả ngày
+                Expanded(
+                  flex: 50,
+                  child: CheckBoxAllDayWidget(
+                    listCheckAllDay: listCheckAllDay,
+                    updateCheckBox: (value) {
+                      _updateCheckBox(value);
+                    },
+                    rowHeight: cellHeight,
+                    spacing: 10,
+                  ),
+                ),
+                // padding right
+                const SizedBox(width: 5),
+              ],
             ),
-            const SizedBox(width: 13),
-            // check box cả ngày
-            Expanded(
-              flex: 50,
-              child: CheckBoxAllDayWidget(
-                listCheckAllDay: listCheckAllDay,
-                updateCheckBox: (value) {
-                  _updateCheckBox(value);
-                },
-              ),
+            ButtonConfigWidget(
+              isLoading: widget.isSaving,
+              onSave: () {
+                _updateRecord();
+                widget.onSave.call(newRecording);
+              },
             ),
-            // padding right
-            const SizedBox(width: 5),
           ],
-        ),
-        ButtonConfigWidget(
-          isLoading: widget.isSaving,
-          onSave: () {
-            _updateRecord();
-            widget.onSave.call(newRecording);
-          },
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -342,4 +388,43 @@ extension TimeSlotsExt on TimeSlots {
         return '24h00';
     }
   }
+}
+
+class GridLinePainter extends CustomPainter {
+  final double cellWidth;
+  final double spacing;
+  final Color color;
+
+  GridLinePainter({
+    required this.cellWidth,
+    required this.spacing,
+    this.color = AppColors.greyE2E8F0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    // 0, 6, 12, 18
+    // chỉ vẽ line start cho các mốc 0-18, mốc 24 vẽ line end
+    final cols = [0, 6, 12, 18];
+    for (var col in cols) {
+      // Draw at the start of the column (left edge)
+      // This keeps the spacing visible to the left of the line
+      double x = col * (cellWidth + spacing);
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+
+    // 24h (end)
+    canvas.drawLine(
+      Offset(size.width, 0),
+      Offset(size.width, size.height),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -70,8 +70,9 @@ class _StorageFolderViewState extends State<StorageFolderView> {
         width: double.infinity,
         height: double.infinity,
         alignment: Alignment.topLeft,
-        child: SizedBox(
-          width: 565,
+        child: Container(
+          // width: 565,
+          constraints: BoxConstraints(minWidth: 565),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,37 +87,47 @@ class _StorageFolderViewState extends State<StorageFolderView> {
               ),
 
               /*  */
-              _buildStorageFolderItem(
-                "Thư mục lưu video",
-                _videoFolderController,
-                prompt: "Chọn thư mục để lưu video",
-              ),
-              _buildStorageFolderItem(
-                "Thư mục lưu ảnh",
-                _snapshotFolderController,
-                prompt: "Chọn thư mục lưu ảnh",
+              IntrinsicWidth(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    _buildStorageFolderItem(
+                      "Thư mục lưu video",
+                      _videoFolderController,
+                      prompt: "Chọn thư mục để lưu video",
+                    ),
+                    _buildStorageFolderItem(
+                      "Thư mục lưu ảnh",
+                      _snapshotFolderController,
+                      prompt: "Chọn thư mục lưu ảnh",
+                    ),
+                  ],
+                ),
               ),
 
               /*  */
               SizedBox(height: 50),
-              Row(
-                spacing: 12,
-                children: <Widget>[
-                  _buildButton(
-                    title: "Hủy",
-                    borderColor: AppColors.greyE2E8F0,
-                    bgColor: AppColors.white,
-                    textColor: AppColors.black,
-                    onPressed: _onCancel,
-                  ),
-                  _buildButton(
-                    title: "Lưu",
-                    borderColor: AppColors.secondary,
-                    bgColor: AppColors.secondary,
-                    textColor: AppColors.white,
-                    onPressed: _onSave,
-                  ),
-                ],
+              SizedBox(
+                width: 565,
+                child: Row(
+                  spacing: 12,
+                  children: <Widget>[
+                    _buildButton(
+                      title: "Hủy",
+                      borderColor: AppColors.greyE2E8F0,
+                      bgColor: AppColors.white,
+                      textColor: AppColors.black,
+                      onPressed: _onCancel,
+                    ),
+                    _buildButton(
+                      title: "Lưu",
+                      borderColor: AppColors.secondary,
+                      bgColor: AppColors.secondary,
+                      textColor: AppColors.white,
+                      onPressed: _onSave,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -153,43 +164,47 @@ class _StorageFolderViewState extends State<StorageFolderView> {
   }
 
   Widget _buildStorageFolderItem(String title, TextEditingController controller, {String? prompt}) {
-    return Ink(
+    return Padding(
       padding: EdgeInsets.only(top: 20),
       child: InkWell(
         onTap: () => _onSelectFolder(controller, title: prompt),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Text(
-              title,
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.black0D0D0D,
+            ConstrainedBox(
+              constraints: BoxConstraints(minWidth: 180),
+              child: Text(
+                title,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.black0D0D0D,
+                ),
               ),
             ),
-            Container(
-              margin: EdgeInsets.only(left: 12),
-              constraints: BoxConstraints(minWidth: 384, minHeight: 41),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: AppColors.greyE2E8F0),
-              ),
-              padding: EdgeInsets.all(12),
-              alignment: Alignment.centerLeft,
-              child: ValueListenableBuilder(
-                valueListenable: controller,
-                builder: (context, text, child) {
-                  return Text(
-                    text.text.isEmpty ? "Đang tải ..." : controller.text,
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w400,
-                      color: text.text.isEmpty ? AppColors.grey64748B : AppColors.black,
-                    ),
-                  );
-                },
+            Flexible(
+              child: Container(
+                margin: EdgeInsets.only(left: 12),
+                constraints: BoxConstraints(minWidth: 384, minHeight: 41),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: AppColors.greyE2E8F0),
+                ),
+                padding: EdgeInsets.all(12),
+                alignment: Alignment.centerLeft,
+                child: ValueListenableBuilder(
+                  valueListenable: controller,
+                  builder: (context, text, child) {
+                    return Text(
+                      text.text.isEmpty ? "Đang tải ..." : controller.text,
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w400,
+                        color: text.text.isEmpty ? AppColors.grey64748B : AppColors.black,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],

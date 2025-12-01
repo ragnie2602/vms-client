@@ -18,9 +18,15 @@ class ChangePlayback extends PlaybackEvent {
 }
 
 class DownloadPlayback extends PlaybackEvent {
-  final PlaybackVideo playback;
+  final String url;
+  final Future<String?> Function() getSavedPath;
   final Function(double?)? onProgress;
   final Function(String?)? onError;
 
-  const DownloadPlayback(this.playback, {this.onProgress, this.onError});
+  const DownloadPlayback({
+    required this.url,
+    required this.getSavedPath,
+    this.onProgress,
+    this.onError,
+  });
 }

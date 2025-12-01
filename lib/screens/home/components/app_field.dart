@@ -22,6 +22,8 @@ class AppField extends StatefulWidget {
     this.inputFormatters,
     this.readOnly = false,
     this.borderRadius,
+    this.isFilled,
+    this.fillColor,
   });
 
   final TextEditingController controller;
@@ -39,6 +41,8 @@ class AppField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool? readOnly;
   final double? borderRadius;
+  final bool? isFilled;
+  final Color? fillColor;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -130,12 +134,11 @@ class _AppFieldState extends State<AppField> {
                         });
                       },
                       readOnly: widget.readOnly ?? false,
-
                       inputFormatters: widget.inputFormatters,
                       decoration: InputDecoration(
                         hintText: widget.hintText,
-                        filled: widget.readOnly ?? false,
-                        fillColor: widget.readOnly ?? false ? AppColors.greyF2F4FA : null,
+                        filled: widget.isFilled ?? widget.readOnly ?? false,
+                        fillColor: widget.fillColor ?? (widget.readOnly ?? false ? AppColors.greyF2F4FA : null),
                         hintStyle: AppTypography.style(
                           14,
                           fontWeight: FontWeight.w400,

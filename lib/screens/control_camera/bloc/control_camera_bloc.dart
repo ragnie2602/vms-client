@@ -42,7 +42,7 @@ class ControlCameraBloc
     on<GetListCameraInGroupEvent>(_onGetCameraInGroup);
     on<CheckOnvifEvent>(_onCheckOnvif);
     on<FilterCameraEvent>(_onFilterCamera);
-    on<FilterTagCameraEvent>(_onFilterTagCamera);
+    // on<FilterTagCameraEvent>(_onFilterTagCamera);
     on<AddCameraRTSPEvent>(_onAddCameraRTSP);
     on<AddCameraOnvifEvent>(_onAddCameraOnvif);
     on<UpdateCameraEvent>(_onUpdateCamera);
@@ -174,6 +174,7 @@ class ControlCameraBloc
     Emitter<ControlCameraState> emit,
   ) {
     final FilterCameraInput input = FilterCameraInput(
+      tagName: event.tagName,
       nameCamera: event.cameraName,
       isOnline: event.isOnline,
       listCameraOrigin: listCamera,
@@ -445,16 +446,17 @@ class ControlCameraBloc
   }
 
   void _onFilterTagCamera(
-    FilterTagCameraEvent event,
+    FilterCameraEvent event,
     Emitter<ControlCameraState> emit,
   ) {
-    final FilterTagCameraInput input = FilterTagCameraInput(
+    final FilterCameraInput input = FilterCameraInput(
+      isOnline: event.isOnline,
+      nameCamera: event.cameraName,
       tagName: event.tagName,
-      keyWord: event.keyWord,
       listCameraOrigin: listCamera,
     );
-    final FilterTagCameraOutput output = filterTagCameraUseCase.execute(input);
-    emit(ListCameraSuccessState(cameras: output.listCamera ?? []));
+  //  final FilterTagCameraOutput output = filterTagCameraUseCase.execute(input);
+  //  emit(ListCameraSuccessState(cameras: output.listCamera ?? []));
   }
 
   FutureOr<void> _onCreateTag(

@@ -11,6 +11,8 @@ class AppButton extends StatelessWidget {
     super.key,
     this.child,
     this.borderColor,
+    this.backgroundColor,
+    this.padding,
   });
   final String label;
   final VoidCallback? onPressed;
@@ -18,6 +20,8 @@ class AppButton extends StatelessWidget {
   final Widget? child;
   final bool fullWidth;
   final Color? borderColor;
+  final Color? backgroundColor;
+  final EdgeInsetsGeometry? padding;
 
   factory AppButton.filled({
     Key? key,
@@ -25,7 +29,18 @@ class AppButton extends StatelessWidget {
     VoidCallback? onPressed,
     Widget? child,
     bool fullWidth = false,
-  }) => AppButton._(label, onPressed, true, fullWidth, key: key, child: child);
+    Color? backgroundColor,
+    EdgeInsetsGeometry? padding,
+  }) => AppButton._(
+    label,
+    onPressed,
+    true,
+    fullWidth,
+    key: key,
+    backgroundColor: backgroundColor,
+    padding: padding,
+    child: child,
+  );
   factory AppButton.outline({
     Key? key,
     required String label,
@@ -33,6 +48,7 @@ class AppButton extends StatelessWidget {
     bool fullWidth = false,
     Color? borderColor,
     Widget? child,
+    EdgeInsetsGeometry? padding,
   }) => AppButton._(
     label,
     onPressed,
@@ -40,6 +56,7 @@ class AppButton extends StatelessWidget {
     fullWidth,
     key: key,
     borderColor: borderColor,
+    padding: padding,
     child: child,
   );
 
@@ -60,11 +77,13 @@ class AppButton extends StatelessWidget {
       return ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.blue005AA9,
+          backgroundColor: backgroundColor ?? AppColors.blue005AA9,
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppColors.blue005AA9.withOpacity(0.2),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding:
+              padding ??
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           minimumSize: fullWidth
               ? const Size(double.infinity, 48)
               : const Size(150, 48),
@@ -82,7 +101,9 @@ class AppButton extends StatelessWidget {
             width: 1,
           ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding:
+              padding ??
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           minimumSize: fullWidth
               ? const Size(double.infinity, 48)
               : const Size(150, 48),

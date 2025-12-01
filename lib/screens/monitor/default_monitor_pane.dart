@@ -45,8 +45,14 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
             return LayoutBuilder(
               builder: (context, constraints) {
                 final paginatorHeight = isFullScreen ? 4 : 48;
-                final size = _initPlayerSize(constraints, paginatorHeight, state.mode.rows, state.mode.columns);
-                final wrapWidth = (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
+                final size = _initPlayerSize(
+                  constraints,
+                  paginatorHeight,
+                  state.mode.rows,
+                  state.mode.columns,
+                );
+                final wrapWidth =
+                    (size.width * state.mode.columns) + (spacing * (state.mode.columns - 1));
                 return Container(
                   color: AppColors.greyF2F4FA,
                   child: Column(
@@ -70,9 +76,10 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                                             Routes.cameraDetail.name,
                                             extra: CameraDetailScreenArgs(
                                               data: camera,
-                                              onBack: () => AppRouter.rootNavigatorKey.currentContext?.goNamed(
-                                                Routes.monitoring.name,
-                                              ),
+                                              onBack: () => AppRouter
+                                                  .rootNavigatorKey
+                                                  .currentContext
+                                                  ?.goNamed(Routes.monitoring.name),
                                             ),
                                           );
                                         },
@@ -111,7 +118,11 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                             children: [
                               Text(
                                 "Hiển thị ${state.paginatedCameras.length} trong số ${state.cameras.length} camera",
-                                style: AppTypography.style(fontWeight: FontWeight.w400, 13, color: Colors.black),
+                                style: AppTypography.style(
+                                  fontWeight: FontWeight.w400,
+                                  13,
+                                  color: Colors.black,
+                                ),
                               ),
                               ConstrainedBox(
                                 constraints: BoxConstraints(maxWidth: 280, maxHeight: 32),
@@ -137,12 +148,18 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
   }
 
   // Getters
-  Size _initPlayerSize(BoxConstraints constraints, int paginatorHeight, [int rows = 6, int columns = 6]) {
+  Size _initPlayerSize(
+    BoxConstraints constraints,
+    int paginatorHeight, [
+    int rows = 6,
+    int columns = 6,
+  ]) {
     rows = AppConfig.OVERRIDE_MONITOR_GRID_ROWS ?? rows;
     columns = AppConfig.OVERRIDE_MONITOR_GRID_COLUMNS ?? columns;
 
     final availableWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
-    final availableHeight = ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (paginatorHeight / rows);
+    final availableHeight =
+        ((constraints.maxHeight - spacing * (rows - 1)) / rows) - (paginatorHeight / rows);
 
     // Maintain 16:9 aspect ratio - always use width as the constraint
     // This ensures players grow/shrink when drawer opens/closes
@@ -161,6 +178,7 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
   }
 
   Widget _buildLabel(String label, Size size) {
+    if (_position.value == -1) return SizedBox.shrink();
     return Positioned(
       bottom: (_position.value & 1) == 1 ? 10 : null,
       left: (_position.value & 2) == 0 ? 10 : null,

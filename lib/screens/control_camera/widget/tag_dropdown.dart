@@ -2,10 +2,12 @@ import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -157,8 +159,8 @@ class _TagDropdownState extends State<TagDropdown> {
                                   child: Row(
                                     children: [
                                       Container(
-                                        width: 20,
-                                        height: 20,
+                                        width: 16,
+                                        height: 16,
                                         decoration: BoxDecoration(
                                           color: tag.isSelected
                                               ? AppColors.blue085DA8
@@ -208,31 +210,33 @@ class _TagDropdownState extends State<TagDropdown> {
                       );
                     },
                   ),
-                  const SizedBox(height: 12),
-                  const Divider(height: 1, color: AppColors.greyE2E8F0),
-                  const SizedBox(height: 12),
-                  InkWell(
-                    onTap: () => widget.onOpenTagManagement?.call(_tags),
-                    child: Row(
-                      children: [
-                        SvgPicture.asset(
-                          AppAssets.tabSettings,
-                          color: AppColors.blue085DA8,
-                          height: 13,
-                          width: 13,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Quản lý thẻ phân loại',
-                          style: AppTypography.style(
-                            13,
-                            fontWeight: FontWeight.w500,
+                  if (AppData.instance.profile?.userType != UserType.user) ...[
+                    const SizedBox(height: 12),
+                    const Divider(height: 1, color: AppColors.greyE2E8F0),
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: () => widget.onOpenTagManagement?.call(_tags),
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            AppAssets.tabSettings,
                             color: AppColors.blue085DA8,
+                            height: 20,
+                            width: 20,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            'Quản lý thẻ phân loại',
+                            style: AppTypography.style(
+                              15,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.blue085DA8,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

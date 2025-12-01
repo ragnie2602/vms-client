@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
 import 'package:vms_flutter_client/screens/monitor/mobile_monitor_list.dart';
 import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
 
-import 'bloc/monitor/monitor_bloc.dart';
 import 'layout/monitor_desktop_layout.dart';
 
 class MonitorScreen extends StatefulWidget {
@@ -21,7 +19,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
   void initState() {
     super.initState();
 
-    context.read<MonitorBloc>().add(GetAllCamera());
+    // context.read<MonitorBloc>().add(GetAllCamera());
   }
 
   @override

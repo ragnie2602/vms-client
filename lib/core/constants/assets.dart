@@ -136,4 +136,8 @@ class AppAssets {
   static const icVideoOnlineFilled = '$_svgPath/video_on_filled.svg';
   static const icVolume = '$_svgPath/ic_volume.svg';
   static const icUserProfileX = '$_svgPath/ic_user_profile_x.svg';
+  static const icArrowdown = '$_svgPath/arrow_down.svg';
+
+  static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
+  static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
 }

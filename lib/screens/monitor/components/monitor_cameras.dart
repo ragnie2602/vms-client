@@ -37,26 +37,38 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
   late Function(CameraEntity) onTap;
   late CameraEntity? selectedCamera;
 
-  late final MonitorBloc _monitorBloc;
+  late final _searchController = TextEditingController(text: _monitorBloc.filterData.searchText);
+  late final MonitorBloc _monitorBloc = context.read<MonitorBloc>();
+
   final LayerLink layerLink = LayerLink();
-  final Set<TagEntity> _selectedTags = {};
   OverlayEntry? _overlayEntry;
+
+  Set<TagEntity> get _selectedTags => _monitorBloc.filterData.selectedTags;
 
   @override
   void initState() {
     context.read<ControlCameraBloc>().add(GetAllTagsEvent());
     onTap = widget.onTap ?? (_) {};
     selectedCamera = widget.selectedCamera;
+
+    // Lưu lại search data
+    _searchController.addListener(
+      () => _monitorBloc.filterData.searchText = _searchController.text,
+    );
+
     super.initState();
 
     if (mounted) {
-      _monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())..add(GetAllCamera());
+      _monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
+        ..add(GetAllCamera());
     }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
     super.dispose();
   }
 
@@ -78,9 +90,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     bool matchesTags = true;
     if (_selectedTags.isNotEmpty) {
       // Check if camera has ANY of the selected tags
-      matchesTags = camera.tags.any(
-        (cameraTag) => _selectedTags.contains(cameraTag),
-      );
+      matchesTags = camera.tags.any((cameraTag) => _selectedTags.contains(cameraTag));
     }
 
     return matchesSearch && matchesTags;
@@ -122,9 +132,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                       margin: EdgeInsets.only(right: 16, left: 12),
                       child: SvgPicture.asset(AppAssets.icSearch),
                     ),
-                    prefixIconConstraints: BoxConstraints.tight(
-                      Size(20 + 16 + 12, 20),
-                    ),
+                    prefixIconConstraints: BoxConstraints.tight(Size(20 + 16 + 12, 20)),
                     suffixIcon: ValueListenableBuilder(
                       valueListenable: _searchController,
                       builder: (context, value, child) => value.text.isEmpty
@@ -144,49 +152,66 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
               ),
             ),
             SizedBox(height: 14),
-            InkWell(
-              onTap: () {
-                _showAddCameraDropdownTag(context, context, []);
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: CompositedTransformTarget(
-                  link: layerLink,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        _selectedTags.isEmpty
-                            ? "Thẻ Tags"
-                            : _selectedTags.length == 1
-                            ? _selectedTags.first.name
-                            : "${_selectedTags.length} thẻ",
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: CompositedTransformTarget(
+                link: layerLink,
+                child: Align(
+                  alignment: AlignmentGeometry.centerRight,
+                  child: Builder(
+                    builder: (buttonContext) => InkWell(
+                      onTap: () {
+                        _showAddCameraDropdownTag(context, buttonContext, []);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
                           color: _selectedTags.isEmpty
-                              ? AppColors.black
-                              : AppColors.blue005AA9,
+                              ? AppColors.greyEFEFEF
+                              : AppColors.blueE7F3FF,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                _selectedTags.isEmpty
+                                    ? "Thẻ Tags"
+                                    : _selectedTags.length == 1
+                                    ? _selectedTags.first.name
+                                    : "${_selectedTags.length} thẻ",
+                                style: AppTypography.style(
+                                  13,
+                                  fontWeight: FontWeight.w400,
+                                  color: _selectedTags.isEmpty
+                                      ? AppColors.black
+                                      : AppColors.blue005AA9,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (_selectedTags.isNotEmpty) ...[
+                              const SizedBox(width: 4),
+                              InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedTags.clear();
+                                  });
+                                },
+                                child: Icon(Icons.cancel, size: 16, color: AppColors.blue005AA9),
+                              ),
+                            ],
+                            if (_selectedTags.isEmpty) ...[
+                              const SizedBox(width: 4),
+                              SvgPicture.asset(AppAssets.icArrowdown),
+                            ],
+                          ],
                         ),
                       ),
-                      if (_selectedTags.isNotEmpty) ...[
-                        const SizedBox(width: 4),
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedTags.clear();
-                            });
-                          },
-                          child: Icon(
-                            Icons.cancel,
-                            size: 16,
-                            color: AppColors.blue005AA9,
-                          ),
-                        ),
-                      ],
-                      if (_selectedTags.isEmpty)
-                        Icon(Icons.arrow_drop_down, color: AppColors.black),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -201,8 +226,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                     builder: (context, value, child) {
                       final cameras = state.cameras.where(_filterFunc).toList();
 
-                      if (cameras.isEmpty &&
-                          (value.text.isNotEmpty || _selectedTags.isNotEmpty)) {
+                      if (cameras.isEmpty && (value.text.isNotEmpty || _selectedTags.isNotEmpty)) {
                         return _buildSearchEmpty();
                       }
 
@@ -210,8 +234,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                         padding: EdgeInsets.only(bottom: 20),
                         primary: true,
                         itemCount: cameras.length,
-                        itemBuilder: (context, index) =>
-                            _cameraItem(context, cameras[index]),
+                        itemBuilder: (context, index) => _cameraItem(context, cameras[index]),
                       );
                     },
                   ),
@@ -228,11 +251,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     return Center(
       child: Text(
         'Không có dữ liệu hiển thị',
-        style: AppTypography.style(
-          14,
-          fontWeight: FontWeight.w600,
-          color: AppColors.blackOrWhite,
-        ),
+        style: AppTypography.style(14, fontWeight: FontWeight.w600, color: AppColors.blackOrWhite),
       ),
     );
   }
@@ -252,8 +271,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
       builder: (context) => BlocProvider.value(
         value: mainContext.read<ControlCameraBloc>(),
         child: TagDropdown(
-          excludedCameraNames:
-              excludedCameraNames, // Truyền danh sách camera đã có
+          excludedCameraNames: excludedCameraNames, // Truyền danh sách camera đã có
           onClose: () {
             _overlayEntry?.remove();
             _overlayEntry = null;
@@ -282,10 +300,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _showTagManagementDialog(
-    BuildContext mainContext,
-    List<TagEntity> tags,
-  ) {
+  void _showTagManagementDialog(BuildContext mainContext, List<TagEntity> tags) {
     showDialog(
       context: mainContext,
       builder: (context) => BlocProvider.value(
@@ -304,9 +319,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        color: selectedCamera?.camId == camera.camId
-            ? AppColors.greyF2F4FA
-            : Colors.transparent,
+        color: selectedCamera?.camId == camera.camId ? AppColors.greyF2F4FA : Colors.transparent,
         child: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [
@@ -314,11 +327,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 Container(
                   height: 35,
                   alignment: Alignment.topCenter,
-                  child: SvgPicture.asset(
-                    AppAssets.icVideoOn,
-                    width: 20,
-                    height: 20,
-                  ),
+                  child: SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
                 ),
                 SizedBox(width: 16),
               ],
@@ -356,9 +365,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 SizedBox.square(
                   dimension: 8,
                   child: CircleAvatar(
-                    backgroundColor: camera.isOnline
-                        ? Color(0xFF21CCC3)
-                        : Color(0xFF64748B),
+                    backgroundColor: camera.isOnline ? Color(0xFF21CCC3) : Color(0xFF64748B),
                   ),
                 ),
                 SizedBox(width: 8),

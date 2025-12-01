@@ -109,7 +109,7 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
                                   controller: _usernameController,
                                   hintText: 'Nhập tài khoản',
                                   label: 'Tài khoản',
-                                  requiredField: true,
+                                  // requiredField: true,
                                   borderRadius: 3,
                                   paddingBottomLabel: 12,
                                   readOnly: true,

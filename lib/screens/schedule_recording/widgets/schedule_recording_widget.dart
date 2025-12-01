@@ -4,7 +4,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
-import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
+
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/button_config_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/config_schedule_record_widget.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/general_config_camera_widget.dart';
@@ -76,27 +76,68 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
                       SizedBox(
                         height: 50,
                         width: 250,
-                        child: CustomCommonDropdown<RecordingTypeSchedule>(
-                          items: RecordingTypeSchedule.values,
-                          value: typeSelected,
-                          height: 41,
-                          onChanged: (p0) {
+                        child: PopupMenuButton<RecordingTypeSchedule>(
+                          tooltip: '',
+                          offset: Offset(0, 50),
+                          constraints: BoxConstraints(
+                            minWidth: 250,
+                            maxWidth: 250,
+                          ),
+                          onSelected: (value) {
                             setState(() {
-                              typeSelected = p0;
+                              typeSelected = value;
                             });
                           },
-                          itemAsString: (p0) => p0.displayName,
-                          contentTextStyle: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.black,
-                          ),
-                          hint: Text(
-                            'Luôn ghi',
-                            style: AppTypography.style(
-                              14,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.black,
+                          itemBuilder: (context) => RecordingTypeSchedule.values
+                              .map(
+                                (e) => PopupMenuItem(
+                                  // padding: EdgeInsets.zero,
+                                  height: 32,
+                                  value: e,
+                                  child: Text(
+                                    e.displayName,
+                                    style: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.black,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 0,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide: BorderSide(
+                                  color: AppColors.greyE2E8F0,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide: BorderSide(
+                                  color: AppColors.greyE2E8F0,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(4),
+                                borderSide: BorderSide(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              suffixIcon: Icon(Icons.arrow_drop_down),
+                            ),
+                            child: Text(
+                              typeSelected?.displayName ?? '',
+                              style: AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.black,
+                              ),
                             ),
                           ),
                         ),
@@ -125,7 +166,7 @@ class _ScheduleRecordingWidgetState extends State<ScheduleRecordingWidget> {
                       turnOnRecording: currentRecord?.turnOnRecording,
                       prefixPath: currentRecord?.prefixPath,
                       typeScheduleRecording: RecordingTypeSchedule.alwaysRecord,
-                      schedules: []
+                      schedules: [],
                     );
                     widget.onSave.call(record);
                   },

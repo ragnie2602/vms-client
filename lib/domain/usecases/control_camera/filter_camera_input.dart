@@ -9,6 +9,7 @@ class FilterCameraInput extends BaseInput with _$FilterCameraInput {
   const factory FilterCameraInput({
     String? nameCamera,
     bool? isOnline,
+    String? tagName,
     List<CameraEntity>? listCameraOrigin,
   }) = _FilterCameraInput;
 }

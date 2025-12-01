@@ -16,6 +16,11 @@ import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.d
 part 'monitor_event.dart';
 part 'monitor_state.dart';
 
+class FilterData {
+  Set<TagEntity> selectedTags = {};
+  String searchText = '';
+}
+
 class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   MonitorBloc(
     this.getCameraUseCase,
@@ -38,6 +43,8 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   final GetCameraUseCase getCameraUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
   final ICameraRepository cameraRepository;
+
+  late final filterData = FilterData();
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
     final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
