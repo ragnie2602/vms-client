@@ -33,7 +33,6 @@ class MonitorCameras extends StatefulWidget {
 }
 
 class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin {
-  final _searchController = TextEditingController();
   late Function(CameraEntity) onTap;
   late CameraEntity? selectedCamera;
 
@@ -58,10 +57,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
 
     super.initState();
 
-    if (mounted) {
-      _monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
-        ..add(GetAllCamera());
-    }
+    if (mounted && _monitorBloc.state is! MonitorSuccess) _monitorBloc.add(GetAllCamera());
   }
 
   @override
