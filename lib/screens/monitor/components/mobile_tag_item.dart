@@ -4,12 +4,17 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/tab_shape_icon.dart';
 
-class TagItem extends StatelessWidget {
+class MobileTagItem extends StatelessWidget {
   final TagEntity tag;
   final bool isChecked;
   final Function(bool) onChecked;
 
-  const TagItem({super.key, required this.tag, required this.isChecked, required this.onChecked});
+  const MobileTagItem({
+    super.key,
+    required this.tag,
+    required this.isChecked,
+    required this.onChecked,
+  });
 
   @override
   Widget build(BuildContext context) {

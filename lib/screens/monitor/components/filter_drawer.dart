@@ -16,7 +16,7 @@ import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/hierarchy_device_group_dropdown.dart';
-import 'package:vms_flutter_client/screens/monitor/components/tag_item.dart';
+import 'package:vms_flutter_client/screens/monitor/components/mobile_tag_item.dart';
 
 class FilterDrawer extends StatefulWidget {
   final FilterDrawerController controller;
@@ -52,7 +52,10 @@ class _FilterDrawerState extends State<FilterDrawer> {
             Row(
               children: [
                 const SizedBox(width: 20),
-                IconButton(onPressed: () => Scaffold.of(context).closeEndDrawer(), icon: Icon(Icons.close)),
+                IconButton(
+                  onPressed: () => Scaffold.of(context).closeEndDrawer(),
+                  icon: Icon(Icons.close),
+                ),
                 Text('Phân loại', style: AppTypography.style(20, fontWeight: FontWeight.w600)),
               ],
             ),
@@ -65,13 +68,19 @@ class _FilterDrawerState extends State<FilterDrawer> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Nhóm camera', style: AppTypography.style(16, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Nhóm camera',
+                      style: AppTypography.style(16, fontWeight: FontWeight.w600),
+                    ),
                     BlocListener<GroupCameraBloc, GroupCameraState>(
                       listener: (context, state) {
                         if (state is GetAllGroupCameraSuccessState) {
                           setState(() {
                             if (widget.controller.groups.length > 2) {
-                              widget.controller.groups.removeRange(2, widget.controller.groups.length);
+                              widget.controller.groups.removeRange(
+                                2,
+                                widget.controller.groups.length,
+                              );
                             }
                             widget.controller.groups.addAll(state.groups ?? []);
                           });
@@ -81,7 +90,8 @@ class _FilterDrawerState extends State<FilterDrawer> {
                         widget.controller.groups,
                         key: ValueKey(widget.controller.selectedGroupIdChain.toString()),
                         initGroupIdChain: widget.controller.selectedGroupIdChain,
-                        onSelectGroup: (idChain) => widget.controller.selectedGroupIdChain = idChain,
+                        onSelectGroup: (idChain) =>
+                            widget.controller.selectedGroupIdChain = idChain,
                       ),
                     ),
                   ],
@@ -96,7 +106,10 @@ class _FilterDrawerState extends State<FilterDrawer> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Theo thẻ Tags', style: AppTypography.style(16, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Theo thẻ Tags',
+                      style: AppTypography.style(16, fontWeight: FontWeight.w600),
+                    ),
                     const SizedBox(height: 10),
                     Expanded(
                       child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
@@ -110,7 +123,7 @@ class _FilterDrawerState extends State<FilterDrawer> {
                               itemBuilder: (context, index) {
                                 final tag = state.tags[index];
                                 final isChecked = widget.controller.selectedTags.contains(tag);
-                                return TagItem(
+                                return MobileTagItem(
                                   tag: tag,
                                   isChecked: isChecked,
                                   onChecked: (checked) => setState(() {
@@ -130,7 +143,11 @@ class _FilterDrawerState extends State<FilterDrawer> {
                           return Center(
                             child: Text(
                               'Không có dữ liệu',
-                              style: AppTypography.style(14, color: AppColors.grey92929D, fontWeight: FontWeight.w400),
+                              style: AppTypography.style(
+                                14,
+                                color: AppColors.grey92929D,
+                                fontWeight: FontWeight.w400,
+                              ),
                             ),
                           );
                         },
@@ -156,7 +173,11 @@ class _FilterDrawerState extends State<FilterDrawer> {
                     ),
                     child: Text(
                       'Đặt lại',
-                      style: AppTypography.style(14, color: AppColors.secondary, fontWeight: FontWeight.w700),
+                      style: AppTypography.style(
+                        14,
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
@@ -175,7 +196,11 @@ class _FilterDrawerState extends State<FilterDrawer> {
                     ),
                     child: Text(
                       'Phân loại',
-                      style: AppTypography.style(14, color: AppColors.white, fontWeight: FontWeight.w700),
+                      style: AppTypography.style(
+                        14,
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
