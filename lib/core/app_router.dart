@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dar
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
+import 'package:vms_flutter_client/screens/account/mobile_account_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
@@ -90,7 +91,8 @@ enum Routes {
     title: 'Cấu hình hệ thống',
     description: 'Cho phép quản trị viên cấu hình hệ thống quản lý camera',
   ),
-  about(name: 'about', path: '/about');
+  about(name: 'about', path: '/about'),
+  account(name: 'account', path: '/account');
 
   final String name;
   final String path;
@@ -224,6 +226,13 @@ class AppRouter {
                 },
               ),
             ],
+          ),
+
+          GoRoute(
+            path: Routes.account.path,
+            name: Routes.account.name,
+            pageBuilder: (context, state) =>
+                fadeTransition(context: context, state: state, child: MobileAccountScreen()),
           ),
 
           GoRoute(
