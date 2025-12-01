@@ -21,6 +21,7 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custo
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
@@ -115,6 +116,8 @@ class DependencyInjection {
       ),
     ),
     Provider<SearchEmapUseCase>(create: (context) => SearchEmapUseCase()),
+
+    Provider<GetCameraUseCase>(create: (context) => GetCameraUseCase(context.read())),
 
     // Bloc
     Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),

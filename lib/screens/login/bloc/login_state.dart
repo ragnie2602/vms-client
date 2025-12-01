@@ -13,16 +13,11 @@ class LoginState extends BaseState {
     this.isSuccess = false,
   });
 
-  LoginState copyWith({
-    bool? isLoading,
-    String? account,
-    String? errorMessage,
-    bool? isSuccess,
-  }) {
+  LoginState copyWith({bool? isLoading, String? account, String? errorMessage, bool? isSuccess}) {
     return LoginState(
       isLoading: isLoading ?? this.isLoading,
       account: account ?? this.account,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: errorMessage,
       isSuccess: isSuccess ?? this.isSuccess,
     );
   }

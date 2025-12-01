@@ -84,7 +84,9 @@ enum LiveviewDetailAudioSource {
   bool get isOn => this == on;
   bool get isOff => this == off;
   factory LiveviewDetailAudioSource.fromConfig(String? value) => value == null
-      ? LiveviewDetailAudioSource.off
+      ? (Platform.isAndroid || Platform.isIOS
+            ? LiveviewDetailAudioSource.on
+            : LiveviewDetailAudioSource.off)
       : LiveviewDetailAudioSource.values.firstWhere(
           (e) => e.name == value,
           orElse: () => LiveviewDetailAudioSource.on,
