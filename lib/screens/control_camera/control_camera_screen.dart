@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:excel/excel.dart' hide Border;
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +10,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/share_camera_role_enum.dart';
@@ -168,6 +171,60 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         tags: tags,
       ),
     );
+  }
+
+  Future<void> _exportExcel(List<CameraEntity> cameras) async {
+    var excel = Excel.createExcel();
+    Sheet sheetObject = excel['Sheet1'];
+
+    // Add headers
+    List<CellValue> headers = [
+      TextCellValue('STT'),
+      TextCellValue('Tên camera'),
+      TextCellValue('Username'),
+      TextCellValue('Địa chỉ RTSP'),
+      TextCellValue('Địa chỉ luồng phụ'),
+    ];
+    sheetObject.appendRow(headers);
+
+    for (var i = 0; i < cameras.length; i++) {
+      final camera = cameras[i];
+      final subStream =
+          camera.stream.streamLinks
+              .firstWhereOrNull((e) => e.nameOfStream == "SUB STREAM")
+              ?.urlOfStream ??
+          "";
+
+      List<CellValue> row = [
+        IntCellValue(i + 1),
+        TextCellValue(camera.name),
+        TextCellValue(camera.username),
+        TextCellValue(camera.stream.streamOriginUrl),
+        TextCellValue(subStream),
+      ];
+      sheetObject.appendRow(row);
+    }
+
+    final FileSaveLocation? result = await getSaveLocation(
+      suggestedName: 'Camera_list.xlsx',
+      acceptedTypeGroups: [
+        const XTypeGroup(label: 'Excel', extensions: ['xlsx']),
+      ],
+    );
+
+    if (result == null) {
+      // User canceled the picker
+      return;
+    }
+
+    final List<int>? fileBytes = excel.save();
+    if (fileBytes != null) {
+      final XFile textFile = XFile.fromData(
+        Uint8List.fromList(fileBytes),
+        name: 'Camera_list.xlsx',
+      );
+      await textFile.saveTo(result.path);
+    }
   }
 
   void _onUpdateCamera({
@@ -653,6 +710,70 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                               ),
                             ),
                           ),
+                        ),
+                        SizedBox(width: 16),
+                        BlocBuilder<ControlCameraBloc, ControlCameraState>(
+                          buildWhen: (previous, current) =>
+                              current is ListCameraSuccessState ||
+                              current is ControlCameraLoadingState ||
+                              current is ListCameraFailState,
+                          builder: (context, state) {
+                            if (state is ControlCameraLoadingState) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (state is ListCameraFailState) {
+                              return Center(
+                                child: Text(
+                                  state.errorMsg,
+                                  style: AppTypography.style(14),
+                                ),
+                              );
+                            }
+                            // case success
+
+                            return InkWell(
+                              onTap: () {
+                                List<CameraEntity> cameras =
+                                    state is ListCameraSuccessState
+                                    ? state.cameras
+                                    : [];
+                                _exportExcel(cameras);
+                              },
+                              splashColor: Colors.transparent,
+
+                              child: Container(
+                                height: 41,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(3),
+                                  border: Border.all(
+                                    width: 1,
+                                    color: AppColors.secondary,
+                                  ),
+                                  color: AppColors.blueD7E5F1,
+                                ),
+                                child: Center(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(AppAssets.icUpload),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Xuất file',
+                                        style: AppTypography.style(
+                                          14,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.secondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
