@@ -17,6 +17,7 @@ import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bl
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
+import 'package:vms_flutter_client/screens/login/mobile_login_screen.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/emap_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
@@ -47,7 +48,8 @@ enum Routes {
     name: 'addGroupCamera',
     path: '/addGroupCamera',
     title: 'Quản lý camera',
-    description: 'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
+    description:
+        'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
   ),
   login(name: 'login', path: '/login'),
   monitoring(
@@ -79,7 +81,8 @@ enum Routes {
     name: 'users',
     path: '/users',
     title: 'Quản lý tài khoản',
-    description: 'Cho phép quản trị viên kiểm soát ai có thể xem camera của mình và cách thức họ truy cập',
+    description:
+        'Cho phép quản trị viên kiểm soát ai có thể xem camera của mình và cách thức họ truy cập',
   ),
   configuration(
     name: 'system_configuration',
@@ -115,13 +118,20 @@ class AppRouter {
     initialLocation: AppConfig.INITIAL_ROUTE.path,
     navigatorKey: rootNavigatorKey,
     routes: [
-      GoRoute(path: Routes.splash.path, name: Routes.splash.name, builder: (context, state) => const SplashScreen()),
+      GoRoute(
+        path: Routes.splash.path,
+        name: Routes.splash.name,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: Routes.login.path,
         name: Routes.login.name,
         builder: (context, state) => BlocProvider(
           create: (context) => LoginBloc(loginUseCase: context.read<LoginUseCase>()),
-          child: const LoginScreen(),
+          child: PlatformBuilder.builder(
+            onDesktop: (_) => LoginScreen(),
+            onMobile: (_) => MobileLoginScreen(),
+          ),
         ),
       ),
       ShellRoute(
@@ -129,16 +139,27 @@ class AppRouter {
         builder: (context, state, child) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
-            BlocProvider(create: (context) => StorageFolderBloc()..add(StorageFolderStarted()), lazy: false),
             BlocProvider(
-              create: (context) =>
-                  MonitorBloc(context.read(), context.read(), context.read(), context.read())
-                    ..add(ReopenMonitor(context.read<AppBloc>().reopenViewId, context.read<AppBloc>().reopenViewMode)),
+              create: (context) => StorageFolderBloc()..add(StorageFolderStarted()),
+              lazy: false,
             ),
             BlocProvider(
               create: (context) =>
-                  CustomViewBloc(context.read(), context.read(), context.read(), context.read(), context.read())
-                    ..add(ReopenCustomView(context.read<AppBloc>().reopenViewId)),
+                  MonitorBloc(context.read(), context.read(), context.read(), context.read())..add(
+                    ReopenMonitor(
+                      context.read<AppBloc>().reopenViewId,
+                      context.read<AppBloc>().reopenViewMode,
+                    ),
+                  ),
+            ),
+            BlocProvider(
+              create: (context) => CustomViewBloc(
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+              )..add(ReopenCustomView(context.read<AppBloc>().reopenViewId)),
               lazy: false,
             ),
             BlocProvider(
@@ -159,11 +180,16 @@ class AppRouter {
               ),
             ),
             BlocProvider(
-              create: (context) =>
-                  EmapBloc(emapRepository: context.read(), searchEmapUseCase: context.read<SearchEmapUseCase>()),
+              create: (context) => EmapBloc(
+                emapRepository: context.read(),
+                searchEmapUseCase: context.read<SearchEmapUseCase>(),
+              ),
             ),
             BlocProvider(
-              create: (context) => ScheduleBloc(cameraRepository: context.read(), scheduleRepository: context.read()),
+              create: (context) => ScheduleBloc(
+                cameraRepository: context.read(),
+                scheduleRepository: context.read(),
+              ),
             ),
             BlocProvider(
               create: (context) => UserManagementBloc(
@@ -209,7 +235,8 @@ class AppRouter {
                 state: state,
                 child: PlatformBuilder.builder(
                   onDesktop: (_) => CameraDetailScreen(args: state.extra as CameraDetailScreenArgs),
-                  onMobile: (_) => MobileCameraDetailScreen(args: state.extra as CameraDetailScreenArgs),
+                  onMobile: (_) =>
+                      MobileCameraDetailScreen(args: state.extra as CameraDetailScreenArgs),
                 ),
               );
             },
@@ -235,7 +262,11 @@ class AppRouter {
             path: Routes.configuration.path,
             name: Routes.configuration.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: SystemConfigurationScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: SystemConfigurationScreen(),
+              );
             },
           ),
 
@@ -309,7 +340,9 @@ CustomTransitionPage slideTransition<T>({
     reverseTransitionDuration: const Duration(milliseconds: 250),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return SlideTransition(
-        position: animation.drive(Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.ease))),
+        position: animation.drive(
+          Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.ease)),
+        ),
         child: child,
       );
     },
