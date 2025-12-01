@@ -4,10 +4,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
+import '../../shared/player/sources.dart';
 import '../bloc/camera_detail/camera_detail_bloc.dart';
-import '../widgets/camera_detail_player.dart';
 import '../widgets/control_record.dart';
 import '../widgets/control_source.dart';
 import '../widgets/control_speed_box.dart';
@@ -17,8 +19,30 @@ class PlayerControls extends StatelessWidget {
   const PlayerControls({super.key, required this.mode});
   final CameraDetailMode mode;
 
-  CameraDetailPlayerState? playerState(BuildContext context) {
-    return context.read<CameraDetailBloc>().state.cameraDetailController.ref.currentState;
+  PlayerController? playerController(BuildContext context) {
+    return context.read<CameraDetailBloc>().state.playerController;
+  }
+
+  Future<void> takeSnapshot(BuildContext context) async {
+    final storageFolderState = context.read<StorageFolderBloc>().state;
+    final cameraName = context.read<CameraDetailBloc>().state.camera?.name ?? 'camera';
+
+    // C:\Users\admin\Documents\VMSLibrary\Snapshots\ten_camera\yyyyMMdd_HHmmss.jpg
+    String path = await storageFolderState.ensureSnapshotFolder(
+      cameraName,
+      '${DateTime.now().format("yyyyMMdd_HHmmss")}.jpg',
+    );
+
+    // ignore: use_build_context_synchronously
+    final res = await playerController(context)?.snapshot?.call(path);
+    if (res == true) {
+      ToastUtil.toastSuccess(
+        title: Text(
+          "Đã chụp hình",
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+        ),
+      );
+    }
   }
 
   @override
@@ -51,10 +75,11 @@ class PlayerControls extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       /* Sources */
-                      if (mode.isLive) Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: ControlSource(disabled: isRecording),
-                      ),
+                      if (mode.isLive)
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: ControlSource(disabled: isRecording),
+                        ),
 
                       /* Volumne */
                       ControlVolume(disabled: isRecording),
@@ -71,7 +96,7 @@ class PlayerControls extends StatelessWidget {
                         builder: (context, status) => _controlItem(
                           disabled: isRecording,
                           status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
-                          () => playerState(context)?.togglePlay(),
+                          () => playerController(context)?.togglePlay?.call(),
                         ),
                       ),
 
@@ -88,7 +113,7 @@ class PlayerControls extends StatelessWidget {
                       _controlItem(
                         disabled: isRecording,
                         AppAssets.icCamera,
-                        () => playerState(context)?.snapshot(),
+                        () => takeSnapshot(context),
                       ),
 
                       /* Speed */
@@ -102,19 +127,19 @@ class PlayerControls extends StatelessWidget {
                       _controlItem(
                         disabled: isRecording,
                         AppAssets.icZoomIn,
-                        () => playerState(context)?.zoom(1),
+                        () => playerController(context)?.zoom?.call(1),
                       ),
                       _controlItem(
                         disabled: isRecording,
                         AppAssets.icZoomOut,
-                        () => playerState(context)?.zoom(-1),
+                        () => playerController(context)?.zoom?.call(-1),
                       ),
 
                       /* Fullscreen */
                       _controlItem(
                         disabled: isRecording,
                         AppAssets.icFullscreen,
-                        () => playerState(context)?.toggleFullscreen(),
+                        () => playerController(context)?.toggleFullscreen?.call(),
                       ),
                     ],
                   ),
@@ -198,7 +223,7 @@ class PlayerControls extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 8),
-                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Liveview')),
+                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Trực tiếp')),
                     ],
                   ),
                 ),
@@ -216,7 +241,7 @@ class PlayerControls extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: 8),
-                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Playback')),
+                      Padding(padding: const EdgeInsets.only(top: 1), child: Text('Xem lại')),
                     ],
                   ),
                 ),

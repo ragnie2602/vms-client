@@ -1,16 +1,22 @@
 import 'dart:async';
 
+import 'package:easy_onvif/probe.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_output.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_input.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_output.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
@@ -21,12 +27,14 @@ class ControlCameraBloc
   final IControlCameraRepository controlGroupRepository;
   final FilterCameraUseCase filterCameraUseCase;
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
+  final FilterTagCameraUseCase filterTagCameraUseCase;
 
   final DeleteCameraUseCase deleteCameraUseCase;
   ControlCameraBloc({
     required this.controlGroupRepository,
     required this.filterCameraUseCase,
     required this.filterCameraNoGroupUseCase,
+    required this.filterTagCameraUseCase,
     required this.deleteCameraUseCase,
   }) : super(const ControlCameraState()) {
     on<ValidateCameraEvent>(_onValidateCamera);
@@ -35,6 +43,7 @@ class ControlCameraBloc
     on<GetListCameraInGroupEvent>(_onGetCameraInGroup);
     on<CheckOnvifEvent>(_onCheckOnvif);
     on<FilterCameraEvent>(_onFilterCamera);
+    // on<FilterTagCameraEvent>(_onFilterTagCamera);
     on<AddCameraRTSPEvent>(_onAddCameraRTSP);
     on<AddCameraOnvifEvent>(_onAddCameraOnvif);
     on<UpdateCameraEvent>(_onUpdateCamera);
@@ -46,12 +55,21 @@ class ControlCameraBloc
     // on<ListShareCameraEvent>(_onListShareCamera);
     // on<DeleteShareCameraEvent>(_onDeleteShareCamera);
     on<RemoveCameraFromGroupEvent>(_onRemoveCameraFromGroup);
+    on<ReplaceCameraEvent>(_onReplaceNewCamera);
+
+    on<GetAllTagsEvent>(_onGetAllTags);
+    on<CreateTagEvent>(_onCreateTag);
+    on<DeleteTagEvent>(_onDeleteTag);
+    on<UpdateTagEvent>(_onUpdateTag);
   }
 
   // list camera
   List<CameraEntity> listCamera = [];
   List<int> currentGroupId = [];
   bool isNoGroup = false;
+
+  //list tag
+  List<TagEntity> listTagOrigin = [];
 
   FutureOr<void> _onGetListCamera(
     GetListCameraEvent event,
@@ -157,6 +175,7 @@ class ControlCameraBloc
     Emitter<ControlCameraState> emit,
   ) {
     final FilterCameraInput input = FilterCameraInput(
+      tagName: event.tagName,
       nameCamera: event.cameraName,
       isOnline: event.isOnline,
       listCameraOrigin: listCamera,
@@ -180,6 +199,7 @@ class ControlCameraBloc
       boxId: event.boxId,
       groupId: currentGroupId,
       subStreamUrls: event.subStreamUrls,
+      tags: event.tags,
     );
     addCameraRTSP.fold(
       (onFailure) => emit(AddCameraFailState(addCameraRTSP.left.toString())),
@@ -205,6 +225,7 @@ class ControlCameraBloc
       groupId: currentGroupId,
       urn: event.urn,
       subStreamUrls: event.subStreamUrls,
+      tags: event.tags,
     );
     addCameraOnvif.fold(
       (onFailure) => emit(AddCameraFailState(addCameraOnvif.left.toString())),
@@ -226,6 +247,7 @@ class ControlCameraBloc
       xaddr: event.xaddr,
       location: event.location,
       subStreamUrls: event.subStreamUrls,
+      tags: event.tags,
     );
     res.fold((onFailure) => emit(AddCameraFailState(res.left.toString())), (
       onSuccess,
@@ -351,6 +373,21 @@ class ControlCameraBloc
     }, (onSuccess) => onSuccess);
   }
 
+  FutureOr<void> _onReplaceNewCamera(
+    ReplaceCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    // update lại cam theo id
+    listCamera = List<CameraEntity>.from(listCamera);
+    final index = listCamera.indexWhere(
+      (element) => listEquals(element.id, event.newCamera.id),
+    );
+    if (index != -1) {
+      listCamera[index] = event.newCamera;
+      emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)));
+    }
+  }
+
   FutureOr<void> _onRemoveCameraFromGroup(
     RemoveCameraFromGroupEvent event,
     Emitter<ControlCameraState> emit,
@@ -382,6 +419,80 @@ class ControlCameraBloc
           ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)),
         );
       },
+    );
+  }
+
+  FutureOr<void> _onGetAllTags(
+    GetAllTagsEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    emit(GetAllTagsLoadingState());
+
+    final res = await controlGroupRepository.getAllTag();
+    res.fold(
+      (onFailure) {
+        listTagOrigin = [];
+        emit(GetAllTagsFailState(res.left.toString()));
+      },
+      (onSuccess) {
+        listTagOrigin = [];
+        listTagOrigin.add(
+          TagEntity(name: 'Tất cả', id: [], color: Colors.transparent),
+        );
+        listTagOrigin.addAll(onSuccess);
+
+        emit(GetAllTagsSuccessState(tags: onSuccess));
+      },
+    );
+  }
+
+  void _onFilterTagCamera(
+    FilterCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) {
+    final FilterCameraInput input = FilterCameraInput(
+      isOnline: event.isOnline,
+      nameCamera: event.cameraName,
+      tagName: event.tagName,
+      listCameraOrigin: listCamera,
+    );
+  //  final FilterTagCameraOutput output = filterTagCameraUseCase.execute(input);
+  //  emit(ListCameraSuccessState(cameras: output.listCamera ?? []));
+  }
+
+  FutureOr<void> _onCreateTag(
+    CreateTagEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    emit(CreateTagLoadingState());
+    final res = await controlGroupRepository.createTag(tag: event.tag);
+    res.fold(
+      (onFailure) => emit(CreateTagFailState(res.left.toString())),
+      (onSuccess) => emit(CreateTagSuccessState(tag: onSuccess)),
+    );
+  }
+
+  FutureOr<void> _onDeleteTag(
+    DeleteTagEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    emit(DeleteTagLoadingState(event.id));
+    final res = await controlGroupRepository.deleteTag(id: event.id);
+    res.fold(
+      (onFailure) => emit(DeleteTagFailState(res.left.toString())),
+      (onSuccess) => emit(DeleteTagSuccessState(event.id)),
+    );
+  }
+
+  FutureOr<void> _onUpdateTag(
+    UpdateTagEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    emit(UpdateTagLoadingState(event.tag.id));
+    final res = await controlGroupRepository.updateTag(tag: event.tag);
+    res.fold(
+      (onFailure) => emit(UpdateTagFailState(res.left.toString())),
+      (onSuccess) => emit(UpdateTagSuccessState(tag: onSuccess)),
     );
   }
 }

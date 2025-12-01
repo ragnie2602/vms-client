@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:popover/popover.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -138,8 +139,13 @@ class _CustomViewItemState extends State<CustomViewItem> {
                 extra: CustomMonitorPaneArgs(mode: CustomMonitorPaneMode.view),
               );
             }
+
             widget.bloc.add(ShowCustomView(widget.customView, CustomMonitorPaneMode.view));
             widget.monitorBloc?.add(ResetFilter());
+
+            context.read<AppBloc>().add(
+              ChangeSettingWindow(id: widget.customView.id, isDefaultMode: false),
+            );
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),

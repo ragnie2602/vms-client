@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -7,11 +8,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fvp/mdk.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
@@ -26,6 +29,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
 
   int windowId = 0; // businessWindowID
+
+  // Reopen monitor
+  bool isDefaultMode = true;
+  List<int> reopenViewId = [];
+  int reopenViewMode = 1;
 
   StreamSubscription? _multiWindowEventSubscription;
 
@@ -55,11 +63,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   }
 
   void registerIPCEvents() {
+    if (Platform.isAndroid || Platform.isIOS) return;
+
     _multiWindowEventSubscription?.cancel();
 
-    final mweOuput = subscribeMultiWindowEventUseCase.execute(
-      SubscribeMultiWindowEventInput(windowId),
-    );
+    final mweOuput = subscribeMultiWindowEventUseCase.execute(SubscribeMultiWindowEventInput());
 
     // In case of call the other usecase(s)
     _multiWindowEventSubscription = mweOuput.listen((output) {
@@ -93,13 +101,24 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       }
     } catch (_) {}
 
-    emit(state.copyWith(skipLogin: !MultiWindowUtil.isMainWindow(windowId)));
+    if (MultiWindowUtil.isMainWindow(windowId)) {
+      emit(state.copyWith(nextRoute: Routes.login.name));
+    }
   }
 
   FutureOr<void> _onCreateNewWindow(CreateNewWindow event, Emitter<AppState> emit) async {
+    if (Platform.isAndroid || Platform.isIOS) return;
+
     final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
     await sendMultiWindowEventUseCase.execute(
       SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
+    );
+    await sendMultiWindowEventUseCase.execute(
+      SendMultiWindowEventInput(
+        output.windowController.windowId,
+        'restore_monitor_mode',
+        data: {'bWindowID': output.bWindowId},
+      ),
     );
     output.windowController.show();
   }
@@ -121,8 +140,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
       MultiWindowUtil.clearWindowSetting(bSourceID);
 
       if (MultiWindowUtil.hasClosedAll()) {
-        await windowManager.setPreventClose(false);
-        windowManager.close();
+        if (!Platform.isAndroid && !Platform.isIOS) {
+          await windowManager.setPreventClose(false);
+          windowManager.close();
+        }
       }
     }
     if (event.multiWindowEvent is MWESignOut) {
@@ -132,11 +153,28 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         emit(state.copyWith(isSignOut: false)); // Avoid equatable mistake
         emit(state.copyWith(isSignOut: true));
       } else {
-        await windowManager.setPreventClose(false);
-        windowManager.close();
+        if (!Platform.isAndroid && !Platform.isIOS) {
+          await windowManager.setPreventClose(false);
+          windowManager.close();
+        }
       }
     }
-    if (event.multiWindowEvent is MWEProfileReady) emit(state.copyWith(profileReady: true));
+    if (event.multiWindowEvent is MWEProfileReady) {
+      emit(state.copyWith(profileReady: true));
+    }
+    if (event.multiWindowEvent is MWERestoreMonitorMode) {
+      final restoreData = event.multiWindowEvent as MWERestoreMonitorMode;
+
+      reopenViewId = restoreData.id;
+      reopenViewMode = restoreData.viewMode.value;
+      isDefaultMode = restoreData.isDefaultMode;
+
+      if (isDefaultMode) {
+        emit(state.copyWith(nextRoute: Routes.monitoring.name));
+      } else {
+        emit(state.copyWith(nextRoute: Routes.custom_live_view.name));
+      }
+    }
   }
 
   FutureOr<void> _onToggleMonitorDisplayMode(
@@ -151,16 +189,26 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
     AppData.instance.profile = null;
 
-    sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
+    }
   }
 
   FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) async {
+    if (Platform.isAndroid || Platform.isIOS) return;
+
     final rect = await windowManager.getBounds();
     sendMultiWindowEventUseCase.execute(
       SendMultiWindowEventInput(
         0,
         'change_setting_window',
-        data: {'bWindowID': windowId, 'rect': rect},
+        data: {
+          'bWindowID': windowId,
+          'rect': rect,
+          'viewMode': event.viewMode?.value,
+          'isDefaultMode': event.isDefaultMode,
+          'id': event.id,
+        },
       ),
     );
   }
@@ -171,37 +219,58 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
       MultiWindowUtil.clearWindowSetting(windowId);
 
-      for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
-        WindowController.fromWindowId(subWindowId).close();
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        for (var subWindowId in await DesktopMultiWindow.getAllSubWindowIds()) {
+          WindowController.fromWindowId(subWindowId).close();
+        }
       }
 
       // Need to call here because it can be no sub-window to send message to main window
       if (MultiWindowUtil.hasClosedAll()) {
-        await windowManager.setPreventClose(false);
-        windowManager.close();
+        if (!Platform.isAndroid && !Platform.isIOS) {
+          await windowManager.setPreventClose(false);
+          windowManager.close();
+        }
       }
     } else {
-      await sendMultiWindowEventUseCase.execute(
-        SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
-      );
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        await windowManager.setPreventClose(false);
 
-      await windowManager.setPreventClose(false);
-      windowManager.close();
+        sendMultiWindowEventUseCase.execute(
+          SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
+        );
+
+        windowManager.close();
+      }
     }
   }
 
   FutureOr<void> _onReopenSubWindow(ReopenSubWindow event, Emitter<AppState> emit) async {
+    if (Platform.isAndroid || Platform.isIOS) return;
+
     MultiWindowUtil.init();
 
     if (MultiWindowUtil.isMainWindow(windowId)) {
+      final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: windowId);
+      reopenViewId = setting.id;
+      reopenViewMode = setting.viewMode.value;
+      isDefaultMode = setting.isDefaultMode;
+
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
       for (var i = 1; i <= subWindowCount; i++) {
         final output = await createNewWindowUseCase.execute(CreateNewWindowInput(windowID: i));
-        await sendMultiWindowEventUseCase.execute(
-          SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
-        );
-        output.windowController.show();
-        Future.delayed(const Duration(milliseconds: 200), () {});
+        output.windowController.show().then((_) async {
+          await sendMultiWindowEventUseCase.execute(
+            SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
+          );
+          await sendMultiWindowEventUseCase.execute(
+            SendMultiWindowEventInput(
+              output.windowController.windowId,
+              'restore_monitor_mode',
+              data: {'bWindowID': i},
+            ),
+          );
+        });
       }
     }
   }
@@ -216,7 +285,7 @@ class AppState extends BaseState {
   final bool displayFullScreenLiveView;
   final bool isSignOut;
   final int myProfileUpdatedAt;
-  final bool skipLogin;
+  final String nextRoute;
   final bool profileReady;
 
   AppState(
@@ -224,7 +293,7 @@ class AppState extends BaseState {
     ThemeMode? themeMode,
     this.isSignOut = false,
     this.myProfileUpdatedAt = 0,
-    this.skipLogin = false,
+    this.nextRoute = '',
     this.profileReady = false,
   }) : themeMode = themeMode ?? AppConfig.DEFAULT_THEME_MODE {
     AppTheme.currentMode = this.themeMode;
@@ -235,7 +304,7 @@ class AppState extends BaseState {
     bool? displayFullScreenLiveView,
     bool? isSignOut,
     int? myProfileUpdatedAt,
-    bool? skipLogin,
+    String? nextRoute,
     bool? profileReady,
   }) {
     return AppState(
@@ -243,7 +312,7 @@ class AppState extends BaseState {
       themeMode: themeMode ?? this.themeMode,
       isSignOut: isSignOut ?? false,
       myProfileUpdatedAt: myProfileUpdatedAt ?? this.myProfileUpdatedAt,
-      skipLogin: skipLogin ?? this.skipLogin,
+      nextRoute: nextRoute ?? this.nextRoute,
       profileReady: profileReady ?? this.profileReady,
     );
   }
@@ -254,7 +323,7 @@ class AppState extends BaseState {
     displayFullScreenLiveView,
     isSignOut,
     myProfileUpdatedAt,
-    skipLogin,
+    nextRoute,
     profileReady,
   ];
 }
@@ -290,7 +359,11 @@ class ToggleMonitorDisplayMode extends AppEvent {}
 class SignOut extends AppEvent {}
 
 class ChangeSettingWindow extends AppEvent {
-  const ChangeSettingWindow();
+  final ViewMode? viewMode;
+  final bool? isDefaultMode;
+  final List<int>? id;
+
+  const ChangeSettingWindow({this.viewMode, this.isDefaultMode, this.id});
 }
 
 class CloseWindow extends AppEvent {

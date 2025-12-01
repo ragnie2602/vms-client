@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:path/path.dart' as p;
 
 import 'utils/logger.dart';
 
@@ -20,6 +21,7 @@ class ErrorService {
   static String? get logPath => _logFile?.path;
   static final List<String> _excludedErrors = [
     "PlatformException(media open error, invalid or unsupported media, null, null)",
+    "A RenderFlex overflowed by"
   ];
 
   static Future<void> initGlobalErrorHandler(Future<void> Function() app) async {
@@ -72,7 +74,7 @@ class ErrorService {
     StackTrace? stack, {
     String level = 'ERROR',
   }) async {
-    if (_excludedErrors.contains(error.toString())) return;
+    if (_excludedErrors.any((e) => error.toString().contains(e))) return;
     if (_logFile == null) await _initLogFile();
 
     final timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
@@ -122,7 +124,7 @@ class ErrorService {
 
   static Future<void> _initLogFile() async {
     final appDocDir = await getApplicationSupportDirectory(); // created automatically
-    final logFile = File('${appDocDir.path}/vms.log');
+    final logFile = File(p.join(appDocDir.path, 'vms.log'));
 
     bool createOrReplace = true;
 

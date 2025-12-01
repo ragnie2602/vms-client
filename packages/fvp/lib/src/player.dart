@@ -120,6 +120,10 @@ class Player {
             final texts = (message[3] as List).cast<String>();
             _subtitleCb?.call(start, end, texts);
           }
+        case 10:
+          {
+            _mediaChangedCb?.call();
+          }
       }
       calloc.free(rep);
     });
@@ -180,7 +184,6 @@ class Player {
         await _creatingCompleter!.future;
       }
 
-
       // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
       await updateTexture(width: -1, synchronized: false);
       state = PlaybackState.stopped;
@@ -188,6 +191,7 @@ class Player {
       onEvent(null);
       onStateChanged(null);
       onMediaStatus(null);
+      onMediaChanged(null);
 
       _receivePort.close();
 
@@ -303,6 +307,8 @@ class Player {
 
   /// Set media, can be url, file path, assets://path etc.
   set media(String value) {
+    if (_isDisposed) return;
+
     if (_media != value) {
       if (!_videoSize.isCompleted) {
         _videoSize.complete(null);
@@ -311,14 +317,20 @@ class Player {
     }
     _media = value;
     final cs = value.toNativeUtf8();
-    _player.ref.setMedia
-            .asFunction<void Function(Pointer<mdkPlayer>, Pointer<Char>)>()(
+    _player.ref.setMedia.asFunction<void Function(Pointer<mdkPlayer>, Pointer<Char>)>()(
         _player.ref.object, cs.cast());
     malloc.free(cs);
   }
 
   /// Current media.
   String get media => _media;
+  String get nativeMedia {
+    final ptr = _player.ref.url
+        .asFunction<Pointer<Char> Function(Pointer<mdkPlayer>)>()(_player.ref.object);
+
+    if (ptr == nullptr) return '';
+    return ptr.cast<Utf8>().toDartString();
+  }
 
   /// Set audio decoder priority. Usually not required.
   set audioDecoders(List<String> value) => setDecoders(MediaType.audio, value);
@@ -335,8 +347,7 @@ class Player {
   /// Set active audio tracks. Other tracks will be disabled.
   /// The tracks can be from [media], or an external audio source set by [setMedia] with [MediaType.audio].
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setactivetracksmediatype-type-const-stdsetint-tracks
-  set activeAudioTracks(List<int> value) =>
-      setActiveTracks(MediaType.audio, value);
+  set activeAudioTracks(List<int> value) => setActiveTracks(MediaType.audio, value);
 
   /// Active audio tracks set by user
   List<int> get activeAudioTracks => _activeAT;
@@ -344,8 +355,7 @@ class Player {
   /// Set active video tracks. Other tracks will be disabled.
   /// The tracks can be from [media], or an external video source set by [setMedia] with [MediaType.video].
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setactivetracksmediatype-type-const-stdsetint-tracks
-  set activeVideoTracks(List<int> value) =>
-      setActiveTracks(MediaType.video, value);
+  set activeVideoTracks(List<int> value) => setActiveTracks(MediaType.video, value);
 
   /// Active video tracks set by user
   List<int> get activeVideoTracks => _activeVT;
@@ -353,8 +363,7 @@ class Player {
   /// Set active subtitle tracks. Other tracks will be disabled.
   /// The tracks can be from [media], or an external video source set by [setMedia] with [MediaType.subtitle].
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setactivetracksmediatype-type-const-stdsetint-tracks
-  set activeSubtitleTracks(List<int> value) =>
-      setActiveTracks(MediaType.subtitle, value);
+  set activeSubtitleTracks(List<int> value) => setActiveTracks(MediaType.subtitle, value);
 
   /// Active subtitle tracks set by user
   List<int> get activeSubtitleTracks => _activeST;
@@ -362,6 +371,8 @@ class Player {
   /// Set playback state to start, pause and stop the media.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setstateplaybackstate-value
   set state(PlaybackState value) {
+    if (_isDisposed) return;
+
     _state = value;
     _player.ref.setState.asFunction<void Function(Pointer<mdkPlayer>, int)>()(
         _player.ref.object, value.rawValue);
@@ -509,11 +520,11 @@ class Player {
   /// Set the next media to play when current media playback is finished.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setnextmediaconst-char-url-int64_t-startposition--0-seekflag-flags--seekflagfromstart
   void setNext(String uri,
-      {int from = 0,
-      SeekFlag seekFlag = const SeekFlag(SeekFlag.defaultFlags)}) {
+      {int from = 0, SeekFlag seekFlag = const SeekFlag(SeekFlag.defaultFlags)}) {
+    nextMedia = uri;
     final cs = uri.toNativeUtf8();
-    _player.ref.setNextMedia.asFunction<
-            void Function(Pointer<mdkPlayer>, Pointer<Char>, int, int)>()(
+    _player.ref.setNextMedia
+            .asFunction<void Function(Pointer<mdkPlayer>, Pointer<Char>, int, int)>()(
         _player.ref.object, cs.cast(), from, seekFlag.rawValue);
     malloc.free(cs);
   }
@@ -609,6 +620,7 @@ class Player {
       fps,
     );
   }
+
   void play() => state = PlaybackState.playing;
   void pause() => state = PlaybackState.paused;
 
@@ -781,8 +793,16 @@ class Player {
     }
   }
 
-  void onSubtitleText(
-      void Function(double start, double end, List<String> text)? callback) {
+  void onMediaChanged(void Function()? callback) {
+    _mediaChangedCb = callback;
+    if (callback == null) {
+      Libfvp.unregisterType(nativeHandle, 10);
+    } else {
+      Libfvp.registerType(nativeHandle, 10, false);
+    }
+  }
+
+  void onSubtitleText(void Function(double start, double end, List<String> text)? callback) {
     _subtitleCb = callback;
     if (callback == null) {
       Libfvp.unregisterType(nativeHandle, 8);
@@ -845,14 +865,15 @@ class Player {
 
   final _eventCb = <Function(MediaEvent)>[];
   final _stateCb = <Function(PlaybackState oldValue, PlaybackState newValue)>[];
-  final _statusCb =
-      <bool Function(MediaStatus oldValue, MediaStatus newValue)>[];
+  final _statusCb = <bool Function(MediaStatus oldValue, MediaStatus newValue)>[];
+  Function()? _mediaChangedCb;
   Function(double start, double end, List<String> text)? _subtitleCb;
   Future<bool> Function()? _prepareCb;
 
   bool _mute = false;
   double _volume = 1.0;
   String _media = "";
+  String nextMedia = "";
   List<String> _adec = ["auto"];
   List<String> _vdec = ["auto"];
   List<int> _activeAT = [0];
@@ -862,8 +883,7 @@ class Player {
   int _loop = 0;
   bool _preloadImmediately = true;
   double _playbackRate = 1.0;
-  Pointer<mdkMediaInfo> _mediaInfoC =
-      nullptr; // MediaInfo has views on mdkMediaInfo
+  Pointer<mdkMediaInfo> _mediaInfoC = nullptr; // MediaInfo has views on mdkMediaInfo
 }
 
 final class _CallbackReply extends Union {

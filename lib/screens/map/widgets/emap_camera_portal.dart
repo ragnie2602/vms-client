@@ -4,7 +4,8 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/group/widget/confirm_remove_view.dart';
 import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
-import 'package:vms_flutter_client/screens/monitor/widgets/camera_player.dart';
+
+import '../../shared/player/sources.dart';
 
 class EmapCameraPortal extends StatefulWidget {
   const EmapCameraPortal({
@@ -93,10 +94,10 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          CameraPlayer(
+          MonitorPlayer(
             source: widget.item.source,
             name: widget.item.label ?? '',
-            mode: PlayerMode.monitoring,
+            mode: MonitorMode.monitoring,
             size: Size(500, 281),
           ),
           Positioned(

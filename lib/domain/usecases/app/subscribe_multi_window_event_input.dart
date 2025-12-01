@@ -1,7 +1,5 @@
 import 'package:vms_flutter_client/domain/usecases/base_input.dart';
 
 class SubscribeMultiWindowEventInput extends BaseInput {
-  final int windowId;
-
-  const SubscribeMultiWindowEventInput(this.windowId);
+  const SubscribeMultiWindowEventInput();
 }

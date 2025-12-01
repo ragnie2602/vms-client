@@ -79,12 +79,10 @@ class AppConfig {
 
 enum LiveviewDetailAudioSource {
   on,
-  off,
-  split;
+  off;
 
   bool get isOn => this == on;
   bool get isOff => this == off;
-  bool get isSplit => this == split;
   factory LiveviewDetailAudioSource.fromConfig(String? value) => value == null
       ? LiveviewDetailAudioSource.off
       : LiveviewDetailAudioSource.values.firstWhere(

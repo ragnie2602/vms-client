@@ -65,6 +65,8 @@ enum PacketType {
 
   configSendEmail(209),
   scheduleRecordingCamera(146),
+  getCameraInfo(2006),
+
 
   configOnOffBarrier(291),
   listVehicle(292),
@@ -114,6 +116,12 @@ enum PacketType {
   getCloudRecordPlayback(193),
   requestUrlDownload(231),
   getCurrentRecoding(244),
+
+  // Camera tag
+  getAllTag(2000),
+  addTag(2001),
+  deleteTag(2002),
+  updateTag(2003),
 
   // Emap
   postEmap(215),

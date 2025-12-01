@@ -4,6 +4,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 class ControlCameraState extends BaseState {
   final CameraStatus? status;
@@ -38,10 +39,7 @@ class ControlCameraLoadingState extends ControlCameraState {
 class ListShareCameraSuccessState extends ControlCameraState {
   final List<int> cameraId;
   final List<InviteMessageEntity> inviteMessages;
-  const ListShareCameraSuccessState({
-    required this.cameraId,
-    required this.inviteMessages,
-  });
+  const ListShareCameraSuccessState({required this.cameraId, required this.inviteMessages});
   @override
   StateType get type => StateType.success;
   @override
@@ -148,4 +146,110 @@ class RemoveCameraFromGroupSuccessState extends ControlCameraState {
   StateType get type => StateType.success;
   @override
   List<Object?> get props => [cameras];
+}
+
+class GetAllTagsSuccessState extends ControlCameraState {
+  final List<TagEntity> tags;
+  const GetAllTagsSuccessState({required this.tags});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [tags];
+}
+
+class GetAllTagsFailState extends ControlCameraState {
+  final String message;
+  const GetAllTagsFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+  @override
+  List<Object?> get props => [message];
+}
+
+class GetAllTagsLoadingState extends ControlCameraState {
+  @override
+  StateType get type => StateType.loading;
+}
+
+class CreateTagSuccessState extends ControlCameraState {
+  final TagEntity tag;
+  const CreateTagSuccessState({required this.tag});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [tag];
+}
+
+class CreateTagFailState extends ControlCameraState {
+  final String message;
+  const CreateTagFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+  @override
+  List<Object?> get props => [message];
+}
+
+class CreateTagLoadingState extends ControlCameraState {
+  @override
+  StateType get type => StateType.loading;
+}
+
+class DeleteTagSuccessState extends ControlCameraState {
+  final List<int> id;
+  const DeleteTagSuccessState(this.id);
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [id];
+}
+
+class DeleteTagFailState extends ControlCameraState {
+  final String message;
+  const DeleteTagFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+  @override
+  List<Object?> get props => [message];
+}
+
+class DeleteTagLoadingState extends ControlCameraState {
+  final List<int> id;
+
+  const DeleteTagLoadingState(this.id);
+  @override
+  StateType get type => StateType.loading;
+}
+
+class UpdateTagSuccessState extends ControlCameraState {
+  final TagEntity tag;
+  const UpdateTagSuccessState({required this.tag});
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [tag];
+}
+
+class UpdateTagFailState extends ControlCameraState {
+  final String message;
+  const UpdateTagFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+  @override
+  List<Object?> get props => [message];
+}
+
+class UpdateTagLoadingState extends ControlCameraState {
+  final List<int> id;
+
+  const UpdateTagLoadingState(this.id);
+  @override
+  StateType get type => StateType.loading;
 }

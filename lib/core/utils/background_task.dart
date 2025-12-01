@@ -1,12 +1,39 @@
+// ignore: depend_on_referenced_packages
+import 'package:image/image.dart' as img;
 import 'dart:async';
 import 'dart:isolate';
-
+import 'dart:typed_data' show Uint8List, ByteBuffer;
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 class BackgroundTask {
   BackgroundTask._();
 
-  //
+  /// (package:image) fromBytes + encodeJpg --> xử lý CPU-bound trên isolate hiện tại
+  /// --> Block UI nếu chạy trên main isolate
+  static Future<bool> encodeRgbaToJpegFile({
+    required String path,
+    required Uint8List bytes,
+    required int width,
+    required int height,
+  }) => compute(_isolateEncodeRgbaToJpegFile, <String, dynamic>{
+    'path': path,
+    'byteBuffer': bytes.buffer,
+    'width': width,
+    'height': height,
+  });
+  static Future<bool> _isolateEncodeRgbaToJpegFile(Map<String, dynamic> message) async {
+    final image = img.Image.fromBytes(
+      width: message['width'] as int,
+      height: message['height'] as int,
+      bytes: message['byteBuffer'] as ByteBuffer,
+      order: img.ChannelOrder.rgba,
+    );
+
+    return img.encodeJpgFile(message['path'] as String, image);
+  }
+
+  ///
   static Future<void> _isolateDownload(SendPort sendPort) async {
     final port = ReceivePort();
     sendPort.send(port.sendPort); // Gửi lại sendPort cho main isolate

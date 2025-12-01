@@ -2911,6 +2911,7 @@ class AddCameraRTSP_Request extends $pb.GeneratedMessage {
     $core.List<$core.int>? boxId,
     $core.List<$core.int>? groupId,
     $core.Iterable<$core.String>? subStreamUrls,
+    $core.Iterable<$core.List<$core.int>>? tagsetId,
   }) {
     final $result = create();
     if (name != null) {
@@ -2937,6 +2938,9 @@ class AddCameraRTSP_Request extends $pb.GeneratedMessage {
     if (subStreamUrls != null) {
       $result.subStreamUrls.addAll(subStreamUrls);
     }
+    if (tagsetId != null) {
+      $result.tagsetId.addAll(tagsetId);
+    }
     return $result;
   }
   AddCameraRTSP_Request._() : super();
@@ -2952,6 +2956,7 @@ class AddCameraRTSP_Request extends $pb.GeneratedMessage {
     ..a<$core.List<$core.int>>(6, _omitFieldNames ? '' : 'boxId', $pb.PbFieldType.OY)
     ..a<$core.List<$core.int>>(7, _omitFieldNames ? '' : 'groupId', $pb.PbFieldType.OY)
     ..pPS(8, _omitFieldNames ? '' : 'subStreamUrls')
+    ..p<$core.List<$core.int>>(9, _omitFieldNames ? '' : 'tagsetId', $pb.PbFieldType.PY)
     ..hasRequiredFields = false
   ;
 
@@ -3043,6 +3048,9 @@ class AddCameraRTSP_Request extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(8)
   $core.List<$core.String> get subStreamUrls => $_getList(7);
+
+  @$pb.TagNumber(9)
+  $core.List<$core.List<$core.int>> get tagsetId => $_getList(8);
 }
 
 class AddCameraRTSP_Reply extends $pb.GeneratedMessage {
@@ -3174,6 +3182,7 @@ class AddCameraOnVif_Request extends $pb.GeneratedMessage {
     $core.List<$core.int>? groupId,
     $core.String? urn,
     $core.Iterable<$core.String>? subStreamUrls,
+    $core.Iterable<$core.List<$core.int>>? tagsetId,
   }) {
     final $result = create();
     if (name != null) {
@@ -3209,6 +3218,9 @@ class AddCameraOnVif_Request extends $pb.GeneratedMessage {
     if (subStreamUrls != null) {
       $result.subStreamUrls.addAll(subStreamUrls);
     }
+    if (tagsetId != null) {
+      $result.tagsetId.addAll(tagsetId);
+    }
     return $result;
   }
   AddCameraOnVif_Request._() : super();
@@ -3227,6 +3239,7 @@ class AddCameraOnVif_Request extends $pb.GeneratedMessage {
     ..a<$core.List<$core.int>>(9, _omitFieldNames ? '' : 'groupId', $pb.PbFieldType.OY)
     ..aOS(10, _omitFieldNames ? '' : 'urn')
     ..pPS(11, _omitFieldNames ? '' : 'subStreamUrls')
+    ..p<$core.List<$core.int>>(12, _omitFieldNames ? '' : 'tagsetId', $pb.PbFieldType.PY)
     ..hasRequiredFields = false
   ;
 
@@ -3345,6 +3358,9 @@ class AddCameraOnVif_Request extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(11)
   $core.List<$core.String> get subStreamUrls => $_getList(10);
+
+  @$pb.TagNumber(12)
+  $core.List<$core.List<$core.int>> get tagsetId => $_getList(11);
 }
 
 class AddCameraOnVif_Reply extends $pb.GeneratedMessage {

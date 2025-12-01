@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,8 @@ import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
 
 Future<int> initialMultiWindowConfig(List<String> args) async {
+  if (Platform.isAndroid || Platform.isIOS) return 0;
+
   await windowManager.ensureInitialized();
 
   if (args.firstOrNull == 'multi_window') {
@@ -102,8 +105,10 @@ class _MyAppState extends State<MyApp> with WindowListener {
   @override
   void initState() {
     super.initState();
-    windowManager.addListener(this);
-    windowManager.setPreventClose(true);
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      windowManager.addListener(this);
+      windowManager.setPreventClose(true);
+    }
   }
 
   @override
@@ -111,7 +116,9 @@ class _MyAppState extends State<MyApp> with WindowListener {
     return MultiProvider(
       providers: DependencyInjection.providers,
       child: BlocProvider(
-        create: (context) => (appBloc = context.read<AppBloc>())..add(AppStarted(widget.bWindowID)),
+        create: (context) =>
+            (appBloc = context.read<AppBloc>())
+              ..add(AppStarted(widget.bWindowID)),
         child: BlocSelector<AppBloc, AppState, ThemeMode>(
           selector: (state) => state.themeMode,
           builder: (context, theme) => ToastificationWrapper(

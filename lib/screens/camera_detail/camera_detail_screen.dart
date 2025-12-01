@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/osd.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/osd_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 
+import '../shared/player/sources.dart';
 import '../shared/state_builder_mixin.dart';
 import 'bloc/camera_detail/camera_detail_bloc.dart';
 import 'bloc/playback/playback_bloc.dart';
 import 'layout/camera_detail_desktop_layout.dart';
-import 'widgets/camera_detail_player.dart';
 
 class CameraDetailScreenArgs extends BaseScreenArgs {
   final CameraEntity? data;
@@ -37,6 +42,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
   final CameraEntity? data;
   final bool isPlayback;
   final bool openCamerasPanelImmediately;
+  final OSDPosition _position = OsdUtil.getOSDPositions();
 
   void _handlePageInfo(BuildContext context, CameraDetailState pre, CameraDetailState cur) {
     if ((pre.mode != cur.mode || pre.camera != cur.camera) && cur.camera != null) {
@@ -102,11 +108,13 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
         onReload: () => context.read<PlaybackBloc>().add(
           GetVideoPlaybacks(data.camera!.id, context.read<CameraDetailBloc>().state.playbackDate),
         ),
-        child: (state) => CameraDetailPlayer.playlist(
+        child: (state) => PlaybackPlayer(
+          enableZoom: true,
           playlist: state.playbacks.toList(),
           name: data.camera!.name,
           initialIndex: state.initialIndex,
-          controller: data.cameraDetailController,
+          controller: data.playerController,
+          labelBuilder: _buildLabel,
           onStatusChanged: (status) {
             context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
           },
@@ -121,10 +129,13 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
   }
 
   Widget _buildLiveview(CameraDetailState state, BuildContext context) {
-    return CameraDetailPlayer.liveview(
+    return MonitorPlayer(
+      enableZoom: true,
+      mode: MonitorMode.liveview,
       source: state.stream?.urlOfStream ?? state.camera!.mainStreamUri.toString(),
       name: state.camera!.name,
-      controller: state.cameraDetailController,
+      controller: state.playerController,
+      labelBuilder: _buildLabel,
       onStatusChanged: (status) {
         context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
       },
@@ -137,6 +148,33 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
         final bloc = context.read<CameraDetailBloc>();
         if (bloc.state.recordingStatus != 0) bloc.add(OnRecording(cancelStatus: -1));
       },
+    );
+  }
+
+  Widget _buildLabel(String name) {
+    return Positioned(
+      bottom: (_position.value & 1) == 1 ? 20 : null,
+      left: (_position.value & 2) == 0 ? 20 : null,
+      right: (_position.value & 2) == 2 ? 20 : null,
+      top: (_position.value & 1) == 0 ? 20 : null,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(3),
+          boxShadow: [BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6))],
+        ),
+        padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+        child: Row(
+          children: [
+            SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
+            SizedBox(width: 4),
+            Text(
+              name,
+              style: AppTypography.style(11, color: Colors.black, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

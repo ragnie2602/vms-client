@@ -20,9 +20,11 @@ class AppAssets {
   static const tabSettings = '$_svgPath/settings.svg';
   static const tabMap = '$_svgPath/ic_map.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
+  static const tabSystemConfig = '$_svgPath/tab_setting.svg';
 
   static const icCamera = '$_svgPath/camera.svg';
   static const icClose = '$_svgPath/close.svg';
+  static const icCloseSolid = '$_svgPath/close_solid.svg';
   static const icFullscreen = '$_svgPath/full_screen.svg';
   static const icFullTv = '$_svgPath/ic_full_tv.svg';
   static const icPauseCircle = '$_svgPath/pause_circle.svg';
@@ -52,6 +54,7 @@ class AppAssets {
   static const icDotHorizontal = '$_svgPath/dot_horizontal.svg';
   static const icAction = '$_svgPath/ic_action.svg';
   static const icEdit = '$_svgPath/ic_edit.svg';
+  static const icConfig = '$_svgPath/ic_config.svg';
   static const icReset = '$_svgPath/ic_reset.svg';
   static const icDelete = '$_svgPath/ic_delete.svg';
   static const icDeleteLight = '$_svgPath/ic_delete_light.svg';
@@ -90,6 +93,8 @@ class AppAssets {
   static const icVideoOff = '$_svgPath/video_off.svg';
   static const icCheckBox = '$_svgPath/check_box.svg';
   static const icChecked = '$_svgPath/checked.svg';
+  // schedule record
+  static const icSchedule = '$_svgPath/ic_schedule.svg';
   // group + cam
   static const icCollapse = '$_svgPath/ic_collapse.svg';
   static const icExpand = '$_svgPath/ic_expand.svg';
@@ -107,4 +112,8 @@ class AppAssets {
   static const icKey = '$_svgPath/ic_key.svg';
   static const icCameraMap = '$_svgPath/ic_camera_map.svg';
   static const icUserInfo = '$_svgPath/ic_user_info.svg';
+  static const icArrowdown = '$_svgPath/arrow_down.svg';
+
+  static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
+  static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
 }

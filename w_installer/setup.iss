@@ -4,7 +4,7 @@ AppVersion=1.0.5
 DefaultDirName={pf}\VNPT Secure Vision
 DefaultGroupName=VNPT Secure Vision
 OutputDir=output
-OutputBaseFilename=VNPTSecureVisionInstaller_1.0.5_6
+OutputBaseFilename=VNPTSecureVisionInstaller_1.0.6_1
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -13,8 +13,11 @@ AppPublisher=Vivas
 AppPublisherURL=https://vivas.vn
 
 [Files]
-; Copy all files from Release folder
-Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
+; Copy all files from Release folder (trừ vms_flutter_client.exe)
+Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Excludes: "vms_flutter_client.exe"; Flags: recursesubdirs createallsubdirs
+
+; Copy vms_flutter_client.exe và đổi tên thành vnpt_secure_vision.exe
+Source: "..\build\windows\x64\runner\Release\vms_flutter_client.exe"; DestDir: "{app}"; DestName: "vnpt_secure_vision.exe"; Flags: ignoreversion
 
 ; Include VC++ redistributable installer
 Source: "VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: dontcopy
@@ -46,3 +49,6 @@ begin
   exists := RegKeyExists(HKLM, key);
   Result := not exists;
 end;
+
+[UninstallDelete]
+Type: files; Name: "{userappdata}\Vivas\VNPT Secure Vision\shared_preferences.json"

@@ -248,6 +248,39 @@ FVP_EXPORT void MdkCallbacksRegisterPort(int64_t handle, void* post_c_object, in
         return p->data[type].mediaStatus.ret;
     });
 
+    player->currentMediaChanged([=](){
+        auto sp = wp.lock();
+        if (!sp)
+            return;
+        auto p = sp.get();
+        const auto type = int(CallbackType::MediaChanged);
+        if (!(p->callbackTypes & (1 << type)))
+            return;
+
+        Dart_CObject t{
+            .type = Dart_CObject_kInt64,
+            .value = {
+                .as_int64 = type,
+            }
+        };
+
+        Dart_CObject* arr[] = { &t };
+        Dart_CObject msg{
+            .type = Dart_CObject_kArray,
+            .value = {
+                .as_array = {
+                    .length = std::size(arr),
+                    .values = arr,
+                },
+            },
+        };
+
+        if (!postCObject(send_port, &msg)) {
+            clog << __func__ << __LINE__ << "postCObject error" << endl;
+            return;
+        }
+    });
+
     // player->onSubtitleText([=](double start, double end, const std::vector<std::string>& texts){
     //     auto sp = wp.lock();
     //     if (!sp)

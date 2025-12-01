@@ -17,6 +17,15 @@ namespace {
 // ======================================================
 std::mutex g_logMutex;
 
+std::wstring Utf8ToWide(const std::string& s) {
+    if (s.empty()) return L"";
+    int len = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, nullptr, 0);
+    if (len <= 0) return L"";
+    std::wstring result(len - 1, L'\0');
+    MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, result.data(), len);
+    return result;
+}
+
 void Log(const std::string& level, const std::string& msg) {
     std::lock_guard<std::mutex> lk(g_logMutex);
 
@@ -221,6 +230,15 @@ void RegisterFFmpegJobChannel(flutter::FlutterEngine* engine) {
                 if (auto s = std::get_if<std::string>(&it->second)) return *s;
                 return {};
             };
+            auto getBool = [&](const char* key) -> bool {
+                auto it = args->find(flutter::EncodableValue(key));
+                if (it == args->end()) return false;
+
+                if (auto b = std::get_if<bool>(&it->second)) return *b;
+                if (auto i32 = std::get_if<int32_t>(&it->second)) return (*i32 != 0);
+                if (auto i64 = std::get_if<int64_t>(&it->second)) return (*i64 != 0);
+                return false;
+            };
 
             int pid = 0;
             auto itPid = args->find(flutter::EncodableValue("pid"));
@@ -235,26 +253,31 @@ void RegisterFFmpegJobChannel(flutter::FlutterEngine* engine) {
             std::string v = getStr("temp_video");
             std::string o = getStr("output");
             std::string l = getStr("log_path");
+            bool useWatcher = getBool("use_watcher");
 
-            // 🟢 Case 1: chỉ truyền pid → gán vào AppJob
-            if (pid > 0 && (a.empty() || v.empty() || o.empty())) {
-                if (AssignPidToAppJob(pid))
-                    result->Success(flutter::EncodableValue(true));
-                else
-                    result->Error("assign_fail", "Failed to assign PID to AppJob");
+            // Nếu pid không hợp lệ
+            if (pid <= 0) {
+                result->Error("bad_args", "Missing or invalid pid");
                 return;
             }
 
-            if (pid <= 0 || a.empty() || v.empty() || o.empty()) {
-                result->Error("bad_args", "Missing pid/temp_audio/temp_video/output");
+            // 🟢 Case 1: Nếu KHÔNG dùng watcher -> luôn chỉ gán vào AppJob
+            if (!useWatcher) {
+                if (AssignPidToAppJob(pid)) {
+                    LOGI("Case1: Assigned PID to AppJob (no watcher)");
+                    result->Success(flutter::EncodableValue(true));
+                } else {
+                    result->Error("assign_fail", "Failed to assign PID to AppJob");
+                }
                 return;
             }
 
             BindPidAndWatcher(pid,
-                              std::wstring(a.begin(), a.end()),
-                              std::wstring(v.begin(), v.end()),
-                              std::wstring(o.begin(), o.end()),
-                              std::wstring(l.begin(), l.end()));
+                Utf8ToWide(a),
+                Utf8ToWide(v),
+                Utf8ToWide(o),
+                Utf8ToWide(l)
+            );
 
             LOGI("Bound FFmpeg PID and launched ffmpeg_watchdog");
             result->Success(flutter::EncodableValue(true));

@@ -1,6 +1,8 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 class ControlCameraEvent extends BaseEvent {
   const ControlCameraEvent();
@@ -43,7 +45,8 @@ class CheckOnvifEvent extends ControlCameraEvent {
 class FilterCameraEvent extends ControlCameraEvent {
   final String? cameraName;
   final bool? isOnline;
-  const FilterCameraEvent({this.cameraName, this.isOnline});
+  final String? tagName;
+  const FilterCameraEvent({this.cameraName, this.isOnline, this.tagName});
 }
 
 class AddCameraRTSPEvent extends ControlCameraEvent {
@@ -55,6 +58,8 @@ class AddCameraRTSPEvent extends ControlCameraEvent {
   final List<int> boxId;
   final List<int> groupId;
   final List<String> subStreamUrls;
+  final Set<TagEntity> tags;
+
   const AddCameraRTSPEvent({
     required this.name,
     required this.username,
@@ -64,6 +69,7 @@ class AddCameraRTSPEvent extends ControlCameraEvent {
     required this.boxId,
     required this.groupId,
     required this.subStreamUrls,
+    required this.tags,
   });
 }
 
@@ -79,6 +85,8 @@ class AddCameraOnvifEvent extends ControlCameraEvent {
   final List<int> groupId;
   final String urn;
   final List<String> subStreamUrls;
+  final Set<TagEntity> tags;
+
   const AddCameraOnvifEvent({
     required this.rtspUrl,
     required this.serialNumber,
@@ -91,6 +99,7 @@ class AddCameraOnvifEvent extends ControlCameraEvent {
     required this.username,
     required this.password,
     required this.onvifDeviceIp,
+    required this.tags,
   });
 }
 
@@ -103,6 +112,7 @@ class UpdateCameraEvent extends ControlCameraEvent {
   final String? xaddr;
   final CameraMap? location;
   final List<String>? subStreamUrls;
+  final Set<TagEntity> tags;
   const UpdateCameraEvent({
     required this.cameraId,
     this.name,
@@ -112,7 +122,15 @@ class UpdateCameraEvent extends ControlCameraEvent {
     this.xaddr,
     this.location,
     this.subStreamUrls,
+    required this.tags,
   });
+}
+
+class ReplaceCameraEvent extends ControlCameraEvent {
+  final CameraEntity newCamera;
+  const ReplaceCameraEvent({required this.newCamera});
+  @override
+  List<Object?> get props => [newCamera];
 }
 
 class DeleteCameraEvent extends ControlCameraEvent {
@@ -177,4 +195,32 @@ class RemoveCameraFromGroupEvent extends ControlCameraEvent {
   final List<int> cameraId;
   final List<int>? groupId;
   const RemoveCameraFromGroupEvent({required this.cameraId, this.groupId});
+}
+
+class GetAllTagsEvent extends ControlCameraEvent {
+  const GetAllTagsEvent();
+
+  @override
+  List<Object?> get props => [hashCode];
+}
+
+class FilterTagCameraEvent extends ControlCameraEvent {
+  final String? tagName;
+  final String? keyWord;
+  const FilterTagCameraEvent({this.tagName, this.keyWord});
+}
+
+class CreateTagEvent extends ControlCameraEvent {
+  final TagEntity tag;
+  const CreateTagEvent(this.tag);
+}
+
+class DeleteTagEvent extends ControlCameraEvent {
+  final List<int> id;
+  const DeleteTagEvent(this.id);
+}
+
+class UpdateTagEvent extends ControlCameraEvent {
+  final TagEntity tag;
+  const UpdateTagEvent(this.tag);
 }
