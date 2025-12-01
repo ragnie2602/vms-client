@@ -14,7 +14,7 @@ review-source:
     - |
       echo "Writing Claude CLI settings..."
       mkdir -p ~/.claude
-      cat <<EOF > "~/.claude/settings.json"
+      cat <<EOF > "./.claude/settings.json"
       $CLAUDE_SETTINGS
       EOF
     - echo "Indexing branch with Serena..."
