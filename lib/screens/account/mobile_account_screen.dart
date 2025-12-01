@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -50,7 +52,11 @@ class MobileAccountScreen extends StatelessWidget {
       body: Column(
         children: [
           const Divider(color: AppColors.greyF2F4FA, thickness: 3),
-          AccountItem(onTap: () {}, svgPath: AppAssets.icUserProfileX, title: 'Thông tin cá nhân'),
+          AccountItem(
+            onTap: () => context.pushNamed(Routes.info.name),
+            svgPath: AppAssets.icUserProfileX,
+            title: 'Thông tin cá nhân',
+          ),
           AccountItem(onTap: () {}, svgPath: AppAssets.icKey02, title: 'Đổi mật khẩu'),
           AccountItem(onTap: () {}, svgPath: AppAssets.icCube, title: 'Điều khoản & Điều kiện'),
           AccountItem(onTap: () {}, svgPath: AppAssets.icCube, title: 'Chính sách quyền riêng tư'),

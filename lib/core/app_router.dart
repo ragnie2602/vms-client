@@ -12,12 +12,14 @@ import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/fi
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/account/mobile_account_screen.dart';
+import 'package:vms_flutter_client/screens/account/mobile_info_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
+import 'package:vms_flutter_client/screens/home/bloc/change_my_info_bloc.dart';
 import 'package:vms_flutter_client/screens/login/mobile_login_screen.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/emap_screen.dart';
@@ -92,7 +94,8 @@ enum Routes {
     description: 'Cho phép quản trị viên cấu hình hệ thống quản lý camera',
   ),
   about(name: 'about', path: '/about'),
-  account(name: 'account', path: '/account');
+  account(name: 'account', path: '/account'),
+  info(name: 'info', path: '/info');
 
   final String name;
   final String path;
@@ -199,6 +202,7 @@ class AppRouter {
                 searchUserUseCase: context.read<SearchUserUseCase>(),
               ),
             ),
+            BlocProvider(create: (context) => ChangeMyInfoBloc(context.read(), context.read())),
           ],
           child: HomeScreen(body: child, currentPath: state.uri.path),
         ),
@@ -249,6 +253,13 @@ class AppRouter {
                 ),
               );
             },
+          ),
+
+          GoRoute(
+            path: Routes.info.path,
+            name: Routes.info.name,
+            pageBuilder: (context, state) =>
+                fadeTransition(context: context, state: state, child: MobileInfoScreen()),
           ),
 
           GoRoute(

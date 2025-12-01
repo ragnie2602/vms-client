@@ -36,37 +36,39 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: max(
-          0,
-          data.routes.indexWhere((r) => r.path == GoRouterState.of(context).uri.path),
-        ),
-        items: List.generate(
-          data.routes.length,
-          (index) => BottomNavigationBarItem(
-            activeIcon: SvgPicture.asset(data.activeAssets[index], height: 24, width: 24),
-            icon: SvgPicture.asset(data.assets[index], height: 24, width: 24),
-            label: data.labels[index],
-          ),
-        ),
-        onTap: (int idx) => context.goNamed(data.routes[idx].name),
-        selectedItemColor: AppColors.blue15ABFF,
-        selectedLabelStyle: AppTypography.style(
-          11,
-          fontWeight: FontWeight.w500,
-          color: AppColors.blue15ABFF,
-        ),
-        unselectedLabelStyle: AppTypography.style(
-          11,
-          fontWeight: FontWeight.w500,
-          color: AppColors.grey666666,
-        ),
-      ),
+      bottomNavigationBar: data == null
+          ? null
+          : BottomNavigationBar(
+              currentIndex: max(
+                0,
+                data.routes.indexWhere((r) => r.path == GoRouterState.of(context).uri.path),
+              ),
+              items: List.generate(
+                data.routes.length,
+                (index) => BottomNavigationBarItem(
+                  activeIcon: SvgPicture.asset(data.activeAssets[index], height: 24, width: 24),
+                  icon: SvgPicture.asset(data.assets[index], height: 24, width: 24),
+                  label: data.labels[index],
+                ),
+              ),
+              onTap: (int idx) => context.goNamed(data.routes[idx].name),
+              selectedItemColor: AppColors.blue15ABFF,
+              selectedLabelStyle: AppTypography.style(
+                11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.blue15ABFF,
+              ),
+              unselectedLabelStyle: AppTypography.style(
+                11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.grey666666,
+              ),
+            ),
       endDrawer: FilterDrawer(controller: _filterDrawerController),
     );
   }
 
-  _BottomNavigationBarData _bottomNavigationBarData(String currentPath) {
+  _BottomNavigationBarData? _bottomNavigationBarData(String currentPath) {
     final location = Routes.fromName(currentPath.substring(1));
     switch (location) {
       case Routes.monitoring:
@@ -88,7 +90,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
       default:
     }
 
-    return _BottomNavigationBarData(labels: [], activeAssets: [], assets: [], routes: []);
+    return null;
   }
 }
 
