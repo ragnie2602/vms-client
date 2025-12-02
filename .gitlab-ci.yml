@@ -36,6 +36,6 @@ review-source:
       2. Đưa ra các nhận xét và đề xuất cải thiện bằng tiếng việt, chỉ ra các vấn đề tiềm ẩn hoặc những điểm chưa đáp ứng vào file comment.json ở thư mục project với cú pháp như sau {"body":"nhận xét của bạn viết bằng markdown"} .
       EOF
     - |
-      curl --request POST --header "PRIVATE-TOKEN: ${CI_PAT_TOKEN}" --header "Content-Type: application/json" --data @comment.json "https://code.vivas.vn/api/v4/projects/${N8N_PROJECT_ID}/merge_requests/${N8N_MR_ID}/notes" -v
+      curl --request POST --header "PRIVATE-TOKEN: ${CI_PAT_TOKEN}" --header "Content-Type: application/json" --data @comment.json "https://gitlab.vivas.vn/api/v4/projects/${N8N_PROJECT_ID}/merge_requests/${N8N_MR_ID}/notes" -v
   rules:
     - if: $CI_PIPELINE_SOURCE == "trigger" && $TRI_TYPE == "merge_request"
