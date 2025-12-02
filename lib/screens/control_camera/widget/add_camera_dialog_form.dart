@@ -164,11 +164,9 @@ extension AddCameraDialogForm on _AddCameraDialogState {
                 final byteData = await rootBundle.load(
                   AppAssets.cameraTemplateImport,
                 );
-                String? outputFile = await FilePicker.platform.saveFile(
-                  dialogTitle: 'Please select an output file:',
-                  fileName: 'Camera_Template_Import.xlsx',
-                  allowedExtensions: ['xlsx'],
-                  type: FileType.custom,
+                String? outputFile = await FileUtil.selectSaveLocation(
+                  'Camera_Template_Import.xlsx',
+                  'xlsx',
                 );
 
                 if (outputFile != null) {
