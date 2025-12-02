@@ -68,47 +68,50 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
 
   @override
   Widget build(BuildContext context) {
-    return Ink(
+    return Container(
       height: 64,
       width: double.infinity,
       decoration: BoxDecoration(color: Colors.white),
-      child: Row(
-        children: [
-          /* Play/Pause */
-          BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
-            selector: (state) => state.status,
-            builder: (context, status) => _controlItem(
-              status == PlayerStatus.playing ? AppAssets.icPauseMobile : AppAssets.icPlayMobile,
-              () => controller?.togglePlay?.call(),
-            ),
-          ),
-
-          /* Speed */
-          BlocSelector<CameraDetailBloc, CameraDetailState, double>(
-            selector: (state) => state.speed,
-            builder: (context, speed) => Expanded(
-              child: MobileControlSpeed(
-                speed: speed,
-                onSpeedChanged: (spd) => context.read<CameraDetailBloc>().add(ChangeSpeed(spd)),
+      child: Material(
+        color: Colors.transparent,
+        child: Row(
+          children: [
+            /* Play/Pause */
+            BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
+              selector: (state) => state.status,
+              builder: (context, status) => _controlItem(
+                status == PlayerStatus.playing ? AppAssets.icPauseMobile : AppAssets.icPlayMobile,
+                () => controller?.togglePlay?.call(),
               ),
             ),
-          ),
 
-          /* Screenshot */
-          _controlItem(AppAssets.icCamera01, _takeSnapshot),
-
-          /* Volume */
-          BlocSelector<CameraDetailBloc, CameraDetailState, double>(
-            selector: (state) => state.volume,
-            builder: (context, volume) => _controlItem(
-              volume == 0 ? AppAssets.icVolumeMuted : AppAssets.icVolume,
-              _toggleMute,
+            /* Speed */
+            BlocSelector<CameraDetailBloc, CameraDetailState, double>(
+              selector: (state) => state.speed,
+              builder: (context, speed) => Expanded(
+                child: MobileControlSpeed(
+                  speed: speed,
+                  onSpeedChanged: (spd) => context.read<CameraDetailBloc>().add(ChangeSpeed(spd)),
+                ),
+              ),
             ),
-          ),
 
-          /* Fullscreen */
-          _controlItem(AppAssets.icFullAltRight, () => controller?.toggleFullscreen?.call()),
-        ],
+            /* Screenshot */
+            _controlItem(AppAssets.icCamera01, _takeSnapshot),
+
+            /* Volume */
+            BlocSelector<CameraDetailBloc, CameraDetailState, double>(
+              selector: (state) => state.volume,
+              builder: (context, volume) => _controlItem(
+                volume == 0 ? AppAssets.icVolumeMuted : AppAssets.icVolume,
+                _toggleMute,
+              ),
+            ),
+
+            /* Fullscreen */
+            _controlItem(AppAssets.icFullAltRight, () => controller?.toggleFullscreen?.call()),
+          ],
+        ),
       ),
     );
   }

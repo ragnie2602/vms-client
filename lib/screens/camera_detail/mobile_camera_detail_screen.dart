@@ -57,7 +57,22 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                 ..add(GetVideoPlaybacks(bloc.state.camera!.id, bloc.state.playbackDate)),
         ),
       ],
-      child: CameraDetailMobileLayout(mode: CameraDetailMode.playback),
+      child: BlocConsumer<CameraDetailBloc, CameraDetailState>(
+        listenWhen: (previous, current) {
+          return previous.camera?.id != current.camera?.id ||
+              previous.playbackDate != current.playbackDate;
+        },
+        listener: (context, state) {
+          if (state.camera == null) return;
+          context.read<PlaybackBloc>().add(GetVideoPlaybacks(state.camera!.id, state.playbackDate));
+        },
+        buildWhen: (previous, current) {
+          return previous.camera?.id != current.camera?.id ||
+              previous.mode != current.mode ||
+              previous.stream != current.stream;
+        },
+        builder: (context, state) => CameraDetailMobileLayout(mode: CameraDetailMode.playback),
+      ),
     );
   }
 

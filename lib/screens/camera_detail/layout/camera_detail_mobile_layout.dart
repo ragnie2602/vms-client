@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/camera_detail/components/player_timeline.dart';
 
 import '../../shared/player/playback_player.dart';
 import '../../shared/state_builder_mixin.dart';
@@ -12,6 +11,7 @@ import '../bloc/camera_detail/camera_detail_bloc.dart';
 import '../bloc/playback/playback_bloc.dart';
 import '../components/mobile_list_playbacks.dart';
 import '../components/mobile_player_controls.dart';
+import '../components/mobile_player_timeline.dart';
 
 class CameraDetailMobileLayout extends StatelessWidget with StateBuilderMixin {
   const CameraDetailMobileLayout({super.key, required this.mode});
@@ -49,20 +49,17 @@ class CameraDetailMobileLayout extends StatelessWidget with StateBuilderMixin {
 
             /*  */
             if (mode.isPlayback) ...[
-              PlayerTimeline(
+              MobilePlayerTimeline(
                 size: Size(double.infinity, 64),
-                normalStyle: const TextStyle(
-                  color: Color.fromRGBO(255, 255, 255, 0.2),
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
+                timeStyle: const TextStyle(
+                  color: AppColors.grey666666,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
                 ),
-                highlightStyle: TextStyle(
-                  color: Color.fromRGBO(255, 255, 255, 0.2),
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                ),
-                playbackColor: Color.fromRGBO(21, 171, 255, 0.4),
-                centralLineColor: Color.fromRGBO(33, 204, 195, 1),
+                playbackColor: AppColors.blue005AA9,
+                unplaybackColor: AppColors.greyCACACA,
+                centralLineColor: AppColors.blue15ABFF,
+                tickColor: AppColors.greyE5E5E5,
               ),
               Expanded(child: MobileListPlaybacks()),
             ],
