@@ -42,16 +42,6 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   }
 
   @override
-  void dispose() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    bloc.close();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
@@ -178,6 +168,16 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    bloc.close();
+    super.dispose();
   }
 
   void fullscreen() {
