@@ -28,6 +28,7 @@ review-source:
     - claude mcp list  
     - |
       echo "=== Reviewing Source Code with Claude ==="
+      export IS_SANDBOX=1
       claude --dangerously-skip-permissions --allow-dangerously-skip-permissions -p <<EOF
       ${REVIEW_PROMPT}
       Steps:
