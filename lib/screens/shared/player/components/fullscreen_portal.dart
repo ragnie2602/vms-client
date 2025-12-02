@@ -107,6 +107,12 @@ class FullscreenPortalState extends State<FullscreenPortal> {
           )
         : child;
   }
+
+  @override
+  dispose() async {
+    await defaultExitNativeFullscreen();
+    super.dispose();
+  }
 }
 
 class FullScreenActions extends StatefulWidget {
