@@ -14,7 +14,7 @@ class CameraDetailState extends BaseState {
     this.status = PlayerStatus.playing,
     required this.mode,
     required this.camera,
-    this.volume = 100,
+    this.volume = 1,
     this.speed = 1,
     required this.playbackDate,
     this.timelineDisplayMode = TimelineDisplayMode.h8,

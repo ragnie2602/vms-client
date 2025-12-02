@@ -266,7 +266,26 @@ class AppRouter {
             path: Routes.playback.path,
             name: Routes.playback.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: PlaybackScreen());
+              final args = state.extra as CameraDetailScreenArgs;
+
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: PlatformBuilder.builder(
+                  onDesktop: (_) => PlaybackScreen(),
+                  onMobile: (_) => MobileCameraDetailScreen(
+                    args: CameraDetailScreenArgs(
+                      data: args.data,
+                      isPlayback: true,
+                      title: args.title,
+                      key: args.key,
+                      onBack: args.onBack,
+                      description: args.description,
+                      openCamerasPanelImmediately: args.openCamerasPanelImmediately,
+                    ),
+                  ),
+                ),
+              );
             },
           ),
 

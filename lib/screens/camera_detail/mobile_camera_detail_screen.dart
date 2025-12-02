@@ -11,7 +11,9 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/camera_detail/camera_detail_bloc.dart';
+import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
+import 'package:vms_flutter_client/screens/camera_detail/layout/camera_detail_mobile_layout.dart';
 import 'package:vms_flutter_client/screens/shared/player/monitor_player.dart';
 import 'package:vms_flutter_client/screens/shared/player/player_controller.dart';
 
@@ -33,7 +35,10 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   @override
   void initState() {
     super.initState();
-    bloc = CameraDetailBloc(mode: CameraDetailMode.live, camera: widget.args.data);
+    bloc = CameraDetailBloc(
+      mode: widget.args.isPlayback ? CameraDetailMode.playback : CameraDetailMode.live,
+      camera: widget.args.data,
+    );
 
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -41,8 +46,25 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
     ]);
   }
 
+  Widget _buildPlayback() {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: bloc),
+        BlocProvider(
+          lazy: false,
+          create: (_) =>
+              PlaybackBloc(context.read(), context.read())
+                ..add(GetVideoPlaybacks(bloc.state.camera!.id, bloc.state.playbackDate)),
+        ),
+      ],
+      child: CameraDetailMobileLayout(mode: CameraDetailMode.playback),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.args.isPlayback) return _buildPlayback();
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -81,6 +103,10 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   bloc: bloc,
                   builder: (context, state) {
                     return MonitorPlayer(
+                      syncSystemVolume: true,
+                      onVolumeChanged: (volume) {
+                        isMuted.value = volume <= 0;
+                      },
                       enableZoom: true,
                       mode: MonitorMode.liveview,
                       source: state.stream?.urlOfStream ?? state.camera!.mainStreamUri.toString(),
@@ -90,6 +116,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                         context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
                       },
                       onInitializedValues: ({required double volume, required double speed}) {
+                        isMuted.value = volume <= 0;
                         context.read<CameraDetailBloc>().add(ChangeVolume(volume));
                         context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
                         context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
