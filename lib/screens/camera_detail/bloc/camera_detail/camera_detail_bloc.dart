@@ -96,6 +96,7 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     ChangePlaybackDate event,
     Emitter<CameraDetailState> emit,
   ) async {
+    // update change date for multi playback
     if (state.playbackDate == event.date) return;
 
     emit(state.copyWith(playbackDate: event.date));

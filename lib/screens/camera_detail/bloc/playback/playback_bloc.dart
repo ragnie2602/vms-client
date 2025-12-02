@@ -17,17 +17,24 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
   final IPlaybackRepository playbackRepository;
   final ProtobufHttpClient client;
 
-  PlaybackBloc(this.playbackRepository, this.client) : super(PlaybackInitial()) {
+  PlaybackBloc(this.playbackRepository, this.client)
+    : super(PlaybackInitial()) {
     on<GetVideoPlaybacks>(_onGetVideoPlaybacks);
     on<ChangePlayback>(_onChangePlayback);
     on<DownloadPlayback>(_onDownloadPlayback);
+    on<ChangeMultiPlaybackEvent>(_onChangeMultiPlayback);
   }
 
   List<int> _belongCameraId = [];
   DateTime _belongDate = DateTime.now();
 
-  FutureOr<void> _onGetVideoPlaybacks(GetVideoPlaybacks event, Emitter<PlaybackState> emit) async {
-    if (state is PlaybackSuccess && _belongCameraId == event.id && _belongDate == event.date) {
+  FutureOr<void> _onGetVideoPlaybacks(
+    GetVideoPlaybacks event,
+    Emitter<PlaybackState> emit,
+  ) async {
+    if (state is PlaybackSuccess &&
+        _belongCameraId == event.id &&
+        _belongDate == event.date) {
       return;
     }
 
@@ -45,13 +52,20 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
         _belongCameraId = event.id;
         _belongDate = event.date;
         emit(
-          PlaybackSuccess(initialIndex: 0, playbacks: playbacks.reversed.toList(), currentIndex: 0),
+          PlaybackSuccess(
+            initialIndex: 0,
+            playbacks: playbacks.reversed.toList(),
+            currentIndex: 0,
+          ),
         );
       },
     );
   }
 
-  FutureOr<void> _onChangePlayback(ChangePlayback event, Emitter<PlaybackState> emit) async {
+  FutureOr<void> _onChangePlayback(
+    ChangePlayback event,
+    Emitter<PlaybackState> emit,
+  ) async {
     if (state is! PlaybackSuccess) return;
     final success = state as PlaybackSuccess;
 
@@ -59,7 +73,10 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
     emit(success.copyWith(currentIndex: event.index));
   }
 
-  FutureOr<void> _onDownloadPlayback(DownloadPlayback event, Emitter<PlaybackState> emit) async {
+  FutureOr<void> _onDownloadPlayback(
+    DownloadPlayback event,
+    Emitter<PlaybackState> emit,
+  ) async {
     try {
       final savedPath = await event.getSavedPath();
       if (savedPath == null) return;
@@ -74,6 +91,21 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
     } catch (e) {
       Logger.error(e, writeLog: true);
       event.onError?.call(kReleaseMode ? null : e.toString());
+    }
+  }
+
+  FutureOr<void> _onChangeMultiPlayback(
+    ChangeMultiPlaybackEvent event,
+    Emitter<PlaybackState> emit,
+  ) async {
+    if (event.isMulti) {
+      emit(MultiplePlaybackSuccess());
+    } else {
+      if (event.id != null && event.id!.isNotEmpty && event.date != null) {
+        add(GetVideoPlaybacks([event.id!.first], event.date!));
+      } else {
+        emit(PlaybackInitial());
+      }
     }
   }
 }
