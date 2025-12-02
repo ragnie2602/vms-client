@@ -4,9 +4,7 @@ part of 'playback_bloc.dart';
 enum PlaybackType { only, multi }
 
 sealed class PlaybackState extends BaseState {
-  // type: only/multi
-  final PlaybackType? playbackType;
-  const PlaybackState({this.playbackType});
+  const PlaybackState();
 }
 
 final class PlaybackInitial extends PlaybackState {
@@ -39,7 +37,7 @@ class PlaybackSuccess extends PlaybackState {
     required this.initialIndex,
     required this.playbacks,
     required this.currentIndex,
-  }):super(playbackType: PlaybackType.only);
+  });
 
   @override
   StateType get type =>
@@ -100,8 +98,4 @@ class PlaybackSuccess extends PlaybackState {
 
   //   return null;
   // }
-}
-
-class MultiplePlaybackSuccess extends PlaybackState {
-  const MultiplePlaybackSuccess() : super(playbackType: PlaybackType.multi);
 }

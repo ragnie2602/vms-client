@@ -87,16 +87,6 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: CameraDetailDesktopLayout(
-              onSwitchPlayback: (isMultiPlayback) {
-                final bloc = context.read<CameraDetailBloc>();
-                context.read<PlaybackBloc>().add(
-                  ChangeMultiPlaybackEvent(
-                    isMulti: isMultiPlayback,
-                    date: bloc.state.playbackDate,
-                    id: bloc.state.camera != null ? bloc.state.camera!.id : [],
-                  ),
-                );
-              },
               openCamerasPanelImmediately:
                   openCamerasPanelImmediately || isPlayback,
               content: state.camera == null
@@ -114,77 +104,34 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
 
   Widget _waitingPlayback(CameraDetailState data, BuildContext context) {
     return BlocBuilder<PlaybackBloc, PlaybackState>(
-      builder: (context, state) {
-        if (state is MultiplePlaybackSuccess) {
-          return Container(
-            color: Colors.black,
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Xem lại nhiều camera',
-                  style: AppTypography.style(
-                    16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 16 / 9,
-                    children: List.generate(
-                      4,
-                      (index) => Container(
-                        color: Colors.grey[900],
-                        child: Center(
-                          child: Icon(
-                            Icons.videocam_off,
-                            color: Colors.white54,
-                            size: 32,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return stateBuilder<PlaybackSuccess>(
-          state,
-          onReload: () => context.read<PlaybackBloc>().add(
-            GetVideoPlaybacks(
-              data.camera!.id,
-              context.read<CameraDetailBloc>().state.playbackDate,
-            ),
+      builder: (context, state) => stateBuilder<PlaybackSuccess>(
+        state,
+        onReload: () => context.read<PlaybackBloc>().add(
+          GetVideoPlaybacks(
+            data.camera!.id,
+            context.read<CameraDetailBloc>().state.playbackDate,
           ),
-          child: (state) => PlaybackPlayer(
-            enableZoom: true,
-            playlist: state.playbacks.toList(),
-            name: data.camera!.name,
-            initialIndex: state.initialIndex,
-            controller: data.playerController,
-            labelBuilder: _buildLabel,
-            onStatusChanged: (status) {
-              context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
-            },
-            onInitializedValues:
-                ({required double volume, required double speed}) {
-                  context.read<CameraDetailBloc>().add(ChangeVolume(volume));
-                  context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
-                  context.read<CameraDetailBloc>().add(
-                    OnRecording(cancelStatus: 0),
-                  );
-                },
-          ),
-        );
-      },
+        ),
+        child: (state) => PlaybackPlayer(
+          enableZoom: true,
+          playlist: state.playbacks.toList(),
+          name: data.camera!.name,
+          initialIndex: state.initialIndex,
+          controller: data.playerController,
+          labelBuilder: _buildLabel,
+          onStatusChanged: (status) {
+            context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
+          },
+          onInitializedValues:
+              ({required double volume, required double speed}) {
+                context.read<CameraDetailBloc>().add(ChangeVolume(volume));
+                context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+                context.read<CameraDetailBloc>().add(
+                  OnRecording(cancelStatus: 0),
+                );
+              },
+        ),
+      ),
     );
   }
 

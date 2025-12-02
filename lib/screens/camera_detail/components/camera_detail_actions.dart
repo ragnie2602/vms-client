@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
-import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/monitor_cameras.dart';
 
 import '../../shared/action_item.dart';
@@ -18,13 +19,11 @@ class CameraDetailActions extends StatefulWidget {
     required this.rightController,
     required this.mode,
     this.openCamerasPanelImmediately = false,
-    required this.onSwitchPlayback,
   });
   final PanelController leftController;
   final PanelController rightController;
   final CameraDetailMode mode;
   final bool openCamerasPanelImmediately;
-  final Function(bool isMultiPlayback) onSwitchPlayback;
 
   @override
   State<CameraDetailActions> createState() => _CameraDetailActionsState();
@@ -128,24 +127,14 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
             if (widget.mode.isPlayback)
               ValueListenableBuilder(
                 valueListenable: _leftPanelIndex,
-                builder: (context, index, child) =>
-                    BlocSelector<PlaybackBloc, PlaybackState, PlaybackType?>(
-                      selector: (state) => state.playbackType,
-                      builder: (context, playbackType) {
-                        return ActionItem(
-                          title: playbackType == PlaybackType.multi
-                              ? 'Xem từng camera'
-                              : 'Xem nhiều camera',
-                          icon: AppAssets.icMenu,
-                          isSelected: index == 3,
-                          onTap: () {
-                            widget.onSwitchPlayback.call(
-                              playbackType == PlaybackType.multi ? false : true,
-                            );
-                          },
-                        );
-                      },
-                    ),
+                builder: (context, index, child) => ActionItem(
+                  title: 'Xem nhiều camera',
+                  icon: AppAssets.icMenu,
+                  isSelected: index == 3,
+                  onTap: () {
+                    context.pushNamed(Routes.multi_playback.name);
+                  },
+                ),
               ),
 
             /*  */

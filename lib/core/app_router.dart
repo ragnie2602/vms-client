@@ -28,6 +28,8 @@ import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dar
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
+import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
+import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
@@ -68,6 +70,11 @@ enum Routes {
     description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   cameraDetail(name: 'camera_detail', path: '/camera_detail'),
+  multi_playback(
+    name: 'multi_playback',
+    path: '/multi_playback',
+    title: 'Xem lại nhiều camera',
+  ),
   playback(
     name: 'playback',
     path: '/playback',
@@ -190,6 +197,7 @@ class AppRouter {
                 searchEmapUseCase: context.read<SearchEmapUseCase>(),
               ),
             ),
+            BlocProvider(create: (context) => MultiPlaybackBloc()),
             BlocProvider(
               create: (context) => ScheduleBloc(
                 cameraRepository: context.read(),
@@ -302,7 +310,22 @@ class AppRouter {
             path: Routes.emap.path,
             name: Routes.emap.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: EmapScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: EmapScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.multi_playback.path,
+            name: Routes.multi_playback.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: MultiPlaybackScreen(),
+              );
             },
           ),
 

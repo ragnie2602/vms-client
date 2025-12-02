@@ -22,7 +22,7 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
     on<GetVideoPlaybacks>(_onGetVideoPlaybacks);
     on<ChangePlayback>(_onChangePlayback);
     on<DownloadPlayback>(_onDownloadPlayback);
-    on<ChangeMultiPlaybackEvent>(_onChangeMultiPlayback);
+    // on<ChangeMultiPlaybackEvent>(_onChangeMultiPlayback);
   }
 
   List<int> _belongCameraId = [];
@@ -94,18 +94,18 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
     }
   }
 
-  FutureOr<void> _onChangeMultiPlayback(
-    ChangeMultiPlaybackEvent event,
-    Emitter<PlaybackState> emit,
-  ) async {
-    if (event.isMulti) {
-      emit(MultiplePlaybackSuccess());
-    } else {
-      if (event.id != null && event.id!.isNotEmpty && event.date != null) {
-        add(GetVideoPlaybacks([event.id!.first], event.date!));
-      } else {
-        emit(PlaybackInitial());
-      }
-    }
-  }
+  // FutureOr<void> _onChangeMultiPlayback(
+  //   ChangeMultiPlaybackEvent event,
+  //   Emitter<PlaybackState> emit,
+  // ) async {
+  //   if (event.isMulti) {
+  //     emit(MultiplePlaybackSuccess());
+  //   } else {
+  //     if (event.id != null && event.id!.isNotEmpty && event.date != null) {
+  //       add(GetVideoPlaybacks([event.id!.first], event.date!));
+  //     } else {
+  //       emit(PlaybackInitial());
+  //     }
+  //   }
+  // }
 }
