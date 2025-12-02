@@ -91,6 +91,11 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           label: 'Dò tìm camera',
           value: AddCameraStep.discovery,
         ),
+        const SizedBox(height: 12),
+        _buildSelectModeOption(
+          label: 'Thêm bằng file',
+          value: AddCameraStep.importFile,
+        ),
       ],
     );
   }
@@ -122,29 +127,101 @@ extension AddCameraDialogForm on _AddCameraDialogState {
   /// Bước thêm bằng file (placeholder – sẽ gắn import file sau)
   Widget _buildImportFileContent() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 12),
-        Text(
-          'Thêm camera bằng file',
-          style: AppTypography.style(
-            16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.black,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            RichText(
+              text: TextSpan(
+                style: AppTypography.style(
+                  16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.black,
+                ),
+                children: [
+                  TextSpan(
+                    text: 'Upload file ',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.grey334155,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '*',
+                    style: AppTypography.style(
+                      16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.redFF0000,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () async {
+                final byteData = await rootBundle.load(
+                  AppAssets.cameraTemplateImport,
+                );
+                String? outputFile = await FilePicker.platform.saveFile(
+                  dialogTitle: 'Please select an output file:',
+                  fileName: 'Camera_Template_Import.xlsx',
+                  allowedExtensions: ['xlsx'],
+                  type: FileType.custom,
+                );
+
+                if (outputFile != null) {
+                  try {
+                    final file = File(outputFile);
+                    await file.writeAsBytes(
+                      byteData.buffer.asUint8List(
+                        byteData.offsetInBytes,
+                        byteData.lengthInBytes,
+                      ),
+                    );
+                    ToastUtil.toastSuccess(
+                      title: Text('Tải file mẫu thành công'),
+                    );
+                  } catch (e) {
+                    ToastUtil.toastFail(title: Text('Lỗi ghi file: $e'));
+                  }
+                }
+              },
+              child: Row(
+                children: [
+                  SvgPicture.asset(AppAssets.icDownloadFile),
+                  SizedBox(width: 4),
+                  Text(
+                    'Tải file mẫu',
+                    style: AppTypography.style(
+                      13,
+                      fontWeight: FontWeight.w500,
+                      isItalic: true,
+                      decoration: TextDecoration.underline,
+                      decorationColor: AppColors.blue15ABFF,
+                      color: AppColors.blue15ABFF,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Text(
-          'Khu vực này sẽ cho phép bạn chọn file (ví dụ: CSV / Excel) để import danh sách camera.',
+          'Vui lòng chọn tệp danh sách camera có định dạng giống file mẫu để import vào hệ thống',
           style: AppTypography.style(
             13,
             fontWeight: FontWeight.w400,
+            isItalic: true,
             color: AppColors.grey64748B,
           ),
         ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(12),
+          width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
             border: Border.all(color: AppColors.greyE2E8F0),
@@ -158,7 +235,6 @@ extension AddCameraDialogForm on _AddCameraDialogState {
             ),
           ),
         ),
-        const SizedBox(height: 24),
       ],
     );
   }
