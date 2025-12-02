@@ -5,9 +5,11 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
+import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_state.dart';
 
 class MenuSelectDatePlayback extends StatefulWidget {
@@ -48,7 +50,9 @@ class _MenuSelectDatePlaybackState extends State<MenuSelectDatePlayback> {
           builder: (context, date) => Row(
             children: <Widget>[
               _icon(AppAssets.icArrowChevronLeft, () {
-                // bloc.add(ChangePlaybackDate(date.subtract(Duration(days: 1))));
+                bloc.add(
+                  ChangePlaybackDate(date: date.subtract(Duration(days: 1))),
+                );
               }),
               InkWell(
                 onTap: () => _menuController.isOpen
@@ -73,7 +77,7 @@ class _MenuSelectDatePlaybackState extends State<MenuSelectDatePlayback> {
                 final nextDate = bloc.state.playbackDate.startOfNextDay;
                 if (nextDate.isAfter(DateTime.now())) return;
 
-                // bloc.add(ChangePlaybackDate(nextDate));
+                bloc.add(ChangePlaybackDate(date: nextDate));
               }),
             ],
           ),
@@ -104,7 +108,9 @@ class _MenuSelectDatePlaybackState extends State<MenuSelectDatePlayback> {
         builder: (context, date) {
           return TableCalendar(
             onDaySelected: (date, focusedDay) {
-              // context.read<MultiPlaybackBloc>().let((bloc) => bloc.add(ChangePlaybackDate(date)))
+              context.read<MultiPlaybackBloc>().let(
+                (bloc) => bloc.add(ChangePlaybackDate(date: date)),
+              );
             },
             onCalendarCreated: (pageController) =>
                 _pageController = pageController,
