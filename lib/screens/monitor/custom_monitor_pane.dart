@@ -162,8 +162,9 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
                 Routes.cameraDetail.name,
                 extra: CameraDetailScreenArgs(
                   data: camera,
-                  onBack: () =>
-                      AppRouter.rootNavigatorKey.currentContext?.goNamed(Routes.monitoring.name),
+                  onBack: () => AppRouter.rootNavigatorKey.currentContext?.goNamed(
+                    Routes.custom_live_view.name,
+                  ),
                 ),
               ),
               child: MonitorPlayer(
