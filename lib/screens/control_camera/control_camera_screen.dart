@@ -670,7 +670,9 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                     state is ListCameraSuccessState
                                     ? state.cameras
                                     : [];
-                                ExportFileUserCase.exportExcel(cameras);
+                                context.read<ControlCameraBloc>().add(
+                                  ExportExcelEvent(listCamera: cameras),
+                                );
                               },
                               splashColor: Colors.transparent,
 

@@ -253,3 +253,20 @@ class UpdateTagLoadingState extends ControlCameraState {
   @override
   StateType get type => StateType.loading;
 }
+
+class ExportExcelSuccessState extends ControlCameraState {
+  const ExportExcelSuccessState();
+  @override
+  StateType get type => StateType.success;
+} 
+
+class ExportExcelFailState extends ControlCameraState {
+  final String message;
+  const ExportExcelFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+  @override
+  List<Object?> get props => [message];
+}

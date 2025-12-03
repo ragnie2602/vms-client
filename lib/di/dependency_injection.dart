@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_user_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custom_live_view_use_case.dart';
@@ -103,6 +104,7 @@ class DependencyInjection {
     ),
 
     Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
+    Provider<ExportFileUserCase>(create: (context) => ExportFileUserCase()),
     Provider<FilterTagCameraUseCase>(create: (context) => FilterTagCameraUseCase()),
     Provider<FilterCameraNoGroupUseCase>(create: (context) => FilterCameraNoGroupUseCase()),
     Provider<FilterCameraNotInGroupUsecase>(
