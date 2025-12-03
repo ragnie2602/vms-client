@@ -1,21 +1,29 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/control_camera/utils/custom_onvif_discovery.dart';
+import 'package:vms_flutter_client/screens/control_camera/utils/excel_utils.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/add_tag_dropdown.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/tag_management_dialog.dart';
+import 'package:vms_flutter_client/screens/map/widgets/dash_border_widget.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 import '../../home/components/components_src.dart';
@@ -33,6 +41,7 @@ Future<T?> showAddCameraDialog<T>(
   CameraEntity? cameraData,
   Future<void> Function(AddCameraPayload value)? onSubmit,
   Future<void> Function(AddCameraPayload value)? onEdit,
+  Future<void> Function(List<ImportCameraCell> cameras)? onImport,
   Future<List<DiscoveredDevice>> Function()? onCheckDiscovery,
   List<DiscoveredDevice>? deviceFounded,
   VoidCallback? onBack,
@@ -55,6 +64,7 @@ Future<T?> showAddCameraDialog<T>(
         cameraData: cameraData,
         onSubmit: onSubmit,
         onEdit: onEdit,
+        onImport: onImport,
         onBack: onBack,
         onCheck: onCheck,
         onCheckDiscovery: onCheckDiscovery,
@@ -70,6 +80,7 @@ class _AddCameraDialog extends StatefulWidget {
     this.cameraData,
     this.onSubmit,
     this.onEdit,
+    this.onImport,
     this.onBack,
     this.onCheck,
     this.onCheckDiscovery,
@@ -79,6 +90,7 @@ class _AddCameraDialog extends StatefulWidget {
   final CameraEntity? cameraData;
   final Future<void> Function(AddCameraPayload value)? onSubmit;
   final Future<void> Function(AddCameraPayload value)? onEdit;
+  final Future<void> Function(List<ImportCameraCell> cameras)? onImport;
   final Future<List<DiscoveredDevice>> Function()? onCheckDiscovery;
   final List<DiscoveredDevice>? deviceFounded;
   final VoidCallback? onBack;
@@ -107,6 +119,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   final _onvifPassword = TextEditingController();
   bool _obscure = true;
   String _method = 'RTSP'; // 'RTSP' hoặc 'ONVIF'
+  ImportCameraEntity? importCameraEntity;
+
+  FilePickerResult? _excelFileResult;
+  double _importProgress = 0.0;
 
   List<DiscoveredDevice>? _deviceMatches;
   AddCameraStep _step = AddCameraStep.selectMode;
@@ -213,7 +229,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
           curr is CheckOnvifFailState ||
           curr is AddCameraSuccessState ||
           curr is AddCameraFailState ||
-          curr is UpdateCameraSuccessState,
+          curr is UpdateCameraSuccessState ||
+          curr is ImportCameraSuccessState ||
+          curr is ImportCameraFailState,
       listener: _handleBlocState,
       child: AlertDialog(
         backgroundColor: Colors.white,
@@ -267,7 +285,11 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       child: SizedBox(
         height: 44,
         child: AppButton.outline(
-          label: _step == AddCameraStep.discovery ? 'Đóng' : 'Hủy',
+          label:
+              _step == AddCameraStep.discovery ||
+                  _step == AddCameraStep.importFileResult
+              ? 'Đóng'
+              : 'Hủy',
           onPressed: (_isChecking || _isSubmitting)
               ? null
               : () => Navigator.pop(context),
@@ -280,7 +302,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     return Visibility(
       visible:
           _step == AddCameraStep.selectMode ||
-          _step == AddCameraStep.manualForm,
+          _step == AddCameraStep.manualForm ||
+          _step == AddCameraStep.importFile,
       child: Expanded(
         child: Container(
           height: 44,
@@ -303,6 +326,25 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
                       setState(() {
                         _step = _selectedAddStep!;
                       });
+                      return;
+                    }
+
+                    if (_step == AddCameraStep.importFile) {
+                      if (_excelFileResult == null) {
+                        ToastUtil.toastFail(
+                          title: Text('Vui lòng chọn file Excel'),
+                        );
+                        return;
+                      }
+                      // await ExcelUtils.importExcelFile(
+                      //   excelFileResult: _excelFileResult,
+                      //   onImport: (cameras) async {
+                      //     await widget.onImport?.call(cameras);
+                      //   },
+                      // );
+                      _importProgress = 0.0;
+                      _step = AddCameraStep.importFileResult;
+                      updateState(() {});
                       return;
                     }
 
@@ -393,6 +435,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       case AddCameraStep.discovery:
         return 'Dò tìm camera';
       case AddCameraStep.importFile:
+      case AddCameraStep.importFileResult:
         return 'Thêm camera bằng file';
     }
   }
@@ -408,10 +451,25 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
         return _buildDiscoveryContent();
       case AddCameraStep.importFile:
         return _buildImportFileContent();
+      case AddCameraStep.importFileResult:
+        return _buildImportFileResultContent();
     }
   }
 
   void _handleBlocState(BuildContext context, ControlCameraState state) {
+    if (state is ImportCameraSuccessState) {
+      setState(() => _importProgress = 1.0);
+      updateState(() {
+        importCameraEntity = ImportCameraEntity(
+          cameras: state.cameras,
+          cameraError: state.cameraError,
+        );
+      });
+      context.read<ControlCameraBloc>().add(const GetListCameraEvent());
+    } else if (state is ImportCameraFailState) {
+      setState(() => _importProgress = 0.0);
+      updateState(() {});
+    }
     if (state is CheckOnvifSuccessState) {
       setState(() => _isChecking = false);
       _rtsp.text = state.cameraOnvif.rtspUrl;

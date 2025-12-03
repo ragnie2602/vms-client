@@ -171,18 +171,40 @@ extension AddCameraDialogForm on _AddCameraDialogState {
 
                 if (outputFile != null) {
                   try {
-                    final file = File(outputFile);
-                    await file.writeAsBytes(
-                      byteData.buffer.asUint8List(
-                        byteData.offsetInBytes,
-                        byteData.lengthInBytes,
-                      ),
-                    );
-                    ToastUtil.toastSuccess(
-                      title: Text('Tải file mẫu thành công'),
-                    );
+                    // Thử ghi đúng vào đường dẫn user đã chọn
+                    try {
+                      final file = File(outputFile);
+                      await file.writeAsBytes(
+                        byteData.buffer.asUint8List(
+                          byteData.offsetInBytes,
+                          byteData.lengthInBytes,
+                        ),
+                      );
+                      ToastUtil.toastSuccess(
+                        title: Text('Tải file mẫu thành công'),
+                      );
+                      return;
+                    } on FileSystemException {
+                      // Trường hợp phổ biến trên macOS: user chọn thư mục không có quyền (vd: /Users)
+                      // → fallback sang thư mục Documents của user
+                      final safePath = await FileUtil.getSafeUserFilePath(
+                        'Camera_Template_Import.xlsx',
+                      );
+                      final safeFile = File(safePath);
+                      await safeFile.writeAsBytes(
+                        byteData.buffer.asUint8List(
+                          byteData.offsetInBytes,
+                          byteData.lengthInBytes,
+                        ),
+                      );
+                      ToastUtil.toastSuccess(
+                        title: Text(
+                          'Tải file mẫu thành công.\nĐã lưu tại: $safePath',
+                        ),
+                      );
+                    }
                   } catch (e) {
-                    ToastUtil.toastFail(title: Text('Lỗi ghi file: $e'));
+                    ToastUtil.toastFail(title: Text('Lỗi ghi file mẫu: $e'));
                   }
                 }
               },
@@ -217,24 +239,302 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           ),
         ),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(12),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: AppColors.greyE2E8F0),
+        _excelFileResult == null
+            ? InkWell(
+                onTap: () async {
+                  _excelFileResult = await FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: ['xlsx'], // Chỉ cho phép file Excel mới
+                    allowMultiple: false,
+                  );
+                  updateState(() {});
+                },
+                child: _buildAddFileBox(),
+              )
+            : _buildFileBox(),
+      ],
+    );
+  }
+
+  Widget _buildAddFileBox() {
+    return SizedBox(
+      width: double.infinity,
+      child: CustomPaint(
+        painter: DashedBorderPainter(),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: SvgPicture.asset(
+            AppAssets.icAdd,
+            width: 36,
+            height: 36,
+            color: AppColors.black,
           ),
-          child: Text(
-            'TODO: Gắn UI chọn file và logic import camera từ file tại đây.',
-            style: AppTypography.style(
-              13,
-              fontWeight: FontWeight.w400,
-              color: AppColors.grey64748B,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFileBox() {
+    return SizedBox(
+      width: double.infinity,
+      child: CustomPaint(
+        painter: DashedBorderPainter(),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  SvgPicture.asset(AppAssets.icFile),
+                  SizedBox(width: 10),
+                  Text(
+                    '${_excelFileResult?.files.first.name}',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.black,
+                    ),
+                  ),
+                ],
+              ),
+              IconButton(
+                onPressed: () {
+                  updateState(() {
+                    _excelFileResult = null;
+                  });
+                },
+                icon: SvgPicture.asset(AppAssets.icCloseFilled),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImportFileResultContent() {
+    // Bắt đầu import nếu progress = 0
+    if (_importProgress == 0.0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startImport();
+      });
+    }
+
+    // Hiển thị progress bar
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              '${(_importProgress * 100).toInt()}%',
+              style: AppTypography.style(
+                24,
+                fontWeight: FontWeight.w600,
+                color: AppColors.blue15ABFF,
+              ),
             ),
+            SizedBox(width: 10),
+            Text(
+              importCameraEntity != null
+                  ? 'Tải file lên thành công'
+                  : 'Đang tải lên...',
+              style: AppTypography.style(
+                13,
+                fontWeight: FontWeight.w400,
+                lineHeight: 18 / 12,
+                isItalic: true,
+                color: AppColors.grey6F6F6F,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: _importProgress,
+            minHeight: 12,
+            backgroundColor: AppColors.blue15ABFF,
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue15ABFF),
+          ),
+        ),
+        Visibility(
+          visible: importCameraEntity != null,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0, bottom: 5),
+                child: _buildTextResult(),
+              ),
+              Visibility(
+                visible:
+                    (importCameraEntity?.cameras.isNotEmpty ?? false) &&
+                    (importCameraEntity?.cameraError.isNotEmpty ?? false),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: importCameraEntity?.cameraError.length ?? 0,
+                  itemBuilder: (context, index) => Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(AppAssets.icError),
+                            SizedBox(width: 10),
+                            SvgPicture.asset(AppAssets.icVideoOn),
+                            SizedBox(width: 16),
+                            Text(
+                              importCameraEntity
+                                      ?.cameraError[index]
+                                      .cameraName ??
+                                  '',
+                              style: AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(height: 0.5, color: AppColors.greyE2E8F0),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildTextResult() {
+    if (importCameraEntity?.cameraError.isEmpty ?? false) {
+      return _buildSuccessText();
+    } else if (importCameraEntity?.cameraError.isNotEmpty ?? false) {
+      if (importCameraEntity?.cameras.isNotEmpty ?? false) {
+        return _buildSuccessAndError();
+      } else {
+        return _buildErrorText();
+      }
+    }
+    return _buildErrorText();
+  }
+
+  Widget _buildErrorText() {
+    return Text(
+      'Thêm mới camera thất bại. Vui lòng kiểm tra định dạng file hoặc thông tin camera và thử lại.',
+      style: AppTypography.style(
+        14,
+        fontWeight: FontWeight.w500,
+        color: AppColors.black,
+      ),
+    );
+  }
+
+  Widget _buildSuccessText() {
+    return RichText(
+      text: TextSpan(
+        style: AppTypography.style(
+          14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.black,
+        ),
+        children: [
+          TextSpan(text: 'Thêm mới thành công '),
+          TextSpan(
+            text: () {
+              final successCount = importCameraEntity?.cameras.length ?? 0;
+              final successStr = successCount == 0
+                  ? '0'
+                  : successCount.toString().padLeft(2, '0');
+              return '$successStr/$successStr';
+            }(),
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.blue005AA9,
+            ),
+          ),
+          TextSpan(text: ' camera'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuccessAndError() {
+    return RichText(
+      text: TextSpan(
+        style: AppTypography.style(
+          14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.black,
+        ),
+        children: [
+          TextSpan(text: 'Tải lên thành công '),
+          TextSpan(
+            text: () {
+              final successCount = importCameraEntity?.cameras.length ?? 0;
+              final totalCount =
+                  (importCameraEntity?.cameras.length ?? 0) +
+                  (importCameraEntity?.cameraError.length ?? 0);
+              final successStr = successCount == 0
+                  ? '0'
+                  : successCount.toString().padLeft(2, '0');
+              final totalStr = totalCount == 0
+                  ? '0'
+                  : totalCount.toString().padLeft(2, '0');
+              return '$successStr/$totalStr';
+            }(),
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.blue005AA9,
+            ),
+          ),
+          TextSpan(text: ' camera, '),
+          TextSpan(
+            text: () {
+              final errorCount = importCameraEntity?.cameraError.length ?? 0;
+              return errorCount == 0
+                  ? '0'
+                  : errorCount.toString().padLeft(2, '0');
+            }(),
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.redFF0909,
+            ),
+          ),
+          TextSpan(text: ' camera không tải lên thành công.'),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _startImport() async {
+    try {
+      await ExcelUtils.importExcelFile(
+        excelFileResult: _excelFileResult,
+        onProgress: (progress) {
+          updateState(() {
+            _importProgress = progress;
+          });
+        },
+        onImport: (cameras) async {
+          await widget.onImport?.call(cameras);
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ToastUtil.toastFail(title: Text('Lỗi import file: $e'));
+      }
+    }
   }
 
   Widget _buildAccountCamera() {

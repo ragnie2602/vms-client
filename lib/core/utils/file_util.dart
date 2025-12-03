@@ -8,8 +8,13 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 extension PathExtension on String {
-  String joinPath(String part1, [String? part2, String? part3, String? part4, String? part5]) =>
-      p.join(this, part1, part2, part3, part4, part5);
+  String joinPath(
+    String part1, [
+    String? part2,
+    String? part3,
+    String? part4,
+    String? part5,
+  ]) => p.join(this, part1, part2, part3, part4, part5);
 }
 
 class FileUtil {
@@ -24,9 +29,13 @@ class FileUtil {
     'MKV': XTypeGroup(label: 'mkv', extensions: <String>['mkv']),
     'WEBM': XTypeGroup(label: 'webm', extensions: <String>['webm']),
     'M3U8': XTypeGroup(label: 'm3u8', extensions: <String>['m3u8']),
+    'XLSX': XTypeGroup(label: 'xlsx', extensions: <String>['xlsx']),
   };
 
-  static Future<String?> selectFolderLocation({String? title, String? initialPath}) async {
+  static Future<String?> selectFolderLocation({
+    String? title,
+    String? initialPath,
+  }) async {
     return await FilePicker.platform.getDirectoryPath(
       dialogTitle: title,
       initialDirectory: initialPath,
@@ -34,7 +43,10 @@ class FileUtil {
     );
   }
 
-  static Future<String?> selectSaveLocation(String fileName, String extension) async {
+  static Future<String?> selectSaveLocation(
+    String fileName,
+    String extension,
+  ) async {
     try {
       // Use file_picker for Windows to prevent UI freezing with lockParentWindow
       if (Platform.isWindows) {
@@ -49,12 +61,16 @@ class FileUtil {
         if (result == null) return null;
 
         // Ensure file has extension
-        return result.endsWith('.$cleanExtension') ? result : '$result.$cleanExtension';
+        return result.endsWith('.$cleanExtension')
+            ? result
+            : '$result.$cleanExtension';
       }
 
       // Use file_selector for other platforms (macOS, Linux)
       final result = await getSaveLocation(
-        acceptedTypeGroups: [_typeGroupMapper[extension.toUpperCase()] ?? _typeGroupMapper['MP4']!],
+        acceptedTypeGroups: [
+          _typeGroupMapper[extension.toUpperCase()] ?? _typeGroupMapper['MP4']!,
+        ],
         suggestedName: fileName,
       );
       if (result == null) return null;
@@ -62,7 +78,9 @@ class FileUtil {
       final _extension = result.activeFilter?.extensions?.firstOrNull ?? 'mp4';
 
       // MacOS thì result.path đã gắn extension luôn
-      return result.path.endsWith(_extension) ? result.path : '${result.path}.$_extension';
+      return result.path.endsWith(_extension)
+          ? result.path
+          : '${result.path}.$_extension';
     } catch (e) {
       // Handle any errors from the file dialog
       return null;
@@ -106,11 +124,21 @@ class FileUtil {
   }
 
   static Future<String> getVMSLibraryDirectory() async {
-    final documentDirectory = await getApplicationDocumentsDirectory(); // C:\Users\admin\Documents
+    final documentDirectory =
+        await getApplicationDocumentsDirectory(); // C:\Users\admin\Documents
 
     final vmsLibraryPath = p.join(documentDirectory.path, 'VMSLibrary');
     await ensureFolderExists(vmsLibraryPath);
     return vmsLibraryPath;
+  }
+
+  /// Trả về một đường dẫn an toàn trong thư mục Documents của user
+  /// để lưu file khi vị trí do user chọn không ghi được (vd: /Users trên macOS).
+  static Future<String> getSafeUserFilePath(String fileName) async {
+    final documentDirectory = await getApplicationDocumentsDirectory();
+    final safePath = p.join(documentDirectory.path, fileName);
+    await ensureFolderExists(safePath);
+    return safePath;
   }
 }
 

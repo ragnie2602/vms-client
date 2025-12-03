@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
@@ -39,7 +40,10 @@ class ControlCameraLoadingState extends ControlCameraState {
 class ListShareCameraSuccessState extends ControlCameraState {
   final List<int> cameraId;
   final List<InviteMessageEntity> inviteMessages;
-  const ListShareCameraSuccessState({required this.cameraId, required this.inviteMessages});
+  const ListShareCameraSuccessState({
+    required this.cameraId,
+    required this.inviteMessages,
+  });
   @override
   StateType get type => StateType.success;
   @override
@@ -250,6 +254,35 @@ class UpdateTagLoadingState extends ControlCameraState {
   final List<int> id;
 
   const UpdateTagLoadingState(this.id);
+  @override
+  StateType get type => StateType.loading;
+}
+
+class ImportCameraSuccessState extends ControlCameraState {
+  final List<CameraEntity> cameras;
+  final List<ImportCameraCell> cameraError;
+  const ImportCameraSuccessState({
+    required this.cameras,
+    required this.cameraError,
+  });
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [cameras, cameraError];
+}
+
+class ImportCameraFailState extends ControlCameraState {
+  final String message;
+  const ImportCameraFailState(this.message);
+  @override
+  StateType get type => StateType.failure;
+  @override
+  String get errorMsg => message;
+  @override
+  List<Object?> get props => [message];
+}
+
+class ImportCameraLoadingState extends ControlCameraState {
   @override
   StateType get type => StateType.loading;
 }

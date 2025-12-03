@@ -115,4 +115,12 @@ class AppAssets {
 
   static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
   static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
+  static const icDownloadFile = '$_svgPath/ic_download_file.svg';
+
+  /* Files */
+  static const cameraTemplateImport = 'assets/Camera_Template_Import.xlsx';
+
+  static const icFile = '$_svgPath/ic_file.svg';
+  static const icError = '$_svgPath/ic_error.svg';
+  static const icCloseFilled = '$_svgPath/ic_close.svg';
 }

@@ -2,6 +2,8 @@ import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_onvif.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart'
     show InviteMessageEntity;
@@ -16,7 +18,9 @@ abstract class IControlCameraRepository {
     int? status,
     int? ivaType,
   });
-  Future<Either<Failure, List<CameraEntity>>> getCamerasInGroup({List<int>? groupId});
+  Future<Either<Failure, List<CameraEntity>>> getCamerasInGroup({
+    List<int>? groupId,
+  });
   Future<Either<Failure, RemoveCameraFromGroupEntity>> removeCameraFromGroup({
     required List<int> cameraId,
     required List<int> groupId,
@@ -65,7 +69,9 @@ abstract class IControlCameraRepository {
     Set<TagEntity>? tags,
   });
 
-  Future<Either<Failure, List<int>>> deleteCamera({required List<int> cameraId});
+  Future<Either<Failure, List<int>>> deleteCamera({
+    required List<int> cameraId,
+  });
 
   Future<Either<Failure, List<int>>> shareCamera({
     required List<int> cameraId,
@@ -73,7 +79,8 @@ abstract class IControlCameraRepository {
     required String accountInvite,
   });
 
-  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>> checkAccountShare({
+  Future<Either<Failure, ({bool isExists, List<int> accountInviteId})>>
+  checkAccountShare({
     List<int>? cameraId,
     required String account,
     required int shareType,
@@ -89,7 +96,9 @@ abstract class IControlCameraRepository {
   //   required List<int> groupId,
   // });
 
-  Future<Either<Failure, List<InviteMessageEntity>>> listShareCamera({required List<int> cameraId});
+  Future<Either<Failure, List<InviteMessageEntity>>> listShareCamera({
+    required List<int> cameraId,
+  });
 
   Future<Either<Failure, List<int>>> deleteShareCamera({
     required List<int> cameraId,
@@ -102,4 +111,8 @@ abstract class IControlCameraRepository {
   Future<Either<Failure, TagEntity>> createTag({required TagEntity tag});
   Future<Either<Failure, List<int>>> deleteTag({required List<int> id});
   Future<Either<Failure, TagEntity>> updateTag({required TagEntity tag});
+
+  Future<Either<Failure, ImportCameraEntity>> importCamera({
+    required List<ImportCameraCell> cameras,
+  });
 }

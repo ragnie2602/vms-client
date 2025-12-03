@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:easy_onvif/probe.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,6 +60,7 @@ class ControlCameraBloc
     on<CreateTagEvent>(_onCreateTag);
     on<DeleteTagEvent>(_onDeleteTag);
     on<UpdateTagEvent>(_onUpdateTag);
+    on<ImportCameraEvent>(_onImportCamera);
   }
 
   // list camera
@@ -383,7 +383,9 @@ class ControlCameraBloc
     );
     if (index != -1) {
       listCamera[index] = event.newCamera;
-      emit(ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)));
+      emit(
+        ListCameraSuccessState(cameras: List<CameraEntity>.from(listCamera)),
+      );
     }
   }
 
@@ -491,6 +493,25 @@ class ControlCameraBloc
     res.fold(
       (onFailure) => emit(UpdateTagFailState(res.left.toString())),
       (onSuccess) => emit(UpdateTagSuccessState(tag: onSuccess)),
+    );
+  }
+
+  FutureOr<void> _onImportCamera(
+    ImportCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    emit(ImportCameraLoadingState());
+    final res = await controlGroupRepository.importCamera(
+      cameras: event.cameras,
+    );
+    res.fold(
+      (onFailure) => emit(ImportCameraFailState(res.left.toString())),
+      (onSuccess) => emit(
+        ImportCameraSuccessState(
+          cameras: onSuccess.cameras,
+          cameraError: onSuccess.cameraError,
+        ),
+      ),
     );
   }
 }
