@@ -43,18 +43,39 @@ class ExcelUtils {
   /// Kiểm tra header row có đúng format không
   /// Throw ExcelFormatException nếu không hợp lệ
   static void _validateHeader(List<Data?> headerRow) {
-    // Kiểm tra số lượng cột
-    if (headerRow.length < _expectedHeaders.length) {
-      throw ExcelFormatException(
-        'File Excel không đúng định dạng: Header phải có đủ ${_expectedHeaders.length} cột. '
-        'Hiện tại chỉ có ${headerRow.length} cột.',
-      );
+    // Lọc ra chỉ những cột có giá trị thực sự (không null và không empty)
+    List<Data?> actualHeaders = [];
+    for (var cell in headerRow) {
+      // Lấy giá trị và normalize
+      String value = _normalizeString(cell?.value?.toString() ?? '');
+      // Nếu có giá trị thực sự thì thêm vào list
+      if (value.isNotEmpty) {
+        actualHeaders.add(cell);
+      } else {
+        // Nếu gặp cột empty/null thì dừng lại (chỉ lấy các cột liên tiếp từ đầu)
+        break;
+      }
+    }
+
+    // Kiểm tra số lượng cột phải đúng bằng 8 (không được thiếu hoặc thừa)
+    if (actualHeaders.length != _expectedHeaders.length) {
+      String errorMessage;
+      if (actualHeaders.length < _expectedHeaders.length) {
+        errorMessage =
+            'File Excel không đúng định dạng: Header thiếu cột!\n'
+            'Yêu cầu đúng ${_expectedHeaders.length} cột, hiện tại chỉ có ${actualHeaders.length} cột.';
+      } else {
+        errorMessage =
+            'File Excel không đúng định dạng: Header thừa cột!\n'
+            'Yêu cầu đúng ${_expectedHeaders.length} cột, hiện tại có ${actualHeaders.length} cột.';
+      }
+      throw ExcelFormatException(errorMessage);
     }
 
     // Kiểm tra từng trường header theo thứ tự
     for (int i = 0; i < _expectedHeaders.length; i++) {
       String actualHeader = _normalizeString(
-        headerRow[i]?.value?.toString() ?? '',
+        actualHeaders[i]?.value?.toString() ?? '',
       );
       String expectedHeader = _normalizeString(_expectedHeaders[i]);
 
