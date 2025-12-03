@@ -120,6 +120,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   bool _obscure = true;
   String _method = 'RTSP'; // 'RTSP' hoặc 'ONVIF'
   ImportCameraEntity? importCameraEntity;
+  bool _isExcelFormatError = false; // Check lỗi định dạng file Excel
 
   FilePickerResult? _excelFileResult;
   double _importProgress = 0.0;

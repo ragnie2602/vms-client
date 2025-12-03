@@ -247,7 +247,9 @@ extension AddCameraDialogForm on _AddCameraDialogState {
                     allowedExtensions: ['xlsx'], // Chỉ cho phép file Excel mới
                     allowMultiple: false,
                   );
-                  updateState(() {});
+                  updateState(() {
+                    _isExcelFormatError = false; // Reset flag khi chọn file mới
+                  });
                 },
                 child: _buildAddFileBox(),
               )
@@ -302,6 +304,9 @@ extension AddCameraDialogForm on _AddCameraDialogState {
                 onPressed: () {
                   updateState(() {
                     _excelFileResult = null;
+                    _isExcelFormatError = false; // Reset flag khi xóa file
+                    importCameraEntity = null; // Reset entity khi xóa file
+                    _importProgress = 0.0; // Reset progress
                   });
                 },
                 icon: SvgPicture.asset(AppAssets.icCloseFilled),
@@ -361,7 +366,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           ),
         ),
         Visibility(
-          visible: importCameraEntity != null,
+          visible: importCameraEntity != null || _isExcelFormatError,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,6 +419,11 @@ extension AddCameraDialogForm on _AddCameraDialogState {
   }
 
   Widget _buildTextResult() {
+    // Nếu có lỗi định dạng file Excel, hiển thị error text
+    if (_isExcelFormatError) {
+      return _buildErrorText();
+    }
+
     if (importCameraEntity?.cameraError.isEmpty ?? false) {
       return _buildSuccessText();
     } else if (importCameraEntity?.cameraError.isNotEmpty ?? false) {
@@ -519,6 +529,9 @@ extension AddCameraDialogForm on _AddCameraDialogState {
 
   Future<void> _startImport() async {
     try {
+      // Reset error flag
+      _isExcelFormatError = false;
+
       await ExcelUtils.importExcelFile(
         excelFileResult: _excelFileResult,
         onProgress: (progress) {
@@ -530,7 +543,17 @@ extension AddCameraDialogForm on _AddCameraDialogState {
           await widget.onImport?.call(cameras);
         },
       );
+    } on ExcelFormatException catch (e) {
+      // Lỗi định dạng file Excel - hiển thị trong UI
+      if (mounted) {
+        updateState(() {
+          _isExcelFormatError = true;
+          // Set importCameraEntity để trigger hiển thị text result
+          importCameraEntity = ImportCameraEntity(cameras: [], cameraError: []);
+        });
+      }
     } catch (e) {
+      // Các lỗi khác vẫn hiển thị toast như cũ
       if (mounted) {
         ToastUtil.toastFail(title: Text('Lỗi import file: $e'));
       }
