@@ -27,6 +27,19 @@ class ExcelUtils {
     'Địa chỉ luồng phụ (không bắt buộc)',
   ];
 
+  /// Normalize chuỗi: loại bỏ tất cả ký tự đặc biệt (newline, carriage return, tab, v.v.)
+  /// và chỉ giữ lại các ký tự thông thường
+  static String _normalizeString(String input) {
+    // Loại bỏ các ký tự điều khiển (control characters) như \n, \r, \t, v.v.
+    // Chỉ giữ lại chữ cái, số, dấu cách và các ký tự có thể in được
+    return input
+        .replaceAll(
+          RegExp(r'[\n\r\t\x00-\x1F\x7F]'),
+          '',
+        ) // Loại bỏ control characters
+        .trim(); // Xóa khoảng trắng thừa ở đầu/cuối
+  }
+
   /// Kiểm tra header row có đúng format không
   /// Throw ExcelFormatException nếu không hợp lệ
   static void _validateHeader(List<Data?> headerRow) {
@@ -40,8 +53,10 @@ class ExcelUtils {
 
     // Kiểm tra từng trường header theo thứ tự
     for (int i = 0; i < _expectedHeaders.length; i++) {
-      String actualHeader = headerRow[i]?.value?.toString().trim() ?? '';
-      String expectedHeader = _expectedHeaders[i];
+      String actualHeader = _normalizeString(
+        headerRow[i]?.value?.toString() ?? '',
+      );
+      String expectedHeader = _normalizeString(_expectedHeaders[i]);
 
       if (actualHeader != expectedHeader) {
         throw ExcelFormatException(

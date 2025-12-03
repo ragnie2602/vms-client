@@ -326,6 +326,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
                 onPressed: () {
                   updateState(() {
                     _excelFileResult = null;
+                    _isSubmitting = false;
                     _isExcelFormatError = false; // Reset flag khi xóa file
                     importCameraEntity = null; // Reset entity khi xóa file
                     _importProgress = 0.0; // Reset progress
@@ -553,7 +554,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
     try {
       // Reset error flag
       _isExcelFormatError = false;
-
+      _isSubmitting = true;
       await ExcelUtils.importExcelFile(
         excelFileResult: _excelFileResult,
         onProgress: (progress) {
@@ -563,6 +564,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
         },
         onImport: (cameras) async {
           await widget.onImport?.call(cameras);
+          _isSubmitting = false;
         },
       );
     } on ExcelFormatException catch (e) {
@@ -570,6 +572,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
       if (mounted) {
         updateState(() {
           _isExcelFormatError = true;
+          _isSubmitting = false;
           // Set importCameraEntity để trigger hiển thị text result
           importCameraEntity = ImportCameraEntity(cameras: [], cameraError: []);
         });
@@ -577,6 +580,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
     } catch (e) {
       // Các lỗi khác vẫn hiển thị toast như cũ
       if (mounted) {
+        _isSubmitting = false;
         ToastUtil.toastFail(title: Text('Lỗi import file: $e'));
       }
     }
