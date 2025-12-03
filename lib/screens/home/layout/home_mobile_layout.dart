@@ -51,7 +51,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
                   label: data.labels[index],
                 ),
               ),
-              onTap: (int idx) => context.goNamed(data.routes[idx].name),
+              onTap: (int idx) => context.goNamed(data.routes[idx].name, extra: GoRouterState.of(context).extra),
               selectedItemColor: AppColors.blue15ABFF,
               selectedLabelStyle: AppTypography.style(
                 11,
