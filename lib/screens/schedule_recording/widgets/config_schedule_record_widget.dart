@@ -407,17 +407,13 @@ class GridLinePainter extends CustomPainter {
       ..color = color
       ..strokeWidth = 1;
 
-    // 0h (start)
-    canvas.drawLine(Offset(0, 0), Offset(0, size.height), paint);
-
-    // 6, 12, 18 (middle)
-    final cols = [6, 12, 18];
+    // 0, 6, 12, 18
+    // chỉ vẽ line start cho các mốc 0-18, mốc 24 vẽ line end
+    final cols = [0, 6, 12, 18];
     for (var col in cols) {
-      // Calculate x to be in the middle of the spacing before the column
-      // Start of column 'col' is: col * (cellWidth + spacing)
-      // Spacing is 'spacing' wide.
-      // Center of spacing is: col * (cellWidth + spacing) - spacing / 2
-      double x = col * (cellWidth + spacing) - spacing / 2;
+      // Draw at the start of the column (left edge)
+      // This keeps the spacing visible to the left of the line
+      double x = col * (cellWidth + spacing);
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 

@@ -138,6 +138,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
   bool _isAddingDiscoveryCamera = false;
   final _discoveryFormKey = GlobalKey<FormState>();
+  ScrollController scrollController = ScrollController();
+  double _additionalSpacing = 0;
 
   @override
   void initState() {
@@ -271,7 +273,10 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
             behavior: ScrollConfiguration.of(
               context,
             ).copyWith(scrollbars: false),
-            child: SingleChildScrollView(child: _buildStepContent()),
+            child: SingleChildScrollView(
+              controller: scrollController,
+              child: _buildStepContent(),
+            ),
           ),
         ),
         actions: [
@@ -422,6 +427,14 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
     );
   }
 
+  void _scrollToBottom() {
+    if (scrollController.hasClients) {
+      // Use the maxScrollExtent property for the maximum scroll position
+      final double maxScroll = scrollController.position.maxScrollExtent;
+      scrollController.jumpTo(maxScroll);
+    }
+  }
+
   /// Đổi title dialog theo mode/bước hiện tại
   String _buildDialogTitle() {
     if (widget.mode == CameraDialogMode.edit) {
@@ -447,7 +460,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
       case AddCameraStep.selectMode:
         return _buildSelectMode();
       case AddCameraStep.manualForm:
-        return _buildManualForm();
+        return _buildManualForm(onScroll: _scrollToBottom);
       case AddCameraStep.discovery:
         return _buildDiscoveryContent();
       case AddCameraStep.importFile:
@@ -579,8 +592,11 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
 class _TagField extends StatefulWidget {
   final Set<TagEntity> tags;
+  final VoidCallback? onTap;
+  final VoidCallback? onClose;
+  final double? dropdownHeight;
 
-  const _TagField(this.tags);
+  const _TagField(this.tags, {this.onTap, this.onClose, this.dropdownHeight});
   @override
   State<_TagField> createState() => _TagFieldState();
 }
@@ -595,7 +611,19 @@ class _TagFieldState extends State<_TagField> {
       link: layerLink,
       child: Builder(
         builder: (buttonContext) => InkWell(
-          onTap: () => _showAddCameraDropdown(context, buttonContext, []),
+          onTap: () {
+            widget.onTap?.call();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _showAddCameraDropdown(
+                  context,
+                  buttonContext,
+                  [],
+                  height: widget.dropdownHeight,
+                );
+              }
+            });
+          },
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -614,62 +642,79 @@ class _TagFieldState extends State<_TagField> {
                             color: AppColors.grey92929D,
                           ),
                         )
-                      : Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: widget.tags.map((tag) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: tag.color, width: 1),
-                                borderRadius: BorderRadius.circular(4),
-                                color: tag.color.withOpacity(0.1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: tag.color,
-                                    ),
-                                    height: 8,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    width: 8,
+                      : BlocListener<ControlCameraBloc, ControlCameraState>(
+                          listener: (context, state) => setState(() {
+                            if (state is DeleteTagSuccessState) {
+                              widget.tags.removeWhere(
+                                (tag) => tag.id.equals(state.id),
+                              );
+                            } else if (state is UpdateTagSuccessState) {
+                              widget.tags.removeWhere(
+                                (tag) => tag.id.equals(state.tag.id),
+                              );
+                              widget.tags.add(state.tag);
+                            }
+                          }),
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: widget.tags.map((tag) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: tag.color,
+                                    width: 1,
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: Text(
-                                      tag.name,
-                                      style: AppTypography.style(
-                                        12,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.black,
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: tag.color.withOpacity(0.1),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: tag.color,
+                                      ),
+                                      height: 8,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      width: 8,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(4),
+                                      child: Text(
+                                        tag.name,
+                                        style: AppTypography.style(
+                                          12,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: IconButton(
-                                      icon: Icon(
-                                        Icons.close,
-                                        color: AppColors.grey92929D,
-                                        size: 10,
+                                    SizedBox(
+                                      height: 16,
+                                      width: 16,
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.close,
+                                          color: AppColors.grey92929D,
+                                          size: 10,
+                                        ),
+                                        onPressed: () => setState(
+                                          () => widget.tags.remove(tag),
+                                        ),
+                                        padding: EdgeInsets.all(3),
                                       ),
-                                      onPressed: () => setState(
-                                        () => widget.tags.remove(tag),
-                                      ),
-                                      padding: EdgeInsets.all(3),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
                         ),
                 ),
                 const SizedBox(width: 8),
@@ -685,8 +730,9 @@ class _TagFieldState extends State<_TagField> {
   void _showAddCameraDropdown(
     BuildContext mainContext,
     BuildContext buttonContext,
-    List<CameraEntity> listCamera,
-  ) {
+    List<CameraEntity> listCamera, {
+    double? height,
+  }) {
     final RenderBox renderBox = buttonContext.findRenderObject() as RenderBox;
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
@@ -702,14 +748,22 @@ class _TagFieldState extends State<_TagField> {
           onClose: () {
             _overlayEntry?.remove();
             _overlayEntry = null;
+            widget.onClose?.call();
           },
           onOpenTagManagement: (tags) {
             _overlayEntry?.remove();
             _overlayEntry = null;
+            widget.onClose?.call();
             _showTagManagementDialog(mainContext, tags);
           },
           onTagSelected: (tag) {
-            setState(() => widget.tags.add(tag));
+            setState(() {
+              if (tag.isSelected) {
+                widget.tags.add(tag);
+              } else {
+                widget.tags.remove(tag);
+              }
+            });
           },
           selectedTags: widget.tags,
           tagLayerLink: layerLink,

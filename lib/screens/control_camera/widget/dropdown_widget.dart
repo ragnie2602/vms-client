@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 
 class CustomCommonDropdown<T> extends StatelessWidget {
   final List<T> items;
@@ -83,10 +84,24 @@ class CustomCommonDropdown<T> extends StatelessWidget {
           ),
         ),
       ),
-      popupProps: const PopupProps.menu(
+      popupProps: PopupProps.menu(
         showSearchBox: false,
         fit: FlexFit.loose,
-        constraints: BoxConstraints(),
+        constraints: const BoxConstraints(),
+        itemBuilder: (context, item, isSelected, isDisabled) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            color: isDisabled ? AppColors.redFF0000 : Colors.transparent,
+            child: Text(
+              itemAsString(item),
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w400,
+                color: isDisabled ? AppColors.redFF0000 : AppColors.black,
+              ),
+            ),
+          );
+        },
       ),
     );
 

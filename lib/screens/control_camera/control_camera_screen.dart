@@ -99,6 +99,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       FilterCameraEvent(
         cameraName: cameraNameController.text,
         isOnline: cameraStatus?.getValue,
+        tagName: tagSelected?.name,
       ),
     );
   }
@@ -525,7 +526,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 onChanged: (p0) {
                                   setState(() {
                                     tagSelected = p0;
-                                    _onFilterTag();
+                                    // _onFilterTag();
+                                    _onSearch();
                                   });
                                 },
                                 itemAsString: (p0) => p0.name,

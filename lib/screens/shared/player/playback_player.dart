@@ -5,8 +5,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/common_extensions.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -14,11 +16,13 @@ import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
-import 'package:vector_math/vector_math_64.dart' show Vector3;
+import 'package:volume_controller/volume_controller.dart';
 
+import 'components/accumulating_seek_queue.dart';
 import 'components/dual_task_queue.dart';
-import 'player_controller.dart';
 import 'components/fullscreen_portal.dart';
+import 'components/sequential_task_queue.dart';
+import 'player_controller.dart';
 
 class PlaybackPlayer extends StatefulWidget {
   PlaybackPlayer({
@@ -31,6 +35,8 @@ class PlaybackPlayer extends StatefulWidget {
     this.onLostConnection,
     this.labelBuilder,
     this.enableZoom = false,
+    this.syncSystemVolume = false,
+    this.onVolumeChanged,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -42,6 +48,8 @@ class PlaybackPlayer extends StatefulWidget {
   final Function()? onLostConnection;
   final Function(String name)? labelBuilder;
   final bool enableZoom;
+  final bool syncSystemVolume;
+  final Function(double volume)? onVolumeChanged;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
@@ -63,6 +71,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
   late final Player _player;
   Completer<bool>? _waitForFirstFrame;
+  // Trường hợp đổi sang media mới thì có thể trigger status (unloaded + end) --> bị trigger thành lỗi
+  Completer<void> _waitForUnloadedOldMedia = Completer<void>()..safeComplete();
+  Timer? _completerTimeoutTimer;
 
   double _aspectRatio = 1.0;
   int _lastPosition = -1;
@@ -70,7 +81,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   Timer? _reconnectingTimer;
   Timer? _timer;
   Timer? _debounce;
+  late final _seekFlag = SeekFlag(SeekFlag.fromStart | SeekFlag.keyFrame | SeekFlag.inCache);
+
+  late final SequentialTaskQueue _sequentialQueue = SequentialTaskQueue();
   late final DualTaskQueue _dualQueue = DualTaskQueue();
+  late final AccumulatingSeekQueue _accumulatingSeekQueue = AccumulatingSeekQueue(onSeek: _seek);
 
   late final Map<String, int> _playlistMapper;
   int get initialIndex => widget.initialIndex;
@@ -78,8 +93,6 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   PlaybackVideo get currentPlayback => widget.playlist[currentIndex];
   PlaybackVideo? get nextPlayback =>
       currentIndex < widget.playlist.length - 1 ? widget.playlist[currentIndex + 1] : null;
-  PlaybackVideo? get previousPlayback =>
-      currentIndex > 0 ? widget.playlist[currentIndex - 1] : null;
 
   @override
   void initState() {
@@ -90,7 +103,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     _isSeeking.addListener(() {
       if (_status.value == PlayerStatus.finished) _status.value = PlayerStatus.playing;
     });
-    _state.addListener(() => _tryReconnecting(_state.value.isError));
+    _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
     _status.addListener(() {
       if (_status.value == PlayerStatus.playing) _shouldSyncPlayerTime = true;
       widget.onStatusChanged?.call(_status.value);
@@ -105,8 +118,19 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     );
     _init();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onInitializedValues?.call(volume: 100, speed: 1);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.syncSystemVolume) {
+        _player.volume = await VolumeController.instance.getVolume();
+        widget.onInitializedValues?.call(volume: _player.volume, speed: 1);
+
+        VolumeController.instance.addListener((volume) {
+          _player.volume = volume;
+          widget.onVolumeChanged?.call(volume);
+        }, fetchInitialVolume: false);
+      } else {
+        widget.onInitializedValues?.call(volume: 1, speed: 1);
+      }
+
       widget.controller.onPlaybackChanged?.call(currentIndex);
       widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
     });
@@ -114,9 +138,13 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
   @override
   void dispose() {
+    if (widget.syncSystemVolume) VolumeController.instance.removeListener();
+    _accumulatingSeekQueue.dispose();
+    _sequentialQueue.dispose();
     _playlistIndex.dispose();
     _dualQueue.dispose();
     _cancelTimers();
+    _completerTimeoutTimer?.cancel();
     try {
       _player.dispose();
     } catch (_) {}
@@ -157,7 +185,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
   void _attachController() {
     widget.controller.changeVolume = changeVolume;
-    widget.controller.seek = seek;
+    widget.controller.seek = seekQueue;
     widget.controller.changeSpeed = changeSpeed;
     widget.controller.togglePlay = togglePlay;
     widget.controller.snapshot = snapshot;
@@ -182,28 +210,47 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
         Future.delayed(Duration(milliseconds: 1100), () => _status.value = PlayerStatus.finished);
       }
 
-      print("=========================> STATE: ${pre} - ${cur}");
+      // print("=========================> STATE: $pre - $cur");
     });
     _player.onMediaStatus((pre, cur) {
+      // Completer
       if (_waitForFirstFrame != null && !_waitForFirstFrame!.isCompleted) {
-        if (cur.test(MediaStatus.invalid)) _waitForFirstFrame!.complete(false);
+        if (cur.test(MediaStatus.invalid)) _waitForFirstFrame!.safeComplete(false);
         if (pre.test(MediaStatus.buffering) && cur.test(MediaStatus.buffered)) {
-          _waitForFirstFrame!.complete(true);
+          _waitForFirstFrame!.safeComplete(true);
         }
       }
 
-      if (!pre.test(MediaStatus.invalid) && cur.test(MediaStatus.invalid)) {
+      // Case mất kết nối giữ chừng (== giống khi kết thúc video)
+      // Khi đổi playback thì media cũ có thể bị unloaded + end --> bỏ qua trường hợp này
+      if (_waitForUnloadedOldMedia.isCompleted &&
+          cur.test(MediaStatus.unloaded) &&
+          cur.test(MediaStatus.end) &&
+          !(currentIndex == widget.playlist.length - 1 &&
+              _player.position + 1000 >= _player.mediaInfo.duration)) {
+        Logger.warn("Camera '${widget.name}' disconnected ($pre -> $cur)");
         _state.value = PlayerState.error;
       }
 
-      print("=========================> STATUS: ${pre} - ${cur}");
+      // Completer unloaded old media (sau check mất kết nối)
+      if (!_waitForUnloadedOldMedia.isCompleted && cur.test(MediaStatus.unloaded)) {
+        _waitForUnloadedOldMedia.safeComplete();
+      }
+
+      // Case bị lỗi
+      if (!pre.test(MediaStatus.invalid) && cur.test(MediaStatus.invalid)) {
+        Logger.warn("Camera '${widget.name}' invalid ($pre -> $cur)");
+        _state.value = PlayerState.error;
+      }
+
+      // print("=========================> STATUS: $pre - $cur");
       return true;
     });
-    _player.onEvent((event) {
-      print(
-        "=========================> EVENT ${event.category} - ${event.detail} - ${event.error}",
-      );
-    });
+    // _player.onEvent((event) {
+    //   print(
+    //     "=========================> EVENT ${event.category} - ${event.detail} - ${event.error}",
+    //   );
+    // });
 
     // ======================= Properties =======================
     _player.setProperty('avformat.strict', 'experimental');
@@ -215,9 +262,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     setGlobalOption('videoout.clear_on_stop', 0);
 
     _player.videoDecoders = AppConfig.MDK_DECODERS;
-    // // Nếu trong 5 giây không nhận được gói tin nào, ngắt kết nối và báo lỗi.
-    // _player.setProperty("avformat.timeout", "5000000");
-    _player.setProperty("avformat.stimeout", "5000000");
+    // Nếu trong 15 giây không nhận được gói tin nào, ngắt kết nối và báo lỗi.
+    _player.setProperty("avformat.timeout", "15000000");
+    _player.setProperty("avformat.stimeout", "15000000");
     // Cho phép FFmpeg tự do đệm dữ liệu để xử lý mạng chập chờn
     _player.setProperty('avformat.fflags', '+genpts+discardcorrupt');
     // Tối ưu hóa mạng cho HTTP/MP4
@@ -231,7 +278,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     // Cấu hình bộ đệm RAM (Buffer Range) --> Min cao để mượt, max cao để cache trước
     _player.setBufferRange(
       min: 0, // Play ngay
-      max: 1000 * 60 * 1, // Cache trước 15 phút, TODO: Sửa lại thành 15 phút
+      max: 1000 * 60 * 10, // Cache ~ 10 phút
       drop: false, // TUYỆT ĐỐI KHÔNG DROP (để đảm bảo không mất dữ liệu khi tua)
     );
   }
@@ -252,17 +299,20 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     _cancelTimers();
     _state.value = showLoading ? PlayerState.initializing : PlayerState.error_again;
+    _waitForFirstFrame = Completer<bool>();
 
     // disable next media (nếu đang có next media)
     _player.setNext("", from: -1);
 
     // Nếu kết nối lại sau khi bị disconnect --> set rỗng --> set lại source cũ
     if (_player.media == currentPlayback.urlPlayback) {
+      _waitForUnloadedOldMedia = Completer<void>();
       _player.media = "";
-      await Future.delayed(const Duration(seconds: 1));
+      await _waitForUnloadedOldMedia.future.timeout(Duration(seconds: 1), onTimeout: () => false);
+      await Future.delayed(Duration(milliseconds: 150));
+      _waitForUnloadedOldMedia.safeComplete();
     }
 
-    _waitForFirstFrame = Completer<bool>();
     _player
       ..media = currentPlayback.urlPlayback
       ..state = PlaybackState.playing;
@@ -274,10 +324,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     // Chưa có texture --> tạo lại
     if (textureId < 0) {
-      textureId = await _player.updateTexture().timeout(
-        AppConfig.PLAYER_INITIALIZATION_TIMEOUT,
-        onTimeout: () => -1,
-      );
+      textureId = await _player.updateTexture(timeout: AppConfig.PLAYER_INITIALIZATION_TIMEOUT);
+
+      // Lỗi thì complete _waitForFirstFrame luôn đỡ phải đợi thêm [PLAYER_INITIALIZATION_TIMEOUT]
+      if (textureId < 0) _waitForFirstFrame?.safeComplete(false);
     }
 
     final res = await _waitForFirstFrame?.future.timeout(
@@ -302,7 +352,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     );
     _aspectRatio = (size?.width ?? 1920) / (size?.height ?? 1080);
 
-    if (_lastPosition > 0) await _player.seek(position: _lastPosition);
+    if (_lastPosition > 0) {
+      await _seek(Duration(milliseconds: _lastPosition), needInitialized: false);
+    }
     _state.value = PlayerState.initialized;
 
     _cancelTimers();
@@ -330,28 +382,37 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     });
   }
 
-  void _debounceConnectionLost() {
-    _debounce?.cancel();
-    _debounce = Timer(AppConfig.PLAYER_DISCONNECTION_THRESHOLD, () {
-      if (!mounted ||
-          _status.value == PlayerStatus.finished ||
-          _status.value == PlayerStatus.paused ||
-          _state.value == PlayerState.empty ||
-          _state.value.isError) {
-        return;
-      }
-
-      Logger.warn("Camera '${widget.name}' disconnected");
-      _cancelTimers();
-      _state.value = PlayerState.error;
-    });
-  }
+  // void _debounceConnectionLost() {
+  //   _debounce?.cancel();
+  //   _debounce = Timer(AppConfig.PLAYER_DISCONNECTION_THRESHOLD, () {
+  //     if (!mounted ||
+  //         _status.value == PlayerStatus.finished ||
+  //         _status.value == PlayerStatus.paused ||
+  //         _state.value == PlayerState.empty ||
+  //         _state.value.isError) {
+  //       return;
+  //     }
+  //     Logger.warn("Camera '${widget.name}' disconnected");
+  //     _cancelTimers();
+  //     _state.value = PlayerState.error;
+  //   });
+  // }
 
   void _handlePlaylistChanged() {
     // Gần hết đoạn playback hiện tại thì setNext tiếp theo để không bị gián đoạn
     if (_player.position + 3000 >= _player.mediaInfo.duration) {
       if (_player.nextMedia.isEmpty && nextPlayback?.urlPlayback != null) {
+        // setNext <=> đổi media <=> status từ [unloaded+end] sau đó sang [loading+loaded/invalid]
+        // --> FIX: khi hết playback hiện tại và chuyển sang playback tiếp theo --> báo lỗi
+        _waitForUnloadedOldMedia = Completer<void>();
         _player.setNext(nextPlayback!.urlPlayback);
+
+        // Sau 10s mà chưa complete thì mark complete luôn (đề phòng)
+        _completerTimeoutTimer?.cancel();
+        _completerTimeoutTimer = Timer(
+          Duration(seconds: 10),
+          () => _waitForUnloadedOldMedia.safeComplete(),
+        );
       }
     } else if (_player.nextMedia.isNotEmpty) {
       _player.setNext("", from: -1);
@@ -359,9 +420,32 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   }
 
   /* =============================== CONTROL FUNCTIONS =============================== */
+  Future<void> _ensureConnectingFinished() async {
+    /// Trường hợp đang load (mới mở) hoặc reconnecting --> đợi xong mới thực hiện jump
+    /// await updateTexture (~ await textureSize) --> change media --> textureSize sẽ được complete (null) và khởi tạo lại
+    /// --> return -1 --> Hiển thị lỗi
+    if (_waitForFirstFrame?.isCompleted == false) {
+      final success = await _waitForFirstFrame?.future;
+
+      // Thành công thì đợi state sang initialized (sau khi có textureSize) --> để seek chuẩn
+      if (success == true) {
+        await _player.textureSize.timeout(
+          AppConfig.PLAYER_INITIALIZATION_TIMEOUT,
+          onTimeout: () => null,
+        );
+      }
+      // Lỗi --> cancel retry (Tránh reconnecting sau 5s) --> Seek (lỗi/thành công thì sẽ được thực hiện theo date mới)
+      else {
+        _cancelTimers();
+      }
+
+      await Future.delayed(Duration(milliseconds: 150));
+    }
+  }
+
   bool _newestIsEmpty = false;
   Future<void> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
-    if (!isInitialized() || !mounted) return;
+    if (!mounted) return;
 
     _shouldSyncPlayerTime = _newestIsEmpty = false;
     _isSeeking.value = true;
@@ -379,6 +463,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     }
 
     _dualQueue.add(() async {
+      await _ensureConnectingFinished();
       await _jumpToDate(date, dateIndex: index);
 
       // Spam click và sau đó click ra ngoài --> bị nhảy về cái trước đó
@@ -410,7 +495,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      if (diff != Duration.zero) await _player.seek(position: diff.inMilliseconds);
+      if (diff != Duration.zero) await _seek(diff, needInitialized: false);
     }
     // Playback khác --> đổi playlist và jump
     else {
@@ -419,26 +504,30 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       _lastPosition = diff.inMilliseconds;
 
       _player.setNext("", from: -1); // disable next media (đề phòng)
+      _waitForUnloadedOldMedia = Completer<void>();
       _player.state = PlaybackState.paused;
       _player.media = widget.playlist[index].urlPlayback;
       await _player.prepare(position: diff.inMilliseconds);
       _player.state = PlaybackState.playing;
+      _waitForUnloadedOldMedia.safeComplete();
     }
   }
 
-  Future<void> seek(Duration duration) async {
-    if (!isInitialized() || !mounted) return;
+  void seekQueue(Duration duration) => _accumulatingSeekQueue.add(duration);
+  Future<void> _seek(Duration duration, {bool needInitialized = true}) async {
+    if ((needInitialized && !isInitialized()) || !mounted) return;
     final _toMs = _player.position + duration.inMilliseconds;
     final _totalMs = _player.mediaInfo.duration;
 
     // Đầu playlist
     if (_toMs <= 0 && currentIndex == 0) {
-      await _player.seek(position: 0);
+      await _player.seek(position: 0, flags: _seekFlag);
       return;
     }
     // Cuối playlist
     if (_toMs >= _totalMs && currentIndex == widget.playlist.length - 1) {
-      await _player.seek(position: _totalMs - 500); // Để video nhảy 1 phát xong hiện pause luôn
+      // Để video nhảy 1 phát xong hiện pause luôn
+      await _player.seek(position: _totalMs - 500, flags: _seekFlag);
       return;
     }
 
@@ -446,10 +535,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     if (_toMs <= _totalMs && _toMs >= 0) {
       _lastPosition = _toMs;
 
-      await _player.seek(
-        position: _toMs,
-        flags: SeekFlag(_toMs < _player.buffered() ? SeekFlag.inCache : SeekFlag.defaultFlags),
-      );
+      await _player.seek(position: _toMs, flags: _seekFlag);
     } else {
       _shouldSyncPlayerTime = false;
       _isSeeking.value = true;
@@ -483,7 +569,17 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   // Dual task queue
   void changeVolume(double volume) {
     _dualQueue.add(() async {
-      _player.volume = volume / 100;
+      if (volume == _player.volume) return;
+      _player.volume = volume;
+
+      // Đồng bộ volume với hệ thống
+      if (widget.syncSystemVolume) {
+        VolumeController.instance.showSystemUI = true;
+        await VolumeController.instance.setVolume(_player.volume);
+        VolumeController.instance.showSystemUI = false;
+      }
+
+      widget.onVolumeChanged?.call(_player.volume);
       await Future.delayed(Duration(milliseconds: 100));
     });
   }
@@ -568,7 +664,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
           child: ValueListenableBuilder(
             valueListenable: _state,
             builder: (context, value, child) => switch (value) {
-              PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
+              PlayerState.initializing => const Center(
+                child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
+              ),
               PlayerState.empty => _buildNoPlayback(),
               PlayerState.error || PlayerState.error_again => _buildError(),
               _ => Stack(

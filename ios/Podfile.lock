@@ -40,6 +40,9 @@ PODS:
     - Flutter
     - FlutterMacOS
     - mdk (~> 0.35.0)
+  - gal (1.0.0):
+    - Flutter
+    - FlutterMacOS
   - mdk (0.35.0)
   - media_kit_libs_ios_video (1.0.4):
     - Flutter
@@ -75,6 +78,7 @@ DEPENDENCIES:
   - file_selector_ios (from `.symlinks/plugins/file_selector_ios/ios`)
   - Flutter (from `Flutter`)
   - fvp (from `.symlinks/plugins/fvp/darwin`)
+  - gal (from `.symlinks/plugins/gal/darwin`)
   - media_kit_libs_ios_video (from `.symlinks/plugins/media_kit_libs_ios_video/ios`)
   - media_kit_video (from `.symlinks/plugins/media_kit_video/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
@@ -103,6 +107,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   fvp:
     :path: ".symlinks/plugins/fvp/darwin"
+  gal:
+    :path: ".symlinks/plugins/gal/darwin"
   media_kit_libs_ios_video:
     :path: ".symlinks/plugins/media_kit_libs_ios_video/ios"
   media_kit_video:
@@ -129,6 +135,7 @@ SPEC CHECKSUMS:
   file_selector_ios: ec57ec07954363dd730b642e765e58f199bb621a
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   fvp: ecee65308dd86ae46e3c6d5d42cd2aad48095ef5
+  gal: baecd024ebfd13c441269ca7404792a7152fde89
   mdk: baa616b93f696c7066df0e5ebe057badfa9c462b
   media_kit_libs_ios_video: 5a18affdb97d1f5d466dc79988b13eff6c5e2854
   media_kit_video: 1746e198cb697d1ffb734b1d05ec429d1fcd1474

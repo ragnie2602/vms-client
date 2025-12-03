@@ -19,6 +19,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$FilterCameraInput {
   String? get nameCamera => throw _privateConstructorUsedError;
   bool? get isOnline => throw _privateConstructorUsedError;
+  String? get tagName => throw _privateConstructorUsedError;
   List<CameraEntity>? get listCameraOrigin =>
       throw _privateConstructorUsedError;
 
@@ -39,6 +40,7 @@ abstract class $FilterCameraInputCopyWith<$Res> {
   $Res call({
     String? nameCamera,
     bool? isOnline,
+    String? tagName,
     List<CameraEntity>? listCameraOrigin,
   });
 }
@@ -60,6 +62,7 @@ class _$FilterCameraInputCopyWithImpl<$Res, $Val extends FilterCameraInput>
   $Res call({
     Object? nameCamera = freezed,
     Object? isOnline = freezed,
+    Object? tagName = freezed,
     Object? listCameraOrigin = freezed,
   }) {
     return _then(
@@ -72,6 +75,10 @@ class _$FilterCameraInputCopyWithImpl<$Res, $Val extends FilterCameraInput>
                 ? _value.isOnline
                 : isOnline // ignore: cast_nullable_to_non_nullable
                       as bool?,
+            tagName: freezed == tagName
+                ? _value.tagName
+                : tagName // ignore: cast_nullable_to_non_nullable
+                      as String?,
             listCameraOrigin: freezed == listCameraOrigin
                 ? _value.listCameraOrigin
                 : listCameraOrigin // ignore: cast_nullable_to_non_nullable
@@ -94,6 +101,7 @@ abstract class _$$FilterCameraInputImplCopyWith<$Res>
   $Res call({
     String? nameCamera,
     bool? isOnline,
+    String? tagName,
     List<CameraEntity>? listCameraOrigin,
   });
 }
@@ -114,6 +122,7 @@ class __$$FilterCameraInputImplCopyWithImpl<$Res>
   $Res call({
     Object? nameCamera = freezed,
     Object? isOnline = freezed,
+    Object? tagName = freezed,
     Object? listCameraOrigin = freezed,
   }) {
     return _then(
@@ -126,6 +135,10 @@ class __$$FilterCameraInputImplCopyWithImpl<$Res>
             ? _value.isOnline
             : isOnline // ignore: cast_nullable_to_non_nullable
                   as bool?,
+        tagName: freezed == tagName
+            ? _value.tagName
+            : tagName // ignore: cast_nullable_to_non_nullable
+                  as String?,
         listCameraOrigin: freezed == listCameraOrigin
             ? _value._listCameraOrigin
             : listCameraOrigin // ignore: cast_nullable_to_non_nullable
@@ -141,6 +154,7 @@ class _$FilterCameraInputImpl implements _FilterCameraInput {
   const _$FilterCameraInputImpl({
     this.nameCamera,
     this.isOnline,
+    this.tagName,
     final List<CameraEntity>? listCameraOrigin,
   }) : _listCameraOrigin = listCameraOrigin;
 
@@ -148,6 +162,8 @@ class _$FilterCameraInputImpl implements _FilterCameraInput {
   final String? nameCamera;
   @override
   final bool? isOnline;
+  @override
+  final String? tagName;
   final List<CameraEntity>? _listCameraOrigin;
   @override
   List<CameraEntity>? get listCameraOrigin {
@@ -161,7 +177,7 @@ class _$FilterCameraInputImpl implements _FilterCameraInput {
 
   @override
   String toString() {
-    return 'FilterCameraInput(nameCamera: $nameCamera, isOnline: $isOnline, listCameraOrigin: $listCameraOrigin)';
+    return 'FilterCameraInput(nameCamera: $nameCamera, isOnline: $isOnline, tagName: $tagName, listCameraOrigin: $listCameraOrigin)';
   }
 
   @override
@@ -173,6 +189,7 @@ class _$FilterCameraInputImpl implements _FilterCameraInput {
                 other.nameCamera == nameCamera) &&
             (identical(other.isOnline, isOnline) ||
                 other.isOnline == isOnline) &&
+            (identical(other.tagName, tagName) || other.tagName == tagName) &&
             const DeepCollectionEquality().equals(
               other._listCameraOrigin,
               _listCameraOrigin,
@@ -184,6 +201,7 @@ class _$FilterCameraInputImpl implements _FilterCameraInput {
     runtimeType,
     nameCamera,
     isOnline,
+    tagName,
     const DeepCollectionEquality().hash(_listCameraOrigin),
   );
 
@@ -203,6 +221,7 @@ abstract class _FilterCameraInput implements FilterCameraInput {
   const factory _FilterCameraInput({
     final String? nameCamera,
     final bool? isOnline,
+    final String? tagName,
     final List<CameraEntity>? listCameraOrigin,
   }) = _$FilterCameraInputImpl;
 
@@ -210,6 +229,8 @@ abstract class _FilterCameraInput implements FilterCameraInput {
   String? get nameCamera;
   @override
   bool? get isOnline;
+  @override
+  String? get tagName;
   @override
   List<CameraEntity>? get listCameraOrigin;
 

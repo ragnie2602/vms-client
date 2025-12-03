@@ -28,7 +28,7 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     on<ChangeViewMode>(_onChaneViewMode);
     on<ChangeCamera>(_onChangeCamera);
     on<ChangePlayerStatus>(_onChangePlayerStatus);
-    on<SeekPlayer>(_onSeekPlayer, transformer: sequential());
+    on<SeekPlayer>(_onSeekPlayer);
     on<ChangeVolume>(_onChangeVolume, transformer: sequential());
     on<ChangeSpeed>(_onChangeSpeed, transformer: sequential());
     on<ChangePlaybackDate>(_onChangePlaybackDate);
@@ -77,12 +77,13 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
   }
 
   FutureOr<void> _onSeekPlayer(SeekPlayer event, Emitter<CameraDetailState> emit) async {
-    await state.playerController.seek?.call(event.amount);
+    state.playerController.seek?.call(event.amount);
   }
 
   FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraDetailState> emit) async {
-    state.playerController.changeVolume?.call(event.volume);
+    if (state.volume == event.volume) return;
 
+    state.playerController.changeVolume?.call(event.volume);
     emit(state.copyWith(volume: event.volume));
   }
 
@@ -136,4 +137,10 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
 
     emit(state.copyWith(stream: event.stream));
   }
+
+  // @override
+  // Future<void> close() {
+  //   state.playerController.dispose();
+  //   return super.close();
+  // }
 }

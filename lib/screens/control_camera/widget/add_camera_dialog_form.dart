@@ -1,10 +1,11 @@
 part of 'dialog.dart';
 
 extension AddCameraDialogForm on _AddCameraDialogState {
-  Widget _buildManualForm() {
+  Widget _buildManualForm({required VoidCallback onScroll}) {
     return Form(
       key: _form,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppField(
@@ -61,7 +62,28 @@ extension AddCameraDialogForm on _AddCameraDialogState {
             ),
           ),
           const SizedBox(height: 12),
-          _TagField(_tags),
+          _TagField(
+            _tags,
+            dropdownHeight: _additionalSpacing,
+            onTap: () {
+              // Khi user click vào _TagField để mở dropdown, thêm spacing
+              if (_additionalSpacing == 0) {
+                updateState(() {
+                  _additionalSpacing = 220;
+                });
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  onScroll.call();
+                });
+              }
+            },
+            onClose: () {
+              // Khi đóng dropdown, xóa spacing
+              updateState(() {
+                _additionalSpacing = 0;
+              });
+            },
+          ),
+          SizedBox(height: _additionalSpacing),
         ],
       ),
     );

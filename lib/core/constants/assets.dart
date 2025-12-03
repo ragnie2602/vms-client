@@ -43,6 +43,7 @@ class AppAssets {
   static const icArrowLeft = '$_svgPath/arrow_left.svg';
   static const icBell = '$_svgPath/bell.svg';
   static const icSearch = '$_svgPath/search.svg';
+  static const icSearchMobile = '$_svgPath/ic_search_mobile.svg';
   static const icDarkMode = '$_svgPath/dark_mode.svg';
   static const icLightMode = '$_svgPath/light_mode.svg';
   static const icAlertTriangle = '$_svgPath/alert_triangle.svg';
@@ -113,8 +114,33 @@ class AppAssets {
   static const icCameraMap = '$_svgPath/ic_camera_map.svg';
   static const icUserInfo = '$_svgPath/ic_user_info.svg';
 
+  // Mobile
+  static const icCamera01 = '$_svgPath/ic_camera-01.svg';
+  static const icCube = '$_svgPath/ic_cube.svg';
+  static const icFeedback = '$_svgPath/ic_feedback.svg';
+  static const icFilterAltLight = '$_svgPath/ic_filter_alt_light.svg';
+  static const icFullAltRight = '$_svgPath/ic_full_alt_right.svg';
+  static const icHome = '$_svgPath/ic_home.svg';
+  static const icHomeFilled = '$_svgPath/ic_home_filled.svg';
+  static const icKey02 = '$_svgPath/ic_key_02.svg';
+  static const icLanguage = '$_svgPath/ic_language.svg';
+  static const icLogOut = '$_svgPath/ic_log_out.svg';
+  static const icPauseMobile = '$_svgPath/ic_pause_mobile.svg';
+  static const icPlayMobile = '$_svgPath/ic_play_mobile.svg';
+  static const icPlayback = '$_svgPath/tab_playback.svg';
+  static const icPlaybackFilled = '$_svgPath/ic_playback_filled.svg';
+  static const icUser = '$_svgPath/ic_user.svg';
+  static const icUserFilled = '$_svgPath/ic_user_filled.svg';
+  static const icVideoOffline = '$_svgPath/ic_camera_offline_mobile.svg';
+  static const icVideoOnline = '$_svgPath/ic_camera_online_mobile.svg';
+  static const icVideoOnlineFilled = '$_svgPath/video_on_filled.svg';
+  static const icVolume = '$_svgPath/ic_volume.svg';
+  static const icUserProfileX = '$_svgPath/ic_user_profile_x.svg';
+  static const icArrowdown = '$_svgPath/arrow_down.svg';
+
   static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
   static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
+  static const icSpeed = '$_svgPath/ic_speed.svg';
   static const icDownloadFile = '$_svgPath/ic_download_file.svg';
 
   /* Files */

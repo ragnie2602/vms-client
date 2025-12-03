@@ -64,29 +64,60 @@ class _OsdViewState extends State<OsdView> {
                       borderRadius: BorderRadius.circular(3),
                       border: Border.all(color: AppColors.greyE2E8F0, width: 1),
                     ),
-                    child: DropdownButton(
-                      dropdownColor: AppColors.white,
-                      icon: SvgPicture.asset(
-                        AppAssets.icArrowChevronDown,
-                        color: AppColors.grey94A3B8,
-                      ),
-                      isDense: true,
-                      isExpanded: true,
-                      items: OSDPosition.values
-                          .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
+                    child: DropdownMenu<OSDPosition>(
+                      dropdownMenuEntries: OSDPosition.values
+                          .map(
+                            (pos) => DropdownMenuEntry(
+                              value: pos,
+                              label: pos.name,
+                              style: ButtonStyle(
+                                textStyle: MaterialStatePropertyAll(
+                                  AppTypography.style(
+                                    14,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
                           .toList(),
-                      onChanged: (value) => setState(() {
+                      enableFilter: false,
+                      enableSearch: false,
+                      initialSelection: _position,
+                      inputDecorationTheme: InputDecorationTheme(
+                        border: InputBorder.none,
+                        constraints: BoxConstraints.tightFor(
+                          height: MediaQuery.heightOf(context) * 41 / 900,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        isDense: true,
+                      ),
+                      menuStyle: const MenuStyle(
+                        alignment: AlignmentDirectional.bottomStart, // top menu = bottom field
+                        backgroundColor: MaterialStatePropertyAll<Color>(AppColors.white),
+                        padding: MaterialStatePropertyAll<EdgeInsets>(EdgeInsets.zero),
+                      ),
+                      onSelected: (value) => setState(() {
                         _position = value!;
                         hasChange = true;
                       }),
-                      padding: const EdgeInsets.all(12),
-                      style: AppTypography.style(
+                      requestFocusOnTap: false,
+                      textInputAction: TextInputAction.none,
+                      textStyle: AppTypography.style(
                         14,
                         fontWeight: FontWeight.w400,
                         color: AppColors.black,
                       ),
-                      underline: Container(),
-                      value: _position,
+                      trailingIcon: SvgPicture.asset(
+                        AppAssets.icArrowChevronDown,
+                        colorFilter: const ColorFilter.mode(AppColors.grey94A3B8, BlendMode.srcIn),
+                      ),
+                      selectedTrailingIcon: SvgPicture.asset(
+                        AppAssets.icArrowChevronUp,
+                        colorFilter: const ColorFilter.mode(AppColors.grey94A3B8, BlendMode.srcIn),
+                      ),
+                      width: double.infinity,
                     ),
                   ),
                 ),

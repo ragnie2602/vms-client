@@ -80,6 +80,9 @@ dependencies:
   number_paginator: ^1.1.1
   toastification: ^3.0.3
   diacritic: ^0.1.6
+  path_provider: ^2.1.5
+  gal: ^2.3.2
+  volume_controller: ^3.4.0
 
   # add group
   dropdown_search: ^6.0.2

@@ -9,6 +9,9 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/osd.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/osd_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
@@ -36,6 +39,7 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
   late final CustomViewBloc bloc;
 
   CustomLiveView? customView;
+  final OSDPosition _position = OsdUtil.getOSDPositions();
 
   ViewMode get _viewMode => customView?.base ?? ViewMode.v2x2;
 
@@ -171,39 +175,7 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
                 mode: MonitorMode.monitoring,
                 name: camera.name,
                 source: camera.subStreamUri.toString(),
-                labelBuilder: (name) => Positioned(
-                  bottom: 10,
-                  right: 10,
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: size.width - 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(3),
-                      boxShadow: [
-                        BoxShadow(blurRadius: 4, color: Colors.white.withValues(alpha: 0.6)),
-                      ],
-                    ),
-                    padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
-                        SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            camera.name,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                labelBuilder: (name) => _buildLabel(name, size),
               ),
             ),
           ),
@@ -264,7 +236,7 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
   }
 
   showCameraListPopup(BuildContext context, Offset position, int index) {
-    final monitorBloc = MonitorBloc(context.read(), context.read(), context.read());
+    final monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read());
 
     showDialog(
       barrierColor: Colors.transparent,
@@ -316,5 +288,38 @@ class _CustomMonitorPaneState extends State<CustomMonitorPane> {
     //   cv.positions[index] = LiveViewPosition(index: index, cameraId: [], camera: null);
     //   bloc.add(UpdateCustomView(customView: cv, index: index));
     // }
+  }
+
+  Widget _buildLabel(String label, Size size) {
+    if (_position.value == -1) return SizedBox.shrink();
+    return Positioned(
+      bottom: (_position.value & 1) == 1 ? 10 : null,
+      left: (_position.value & 2) == 0 ? 10 : null,
+      right: (_position.value & 2) == 2 ? 10 : null,
+      top: (_position.value & 1) == 0 ? 10 : null,
+      child: Container(
+        constraints: BoxConstraints(maxWidth: size.width - 10),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
+        padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
+            SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                style: AppTypography.style(
+                  color: Colors.black,
+                  9,
+                  fontWeight: FontWeight.w600,
+                  textOverflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

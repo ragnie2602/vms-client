@@ -7,16 +7,23 @@ import 'package:vms_flutter_client/core/utils/task_pool.dart';
 import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
-import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
 
 part 'monitor_event.dart';
 part 'monitor_state.dart';
 
+class FilterData {
+  Set<TagEntity> selectedTags = {};
+  String searchText = '';
+}
+
 class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   MonitorBloc(
+    this.getCameraUseCase,
     this.filterCameraNoGroupUseCase,
     this.cameraRepository,
     this.subscribeMultiWindowEventUseCase,
@@ -33,73 +40,57 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   }
 
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
+  final GetCameraUseCase getCameraUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
   final ICameraRepository cameraRepository;
+
+  late final filterData = FilterData();
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
     final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
 
     emit(MonitorLoading());
 
-    (await cameraRepository.getAllCamera()).fold(
-      (failure) {
-        emit(MonitorFailure(failure.toString()));
-      },
-      (cameras) {
-        emit(MonitorSuccess(cameras: cameras, mode: lastState?.mode ?? ViewMode.v2x2));
-      },
-    );
+    final output = await getCameraUseCase.execute(GetCameraInput(groupId: [-1], tags: event.tags));
+    if (output.isSuccess) {
+      emit(MonitorSuccess(cameras: output.cameras ?? [], mode: lastState?.mode ?? ViewMode.v2x2));
+    } else {
+      emit(MonitorFailure(output.errMsg ?? ''));
+    }
   }
 
-  FutureOr<void> _onGetAllCameraInGroup(
-    GetAllCameraInGroup event,
-    Emitter<MonitorState> emit,
-  ) async {
+  FutureOr<void> _onGetAllCameraInGroup(GetAllCameraInGroup event, Emitter<MonitorState> emit) async {
     TaskPool.instance.clean();
     emit(MonitorLoading());
 
-    (await cameraRepository.getAllCamerasInGroup(groupId: event.groupId)).fold(
-      (failure) {
-        emit(MonitorFailure(failure.toString()));
-      },
-      (cameras) {
-        emit(
-          MonitorSuccess(
-            cameras: cameras,
-            mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
-            groupId: event.groupId,
-          ),
-        );
-      },
-    );
+    final output = await getCameraUseCase.execute(GetCameraInput(groupId: event.groupId, tags: event.tags));
+    if (output.isSuccess) {
+      emit(
+        MonitorSuccess(
+          cameras: output.cameras ?? [],
+          mode: ViewMode.fitWithLength(output.cameras!.length, min: ViewMode.v2x2),
+        ),
+      );
+    } else {
+      emit(MonitorFailure(output.errMsg ?? ''));
+    }
   }
 
-  FutureOr<void> _onGetAllCameraNoGroup(
-    GetAllCameraNoGroup event,
-    Emitter<MonitorState> emit,
-  ) async {
+  FutureOr<void> _onGetAllCameraNoGroup(GetAllCameraNoGroup event, Emitter<MonitorState> emit) async {
     TaskPool.instance.clean();
     emit(MonitorLoading());
 
-    final groups = await cameraRepository.getAllCamera();
-    groups.fold(
-      (failure) {
-        emit(MonitorFailure(failure.toString()));
-      },
-      (cameras) {
-        // filter camera no group
-        final input = FilterCameraNoGroupInput(listCameraOrigin: cameras);
-        final output = filterCameraNoGroupUseCase.execute(input);
-        final filteredCameras = output.listCamera ?? [];
-        emit(
-          MonitorSuccess(
-            cameras: filteredCameras,
-            mode: ViewMode.fitWithLength(filteredCameras.length, min: ViewMode.v2x2),
-            groupId: [],
-          ),
-        );
-      },
-    );
+    final output = await getCameraUseCase.execute(GetCameraInput(groupId: [0], tags: event.tags));
+    if (output.isSuccess) {
+      emit(
+        MonitorSuccess(
+          cameras: output.cameras ?? [],
+          mode: ViewMode.fitWithLength(output.cameras!.length, min: ViewMode.v2x2),
+        ),
+      );
+    } else {
+      emit(MonitorFailure(output.errMsg ?? ''));
+    }
   }
 
   Future<void> _onGetCameraAtPage(GetCameraAtPage event, Emitter<MonitorState> emit) async {
@@ -107,14 +98,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
 
     if (state is MonitorSuccess) {
       final preState = state as MonitorSuccess;
-      emit(
-        MonitorSuccess(
-          cameras: preState.cameras,
-          mode: preState.mode,
-          page: event.page,
-          groupId: preState.groupId,
-        ),
-      );
+      emit(MonitorSuccess(cameras: preState.cameras, mode: preState.mode, page: event.page, groupId: preState.groupId));
       return;
     }
 
