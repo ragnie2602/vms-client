@@ -16,6 +16,7 @@ import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 import 'components/accumulating_seek_queue.dart';
 import 'components/dual_task_queue.dart';
@@ -34,6 +35,8 @@ class PlaybackPlayer extends StatefulWidget {
     this.onLostConnection,
     this.labelBuilder,
     this.enableZoom = false,
+    this.syncSystemVolume = false,
+    this.onVolumeChanged,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -45,6 +48,8 @@ class PlaybackPlayer extends StatefulWidget {
   final Function()? onLostConnection;
   final Function(String name)? labelBuilder;
   final bool enableZoom;
+  final bool syncSystemVolume;
+  final Function(double volume)? onVolumeChanged;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
@@ -113,8 +118,19 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     );
     _init();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onInitializedValues?.call(volume: 100, speed: 1);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.syncSystemVolume) {
+        _player.volume = await VolumeController.instance.getVolume();
+        widget.onInitializedValues?.call(volume: _player.volume, speed: 1);
+
+        VolumeController.instance.addListener((volume) {
+          _player.volume = volume;
+          widget.onVolumeChanged?.call(volume);
+        }, fetchInitialVolume: false);
+      } else {
+        widget.onInitializedValues?.call(volume: 1, speed: 1);
+      }
+
       widget.controller.onPlaybackChanged?.call(currentIndex);
       widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
     });
@@ -122,6 +138,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
   @override
   void dispose() {
+    if (widget.syncSystemVolume) VolumeController.instance.removeListener();
     _accumulatingSeekQueue.dispose();
     _sequentialQueue.dispose();
     _playlistIndex.dispose();
@@ -552,7 +569,17 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   // Dual task queue
   void changeVolume(double volume) {
     _dualQueue.add(() async {
-      _player.volume = volume / 100;
+      if (volume == _player.volume) return;
+      _player.volume = volume;
+
+      // Đồng bộ volume với hệ thống
+      if (widget.syncSystemVolume) {
+        VolumeController.instance.showSystemUI = true;
+        await VolumeController.instance.setVolume(_player.volume);
+        VolumeController.instance.showSystemUI = false;
+      }
+
+      widget.onVolumeChanged?.call(_player.volume);
       await Future.delayed(Duration(milliseconds: 100));
     });
   }
@@ -637,7 +664,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
           child: ValueListenableBuilder(
             valueListenable: _state,
             builder: (context, value, child) => switch (value) {
-              PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
+              PlayerState.initializing => const Center(
+                child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
+              ),
               PlayerState.empty => _buildNoPlayback(),
               PlayerState.error || PlayerState.error_again => _buildError(),
               _ => Stack(
