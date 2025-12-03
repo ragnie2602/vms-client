@@ -35,10 +35,8 @@ class FilterCameraUseCase
           .toList();
     }
     // lọc theo tag
-    if ((input.tagName ?? '') != 'Tất cả') {
-      String _key = removeDiacritics(
-        (input.tagName ?? '').trim().toLowerCase(),
-      );
+    if ((input.tagName ?? 'Tất cả') != 'Tất cả') {
+      String _key = removeDiacritics((input.tagName ?? '').trim().toLowerCase());
 
       listCameraAfterFilter = listCameraAfterFilter
           .where(
