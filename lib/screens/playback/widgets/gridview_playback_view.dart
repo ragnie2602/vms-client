@@ -4,13 +4,12 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
-import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_state.dart';
 import 'package:vms_flutter_client/screens/playback/widgets/camera_selection_popup.dart';
-import 'package:vms_flutter_client/screens/shared/player/playback_player.dart';
+import 'package:vms_flutter_client/screens/playback/widgets/item_camera_playback_widget.dart';
 
 class GridviewPlaybackView extends StatefulWidget {
   const GridviewPlaybackView({super.key});
@@ -130,7 +129,7 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
                         final ItemPlaybackModel? item = listItem
                             ?.firstWhereOrNull((e) => e.index == index);
                         if (item != null) {
-                          return _ItemCameraPlaybackWidget(item: item);
+                          return ItemCameraPlaybackWidget(item: item);
                         }
                         return Center(
                           child: CompositedTransformTarget(
@@ -158,109 +157,3 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
   }
 }
 
-class _ItemCameraPlaybackWidget extends StatelessWidget {
-  const _ItemCameraPlaybackWidget({super.key, required this.item});
-  final ItemPlaybackModel item;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        (item.listVideoPlaybacks ?? []).isEmpty
-            ? _EmptyRecordCameraWidget()
-            : PlaybackPlayer(
-                initialIndex: 0,
-                name: item.camera.name,
-                controller: item.playerController,
-                playlist: item.listVideoPlaybacks ?? [],
-              ),
-        // Close button
-        Positioned(
-          top: 0,
-          right: 0,
-          child: InkWell(
-            onTap: () {
-              context.read<MultiPlaybackBloc>().add(
-                RemoveCameraEvent(camera: item.camera, indexCam: item.index),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3),
-                color: const Color(0x99000000),
-              ),
-              margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 9),
-              child: SvgPicture.asset(
-                AppAssets.icClose,
-                colorFilter: const ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
-        ),
-        // tên cam
-        Positioned(
-          bottom: 15,
-          right: 15,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
-                const SizedBox(width: 4),
-                Text(
-                  item.camera.name,
-                  style: AppTypography.style(
-                    9,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _EmptyRecordCameraWidget extends StatelessWidget {
-  const _EmptyRecordCameraWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: AppColors.black,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset(AppAssets.icCameraRecord),
-            Padding(
-              padding: EdgeInsetsGeometry.only(top: 5),
-              child: Text(
-                'Không có dữ liệu ghi hình tại thời điểm này',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
