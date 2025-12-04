@@ -87,7 +87,8 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           return Container(
             color: Theme.of(context).scaffoldBackgroundColor,
             child: CameraDetailDesktopLayout(
-              openCamerasPanelImmediately: openCamerasPanelImmediately || isPlayback,
+              openCamerasPanelImmediately:
+                  openCamerasPanelImmediately || isPlayback,
               content: state.camera == null
                   ? null
                   : state.mode.isPlayback
@@ -106,7 +107,10 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,
         onReload: () => context.read<PlaybackBloc>().add(
-          GetVideoPlaybacks(data.camera!.id, context.read<CameraDetailBloc>().state.playbackDate),
+          GetVideoPlaybacks(
+            data.camera!.id,
+            context.read<CameraDetailBloc>().state.playbackDate,
+          ),
         ),
         child: (state) => PlaybackPlayer(
           enableZoom: true,
@@ -118,11 +122,14 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           onStatusChanged: (status) {
             context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
           },
-          onInitializedValues: ({required double volume, required double speed}) {
-            context.read<CameraDetailBloc>().add(ChangeVolume(volume));
-            context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
-            context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
-          },
+          onInitializedValues:
+              ({required double volume, required double speed}) {
+                context.read<CameraDetailBloc>().add(ChangeVolume(volume));
+                context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
+                context.read<CameraDetailBloc>().add(
+                  OnRecording(cancelStatus: 0),
+                );
+              },
         ),
       ),
     );

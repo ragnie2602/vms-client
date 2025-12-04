@@ -109,8 +109,8 @@ class FullscreenPortalState extends State<FullscreenPortal> {
   }
 
   @override
-  dispose() async {
-    await defaultExitNativeFullscreen();
+  dispose()  {
+    defaultExitNativeFullscreen();
     super.dispose();
   }
 }
