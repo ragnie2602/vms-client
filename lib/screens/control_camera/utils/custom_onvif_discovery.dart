@@ -64,10 +64,7 @@ class CustomOnvifDiscovery {
               final datagram = socket?.receive();
               if (datagram != null) {
                 final response = utf8.decode(datagram.data);
-                final match = _parseProbeMatch(
-                  response,
-                  datagram.address.address,
-                );
+                final match = _parseProbeMatch(response, datagram.address.address);
                 if (match != null && !foundAddresses.contains(match.xAddr)) {
                   foundAddresses.add(match.xAddr);
                   devices.add(match);
@@ -176,10 +173,7 @@ class CustomOnvifDiscovery {
               final datagram = socket?.receive();
               if (datagram != null) {
                 final response = utf8.decode(datagram.data);
-                final match = _parseProbeMatch(
-                  response,
-                  datagram.address.address,
-                );
+                final match = _parseProbeMatch(response, datagram.address.address);
                 if (match != null && !foundAddresses.contains(match.xAddr)) {
                   foundAddresses.add(match.xAddr);
                   devices.add(match);
@@ -202,7 +196,7 @@ class CustomOnvifDiscovery {
       // We scan 1-254.
       for (int i = 1; i < 255; i++) {
         if (isSocketClosed) break;
-
+        
         final targetIp = '$prefix.$i';
         if (targetIp == ip) continue;
 
