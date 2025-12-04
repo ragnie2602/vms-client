@@ -318,13 +318,13 @@ class MobileTimelinePainter extends CustomPainter {
   }
 
   void _drawPlaybacks(Canvas canvas, Size size, double centralOffsetX) {
-    if (playbacks.isEmpty) return;
-
     // Vẽ thanh không có playback
     canvas.drawRect(
       Rect.fromPoints(Offset(0, size.height - 11), Offset(size.width, 33)),
       unplaybackPaint,
     );
+
+    if (playbacks.isEmpty) return;
 
     double currentOffset = centralOffsetX;
     DateTime comparedTime = central;

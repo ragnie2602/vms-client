@@ -56,6 +56,7 @@ dependencies:
   protobuf: ^3.1.0
   fixnum: ^1.1.1
   dio: ^5.7.0
+  connectivity_plus: ^7.0.0
 
   # Player
   fvp:
@@ -81,6 +82,8 @@ dependencies:
   toastification: ^3.0.3
   diacritic: ^0.1.6
   path_provider: ^2.1.5
+
+  # Mobile
   gal: ^2.3.2
   volume_controller: ^3.4.0
 

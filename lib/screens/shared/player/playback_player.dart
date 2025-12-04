@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -21,7 +22,7 @@ import 'package:volume_controller/volume_controller.dart';
 import 'components/accumulating_seek_queue.dart';
 import 'components/dual_task_queue.dart';
 import 'components/fullscreen_portal.dart';
-import 'components/sequential_task_queue.dart';
+import 'components/mobile_controls.dart';
 import 'player_controller.dart';
 
 class PlaybackPlayer extends StatefulWidget {
@@ -73,6 +74,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   Completer<bool>? _waitForFirstFrame;
   // Trường hợp đổi sang media mới thì có thể trigger status (unloaded + end) --> bị trigger thành lỗi
   Completer<void> _waitForUnloadedOldMedia = Completer<void>()..safeComplete();
+  Completer<void>? _seekingCompleter;
   Timer? _completerTimeoutTimer;
 
   double _aspectRatio = 1.0;
@@ -83,8 +85,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   Timer? _debounce;
   late final _seekFlag = SeekFlag(SeekFlag.fromStart | SeekFlag.keyFrame | SeekFlag.inCache);
 
-  late final SequentialTaskQueue _sequentialQueue = SequentialTaskQueue();
   late final DualTaskQueue _dualQueue = DualTaskQueue();
+  late final DualTaskQueue _volumeQueue = DualTaskQueue();
   late final AccumulatingSeekQueue _accumulatingSeekQueue = AccumulatingSeekQueue(onSeek: _seek);
 
   late final Map<String, int> _playlistMapper;
@@ -140,13 +142,13 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   void dispose() {
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
     _accumulatingSeekQueue.dispose();
-    _sequentialQueue.dispose();
+    _volumeQueue.dispose();
     _playlistIndex.dispose();
     _dualQueue.dispose();
     _cancelTimers();
     _completerTimeoutTimer?.cancel();
     try {
-      _player.dispose();
+      _player.dispose(synchronized: false);
     } catch (_) {}
     _status.dispose();
     _state.dispose();
@@ -353,7 +355,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     _aspectRatio = (size?.width ?? 1920) / (size?.height ?? 1080);
 
     if (_lastPosition > 0) {
-      await _seek(Duration(milliseconds: _lastPosition), needInitialized: false);
+      await _seek(
+        Duration(milliseconds: _lastPosition),
+        needInitialized: false,
+        waitSeeking: false,
+      );
     }
     _state.value = PlayerState.initialized;
 
@@ -450,6 +456,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     _shouldSyncPlayerTime = _newestIsEmpty = false;
     _isSeeking.value = true;
     widget.controller.onTimeChanged?.call(date.roundToSecond, dateIndex != null);
+    _seekingCompleter ??= Completer<void>();
 
     final index = dateIndex ?? widget.playlist.atTime(date);
     widget.controller.onPlaybackChanged?.call(index ?? -1);
@@ -470,6 +477,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       if (_dualQueue.nextJobIsEmpty && !_newestIsEmpty) {
         _shouldSyncPlayerTime = true;
         _isSeeking.value = false;
+        _seekingCompleter?.safeComplete();
+        _seekingCompleter = null;
       }
     });
   }
@@ -495,7 +504,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      if (diff != Duration.zero) await _seek(diff, needInitialized: false);
+      if (diff != Duration.zero) await _seek(diff, needInitialized: false, waitSeeking: false);
     }
     // Playback khác --> đổi playlist và jump
     else {
@@ -514,8 +523,18 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   }
 
   void seekQueue(Duration duration) => _accumulatingSeekQueue.add(duration);
-  Future<void> _seek(Duration duration, {bool needInitialized = true}) async {
+  Future<void> _seek(
+    Duration duration, {
+    bool needInitialized = true,
+    bool waitSeeking = true,
+  }) async {
     if ((needInitialized && !isInitialized()) || !mounted) return;
+
+    // (Ấn backward/forward) Đang jump --> đợi xong mới thực thi seek
+    if (waitSeeking) {
+      await _seekingCompleter?.future.timeout(Duration(seconds: 30), onTimeout: () => null);
+    }
+
     final _toMs = _player.position + duration.inMilliseconds;
     final _totalMs = _player.mediaInfo.duration;
 
@@ -568,7 +587,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
   // Dual task queue
   void changeVolume(double volume) {
-    _dualQueue.add(() async {
+    _volumeQueue.add(() async {
       if (volume == _player.volume) return;
       _player.volume = volume;
 
@@ -690,8 +709,20 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
                   ),
 
                   if (widget.labelBuilder != null) widget.labelBuilder!.call(widget.name),
-                  Positioned.fill(child: _buildPlaybackStatus()),
-                  _buildSeekingStatus(),
+
+                  if (Platform.isAndroid || Platform.isIOS)
+                    Positioned.fill(
+                      child: MobileControls(
+                        status: _status,
+                        isSeeking: _isSeeking,
+                        togglePlay: togglePlay,
+                        seek: seekQueue,
+                      ),
+                    )
+                  else ...[
+                    Positioned.fill(child: _buildPlaybackStatus()),
+                    _buildSeekingStatus(),
+                  ],
                 ],
               ),
             },

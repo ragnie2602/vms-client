@@ -141,4 +141,7 @@ class AppAssets {
   static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
   static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
   static const icSpeed = '$_svgPath/ic_speed.svg';
+
+  static const icMobileBackward30 = '$_svgPath/mobile_backward_30s.svg';
+  static const icMobileForward30 = '$_svgPath/mobile_forward_30s.svg';
 }

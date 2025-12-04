@@ -17,6 +17,7 @@ import 'package:window_manager/window_manager.dart';
 import 'app_bloc.dart';
 import 'core/app_router.dart';
 import 'core/env_service.dart';
+import 'core/utils/chunked_downloader.dart';
 import 'di/dependency_injection.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
@@ -58,6 +59,9 @@ void main(List<String> args) async {
 
     await AppData.instance.init();
     await EnvService.init();
+
+    /// Dọn dẹp các file .partX và file đích đang tải dở bị sót lại từ các phiên download trước đó
+    if (Platform.isAndroid || Platform.isIOS) ChunkedDownloader.cleanupResidualFiles();
 
     final windowID = await initialMultiWindowConfig(args);
 
