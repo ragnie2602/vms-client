@@ -130,85 +130,7 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
                         final ItemPlaybackModel? item = listItem
                             ?.firstWhereOrNull((e) => e.index == index);
                         if (item != null) {
-                          return Stack(
-                            children: [
-                              (item.listVideoPlaybacks ?? []).isEmpty
-                                  ? _EmptyRecordCameraWidget()
-                                  : PlaybackPlayer(
-                                      initialIndex: 0,
-                                      name: item.camera.name,
-                                      controller: item.playerController,
-                                      playlist: item.listVideoPlaybacks ?? [],
-                                    ),
-                              // Close button
-                              Positioned(
-                                top: 0,
-                                right: 0,
-                                child: InkWell(
-                                  onTap: () {
-                                    context.read<MultiPlaybackBloc>().add(
-                                      RemoveCameraEvent(
-                                        camera: item.camera,
-                                        indexCam: index,
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(3),
-                                      color: const Color(0x99000000),
-                                    ),
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 10,
-                                      horizontal: 9,
-                                    ),
-                                    child: SvgPicture.asset(
-                                      AppAssets.icClose,
-                                      colorFilter: const ColorFilter.mode(
-                                        Colors.white,
-                                        BlendMode.srcIn,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              // tên cam
-                              Positioned(
-                                bottom: 15,
-                                right: 15,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SvgPicture.asset(
-                                        AppAssets.icVideoOn,
-                                        width: 16,
-                                        height: 16,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        item.camera.name,
-                                        style: AppTypography.style(
-                                          9,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
+                          return _ItemCameraPlaybackWidget(item: item);
                         }
                         return Center(
                           child: CompositedTransformTarget(
@@ -232,6 +154,81 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
           ),
         );
       },
+    );
+  }
+}
+
+class _ItemCameraPlaybackWidget extends StatelessWidget {
+  const _ItemCameraPlaybackWidget({super.key, required this.item});
+  final ItemPlaybackModel item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        (item.listVideoPlaybacks ?? []).isEmpty
+            ? _EmptyRecordCameraWidget()
+            : PlaybackPlayer(
+                initialIndex: 0,
+                name: item.camera.name,
+                controller: item.playerController,
+                playlist: item.listVideoPlaybacks ?? [],
+              ),
+        // Close button
+        Positioned(
+          top: 0,
+          right: 0,
+          child: InkWell(
+            onTap: () {
+              context.read<MultiPlaybackBloc>().add(
+                RemoveCameraEvent(camera: item.camera, indexCam: item.index),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                color: const Color(0x99000000),
+              ),
+              margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 9),
+              child: SvgPicture.asset(
+                AppAssets.icClose,
+                colorFilter: const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
+        ),
+        // tên cam
+        Positioned(
+          bottom: 15,
+          right: 15,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
+                const SizedBox(width: 4),
+                Text(
+                  item.camera.name,
+                  style: AppTypography.style(
+                    9,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
