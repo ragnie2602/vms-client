@@ -46,118 +46,84 @@ class CustomOnvifDiscovery {
     Set<String> foundAddresses,
     Duration timeout,
   ) async {
-    // Get all network interfaces first
-    List<NetworkInterface> interfaces = [];
+    RawDatagramSocket? socket;
     try {
-      interfaces = await NetworkInterface.list();
-    } catch (e) {
-      print('Failed to list network interfaces: $e');
-      return;
-    }
+      socket = await RawDatagramSocket.bind(
+        InternetAddress.anyIPv4,
+        0,
+        reuseAddress: true,
+      );
 
-    // Filter valid IPv4 interfaces
-    final validInterfaces = <InternetAddress>[];
-    for (var interface in interfaces) {
-      for (var addr in interface.addresses) {
-        if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
-          validInterfaces.add(addr);
-        }
-      }
-    }
+      socket.broadcastEnabled = true;
+      socket.readEventsEnabled = true;
 
-    if (validInterfaces.isEmpty) {
-      print('No valid network interfaces found');
-      return;
-    }
-
-    // Create a socket for each interface to ensure multicast works on all networks
-    final sockets = <RawDatagramSocket>[];
-    final probeMessage = _buildProbeMessage();
-    final data = utf8.encode(probeMessage);
-
-    try {
-      // Create sockets and send probes for each interface
-      for (var localAddr in validInterfaces) {
-        try {
-          final socket = await RawDatagramSocket.bind(
-            localAddr,
-            0,
-            reuseAddress: true,
-          );
-
-          socket.broadcastEnabled = true;
-          socket.readEventsEnabled = true;
-
-          // Join multicast group on this interface
-          try {
-            socket.joinMulticast(InternetAddress(_multicastAddress));
-          } catch (e) {
-            // Some interfaces may not support multicast, continue anyway
-          }
-
-          socket.listen(
-            (RawSocketEvent event) {
-              if (event == RawSocketEvent.read) {
-                try {
-                  final datagram = socket.receive();
-                  if (datagram != null) {
-                    final response = utf8.decode(datagram.data);
-                    final match = _parseProbeMatch(
-                      response,
-                      datagram.address.address,
-                    );
-                    if (match != null &&
-                        !foundAddresses.contains(match.xAddr)) {
-                      foundAddresses.add(match.xAddr);
-                      devices.add(match);
-                    }
-                  }
-                } catch (e) {
-                  // Ignore receive/parse errors
+      socket.listen(
+        (RawSocketEvent event) {
+          if (event == RawSocketEvent.read) {
+            try {
+              final datagram = socket?.receive();
+              if (datagram != null) {
+                final response = utf8.decode(datagram.data);
+                final match = _parseProbeMatch(
+                  response,
+                  datagram.address.address,
+                );
+                if (match != null && !foundAddresses.contains(match.xAddr)) {
+                  foundAddresses.add(match.xAddr);
+                  devices.add(match);
                 }
               }
-            },
-            onError: (error) {
-              // Ignore socket errors during listening
-            },
-            cancelOnError: false,
-          );
-
-          sockets.add(socket);
-
-          // Send multicast probe from this interface
-          try {
-            socket.send(
-              data,
-              InternetAddress(_multicastAddress),
-              _onvifDiscoveryPort,
-            );
-          } catch (e) {
-            // Ignore send errors for this interface
+            } catch (e) {
+              // Ignore receive/parse errors
+            }
           }
+        },
+        onError: (error) {
+          // Ignore socket errors during listening
+        },
+        cancelOnError: false,
+      );
 
-          // Small delay between interface probes
-          await Future.delayed(const Duration(milliseconds: 50));
-        } catch (e) {
-          // Failed to create socket for this interface, try next one
-          if (!e.toString().contains('No route to host')) {
-            print('Failed to bind socket to ${localAddr.address}: $e');
-          }
-        }
+      final probeMessage = _buildProbeMessage();
+      final data = utf8.encode(probeMessage);
+
+      // Send to Multicast Group
+      try {
+        socket.send(
+          data,
+          InternetAddress(_multicastAddress),
+          _onvifDiscoveryPort,
+        );
+      } catch (e) {
+        // Ignore multicast send errors
       }
 
-      // Wait for responses
+      // Send to broadcast address of each interface (sometimes helps)
+      try {
+        final interfaces = await NetworkInterface.list();
+        for (var interface in interfaces) {
+          for (var addr in interface.addresses) {
+            if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
+              // Try to send to the broadcast address of the subnet if possible
+              // Since we can't easily get broadcast addr, we rely on multicast
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore interface listing errors
+      }
+
       await Future.delayed(timeout);
     } catch (e) {
-      print('Multicast probe error: $e');
+      // Only log unexpected errors
+      if (!e.toString().contains('No route to host')) {
+        print('Multicast probe error: $e');
+      }
     } finally {
-      // Close all sockets
-      for (var socket in sockets) {
-        try {
-          socket.close();
-        } catch (e) {
-          // Ignore close errors
-        }
+      try {
+        socket?.close();
+      } catch (e) {
+        // Ignore close errors
       }
     }
   }
