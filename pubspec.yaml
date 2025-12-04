@@ -87,7 +87,7 @@ dependencies:
   # add group
   dropdown_search: ^6.0.2
   file_selector: ^1.0.4
-  file_picker: ^8.1.4
+  file_picker: ^10.3.7
   table_calendar: ^3.2.0
 
   # user config
@@ -139,7 +139,7 @@ flutter:
     - assets/svgs/
     - assets/fonts/
     - assets/images/
-    - assets/discovery.dll
+    - assets/Camera_Template_Import.xlsx
   fonts:
     - family: Inter
       fonts:

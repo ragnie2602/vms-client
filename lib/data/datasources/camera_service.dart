@@ -5,7 +5,8 @@ import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.2.pbserver.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
-import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_entity.dart';
 
 import '../proto/models/comm.command2.pb.dart';
 import '../proto/models/comm.model.pb.dart';
@@ -108,6 +109,45 @@ class CameraService {
     );
   }
 
+  Future<ImportCameraEntity> importCamera({
+    required List<ImportCameraCell> cameras,
+  }) async {
+    final request = ImportCamera_Request()
+      ..cameras.addAll(
+        cameras.map(
+          (e) => ImportCamera_ImportCell(
+            indexNumer: e.indexNumer,
+            cameraType: e.type == 'ONVIF' ? CameraType.ONVIF : CameraType.RTSP,
+            cameraName: e.cameraName,
+            onvifXaadr: e.onvifXaadr,
+            userName: e.userName,
+            password: e.password,
+            mainStream: e.mainStream,
+            subStream: e.subStream,
+            error: e.error,
+          ),
+        ),
+      );
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: UniqueId.getUniqueId(PacketType.importCamera.value),
+          data: request.writeToBuffer(),
+          type: PacketType.importCamera,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(
+        ImportCamera_Error.valueOf,
+        PacketType.importCamera.value,
+      ),
+      (buffer) => ImportCamera_Reply.fromBuffer(buffer).toDomain(),
+    );
+  }
+
   Future<Camera> updateCamera({
     required List<int> cameraId,
     String? name,
@@ -142,8 +182,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(UpdateCamera_Error.valueOf, PacketType.updateCamera.value),
+      (failure) => throw failure.toMessageFailure(
+        UpdateCamera_Error.valueOf,
+        PacketType.updateCamera.value,
+      ),
       (buffer) => UpdateCamera_Reply.fromBuffer(buffer).camera,
     );
   }
@@ -179,7 +221,11 @@ class CameraService {
     );
   }
 
-  Future<List<Camera>> getAllCamera({List<int>? cameraId, int? status, int? ivaType}) async {
+  Future<List<Camera>> getAllCamera({
+    List<int>? cameraId,
+    int? status,
+    int? ivaType,
+  }) async {
     final request = GetAllCamera_Request();
     if (cameraId != null) request.cameraId = cameraId;
     if (status != null) request.status = GetAllCamera_Status.valueOf(status)!;
@@ -198,13 +244,17 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(GetAllCamera_Error.valueOf, PacketType.getAllCamera.value),
+      (failure) => throw failure.toMessageFailure(
+        GetAllCamera_Error.valueOf,
+        PacketType.getAllCamera.value,
+      ),
       (buffer) => GetAllCamera_Reply.fromBuffer(buffer).cameras,
     );
   }
 
-  Future<List<Camera>> getAllCamerasInGroup({required List<int> groupId}) async {
+  Future<List<Camera>> getAllCamerasInGroup({
+    required List<int> groupId,
+  }) async {
     final request = GetCameraInGroup_Request(groupId: groupId);
 
     final responseBuffer = await socketClient.send<List<int>>(
@@ -267,8 +317,10 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(ShareCamera_Error.valueOf, PacketType.shareCamera.value),
+      (failure) => throw failure.toMessageFailure(
+        ShareCamera_Error.valueOf,
+        PacketType.shareCamera.value,
+      ),
       (buffer) => ShareCamera_Reply.fromBuffer(buffer).cameraId,
     );
   }
@@ -380,7 +432,9 @@ class CameraService {
   //   );
   // }
 
-  Future<List<InviteMessage>> listShareCamera({required List<int> cameraId}) async {
+  Future<List<InviteMessage>> listShareCamera({
+    required List<int> cameraId,
+  }) async {
     final request = ListShareCamera_Request()..cameraId = cameraId;
 
     final responseBuffer = await socketClient.send<List<int>>(
@@ -429,7 +483,9 @@ class CameraService {
   }
 
   // get camera info
-  Future<GetCameraInfo_Reply> getCameraInfo({required List<int> cameraId}) async {
+  Future<GetCameraInfo_Reply> getCameraInfo({
+    required List<int> cameraId,
+  }) async {
     final request = GetCameraInfo_Request()..camerasId = cameraId;
 
     final responseBuffer = await socketClient.send<List<int>>(

@@ -144,5 +144,12 @@ class AppAssets {
    static const icUpload = '$_svgPath/ic_upload.svg';
 
   static const icSpeed = '$_svgPath/ic_speed.svg';
+  static const icDownloadFile = '$_svgPath/ic_download_file.svg';
 
+  /* Files */
+  static const cameraTemplateImport = 'assets/Camera_Template_Import.xlsx';
+
+  static const icFile = '$_svgPath/ic_file.svg';
+  static const icError = '$_svgPath/ic_error.svg';
+  static const icCloseFilled = '$_svgPath/ic_close.svg';
 }

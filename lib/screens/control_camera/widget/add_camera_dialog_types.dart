@@ -9,6 +9,7 @@ enum AddCameraStep {
   manualForm, // Form thêm thủ công (giữ nguyên logic hiện tại)
   discovery, // Dò tìm camera trong mạng
   importFile, // Thêm bằng file cấu hình
+  importFileResult, // Kết quả import file
 }
 
 /// Data model to return from the dialog

@@ -63,6 +63,7 @@ class ControlCameraBloc
     on<CreateTagEvent>(_onCreateTag);
     on<DeleteTagEvent>(_onDeleteTag);
     on<UpdateTagEvent>(_onUpdateTag);
+    on<ImportCameraEvent>(_onImportCamera);
     on<ExportExcelEvent>(_onExportExcel);
   }
 
@@ -511,5 +512,24 @@ class ControlCameraBloc
     } catch (e) {
       emit(ExportExcelFailState(e.toString()));
     }
+  }
+
+  FutureOr<void> _onImportCamera(
+    ImportCameraEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    emit(ImportCameraLoadingState());
+    final res = await controlGroupRepository.importCamera(
+      cameras: event.cameras,
+    );
+    res.fold(
+      (onFailure) => emit(ImportCameraFailState(res.left.toString())),
+      (onSuccess) => emit(
+        ImportCameraSuccessState(
+          cameras: onSuccess.cameras,
+          cameraError: onSuccess.cameraError,
+        ),
+      ),
+    );
   }
 }

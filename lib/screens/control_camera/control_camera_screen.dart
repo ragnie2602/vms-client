@@ -14,6 +14,7 @@ import 'package:vms_flutter_client/data/datasources/share_camera_role_enum.dart'
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_user_case.dart';
@@ -102,6 +103,19 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         tagName: tagSelected?.name,
       ),
     );
+  }
+
+  void _onFilterTag() {
+    context.read<ControlCameraBloc>().add(
+      FilterTagCameraEvent(
+        tagName: tagSelected?.name,
+        keyWord: cameraNameController.text,
+      ),
+    );
+  }
+
+  void _onImportCamera({required List<ImportCameraCell> cameras}) {
+    context.read<ControlCameraBloc>().add(ImportCameraEvent(cameras: cameras));
   }
 
   void _onAddCameraRTSP({
@@ -570,6 +584,9 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   ); // hoặc compute(_probeIsolate, null)
                                 }
                                 return CustomOnvifDiscovery.scan();
+                              },
+                              onImport: (cameras) async {
+                                _onImportCamera(cameras: cameras);
                               },
                               onSubmit: (payload) async {
                                 if (payload.method == 'RTSP') {

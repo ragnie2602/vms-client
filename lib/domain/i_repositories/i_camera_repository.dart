@@ -2,6 +2,8 @@ import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_entity.dart';
 
 import '../entities/camera/camera_entity.dart';
 
@@ -35,4 +37,5 @@ abstract class ICameraRepository {
   });
   // camera info
   Future<Either<Failure, CameraInfoEntity>> getCameraInfo({required List<int> cameraId});
+  Future<Either<Failure, ImportCameraEntity>> importCamera({required List<ImportCameraCell> cameras});
 }
