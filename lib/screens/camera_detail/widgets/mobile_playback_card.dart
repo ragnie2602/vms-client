@@ -215,6 +215,8 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> {
           "${context.read<CameraDetailBloc>().state.camera!.name}_${widget.playback.startTime.format("yyyyMMdd_HHmmss")}.mp4",
     );
     _chunkedDownloader!.progressStream.listen((progress) {
+      if (!mounted) return;
+
       _progress.value = progress.progress;
 
       switch (progress.status) {

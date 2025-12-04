@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
@@ -40,6 +42,7 @@ class ChunkedDownloaderProgress {
 
 class ChunkedDownloader {
   static const String _TAG = 'Chunked Downloader';
+  static const String _FOLDER_NAME = 'ChunkedDownloads';
 
   /* CONFIG CÓ THỂ ĐƯỢC TRUYỀN VÀO CONSTRUCTOR */
   final int chunkSize; // Giá trị này có thể là 0 (cờ hiệu)
@@ -49,10 +52,8 @@ class ChunkedDownloader {
   final String _currentFilename;
 
   /* QUẢN LÝ ĐƯỜNG DẪN */
-  // Đường dẫn lưu file cuối cùng (do người dùng cung cấp, nếu null sẽ dùng _chunkDirPath)
-  String? _saveDirPath;
-  // Đường dẫn lưu file tạm thời/chunks (luôn là getTemporaryDirectory)
-  String? _chunkDirPath;
+  String? _saveDirPath; // <=> _chunkDirPath nếu null
+  String? _chunkDirPath; // <=> getTemporaryDirectory()/ChunkedDownloads
 
   /* QUẢN LÝ TRẠNG THÁI */
   CancelToken? _cancelToken;
@@ -162,10 +163,10 @@ class ChunkedDownloader {
       final lengthHeader = response.headers.value('content-length');
       return int.tryParse(lengthHeader ?? '0');
     } on DioException catch (e) {
-      Logger.error('Error getting file size: ${e.message}', tag: _TAG);
+      Logger.error('Error getting file size: ${e.message}', tag: _TAG, writeLog: true);
       return null;
     } catch (e) {
-      Logger.error('Error getting file size: $e', tag: _TAG);
+      Logger.error('Error getting file size: $e', tag: _TAG, writeLog: true);
       return null;
     }
   }
@@ -283,7 +284,7 @@ class ChunkedDownloader {
     }
 
     if (_progressController.isClosed) {
-      Logger.error('Cannot start download, object has been disposed.', tag: _TAG);
+      Logger.error('Cannot start download, object has been disposed.', tag: _TAG, writeLog: true);
       return;
     }
 
@@ -291,10 +292,11 @@ class ChunkedDownloader {
     if (_chunkDirPath == null) {
       try {
         final tempDir = await getTemporaryDirectory();
-        _chunkDirPath = tempDir.path;
+        _chunkDirPath = tempDir.path.joinPath(_FOLDER_NAME);
+        await FileUtil.ensureFolderExists(_chunkDirPath!);
       } catch (e) {
         _updateProgress(status: ChunkedDownloaderStatus.failed);
-        Logger.error('Failed to resolve temporary directory path: $e', tag: _TAG);
+        Logger.error('Failed to resolve temporary directory path: $e', tag: _TAG, writeLog: true);
         return;
       }
     }
@@ -372,7 +374,7 @@ class ChunkedDownloader {
           _currentStatus != ChunkedDownloaderStatus.paused) {
         _updateProgress(status: ChunkedDownloaderStatus.failed);
       }
-      Logger.error('Download failed: $e', tag: _TAG);
+      Logger.error('Download failed: $e', tag: _TAG, writeLog: true);
     }
   }
 
@@ -452,6 +454,19 @@ class ChunkedDownloader {
       if (e.type == DioExceptionType.cancel) {
         return false;
       }
+
+      // Xử lý Timeout/Mất mạng
+      if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.error is SocketException) {
+        Logger.error(
+          'Chunk $chunkIndex failed due to network loss/timeout: ${e.message}',
+          tag: _TAG,
+          writeLog: true,
+        );
+        return false;
+      }
+
       Logger.error(
         'Failed to download chunk #$chunkIndex ($_currentUrl): ${e.message}',
         tag: _TAG,
@@ -500,13 +515,13 @@ class ChunkedDownloader {
       _chunkProgressMap.clear();
       _fileSize = 0;
     } catch (e) {
-      Logger.error('Error merging chunks: $e', tag: _TAG);
+      Logger.error('Error merging chunks: $e', tag: _TAG, writeLog: true);
       _updateProgress(status: ChunkedDownloaderStatus.failed);
       _currentStatus = ChunkedDownloaderStatus.failed;
     }
   }
 
-  // Dọn dẹp các file tạm .partX (Dành cho Multi-chunk)
+  // Dọn dẹp các file temporary
   Future<void> _cleanupTemp() async {
     // Tính toán totalChunks để xác định loại download (Single/Multi-chunk)
     int calculatedChunkSize = chunkSize;
@@ -515,19 +530,21 @@ class ChunkedDownloader {
     }
     final totalChunks = (_fileSize / calculatedChunkSize).ceil();
 
-    // Case single-chunk (download thành công thì _fileSize set = 0) --> không bị xoá file đích
     if (totalChunks <= 1 && _fileSize > 0) {
-      final finalFilePath = _saveDirPath!.joinPath(_currentFilename);
-      File finalFile = File(finalFilePath);
-      if (await finalFile.exists()) {
-        try {
-          await finalFile.delete();
-        } catch (e) {
-          Logger.error('Could not delete single file $finalFilePath: $e', tag: _TAG);
+      // Single-chunk: Xóa file đích nếu nó nằm trong thư mục tạm
+      if (_saveDirPath == _chunkDirPath) {
+        final finalFilePath = _saveDirPath!.joinPath(_currentFilename);
+        File finalFile = File(finalFilePath);
+        if (await finalFile.exists()) {
+          try {
+            await finalFile.delete();
+          } catch (e) {
+            Logger.error('Could not delete single file $finalFilePath: $e', tag: _TAG);
+          }
         }
       }
     } else {
-      // Xóa các file .partX trong chế độ multi-chunk
+      // Multi-chunk: Xóa các file .partX
       for (int i = 0; i < totalChunks; i++) {
         String tempFilePath = _chunkDirPath!.joinPath('$_currentFilename.part$i');
         File tempFile = File(tempFilePath);
@@ -545,6 +562,9 @@ class ChunkedDownloader {
     _fileSize = 0;
   }
 
+  //
+  //
+  //
   // -----------------------------------------------------
   // CHỨC NĂNG DỌN DẸP (Dọn dẹp các file .partX và file đích đang tải dở bị sót lại từ các phiên download trước đó)
   // -----------------------------------------------------
@@ -560,75 +580,71 @@ class ChunkedDownloader {
       return;
     }
 
-    if (!await tempDir.exists()) return;
+    final ReceivePort receivePort = ReceivePort();
+    receivePort.listen((dynamic message) {
+      if (message is Map<String, dynamic>) {
+        final String logMessage = message['message'];
+        final bool isError = message['isError'] ?? false;
 
-    Logger.log(
-      'Scanning temporary directory: ${tempDir.path} for residual files...',
-      tag: 'ChunkedDownloader.Cleanup',
-    );
-
-    // Set để lưu trữ đường dẫn đầy đủ của các file gốc (final file) cần xóa.
-    // Việc này ngăn ngừa việc xóa file gốc lặp lại và đảm bảo file chỉ bị xóa SAU KHI vòng lặp quét hoàn tất.
-    final Set<String> residualFinalFilePaths = {};
-    final RegExp partRegex = RegExp(r'\.part\d+$');
-
-    try {
-      // PHASE 1 (QUÉT & XÓA CHUNK FILES): Quét, xóa các file .partX và thu thập đường dẫn file gốc
-      await for (final FileSystemEntity entity in tempDir.list()) {
-        if (entity is File) {
-          final String basename = entity.uri.pathSegments.last;
-
-          if (partRegex.hasMatch(basename)) {
-            // 1. Suy ra tên file gốc bằng cách loại bỏ '.partX'
-            final partMatch = partRegex.firstMatch(basename);
-            if (partMatch != null) {
-              final baseName = basename.substring(0, partMatch.start);
-
-              // 2. Tạo đường dẫn file gốc đầy đủ (sử dụng thư mục tạm)
-              final baseFilePath = tempDir.path.joinPath(baseName);
-
-              // Thêm đường dẫn file gốc vào Set để xóa sau
-              residualFinalFilePaths.add(baseFilePath);
-            }
-
-            // 3. Xóa file .partX hiện tại
-            try {
-              await entity.delete();
-              Logger.log(
-                'Deleted residual chunk file: $basename',
-                tag: 'ChunkedDownloader.Cleanup',
-              );
-            } catch (e) {
-              Logger.error(
-                'Could not delete residual chunk file $basename: $e',
-                tag: 'ChunkedDownloader.Cleanup',
-              );
-            }
-          }
+        if (isError) {
+          Logger.error(logMessage, tag: "ChunkedDownloader.Cleanup", writeLog: true);
+        } else {
+          Logger.log(logMessage, tag: "ChunkedDownloader.Cleanup");
         }
       }
+    });
 
-      // PHASE 2 (XÓA FINAL FILES): Xóa các file gốc đã suy ra
-      // Việc này xử lý các file Single-chunk tải dở hoặc Final file của Multi-chunk bị lỗi gộp.
-      for (final finalFilePath in residualFinalFilePaths) {
-        final File finalFile = File(finalFilePath);
-        if (await finalFile.exists()) {
-          try {
-            await finalFile.delete();
-            Logger.log(
-              'Deleted residual final file: ${finalFile.uri.pathSegments.last}',
-              tag: 'ChunkedDownloader.Cleanup',
-            );
-          } catch (e) {
-            Logger.error(
-              'Could not delete residual final file ${finalFile.uri.pathSegments.last}: $e',
-              tag: 'ChunkedDownloader.Cleanup',
-            );
-          }
+    try {
+      await compute<Map<String, dynamic>, void>(_cleanupResidualFiles, {
+        'tempDirPath': tempDir.path,
+        'receivePort': receivePort.sendPort,
+      });
+    } catch (e) {
+      Logger.error('Failed to start cleanup Isolate: $e', tag: _TAG);
+    } finally {
+      receivePort.close();
+    }
+  }
+
+  static Future<void> _cleanupResidualFiles(Map<String, dynamic> params) async {
+    final String tempDirPath = params['tempDirPath'] as String;
+    final SendPort sendPort = params['receivePort'] as SendPort;
+
+    // Helper function để gửi log về Isolate chính
+    void _sendLog(String message, {bool isError = false}) {
+      sendPort.send({'message': message, 'isError': isError});
+    }
+
+    // Xác định đường dẫn thư mục tạm chứa file của downloader
+    final String downloaderTempPath = tempDirPath.joinPath(_FOLDER_NAME);
+    final Directory downloaderTempDir = Directory(downloaderTempPath);
+
+    if (!await downloaderTempDir.exists()) {
+      _sendLog('Chunked Downloader temp directory not found. Cleanup skipped.');
+      return;
+    }
+
+    _sendLog('=== Scanning Chunked Downloader directory ($downloaderTempPath) ===');
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    try {
+      // PHASE 1: Quét và xóa TẤT CẢ các file/thư mục con bên trong thư mục chuyên biệt
+      // Việc này xử lý mọi thứ: file .partX dở dang, file single-chunk bị hủy,
+      // và file final bị sót lại (nếu nó được lưu trong thư mục temp này).
+      await for (final FileSystemEntity entity in downloaderTempDir.list()) {
+        try {
+          // Xóa entity (file hoặc thư mục) hiện tại. Dùng recursive: true cho thư mục
+          await entity.delete(recursive: true);
+          _sendLog('-> Deleted residual entity: ${entity.uri.pathSegments.last}');
+        } catch (e) {
+          _sendLog(
+            'Could not delete residual entity ${entity.uri.pathSegments.last}: $e',
+            isError: true,
+          );
         }
       }
     } catch (e) {
-      Logger.error('Error during residual cleanup scan: $e', tag: 'ChunkedDownloader.Cleanup');
+      _sendLog('Error during residual cleanup scan: $e', isError: true);
     }
   }
 }
