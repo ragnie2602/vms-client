@@ -27,6 +27,7 @@ class MultiPlaybackBloc
     on<InitEvent>(_init);
     on<ChangePlaybackDate>(_onChangePlaybackDate);
     on<AddCameraEvent>(_onAddNewCamera);
+    on<RemoveCameraEvent>(_onRemoveCamera);
   }
   FutureOr<void> _init(
     InitEvent event,
@@ -69,6 +70,7 @@ class MultiPlaybackBloc
   ) async {
     // update change date for multi playback
     if (state.playbackDate == event.date) return;
+    // đổi ngày xem lại => get lại list video playback của từng cam
 
     emit(state.copyWith(playbackDate: event.date));
   }
@@ -108,5 +110,14 @@ class MultiPlaybackBloc
         return playbacks;
       },
     );
+  }
+
+  FutureOr<void> _onRemoveCamera(
+    RemoveCameraEvent event,
+    Emitter<MultiPlaybackState> emit,
+  ) {
+    List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
+    _list.removeWhere((e) => e.index == event.indexCam);
+    emit(state.copyWith(listItemCamPlayback: _list));
   }
 }
