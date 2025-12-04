@@ -26,4 +26,21 @@ class RemoveCameraEvent extends MultiPlaybackEvent {
   const RemoveCameraEvent({required this.camera, required this.indexCam});
 }
 
-// class OnUpdate
+class MultiTogglePlayEvent extends MultiPlaybackEvent {
+  const MultiTogglePlayEvent();
+}
+
+class MultiSeekEvent extends MultiPlaybackEvent {
+  final Duration duration;
+  const MultiSeekEvent(this.duration);
+}
+
+class MultiChangeSpeedEvent extends MultiPlaybackEvent {
+  final double speed;
+  const MultiChangeSpeedEvent(this.speed);
+}
+
+class MultiChangeVolumeEvent extends MultiPlaybackEvent {
+  final double volume;
+  const MultiChangeVolumeEvent(this.volume);
+}

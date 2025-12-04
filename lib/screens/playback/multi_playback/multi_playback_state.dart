@@ -21,6 +21,9 @@ class MultiPlaybackState extends BaseState {
   // tốc độ
   final double speed;
 
+  // trạng thái play/pause
+  final bool isPlaying;
+
   const MultiPlaybackState({
     required this.playbackDate,
     required this.multiPlaybackStatus,
@@ -29,6 +32,7 @@ class MultiPlaybackState extends BaseState {
     this.timelineDisplayMode = TimelineDisplayMode.h8,
     this.volume = 100,
     this.speed = 1,
+    this.isPlaying = false,
   });
   @override
   List<Object?> get props => [
@@ -39,6 +43,7 @@ class MultiPlaybackState extends BaseState {
     timelineDisplayMode,
     volume,
     speed,
+    isPlaying,
   ];
 
   MultiPlaybackState copyWith({
@@ -49,15 +54,17 @@ class MultiPlaybackState extends BaseState {
     TimelineDisplayMode? timelineDisplayMode,
     double? volume,
     double? speed,
+    bool? isPlaying,
   }) {
     return MultiPlaybackState(
       multiPlaybackStatus: multiPlaybackStatus ?? this.multiPlaybackStatus,
       playbackDate: playbackDate ?? this.playbackDate,
       listCameraOrigin: listCameraOrigin ?? this.listCameraOrigin,
-      listItemCamPlayback: listItemCamPlayback?? this.listItemCamPlayback,
+      listItemCamPlayback: listItemCamPlayback ?? this.listItemCamPlayback,
       timelineDisplayMode: timelineDisplayMode ?? this.timelineDisplayMode,
       volume: volume ?? this.volume,
       speed: speed ?? this.speed,
+      isPlaying: isPlaying ?? this.isPlaying,
     );
   }
 }
