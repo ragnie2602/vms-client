@@ -14,8 +14,10 @@ import 'package:vms_flutter_client/data/datasources/share_camera_role_enum.dart'
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_user_case.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -110,6 +112,10 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         keyWord: cameraNameController.text,
       ),
     );
+  }
+
+  void _onImportCamera({required List<ImportCameraCell> cameras}) {
+    context.read<ControlCameraBloc>().add(ImportCameraEvent(cameras: cameras));
   }
 
   void _onAddCameraRTSP({
@@ -521,7 +527,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                 onChanged: (p0) {
                                   setState(() {
                                     tagSelected = p0;
-                                    // _onFilterTag();
                                     _onSearch();
                                   });
                                 },
@@ -579,6 +584,9 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                   ); // hoặc compute(_probeIsolate, null)
                                 }
                                 return CustomOnvifDiscovery.scan();
+                              },
+                              onImport: (cameras) async {
+                                _onImportCamera(cameras: cameras);
                               },
                               onSubmit: (payload) async {
                                 if (payload.method == 'RTSP') {
@@ -653,6 +661,72 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                               ),
                             ),
                           ),
+                        ),
+                        SizedBox(width: 16),
+                        BlocBuilder<ControlCameraBloc, ControlCameraState>(
+                          buildWhen: (previous, current) =>
+                              current is ListCameraSuccessState ||
+                              current is ControlCameraLoadingState ||
+                              current is ListCameraFailState,
+                          builder: (context, state) {
+                            if (state is ControlCameraLoadingState) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (state is ListCameraFailState) {
+                              return Center(
+                                child: Text(
+                                  state.errorMsg,
+                                  style: AppTypography.style(14),
+                                ),
+                              );
+                            }
+                            // case success
+
+                            return InkWell(
+                              onTap: () {
+                                List<CameraEntity> cameras =
+                                    state is ListCameraSuccessState
+                                    ? state.cameras
+                                    : [];
+                                context.read<ControlCameraBloc>().add(
+                                  ExportExcelEvent(listCamera: cameras),
+                                );
+                              },
+                              splashColor: Colors.transparent,
+
+                              child: Container(
+                                height: 41,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(3),
+                                  border: Border.all(
+                                    width: 1,
+                                    color: AppColors.secondary,
+                                  ),
+                                  color: AppColors.blueD7E5F1,
+                                ),
+                                child: Center(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(AppAssets.icUpload),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Xuất file',
+                                        style: AppTypography.style(
+                                          14,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.secondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

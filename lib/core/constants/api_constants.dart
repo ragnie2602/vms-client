@@ -18,7 +18,8 @@ extension PbEnumExt on ProtobufEnum? {
     }
 
     final errorCode = this!.name;
-    return errorMap[errorCode] ?? (kReleaseMode ? DEFAULT_ERROR_MESSAGE : errorCode);
+    return errorMap[errorCode] ??
+        (kReleaseMode ? DEFAULT_ERROR_MESSAGE : errorCode);
   }
 }
 
@@ -65,8 +66,8 @@ enum PacketType {
 
   configSendEmail(209),
   scheduleRecordingCamera(146),
+  importCamera(2005),
   getCameraInfo(2006),
-
 
   configOnOffBarrier(291),
   listVehicle(292),
@@ -214,5 +215,6 @@ enum PacketType {
   bool get isResponseFromApi => this == apiResponse;
 
   static final _mapper = {for (var e in PacketType.values) e.value: e};
-  factory PacketType.fromValue(int value) => _mapper[value] ?? PacketType.unknown;
+  factory PacketType.fromValue(int value) =>
+      _mapper[value] ?? PacketType.unknown;
 }

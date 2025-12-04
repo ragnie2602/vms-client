@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/monitor/components/monitor_cameras.dart';
@@ -87,13 +89,19 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
                         highlightSelected: true,
                         maxWidth: widget.leftController.expandedWidth,
                         key: ValueKey('live_view_cameras'),
-                        selectedCamera: context.read<CameraDetailBloc>().state.camera,
+                        selectedCamera: context
+                            .read<CameraDetailBloc>()
+                            .state
+                            .camera,
                         onTap: (camera) {
-                          context.read<CameraDetailBloc>().add(ChangeCamera(camera));
+                          context.read<CameraDetailBloc>().add(
+                            ChangeCamera(camera),
+                          );
                         },
                       ),
                       id: 1,
-                      onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
+                      onPanelIndexChanged: (index) =>
+                          _leftPanelIndex.value = index,
                     ),
                   ),
 
@@ -108,12 +116,26 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
                           key: ValueKey('live_view_playbacks'),
                         ),
                         id: 2,
-                        onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
+                        onPanelIndexChanged: (index) =>
+                            _leftPanelIndex.value = index,
                       ),
                     ),
                 ],
               ),
             ),
+            // thêm multi playback action item
+            if (widget.mode.isPlayback)
+              ValueListenableBuilder(
+                valueListenable: _leftPanelIndex,
+                builder: (context, index, child) => ActionItem(
+                  title: 'Xem nhiều camera',
+                  icon: AppAssets.icMenu,
+                  isSelected: index == 3,
+                  onTap: () {
+                    context.pushNamed(Routes.multi_playback.name);
+                  },
+                ),
+              ),
 
             /*  */
             // ValueListenableBuilder(
@@ -130,7 +152,6 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
             //       ),
             //     ],
             //   ),
-            // ),
           ],
         ),
       ),

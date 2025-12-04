@@ -108,6 +108,9 @@ class AppAssets {
   static const icLocation = '$_svgPath/ic_location.svg';
   static const icAllCamera = '$_svgPath/ic_all_camera.svg';
   static const icAddGroupCamera = '$_svgPath/ic_add_group_camera.svg';
+  // multi playback
+  static const icAddCam = '$_svgPath/icon_add_cam.svg';
+
 
   static const icLogout = '$_svgPath/ic_logout.svg';
   static const icKey = '$_svgPath/ic_key.svg';
@@ -140,8 +143,19 @@ class AppAssets {
 
   static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
   static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
+
+   static const icUpload = '$_svgPath/ic_upload.svg';
+
   static const icSpeed = '$_svgPath/ic_speed.svg';
 
   static const icMobileBackward30 = '$_svgPath/mobile_backward_30s.svg';
   static const icMobileForward30 = '$_svgPath/mobile_forward_30s.svg';
+  static const icDownloadFile = '$_svgPath/ic_download_file.svg';
+
+  /* Files */
+  static const cameraTemplateImport = 'assets/Camera_Template_Import.xlsx';
+
+  static const icFile = '$_svgPath/ic_file.svg';
+  static const icError = '$_svgPath/ic_error.svg';
+  static const icCloseFilled = '$_svgPath/ic_close.svg';
 }

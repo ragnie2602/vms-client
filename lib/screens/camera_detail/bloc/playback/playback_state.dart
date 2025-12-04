@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'playback_bloc.dart';
 
+enum PlaybackType { only, multi }
+
 sealed class PlaybackState extends BaseState {
   const PlaybackState();
 }
@@ -38,11 +40,16 @@ class PlaybackSuccess extends PlaybackState {
   });
 
   @override
-  StateType get type => playbacks.isNotEmpty ? StateType.success : StateType.empty;
+  StateType get type =>
+      playbacks.isNotEmpty ? StateType.success : StateType.empty;
   @override
   List<Object?> get props => [playbacks, initialIndex, currentIndex];
 
-  PlaybackSuccess copyWith({List<PlaybackVideo>? playbacks, int? currentIndex, int? initialIndex}) {
+  PlaybackSuccess copyWith({
+    List<PlaybackVideo>? playbacks,
+    int? currentIndex,
+    int? initialIndex,
+  }) {
     return PlaybackSuccess(
       playbacks: playbacks ?? this.playbacks,
       currentIndex: currentIndex ?? this.currentIndex,

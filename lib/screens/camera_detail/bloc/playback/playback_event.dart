@@ -30,3 +30,10 @@ class DownloadPlayback extends PlaybackEvent {
     this.onError,
   });
 }
+
+class ChangeMultiPlaybackEvent extends PlaybackEvent {
+  final List<int>? id;
+  final DateTime? date;
+  final bool isMulti;
+  const ChangeMultiPlaybackEvent({required this.isMulti, this.date, this.id});
+}
