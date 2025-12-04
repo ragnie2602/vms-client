@@ -96,17 +96,16 @@ class MultiPlaybackBloc
     required CameraEntity camera,
     required DateTime playbackDate,
   }) async {
-    final res = await playbackRepository.getTimeShiftVideoCloudCamera(
+    return (await playbackRepository.getTimeShiftVideoCloudCamera(
       cameraId: camera.id,
-      currentTime: playbackDate.endOfDay.microsecondsSinceEpoch ~/ 1000,
+      currentTime: playbackDate.endOfDay.millisecondsSinceEpoch ~/ 1000,
       timeZone: 7,
-    );
-    return res.fold(
-      (onFailure) {
+    )).fold(
+      (failure) {
         return [];
       },
-      (onSuccess) {
-        return onSuccess;
+      (playbacks) {
+        return playbacks;
       },
     );
   }
