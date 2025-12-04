@@ -132,12 +132,14 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
                         if (item != null) {
                           return Stack(
                             children: [
-                              PlaybackPlayer(
-                                initialIndex: 0,
-                                name: item.camera.name,
-                                controller: item.playerController,
-                                playlist: item.listVideoPlaybacks ?? [],
-                              ),
+                              (item.listVideoPlaybacks ?? []).isEmpty
+                                  ? _EmptyRecordCameraWidget()
+                                  : PlaybackPlayer(
+                                      initialIndex: 0,
+                                      name: item.camera.name,
+                                      controller: item.playerController,
+                                      playlist: item.listVideoPlaybacks ?? [],
+                                    ),
                               // Close button
                               Positioned(
                                 top: 0,
@@ -155,7 +157,7 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
                                     padding: const EdgeInsets.all(2),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(3),
-                                      color: AppColors.black.withOpacity(0.6),
+                                      color: const Color(0x99000000),
                                     ),
                                     margin: const EdgeInsets.symmetric(
                                       vertical: 10,
@@ -230,6 +232,38 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
           ),
         );
       },
+    );
+  }
+}
+
+class _EmptyRecordCameraWidget extends StatelessWidget {
+  const _EmptyRecordCameraWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: AppColors.black,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(AppAssets.icCameraRecord),
+            Padding(
+              padding: EdgeInsetsGeometry.only(top: 5),
+              child: Text(
+                'Không có dữ liệu ghi hình tại thời điểm này',
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
