@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_control_camera_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_user_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_input.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_output.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
@@ -27,6 +28,7 @@ class ControlCameraBloc
   final FilterCameraUseCase filterCameraUseCase;
   final FilterCameraNoGroupUseCase filterCameraNoGroupUseCase;
   final FilterTagCameraUseCase filterTagCameraUseCase;
+  final ExportFileUserCase exportFileUserCase;
 
   final DeleteCameraUseCase deleteCameraUseCase;
   ControlCameraBloc({
@@ -35,6 +37,7 @@ class ControlCameraBloc
     required this.filterCameraNoGroupUseCase,
     required this.filterTagCameraUseCase,
     required this.deleteCameraUseCase,
+    required this.exportFileUserCase,
   }) : super(const ControlCameraState()) {
     on<ValidateCameraEvent>(_onValidateCamera);
     on<GetListCameraEvent>(_onGetListCamera);
@@ -61,6 +64,7 @@ class ControlCameraBloc
     on<DeleteTagEvent>(_onDeleteTag);
     on<UpdateTagEvent>(_onUpdateTag);
     on<ImportCameraEvent>(_onImportCamera);
+    on<ExportExcelEvent>(_onExportExcel);
   }
 
   // list camera
@@ -458,8 +462,8 @@ class ControlCameraBloc
       tagName: event.tagName,
       listCameraOrigin: listCamera,
     );
-  //  final FilterTagCameraOutput output = filterTagCameraUseCase.execute(input);
-  //  emit(ListCameraSuccessState(cameras: output.listCamera ?? []));
+    //  final FilterTagCameraOutput output = filterTagCameraUseCase.execute(input);
+    //  emit(ListCameraSuccessState(cameras: output.listCamera ?? []));
   }
 
   FutureOr<void> _onCreateTag(
@@ -496,6 +500,18 @@ class ControlCameraBloc
       (onFailure) => emit(UpdateTagFailState(res.left.toString())),
       (onSuccess) => emit(UpdateTagSuccessState(tag: onSuccess)),
     );
+  }
+
+  FutureOr<void> _onExportExcel(
+    ExportExcelEvent event,
+    Emitter<ControlCameraState> emit,
+  ) async {
+    try {
+      await ExportFileUserCase.exportExcel(event.listCamera);
+      emit(const ExportExcelSuccessState());
+    } catch (e) {
+      emit(ExportExcelFailState(e.toString()));
+    }
   }
 
   FutureOr<void> _onImportCamera(

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_user_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
@@ -177,6 +178,7 @@ class AppRouter {
             ),
             BlocProvider(
               create: (context) => ControlCameraBloc(
+                exportFileUserCase: context.read<ExportFileUserCase>(),
                 filterTagCameraUseCase: context.read<FilterTagCameraUseCase>(),
                 controlGroupRepository: context.read(),
                 filterCameraUseCase: context.read<FilterCameraUseCase>(),
