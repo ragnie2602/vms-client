@@ -224,3 +224,8 @@ class UpdateTagEvent extends ControlCameraEvent {
   final TagEntity tag;
   const UpdateTagEvent(this.tag);
 }
+
+class ExportExcelEvent extends ControlCameraEvent {
+  final List<CameraEntity> listCamera;
+  const ExportExcelEvent({required this.listCamera});
+}
