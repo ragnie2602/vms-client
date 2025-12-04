@@ -50,7 +50,7 @@ class _ControlVolumeState extends State<ControlVolume> {
                           );
                         }),
                   child: SvgPicture.asset(
-                    volume == 100
+                    volume == 1
                         ? AppAssets.icVolumeFull
                         : volume == 0
                         ? AppAssets.icVolumeMuted
@@ -79,7 +79,7 @@ class _ControlVolumeState extends State<ControlVolume> {
                             child: Slider(
                               padding: EdgeInsets.zero,
                               min: 0,
-                              max: 100,
+                              max: 1,
                               activeColor: Colors.black,
                               inactiveColor: Colors.grey,
                               value: volume,

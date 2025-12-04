@@ -4,6 +4,8 @@ import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 
 import '../../domain/entities/camera/add_camera.dart';
@@ -15,16 +17,26 @@ class CameraRepository extends BaseRepository implements ICameraRepository {
   const CameraRepository(this.service);
 
   @override
-  Future<Either<Failure, List<CameraEntity>>> getAllCamera({List<int>? cameraId, int? status, int? ivaType}) async {
+  Future<Either<Failure, List<CameraEntity>>> getAllCamera({
+    List<int>? cameraId,
+    int? status,
+    int? ivaType,
+  }) async {
     return await catchError<List<CameraEntity>>(() async {
-      final cameras = await service.getAllCamera(cameraId: cameraId, status: status, ivaType: ivaType);
+      final cameras = await service.getAllCamera(
+        cameraId: cameraId,
+        status: status,
+        ivaType: ivaType,
+      );
 
       return Right(cameras.map((e) => e.toDomain()).toList());
     });
   }
 
   @override
-  Future<Either<Failure, List<CameraEntity>>> getAllCamerasInGroup({required List<int> groupId}) async {
+  Future<Either<Failure, List<CameraEntity>>> getAllCamerasInGroup({
+    required List<int> groupId,
+  }) async {
     return await catchError<List<CameraEntity>>(() async {
       final cameras = await service.getAllCamerasInGroup(groupId: groupId);
       return Right(cameras.map((e) => e.toDomain()).toList());
@@ -53,7 +65,9 @@ class CameraRepository extends BaseRepository implements ICameraRepository {
         groupId: groupId,
         subStreamUrls: subStreamUrls,
       );
-      return Right(AddCameraEntity(cameraId: reply.cameraId, camera: reply.camera));
+      return Right(
+        AddCameraEntity(cameraId: reply.cameraId, camera: reply.camera),
+      );
     });
   }
 
@@ -98,6 +112,21 @@ class CameraRepository extends BaseRepository implements ICameraRepository {
     return await catchError<CameraInfoEntity>(() async {
       final cameraInfo = await service.getCameraInfo(cameraId: cameraId);
       return Right(cameraInfo.toDomain());
+    });
+  }
+
+  @override
+  Future<Either<Failure, ImportCameraEntity>> importCamera({
+    required List<ImportCameraCell> cameras,
+  }) async {
+    return await catchError<ImportCameraEntity>(() async {
+      final importCamera = await service.importCamera(cameras: cameras);
+      return Right(
+        ImportCameraEntity(
+          cameras: importCamera.cameras,
+          cameraError: importCamera.cameraError,
+        ),
+      );
     });
   }
 }

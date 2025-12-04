@@ -18,6 +18,7 @@ import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 import 'components/dual_task_queue.dart';
 import 'components/fullscreen_portal.dart';
@@ -37,6 +38,8 @@ class MonitorPlayer extends StatefulWidget {
     this.onInitializedValues,
     this.onLostConnection,
     this.enableZoom = false,
+    this.syncSystemVolume = false,
+    this.onVolumeChanged,
   }) : super(key: key ?? controller?.ref);
 
   final String source;
@@ -50,6 +53,8 @@ class MonitorPlayer extends StatefulWidget {
   final Function({required double volume, required double speed})? onInitializedValues;
   final Function()? onLostConnection;
   final bool enableZoom;
+  final bool syncSystemVolume;
+  final Function(double volume)? onVolumeChanged;
 
   @override
   State<MonitorPlayer> createState() => MonitorPlayerState();
@@ -93,8 +98,18 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
     _init();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.onInitializedValues?.call(volume: 100, speed: 1);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.syncSystemVolume) {
+        _player.volume = await VolumeController.instance.getVolume();
+        widget.onInitializedValues?.call(volume: _player.volume, speed: 1);
+
+        VolumeController.instance.addListener((volume) {
+          _player.volume = volume;
+          widget.onVolumeChanged?.call(volume);
+        }, fetchInitialVolume: false);
+      } else {
+        widget.onInitializedValues?.call(volume: 1, speed: 1);
+      }
     });
   }
 
@@ -138,6 +153,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   @override
   void dispose() {
+    if (widget.syncSystemVolume) VolumeController.instance.removeListener();
     _zoomAnimationController?.dispose();
     _zoomController?.dispose();
     _dualQueue.dispose();
@@ -341,7 +357,17 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   void changeVolume(double volume) {
     _dualQueue.add(() async {
-      _player.volume = volume / 100;
+      if (volume == _player.volume) return;
+      _player.volume = volume;
+
+      // Đồng bộ volume với hệ thống
+      if (widget.syncSystemVolume) {
+        VolumeController.instance.showSystemUI = true;
+        await VolumeController.instance.setVolume(_player.volume);
+        VolumeController.instance.showSystemUI = false;
+      }
+
+      widget.onVolumeChanged?.call(_player.volume);
       await Future.delayed(Duration(milliseconds: 100));
     });
   }
@@ -446,7 +472,9 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
                   style: TextStyle(fontSize: 13, color: Colors.white),
                 ),
               ),
-              PlayerState.initializing => const Center(child: CircularProgressIndicator.adaptive()),
+              PlayerState.initializing => const Center(
+                child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
+              ),
               PlayerState.error || PlayerState.error_again => _buildError(),
               _ => Stack(
                 fit: StackFit.expand,

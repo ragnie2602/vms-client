@@ -1,7 +1,7 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 class ControlCameraEvent extends BaseEvent {
@@ -223,4 +223,14 @@ class DeleteTagEvent extends ControlCameraEvent {
 class UpdateTagEvent extends ControlCameraEvent {
   final TagEntity tag;
   const UpdateTagEvent(this.tag);
+}
+
+class ExportExcelEvent extends ControlCameraEvent {
+  final List<CameraEntity> listCamera;
+  const ExportExcelEvent({required this.listCamera});
+}
+
+class ImportCameraEvent extends ControlCameraEvent {
+  final List<ImportCameraCell> cameras;
+  const ImportCameraEvent({required this.cameras});
 }

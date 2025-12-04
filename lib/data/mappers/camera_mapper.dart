@@ -15,6 +15,8 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_role.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
+import 'package:vms_flutter_client/domain/entities/camera/import_camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/remove_camera_from_group_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
@@ -61,7 +63,11 @@ extension CameraStreamPtzRangeValueMapper on pb.CameraStream_PtzRange_range {
 
 extension CameraStreamPtzRangeMapper on pb.CameraStream_PtzRange {
   CameraStreamPtzRange toDomain() {
-    return CameraStreamPtzRange(x: x.toDomain(), y: y.toDomain(), z: z.toDomain());
+    return CameraStreamPtzRange(
+      x: x.toDomain(),
+      y: y.toDomain(),
+      z: z.toDomain(),
+    );
   }
 }
 
@@ -71,7 +77,8 @@ extension CameraStreamDefaultURLMapper on pb.CameraStream_DefaultURL {
   }
 }
 
-extension CameraStreamUrlStreamTypeMapper on pb.CameraStream_UrlStream_StreamType {
+extension CameraStreamUrlStreamTypeMapper
+    on pb.CameraStream_UrlStream_StreamType {
   CameraStreamUrlStreamType toDomain() {
     return CameraStreamUrlStreamType.fromValue(value);
   }
@@ -138,7 +145,13 @@ extension CameraMapper on pb.Camera {
       cameraRole: role.toDomain(),
       isOnline: on,
       tags: tags
-          .map((e) => TagEntity(id: e.tagId, name: e.tagName, color: Color(int.parse(e.tagColor))))
+          .map(
+            (e) => TagEntity(
+              id: e.tagId,
+              name: e.tagName,
+              color: Color(int.parse(e.tagColor)),
+            ),
+          )
           .toSet(),
       cameraConfig: config.toDomain(),
     );
@@ -186,5 +199,30 @@ extension RemoveCameraFromGroupMapper on RemoveCameraFormGroup_Reply {
 extension CameraInfoExt on GetCameraInfo_Reply {
   CameraInfoEntity toDomain() {
     return CameraInfoEntity(infoData: infoData, valueData: valueData);
+  }
+}
+
+extension ImportCameraCellMapper on ImportCamera_ImportCell {
+  ImportCameraCell toDomain() {
+    return ImportCameraCell(
+      indexNumer,
+      cameraType.toDomain().name,
+      cameraName,
+      onvifXaadr,
+      userName,
+      password,
+      mainStream,
+      subStream,
+      error,
+    );
+  }
+}
+
+extension ImportCameraMapper on ImportCamera_Reply {
+  ImportCameraEntity toDomain() {
+    return ImportCameraEntity(
+      cameras: caneras.map((e) => e.toDomain()).toList(),
+      cameraError: cameraError.map((e) => e.toDomain()).toList(),
+    );
   }
 }

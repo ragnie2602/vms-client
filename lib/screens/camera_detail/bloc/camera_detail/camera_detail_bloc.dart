@@ -81,8 +81,9 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
   }
 
   FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraDetailState> emit) async {
-    state.playerController.changeVolume?.call(event.volume);
+    if (state.volume == event.volume) return;
 
+    state.playerController.changeVolume?.call(event.volume);
     emit(state.copyWith(volume: event.volume));
   }
 
