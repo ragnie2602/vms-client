@@ -118,7 +118,7 @@ class _MenuAction extends StatelessWidget {
           MenuSelectDatePlayback(),
           ActionItem(
             title: 'Xem từng camera',
-            icon: AppAssets.icMenu,
+            icon: AppAssets.icMultiPlayback,
             isSelected: false,
             onTap: () {
               Navigator.pop(context);

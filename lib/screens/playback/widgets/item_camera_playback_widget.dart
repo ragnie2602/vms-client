@@ -134,7 +134,7 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
                       },
                     ),
                     // chụp màn hình
-                    _buildControlItem(AppAssets.icCamera, () async {
+                    _buildControlItem(AppAssets.iconCamera, () async {
                       await _takeSnapshot(context);
                     }),
                     // phóng to

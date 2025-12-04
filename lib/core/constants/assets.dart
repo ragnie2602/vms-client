@@ -111,6 +111,8 @@ class AppAssets {
   // multi playback
   static const icAddCam = '$_svgPath/icon_add_cam.svg';
   static const icCameraRecord = '$_svgPath/ic_camera_record.svg';
+  static const iconCamera = '$_svgPath/ic_camera.svg';
+  static const icMultiPlayback = '$_svgPath/ic_multi_playback.svg';
 
 
   static const icLogout = '$_svgPath/ic_logout.svg';
