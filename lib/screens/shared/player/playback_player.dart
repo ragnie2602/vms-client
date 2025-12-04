@@ -129,7 +129,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     _cancelTimers();
     _completerTimeoutTimer?.cancel();
     try {
-      _player.dispose();
+      _player.dispose(synchronized: false);
     } catch (_) {}
     _status.dispose();
     _state.dispose();
