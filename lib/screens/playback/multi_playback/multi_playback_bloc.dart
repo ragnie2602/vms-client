@@ -2,22 +2,28 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.dart';
+import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_state.dart';
+import 'package:vms_flutter_client/screens/shared/player/sources.dart';
 
 class MultiPlaybackBloc
     extends BaseBloc<MultiPlaybackEvent, MultiPlaybackState> {
   final ICameraRepository cameraRepository;
-
-  MultiPlaybackBloc({required this.cameraRepository})
-    : super(
-        MultiPlaybackState(
-          playbackDate: DateTime.now(),
-          multiPlaybackStatus: MultiPlaybackStatus.init,
-        ),
-      ) {
+  final IPlaybackRepository playbackRepository;
+  MultiPlaybackBloc({
+    required this.cameraRepository,
+    required this.playbackRepository,
+  }) : super(
+         MultiPlaybackState(
+           playbackDate: DateTime.now(),
+           multiPlaybackStatus: MultiPlaybackStatus.init,
+         ),
+       ) {
     on<InitEvent>(_init);
     on<ChangePlaybackDate>(_onChangePlaybackDate);
     on<AddCameraEvent>(_onAddNewCamera);
@@ -70,11 +76,38 @@ class MultiPlaybackBloc
   FutureOr<void> _onAddNewCamera(
     AddCameraEvent event,
     Emitter<MultiPlaybackState> emit,
-  ) {
-    List<CameraEntity>? _listCam = List.from(state.listCamera ?? []);
-    List<int>? _listIndexCam = List.from(state.listIndexCamera ?? []);
-    _listCam.add(event.newCam);
-    _listIndexCam.add(event.indexCam);
-    emit(state.copyWith(listCamera: _listCam, listIndexCamera: _listIndexCam));
+  ) async {
+    List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
+    final videos = await getVideoPlaybacksByCameraId(
+      camera: event.newCam,
+      playbackDate: state.playbackDate,
+    );
+    ItemPlaybackModel newItem = ItemPlaybackModel(
+      index: event.indexCam,
+      camera: event.newCam,
+      listVideoPlaybacks: videos?.reversed.toList(),
+      playerController: PlayerController(),
+    );
+    _list.add(newItem);
+    emit(state.copyWith(listItemCamPlayback: _list));
+  }
+
+  Future<List<PlaybackVideo>?> getVideoPlaybacksByCameraId({
+    required CameraEntity camera,
+    required DateTime playbackDate,
+  }) async {
+    final res = await playbackRepository.getTimeShiftVideoCloudCamera(
+      cameraId: camera.id,
+      currentTime: playbackDate.endOfDay.microsecondsSinceEpoch ~/ 1000,
+      timeZone: 7,
+    );
+    return res.fold(
+      (onFailure) {
+        return [];
+      },
+      (onSuccess) {
+        return onSuccess;
+      },
+    );
   }
 }

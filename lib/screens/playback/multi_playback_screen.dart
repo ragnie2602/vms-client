@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_state.dart';
@@ -10,6 +13,8 @@ import 'package:vms_flutter_client/screens/playback/widgets/camera_selection_pop
 import 'package:vms_flutter_client/screens/playback/widgets/menu_select_date_playback.dart';
 import 'package:vms_flutter_client/screens/playback/widgets/multi_playback_timeshift_widget.dart';
 import 'package:vms_flutter_client/screens/shared/action_item.dart';
+import 'package:vms_flutter_client/screens/shared/player/playback_player.dart';
+import 'package:vms_flutter_client/screens/shared/player/sources.dart';
 
 class MultiPlaybackScreen extends StatefulWidget {
   const MultiPlaybackScreen({super.key});
@@ -234,21 +239,43 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
             itemBuilder: (context, index) {
               return Container(
                 color: AppColors.white,
-                child: Center(
-                  child: CompositedTransformTarget(
-                    link: _layerLinks[index],
-                    child: InkWell(
-                      onTap: () => _showCameraPopup(context, index),
-                      child: SvgPicture.asset(
-                        AppAssets.icAddCam,
-                        colorFilter: ColorFilter.mode(
-                          AppColors.black,
-                          BlendMode.srcIn,
-                        ),
-                      ),
+                // check view cam
+                child:
+                    BlocSelector<
+                      MultiPlaybackBloc,
+                      MultiPlaybackState,
+                      List<ItemPlaybackModel>?
+                    >(
+                      selector: (state) => state.listItemCamPlayback,
+                      builder: (context, List<ItemPlaybackModel>? listItem) {
+                        // nếu cam được add vào index nào của gridview => update view vào đó
+                        final ItemPlaybackModel? item = listItem
+                            ?.firstWhereOrNull((e) => e.index == index);
+                        if (item != null) {
+                          return PlaybackPlayer(
+                            initialIndex: 0,
+                            name: item.camera.name,
+                            controller: item.playerController,
+                            playlist: item.listVideoPlaybacks ?? [],
+                          );
+                        }
+                        return Center(
+                          child: CompositedTransformTarget(
+                            link: _layerLinks[index],
+                            child: InkWell(
+                              onTap: () => _showCameraPopup(context, index),
+                              child: SvgPicture.asset(
+                                AppAssets.icAddCam,
+                                colorFilter: ColorFilter.mode(
+                                  AppColors.black,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                ),
               );
             },
           ),

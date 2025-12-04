@@ -197,7 +197,7 @@ class AppRouter {
                 searchEmapUseCase: context.read<SearchEmapUseCase>(),
               ),
             ),
-            BlocProvider(create: (context) => MultiPlaybackBloc(cameraRepository: context.read())),
+            BlocProvider(create: (context) => MultiPlaybackBloc(cameraRepository: context.read(), playbackRepository: context.read())),
             BlocProvider(
               create: (context) => ScheduleBloc(
                 cameraRepository: context.read(),

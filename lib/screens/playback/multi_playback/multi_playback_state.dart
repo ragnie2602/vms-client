@@ -1,5 +1,6 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.dart';
 import 'package:vms_flutter_client/screens/camera_detail/components/player_timeline.dart';
 
 enum MultiPlaybackStatus { init, loading, success, fail }
@@ -7,10 +8,10 @@ enum MultiPlaybackStatus { init, loading, success, fail }
 class MultiPlaybackState extends BaseState {
   final MultiPlaybackStatus multiPlaybackStatus;
 
-  // list camera
-  final List<CameraEntity>? listCamera;
   final List<CameraEntity>? listCameraOrigin;
-  final List<int>? listIndexCamera;
+  //
+  final List<ItemPlaybackModel>? listItemCamPlayback;
+
   // ngày muốn xem lại
   final DateTime playbackDate;
   // mode xem lại
@@ -24,8 +25,7 @@ class MultiPlaybackState extends BaseState {
     required this.playbackDate,
     required this.multiPlaybackStatus,
     this.listCameraOrigin,
-    this.listCamera,
-    this.listIndexCamera,
+    this.listItemCamPlayback,
     this.timelineDisplayMode = TimelineDisplayMode.h8,
     this.volume = 100,
     this.speed = 1,
@@ -33,9 +33,8 @@ class MultiPlaybackState extends BaseState {
   @override
   List<Object?> get props => [
     multiPlaybackStatus,
-    listCamera,
     listCameraOrigin,
-    listIndexCamera,
+    listItemCamPlayback,
     playbackDate,
     timelineDisplayMode,
     volume,
@@ -45,9 +44,8 @@ class MultiPlaybackState extends BaseState {
   MultiPlaybackState copyWith({
     MultiPlaybackStatus? multiPlaybackStatus,
     DateTime? playbackDate,
-    List<CameraEntity>? listCamera,
     List<CameraEntity>? listCameraOrigin,
-    List<int>? listIndexCamera,
+    List<ItemPlaybackModel>? listItemCamPlayback,
     TimelineDisplayMode? timelineDisplayMode,
     double? volume,
     double? speed,
@@ -56,8 +54,7 @@ class MultiPlaybackState extends BaseState {
       multiPlaybackStatus: multiPlaybackStatus ?? this.multiPlaybackStatus,
       playbackDate: playbackDate ?? this.playbackDate,
       listCameraOrigin: listCameraOrigin ?? this.listCameraOrigin,
-      listCamera: listCamera ?? this.listCamera,
-      listIndexCamera: listIndexCamera ?? this.listIndexCamera,
+      listItemCamPlayback: listItemCamPlayback?? this.listItemCamPlayback,
       timelineDisplayMode: timelineDisplayMode ?? this.timelineDisplayMode,
       volume: volume ?? this.volume,
       speed: speed ?? this.speed,

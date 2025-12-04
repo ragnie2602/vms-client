@@ -13,12 +13,17 @@ class ChangePlaybackDate extends MultiPlaybackEvent {
   final DateTime date;
   const ChangePlaybackDate({required this.date});
 }
+
 class AddCameraEvent extends MultiPlaybackEvent {
   final CameraEntity newCam;
   final int indexCam;
   const AddCameraEvent({required this.newCam, required this.indexCam});
 }
 
-class RemoveCameraEvent extends MultiPlaybackEvent {}
+class RemoveCameraEvent extends MultiPlaybackEvent {
+  final CameraEntity camera;
+  final int indexCam;
+  const RemoveCameraEvent({required this.camera, required this.indexCam});
+}
 
 // class OnUpdate
