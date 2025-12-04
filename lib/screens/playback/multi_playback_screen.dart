@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/screens/playback/widgets/multi_player_controls.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_state.dart';
@@ -96,6 +97,7 @@ class _MultiPlaybackScreenState extends State<MultiPlaybackScreen> {
             ),
           ),
           // thanh điều khiển (pause, tua)
+          MultiPlayerControls(),
         ],
       ),
     );

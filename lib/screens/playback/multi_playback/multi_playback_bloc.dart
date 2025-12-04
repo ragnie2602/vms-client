@@ -21,6 +21,10 @@ class MultiPlaybackBloc extends BaseBloc<MultiPlaybackEvent, MultiPlaybackState>
     on<ChangeTimelineDisplayMode>(_onChangeTimelineDisplayMode);
     on<AddCameraEvent>(_onAddNewCamera);
     on<RemoveCameraEvent>(_onRemoveCamera);
+    on<MultiTogglePlayEvent>(_onTogglePlay);
+    on<MultiSeekEvent>(_onSeek);
+    on<MultiChangeSpeedEvent>(_onChangeSpeed);
+    on<MultiChangeVolumeEvent>(_onChangeVolume);
   }
   FutureOr<void> _init(InitEvent event, Emitter<MultiPlaybackState> emit) async {
     //init
@@ -83,5 +87,45 @@ class MultiPlaybackBloc extends BaseBloc<MultiPlaybackEvent, MultiPlaybackState>
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
     _list.removeWhere((e) => e.index == event.indexCam);
     emit(state.copyWith(listItemCamPlayback: _list));
+  }
+
+  FutureOr<void> _onTogglePlay(
+    MultiTogglePlayEvent event,
+    Emitter<MultiPlaybackState> emit,
+  ) {
+    final isPlaying = !state.isPlaying;
+    for (var item in state.listItemCamPlayback ?? []) {
+      item.playerController.togglePlay?.call();
+    }
+    emit(state.copyWith(isPlaying: isPlaying));
+  }
+
+  FutureOr<void> _onSeek(
+    MultiSeekEvent event,
+    Emitter<MultiPlaybackState> emit,
+  ) {
+    for (var item in state.listItemCamPlayback ?? []) {
+      item.playerController.seek?.call(event.duration);
+    }
+  }
+
+  FutureOr<void> _onChangeSpeed(
+    MultiChangeSpeedEvent event,
+    Emitter<MultiPlaybackState> emit,
+  ) {
+    for (var item in state.listItemCamPlayback ?? []) {
+      item.playerController.changeSpeed?.call(event.speed);
+    }
+    emit(state.copyWith(speed: event.speed));
+  }
+
+  FutureOr<void> _onChangeVolume(
+    MultiChangeVolumeEvent event,
+    Emitter<MultiPlaybackState> emit,
+  ) {
+    for (var item in state.listItemCamPlayback ?? []) {
+      item.playerController.changeVolume?.call(event.volume);
+    }
+    emit(state.copyWith(volume: event.volume));
   }
 }
