@@ -39,6 +39,8 @@ class PlaybackPlayer extends StatefulWidget {
     this.syncSystemVolume = false,
     this.onVolumeChanged,
     this.controlsBuilder,
+    this.pauseUponEnteringBackgroundMode = true,
+    this.resumeUponEnteringForegroundMode = true,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -53,12 +55,15 @@ class PlaybackPlayer extends StatefulWidget {
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
   final Widget Function(bool isFullscreen)? controlsBuilder;
+  final bool pauseUponEnteringBackgroundMode;
+  final bool resumeUponEnteringForegroundMode;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
 }
 
-class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderStateMixin {
+class PlaybackPlayerState extends State<PlaybackPlayer>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
   final ValueNotifier<PlayerState> _state = ValueNotifier(PlayerState.initializing);
 
@@ -98,6 +103,25 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   PlaybackVideo? get nextPlayback =>
       currentIndex < widget.playlist.length - 1 ? widget.playlist[currentIndex + 1] : null;
 
+  bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.pauseUponEnteringBackgroundMode) {
+      if ([AppLifecycleState.paused, AppLifecycleState.detached].contains(state)) {
+        if (_player.state == PlaybackState.playing) {
+          _pauseDueToPauseUponEnteringBackgroundMode = true;
+          togglePlay();
+        }
+      } else {
+        if (widget.resumeUponEnteringForegroundMode && _pauseDueToPauseUponEnteringBackgroundMode) {
+          _pauseDueToPauseUponEnteringBackgroundMode = false;
+          togglePlay();
+        }
+      }
+    }
+    super.didChangeAppLifecycleState(state);
+  }
+
   @override
   void initState() {
     _initZoom();
@@ -115,6 +139,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     _playlistIndex.addListener(() => widget.controller.markPlaybackChanged(currentIndex));
 
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _zoomAnimationController = AnimationController(vsync: this, duration: Durations.medium1);
 
     _playlistMapper = Map.fromEntries(
@@ -142,6 +167,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
   @override
   void dispose() {
+    _player.pause();
+    WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
     _accumulatingSeekQueue.dispose();
     _volumeQueue.dispose();

@@ -13,8 +13,8 @@ import 'package:vms_flutter_client/core/constants/common_extensions.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/background_task.dart';
+import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
@@ -41,6 +41,8 @@ class MonitorPlayer extends StatefulWidget {
     this.syncSystemVolume = false,
     this.onVolumeChanged,
     this.controlsBuilder,
+    this.pauseUponEnteringBackgroundMode = true,
+    this.resumeUponEnteringForegroundMode = true,
   }) : super(key: key ?? controller?.ref);
 
   final String source;
@@ -57,12 +59,15 @@ class MonitorPlayer extends StatefulWidget {
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
   final Widget Function(bool isFullscreen)? controlsBuilder;
+  final bool pauseUponEnteringBackgroundMode;
+  final bool resumeUponEnteringForegroundMode;
 
   @override
   State<MonitorPlayer> createState() => MonitorPlayerState();
 }
 
-class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMixin {
+class MonitorPlayerState extends State<MonitorPlayer>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
   final ValueNotifier<PlayerState> _state = ValueNotifier(PlayerState.initializing);
 
@@ -88,6 +93,25 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
+  bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.pauseUponEnteringBackgroundMode) {
+      if ([AppLifecycleState.paused, AppLifecycleState.detached].contains(state)) {
+        if (_player.state == PlaybackState.playing) {
+          _pauseDueToPauseUponEnteringBackgroundMode = true;
+          togglePlay();
+        }
+      } else {
+        if (widget.resumeUponEnteringForegroundMode && _pauseDueToPauseUponEnteringBackgroundMode) {
+          _pauseDueToPauseUponEnteringBackgroundMode = false;
+          togglePlay();
+        }
+      }
+    }
+    super.didChangeAppLifecycleState(state);
+  }
+
   @override
   void initState() {
     _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
@@ -97,6 +121,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     _attachController();
 
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     _init();
 
@@ -156,6 +181,8 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   @override
   void dispose() {
+    _player.pause();
+    WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
     _zoomAnimationController?.dispose();
     _zoomController?.dispose();
