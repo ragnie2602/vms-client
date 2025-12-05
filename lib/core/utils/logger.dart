@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -10,13 +11,21 @@ import '../error_service.dart';
 class Logger {
   Logger._();
 
+  static void _showLog(String message) {
+    if (Platform.isAndroid || Platform.isIOS) {
+      dev.log(message, name: '🔥');
+    } else {
+      stdout.writeln(message);
+    }
+  }
+
   static void log(String message, {String tag = 'VMS', bool writeLog = false}) {
     if (writeLog) ErrorService.record(tag, message, null, level: 'INFO');
 
     if (kReleaseMode) return;
 
     final colorTag = _wrapWithColor('info', '[$tag]', needBackground: true);
-    stdout.writeln("$colorTag ${_wrapWithColor('info', message)}");
+    _showLog("$colorTag ${_wrapWithColor('info', message)}");
   }
 
   static void warn(String message, {String tag = 'VMS', bool writeLog = false}) {
@@ -25,7 +34,7 @@ class Logger {
     if (kReleaseMode) return;
 
     final colorTag = _wrapWithColor('warn', '[$tag]', needBackground: true);
-    stdout.writeln("$colorTag ${_wrapWithColor('warn', message)}");
+    _showLog("$colorTag ${_wrapWithColor('warn', message)}");
   }
 
   static void onMdkLog(LogLevel level, String message) {
@@ -36,14 +45,14 @@ class Logger {
       '[MDK:::${level.name.toUpperCase()}]',
       needBackground: true,
     );
-    stdout.writeln("$colorTag ${_wrapWithColor('trace', message)}");
+    _showLog("$colorTag ${_wrapWithColor('trace', message)}");
   }
 
   static void error(Object? error, {String tag = 'VMS', bool writeLog = false}) {
     if (writeLog && error != null) {
       ErrorService.record('APP LOG', error, StackTrace.current, level: 'ERROR');
     }
-    
+
     if (kReleaseMode) return;
 
     String message = _wrapWithColor('error', stringifyObject(error));
@@ -69,7 +78,7 @@ class Logger {
     ];
     final traceStr = traces.map((line) => "\x1B[2m$line$_reset").join('\n');
 
-    stdout.writeln("$message\n$traceStr\n");
+    _showLog("$message\n$traceStr\n");
   }
 
   static final Map<String, Map<String, String>> _colors = {

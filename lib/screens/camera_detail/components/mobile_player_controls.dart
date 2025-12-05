@@ -42,10 +42,9 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
       await Gal.putImage(tempPath);
       File(tempPath).delete();
 
-      // TODO: Cập nhập kiểu thông báo theo figma
       ToastUtil.toastSuccess(
         title: Text(
-          "Đã chụp hình",
+          "Đã lưu ảnh chụp",
           style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
         ),
       );

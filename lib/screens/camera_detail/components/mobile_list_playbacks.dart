@@ -85,6 +85,7 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
                       ?.call(state.playbacks[index].startTime, dateIndex: index),
                   key: ValueKey(state.playbacks[index].playbackId),
                   playback: state.playbacks[index],
+                  isSelected: state.currentIndex == index,
                   backgroundColor: state.currentIndex == index
                       ? AppColors.greyF2F4FA
                       : Colors.white,

@@ -84,7 +84,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
         return _BottomNavigationBarData(
           labels: ['Xem trực tiếp', 'Xem lại'],
           activeAssets: [AppAssets.icVideoOnlineFilled, AppAssets.icPlaybackFilled],
-          assets: [AppAssets.icVideoOnline, AppAssets.icPlayback],
+          assets: [AppAssets.icVideoOn, AppAssets.icPlayback],
           routes: [Routes.cameraDetail, Routes.playback],
         );
       default:

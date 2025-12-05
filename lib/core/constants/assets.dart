@@ -150,6 +150,9 @@ class AppAssets {
    static const icUpload = '$_svgPath/ic_upload.svg';
 
   static const icSpeed = '$_svgPath/ic_speed.svg';
+
+  static const icMobileBackward30 = '$_svgPath/mobile_backward_30s.svg';
+  static const icMobileForward30 = '$_svgPath/mobile_forward_30s.svg';
   static const icDownloadFile = '$_svgPath/ic_download_file.svg';
 
   /* Files */

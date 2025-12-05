@@ -121,7 +121,7 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
   late final int _minorIntervalSize = Duration(
     microseconds: _interval.inMicroseconds ~/ widget.minorTickCount,
   ).inMicroseconds;
-  double overlayWidth = 80;
+  double overlayWidth = 56;
   void _showCurentTimeOverlay() {
     final offsetCentral =
         _time.value.difference(_centralDate.value).inMicroseconds /
@@ -249,16 +249,14 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(
-                            width: 50,
-                            child: Text(
-                              _time.value.format("HH:mm:ss"),
-                              style: AppTypography.style(
-                                11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                              ),
+                          Text(
+                            _time.value.format("HH:mm"),
+                            style: AppTypography.style(
+                              11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
                             ),
+                            textAlign: TextAlign.start,
                           ),
                           SvgPicture.asset(AppAssets.icArrowChevronRight, width: 9, height: 12),
                         ],
