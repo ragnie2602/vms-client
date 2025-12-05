@@ -241,11 +241,23 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
     if (path.isNotEmpty) isSuccess = await bloc.state.playerController.snapshot?.call(path);
 
     if (isSuccess == true) {
-      // ignore: use_build_context_synchronously
-      ToastUtil.toastSuccess(context: context, title: Text('Ảnh chụp thành công!'));
+      ToastUtil.toastSuccess(
+        // ignore: use_build_context_synchronously
+        context: context,
+        title: Text(
+          'Ảnh chụp thành công!',
+          style: AppTypography.style(10, color: AppColors.white, fontWeight: FontWeight.w400),
+        ),
+      );
     } else {
-      // ignore: use_build_context_synchronously
-      ToastUtil.toastFail(context: context, title: Text('Có lỗi xảy ra!'));
+      ToastUtil.toastFail(
+        // ignore: use_build_context_synchronously
+        context: context,
+        title: Text(
+          'Có lỗi xảy ra!',
+          style: AppTypography.style(10, color: AppColors.white, fontWeight: FontWeight.w400),
+        ),
+      );
     }
   }
 
