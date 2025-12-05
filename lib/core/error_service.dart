@@ -21,7 +21,7 @@ class ErrorService {
   static String? get logPath => _logFile?.path;
   static final List<String> _excludedErrors = [
     "PlatformException(media open error, invalid or unsupported media, null, null)",
-    "A RenderFlex overflowed by"
+    "A RenderFlex overflowed by",
   ];
 
   static Future<void> initGlobalErrorHandler(Future<void> Function() app) async {
@@ -148,5 +148,23 @@ class ErrorService {
 
     _logFile = logFile;
     Logger.log("Log file initialized at '${logFile.path}'");
+  }
+
+  static Future<String?> downloadLog(String path) async {
+    return await compute<Map<String, String>, String?>(_downloadLog, {
+      "sourcePath": _logFile!.path,
+      "targetPath": path,
+    });
+  }
+
+  static String? _downloadLog(Map<String, String> data) {
+    final logPath = data["sourcePath"];
+    final targetPath = data["targetPath"];
+    if (logPath == null || targetPath == null) return null;
+
+    final fileName = p.basename(logPath);
+    final destPath = p.join(targetPath, fileName);
+
+    return File(logPath).copySync(destPath).path;
   }
 }
