@@ -40,6 +40,7 @@ class MonitorPlayer extends StatefulWidget {
     this.enableZoom = false,
     this.syncSystemVolume = false,
     this.onVolumeChanged,
+    this.controlsBuilder,
   }) : super(key: key ?? controller?.ref);
 
   final String source;
@@ -55,6 +56,7 @@ class MonitorPlayer extends StatefulWidget {
   final bool enableZoom;
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
+  final Widget Function(bool isFullscreen)? controlsBuilder;
 
   @override
   State<MonitorPlayer> createState() => MonitorPlayerState();
@@ -149,6 +151,7 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     widget.controller!.jumpToDate = null;
     widget.controller!.isInitialized = isInitialized;
     widget.controller!.recording = recording;
+    widget.controller!.status = () => _status;
   }
 
   @override
@@ -502,7 +505,10 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
                   ),
 
                   if (widget.labelBuilder != null) widget.labelBuilder!.call(widget.name),
-                  Positioned.fill(child: _buildPlayerStatus()),
+
+                  Positioned.fill(
+                    child: widget.controlsBuilder?.call(isFullscreen) ?? _buildPlayerStatus(),
+                  ),
                 ],
               ),
             },

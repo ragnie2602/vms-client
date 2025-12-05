@@ -38,6 +38,7 @@ class PlaybackPlayer extends StatefulWidget {
     this.enableZoom = false,
     this.syncSystemVolume = false,
     this.onVolumeChanged,
+    this.controlsBuilder,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -51,6 +52,7 @@ class PlaybackPlayer extends StatefulWidget {
   final bool enableZoom;
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
+  final Widget Function(bool isFullscreen)? controlsBuilder;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
@@ -110,7 +112,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       if (_status.value == PlayerStatus.playing) _shouldSyncPlayerTime = true;
       widget.onStatusChanged?.call(_status.value);
     });
-    _playlistIndex.addListener(() => widget.controller.onPlaybackChanged?.call(currentIndex));
+    _playlistIndex.addListener(() => widget.controller.markPlaybackChanged(currentIndex));
 
     super.initState();
     _zoomAnimationController = AnimationController(vsync: this, duration: Durations.medium1);
@@ -133,8 +135,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
         widget.onInitializedValues?.call(volume: 1, speed: 1);
       }
 
-      widget.controller.onPlaybackChanged?.call(currentIndex);
-      widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
+      widget.controller.markPlaybackChanged(currentIndex);
+      widget.controller.markTimeChanged(currentPlayback.startTime.roundToSecond);
     });
   }
 
@@ -195,6 +197,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     widget.controller.toggleFullscreen = toggleFullscreen;
     widget.controller.jumpToDate = jumpToDateQueue;
     widget.controller.isInitialized = isInitialized;
+    widget.controller.status = () => _status;
+    widget.controller.isSeeking = () => _isSeeking;
+    widget.controller.playerTime = () =>
+        currentPlayback.startTime.add(Duration(milliseconds: _lastPosition));
   }
 
   void _initPlayer() {
@@ -377,7 +383,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
             if (_status.value != PlayerStatus.playing) _status.value = PlayerStatus.playing;
 
             // Syncing time
-            widget.controller.onTimeChanged?.call(
+            widget.controller.markTimeChanged(
               currentPlayback.startTime.add(Duration(milliseconds: pos)).roundToSecond,
             );
           }
@@ -455,11 +461,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     _shouldSyncPlayerTime = _newestIsEmpty = false;
     _isSeeking.value = true;
-    widget.controller.onTimeChanged?.call(date.roundToSecond, dateIndex != null);
+    widget.controller.markTimeChanged(date.roundToSecond, dateIndex != null);
     _seekingCompleter ??= Completer<void>();
 
     final index = dateIndex ?? widget.playlist.atTime(date);
-    widget.controller.onPlaybackChanged?.call(index ?? -1);
+    widget.controller.markPlaybackChanged(index ?? -1);
     if (index == null) {
       _isSeeking.value = false;
       _newestIsEmpty = true;
@@ -488,7 +494,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     // Click ngoài khoảng playback
     if (index == null) {
-      widget.controller.onPlaybackChanged?.call(-1);
+      widget.controller.markPlaybackChanged(-1);
       _state.value = PlayerState.empty;
       _player.pause();
       return;
@@ -712,12 +718,14 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
                   if (Platform.isAndroid || Platform.isIOS)
                     Positioned.fill(
-                      child: MobileControls(
-                        status: _status,
-                        isSeeking: _isSeeking,
-                        togglePlay: togglePlay,
-                        seek: seekQueue,
-                      ),
+                      child:
+                          widget.controlsBuilder?.call(isFullscreen) ??
+                          MobileControls(
+                            status: _status,
+                            isSeeking: _isSeeking,
+                            togglePlay: togglePlay,
+                            seek: seekQueue,
+                          ),
                     )
                   else ...[
                     Positioned.fill(child: _buildPlaybackStatus()),

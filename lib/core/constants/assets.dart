@@ -34,11 +34,13 @@ class AppAssets {
   static const icVolumeHalf = '$_svgPath/volume_half.svg';
   static const icVolumeFull = '$_svgPath/volume_full.svg';
   static const icVolumeMuted = '$_svgPath/volume_muted.svg';
+  static const icVolumeMutedFullscreen = '$_svgPath/volume_muted_fullscreen.svg';
   static const icZoomIn = '$_svgPath/zoom_in.svg';
   static const icZoomOut = '$_svgPath/zoom_out.svg';
   static const icArrowSquareLeft = '$_svgPath/arrow_square_left.svg';
   static const icArrowSquareRight = '$_svgPath/arrow_square_right.svg';
   static const icArrowCircleDown = '$_svgPath/arrow_circle_down.svg';
+  static const icArrowCircleLeft = '$_svgPath/arrow_circle_left.svg';
   static const icArrowCircleUp = '$_svgPath/arrow_circle_up.svg';
   static const icArrowLeft = '$_svgPath/arrow_left.svg';
   static const icBell = '$_svgPath/bell.svg';

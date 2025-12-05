@@ -29,6 +29,10 @@ class ChangeVolume extends CameraDetailEvent {
   const ChangeVolume(this.volume);
 }
 
+class ToggleMute extends CameraDetailEvent {
+  const ToggleMute();
+}
+
 class ChangeSpeed extends CameraDetailEvent {
   final double speed;
   const ChangeSpeed(this.speed);
@@ -54,4 +58,10 @@ class OnRecording extends CameraDetailEvent {
 class ChangeStream extends CameraDetailEvent {
   final CameraStreamUrlStream stream;
   const ChangeStream(this.stream);
+}
+
+class TakeSnapshot extends CameraDetailEvent {
+  final Function()? onSuccess;
+
+  const TakeSnapshot({this.onSuccess});
 }
