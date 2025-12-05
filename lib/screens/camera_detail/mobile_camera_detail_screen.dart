@@ -40,6 +40,11 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
       mode: widget.args.isPlayback ? CameraDetailMode.playback : CameraDetailMode.live,
       camera: widget.args.data,
     );
+
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
   }
 
   Widget _buildPlayback() {
@@ -217,6 +222,10 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
 
   @override
   void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     bloc.close();
     super.dispose();
   }

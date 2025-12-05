@@ -52,28 +52,27 @@ class MobileControlSpeed extends StatelessWidget {
   Widget _buildDialogSpeed(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: IntrinsicWidth(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Tốc độ phát',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.blackOrWhite,
-                ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Tốc độ phát',
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.blackOrWhite,
               ),
-              SizedBox(height: 22),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 5,
-                children: _speeds.map((speed) => _buildItemSpeed(context, speed)).toList(),
-              ),
-            ],
-          ),
+            ),
+            SizedBox(height: 22),
+            Wrap(
+              spacing: 5,
+              runSpacing: 5,
+              alignment: WrapAlignment.center,
+              children: _speeds.map((speed) => _buildItemSpeed(context, speed)).toList(),
+            ),
+          ],
         ),
       ),
     );
@@ -86,17 +85,19 @@ class MobileControlSpeed extends StatelessWidget {
         Material(
           child: InkWell(
             onTap: () => Navigator.of(context, rootNavigator: true).pop(speed),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                color: speed == this.speed ? AppColors.blue15ABFF : AppColors.grey64748B,
-              ),
-              constraints: BoxConstraints(minWidth: 42, minHeight: 23),
-              alignment: Alignment.center,
-              padding: EdgeInsets.symmetric(horizontal: 13, vertical: 4),
-              child: Text(
-                speed.toString(),
-                style: AppTypography.style(12, fontWeight: FontWeight.w500, color: AppColors.white),
+            child: IntrinsicWidth(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  color: speed == this.speed ? AppColors.blue15ABFF : AppColors.grey64748B,
+                ),
+                constraints: BoxConstraints(minWidth: 42, minHeight: 23),
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(horizontal: 13, vertical: 4),
+                child: Text(
+                  speed.toString(),
+                  style: AppTypography.style(12, fontWeight: FontWeight.w500, color: AppColors.white),
+                ),
               ),
             ),
           ),

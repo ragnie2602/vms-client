@@ -610,6 +610,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   }
 
   Future<void> togglePlay() async {
+    if (_isSeeking.value) return;
+
     if (_status.value == PlayerStatus.playing) {
       _shouldSyncPlayerTime = false;
       _player.pause();
