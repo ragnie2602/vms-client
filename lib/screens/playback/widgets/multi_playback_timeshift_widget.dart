@@ -218,10 +218,7 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
                                         tickWidth: widget.tickWidth,
                                         centralDate: _centralDate,
                                         currentTime: currentTime,
-                                        // playbacks: state.type.isSuccess
-                                        //     ? (state as PlaybackSuccess)
-                                        //           .playbacks
-                                        //     : [],
+                                        playbacks: state.mergedPlaybackList,
                                         startDate: _startDate,
                                         endDate: _endDate,
                                         formatPattern: widget.formatPattern,

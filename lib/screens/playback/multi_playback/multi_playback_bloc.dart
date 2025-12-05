@@ -87,7 +87,12 @@ class MultiPlaybackBloc
         item.copyWith(listVideoPlaybacks: videos?.reversed.toList()),
       );
     }
-    emit(state.copyWith(listItemCamPlayback: updatedList));
+    emit(
+      state.copyWith(
+        listItemCamPlayback: updatedList,
+        mergedPlaybackList: _mergePlaybacks(updatedList),
+      ),
+    );
   }
 
   FutureOr<void> _onChangeTimelineDisplayMode(
@@ -113,7 +118,12 @@ class MultiPlaybackBloc
       playerController: PlayerController(),
     );
     _list.add(newItem);
-    emit(state.copyWith(listItemCamPlayback: _list));
+    emit(
+      state.copyWith(
+        listItemCamPlayback: _list,
+        mergedPlaybackList: _mergePlaybacks(_list),
+      ),
+    );
   }
 
   Future<List<PlaybackVideo>?> getVideoPlaybacksByCameraId({
@@ -140,7 +150,47 @@ class MultiPlaybackBloc
   ) {
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
     _list.removeWhere((e) => e.index == event.indexCam);
-    emit(state.copyWith(listItemCamPlayback: _list));
+    emit(
+      state.copyWith(
+        listItemCamPlayback: _list,
+        mergedPlaybackList: _mergePlaybacks(_list),
+      ),
+    );
+  }
+
+  List<PlaybackVideo> _mergePlaybacks(List<ItemPlaybackModel> items) {
+    List<PlaybackVideo> allPlaybacks = [];
+    for (var item in items) {
+      if (item.listVideoPlaybacks != null) {
+        allPlaybacks.addAll(item.listVideoPlaybacks!);
+      }
+    }
+
+    if (allPlaybacks.isEmpty) return [];
+
+    // sắp xếp các mốc time của playvideo dựa vào start time của từng mốc
+    allPlaybacks.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    List<PlaybackVideo> merged = [];
+    PlaybackVideo current = allPlaybacks.first;
+
+    for (int i = 1; i < allPlaybacks.length; i++) {
+      PlaybackVideo next = allPlaybacks[i];
+
+      // các khoảng thời gian nếu giao nhau/ nối liền nhau => merge làm 1 khoảng
+      if (current.endTime.add(Duration(seconds: 1)).isAfter(next.startTime)) {
+        DateTime newEndTime = current.endTime.isAfter(next.endTime)
+            ? current.endTime
+            : next.endTime;
+        current = current.copyWith(endTime: newEndTime);
+      } else {
+        merged.add(current);
+        current = next;
+      }
+    }
+    merged.add(current);
+
+    return merged;
   }
 
   FutureOr<void> _onTogglePlay(
