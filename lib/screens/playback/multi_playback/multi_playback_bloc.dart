@@ -158,6 +158,7 @@ class MultiPlaybackBloc
     );
   }
 
+  /// merge các section thời gian nếu liền nhau/ giao cắt nhau => dùng để view timeshift
   List<PlaybackVideo> _mergePlaybacks(List<ItemPlaybackModel> items) {
     List<PlaybackVideo> allPlaybacks = [];
     for (var item in items) {
@@ -167,6 +168,11 @@ class MultiPlaybackBloc
     }
 
     if (allPlaybacks.isEmpty) return [];
+
+    //   // sắp xếp các mốc time của play video dựa vào start time của từng mốc
+    //   allPlaybacks.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    //  return allPlaybacks;
 
     // sắp xếp các mốc time của playvideo dựa vào start time của từng mốc
     allPlaybacks.sort((a, b) => a.startTime.compareTo(b.startTime));
