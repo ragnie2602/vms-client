@@ -51,7 +51,17 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
                   label: data.labels[index],
                 ),
               ),
-              onTap: (int idx) => context.goNamed(data.routes[idx].name, extra: GoRouterState.of(context).extra),
+              onTap: (int idx) {
+                final currentRoute = GoRouterState.of(context).uri.path;
+                final targetRoute = data.routes[idx].path;
+
+                if (currentRoute == targetRoute) return;
+
+                context.pushReplacementNamed(
+                  data.routes[idx].name,
+                  extra: GoRouterState.of(context).extra,
+                );
+              },
               selectedItemColor: AppColors.blue15ABFF,
               selectedLabelStyle: AppTypography.style(
                 11,

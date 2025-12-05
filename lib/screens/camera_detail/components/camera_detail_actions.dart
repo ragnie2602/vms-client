@@ -129,7 +129,7 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
                 valueListenable: _leftPanelIndex,
                 builder: (context, index, child) => ActionItem(
                   title: 'Xem nhiều camera',
-                  icon: AppAssets.icMenu,
+                  icon: AppAssets.icMultiPlayback,
                   isSelected: index == 3,
                   onTap: () {
                     context.pushNamed(Routes.multi_playback.name);
