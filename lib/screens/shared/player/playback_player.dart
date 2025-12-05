@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -41,6 +42,7 @@ class PlaybackPlayer extends StatefulWidget {
     this.controlsBuilder,
     this.pauseUponEnteringBackgroundMode = true,
     this.resumeUponEnteringForegroundMode = true,
+    this.wakelock = true,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -57,6 +59,7 @@ class PlaybackPlayer extends StatefulWidget {
   final Widget Function(bool isFullscreen)? controlsBuilder;
   final bool pauseUponEnteringBackgroundMode;
   final bool resumeUponEnteringForegroundMode;
+  final bool wakelock;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
@@ -103,7 +106,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   PlaybackVideo? get nextPlayback =>
       currentIndex < widget.playlist.length - 1 ? widget.playlist[currentIndex + 1] : null;
 
+  final _wakelock = Wakelock();
   bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (widget.pauseUponEnteringBackgroundMode) {
@@ -128,6 +133,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     _attachController();
     _playlistIndex.value = widget.initialIndex;
 
+    if (widget.wakelock) {
+      _status.addListener(
+        () => _status.value == PlayerStatus.playing ? _wakelock.enable() : _wakelock.disable(),
+      );
+    }
     _isSeeking.addListener(() {
       if (_status.value == PlayerStatus.finished) _status.value = PlayerStatus.playing;
     });
@@ -170,6 +180,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     _player.pause();
     WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
+    _wakelock.disable();
     _accumulatingSeekQueue.dispose();
     _volumeQueue.dispose();
     _playlistIndex.dispose();

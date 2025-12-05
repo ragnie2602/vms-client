@@ -6,6 +6,7 @@ import 'dart:io' show Process;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -43,6 +44,7 @@ class MonitorPlayer extends StatefulWidget {
     this.controlsBuilder,
     this.pauseUponEnteringBackgroundMode = true,
     this.resumeUponEnteringForegroundMode = true,
+    this.wakelock = true,
   }) : super(key: key ?? controller?.ref);
 
   final String source;
@@ -61,6 +63,7 @@ class MonitorPlayer extends StatefulWidget {
   final Widget Function(bool isFullscreen)? controlsBuilder;
   final bool pauseUponEnteringBackgroundMode;
   final bool resumeUponEnteringForegroundMode;
+  final bool wakelock;
 
   @override
   State<MonitorPlayer> createState() => MonitorPlayerState();
@@ -93,7 +96,9 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
+  final _wakelock = Wakelock();
   bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (widget.pauseUponEnteringBackgroundMode) {
@@ -116,6 +121,11 @@ class MonitorPlayerState extends State<MonitorPlayer>
   void initState() {
     _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
     _status.addListener(() => widget.onStatusChanged?.call(_status.value));
+    if (widget.wakelock) {
+      _status.addListener(
+        () => _status.value == PlayerStatus.playing ? _wakelock.enable() : _wakelock.disable(),
+      );
+    }
 
     _initZoom();
     _attachController();
@@ -184,6 +194,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
     _player.pause();
     WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
+    _wakelock.disable();
     _zoomAnimationController?.dispose();
     _zoomController?.dispose();
     _dualQueue.dispose();
