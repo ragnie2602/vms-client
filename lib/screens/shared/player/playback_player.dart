@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
@@ -163,8 +164,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     super.didUpdateWidget(oldWidget);
     if (widget.enableZoom != oldWidget.enableZoom) _initZoom();
     _attachController();
-
-    if (widget.playlist != oldWidget.playlist) {
+    // dành cho case update màn multi playback
+    if (!_isPlaylistEquals(widget.playlist, oldWidget.playlist)) {
       _playlistMapper = Map.fromEntries(
         widget.playlist.mapIndexed((idx, e) => MapEntry(e.urlPlayback, idx)),
       );
@@ -177,6 +178,19 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       } catch (_) {}
       _init();
     }
+  }
+
+  bool _isPlaylistEquals(List<PlaybackVideo> list1, List<PlaybackVideo> list2) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i].urlPlayback != list2[i].urlPlayback ||
+          list1[i].startTime != list2[i].startTime ||
+          list1[i].endTime != list2[i].endTime ||
+          !listEquals(list1[i].playbackId, list2[i].playbackId)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<void> _init() async {
