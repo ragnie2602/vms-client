@@ -70,7 +70,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   AnimationController? _zoomAnimationController;
   Animation<double>? _zoomAnimation;
 
-  late final Player _player;
+  late Player _player;
   Completer<bool>? _waitForFirstFrame;
   // Trường hợp đổi sang media mới thì có thể trigger status (unloaded + end) --> bị trigger thành lỗi
   Completer<void> _waitForUnloadedOldMedia = Completer<void>()..safeComplete();
@@ -89,7 +89,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   late final DualTaskQueue _volumeQueue = DualTaskQueue();
   late final AccumulatingSeekQueue _accumulatingSeekQueue = AccumulatingSeekQueue(onSeek: _seek);
 
-  late final Map<String, int> _playlistMapper;
+  late Map<String, int> _playlistMapper;
   int get initialIndex => widget.initialIndex;
   int get currentIndex => _playlistIndex.value;
   PlaybackVideo get currentPlayback => widget.playlist[currentIndex];
@@ -163,6 +163,20 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     super.didUpdateWidget(oldWidget);
     if (widget.enableZoom != oldWidget.enableZoom) _initZoom();
     _attachController();
+
+    if (widget.playlist != oldWidget.playlist) {
+      _playlistMapper = Map.fromEntries(
+        widget.playlist.mapIndexed((idx, e) => MapEntry(e.urlPlayback, idx)),
+      );
+      _playlistIndex.value = widget.initialIndex;
+
+      _cancelTimers();
+      _completerTimeoutTimer?.cancel();
+      try {
+        _player.dispose(synchronized: false);
+      } catch (_) {}
+      _init();
+    }
   }
 
   Future<void> _init() async {
@@ -202,15 +216,30 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     _player = Player();
     _player.onMediaChanged(() {
-      _playlistIndex.value = _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
+      if (!mounted) return;
+      _playlistIndex.value =
+          _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
     });
     _player.onStateChanged((pre, cur) {
+      if (!mounted) return;
       if (cur == PlaybackState.stopped &&
           currentIndex == widget.playlist.length - 1 &&
           !_isSeeking.value) {
         // Delay để tránh bị override lại khi check timer 1s
-        Future.delayed(Duration(milliseconds: 1100), () => _status.value = PlayerStatus.finished);
+        Future.delayed(Duration(milliseconds: 1100), () {
+          if (mounted) _status.value = PlayerStatus.finished;
+        });
       }
+      // _player.onMediaChanged(() {
+      //   _playlistIndex.value = _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
+      // });
+      // _player.onStateChanged((pre, cur) {
+      //   if (cur == PlaybackState.stopped &&
+      //       currentIndex == widget.playlist.length - 1 &&
+      //       !_isSeeking.value) {
+      //     // Delay để tránh bị override lại khi check timer 1s
+      //     Future.delayed(Duration(milliseconds: 1100), () => _status.value = PlayerStatus.finished);
+      //   }
 
       // print("=========================> STATE: $pre - $cur");
     });
