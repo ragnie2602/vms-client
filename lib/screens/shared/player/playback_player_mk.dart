@@ -31,6 +31,7 @@ class PlaybackPlayerMK extends StatefulWidget {
     this.onLostConnection,
     this.labelBuilder,
     this.enableZoom = false,
+    this.initialVolume = 1,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -42,6 +43,7 @@ class PlaybackPlayerMK extends StatefulWidget {
   final Function()? onLostConnection;
   final Function(String name)? labelBuilder;
   final bool enableZoom;
+  final double initialVolume;
 
   @override
   State<PlaybackPlayerMK> createState() => PlaybackPlayerMKState();
@@ -173,6 +175,9 @@ class PlaybackPlayerMKState extends State<PlaybackPlayerMK> with TickerProviderS
         _state.value = PlayerState.initialized;
       }
     });
+
+    // Set initial volume after player is initialized
+    await _player.setVolume(widget.initialVolume);
   }
 
   Future<void> _onOpenPlayer({Duration? position, bool showLoading = true}) async {

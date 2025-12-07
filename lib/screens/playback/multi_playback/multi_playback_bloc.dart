@@ -111,11 +111,16 @@ class MultiPlaybackBloc
       camera: event.newCam,
       playbackDate: state.playbackDate,
     );
+    final playerController = PlayerController();
+    // Delay setting volume to ensure player is initialized
+    Future.delayed(const Duration(milliseconds: 500), () {
+      playerController.changeVolume?.call(0);
+    });
     ItemPlaybackModel newItem = ItemPlaybackModel(
       index: event.indexCam,
       camera: event.newCam,
       listVideoPlaybacks: videos?.reversed.toList(),
-      playerController: PlayerController(),
+      playerController: playerController,
     );
     _list.add(newItem);
     emit(

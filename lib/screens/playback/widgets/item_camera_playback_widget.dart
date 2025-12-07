@@ -14,8 +14,13 @@ import 'package:vms_flutter_client/screens/shared/player/playback_player.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 class ItemCameraPlaybackWidget extends StatefulWidget {
-  const ItemCameraPlaybackWidget({super.key, required this.item});
+  const ItemCameraPlaybackWidget({
+    super.key,
+    required this.item,
+    this.isMultiPlayback = false,
+  });
   final ItemPlaybackModel item;
+  final bool isMultiPlayback;
 
   @override
   State<ItemCameraPlaybackWidget> createState() =>
@@ -25,6 +30,19 @@ class ItemCameraPlaybackWidget extends StatefulWidget {
 class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
   bool _isHovering = false;
   bool _isMuted = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.isMultiPlayback) {
+        widget.item.playerController.changeVolume?.call(0);
+        setState(() {
+          _isMuted = true;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
