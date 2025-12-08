@@ -80,7 +80,6 @@ class MultiPlaybackBloc
     for (var item in (state.listItemCamPlayback ?? [])) {
       item.playerController.pause?.call();
     }
-
     emit(state.copyWith(playbackDate: event.date));
     // đổi ngày xem lại => get lại list video playback của từng cam
     List<ItemPlaybackModel> updatedList = [];
@@ -128,6 +127,19 @@ class MultiPlaybackBloc
     emit(state.copyWith(timelineDisplayMode: event.mode));
   }
 
+  /// Thêm 1 camera mới vào lưới
+  /// 
+  /// step 1: Pause tất cả các camera đang play tronmg listCamera (nếu có)
+  /// 
+  /// step 2: Save lại thời gian khi bị pause
+  /// 
+  /// step 3: Get video playback của camera muốn thêm => add thêm camera đó vào list đang có
+  /// 
+  /// step 4: Setup cho cam mới (mute âm thanh + jumpDate cam mới đến khoảng time của các camera đang bị pause)
+  /// 
+  /// step 5: Check nếu tồn tại ít nhất 1 cam trong listCam đang có trạng thái loading (state =  PlayerState.initializing) 
+  /// thì vẫn chờ, đến khi hết loading => play toàn bộ cam trong listCam
+  /// 
   FutureOr<void> _onAddNewCamera(
     AddCameraEvent event,
     Emitter<MultiPlaybackState> emit,
@@ -141,10 +153,16 @@ class MultiPlaybackBloc
     // 2. Get sync date from first camera
     DateTime? syncDate;
     if (_list.isNotEmpty) {
-      final refController = _list.first.playerController;
-      if (refController.isInitialized?.call() == true &&
-          refController.getCurrentDate != null) {
-        syncDate = refController.getCurrentDate!();
+      // check cam đầu tiên trong list có dữ liệu đang play
+      for (ItemPlaybackModel e in _list) {
+        if ((e.listVideoPlaybacks ?? []).isNotEmpty) {
+          final refController = e.playerController;
+          if (refController.isInitialized?.call() == true &&
+              refController.getCurrentDate != null) {
+            syncDate = refController.getCurrentDate!();
+          }
+          break;
+        }
       }
     }
 
