@@ -567,8 +567,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     }
 
     _dualQueue.add(() async {
+      if (!mounted) return;
       await _ensureConnectingFinished();
+      if (!mounted) return;
       await _jumpToDate(date, dateIndex: index);
+      if (!mounted) return;
 
       // Spam click và sau đó click ra ngoài --> bị nhảy về cái trước đó
       if (_dualQueue.nextJobIsEmpty && !_newestIsEmpty) {

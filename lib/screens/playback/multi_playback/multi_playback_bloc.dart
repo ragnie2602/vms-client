@@ -247,6 +247,9 @@ class MultiPlaybackBloc
       if (syncDate != null) {
         await playerController.jumpToDate?.call(syncDate);
       }
+      for (var item in _list) {
+        await item.playerController.pause?.call();
+      }
 
       // 5. Wait until all players are ready, then play all
       Future.doWhile(() async {
@@ -259,9 +262,6 @@ class MultiPlaybackBloc
               item.playerController.isSeeking?.call().value == true),
         );
         if (anyInitializing) {
-          for (var item in _list) {
-            await item.playerController.pause?.call();
-          }
           await Future.delayed(const Duration(milliseconds: 100));
           return true; // keep waiting
         }
