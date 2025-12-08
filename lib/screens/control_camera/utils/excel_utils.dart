@@ -33,10 +33,7 @@ class ExcelUtils {
     // Loại bỏ các ký tự điều khiển (control characters) như \n, \r, \t, v.v.
     // Chỉ giữ lại chữ cái, số, dấu cách và các ký tự có thể in được
     return input
-        .replaceAll(
-          RegExp(r'[\n\r\t\x00-\x1F\x7F]'),
-          '',
-        ) // Loại bỏ control characters
+        .replaceAll(RegExp(r'[\n\r\t\x00-\x1F\x7F]'), '') // Loại bỏ control characters
         .trim(); // Xóa khoảng trắng thừa ở đầu/cuối
   }
 
@@ -74,9 +71,7 @@ class ExcelUtils {
 
     // Kiểm tra từng trường header theo thứ tự
     for (int i = 0; i < _expectedHeaders.length; i++) {
-      String actualHeader = _normalizeString(
-        actualHeaders[i]?.value?.toString() ?? '',
-      );
+      String actualHeader = _normalizeString(actualHeaders[i]?.value?.toString() ?? '');
       String expectedHeader = _normalizeString(_expectedHeaders[i]);
 
       if (actualHeader != expectedHeader) {
@@ -100,8 +95,7 @@ class ExcelUtils {
       var file = excelFileResult.files.single.path;
       if (file == null) return;
 
-      ExcelFormatException?
-      formatError; // Lưu lỗi định dạng để báo sau khi progress 100%
+      ExcelFormatException? formatError; // Lưu lỗi định dạng để báo sau khi progress 100%
 
       // Đọc file - 10% tiến trình
       onProgress?.call(0.1);
@@ -156,19 +150,7 @@ class ExcelUtils {
             // Nếu không có tên hoặc link RTSP thì bỏ qua
             if (name.isEmpty || rtspUrl.isEmpty || method.isEmpty) continue;
 
-            cameras.add(
-              ImportCameraCell(
-                index,
-                method,
-                name,
-                xaddr,
-                username,
-                password,
-                rtspUrl,
-                subStream,
-                0,
-              ),
-            );
+            cameras.add(ImportCameraCell(index, method, name, xaddr, username, password, rtspUrl, subStream, 0));
 
             // Cập nhật tiến trình từ 20% đến 80% khi đọc dữ liệu
             double progress = 0.2 + (0.6 * (i / totalRows));
