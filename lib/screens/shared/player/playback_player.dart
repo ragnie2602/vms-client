@@ -1,10 +1,13 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -21,7 +24,7 @@ import 'package:volume_controller/volume_controller.dart';
 import 'components/accumulating_seek_queue.dart';
 import 'components/dual_task_queue.dart';
 import 'components/fullscreen_portal.dart';
-import 'components/sequential_task_queue.dart';
+import 'components/mobile_controls.dart';
 import 'player_controller.dart';
 
 class PlaybackPlayer extends StatefulWidget {
@@ -37,6 +40,10 @@ class PlaybackPlayer extends StatefulWidget {
     this.enableZoom = false,
     this.syncSystemVolume = false,
     this.onVolumeChanged,
+    this.controlsBuilder,
+    this.pauseUponEnteringBackgroundMode = true,
+    this.resumeUponEnteringForegroundMode = true,
+    this.wakelock = true,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -50,12 +57,17 @@ class PlaybackPlayer extends StatefulWidget {
   final bool enableZoom;
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
+  final Widget Function(bool isFullscreen)? controlsBuilder;
+  final bool pauseUponEnteringBackgroundMode;
+  final bool resumeUponEnteringForegroundMode;
+  final bool wakelock;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
 }
 
-class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderStateMixin {
+class PlaybackPlayerState extends State<PlaybackPlayer>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
   final ValueNotifier<PlayerState> _state = ValueNotifier(PlayerState.initializing);
 
@@ -69,10 +81,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   AnimationController? _zoomAnimationController;
   Animation<double>? _zoomAnimation;
 
-  late final Player _player;
+  late Player _player;
   Completer<bool>? _waitForFirstFrame;
   // Trường hợp đổi sang media mới thì có thể trigger status (unloaded + end) --> bị trigger thành lỗi
   Completer<void> _waitForUnloadedOldMedia = Completer<void>()..safeComplete();
+  Completer<void>? _seekingCompleter;
   Timer? _completerTimeoutTimer;
 
   double _aspectRatio = 1.0;
@@ -83,16 +96,37 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   Timer? _debounce;
   late final _seekFlag = SeekFlag(SeekFlag.fromStart | SeekFlag.keyFrame | SeekFlag.inCache);
 
-  late final SequentialTaskQueue _sequentialQueue = SequentialTaskQueue();
   late final DualTaskQueue _dualQueue = DualTaskQueue();
+  late final DualTaskQueue _volumeQueue = DualTaskQueue();
   late final AccumulatingSeekQueue _accumulatingSeekQueue = AccumulatingSeekQueue(onSeek: _seek);
 
-  late final Map<String, int> _playlistMapper;
+  late Map<String, int> _playlistMapper;
   int get initialIndex => widget.initialIndex;
   int get currentIndex => _playlistIndex.value;
   PlaybackVideo get currentPlayback => widget.playlist[currentIndex];
   PlaybackVideo? get nextPlayback =>
       currentIndex < widget.playlist.length - 1 ? widget.playlist[currentIndex + 1] : null;
+
+  final _wakelock = Wakelock();
+  bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.pauseUponEnteringBackgroundMode) {
+      if ([AppLifecycleState.paused, AppLifecycleState.detached].contains(state)) {
+        if (_player.state == PlaybackState.playing) {
+          _pauseDueToPauseUponEnteringBackgroundMode = true;
+          togglePlay();
+        }
+      } else {
+        if (widget.resumeUponEnteringForegroundMode && _pauseDueToPauseUponEnteringBackgroundMode) {
+          _pauseDueToPauseUponEnteringBackgroundMode = false;
+          togglePlay();
+        }
+      }
+    }
+    super.didChangeAppLifecycleState(state);
+  }
 
   @override
   void initState() {
@@ -100,6 +134,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     _attachController();
     _playlistIndex.value = widget.initialIndex;
 
+    if (widget.wakelock) {
+      _status.addListener(
+        () => _status.value == PlayerStatus.playing ? _wakelock.enable() : _wakelock.disable(),
+      );
+    }
     _isSeeking.addListener(() {
       if (_status.value == PlayerStatus.finished) _status.value = PlayerStatus.playing;
     });
@@ -108,9 +147,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       if (_status.value == PlayerStatus.playing) _shouldSyncPlayerTime = true;
       widget.onStatusChanged?.call(_status.value);
     });
-    _playlistIndex.addListener(() => widget.controller.onPlaybackChanged?.call(currentIndex));
+    _playlistIndex.addListener(() => widget.controller.markPlaybackChanged(currentIndex));
 
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _zoomAnimationController = AnimationController(vsync: this, duration: Durations.medium1);
 
     _playlistMapper = Map.fromEntries(
@@ -131,22 +171,27 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
         widget.onInitializedValues?.call(volume: 1, speed: 1);
       }
 
-      widget.controller.onPlaybackChanged?.call(currentIndex);
-      widget.controller.onTimeChanged?.call(currentPlayback.startTime.roundToSecond);
+      widget.controller.markPlaybackChanged(currentIndex);
+      widget.controller.markTimeChanged(currentPlayback.startTime.roundToSecond);
     });
   }
 
   @override
   void dispose() {
+    try {
+      _player.pause();
+    } catch (_) {}
+    WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
+    _wakelock.disable();
     _accumulatingSeekQueue.dispose();
-    _sequentialQueue.dispose();
+    _volumeQueue.dispose();
     _playlistIndex.dispose();
     _dualQueue.dispose();
     _cancelTimers();
     _completerTimeoutTimer?.cancel();
     try {
-      _player.dispose();
+      _player.dispose(synchronized: false);
     } catch (_) {}
     _status.dispose();
     _state.dispose();
@@ -161,6 +206,33 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     super.didUpdateWidget(oldWidget);
     if (widget.enableZoom != oldWidget.enableZoom) _initZoom();
     _attachController();
+    // dành cho case update màn multi playback
+    if (!_isPlaylistEquals(widget.playlist, oldWidget.playlist)) {
+      _playlistMapper = Map.fromEntries(
+        widget.playlist.mapIndexed((idx, e) => MapEntry(e.urlPlayback, idx)),
+      );
+      _playlistIndex.value = widget.initialIndex;
+
+      _cancelTimers();
+      _completerTimeoutTimer?.cancel();
+      try {
+        _player.dispose(synchronized: false);
+      } catch (_) {}
+      _init();
+    }
+  }
+
+  bool _isPlaylistEquals(List<PlaybackVideo> list1, List<PlaybackVideo> list2) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i].urlPlayback != list2[i].urlPlayback ||
+          list1[i].startTime != list2[i].startTime ||
+          list1[i].endTime != list2[i].endTime ||
+          !listEquals(list1[i].playbackId, list2[i].playbackId)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<void> _init() async {
@@ -188,11 +260,23 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     widget.controller.seek = seekQueue;
     widget.controller.changeSpeed = changeSpeed;
     widget.controller.togglePlay = togglePlay;
+    widget.controller.play = play;
+    widget.controller.pause = pause;
+    widget.controller.getPlayerStatus = () => _status.value;
     widget.controller.snapshot = snapshot;
     widget.controller.zoom = zoom;
     widget.controller.toggleFullscreen = toggleFullscreen;
     widget.controller.jumpToDate = jumpToDateQueue;
     widget.controller.isInitialized = isInitialized;
+    widget.controller.status = () => _status;
+    widget.controller.isSeeking = () => _isSeeking;
+    widget.controller.playerTime = () =>
+        currentPlayback.startTime.add(Duration(milliseconds: _lastPosition));
+    widget.controller.getPlayerState = () => _state.value;
+    widget.controller.getCurrentPosition = () =>
+        Duration(milliseconds: _player.position);
+    widget.controller.getCurrentDate = () =>
+        currentPlayback.startTime.add(Duration(milliseconds: _player.position));
   }
 
   void _initPlayer() {
@@ -200,15 +284,30 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     _player = Player();
     _player.onMediaChanged(() {
-      _playlistIndex.value = _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
+      if (!mounted) return;
+      _playlistIndex.value =
+          _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
     });
     _player.onStateChanged((pre, cur) {
+      if (!mounted) return;
       if (cur == PlaybackState.stopped &&
           currentIndex == widget.playlist.length - 1 &&
           !_isSeeking.value) {
         // Delay để tránh bị override lại khi check timer 1s
-        Future.delayed(Duration(milliseconds: 1100), () => _status.value = PlayerStatus.finished);
+        Future.delayed(Duration(milliseconds: 1100), () {
+          if (mounted) _status.value = PlayerStatus.finished;
+        });
       }
+      // _player.onMediaChanged(() {
+      //   _playlistIndex.value = _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
+      // });
+      // _player.onStateChanged((pre, cur) {
+      //   if (cur == PlaybackState.stopped &&
+      //       currentIndex == widget.playlist.length - 1 &&
+      //       !_isSeeking.value) {
+      //     // Delay để tránh bị override lại khi check timer 1s
+      //     Future.delayed(Duration(milliseconds: 1100), () => _status.value = PlayerStatus.finished);
+      //   }
 
       // print("=========================> STATE: $pre - $cur");
     });
@@ -353,7 +452,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     _aspectRatio = (size?.width ?? 1920) / (size?.height ?? 1080);
 
     if (_lastPosition > 0) {
-      await _seek(Duration(milliseconds: _lastPosition), needInitialized: false);
+      await _seek(
+        Duration(milliseconds: _lastPosition),
+        needInitialized: false,
+        waitSeeking: false,
+      );
     }
     _state.value = PlayerState.initialized;
 
@@ -371,7 +474,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
             if (_status.value != PlayerStatus.playing) _status.value = PlayerStatus.playing;
 
             // Syncing time
-            widget.controller.onTimeChanged?.call(
+            widget.controller.markTimeChanged(
               currentPlayback.startTime.add(Duration(milliseconds: pos)).roundToSecond,
             );
           }
@@ -449,10 +552,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     _shouldSyncPlayerTime = _newestIsEmpty = false;
     _isSeeking.value = true;
-    widget.controller.onTimeChanged?.call(date.roundToSecond, dateIndex != null);
+    widget.controller.markTimeChanged(date.roundToSecond, dateIndex != null);
+    _seekingCompleter ??= Completer<void>();
 
     final index = dateIndex ?? widget.playlist.atTime(date);
-    widget.controller.onPlaybackChanged?.call(index ?? -1);
+    widget.controller.markPlaybackChanged(index ?? -1);
     if (index == null) {
       _isSeeking.value = false;
       _newestIsEmpty = true;
@@ -470,6 +574,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       if (_dualQueue.nextJobIsEmpty && !_newestIsEmpty) {
         _shouldSyncPlayerTime = true;
         _isSeeking.value = false;
+        _seekingCompleter?.safeComplete();
+        _seekingCompleter = null;
       }
     });
   }
@@ -479,7 +585,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     // Click ngoài khoảng playback
     if (index == null) {
-      widget.controller.onPlaybackChanged?.call(-1);
+      widget.controller.markPlaybackChanged(-1);
       _state.value = PlayerState.empty;
       _player.pause();
       return;
@@ -495,7 +601,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      if (diff != Duration.zero) await _seek(diff, needInitialized: false);
+      if (diff != Duration.zero) await _seek(diff, needInitialized: false, waitSeeking: false);
     }
     // Playback khác --> đổi playlist và jump
     else {
@@ -514,8 +620,18 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   }
 
   void seekQueue(Duration duration) => _accumulatingSeekQueue.add(duration);
-  Future<void> _seek(Duration duration, {bool needInitialized = true}) async {
+  Future<void> _seek(
+    Duration duration, {
+    bool needInitialized = true,
+    bool waitSeeking = true,
+  }) async {
     if ((needInitialized && !isInitialized()) || !mounted) return;
+
+    // (Ấn backward/forward) Đang jump --> đợi xong mới thực thi seek
+    if (waitSeeking) {
+      await _seekingCompleter?.future.timeout(Duration(seconds: 30), onTimeout: () => null);
+    }
+
     final _toMs = _player.position + duration.inMilliseconds;
     final _totalMs = _player.mediaInfo.duration;
 
@@ -568,7 +684,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
   // Dual task queue
   void changeVolume(double volume) {
-    _dualQueue.add(() async {
+    _volumeQueue.add(() async {
       if (volume == _player.volume) return;
       _player.volume = volume;
 
@@ -585,6 +701,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   }
 
   Future<void> togglePlay() async {
+    if (_isSeeking.value) return;
+
     if (_status.value == PlayerStatus.playing) {
       _shouldSyncPlayerTime = false;
       _player.pause();
@@ -593,6 +711,22 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       _shouldSyncPlayerTime = true;
       _player.play();
       _status.value = PlayerStatus.playing;
+    }
+  }
+
+  Future<void> play() async {
+    if (_status.value != PlayerStatus.playing) {
+      _shouldSyncPlayerTime = true;
+      _player.play();
+      _status.value = PlayerStatus.playing;
+    }
+  }
+
+  Future<void> pause() async {
+    if (_status.value == PlayerStatus.playing) {
+      _shouldSyncPlayerTime = false;
+      _player.pause();
+      _status.value = PlayerStatus.paused;
     }
   }
 
@@ -690,8 +824,22 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
                   ),
 
                   if (widget.labelBuilder != null) widget.labelBuilder!.call(widget.name),
-                  Positioned.fill(child: _buildPlaybackStatus()),
-                  _buildSeekingStatus(),
+
+                  if (Platform.isAndroid || Platform.isIOS)
+                    Positioned.fill(
+                      child:
+                          widget.controlsBuilder?.call(isFullscreen) ??
+                          MobileControls(
+                            status: _status,
+                            isSeeking: _isSeeking,
+                            togglePlay: togglePlay,
+                            seek: seekQueue,
+                          ),
+                    )
+                  else ...[
+                    Positioned.fill(child: _buildPlaybackStatus()),
+                    _buildSeekingStatus(),
+                  ],
                 ],
               ),
             },

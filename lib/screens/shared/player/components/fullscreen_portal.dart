@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
 
 Future<void> defaultEnterNativeFullscreen() async {
   try {
@@ -90,7 +91,6 @@ class FullscreenPortalState extends State<FullscreenPortal> {
 
   Future<void> exitFullscreen(BuildContext context) async {
     await Navigator.of(context).maybePop();
-    await defaultExitNativeFullscreen();
   }
 
   @override
@@ -98,20 +98,27 @@ class FullscreenPortalState extends State<FullscreenPortal> {
     final child = Hero(tag: widget.tag, child: widget.builder(isFullscreen));
 
     return widget.isFullscreen
-        ? Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              Positioned.fill(child: child),
-              FullScreenActions(onExit: () => exitFullscreen(context)),
-            ],
-          )
-        : child;
-  }
+        ? PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
 
-  @override
-  dispose() async {
-    await defaultExitNativeFullscreen();
-    super.dispose();
+            await defaultExitNativeFullscreen();
+            await Future.delayed(Duration(milliseconds: 100));
+            if (context.mounted) Navigator.of(context).pop();
+          },
+          child: PlatformBuilder.builder(
+            onMobile: (_) => child,
+            onDesktop: (_) => Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  Positioned.fill(child: child),
+                  FullScreenActions(onExit: () => exitFullscreen(context)),
+                ],
+              ),
+          ),
+        )
+        : child;
   }
 }
 

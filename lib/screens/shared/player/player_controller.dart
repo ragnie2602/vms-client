@@ -1,5 +1,5 @@
 import 'dart:io' show Process;
-import 'package:flutter/material.dart' show GlobalKey;
+import 'package:flutter/material.dart' show GlobalKey, ValueNotifier;
 
 enum MonitorMode { liveview, monitoring }
 
@@ -17,10 +17,34 @@ enum PlayerState {
 enum PlayerStatus { playing, paused, finished }
 
 class PlayerController {
+  Future<void> Function()? play;
+  Future<void> Function()? pause;
+  PlayerState Function()? getPlayerState;
+  Duration Function()? getCurrentPosition;
+  DateTime Function()? getCurrentDate;
   GlobalKey ref = GlobalKey();
 
-  Function(int)? onPlaybackChanged;
-  Function(DateTime, [bool])? onTimeChanged;
+  /* Listeners */
+  Set<Function(int)> onPlaybackChanged = {};
+  Set<Function(DateTime, [bool])> onTimeChanged = {};
+
+  void markPlaybackChanged(int currentIndex) {
+    for (var callback in onPlaybackChanged) {
+      callback(currentIndex);
+    }
+  }
+
+  void markTimeChanged(DateTime param1, [bool param2 = false]) {
+    for (var callback in onTimeChanged) {
+      callback(param1, param2);
+    }
+  }
+
+  /* Getter */
+  bool Function()? isInitialized;
+  ValueNotifier<PlayerStatus> Function()? status;
+  ValueNotifier<bool> Function()? isSeeking;
+  DateTime Function()? playerTime;
 
   /* Function control player */
   void Function(double volume)? changeVolume;
@@ -29,8 +53,8 @@ class PlayerController {
   void Function(Duration duration)? seek;
   Future<void> Function(double speed)? changeSpeed;
   Future<void> Function()? togglePlay;
+  PlayerStatus Function()? getPlayerStatus;
   Future<void> Function(DateTime date, {int? dateIndex})? jumpToDate;
-  bool Function()? isInitialized;
   Future<Process?> Function(String output)? recording;
   Future<bool> Function(String path)? snapshot;
 }

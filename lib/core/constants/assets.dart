@@ -34,11 +34,13 @@ class AppAssets {
   static const icVolumeHalf = '$_svgPath/volume_half.svg';
   static const icVolumeFull = '$_svgPath/volume_full.svg';
   static const icVolumeMuted = '$_svgPath/volume_muted.svg';
+  static const icVolumeMutedFullscreen = '$_svgPath/volume_muted_fullscreen.svg';
   static const icZoomIn = '$_svgPath/zoom_in.svg';
   static const icZoomOut = '$_svgPath/zoom_out.svg';
   static const icArrowSquareLeft = '$_svgPath/arrow_square_left.svg';
   static const icArrowSquareRight = '$_svgPath/arrow_square_right.svg';
   static const icArrowCircleDown = '$_svgPath/arrow_circle_down.svg';
+  static const icArrowCircleLeft = '$_svgPath/arrow_circle_left.svg';
   static const icArrowCircleUp = '$_svgPath/arrow_circle_up.svg';
   static const icArrowLeft = '$_svgPath/arrow_left.svg';
   static const icBell = '$_svgPath/bell.svg';
@@ -108,6 +110,12 @@ class AppAssets {
   static const icLocation = '$_svgPath/ic_location.svg';
   static const icAllCamera = '$_svgPath/ic_all_camera.svg';
   static const icAddGroupCamera = '$_svgPath/ic_add_group_camera.svg';
+  // multi playback
+  static const icAddCam = '$_svgPath/icon_add_cam.svg';
+  static const icCameraRecord = '$_svgPath/ic_camera_record.svg';
+  static const iconCamera = '$_svgPath/ic_camera.svg';
+  static const icMultiPlayback = '$_svgPath/ic_multi_playback.svg';
+
 
   static const icLogout = '$_svgPath/ic_logout.svg';
   static const icKey = '$_svgPath/ic_key.svg';
@@ -144,6 +152,9 @@ class AppAssets {
    static const icUpload = '$_svgPath/ic_upload.svg';
 
   static const icSpeed = '$_svgPath/ic_speed.svg';
+
+  static const icMobileBackward30 = '$_svgPath/mobile_backward_30s.svg';
+  static const icMobileForward30 = '$_svgPath/mobile_forward_30s.svg';
   static const icDownloadFile = '$_svgPath/ic_download_file.svg';
 
   /* Files */

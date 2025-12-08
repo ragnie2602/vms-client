@@ -8,7 +8,6 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 
 class HomeMobileLayout extends StatefulWidget {
   final Widget content;
@@ -21,8 +20,6 @@ class HomeMobileLayout extends StatefulWidget {
 }
 
 class _HomeMobileLayoutState extends State<HomeMobileLayout> {
-  final FilterDrawerController _filterDrawerController = FilterDrawerController();
-
   @override
   Widget build(BuildContext context) {
     final data = _bottomNavigationBarData(widget.currentPath);
@@ -51,7 +48,17 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
                   label: data.labels[index],
                 ),
               ),
-              onTap: (int idx) => context.goNamed(data.routes[idx].name, extra: GoRouterState.of(context).extra),
+              onTap: (int idx) {
+                final currentRoute = GoRouterState.of(context).uri.path;
+                final targetRoute = data.routes[idx].path;
+
+                if (currentRoute == targetRoute) return;
+
+                context.pushReplacementNamed(
+                  data.routes[idx].name,
+                  extra: GoRouterState.of(context).extra,
+                );
+              },
               selectedItemColor: AppColors.blue15ABFF,
               selectedLabelStyle: AppTypography.style(
                 11,
@@ -64,7 +71,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
                 color: AppColors.grey666666,
               ),
             ),
-      endDrawer: FilterDrawer(controller: _filterDrawerController),
     );
   }
 
@@ -84,7 +90,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
         return _BottomNavigationBarData(
           labels: ['Xem trực tiếp', 'Xem lại'],
           activeAssets: [AppAssets.icVideoOnlineFilled, AppAssets.icPlaybackFilled],
-          assets: [AppAssets.icVideoOnline, AppAssets.icPlayback],
+          assets: [AppAssets.icVideoOn, AppAssets.icPlayback],
           routes: [Routes.cameraDetail, Routes.playback],
         );
       default:

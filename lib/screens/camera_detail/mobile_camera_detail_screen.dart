@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gal/gal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -16,6 +17,8 @@ import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.da
 import 'package:vms_flutter_client/screens/camera_detail/layout/camera_detail_mobile_layout.dart';
 import 'package:vms_flutter_client/screens/shared/player/monitor_player.dart';
 import 'package:vms_flutter_client/screens/shared/player/player_controller.dart';
+
+import 'components/mobile_controls_overlay.dart';
 
 class MobileCameraDetailScreen extends StatefulWidget {
   final CameraDetailScreenArgs args;
@@ -30,7 +33,6 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   late final CameraDetailBloc bloc;
 
   ValueNotifier<bool> isMuted = ValueNotifier(false);
-  ValueNotifier<bool> isPlaying = ValueNotifier(true);
 
   @override
   void initState() {
@@ -142,6 +144,13 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                           bloc.add(OnRecording(cancelStatus: -1));
                         }
                       },
+                      controlsBuilder: (isFullscreen) => MobileControlsOverlay(
+                        name: widget.args.data?.name ?? '',
+                        isFullscreen: isFullscreen,
+                        mode: CameraDetailMode.live,
+                        detailBloc: bloc,
+                        initialVisible: bloc.state.status == PlayerStatus.paused,
+                      ),
                     );
                   },
                 ),
@@ -150,14 +159,14 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                 children: [
                   Expanded(
                     child: IconButton(
-                      onPressed: togglePlay,
-                      icon: ValueListenableBuilder(
-                        valueListenable: isPlaying,
-                        builder: (context, value, child) {
-                          return SvgPicture.asset(
-                            value ? AppAssets.icPauseMobile : AppAssets.icPlayMobile,
-                          );
-                        },
+                      onPressed: () => bloc.state.playerController.togglePlay?.call(),
+                      icon: BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
+                        selector: (state) => state.status,
+                        builder: (context, status) => SvgPicture.asset(
+                          status == PlayerStatus.playing
+                              ? AppAssets.icPauseMobile
+                              : AppAssets.icPlayMobile,
+                        ),
                       ),
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
@@ -231,6 +240,10 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
     final currentTime = DateTime.now().millisecondsSinceEpoch;
 
     if (Platform.isIOS) {
+      bool granted = await Gal.hasAccess();
+      if (!granted) granted = await Gal.requestAccess();
+      if (!granted) return null;
+
       path = '${(await getLibraryDirectory()).path}/${widget.args.data?.camId}_$currentTime.jpg';
     } else if (Platform.isAndroid) {
       path =
@@ -241,15 +254,30 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
     if (path.isNotEmpty) isSuccess = await bloc.state.playerController.snapshot?.call(path);
 
     if (isSuccess == true) {
-      // ignore: use_build_context_synchronously
-      ToastUtil.toastSuccess(context: context, title: Text('Ảnh chụp thành công!'));
+      ToastUtil.toastSuccess(
+        // ignore: use_build_context_synchronously
+        context: context,
+        title: Text(
+          'Ảnh chụp thành công!',
+          style: AppTypography.style(10, color: AppColors.white, fontWeight: FontWeight.w400),
+        ),
+      );
     } else {
-      // ignore: use_build_context_synchronously
-      ToastUtil.toastFail(context: context, title: Text('Có lỗi xảy ra!'));
+      ToastUtil.toastFail(
+        // ignore: use_build_context_synchronously
+        context: context,
+        title: Text(
+          'Có lỗi xảy ra!',
+          style: AppTypography.style(10, color: AppColors.white, fontWeight: FontWeight.w400),
+        ),
+      );
     }
   }
 
   Future<String?> thumbnail() async {
+    if (bloc.state.playerController.isInitialized?.call() != true) return null;
+
+
     final path = '${(await getTemporaryDirectory()).path}/${widget.args.data?.camId}';
     await bloc.state.playerController.snapshot?.call(path);
 
@@ -259,10 +287,5 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   void toggleMute() {
     bloc.state.playerController.changeVolume?.call(isMuted.value ? 100 : 0);
     isMuted.value = !isMuted.value;
-  }
-
-  void togglePlay() {
-    bloc.state.playerController.togglePlay?.call();
-    isPlaying.value = !isPlaying.value;
   }
 }
