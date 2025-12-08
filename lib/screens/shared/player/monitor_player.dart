@@ -600,7 +600,10 @@ class MonitorPlayerState extends State<MonitorPlayer>
                                 )
                               : Texture(textureId: id);
 
-                          return RepaintBoundary(key: _captureKey, child: player);
+                          return RepaintBoundary(
+                            key: isFullscreen ? null : _captureKey,
+                            child: player,
+                          );
                         },
                       ),
                     ),
