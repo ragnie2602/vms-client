@@ -136,6 +136,19 @@ class PlaybackPlayerMKState extends State<PlaybackPlayerMK> with TickerProviderS
   }
 
   void _attachController() {
+          widget.controller.play = () async {
+            if (_status.value != PlayerStatus.playing) {
+              await _player.play();
+              _status.value = PlayerStatus.playing;
+            }
+          };
+          widget.controller.pause = () async {
+            if (_status.value == PlayerStatus.playing) {
+              await _player.pause();
+              _status.value = PlayerStatus.paused;
+            }
+          };
+      widget.controller.getPlayerState = () => _state.value;
     widget.controller.changeVolume = changeVolume;
     widget.controller.seek = seek;
     widget.controller.changeSpeed = changeSpeed;
@@ -145,6 +158,7 @@ class PlaybackPlayerMKState extends State<PlaybackPlayerMK> with TickerProviderS
     widget.controller.toggleFullscreen = toggleFullscreen;
     widget.controller.jumpToDate = jumpToDateQueue;
     widget.controller.isInitialized = isInitialized;
+    widget.controller.getCurrentPosition = () => _player.state.position;
   }
 
   Future<void> _initPlayer() async {

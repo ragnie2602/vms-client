@@ -218,11 +218,19 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
     widget.controller.seek = seekQueue;
     widget.controller.changeSpeed = changeSpeed;
     widget.controller.togglePlay = togglePlay;
+    widget.controller.play = play;
+    widget.controller.pause = pause;
+    widget.controller.getPlayerStatus = () => _status.value;
     widget.controller.snapshot = snapshot;
     widget.controller.zoom = zoom;
     widget.controller.toggleFullscreen = toggleFullscreen;
     widget.controller.jumpToDate = jumpToDateQueue;
     widget.controller.isInitialized = isInitialized;
+    widget.controller.getPlayerState = () => _state.value;
+    widget.controller.getCurrentPosition = () =>
+        Duration(milliseconds: _player.position);
+    widget.controller.getCurrentDate = () =>
+        currentPlayback.startTime.add(Duration(milliseconds: _player.position));
   }
 
   void _initPlayer() {
@@ -655,6 +663,22 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
       _shouldSyncPlayerTime = true;
       _player.play();
       _status.value = PlayerStatus.playing;
+    }
+  }
+
+  Future<void> play() async {
+    if (_status.value != PlayerStatus.playing) {
+      _shouldSyncPlayerTime = true;
+      _player.play();
+      _status.value = PlayerStatus.playing;
+    }
+  }
+
+  Future<void> pause() async {
+    if (_status.value == PlayerStatus.playing) {
+      _shouldSyncPlayerTime = false;
+      _player.pause();
+      _status.value = PlayerStatus.paused;
     }
   }
 

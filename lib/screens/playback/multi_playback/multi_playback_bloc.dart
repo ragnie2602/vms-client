@@ -75,6 +75,12 @@ class MultiPlaybackBloc
   ) async {
     // update change date for multi playback
     if (state.playbackDate == event.date) return;
+
+    // 1. Pause all existing cameras
+    for (var item in (state.listItemCamPlayback ?? [])) {
+      item.playerController.pause?.call();
+    }
+
     emit(state.copyWith(playbackDate: event.date));
     // đổi ngày xem lại => get lại list video playback của từng cam
     List<ItemPlaybackModel> updatedList = [];
@@ -93,6 +99,26 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(updatedList),
       ),
     );
+
+    // 2. Wait until all players are ready, then play all
+    Future.delayed(const Duration(milliseconds: 500), () {
+      Future.doWhile(() async {
+        bool allReady = updatedList.every(
+          (item) =>
+              item.playerController.getPlayerState != null &&
+              item.playerController.getPlayerState!() !=
+                  PlayerState.initializing,
+        );
+        if (!allReady) {
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        return !allReady;
+      }).then((_) {
+        for (var item in updatedList) {
+          item.playerController.play?.call();
+        }
+      });
+    });
   }
 
   FutureOr<void> _onChangeTimelineDisplayMode(
@@ -107,15 +133,27 @@ class MultiPlaybackBloc
     Emitter<MultiPlaybackState> emit,
   ) async {
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
+    // 1. Pause all existing cameras
+    for (var item in _list) {
+      await item.playerController.pause?.call();
+    }
+
+    // 2. Get sync date from first camera
+    DateTime? syncDate;
+    if (_list.isNotEmpty) {
+      final refController = _list.first.playerController;
+      if (refController.isInitialized?.call() == true &&
+          refController.getCurrentDate != null) {
+        syncDate = refController.getCurrentDate!();
+      }
+    }
+
+    // 3. Add new camera
     final videos = await getVideoPlaybacksByCameraId(
       camera: event.newCam,
       playbackDate: state.playbackDate,
     );
     final playerController = PlayerController();
-    // Delay setting volume to ensure player is initialized
-    Future.delayed(const Duration(milliseconds: 500), () {
-      playerController.changeVolume?.call(0);
-    });
     ItemPlaybackModel newItem = ItemPlaybackModel(
       index: event.indexCam,
       camera: event.newCam,
@@ -129,6 +167,37 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(_list),
       ),
     );
+
+    // 4. Seek new camera to sync date and mute
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      playerController.changeVolume?.call(0);
+      if (syncDate != null) {
+        await playerController.jumpToDate?.call(syncDate);
+      }
+
+      // 5. Wait until all players are ready, then play all
+      Future.doWhile(() async {
+        // If any camera is initializing, all must be paused
+        bool anyInitializing = _list.any(
+          (item) =>
+              item.playerController.getPlayerState != null &&
+              item.playerController.getPlayerState!() ==
+                  PlayerState.initializing,
+        );
+        if (anyInitializing) {
+          for (var item in _list) {
+            await item.playerController.pause?.call();
+          }
+          await Future.delayed(const Duration(milliseconds: 100));
+          return true; // keep waiting
+        }
+        return false; // all ready
+      }).then((_) async {
+        for (var item in _list) {
+          await item.playerController.play?.call();
+        }
+      });
+    });
   }
 
   Future<List<PlaybackVideo>?> getVideoPlaybacksByCameraId({
