@@ -32,7 +32,9 @@ class GetCameraUseCase extends FutureUseCase<GetCameraInput, GetCameraOutput> {
       )).fold((error) => errMsg = error.toString(), (data) => cameras = data);
     }
 
-    if (input.tags != null) cameras = cameras?.where((c) => c.tags.any((t) => input.tags!.contains(t))).toList();
+    if (input.tags?.isNotEmpty == true) {
+      cameras = cameras?.where((c) => c.tags.any((t) => input.tags!.contains(t))).toList();
+    }
 
     return GetCameraOutput(cameras: cameras, errMsg: errMsg, isSuccess: cameras != null);
   }
