@@ -161,7 +161,13 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                       },
                       borderRadius: BorderRadius.circular(20),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        constraints: BoxConstraints(
+                          maxWidth: widget.maxWidth - 48,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: _selectedTags.isEmpty
                               ? AppColors.greyEFEFEF

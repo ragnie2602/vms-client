@@ -17,6 +17,11 @@ enum PlayerState {
 enum PlayerStatus { playing, paused, finished }
 
 class PlayerController {
+  Future<void> Function()? play;
+  Future<void> Function()? pause;
+  PlayerState Function()? getPlayerState;
+  Duration Function()? getCurrentPosition;
+  DateTime Function()? getCurrentDate;
   GlobalKey ref = GlobalKey();
 
   /* Listeners */
@@ -48,6 +53,7 @@ class PlayerController {
   void Function(Duration duration)? seek;
   Future<void> Function(double speed)? changeSpeed;
   Future<void> Function()? togglePlay;
+  PlayerStatus Function()? getPlayerStatus;
   Future<void> Function(DateTime date, {int? dateIndex})? jumpToDate;
   Future<Process?> Function(String output)? recording;
   Future<bool> Function(String path)? snapshot;

@@ -21,6 +21,26 @@ class PlaybackVideo {
   String toString() {
     return 'PlaybackVideo(startTime: $startTime -> endTime: $endTime)';
   }
+
+  PlaybackVideo copyWith({
+    DateTime? startTime,
+    DateTime? endTime,
+    String? urlPlayback,
+    List<int>? cameraId,
+    String? urlThumbnail,
+    int? duration,
+    List<int>? playbackId,
+  }) {
+    return PlaybackVideo(
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      urlPlayback: urlPlayback ?? this.urlPlayback,
+      cameraId: cameraId ?? this.cameraId,
+      urlThumbnail: urlThumbnail ?? this.urlThumbnail,
+      duration: duration ?? this.duration,
+      playbackId: playbackId ?? this.playbackId,
+    );
+  }
 }
 
 extension ListPlaybackVideoExt on List<PlaybackVideo> {

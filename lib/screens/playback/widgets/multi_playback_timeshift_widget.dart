@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/size_observer.dart';
+import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.dart';
 import 'package:vms_flutter_client/screens/camera_detail/components/player_timeline.dart';
 import 'package:vms_flutter_client/screens/camera_detail/widgets/timeline_painter.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
@@ -38,10 +39,12 @@ class MultiPlaybackTimeshiftWidget extends StatefulWidget {
   final Color? playbackColor;
   final Color? centralLineColor;
   @override
-  State<MultiPlaybackTimeshiftWidget> createState() => _MultiPlaybackTimeshiftWidgetState();
+  State<MultiPlaybackTimeshiftWidget> createState() =>
+      _MultiPlaybackTimeshiftWidgetState();
 }
 
-class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWidget> {
+class _MultiPlaybackTimeshiftWidgetState
+    extends State<MultiPlaybackTimeshiftWidget> {
   late final _time = ValueNotifier(DateTime.now().roundToSecond);
   late final _centralDate = ValueNotifier(DateTime.now().roundToSecond);
 
@@ -56,9 +59,11 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
   double _overlayWidth = 0;
 
   //
-  MultiPlaybackBloc get _multiPlaybackBloc => context.read<MultiPlaybackBloc>();
-  double get _tickGap => _multiPlaybackBloc.state.timelineDisplayMode.gap(_timelineWidth);
-  Duration get _interval => _multiPlaybackBloc.state.timelineDisplayMode.interval;
+  late final MultiPlaybackBloc _multiPlaybackBloc = context.read<MultiPlaybackBloc>();
+  double get _tickGap =>
+      _multiPlaybackBloc.state.timelineDisplayMode.gap(_timelineWidth);
+  Duration get _interval =>
+      _multiPlaybackBloc.state.timelineDisplayMode.interval;
   DateTime get _startDate => _multiPlaybackBloc.state.playbackDate.startOfDay;
   DateTime get _endDate => _multiPlaybackBloc.state.playbackDate.startOfNextDay;
   int get _dragSpeed => _multiPlaybackBloc.state.timelineDisplayMode.let(
@@ -75,6 +80,9 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
 
   @override
   void dispose() {
+    for (var item in _multiPlaybackBloc.state.listItemCamPlayback ?? <ItemPlaybackModel>[]) {
+      item.playerController.onTimeChanged.remove(_onTimeChanged);
+    }
     _time.dispose();
     _overlayEntry?.remove();
     _centralDate.dispose();
@@ -82,20 +90,33 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
   }
 
   void _initCentralDateFromStartAndEnd() {
-    final offset = _timelineWidth / 2 / (_tickGap + widget.tickWidth) * (_interval.inMicroseconds / widget.minorTickCount);
+    final offset =
+        _timelineWidth /
+        2 /
+        (_tickGap + widget.tickWidth) *
+        (_interval.inMicroseconds / widget.minorTickCount);
 
-    _centralDateFromStart = _startDate.add(Duration(microseconds: offset.floor()));
-    _centralDateFromEnd = _endDate.subtract(Duration(microseconds: offset.floor()));
+    _centralDateFromStart = _startDate.add(
+      Duration(microseconds: offset.floor()),
+    );
+    _centralDateFromEnd = _endDate.subtract(
+      Duration(microseconds: offset.floor()),
+    );
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
-    _clampCentralDate(_centralDate.value.subtract(Duration(milliseconds: details.delta.dx.toInt() * _dragSpeed)));
+    _clampCentralDate(
+      _centralDate.value.subtract(
+        Duration(milliseconds: details.delta.dx.toInt() * _dragSpeed),
+      ),
+    );
   }
 
   void _clampCentralDate(DateTime target) {
     _initCentralDateFromStartAndEnd();
 
-    if (target.isBefore(_centralDateFromStart!)) target = _centralDateFromStart!;
+    if (target.isBefore(_centralDateFromStart!))
+      target = _centralDateFromStart!;
     if (target.isAfter(_centralDateFromEnd!)) target = _centralDateFromEnd!;
 
     _centralDate.value = target;
@@ -103,15 +124,20 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
 
   DateTime _calculateDateFromOffset(double dx) {
     final diffFromClickToCentral =
-        (dx - _timelineWidth / 2 - _centralOffset) / (_tickGap + widget.tickWidth) * (_interval.inMicroseconds / widget.minorTickCount);
+        (dx - _timelineWidth / 2 - _centralOffset) /
+        (_tickGap + widget.tickWidth) *
+        (_interval.inMicroseconds / widget.minorTickCount);
 
-    return _centralDate.value.add(Duration(microseconds: (diffFromClickToCentral.floor()))).clamp(_startDate, _endDate);
+    return _centralDate.value
+        .add(Duration(microseconds: (diffFromClickToCentral.floor())))
+        .clamp(_startDate, _endDate);
   }
 
   void _showOverlay(double dx, {DateTime? date, bool isCenter = false}) {
     if (_isInteracting) return;
 
-    final parentBox = _globalKey.currentContext!.findRenderObject() as RenderBox;
+    final parentBox =
+        _globalKey.currentContext!.findRenderObject() as RenderBox;
     final parentOffset = parentBox.localToGlobal(Offset.zero);
 
     _hoverDate = date ?? _calculateDateFromOffset(dx);
@@ -124,7 +150,11 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         bottom: MediaQuery.of(context).size.height - parentOffset.dy + 6,
-        left: parentOffset.dx + (isCenter ? parentBox.size.width / 2 - _overlayWidth - 16 + _centralOffset : dx - 22),
+        left:
+            parentOffset.dx +
+            (isCenter
+                ? parentBox.size.width / 2 - _overlayWidth - 16 + _centralOffset
+                : dx - 22),
         child: Material(
           borderRadius: BorderRadius.circular(3),
           color: Colors.white,
@@ -134,7 +164,11 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
               padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               child: Text(
                 _hoverDate!.format(widget.formatPattern),
-                style: AppTypography.style(13, fontWeight: FontWeight.w500, color: Colors.black),
+                style: AppTypography.style(
+                  13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
               ),
             ),
           ),
@@ -144,12 +178,25 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
     Overlay.of(context, rootOverlay: true).insert(_overlayEntry!);
   }
 
+  void _onTimeChanged(DateTime time, [bool shouldUpdateCentralDate = false]) {
+    _time.value = time;
+    if (shouldUpdateCentralDate) _clampCentralDate(time);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MultiPlaybackBloc, MultiPlaybackState>(
       buildWhen: (previous, current) {
-        bool shouldRebuild = previous.timelineDisplayMode != current.timelineDisplayMode;
-        if (shouldRebuild) _clampCentralDate(_time.value);
+        bool shouldRebuild =
+            previous.timelineDisplayMode != current.timelineDisplayMode ||
+            previous.mergedPlaybackList != current.mergedPlaybackList ||
+            previous.listItemCamPlayback != current.listItemCamPlayback;
+        if (shouldRebuild) {
+          _clampCentralDate(_time.value);
+          for (var item in current.listItemCamPlayback ?? <ItemPlaybackModel>[]) {
+            item.playerController.onTimeChanged.add(_onTimeChanged);
+          }
+        }
 
         return shouldRebuild;
       },
@@ -181,10 +228,16 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
                       child: GestureDetector(
                         // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
                         onTapUp: (details) {
-                          // _multiPlaybackBloc.state.playerController.jumpToDate?.call(
-                          //   _hoverDate ??
-                          //       _calculateDateFromOffset(details.localPosition.dx),
-                          // );
+                          final date =
+                              _hoverDate ??
+                              _calculateDateFromOffset(
+                                details.localPosition.dx,
+                              );
+                          for (ItemPlaybackModel? e
+                              in _multiPlaybackBloc.state.listItemCamPlayback ??
+                                  []) {
+                            e?.playerController.jumpToDate?.call(date);
+                          }
                         },
                         onHorizontalDragUpdate: _onHorizontalDragUpdate,
                         onHorizontalDragStart: (_) {
@@ -193,48 +246,62 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
                         },
                         onHorizontalDragEnd: (details) {
                           _isInteracting = false;
-                          _showOverlay(details.localPosition.dx); // Hiển thị luôn lúc thả
+                          _showOverlay(
+                            details.localPosition.dx,
+                          ); // Hiển thị luôn lúc thả
                         },
                         // Không bị vẽ ra ngoài
                         child: ClipRRect(
                           child: RepaintBoundary(
-                            child: BlocBuilder<MultiPlaybackBloc, MultiPlaybackState>(
-                              builder: (context, state) {
-                                return ValueListenableBuilder(
-                                  valueListenable: _time,
-                                  builder: (context, currentTime, child) {
-                                    return CustomPaint(
-                                      size: Size(_timelineWidth, widget.size?.height ?? widget.majorTickHeight),
-                                      isComplex: true,
-                                      willChange: true,
-                                      painter: TimelinePainter(
-                                        showMinorTickTime: mode == TimelineDisplayMode.h1,
-                                        onCentralOffset: (offset) => _centralOffset = offset,
-                                        majorTickHeight: widget.majorTickHeight,
-                                        minorTickHeight: widget.minorTickHeight,
-                                        minorTickCount: widget.minorTickCount,
-                                        tickGap: _tickGap, //
-                                        interval: _interval, //
-                                        tickWidth: widget.tickWidth,
-                                        centralDate: _centralDate,
-                                        currentTime: currentTime,
-                                        // playbacks: state.type.isSuccess
-                                        //     ? (state as PlaybackSuccess)
-                                        //           .playbacks
-                                        //     : [],
-                                        startDate: _startDate,
-                                        endDate: _endDate,
-                                        formatPattern: widget.formatPattern,
-                                        normalStyle: widget.normalStyle,
-                                        highlightStyle: widget.highlightStyle,
-                                        playbackColor: widget.playbackColor,
-                                        centralLineColor: widget.centralLineColor,
-                                      ),
+                            child:
+                                BlocBuilder<
+                                  MultiPlaybackBloc,
+                                  MultiPlaybackState
+                                >(
+                                  builder: (context, state) {
+                                    return ValueListenableBuilder(
+                                      valueListenable: _time,
+                                      builder: (context, currentTime, child) {
+                                        return CustomPaint(
+                                          size: Size(
+                                            _timelineWidth,
+                                            widget.size?.height ??
+                                                widget.majorTickHeight,
+                                          ),
+                                          isComplex: true,
+                                          willChange: true,
+                                          painter: TimelinePainter(
+                                            showMinorTickTime:
+                                                mode == TimelineDisplayMode.h1,
+                                            onCentralOffset: (offset) =>
+                                                _centralOffset = offset,
+                                            majorTickHeight:
+                                                widget.majorTickHeight,
+                                            minorTickHeight:
+                                                widget.minorTickHeight,
+                                            minorTickCount:
+                                                widget.minorTickCount,
+                                            tickGap: _tickGap, //
+                                            interval: _interval, //
+                                            tickWidth: widget.tickWidth,
+                                            centralDate: _centralDate,
+                                            currentTime: currentTime,
+                                            playbacks: state.mergedPlaybackList,
+                                            startDate: _startDate,
+                                            endDate: _endDate,
+                                            formatPattern: widget.formatPattern,
+                                            normalStyle: widget.normalStyle,
+                                            highlightStyle:
+                                                widget.highlightStyle,
+                                            playbackColor: widget.playbackColor,
+                                            centralLineColor:
+                                                widget.centralLineColor,
+                                          ),
+                                        );
+                                      },
                                     );
                                   },
-                                );
-                              },
-                            ),
+                                ),
                           ),
                         ),
                       ),
@@ -256,7 +323,13 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
     return Container(
       decoration: BoxDecoration(
         color: Colors.black,
-        boxShadow: [BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.65), blurRadius: 9, offset: Offset(-4, 0))],
+        boxShadow: [
+          BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.65),
+            blurRadius: 9,
+            offset: Offset(-4, 0),
+          ),
+        ],
       ),
       width: 74,
       height: widget.size?.height ?? widget.majorTickHeight,
@@ -266,7 +339,11 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
           Expanded(
             child: Text(
               mode.label,
-              style: AppTypography.style(16, fontWeight: FontWeight.w500, color: Colors.white),
+              style: AppTypography.style(
+                16,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -276,12 +353,24 @@ class _MultiPlaybackTimeshiftWidgetState extends State<MultiPlaybackTimeshiftWid
             spacing: 7,
             children: <Widget>[
               InkWell(
-                onTap: () => _multiPlaybackBloc.add(ChangeTimelineDisplayMode(mode.next)),
-                child: SvgPicture.asset(AppAssets.icArrowChevronUp, width: 20, height: 20),
+                onTap: () => _multiPlaybackBloc.add(
+                  ChangeTimelineDisplayMode(mode.next),
+                ),
+                child: SvgPicture.asset(
+                  AppAssets.icArrowChevronUp,
+                  width: 20,
+                  height: 20,
+                ),
               ),
               InkWell(
-                onTap: () => _multiPlaybackBloc.add(ChangeTimelineDisplayMode(mode.previous)),
-                child: SvgPicture.asset(AppAssets.icArrowChevronDown, width: 20, height: 20),
+                onTap: () => _multiPlaybackBloc.add(
+                  ChangeTimelineDisplayMode(mode.previous),
+                ),
+                child: SvgPicture.asset(
+                  AppAssets.icArrowChevronDown,
+                  width: 20,
+                  height: 20,
+                ),
               ),
             ],
           ),

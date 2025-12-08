@@ -361,7 +361,7 @@ class TimelinePainter extends CustomPainter {
       final endOffset = _getOffset(playback.endTime, comparedTime);
       final durationOffset = _getOffset(playback.endTime, playback.startTime);
 
-      if (endOffset + durationOffset > size.width) continue;
+      if (currentOffset + endOffset - durationOffset > size.width) continue;
 
       currentOffset += endOffset;
       canvas.drawRect(
