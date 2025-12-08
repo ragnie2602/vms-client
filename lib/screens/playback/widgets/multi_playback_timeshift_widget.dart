@@ -175,10 +175,10 @@ class _MultiPlaybackTimeshiftWidgetState
     Overlay.of(context, rootOverlay: true).insert(_overlayEntry!);
   }
 
-  void _onTimeChanged(DateTime time, [bool shouldUpdateCentralDate = false]) {
-    _time.value = time;
-    if (shouldUpdateCentralDate) _clampCentralDate(time);
-  }
+  // void _onTimeChanged(DateTime time, [bool shouldUpdateCentralDate = false]) {
+  //   _time.value = time;
+  //   if (shouldUpdateCentralDate) _clampCentralDate(time);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -190,9 +190,9 @@ class _MultiPlaybackTimeshiftWidgetState
             previous.listItemCamPlayback != current.listItemCamPlayback;
         if (shouldRebuild) {
           _clampCentralDate(_time.value);
-          for (var item in current.listItemCamPlayback ?? []) {
-            item.playerController.onTimeChanged = _onTimeChanged;
-          }
+          // for (var item in current.listItemCamPlayback ?? []) {
+          //   item.playerController.onTimeChanged = _onTimeChanged;
+          // }
         }
 
         return shouldRebuild;
