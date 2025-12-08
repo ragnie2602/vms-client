@@ -317,7 +317,8 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
           child: AppButton.filled(
             label: _isSubmitting
                 ? ''
-                : _step == AddCameraStep.manualForm
+                : _step == AddCameraStep.manualForm ||
+                      _step == AddCameraStep.importFile
                 ? 'Xác nhận'
                 : 'Tiếp tục',
             onPressed:

@@ -187,7 +187,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
                   AppAssets.cameraTemplateImport,
                 );
                 String? outputFile = await FileUtil.selectSaveLocation(
-                  'Camera_Template_Import.xlsx',
+                  'Camera_import_template.xlsx',
                   'xlsx',
                 );
 
