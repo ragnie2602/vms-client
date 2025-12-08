@@ -33,6 +33,7 @@ class MultiPlaybackBloc
     on<MultiSeekEvent>(_onSeek);
     on<MultiChangeSpeedEvent>(_onChangeSpeed);
     on<MultiChangeVolumeEvent>(_onChangeVolume);
+    on<MultiJumpDateEvent>(_onJumpNewDate);
   }
   FutureOr<void> _init(
     InitEvent event,
@@ -69,19 +70,33 @@ class MultiPlaybackBloc
     );
   }
 
+  /// Đổi ngày theo dõi playback
+  ///
+  /// step 1: Update playback date + pause
+  ///
+  /// step 2: Get video playback của tất cả các camera
+  ///
+  /// step 3: Save thời gian play = thời gian đầu tiên của _mergerList
+  ///
+  /// step 4: Setup (mute âm thanh + jumptDate = thời gian vừa lưu) dành cho tất cả các camera
+  ///
+  /// step 5: Check nếu tồn tại ít nhất 1 cam đang loading thì tiếp tục chờ
+  /// => ko còn cam loading thì play toàn bộ cam trong list tại vị trí mốc thời gian đã lưu
+  ///
   FutureOr<void> _onChangePlaybackDate(
     ChangePlaybackDate event,
     Emitter<MultiPlaybackState> emit,
   ) async {
-    // update change date for multi playback
+    // step 1: Update playback date + pause
     if (state.playbackDate == event.date) return;
 
-    // 1. Pause all existing cameras
     for (var item in (state.listItemCamPlayback ?? [])) {
-      item.playerController.pause?.call();
+      await item.playerController.pause?.call();
     }
+
     emit(state.copyWith(playbackDate: event.date));
-    // đổi ngày xem lại => get lại list video playback của từng cam
+
+    // step 2: Get video playback của tất cả các camera
     List<ItemPlaybackModel> updatedList = [];
     for (ItemPlaybackModel item in (state.listItemCamPlayback ?? [])) {
       final videos = await getVideoPlaybacksByCameraId(
@@ -92,6 +107,8 @@ class MultiPlaybackBloc
         item.copyWith(listVideoPlaybacks: videos?.reversed.toList()),
       );
     }
+
+    // Update state with new playbacks
     emit(
       state.copyWith(
         listItemCamPlayback: updatedList,
@@ -99,22 +116,39 @@ class MultiPlaybackBloc
       ),
     );
 
-    // 2. Wait until all players are ready, then play all
-    Future.delayed(const Duration(milliseconds: 500), () {
-      Future.doWhile(() async {
-        bool allReady = updatedList.every(
-          (item) =>
-              item.playerController.getPlayerState != null &&
-              item.playerController.getPlayerState!() !=
-                  PlayerState.initializing,
-        );
-        if (!allReady) {
-          await Future.delayed(const Duration(milliseconds: 100));
+    // step 3: Save thời gian play = thời gian đầu tiên của _mergerList
+    DateTime? startTime;
+    if (state.mergedPlaybackList.isNotEmpty) {
+      startTime = state.mergedPlaybackList.first.startTime;
+    }
+
+    // step 4: Setup (mute âm thanh + jumptDate = thời gian vừa lưu) dành cho tất cả các camera
+    Future.delayed(const Duration(milliseconds: 500), () async {
+      for (var item in updatedList) {
+        item.playerController.changeVolume?.call(0);
+        if (startTime != null) {
+          await item.playerController.jumpToDate?.call(startTime);
         }
-        return !allReady;
-      }).then((_) {
+      }
+
+      // step 5: Check nếu tồn tại ít nhất 1 cam đang loading thì tiếp tục chờ
+      // => ko còn cam loading thì play toàn bộ cam trong list tại vị trí mốc thời gian đã lưu
+      Future.doWhile(() async {
+        bool anyInitializing = updatedList.any(
+          (item) =>
+              ((item.playerController.getPlayerState != null &&
+                  item.playerController.getPlayerState!() ==
+                      PlayerState.initializing) ||
+              item.playerController.isSeeking?.call().value == true),
+        );
+        if (anyInitializing) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          return true; // keep waiting
+        }
+        return false; // all ready
+      }).then((_) async {
         for (var item in updatedList) {
-          item.playerController.play?.call();
+          await item.playerController.play?.call();
         }
       });
     });
@@ -137,7 +171,7 @@ class MultiPlaybackBloc
   ///
   /// step 4: Setup cho cam mới (mute âm thanh + jumpDate cam mới đến khoảng time của các camera đang bị pause)
   ///
-  /// step 5: Check nếu tồn tại ít nhất 1 cam trong listCam đang có trạng thái loading (state =  PlayerState.initializing)
+  /// step 5: Check nếu tồn tại ít nhất 1 cam trong listCam đang có trạng thái loading init/ loading khi seeking (state =  PlayerState.initializing hoặc isSeeking = true)
   /// thì vẫn chờ, đến khi hết loading => play toàn bộ cam trong listCam
   ///
   FutureOr<void> _onAddNewCamera(
@@ -160,10 +194,15 @@ class MultiPlaybackBloc
           if (refController.isInitialized?.call() == true &&
               refController.getCurrentDate != null) {
             syncDate = refController.getCurrentDate!();
+            break;
           }
-          break;
         }
       }
+    }
+
+    // Fallback: nếu chưa có cam nào play (syncDate == null) thì lấy mốc start của merged list
+    if (syncDate == null && state.mergedPlaybackList.isNotEmpty) {
+      syncDate = state.mergedPlaybackList.first.startTime;
     }
 
     // 3. Add new camera (Emit immediately to show loading)
@@ -211,12 +250,13 @@ class MultiPlaybackBloc
 
       // 5. Wait until all players are ready, then play all
       Future.doWhile(() async {
-        // If any camera is initializing, all must be paused
+        // If any camera is initializing or seeking = true, all camera must be paused
         bool anyInitializing = _list.any(
           (item) =>
-              item.playerController.getPlayerState != null &&
-              item.playerController.getPlayerState!() ==
-                  PlayerState.initializing,
+              ((item.playerController.getPlayerState != null &&
+                  item.playerController.getPlayerState!() ==
+                      PlayerState.initializing) ||
+              item.playerController.isSeeking?.call().value == true),
         );
         if (anyInitializing) {
           for (var item in _list) {
@@ -345,5 +385,54 @@ class MultiPlaybackBloc
       item.playerController.changeVolume?.call(event.volume);
     }
     emit(state.copyWith(volume: event.volume));
+  }
+
+  /// jump date
+  ///
+  /// step 1: Jump new date
+  ///
+  /// step 2: Pause
+  ///
+  /// step 3: Check loading
+  ///
+  /// step 4: Play
+  FutureOr<void> _onJumpNewDate(
+    MultiJumpDateEvent event,
+    Emitter<MultiPlaybackState> emit,
+  ) async {
+    final list = state.listItemCamPlayback ?? [];
+
+    Future.delayed(const Duration(milliseconds: 100), () async {
+      // step 1: Jump new date
+      for (var item in list) {
+        await item.playerController.jumpToDate?.call(event.newTime);
+      }
+
+      // step 2: Pause
+      for (var item in list) {
+        await item.playerController.pause?.call();
+      }
+
+      // step 3: Check loading
+      Future.doWhile(() async {
+        bool anyInitializing = list.any(
+          (item) =>
+              ((item.playerController.getPlayerState != null &&
+                  item.playerController.getPlayerState!() ==
+                      PlayerState.initializing) ||
+              item.playerController.isSeeking?.call().value == true),
+        );
+        if (anyInitializing) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          return true; // keep waiting
+        }
+        return false; // all ready
+      }).then((_) async {
+        // step 4: Play
+        for (var item in list) {
+          await item.playerController.play?.call();
+        }
+      });
+    });
   }
 }
