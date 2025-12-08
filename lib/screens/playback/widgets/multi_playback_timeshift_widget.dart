@@ -59,7 +59,7 @@ class _MultiPlaybackTimeshiftWidgetState
   double _overlayWidth = 0;
 
   //
-  MultiPlaybackBloc get _multiPlaybackBloc => context.read<MultiPlaybackBloc>();
+  late final MultiPlaybackBloc _multiPlaybackBloc = context.read<MultiPlaybackBloc>();
   double get _tickGap =>
       _multiPlaybackBloc.state.timelineDisplayMode.gap(_timelineWidth);
   Duration get _interval =>
@@ -80,6 +80,9 @@ class _MultiPlaybackTimeshiftWidgetState
 
   @override
   void dispose() {
+    for (var item in _multiPlaybackBloc.state.listItemCamPlayback ?? <ItemPlaybackModel>[]) {
+      item.playerController.onTimeChanged.remove(_onTimeChanged);
+    }
     _time.dispose();
     _overlayEntry?.remove();
     _centralDate.dispose();
@@ -175,10 +178,10 @@ class _MultiPlaybackTimeshiftWidgetState
     Overlay.of(context, rootOverlay: true).insert(_overlayEntry!);
   }
 
-  // void _onTimeChanged(DateTime time, [bool shouldUpdateCentralDate = false]) {
-  //   _time.value = time;
-  //   if (shouldUpdateCentralDate) _clampCentralDate(time);
-  // }
+  void _onTimeChanged(DateTime time, [bool shouldUpdateCentralDate = false]) {
+    _time.value = time;
+    if (shouldUpdateCentralDate) _clampCentralDate(time);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,9 +193,9 @@ class _MultiPlaybackTimeshiftWidgetState
             previous.listItemCamPlayback != current.listItemCamPlayback;
         if (shouldRebuild) {
           _clampCentralDate(_time.value);
-          // for (var item in current.listItemCamPlayback ?? []) {
-          //   item.playerController.onTimeChanged = _onTimeChanged;
-          // }
+          for (var item in current.listItemCamPlayback ?? <ItemPlaybackModel>[]) {
+            item.playerController.onTimeChanged.add(_onTimeChanged);
+          }
         }
 
         return shouldRebuild;
