@@ -17,6 +17,8 @@ import 'package:vms_flutter_client/screens/camera_detail/layout/camera_detail_mo
 import 'package:vms_flutter_client/screens/shared/player/monitor_player.dart';
 import 'package:vms_flutter_client/screens/shared/player/player_controller.dart';
 
+import 'components/mobile_controls_overlay.dart';
+
 class MobileCameraDetailScreen extends StatefulWidget {
   final CameraDetailScreenArgs args;
 
@@ -30,7 +32,6 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   late final CameraDetailBloc bloc;
 
   ValueNotifier<bool> isMuted = ValueNotifier(false);
-  ValueNotifier<bool> isPlaying = ValueNotifier(true);
 
   @override
   void initState() {
@@ -142,6 +143,13 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                           bloc.add(OnRecording(cancelStatus: -1));
                         }
                       },
+                      controlsBuilder: (isFullscreen) => MobileControlsOverlay(
+                        name: widget.args.data?.name ?? '',
+                        isFullscreen: isFullscreen,
+                        mode: CameraDetailMode.live,
+                        detailBloc: bloc,
+                        initialVisible: bloc.state.status == PlayerStatus.paused,
+                      ),
                     );
                   },
                 ),
@@ -150,14 +158,14 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                 children: [
                   Expanded(
                     child: IconButton(
-                      onPressed: togglePlay,
-                      icon: ValueListenableBuilder(
-                        valueListenable: isPlaying,
-                        builder: (context, value, child) {
-                          return SvgPicture.asset(
-                            value ? AppAssets.icPauseMobile : AppAssets.icPlayMobile,
-                          );
-                        },
+                      onPressed: () => bloc.state.playerController.togglePlay?.call(),
+                      icon: BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
+                        selector: (state) => state.status,
+                        builder: (context, status) => SvgPicture.asset(
+                          status == PlayerStatus.playing
+                              ? AppAssets.icPauseMobile
+                              : AppAssets.icPlayMobile,
+                        ),
                       ),
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
@@ -271,10 +279,5 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   void toggleMute() {
     bloc.state.playerController.changeVolume?.call(isMuted.value ? 100 : 0);
     isMuted.value = !isMuted.value;
-  }
-
-  void togglePlay() {
-    bloc.state.playerController.togglePlay?.call();
-    isPlaying.value = !isPlaying.value;
   }
 }

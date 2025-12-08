@@ -24,6 +24,8 @@ class MobilePlayerTimeline extends StatefulWidget {
     required this.unplaybackColor,
     required this.centralLineColor,
     required this.tickColor,
+    this.initialTime,
+    this.backgroundColor,
   });
 
   final double tickWidth;
@@ -35,6 +37,8 @@ class MobilePlayerTimeline extends StatefulWidget {
   final Color unplaybackColor;
   final Color centralLineColor;
   final Color tickColor;
+  final DateTime? initialTime;
+  final Color? backgroundColor;
 
   @override
   State<MobilePlayerTimeline> createState() => _MobilePlayerTimelineState();
@@ -42,7 +46,7 @@ class MobilePlayerTimeline extends StatefulWidget {
 
 class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
   late final _centralDate = ValueNotifier(DateTime.now().roundToSecond);
-  late final _time = ValueNotifier(DateTime.now().roundToSecond);
+  late final _time = ValueNotifier(widget.initialTime ?? DateTime.now().roundToSecond);
   late final _gap = ValueNotifier<double>(
     max((_timelineWidth - 4 * 5) / (4 * widget.minorTickCount), 3),
   );
@@ -59,7 +63,7 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
   late final double _maxGap = _calculateGap(1);
   late final double _minGap = _calculateGap(7);
 
-  CameraDetailBloc get _cameraLiveBloc => context.read<CameraDetailBloc>();
+  late final CameraDetailBloc _cameraLiveBloc = context.read<CameraDetailBloc>();
   DateTime get _startDate => _cameraLiveBloc.state.playbackDate.startOfDay;
   DateTime get _endDate => _cameraLiveBloc.state.playbackDate.startOfNextDay;
   double _calculateGap(double timeRanges) => max(
@@ -68,7 +72,23 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
   );
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _cameraLiveBloc.state.playerController
+        ..onPlaybackChanged.add(_onPlaybackChanged)
+        ..onTimeChanged.add(_onTimeChanged);
+
+      if (widget.initialTime != null) {
+        _clampCentralDate(widget.initialTime!);
+      }
+    });
+  }
+
+  @override
   void dispose() {
+    _cameraLiveBloc.state.playerController.onPlaybackChanged.remove(_onPlaybackChanged);
+    _cameraLiveBloc.state.playerController.onTimeChanged.remove(_onTimeChanged);
     _centralDate.dispose();
     _time.dispose();
     _gap.dispose();
@@ -136,7 +156,7 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: AppColors.greyF2F2F2),
+      decoration: BoxDecoration(color: widget.backgroundColor ?? AppColors.greyF2F2F2),
       child: LayoutBuilder(
         builder: (context, constraints) {
           _timelineWidth = constraints.maxWidth;
@@ -180,9 +200,6 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
                             current is PlaybackSuccess &&
                             current.playbacks.isNotEmpty) {
                           _clampCentralDate(current.playbacks[current.initialIndex].startTime);
-                          _cameraLiveBloc.state.playerController
-                            ..onPlaybackChanged = _onPlaybackChanged
-                            ..onTimeChanged = _onTimeChanged;
                         }
                         return true;
                       },

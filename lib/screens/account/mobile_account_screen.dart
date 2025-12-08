@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,9 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/error_service.dart';
+import 'package:vms_flutter_client/core/utils/file_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/account/components/account_item.dart';
 
 class MobileAccountScreen extends StatelessWidget {
@@ -74,12 +79,67 @@ class MobileAccountScreen extends StatelessWidget {
             trailing: Container(),
           ),
           const Spacer(),
-          Text('VNPT Secure Vision', style: AppTypography.style(14, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 5),
-          Text('v1.0', style: AppTypography.style(14, fontWeight: FontWeight.w400)),
+          _DownloadLogHandler(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'VNPT Secure Vision',
+                  style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 5),
+                Text('v1.0', style: AppTypography.style(14, fontWeight: FontWeight.w400)),
+              ],
+            ),
+          ),
           const SizedBox(height: 52),
         ],
       ),
+    );
+  }
+}
+
+class _DownloadLogHandler extends StatefulWidget {
+  const _DownloadLogHandler({required this.child});
+  final Widget child;
+
+  @override
+  State<_DownloadLogHandler> createState() => _DownloadLogHandlerState();
+}
+
+class _DownloadLogHandlerState extends State<_DownloadLogHandler> {
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleDownloadLog(_) {
+    _timer?.cancel();
+    _timer = Timer(Duration(seconds: 5), () async {
+      final des = await FileUtil.selectFolderLocation(title: 'Chọn vị trí để tải log');
+      if (des == null) return;
+
+      final res = await ErrorService.downloadLog(des);
+      if (res != null) {
+        ToastUtil.toastSuccess(
+          title: Text(
+            'Đã tải xuống log',
+            style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPressStart: _scheduleDownloadLog,
+      onLongPressEnd: (_) => _timer?.cancel(),
+      child: Container(color: Colors.transparent, child: widget.child),
     );
   }
 }
