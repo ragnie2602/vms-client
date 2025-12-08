@@ -258,6 +258,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
             fontWeight: FontWeight.w400,
             isItalic: true,
             color: AppColors.grey64748B,
+            textOverflow: TextOverflow.visible,
           ),
         ),
         const SizedBox(height: 16),
@@ -281,20 +282,35 @@ extension AddCameraDialogForm on _AddCameraDialogState {
   }
 
   Widget _buildAddFileBox() {
-    return SizedBox(
-      width: double.infinity,
-      child: CustomPaint(
-        painter: DashedBorderPainter(),
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: SvgPicture.asset(
-            AppAssets.icAdd,
-            width: 36,
-            height: 36,
-            color: AppColors.black,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: CustomPaint(
+            painter: DashedBorderPainter(isError: _isExcelEmpty),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: SvgPicture.asset(
+                AppAssets.icAdd,
+                width: 36,
+                height: 36,
+                color: _isExcelEmpty ? AppColors.redFF0000 : AppColors.black,
+              ),
+            ),
           ),
         ),
-      ),
+        const SizedBox(height: 8),
+        if (_isExcelEmpty)
+          Text(
+            'Vui lòng chọn file tải lên',
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.redFF0000,
+            ),
+          ),
+      ],
     );
   }
 
@@ -466,6 +482,7 @@ extension AddCameraDialogForm on _AddCameraDialogState {
         14,
         fontWeight: FontWeight.w500,
         color: AppColors.black,
+        textOverflow: TextOverflow.visible,
       ),
     );
   }

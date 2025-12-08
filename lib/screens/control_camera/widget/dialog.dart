@@ -121,6 +121,7 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
   String _method = 'RTSP'; // 'RTSP' hoặc 'ONVIF'
   ImportCameraEntity? importCameraEntity;
   bool _isExcelFormatError = false; // Check lỗi định dạng file Excel
+  bool _isExcelEmpty = false;
 
   FilePickerResult? _excelFileResult;
   double _importProgress = 0.0;
@@ -338,9 +339,9 @@ class _AddCameraDialogState extends State<_AddCameraDialog> {
 
                     if (_step == AddCameraStep.importFile) {
                       if (_excelFileResult == null) {
-                        ToastUtil.toastFail(
-                          title: Text('Vui lòng chọn file Excel'),
-                        );
+                        setState(() {
+                          _isExcelEmpty = true;
+                        });
                         return;
                       }
                       // await ExcelUtils.importExcelFile(
