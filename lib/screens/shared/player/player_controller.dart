@@ -57,4 +57,5 @@ class PlayerController {
   Future<void> Function(DateTime date, {int? dateIndex})? jumpToDate;
   Future<Process?> Function(String output)? recording;
   Future<bool> Function(String path)? snapshot;
+  Future<bool> Function(String path)? captureThumbnail;
 }

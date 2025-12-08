@@ -4,8 +4,10 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:vms_flutter_client/core/utils/logger.dart';
 
 extension PathExtension on String {
   String joinPath(
@@ -20,6 +22,8 @@ extension PathExtension on String {
 class FileUtil {
   const FileUtil._();
 
+  static const MethodChannel _channel = MethodChannel('document_access_manager');
+
   static final Map<String, XTypeGroup> _typeGroupMapper = {
     'JPG': XTypeGroup(label: 'jpg', extensions: <String>['jpg']),
     'PNG': XTypeGroup(label: 'png', extensions: <String>['png']),
@@ -32,10 +36,29 @@ class FileUtil {
     'XLSX': XTypeGroup(label: 'xlsx', extensions: <String>['xlsx']),
   };
 
+  static Future<String?> _selectFolderWithFullAccess() async {
+    try {
+      final result = await _channel.invokeMethod('selectDirectory');
+      if (result != null && result is Map) {
+        final path = result['path'] as String;
+        // Chuỗi mã hóa (token) cấp bởi OS, tương ứng với quyền truy cập vào path được chọn
+        // final bookmark = result['bookmark'] as String; // Security-Scoped Access
+
+        return path;
+      }
+      return null;
+    } on PlatformException catch (e) {
+      Logger.error(e, tag: 'Channel document_access_manager', writeLog: true);
+      return null;
+    }
+  }
+
   static Future<String?> selectFolderLocation({
     String? title,
     String? initialPath,
   }) async {
+    if (Platform.isIOS) return await _selectFolderWithFullAccess();
+
     return await FilePicker.platform.getDirectoryPath(
       dialogTitle: title,
       initialDirectory: initialPath,
