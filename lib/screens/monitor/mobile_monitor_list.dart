@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 import 'package:vms_flutter_client/screens/monitor/components/mobile_camera_item.dart';
 
 class MobileMonitorList extends StatefulWidget {
@@ -18,6 +19,8 @@ class MobileMonitorList extends StatefulWidget {
 class _MobileMonitorListState extends State<MobileMonitorList> {
   final TextEditingController _controller = TextEditingController();
   final ValueNotifier<String> _searchValue = ValueNotifier("");
+
+  final FilterDrawerController _filterDrawerController = FilterDrawerController();
 
   @override
   Widget build(BuildContext context) {
@@ -121,28 +124,36 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Các camera', style: AppTypography.style(13, fontWeight: FontWeight.w500)),
-                  ElevatedButton(
-                    onPressed: () => Scaffold.of(context).openEndDrawer(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.greyF5F5F5,
-                      elevation: 0,
-                      minimumSize: Size.zero,
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(33)),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Phân loại',
-                          style: AppTypography.style(13, color: AppColors.grey666666, fontWeight: FontWeight.w400),
+                  Builder(
+                    builder: (context) {
+                      return ElevatedButton(
+                        onPressed: () => Scaffold.of(context).openEndDrawer(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.greyF5F5F5,
+                          elevation: 0,
+                          minimumSize: Size.zero,
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(33)),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
                         ),
-                        const SizedBox(width: 4),
-                        SvgPicture.asset(AppAssets.icFilterAltLight, height: 20, width: 20),
-                      ],
-                    ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Phân loại',
+                              style: AppTypography.style(
+                                13,
+                                color: AppColors.grey666666,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            SvgPicture.asset(AppAssets.icFilterAltLight, height: 20, width: 20),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -197,6 +208,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
           ),
         ),
       ),
+      endDrawer: FilterDrawer(controller: _filterDrawerController),
     );
   }
 

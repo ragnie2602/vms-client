@@ -191,7 +191,9 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   @override
   void dispose() {
-    _player.pause();
+    try {
+      _player.pause();
+    } catch (_) {}
     WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
     _wakelock.disable();

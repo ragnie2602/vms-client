@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gal/gal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -239,6 +240,10 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
     final currentTime = DateTime.now().millisecondsSinceEpoch;
 
     if (Platform.isIOS) {
+      bool granted = await Gal.hasAccess();
+      if (!granted) granted = await Gal.requestAccess();
+      if (!granted) return null;
+
       path = '${(await getLibraryDirectory()).path}/${widget.args.data?.camId}_$currentTime.jpg';
     } else if (Platform.isAndroid) {
       path =
@@ -270,6 +275,9 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   }
 
   Future<String?> thumbnail() async {
+    if (bloc.state.playerController.isInitialized?.call() != true) return null;
+
+
     final path = '${(await getTemporaryDirectory()).path}/${widget.args.data?.camId}';
     await bloc.state.playerController.snapshot?.call(path);
 
