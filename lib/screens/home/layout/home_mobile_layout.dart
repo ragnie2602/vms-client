@@ -8,7 +8,6 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 
 class HomeMobileLayout extends StatefulWidget {
   final Widget content;
@@ -21,8 +20,6 @@ class HomeMobileLayout extends StatefulWidget {
 }
 
 class _HomeMobileLayoutState extends State<HomeMobileLayout> {
-  final FilterDrawerController _filterDrawerController = FilterDrawerController();
-
   @override
   Widget build(BuildContext context) {
     final data = _bottomNavigationBarData(widget.currentPath);
@@ -74,7 +71,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
                 color: AppColors.grey666666,
               ),
             ),
-      endDrawer: FilterDrawer(controller: _filterDrawerController),
     );
   }
 
