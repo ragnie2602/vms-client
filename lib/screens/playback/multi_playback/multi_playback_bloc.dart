@@ -128,18 +128,18 @@ class MultiPlaybackBloc
   }
 
   /// Thêm 1 camera mới vào lưới
-  /// 
+  ///
   /// step 1: Pause tất cả các camera đang play tronmg listCamera (nếu có)
-  /// 
+  ///
   /// step 2: Save lại thời gian khi bị pause
-  /// 
+  ///
   /// step 3: Get video playback của camera muốn thêm => add thêm camera đó vào list đang có
-  /// 
+  ///
   /// step 4: Setup cho cam mới (mute âm thanh + jumpDate cam mới đến khoảng time của các camera đang bị pause)
-  /// 
-  /// step 5: Check nếu tồn tại ít nhất 1 cam trong listCam đang có trạng thái loading (state =  PlayerState.initializing) 
+  ///
+  /// step 5: Check nếu tồn tại ít nhất 1 cam trong listCam đang có trạng thái loading (state =  PlayerState.initializing)
   /// thì vẫn chờ, đến khi hết loading => play toàn bộ cam trong listCam
-  /// 
+  ///
   FutureOr<void> _onAddNewCamera(
     AddCameraEvent event,
     Emitter<MultiPlaybackState> emit,
@@ -166,16 +166,12 @@ class MultiPlaybackBloc
       }
     }
 
-    // 3. Add new camera
-    final videos = await getVideoPlaybacksByCameraId(
-      camera: event.newCam,
-      playbackDate: state.playbackDate,
-    );
+    // 3. Add new camera (Emit immediately to show loading)
     final playerController = PlayerController();
     ItemPlaybackModel newItem = ItemPlaybackModel(
       index: event.indexCam,
       camera: event.newCam,
-      listVideoPlaybacks: videos?.reversed.toList(),
+      listVideoPlaybacks: [], // Empty initially
       playerController: playerController,
     );
     _list.add(newItem);
@@ -185,6 +181,26 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(_list),
       ),
     );
+
+    // 4. Fetch videos and update
+    final videos = await getVideoPlaybacksByCameraId(
+      camera: event.newCam,
+      playbackDate: state.playbackDate,
+    );
+
+    // tìm vị trí camera để update list video playback cho đúng camera đó trong list
+    final index = _list.indexWhere((e) => e.index == event.indexCam);
+    if (index != -1) {
+      _list[index] = _list[index].copyWith(
+        listVideoPlaybacks: videos?.reversed.toList(),
+      );
+      emit(
+        state.copyWith(
+          listItemCamPlayback: List.from(_list), // Create new list reference
+          mergedPlaybackList: _mergePlaybacks(_list),
+        ),
+      );
+    }
 
     // 4. Seek new camera to sync date and mute
     Future.delayed(const Duration(milliseconds: 500), () async {
