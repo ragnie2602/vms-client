@@ -3,8 +3,11 @@ import 'dart:io';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gal/gal.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
 
@@ -35,6 +38,8 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     on<ChangeTimelineDisplayMode>(_onChangeTimelineDisplayMode);
     on<OnRecording>(_onOnRecording);
     on<ChangeStream>(_onChangeStream);
+    on<ToggleMute>(_onToggleMute, transformer: sequential());
+    on<TakeSnapshot>(_onTakeSnapshot, transformer: droppable());
   }
 
   FutureOr<void> _onChaneViewMode(ChangeViewMode event, Emitter<CameraDetailState> emit) async {
@@ -85,6 +90,21 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
 
     state.playerController.changeVolume?.call(event.volume);
     emit(state.copyWith(volume: event.volume));
+  }
+
+  double _volumeBeforeMuted = 0;
+  FutureOr<void> _onToggleMute(ToggleMute event, Emitter<CameraDetailState> emit) async {
+    final isMuted = state.volume <= 0;
+
+    if (isMuted) {
+      double volume = _volumeBeforeMuted <= 0 ? 1 : _volumeBeforeMuted;
+      state.playerController.changeVolume?.call(volume);
+      emit(state.copyWith(volume: volume));
+    } else {
+      _volumeBeforeMuted = state.volume;
+      state.playerController.changeVolume?.call(0);
+      emit(state.copyWith(volume: 0));
+    }
   }
 
   FutureOr<void> _onChangeSpeed(ChangeSpeed event, Emitter<CameraDetailState> emit) async {
@@ -139,9 +159,22 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     emit(state.copyWith(stream: event.stream));
   }
 
-  // @override
-  // Future<void> close() {
-  //   state.playerController.dispose();
-  //   return super.close();
-  // }
+  FutureOr<void> _onTakeSnapshot(TakeSnapshot event, Emitter<CameraDetailState> emit) async {
+    if (state.playerController.isInitialized?.call() != true) return;
+
+    bool granted = await Gal.hasAccess();
+    if (!granted) granted = await Gal.requestAccess();
+    if (!granted) return;
+
+    final tempPath = Directory.systemTemp.path.joinPath(
+      '${state.camera?.name ?? 'camera'}_${DateTime.now().format("yyyyMMdd_HHmmss")}.jpg',
+    );
+    final res = await state.playerController.snapshot?.call(tempPath);
+    if (res == true) {
+      await Gal.putImage(tempPath);
+      File(tempPath).delete();
+
+      event.onSuccess?.call();
+    }
+  }
 }

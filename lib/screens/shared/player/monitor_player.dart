@@ -6,6 +6,7 @@ import 'dart:io' show Process;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -13,8 +14,8 @@ import 'package:vms_flutter_client/core/constants/common_extensions.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/background_task.dart';
+import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
@@ -40,6 +41,10 @@ class MonitorPlayer extends StatefulWidget {
     this.enableZoom = false,
     this.syncSystemVolume = false,
     this.onVolumeChanged,
+    this.controlsBuilder,
+    this.pauseUponEnteringBackgroundMode = true,
+    this.resumeUponEnteringForegroundMode = true,
+    this.wakelock = true,
   }) : super(key: key ?? controller?.ref);
 
   final String source;
@@ -55,12 +60,17 @@ class MonitorPlayer extends StatefulWidget {
   final bool enableZoom;
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
+  final Widget Function(bool isFullscreen)? controlsBuilder;
+  final bool pauseUponEnteringBackgroundMode;
+  final bool resumeUponEnteringForegroundMode;
+  final bool wakelock;
 
   @override
   State<MonitorPlayer> createState() => MonitorPlayerState();
 }
 
-class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMixin {
+class MonitorPlayerState extends State<MonitorPlayer>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final ValueNotifier<PlayerStatus> _status = ValueNotifier(PlayerStatus.playing);
   final ValueNotifier<PlayerState> _state = ValueNotifier(PlayerState.initializing);
 
@@ -86,15 +96,42 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
+  final _wakelock = Wakelock();
+  bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.pauseUponEnteringBackgroundMode) {
+      if ([AppLifecycleState.paused, AppLifecycleState.detached].contains(state)) {
+        if (_player.state == PlaybackState.playing) {
+          _pauseDueToPauseUponEnteringBackgroundMode = true;
+          togglePlay();
+        }
+      } else {
+        if (widget.resumeUponEnteringForegroundMode && _pauseDueToPauseUponEnteringBackgroundMode) {
+          _pauseDueToPauseUponEnteringBackgroundMode = false;
+          togglePlay();
+        }
+      }
+    }
+    super.didChangeAppLifecycleState(state);
+  }
+
   @override
   void initState() {
     _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
     _status.addListener(() => widget.onStatusChanged?.call(_status.value));
+    if (widget.wakelock) {
+      _status.addListener(
+        () => _status.value == PlayerStatus.playing ? _wakelock.enable() : _wakelock.disable(),
+      );
+    }
 
     _initZoom();
     _attachController();
 
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     _init();
 
@@ -149,11 +186,15 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     widget.controller!.jumpToDate = null;
     widget.controller!.isInitialized = isInitialized;
     widget.controller!.recording = recording;
+    widget.controller!.status = () => _status;
   }
 
   @override
   void dispose() {
+    _player.pause();
+    WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
+    _wakelock.disable();
     _zoomAnimationController?.dispose();
     _zoomController?.dispose();
     _dualQueue.dispose();
@@ -502,7 +543,10 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
                   ),
 
                   if (widget.labelBuilder != null) widget.labelBuilder!.call(widget.name),
-                  Positioned.fill(child: _buildPlayerStatus()),
+
+                  Positioned.fill(
+                    child: widget.controlsBuilder?.call(isFullscreen) ?? _buildPlayerStatus(),
+                  ),
                 ],
               ),
             },
