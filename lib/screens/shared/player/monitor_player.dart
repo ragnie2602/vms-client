@@ -2,8 +2,10 @@
 
 import 'dart:async';
 import 'dart:io' show Process;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -75,6 +77,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
   final ValueNotifier<PlayerState> _state = ValueNotifier(PlayerState.initializing);
 
   final GlobalKey<FullscreenPortalState> _fullscreenKey = GlobalKey();
+  final GlobalKey _captureKey = GlobalKey();
 
   final GlobalKey _ivKey = GlobalKey();
   TransformationController? _zoomController;
@@ -187,6 +190,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
     widget.controller!.isInitialized = isInitialized;
     widget.controller!.recording = recording;
     widget.controller!.status = () => _status;
+    widget.controller!.captureThumbnail = captureThumbnail;
   }
 
   @override
@@ -446,6 +450,64 @@ class MonitorPlayerState extends State<MonitorPlayer>
     );
   }
 
+  Future<bool> captureThumbnail(String path) async {
+    try {
+      // Check if player is initialized
+      if (!isInitialized()) {
+        Logger.warn('Cannot capture snapshot: Player not initialized');
+        return false;
+      }
+
+      // Check if video is playing
+      if (_status.value != PlayerStatus.playing) {
+        Logger.warn('Cannot capture snapshot: Video not playing');
+        return false;
+      }
+
+      // Check if player state is valid
+      if (_state.value.isError) {
+        Logger.warn('Cannot capture snapshot: Player in error state');
+        return false;
+      }
+
+      // Get the render object from our RepaintBoundary
+      final RenderObject? renderObject = _captureKey.currentContext?.findRenderObject();
+      if (renderObject == null) {
+        Logger.warn('Cannot capture snapshot: Render object not available');
+        return false;
+      }
+      // Try to capture from RepaintBoundary
+      if (renderObject is RenderRepaintBoundary) {
+        final ui.Image image = await renderObject.toImage(pixelRatio: 1.5);
+
+        // Convert to PNG bytes
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        if (byteData == null) {
+          image.dispose();
+          Logger.warn('Cannot capture snapshot: Failed to convert image to bytes');
+          return false;
+        }
+
+        // nén và ghi file sang Isolate để tránh block UI
+        final success = await BackgroundTask.encodeRgbaToJpegFile(
+          path: path,
+          bytes: byteData.buffer.asUint8List(),
+          width: image.width,
+          height: image.height,
+        );
+
+        image.dispose();
+        return success;
+      }
+
+      Logger.warn('Cannot capture snapshot: Not a RepaintBoundary');
+      return false;
+    } catch (e) {
+      Logger.error(e);
+      return false;
+    }
+  }
+
   void zoom(int type) {
     if (_zoomController == null || _zoomAnimationController == null) return;
 
@@ -538,7 +600,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
                                 )
                               : Texture(textureId: id);
 
-                          return player;
+                          return RepaintBoundary(key: _captureKey, child: player);
                         },
                       ),
                     ),
