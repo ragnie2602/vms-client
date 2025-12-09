@@ -36,39 +36,63 @@ class _InfoTextFieldState extends State<InfoTextField> {
         const SizedBox(height: 10),
         Container(
           color: widget.enabled ? Colors.transparent : AppColors.greyF2F4FA,
-          child: TextField(
-            controller: widget.controller,
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.all(12),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-                borderSide: BorderSide(color: AppColors.greyE2E8F0),
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: widget.controller,
+            builder: (context, value, _) => TextField(
+              controller: widget.controller,
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.all(12),
+                counterText: '',
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(3),
+                  borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                ),
+                enabled: widget.enabled,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(3),
+                  borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(3),
+                  borderSide: BorderSide(color: Colors.red),
+                ),
+                errorText: errorText,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(3),
+                  borderSide: BorderSide(color: AppColors.secondary),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(3),
+                  borderSide: BorderSide(color: Colors.red),
+                ),
+                hintStyle: AppTypography.style(14, fontWeight: FontWeight.w400),
+                hintText: widget.hintText,
+                isDense: true,
+                suffixIcon: widget.maxLength != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Center(
+                          widthFactor: 1.0,
+                          child: Text(
+                            '${value.text.length}/${widget.maxLength}',
+                            style: AppTypography.style(
+                              12,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.grey92929D,
+                            ),
+                          ),
+                        ),
+                      )
+                    : null,
+                suffixIconConstraints: widget.maxLength != null
+                    ? const BoxConstraints(minWidth: 50, minHeight: 20)
+                    : null,
               ),
-              enabled: widget.enabled,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-                borderSide: BorderSide(color: AppColors.greyE2E8F0),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-                borderSide: BorderSide(color: Colors.red),
-              ),
-              errorText: errorText,
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-                borderSide: BorderSide(color: AppColors.secondary),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-                borderSide: BorderSide(color: Colors.red),
-              ),
-              hintStyle: AppTypography.style(14, fontWeight: FontWeight.w400),
-              hintText: widget.hintText,
-              isDense: true,
+              keyboardType: TextInputType.number,
+              maxLength: widget.maxLength,
+              onChanged: onChanged,
+              style: AppTypography.style(14, fontWeight: FontWeight.w400),
             ),
-            maxLength: widget.maxLength,
-            onChanged: onChanged,
-            style: AppTypography.style(14, fontWeight: FontWeight.w400),
           ),
         ),
       ],
