@@ -65,3 +65,7 @@ class TakeSnapshot extends CameraDetailEvent {
 
   const TakeSnapshot({this.onSuccess});
 }
+
+class PausePlayer extends CameraDetailEvent {
+  const PausePlayer();
+}
