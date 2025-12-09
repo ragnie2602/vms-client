@@ -97,12 +97,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
           appBar: AppBar(
             backgroundColor: AppColors.white,
             leading: IconButton(
-              onPressed: () async {
-                final path = await thumbnail();
-
-                // ignore: use_build_context_synchronously
-                context.pop(path);
-              },
+              onPressed: () => Navigator.of(context).maybePop(),
               icon: Icon(Icons.chevron_left),
             ),
             scrolledUnderElevation: 0,
@@ -277,9 +272,8 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   Future<String?> thumbnail() async {
     if (bloc.state.playerController.isInitialized?.call() != true) return null;
 
-
     final path = '${(await getTemporaryDirectory()).path}/${widget.args.data?.camId}';
-    await bloc.state.playerController.snapshot?.call(path);
+    await bloc.state.playerController.captureThumbnail?.call(path);
 
     return path;
   }

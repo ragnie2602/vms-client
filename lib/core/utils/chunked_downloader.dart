@@ -87,8 +87,8 @@ class ChunkedDownloader {
            dio ??
            Dio(
              BaseOptions(
-               receiveTimeout: const Duration(seconds: 10),
-               connectTimeout: const Duration(seconds: 10),
+               receiveTimeout: const Duration(seconds: 20),
+               connectTimeout: const Duration(seconds: 20),
              ),
            ),
        _saveDirPath = savedPath,
