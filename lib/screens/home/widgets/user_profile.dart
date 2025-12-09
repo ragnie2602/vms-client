@@ -229,7 +229,7 @@ class _UserProfileState extends State<UserProfile> {
     );
   }
 
-  showSignOutConfirmationPopup() {
+  void showSignOutConfirmationPopup() {
     showDialog(
       context: context,
       builder: (context) => Dialog(

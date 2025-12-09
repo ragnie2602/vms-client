@@ -67,7 +67,9 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
     _multiWindowEventSubscription?.cancel();
 
-    final mweOuput = subscribeMultiWindowEventUseCase.execute(SubscribeMultiWindowEventInput());
+    final mweOuput = subscribeMultiWindowEventUseCase.execute(
+      SubscribeMultiWindowEventInput(),
+    );
 
     // In case of call the other usecase(s)
     _multiWindowEventSubscription = mweOuput.listen((output) {
@@ -75,7 +77,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     });
   }
 
-  FutureOr<void> _onChangeTheme(ChangeTheme event, Emitter<AppState> emit) async {
+  FutureOr<void> _onChangeTheme(
+    ChangeTheme event,
+    Emitter<AppState> emit,
+  ) async {
     if (state.themeMode == event.themeMode) return;
 
     emit(state.copyWith(themeMode: event.themeMode));
@@ -106,7 +111,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     }
   }
 
-  FutureOr<void> _onCreateNewWindow(CreateNewWindow event, Emitter<AppState> emit) async {
+  FutureOr<void> _onCreateNewWindow(
+    CreateNewWindow event,
+    Emitter<AppState> emit,
+  ) async {
     if (Platform.isAndroid || Platform.isIOS) return;
 
     final output = await createNewWindowUseCase.execute(CreateNewWindowInput());
@@ -123,7 +131,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     output.windowController.show();
   }
 
-  FutureOr<void> _onDisposePlayer(DisposePlayer event, Emitter<AppState> emit) async {
+  FutureOr<void> _onDisposePlayer(
+    DisposePlayer event,
+    Emitter<AppState> emit,
+  ) async {
     if (event.sequentialMode) {
       await event.player.dispose();
     } else {
@@ -136,7 +147,8 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     Emitter<AppState> emit,
   ) async {
     if (event.multiWindowEvent is MWECloseWindow) {
-      final bSourceID = (event.multiWindowEvent as MWECloseWindow).windowId; // business ID
+      final bSourceID =
+          (event.multiWindowEvent as MWECloseWindow).windowId; // business ID
       MultiWindowUtil.clearWindowSetting(bSourceID);
 
       if (MultiWindowUtil.hasClosedAll()) {
@@ -181,7 +193,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     ToggleMonitorDisplayMode event,
     Emitter<AppState> emit,
   ) async {
-    emit(state.copyWith(displayFullScreenLiveView: !state.displayFullScreenLiveView));
+    emit(
+      state.copyWith(
+        displayFullScreenLiveView: !state.displayFullScreenLiveView,
+      ),
+    );
   }
 
   FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) async {
@@ -190,11 +206,18 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     AppData.instance.profile = null;
 
     if (!Platform.isAndroid && !Platform.isIOS) {
-      sendMultiWindowEventUseCase.execute(SendMultiWindowEventInput(-1, 'sign_out'));
+      sendMultiWindowEventUseCase.execute(
+        SendMultiWindowEventInput(-1, 'sign_out'),
+      );
     }
+
+    emit(state.copyWith(isSignOut: true));
   }
 
-  FutureOr<void> _onChangeSettingWindow(ChangeSettingWindow event, Emitter<AppState> emit) async {
+  FutureOr<void> _onChangeSettingWindow(
+    ChangeSettingWindow event,
+    Emitter<AppState> emit,
+  ) async {
     if (Platform.isAndroid || Platform.isIOS) return;
 
     final rect = await windowManager.getBounds();
@@ -213,7 +236,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     );
   }
 
-  FutureOr<void> _onCloseWindow(CloseWindow event, Emitter<AppState> emit) async {
+  FutureOr<void> _onCloseWindow(
+    CloseWindow event,
+    Emitter<AppState> emit,
+  ) async {
     if (MultiWindowUtil.isMainWindow(windowId)) {
       await MultiWindowUtil.save();
 
@@ -237,7 +263,11 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
         await windowManager.setPreventClose(false);
 
         sendMultiWindowEventUseCase.execute(
-          SendMultiWindowEventInput(0, 'close_window', data: {'windowId': windowId}),
+          SendMultiWindowEventInput(
+            0,
+            'close_window',
+            data: {'windowId': windowId},
+          ),
         );
 
         windowManager.close();
@@ -245,23 +275,33 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     }
   }
 
-  FutureOr<void> _onReopenSubWindow(ReopenSubWindow event, Emitter<AppState> emit) async {
+  FutureOr<void> _onReopenSubWindow(
+    ReopenSubWindow event,
+    Emitter<AppState> emit,
+  ) async {
     if (Platform.isAndroid || Platform.isIOS) return;
 
     MultiWindowUtil.init();
 
     if (MultiWindowUtil.isMainWindow(windowId)) {
-      final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: windowId);
+      final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(
+        suggestWindowID: windowId,
+      );
       reopenViewId = setting.id;
       reopenViewMode = setting.viewMode.value;
       isDefaultMode = setting.isDefaultMode;
 
       final subWindowCount = MultiWindowUtil.getSubWindowCount();
       for (var i = 1; i <= subWindowCount; i++) {
-        final output = await createNewWindowUseCase.execute(CreateNewWindowInput(windowID: i));
+        final output = await createNewWindowUseCase.execute(
+          CreateNewWindowInput(windowID: i),
+        );
         output.windowController.show().then((_) async {
           await sendMultiWindowEventUseCase.execute(
-            SendMultiWindowEventInput(output.windowController.windowId, 'profile'),
+            SendMultiWindowEventInput(
+              output.windowController.windowId,
+              'profile',
+            ),
           );
           await sendMultiWindowEventUseCase.execute(
             SendMultiWindowEventInput(
@@ -275,8 +315,13 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
     }
   }
 
-  FutureOr<void> _onMyProfileChanged(MyProfileInfoChanged event, Emitter<AppState> emit) async {
-    emit(state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch));
+  FutureOr<void> _onMyProfileChanged(
+    MyProfileInfoChanged event,
+    Emitter<AppState> emit,
+  ) async {
+    emit(
+      state.copyWith(myProfileUpdatedAt: DateTime.now().millisecondsSinceEpoch),
+    );
   }
 }
 
