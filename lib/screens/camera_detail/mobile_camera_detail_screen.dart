@@ -118,6 +118,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                       syncSystemVolume: true,
                       onVolumeChanged: (volume) {
                         isMuted.value = volume <= 0;
+                        bloc.add(ChangeVolume(volume));
                       },
                       enableZoom: true,
                       mode: MonitorMode.liveview,
