@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 import 'package:vms_flutter_client/screens/monitor/components/mobile_camera_item.dart';
 
 class MobileMonitorList extends StatefulWidget {
@@ -21,10 +22,13 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
   final ValueNotifier<bool> _scrollValue = ValueNotifier(true);
   final ScrollController _scrollController = ScrollController();
 
+  late final FilterDrawerController _filterDrawerController;
+
   @override
   void initState() {
     super.initState();
 
+    _filterDrawerController = context.read();
     _scrollController.addListener(() {
       final isAtTop = _scrollController.position.pixels <= 16;
       if (isAtTop != _scrollValue.value) _scrollValue.value = isAtTop;
@@ -62,7 +66,10 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                               },
                             ),
                             const SizedBox(height: 10),
-                            Text('VNPT Secure Vision', style: AppTypography.style(22, fontWeight: FontWeight.w700)),
+                            Text(
+                              'VNPT Secure Vision',
+                              style: AppTypography.style(22, fontWeight: FontWeight.w700),
+                            ),
                             const SizedBox(height: 20, width: double.infinity),
                           ],
                         )
@@ -130,7 +137,10 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                                 fit: BoxFit.contain,
                               ),
                             ),
-                            prefixIconConstraints: const BoxConstraints(minWidth: 32, minHeight: 22),
+                            prefixIconConstraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 22,
+                            ),
                           ),
                           onChanged: (value) => _searchValue.value = value,
                           style: AppTypography.style(14, fontWeight: FontWeight.w400),
@@ -145,10 +155,23 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Các camera', style: AppTypography.style(13, fontWeight: FontWeight.w500)),
-                  ElevatedButton(
+                  BlocBuilder<MonitorBloc, MonitorState>(
+                    builder: (_, state) {
+                      String label = '';
+                      if (_filterDrawerController.selectedTags.isNotEmpty) {
+                        label = _filterDrawerController.selectedTags.length == 1
+                            ? _filterDrawerController.selectedTags.first.name
+                            : "${_filterDrawerController.selectedTags.length} thẻ";
+                      } else {
+                        label = 'Phân loại';
+                      }
+
+                      return ElevatedButton(
                         onPressed: () => Scaffold.of(context).openEndDrawer(),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.greyF5F5F5,
+                          backgroundColor: _filterDrawerController.selectedTags.isNotEmpty
+                              ? AppColors.blueE7F3FF
+                              : AppColors.greyF5F5F5,
                           elevation: 0,
                           minimumSize: Size.zero,
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -160,18 +183,38 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Phân loại',
+                              label,
                               style: AppTypography.style(
                                 13,
-                                color: AppColors.grey666666,
+                                color: _filterDrawerController.selectedTags.isNotEmpty
+                                    ? AppColors.secondary
+                                    : AppColors.grey666666,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
                             const SizedBox(width: 4),
-                            SvgPicture.asset(AppAssets.icFilterAltLight, height: 20, width: 20),
+                            _filterDrawerController.selectedTags.isNotEmpty
+                                ? GestureDetector(
+                                    onTap: () {
+                                      _filterDrawerController.selectedTags.clear();
+                                      context.read<MonitorBloc>().add(GetAllCamera());
+                                    },
+                                    child: SvgPicture.asset(
+                                      AppAssets.icCloseRounded,
+                                      height: 16,
+                                      width: 16,
+                                    ),
+                                  )
+                                : SvgPicture.asset(
+                                    AppAssets.icFilterAltLight,
+                                    height: 20,
+                                    width: 20,
+                                  ),
                           ],
                         ),
-                  )
+                      );
+                    },
+                  ),
                 ],
               ),
               const SizedBox(height: 7.5),
@@ -194,7 +237,8 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                           return _cameras.isNotEmpty
                               ? ListView.builder(
                                   controller: _scrollController,
-                                  itemBuilder: (context, index) => MobileCameraItem(_cameras[index]),
+                                  itemBuilder: (context, index) =>
+                                      MobileCameraItem(_cameras[index]),
                                   itemCount: _cameras.length,
                                 )
                               : Center(
@@ -215,7 +259,11 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                         color: Colors.amber,
                         child: Text(
                           'Không có dữ liệu',
-                          style: AppTypography.style(13, color: AppColors.grey666666, fontWeight: FontWeight.w600),
+                          style: AppTypography.style(
+                            13,
+                            color: AppColors.grey666666,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     );

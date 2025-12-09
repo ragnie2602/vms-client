@@ -124,6 +124,7 @@ class AppAssets {
 
   // Mobile
   static const icCamera01 = '$_svgPath/ic_camera-01.svg';
+  static const icCloseRounded = '$_svgPath/ic_close_rounded.svg';
   static const icCube = '$_svgPath/ic_cube.svg';
   static const icFeedback = '$_svgPath/ic_feedback.svg';
   static const icFilterAltLight = '$_svgPath/ic_filter_alt_light.svg';
