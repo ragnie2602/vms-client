@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/common_util.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_role.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group_status.dart';
@@ -11,11 +10,7 @@ import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
-import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
-import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
-import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
-import 'package:vms_flutter_client/screens/monitor/components/hierarchy_device_group_dropdown.dart';
 import 'package:vms_flutter_client/screens/monitor/components/mobile_tag_item.dart';
 
 class FilterDrawer extends StatefulWidget {
@@ -28,20 +23,25 @@ class FilterDrawer extends StatefulWidget {
 }
 
 class _FilterDrawerState extends State<FilterDrawer> {
+  final Set<TagEntity> _tempSelectedTags = {};
+
   @override
   void initState() {
     super.initState();
 
     if (!widget.controller.isInitialized) {
       context.read<ControlCameraBloc>().add(GetAllTagsEvent());
-      context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
+      // context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
       widget.controller.isInitialized = true;
     }
+
+    _tempSelectedTags.addAll(widget.controller.selectedTags);
   }
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      elevation: 24,
       width: MediaQuery.widthOf(context) * 330 / 375,
       child: Container(
         height: MediaQuery.heightOf(context),
@@ -51,7 +51,7 @@ class _FilterDrawerState extends State<FilterDrawer> {
           children: [
             Row(
               children: [
-                const SizedBox(width: 20),
+                const SizedBox(width: 13),
                 IconButton(
                   onPressed: () => Scaffold.of(context).closeEndDrawer(),
                   icon: Icon(Icons.close),
@@ -62,44 +62,44 @@ class _FilterDrawerState extends State<FilterDrawer> {
             const SizedBox(height: 11),
             const Divider(color: AppColors.greyF2F4FA),
             const SizedBox(height: 20),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Nhóm camera',
-                      style: AppTypography.style(16, fontWeight: FontWeight.w600),
-                    ),
-                    BlocListener<GroupCameraBloc, GroupCameraState>(
-                      listener: (context, state) {
-                        if (state is GetAllGroupCameraSuccessState) {
-                          setState(() {
-                            if (widget.controller.groups.length > 2) {
-                              widget.controller.groups.removeRange(
-                                2,
-                                widget.controller.groups.length,
-                              );
-                            }
-                            widget.controller.groups.addAll(state.groups ?? []);
-                          });
-                        }
-                      },
-                      child: HierarchyDeviceGroupDropdown(
-                        widget.controller.groups,
-                        key: ValueKey(widget.controller.selectedGroupIdChain.toString()),
-                        initGroupIdChain: widget.controller.selectedGroupIdChain,
-                        onSelectGroup: (idChain) =>
-                            widget.controller.selectedGroupIdChain = idChain,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const Divider(color: AppColors.greyF2F4FA),
-            const SizedBox(height: 20),
+            // Expanded(
+            //   child: Padding(
+            //     padding: const EdgeInsets.only(left: 20),
+            //     child: Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Text(
+            //           'Nhóm camera',
+            //           style: AppTypography.style(16, fontWeight: FontWeight.w600),
+            //         ),
+            //         BlocListener<GroupCameraBloc, GroupCameraState>(
+            //           listener: (context, state) {
+            //             if (state is GetAllGroupCameraSuccessState) {
+            //               setState(() {
+            //                 if (widget.controller.groups.length > 2) {
+            //                   widget.controller.groups.removeRange(
+            //                     2,
+            //                     widget.controller.groups.length,
+            //                   );
+            //                 }
+            //                 widget.controller.groups.addAll(state.groups ?? []);
+            //               });
+            //             }
+            //           },
+            //           child: HierarchyDeviceGroupDropdown(
+            //             widget.controller.groups,
+            //             key: ValueKey(widget.controller.selectedGroupIdChain.toString()),
+            //             initGroupIdChain: widget.controller.selectedGroupIdChain,
+            //             onSelectGroup: (idChain) =>
+            //                 widget.controller.selectedGroupIdChain = idChain,
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            // const Divider(color: AppColors.greyF2F4FA),
+            // const SizedBox(height: 20),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 20),
@@ -120,19 +120,20 @@ class _FilterDrawerState extends State<FilterDrawer> {
                         builder: (context, state) {
                           if (state is GetAllTagsSuccessState) {
                             return ListView.builder(
+                              padding: EdgeInsets.zero,
                               itemBuilder: (context, index) {
                                 final tag = state.tags[index];
-                                final isChecked = widget.controller.selectedTags.contains(tag);
+
                                 return MobileTagItem(
                                   tag: tag,
-                                  isChecked: isChecked,
-                                  onChecked: (checked) => setState(() {
+                                  initValue: _tempSelectedTags.contains(tag),
+                                  onChecked: (checked) {
                                     if (checked) {
-                                      widget.controller.selectedTags.add(tag);
+                                      _tempSelectedTags.add(tag);
                                     } else {
-                                      widget.controller.selectedTags.remove(tag);
+                                      _tempSelectedTags.remove(tag);
                                     }
-                                  }),
+                                  },
                                 );
                               },
                               itemCount: state.tags.length,
@@ -213,26 +214,28 @@ class _FilterDrawerState extends State<FilterDrawer> {
   }
 
   void applyFilter(BuildContext context) {
-    final MonitorBloc bloc = context.read();
-    final selectedId = widget.controller.selectedGroupIdChain.last;
+    widget.controller.selectedTags = _tempSelectedTags;
 
-    if (selectedId.equals([0])) {
-      bloc.add(GetAllCameraNoGroup(tags: widget.controller.selectedTags));
-    } else if (selectedId.equals([-1])) {
+    final MonitorBloc bloc = context.read();
+    // final selectedId = widget.controller.selectedGroupIdChain.last;
+
+    // if (selectedId.equals([0])) {
+    //   bloc.add(GetAllCameraNoGroup(tags: widget.controller.selectedTags));
+    // } else if (selectedId.equals([-1])) {
       bloc.add(GetAllCamera(tags: widget.controller.selectedTags));
-    } else {
-      bloc.add(GetAllCameraInGroup(selectedId, tags: widget.controller.selectedTags));
-    }
+    // } else {
+    //   bloc.add(GetAllCameraInGroup(selectedId, tags: widget.controller.selectedTags));
+    // }
 
     Scaffold.of(context).closeEndDrawer();
   }
 
   void resetFilter() {
     setState(() {
-      widget.controller.selectedGroupIdChain = [
-        [-1],
-      ];
-      widget.controller.selectedTags.clear();
+      // widget.controller.selectedGroupIdChain = [
+      //   [-1],
+      // ];
+      _tempSelectedTags.clear();
     });
   }
 }

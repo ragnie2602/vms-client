@@ -124,6 +124,7 @@ class AppAssets {
 
   // Mobile
   static const icCamera01 = '$_svgPath/ic_camera-01.svg';
+  static const icCloseRounded = '$_svgPath/ic_close_rounded.svg';
   static const icCube = '$_svgPath/ic_cube.svg';
   static const icFeedback = '$_svgPath/ic_feedback.svg';
   static const icFilterAltLight = '$_svgPath/ic_filter_alt_light.svg';
@@ -134,6 +135,7 @@ class AppAssets {
   static const icLanguage = '$_svgPath/ic_language.svg';
   static const icLogOut = '$_svgPath/ic_log_out.svg';
   static const icPauseMobile = '$_svgPath/ic_pause_mobile.svg';
+  static const icPlay01 = '$_svgPath/ic_play_01.svg';
   static const icPlayMobile = '$_svgPath/ic_play_mobile.svg';
   static const icPlayback = '$_svgPath/tab_playback.svg';
   static const icPlaybackFilled = '$_svgPath/ic_playback_filled.svg';

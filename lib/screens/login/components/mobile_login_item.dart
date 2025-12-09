@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
@@ -22,6 +26,14 @@ class MobileLoginItem extends StatefulWidget {
 
 class _MobileLoginItemState extends State<MobileLoginItem> {
   String? errorText;
+  bool obscureText = false;
+  Timer? _hidePasswordTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (mounted) obscureText = widget.obscureText;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +66,19 @@ class _MobileLoginItemState extends State<MobileLoginItem> {
             hintStyle: AppTypography.style(14, fontWeight: FontWeight.w400),
             hintText: widget.hintText,
             isDense: true,
+            suffixIcon: widget.obscureText
+                ? InkWell(
+                    onTap: showPassword,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: SvgPicture.asset(AppAssets.icEyeOpened),
+                    ),
+                  )
+                : null,
+            suffixIconConstraints: BoxConstraints(maxHeight: 40, maxWidth: 64),
           ),
           obscuringCharacter: '*',
-          obscureText: widget.obscureText,
+          obscureText: obscureText,
           onChanged: (_) => setState(
             () => errorText = widget.controller.text.isEmpty
                 ? '${widget.label} không được để trống'
@@ -66,5 +88,22 @@ class _MobileLoginItemState extends State<MobileLoginItem> {
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _hidePasswordTimer?.cancel();
+    super.dispose();
+  }
+
+  showPassword() {
+    setState(() => obscureText = !obscureText);
+    _hidePasswordTimer?.cancel();
+
+    if (!obscureText) {
+      _hidePasswordTimer = Timer(const Duration(seconds: 5), () {
+        if (mounted) setState(() => obscureText = true);
+      });
+    }
   }
 }
