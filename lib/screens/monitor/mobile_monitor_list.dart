@@ -6,7 +6,6 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
-import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 import 'package:vms_flutter_client/screens/monitor/components/mobile_camera_item.dart';
 
 class MobileMonitorList extends StatefulWidget {
@@ -19,8 +18,6 @@ class MobileMonitorList extends StatefulWidget {
 class _MobileMonitorListState extends State<MobileMonitorList> {
   final TextEditingController _controller = TextEditingController();
   final ValueNotifier<String> _searchValue = ValueNotifier("");
-
-  final FilterDrawerController _filterDrawerController = FilterDrawerController();
 
   @override
   Widget build(BuildContext context) {
@@ -124,9 +121,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Các camera', style: AppTypography.style(13, fontWeight: FontWeight.w500)),
-                  Builder(
-                    builder: (context) {
-                      return ElevatedButton(
+                  ElevatedButton(
                         onPressed: () => Scaffold.of(context).openEndDrawer(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.greyF5F5F5,
@@ -152,9 +147,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                             SvgPicture.asset(AppAssets.icFilterAltLight, height: 20, width: 20),
                           ],
                         ),
-                      );
-                    },
-                  ),
+                  )
                 ],
               ),
               const SizedBox(height: 7.5),
@@ -208,7 +201,6 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
           ),
         ),
       ),
-      endDrawer: FilterDrawer(controller: _filterDrawerController),
     );
   }
 

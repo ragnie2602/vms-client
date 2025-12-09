@@ -26,6 +26,7 @@ import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.d
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
+import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 
 class DependencyInjection {
   static List<SingleChildWidget> providers = [
@@ -123,5 +124,8 @@ class DependencyInjection {
 
     // Bloc
     Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),
+
+    // Controller
+    Provider<FilterDrawerController>(create: (context) => FilterDrawerController()),
   ];
 }
