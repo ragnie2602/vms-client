@@ -124,7 +124,7 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
               keyboardType: TextInputType.number,
               label: 'Số điện thoại',
               maxLength: 11,
-              regExp: r'^[0-9]+$',
+              regExp: r'^[0-9]{10,}$',
             ),
             const SizedBox(height: 44),
             Row(
@@ -152,13 +152,21 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                     ),
-                    child: Text(
-                      'Lưu',
-                      style: AppTypography.style(
-                        14,
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: BlocBuilder<ChangeMyInfoBloc, ChangeMyInfoState>(
+                      builder: (context, state) {
+                        if (state.isLoading) {
+                          return const Center(child: CupertinoActivityIndicator());
+                        }
+
+                        return Text(
+                          'Lưu',
+                          style: AppTypography.style(
+                            14,
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -177,7 +185,7 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]').hasMatch(emailController.text)) return false;
 
     if (phoneController.text.isEmpty) return false;
-    if (!RegExp(r'^[0-9]+$').hasMatch(phoneController.text)) return false;
+    if (!RegExp(r'^[0-9]{10,}$').hasMatch(phoneController.text)) return false;
 
     return true;
   }
