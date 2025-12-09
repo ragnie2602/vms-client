@@ -75,7 +75,14 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
                 if (state.isSuccess) {
                   ToastUtil.toastSuccess(
                     context: context,
-                    title: Text('Cập nhật thông tin tài khoản thành công!'),
+                    title: Text(
+                      'Cập nhật thông tin tài khoản thành công!',
+                      style: AppTypography.style(
+                        13,
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   );
                 } else if (state.errorMessage != null) {
                   showAppMessageDialog(
