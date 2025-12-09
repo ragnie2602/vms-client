@@ -121,8 +121,10 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
             InfoTextField(
               controller: phoneController,
               hintText: 'Nhập số điện thoại',
+              keyboardType: TextInputType.number,
               label: 'Số điện thoại',
               maxLength: 11,
+              regExp: r'^[0-9]+$',
             ),
             const SizedBox(height: 44),
             Row(

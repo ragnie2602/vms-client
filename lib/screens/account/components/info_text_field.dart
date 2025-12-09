@@ -6,6 +6,7 @@ class InfoTextField extends StatefulWidget {
   final TextEditingController controller;
   final bool enabled;
   final String hintText;
+  final TextInputType? keyboardType;
   final String label;
   final int? maxLength;
   final String? regExp;
@@ -16,6 +17,7 @@ class InfoTextField extends StatefulWidget {
     this.enabled = true,
     required this.hintText,
     required this.label,
+    this.keyboardType,
     this.maxLength,
     this.regExp,
   });
@@ -88,7 +90,7 @@ class _InfoTextFieldState extends State<InfoTextField> {
                     ? const BoxConstraints(minWidth: 50, minHeight: 20)
                     : null,
               ),
-              keyboardType: TextInputType.number,
+              keyboardType: widget.keyboardType,
               maxLength: widget.maxLength,
               onChanged: onChanged,
               style: AppTypography.style(14, fontWeight: FontWeight.w400),
