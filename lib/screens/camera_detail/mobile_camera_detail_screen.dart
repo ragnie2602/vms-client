@@ -139,12 +139,13 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                           bloc.add(OnRecording(cancelStatus: -1));
                         }
                       },
-                      controlsBuilder: (isFullscreen) => MobileControlsOverlay(
+                      controlsBuilder: (isFullscreen, state) => MobileControlsOverlay(
                         name: widget.args.data?.name ?? '',
                         isFullscreen: isFullscreen,
                         mode: CameraDetailMode.live,
                         detailBloc: bloc,
                         initialVisible: bloc.state.status == PlayerStatus.paused,
+                        state: state,
                       ),
                     );
                   },

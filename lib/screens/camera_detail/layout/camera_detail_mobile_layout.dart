@@ -98,12 +98,13 @@ class CameraDetailMobileLayout extends StatelessWidget with StateBuilderMixin {
               ..add(ChangeSpeed(speed))
               ..add(OnRecording(cancelStatus: 0));
           },
-          controlsBuilder: (isFullscreen) => MobileControlsOverlay(
+          controlsBuilder: (isFullscreen, state) => MobileControlsOverlay(
             name: _detailBloc(context).state.camera!.name,
             isFullscreen: isFullscreen,
             mode: CameraDetailMode.playback,
             detailBloc: _detailBloc(context),
             initialVisible: _detailBloc(context).state.status == PlayerStatus.paused,
+            state: state,
             bottomBuilder: () => MultiBlocProvider(
               providers: [
                 BlocProvider.value(value: context.read<PlaybackBloc>()),

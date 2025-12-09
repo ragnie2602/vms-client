@@ -1,7 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +23,6 @@ import 'package:volume_controller/volume_controller.dart';
 import 'components/accumulating_seek_queue.dart';
 import 'components/dual_task_queue.dart';
 import 'components/fullscreen_portal.dart';
-import 'components/mobile_controls.dart';
 import 'player_controller.dart';
 
 class PlaybackPlayer extends StatefulWidget {
@@ -57,7 +55,7 @@ class PlaybackPlayer extends StatefulWidget {
   final bool enableZoom;
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
-  final Widget Function(bool isFullscreen)? controlsBuilder;
+  final Widget Function(bool isFullscreen, PlayerState state)? controlsBuilder;
   final bool pauseUponEnteringBackgroundMode;
   final bool resumeUponEnteringForegroundMode;
   final bool wakelock;
@@ -793,21 +791,20 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
         decoration: BoxDecoration(color: Colors.black),
         width: double.infinity,
         height: double.infinity,
-        child: wrapWithInteractiveViewerIfEnabled(
-          key: isFullscreen ? null : _ivKey,
-          child: ValueListenableBuilder(
-            valueListenable: _state,
-            builder: (context, value, child) => switch (value) {
-              PlayerState.initializing => const Center(
-                child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
-              ),
-              PlayerState.empty => _buildNoPlayback(),
-              PlayerState.error || PlayerState.error_again => _buildError(),
-              _ => Stack(
-                fit: StackFit.expand,
-                children: [
-                  /* Player */
-                  Center(
+        child: ValueListenableBuilder(
+          valueListenable: _state,
+          builder: (context, value, child) => Stack(
+            fit: StackFit.expand,
+            children: [
+              switch (value) {
+                PlayerState.initializing => const Center(
+                  child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
+                ),
+                PlayerState.empty => _buildNoPlayback(),
+                PlayerState.error || PlayerState.error_again => _buildError(),
+                _ => wrapWithInteractiveViewerIfEnabled(
+                  key: isFullscreen ? null : _ivKey,
+                  child: Center(
                     child: AspectRatio(
                       aspectRatio: _aspectRatio,
                       child: ValueListenableBuilder(
@@ -822,27 +819,19 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
                       ),
                     ),
                   ),
+                ),
+              },
 
-                  if (widget.labelBuilder != null) widget.labelBuilder!.call(widget.name),
+              if (widget.labelBuilder != null && value == PlayerState.initialized)
+                widget.labelBuilder!.call(widget.name),
 
-                  if (Platform.isAndroid || Platform.isIOS)
-                    Positioned.fill(
-                      child:
-                          widget.controlsBuilder?.call(isFullscreen) ??
-                          MobileControls(
-                            status: _status,
-                            isSeeking: _isSeeking,
-                            togglePlay: togglePlay,
-                            seek: seekQueue,
-                          ),
-                    )
-                  else ...[
-                    Positioned.fill(child: _buildPlaybackStatus()),
-                    _buildSeekingStatus(),
-                  ],
-                ],
-              ),
-            },
+              if (widget.controlsBuilder != null)
+                widget.controlsBuilder!.call(isFullscreen, value)
+              else if (value == PlayerState.initialized) ...[
+                _buildPlaybackStatus(),
+                _buildSeekingStatus(),
+              ],
+            ],
           ),
         ),
       ),
@@ -888,11 +877,12 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       builder: (context, status, child) {
         if (status == PlayerStatus.playing) return const SizedBox.shrink();
 
-        return InkWell(
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent, // Nhận event khi chạm vào khoảng không
           onTap: togglePlay,
           child: Container(
             alignment: Alignment.center,
-            color: Colors.black.withValues(alpha: 0.25),
+            // color: Colors.black.withValues(alpha: 0.25),
             child: SvgPicture.asset(
               AppAssets.icPlay,
               width: 60,
@@ -916,7 +906,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
           bottom: 0,
           child: value
               ? Container(
-                  color: Colors.black.withValues(alpha: 0.15),
+                  // color: Colors.black.withValues(alpha: 0.15),
                   width: double.infinity,
                   height: double.infinity,
                   alignment: Alignment.center,
