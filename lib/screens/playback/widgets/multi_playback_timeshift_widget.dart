@@ -59,7 +59,8 @@ class _MultiPlaybackTimeshiftWidgetState
   double _overlayWidth = 0;
 
   //
-  late final MultiPlaybackBloc _multiPlaybackBloc = context.read<MultiPlaybackBloc>();
+  late final MultiPlaybackBloc _multiPlaybackBloc = context
+      .read<MultiPlaybackBloc>();
   double get _tickGap =>
       _multiPlaybackBloc.state.timelineDisplayMode.gap(_timelineWidth);
   Duration get _interval =>
@@ -80,7 +81,9 @@ class _MultiPlaybackTimeshiftWidgetState
 
   @override
   void dispose() {
-    for (var item in _multiPlaybackBloc.state.listItemCamPlayback ?? <ItemPlaybackModel>[]) {
+    for (var item
+        in _multiPlaybackBloc.state.listItemCamPlayback ??
+            <ItemPlaybackModel>[]) {
       item.playerController.onTimeChanged.remove(_onTimeChanged);
     }
     _time.dispose();
@@ -193,7 +196,8 @@ class _MultiPlaybackTimeshiftWidgetState
             previous.listItemCamPlayback != current.listItemCamPlayback;
         if (shouldRebuild) {
           _clampCentralDate(_time.value);
-          for (var item in current.listItemCamPlayback ?? <ItemPlaybackModel>[]) {
+          for (var item
+              in current.listItemCamPlayback ?? <ItemPlaybackModel>[]) {
             item.playerController.onTimeChanged.add(_onTimeChanged);
           }
         }
@@ -233,11 +237,14 @@ class _MultiPlaybackTimeshiftWidgetState
                               _calculateDateFromOffset(
                                 details.localPosition.dx,
                               );
-                          for (ItemPlaybackModel? e
-                              in _multiPlaybackBloc.state.listItemCamPlayback ??
-                                  []) {
-                            e?.playerController.jumpToDate?.call(date);
-                          }
+                          // for (ItemPlaybackModel? e
+                          //     in _multiPlaybackBloc.state.listItemCamPlayback ??
+                          //         []) {
+                          //   e?.playerController.jumpToDate?.call(date);
+                          // }
+                          _multiPlaybackBloc.add(
+                            MultiJumpDateEvent(newTime: date),
+                          );
                         },
                         onHorizontalDragUpdate: _onHorizontalDragUpdate,
                         onHorizontalDragStart: (_) {
