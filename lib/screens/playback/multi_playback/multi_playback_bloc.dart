@@ -180,10 +180,7 @@ class MultiPlaybackBloc
   ) async {
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
     // 1. Pause all existing cameras
-    for (var item in _list) {
-      await item.playerController.pause?.call();
-    }
-
+    await _pauseAllCamera();
     // 2. Get sync date from first camera
     DateTime? syncDate;
     if (_list.isNotEmpty) {
@@ -242,36 +239,17 @@ class MultiPlaybackBloc
     }
 
     // 4. Seek new camera to sync date and mute
-    Future.delayed(const Duration(milliseconds: 500), () async {
+    await Future.delayed(const Duration(milliseconds: 500), () async {
       playerController.changeVolume?.call(0);
-      if (syncDate != null) {
-        await playerController.jumpToDate?.call(syncDate);
-      }
-      for (var item in _list) {
-        await item.playerController.pause?.call();
-      }
-
-      // 5. Wait until all players are ready, then play all
-      Future.doWhile(() async {
-        // If any camera is initializing or seeking = true, all camera must be paused
-        bool anyInitializing = _list.any(
-          (item) =>
-              ((item.playerController.getPlayerState != null &&
-                  item.playerController.getPlayerState!() ==
-                      PlayerState.initializing) ||
-              item.playerController.isSeeking?.call().value == true),
-        );
-        if (anyInitializing) {
-          await Future.delayed(const Duration(milliseconds: 100));
-          return true; // keep waiting
-        }
-        return false; // all ready
-      }).then((_) async {
-        for (var item in _list) {
-          await item.playerController.play?.call();
-        }
-      });
     });
+
+    // seek all camera
+    await _seekAllCamera(syncDate);
+    // 5. Check loading
+    final checked = await _isAllReady();
+    if (checked) {
+      await _playAllCamera();
+    }
   }
 
   Future<List<PlaybackVideo>?> getVideoPlaybacksByCameraId({
@@ -434,5 +412,70 @@ class MultiPlaybackBloc
         }
       });
     });
+  }
+
+  // các hàm phục vụ đồng bộ
+  // 1. Pause
+  Future<void> _pauseAllCamera() async {
+    final _listCam = state.listItemCamPlayback ?? [];
+    if (_listCam.isEmpty) {
+      return;
+    }
+    await Future.wait(
+      _listCam.map((e) => e.playerController.pause?.call() ?? Future.value()),
+    );
+    // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
+    //   await e.playerController.pause?.call();
+    // }
+  }
+
+  // 2. Seek
+  Future<void> _seekAllCamera(DateTime? newDate) async {
+    final _listCam = state.listItemCamPlayback ?? [];
+    if (newDate == null || _listCam.isEmpty) {
+      return;
+    }
+    final data = <Future>[];
+    for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
+      final completer = await e.playerController.jumpToDate?.call(newDate);
+      if (completer != null) data.add(completer.future);
+    }
+    await Future.wait(data);
+    // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
+    //   await e.playerController.jumpToDate?.call(newDate);
+    // }
+  }
+
+  // 3. Check loading
+  Future<bool> _isAllReady() async {
+    final _listCam = state.listItemCamPlayback ?? [];
+    if (_listCam.isEmpty) {
+      return true;
+    }
+
+    try {
+      await Future.wait(
+        _listCam.map(
+          (e) => e.playerController.waitForReady?.call() ?? Future.value(),
+        ),
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // 4. Play
+  Future<void> _playAllCamera() async {
+    final _listCam = state.listItemCamPlayback ?? [];
+    if (_listCam.isEmpty) {
+      return;
+    }
+    await Future.wait(
+      _listCam.map((e) => e.playerController.play?.call() ?? Future.value()),
+    );
+    // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
+    //   await e.playerController.play?.call();
+    // }
   }
 }

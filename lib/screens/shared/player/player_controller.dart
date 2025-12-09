@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Process;
 import 'package:flutter/material.dart' show GlobalKey, ValueNotifier;
 
@@ -54,8 +55,9 @@ class PlayerController {
   Future<void> Function(double speed)? changeSpeed;
   Future<void> Function()? togglePlay;
   PlayerStatus Function()? getPlayerStatus;
-  Future<void> Function(DateTime date, {int? dateIndex})? jumpToDate;
+  Future<Completer?> Function(DateTime date, {int? dateIndex})? jumpToDate;
   Future<Process?> Function(String output)? recording;
   Future<bool> Function(String path)? snapshot;
   Future<bool> Function(String path)? captureThumbnail;
+  Future<void> Function({Duration? timeout})? waitForReady;
 }
