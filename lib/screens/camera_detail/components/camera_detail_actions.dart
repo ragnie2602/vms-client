@@ -132,6 +132,7 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
                   icon: AppAssets.icMultiPlayback,
                   isSelected: index == 3,
                   onTap: () {
+                    context.read<CameraDetailBloc>().add(const PausePlayer());
                     context.pushNamed(Routes.multi_playback.name);
                   },
                 ),
