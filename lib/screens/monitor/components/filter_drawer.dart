@@ -51,7 +51,7 @@ class _FilterDrawerState extends State<FilterDrawer> {
           children: [
             Row(
               children: [
-                const SizedBox(width: 20),
+                const SizedBox(width: 13),
                 IconButton(
                   onPressed: () => Scaffold.of(context).closeEndDrawer(),
                   icon: Icon(Icons.close),
