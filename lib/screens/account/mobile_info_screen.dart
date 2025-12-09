@@ -146,15 +146,7 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => context.read<ChangeMyInfoBloc>().add(
-                      ChangeMyInfoEvent(
-                        updateProfile: AppData.instance.profile?.copyWith(
-                          displayName: nameController.text,
-                          email: emailController.text,
-                          tel: phoneController.text,
-                        ),
-                      ),
-                    ),
+                    onPressed: _validateAndSubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
                       elevation: 0,
@@ -173,6 +165,34 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  bool _validateFields() {
+    if (nameController.text.isEmpty) return false;
+
+    if (emailController.text.isEmpty) return false;
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]').hasMatch(emailController.text)) return false;
+
+    if (phoneController.text.isEmpty) return false;
+    if (!RegExp(r'^[0-9]+$').hasMatch(phoneController.text)) return false;
+
+    return true;
+  }
+
+  void _validateAndSubmit() {
+    if (!_validateFields()) {
+      return;
+    }
+
+    context.read<ChangeMyInfoBloc>().add(
+      ChangeMyInfoEvent(
+        updateProfile: AppData.instance.profile?.copyWith(
+          displayName: nameController.text,
+          email: emailController.text,
+          tel: phoneController.text,
         ),
       ),
     );
