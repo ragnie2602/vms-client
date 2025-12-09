@@ -18,6 +18,8 @@ enum PlayerState {
 enum PlayerStatus { playing, paused, finished }
 
 class PlayerController {
+  Completer waitForAttached = Completer();
+
   Future<void> Function()? play;
   Future<void> Function()? pause;
   PlayerState Function()? getPlayerState;

@@ -238,17 +238,15 @@ class MultiPlaybackBloc
       );
     }
 
-    // 4. Seek new camera to sync date and mute
-    await Future.delayed(const Duration(milliseconds: 500), () async {
-      playerController.changeVolume?.call(0);
-    });
+    await playerController.waitForAttached.future;
 
+    // 4. Seek new camera to sync date and mute
     // seek all camera
     await _seekAllCamera(syncDate);
     // 5. Check loading
     final checked = await _isAllReady();
     if (checked) {
-      await _playAllCamera();
+      // await _playAllCamera();
     }
   }
 

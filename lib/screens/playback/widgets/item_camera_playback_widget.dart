@@ -60,6 +60,7 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
                   playlist: widget.item.listVideoPlaybacks ?? [],
                   enableZoom: true,
                   isMultiPlayback: true,
+                  initialVolume: 0,
                 ),
           // Close button
           Positioned(

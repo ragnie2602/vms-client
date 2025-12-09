@@ -46,6 +46,7 @@ class PlaybackPlayer extends StatefulWidget {
     this.resumeUponEnteringForegroundMode = true,
     this.wakelock = true,
     this.isMultiPlayback,
+    this.initialVolume,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -64,6 +65,7 @@ class PlaybackPlayer extends StatefulWidget {
   final bool resumeUponEnteringForegroundMode;
   final bool wakelock;
   final bool? isMultiPlayback;
+  final double? initialVolume;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
@@ -286,6 +288,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     widget.controller.getCurrentDate = () =>
         currentPlayback.startTime.add(Duration(milliseconds: _player.position));
     widget.controller.waitForReady = waitForReady;
+
+    widget.controller.waitForAttached.safeComplete();
   }
 
   Future<void> waitForReady({Duration? timeout}) async {
@@ -429,6 +433,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       max: 1000 * 60 * 10, // Cache ~ 10 phút
       drop: false, // TUYỆT ĐỐI KHÔNG DROP (để đảm bảo không mất dữ liệu khi tua)
     );
+    // set inital volume
+    if(widget.initialVolume != null){
+      _player.volume = widget.initialVolume!;
+    }
   }
 
   void _tryReconnecting(bool isError) {
@@ -520,7 +528,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
           if (_shouldSyncPlayerTime) {
             // Case đang dừng --> tự động play bởi thư viện --> update _status
-            if (_status.value != PlayerStatus.playing) _status.value = PlayerStatus.playing;
+            if (_status.value != PlayerStatus.playing && _player.state == PlaybackState.playing){
+              _status.value = PlayerStatus.playing;
+            }
 
             // Syncing time
             widget.controller.markTimeChanged(
@@ -654,7 +664,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      if (diff != Duration.zero) await _seek(diff, needInitialized: false, waitSeeking: false);
+      if (widget.isMultiPlayback == true) await pause();
+      if (diff != Duration.zero) await _player.seek(position: diff.inMilliseconds, flags: SeekFlag(SeekFlag.fromStart));
     }
     // Playback khác --> đổi playlist và jump
     else {
