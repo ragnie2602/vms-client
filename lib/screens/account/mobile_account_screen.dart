@@ -15,7 +15,7 @@ import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/screens/account/components/account_item.dart';
-import 'package:vms_flutter_client/screens/home/change_my_password_dialog.dart';
+import 'package:vms_flutter_client/screens/account/mobile_change_password_screen.dart';
 
 class MobileAccountScreen extends StatelessWidget {
   const MobileAccountScreen({super.key});
@@ -23,9 +23,7 @@ class MobileAccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AppBloc, AppState>(
-      listenWhen: (previous, current) =>
-          previous.isSignOut != current.isSignOut ||
-          previous.myProfileUpdatedAt != current.myProfileUpdatedAt,
+      listenWhen: (previous, current) => previous.isSignOut != current.isSignOut || previous.myProfileUpdatedAt != current.myProfileUpdatedAt,
       listener: (context, state) {
         if (state.isSignOut) {
           if (Navigator.canPop(context)) Navigator.pop(context);
@@ -48,10 +46,8 @@ class MobileAccountScreen extends StatelessWidget {
                     fit: BoxFit.cover,
                     child: Image.network(
                       AppData.instance.profile?.avatar ?? "",
-                      errorBuilder: (context, error, stackTrace) =>
-                          Image.asset(AppAssets.defaultAvatar),
-                      loadingBuilder: (context, child, loadingProgress) =>
-                          CupertinoActivityIndicator(),
+                      errorBuilder: (context, error, stackTrace) => Image.asset(AppAssets.defaultAvatar),
+                      loadingBuilder: (context, child, loadingProgress) => CupertinoActivityIndicator(),
                     ),
                   ),
                 ),
@@ -60,11 +56,7 @@ class MobileAccountScreen extends StatelessWidget {
               Text(
                 AppData.instance.profile?.displayNamePreview ?? 'Giám sát viên',
                 overflow: TextOverflow.ellipsis,
-                style: AppTypography.style(
-                  18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.blackOrWhite,
-                ),
+                style: AppTypography.style(18, fontWeight: FontWeight.w600, color: AppColors.blackOrWhite),
               ),
             ],
           ),
@@ -78,49 +70,22 @@ class MobileAccountScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const Divider(color: AppColors.greyF2F4FA, thickness: 3),
-                  AccountItem(
-                    onTap: () => context.pushNamed(Routes.info.name),
-                    svgPath: AppAssets.icUserProfileX,
-                    title: 'Thông tin cá nhân',
-                  ),
+                  AccountItem(onTap: () => context.pushNamed(Routes.info.name), svgPath: AppAssets.icUserProfileX, title: 'Thông tin cá nhân'),
                   AccountItem(
                     onTap: () {
                       if (AppData.instance.profile?.changePassDenied ?? false) {
-                        ToastUtil.toastFail(
-                          context: context,
-                          title: Text(
-                            'Bạn không có quyền sử dụng chức năng này!',
-                            maxLines: 5,
-                          ),
-                        );
+                        ToastUtil.toastFail(context: context, title: Text('Bạn không có quyền sử dụng chức năng này!', maxLines: 5));
                         return;
                       }
-                      showChangeMyPasswordDialog(context);
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MobileChangePasswordScreen()));
                     },
                     svgPath: AppAssets.icKey02,
                     title: 'Đổi mật khẩu',
                   ),
-                  AccountItem(
-                    onTap: () {},
-                    svgPath: AppAssets.icCube,
-                    title: 'Điều khoản & Điều kiện',
-                  ),
-                  AccountItem(
-                    onTap: () {},
-                    svgPath: AppAssets.icCube,
-                    title: 'Chính sách quyền riêng tư',
-                  ),
-                  AccountItem(
-                    onTap: () {},
-                    svgPath: AppAssets.icFeedback,
-                    title: 'Liên hệ & Phản hồi',
-                  ),
-                  AccountItem(
-                    onTap: () {},
-                    svgPath: AppAssets.icLanguage,
-                    title: 'Đổi ngôn ngữ',
-                    trailing: Container(),
-                  ),
+                  AccountItem(onTap: () {}, svgPath: AppAssets.icCube, title: 'Điều khoản & Điều kiện'),
+                  AccountItem(onTap: () {}, svgPath: AppAssets.icCube, title: 'Chính sách quyền riêng tư'),
+                  AccountItem(onTap: () {}, svgPath: AppAssets.icFeedback, title: 'Liên hệ & Phản hồi'),
+                  AccountItem(onTap: () {}, svgPath: AppAssets.icLanguage, title: 'Đổi ngôn ngữ', trailing: Container()),
                   AccountItem(
                     onTap: () {
                       showSignOutConfirmationPopup(context);
@@ -134,21 +99,9 @@ class MobileAccountScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'VNPT Secure Vision',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        Text('VNPT Secure Vision', style: AppTypography.style(14, fontWeight: FontWeight.w500)),
                         const SizedBox(height: 5),
-                        Text(
-                          'v1.0',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+                        Text('v1.0', style: AppTypography.style(14, fontWeight: FontWeight.w400)),
                       ],
                     ),
                   ),
@@ -177,20 +130,12 @@ class MobileAccountScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Đăng xuất',
-                    style: AppTypography.style(
-                      30,
-                      color: AppColors.blackOrWhite,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTypography.style(30, color: AppColors.blackOrWhite, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 28),
                   Text(
                     'Bạn có muốn thoát khỏi ứng dụng?',
-                    style: AppTypography.style(
-                      14,
-                      color: AppColors.blackOrWhite,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: AppTypography.style(14, color: AppColors.blackOrWhite, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 40),
                   Row(
@@ -204,21 +149,12 @@ class MobileAccountScreen extends StatelessWidget {
                             backgroundColor: AppColors.blackOrWhiteReverse,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            side: BorderSide(
-                              color: AppColors.greyE2E8F0,
-                              width: 1,
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                           ),
                           child: Text(
                             'Hủy',
-                            style: AppTypography.style(
-                              14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.blackOrWhite,
-                            ),
+                            style: AppTypography.style(14, fontWeight: FontWeight.w600, color: AppColors.blackOrWhite),
                           ),
                         ),
                       ),
@@ -229,17 +165,11 @@ class MobileAccountScreen extends StatelessWidget {
                           backgroundColor: AppColors.blackOrWhite,
                           elevation: 0,
                           padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(3),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                         ),
                         child: Text(
                           'Xác nhận',
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.blackOrWhiteReverse,
-                          ),
+                          style: AppTypography.style(14, fontWeight: FontWeight.w600, color: AppColors.blackOrWhiteReverse),
                         ),
                       ),
                     ],
@@ -250,10 +180,7 @@ class MobileAccountScreen extends StatelessWidget {
             Positioned(
               top: 0,
               right: 0,
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(Icons.close, size: 20),
-              ),
+              child: IconButton(onPressed: () => Navigator.pop(context), icon: Icon(Icons.close, size: 20)),
             ),
           ],
         ),
@@ -282,9 +209,7 @@ class _DownloadLogHandlerState extends State<_DownloadLogHandler> {
   void _scheduleDownloadLog(_) {
     _timer?.cancel();
     _timer = Timer(Duration(seconds: 5), () async {
-      final des = await FileUtil.selectFolderLocation(
-        title: 'Chọn vị trí để tải log',
-      );
+      final des = await FileUtil.selectFolderLocation(title: 'Chọn vị trí để tải log');
       if (des == null) return;
 
       final res = await ErrorService.downloadLog(des);
@@ -292,11 +217,7 @@ class _DownloadLogHandlerState extends State<_DownloadLogHandler> {
         ToastUtil.toastSuccess(
           title: Text(
             'Đã tải xuống log',
-            style: AppTypography.style(
-              14,
-              fontWeight: FontWeight.w500,
-              color: AppColors.white,
-            ),
+            style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
           ),
         );
       }
