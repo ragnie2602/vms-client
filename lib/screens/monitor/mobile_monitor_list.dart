@@ -18,6 +18,18 @@ class MobileMonitorList extends StatefulWidget {
 class _MobileMonitorListState extends State<MobileMonitorList> {
   final TextEditingController _controller = TextEditingController();
   final ValueNotifier<String> _searchValue = ValueNotifier("");
+  final ValueNotifier<bool> _scrollValue = ValueNotifier(true);
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _scrollController.addListener(() {
+      final isAtTop = _scrollController.position.pixels <= 16;
+      if (isAtTop != _scrollValue.value) _scrollValue.value = isAtTop;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +50,17 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Chào mừng bạn!', style: AppTypography.style(16, fontWeight: FontWeight.w500)),
+                            ValueListenableBuilder(
+                              valueListenable: _scrollValue,
+                              builder: (context, value, child) {
+                                return value
+                                    ? Text(
+                                        'Chào mừng bạn!',
+                                        style: AppTypography.style(16, fontWeight: FontWeight.w500),
+                                      )
+                                    : SizedBox(width: double.infinity);
+                              },
+                            ),
                             const SizedBox(height: 10),
                             Text('VNPT Secure Vision', style: AppTypography.style(22, fontWeight: FontWeight.w700)),
                             const SizedBox(height: 20, width: double.infinity),
@@ -50,6 +72,8 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
               ValueListenableBuilder(
                 valueListenable: _searchValue,
                 builder: (context, value, child) {
+                  if (value.isEmpty) _scrollValue.value = true;
+
                   return Row(
                     children: [
                       if (value.isNotEmpty) ...[
@@ -169,6 +193,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
 
                           return _cameras.isNotEmpty
                               ? ListView.builder(
+                                  controller: _scrollController,
                                   itemBuilder: (context, index) => MobileCameraItem(_cameras[index]),
                                   itemCount: _cameras.length,
                                 )
@@ -206,7 +231,9 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchValue.dispose();
+
     super.dispose();
   }
 }
