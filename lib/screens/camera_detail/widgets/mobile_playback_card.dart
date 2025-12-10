@@ -325,7 +325,7 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBin
             SizedBox(width: 5),
             Container(
               decoration: BoxDecoration(
-                color: AppColors.black.withValues(alpha: 0.5),
+                color: AppColors.black.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(3),
               ),
               height: 48,
@@ -339,20 +339,25 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBin
                       widget.playback.urlThumbnail,
                       fit: BoxFit.cover,
                       loadingBuilder: (_, __, ___) => Center(child: CircularProgressIndicator()),
-                      errorBuilder: (_, __, ___) => SizedBox(),
+                      errorBuilder: (_, __, ___) => Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: SvgPicture.asset(AppAssets.logoFull),
+                      ),
+                    ),
+
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(color: Color.fromRGBO(0, 0, 0, 0.45)),
+                      ),
                     ),
 
                     if (widget.isSelected == false)
-                      Positioned.fill(
-                        child: Container(
-                          color: AppColors.black.withValues(alpha: 0.25),
-                          alignment: Alignment.center,
-                          child: SvgPicture.asset(
-                            AppAssets.icPlay,
-                            width: 20,
-                            height: 20,
-                            colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                          ),
+                      Center(
+                        child: SvgPicture.asset(
+                          AppAssets.icPlay,
+                          width: 16,
+                          height: 16,
+                          colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
                         ),
                       ),
                   ],

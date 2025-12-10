@@ -62,7 +62,7 @@ class MonitorPlayer extends StatefulWidget {
   final bool enableZoom;
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
-  final Widget Function(bool isFullscreen)? controlsBuilder;
+  final Widget Function(bool isFullscreen, PlayerState state)? controlsBuilder;
   final bool pauseUponEnteringBackgroundMode;
   final bool resumeUponEnteringForegroundMode;
   final bool wakelock;
@@ -195,6 +195,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   @override
   void dispose() {
+    widget.controller?.detach();
     try {
       _player.pause();
     } catch (_) {}
@@ -402,13 +403,13 @@ class MonitorPlayerState extends State<MonitorPlayer>
   /* =============================== CONTROL FUNCTIONS =============================== */
   bool isInitialized() => _state.value == PlayerState.initialized;
 
-  void changeVolume(double volume) {
+  void changeVolume(double volume, {bool syncSystemVolume = false}) {
     _dualQueue.add(() async {
       if (volume == _player.volume) return;
       _player.volume = volume;
 
       // Đồng bộ volume với hệ thống
-      if (widget.syncSystemVolume) {
+      if (widget.syncSystemVolume && syncSystemVolume) {
         VolumeController.instance.showSystemUI = true;
         await VolumeController.instance.setVolume(_player.volume);
         VolumeController.instance.showSystemUI = false;
@@ -566,26 +567,25 @@ class MonitorPlayerState extends State<MonitorPlayer>
         ),
         width: double.infinity,
         height: double.infinity,
-        child: wrapWithInteractiveViewerIfEnabled(
-          key: isFullscreen ? null : _ivKey,
-          child: ValueListenableBuilder<PlayerState>(
-            valueListenable: _state,
-            builder: (context, state, _) => switch (state) {
-              PlayerState.empty => Center(
-                child: Text(
-                  'Không có dữ liệu!',
-                  style: TextStyle(fontSize: 13, color: Colors.white),
+        child: ValueListenableBuilder<PlayerState>(
+          valueListenable: _state,
+          builder: (context, state, _) => Stack(
+            fit: StackFit.expand,
+            children: [
+              switch (state) {
+                PlayerState.empty => Center(
+                  child: Text(
+                    'Không có dữ liệu!',
+                    style: TextStyle(fontSize: 13, color: Colors.white),
+                  ),
                 ),
-              ),
-              PlayerState.initializing => const Center(
-                child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
-              ),
-              PlayerState.error || PlayerState.error_again => _buildError(),
-              _ => Stack(
-                fit: StackFit.expand,
-                children: [
-                  /* Player */
-                  Center(
+                PlayerState.initializing => const Center(
+                  child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
+                ),
+                PlayerState.error || PlayerState.error_again => _buildError(),
+                _ => wrapWithInteractiveViewerIfEnabled(
+                  key: isFullscreen ? null : _ivKey,
+                  child: Center(
                     child: AspectRatio(
                       aspectRatio: _aspectRatio,
                       child: ValueListenableBuilder(
@@ -608,15 +608,14 @@ class MonitorPlayerState extends State<MonitorPlayer>
                       ),
                     ),
                   ),
+                ),
+              },
 
-                  if (widget.labelBuilder != null) widget.labelBuilder!.call(widget.name),
+              if (widget.labelBuilder != null && state == PlayerState.initialized)
+                widget.labelBuilder!.call(widget.name),
 
-                  Positioned.fill(
-                    child: widget.controlsBuilder?.call(isFullscreen) ?? _buildPlayerStatus(),
-                  ),
-                ],
-              ),
-            },
+              widget.controlsBuilder?.call(isFullscreen, state) ?? _buildPlayerStatus(),
+            ],
           ),
         ),
       ),
@@ -641,11 +640,12 @@ class MonitorPlayerState extends State<MonitorPlayer>
       builder: (context, status, child) {
         if (status == PlayerStatus.playing) return const SizedBox.shrink();
 
-        return InkWell(
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent, // Nhận event khi chạm vào khoảng không
           onTap: togglePlay,
           child: Container(
             alignment: Alignment.center,
-            color: Colors.black.withValues(alpha: 0.25),
+            // color: Colors.black.withValues(alpha: 0.25),
             child: SvgPicture.asset(
               AppAssets.icPlay,
               width: 60,

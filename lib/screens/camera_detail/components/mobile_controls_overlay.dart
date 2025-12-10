@@ -23,6 +23,7 @@ class MobileControlsOverlay extends StatefulWidget {
     required this.detailBloc,
     this.initialVisible = false,
     this.bottomBuilder,
+    required this.state,
   });
   final String name;
   final bool isFullscreen;
@@ -30,6 +31,7 @@ class MobileControlsOverlay extends StatefulWidget {
   final CameraDetailBloc detailBloc;
   final bool initialVisible;
   final Widget Function()? bottomBuilder;
+  final PlayerState state;
 
   @override
   State<MobileControlsOverlay> createState() => _MobileControlsOverlayState();
@@ -99,6 +101,8 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: GestureDetector(
+        // [IMPORTANT] Cho phép các event chạm được truyền qua widget này (kể cả khi click vào khoảng trắng)
+        behavior: HitTestBehavior.translucent,
         onTap: () => Future.delayed(Duration.zero, () => _visible.value = !_visible.value),
         child: ValueListenableBuilder(
           valueListenable: _visible,
@@ -110,29 +114,30 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
               width: double.infinity,
               height: double.infinity,
               alignment: Alignment.center,
-              color: (visible && widget.isFullscreen)
-                  ? Colors.black.withValues(alpha: 0.15)
-                  : Colors.transparent,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (widget.isFullscreen) _topActions(),
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    child: IgnorePointer(
-                      ignoring: !_visible.value,
-                      child: widget.mode.isPlayback
-                          ? _centerActionsForPlayback()
-                          : _centerActionsForLive(),
-                    ),
-                  ),
-                  if (widget.isFullscreen) _rightActions(),
-                  if (widget.bottomBuilder != null && widget.isFullscreen)
-                    Positioned(bottom: 0, left: 0, right: 0, child: widget.bottomBuilder!()),
-                ],
+              // [IMPORTANT] Không set color để InteractiveViewer bên dưới có thể nhận
+              // HitTestBehavior.translucent --> giúp bắt đc event khi chạm vào khoảng trắng (trong suốt)
+              // color: Colors.transparent,
+              child: IgnorePointer(
+                ignoring: !visible,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (widget.isFullscreen) _topActions(),
+                    if (widget.state == PlayerState.initialized)
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        child: widget.mode.isPlayback
+                            ? _centerActionsForPlayback()
+                            : _centerActionsForLive(),
+                      ),
+                    if (widget.isFullscreen) _rightActions(),
+                    if (widget.bottomBuilder != null && widget.isFullscreen)
+                      Positioned(bottom: 0, left: 0, right: 0, child: widget.bottomBuilder!()),
+                  ],
+                ),
               ),
             ),
           ),
@@ -166,6 +171,7 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
               iconColor: AppColors.white,
               iconSize: 30,
               parentSize: 42,
+              splashColor: Colors.grey,
             ),
             SizedBox(width: 20),
           ],
@@ -218,21 +224,40 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
   }
 
   Widget _centerActionsForLive() {
+    bool fullScreen = widget.isFullscreen;
+
     return ValueListenableBuilder(
       valueListenable: status!,
       builder: (context, status, child) {
-        if (status == PlayerStatus.playing) return const SizedBox.shrink();
+        if (fullScreen) {
+          return Center(
+            child: _actionItem(
+              onTap: () => _onCall(() => playerController.togglePlay?.call()),
+              icon: status == PlayerStatus.paused
+                  ? AppAssets.icPlayMobile
+                  : AppAssets.icPauseMobile,
+              backgroundColor: fullScreen
+                  ? Color.fromRGBO(245, 245, 245, 0.9)
+                  : Colors.black.withValues(alpha: 0.6),
+              iconSize: fullScreen ? 32 : 28,
+              parentSize: fullScreen ? 72 : 55,
+              iconColor: fullScreen ? Colors.black : Colors.white,
+            ),
+          );
+        }
 
-        return Center(
-          child: _actionItem(
-            onTap: () => _onCall(() => playerController.togglePlay?.call()),
-            icon: AppAssets.icPlayMobile,
-            backgroundColor: Color.fromRGBO(245, 245, 245, 0.9),
-            iconSize: 32,
-            parentSize: 72,
-            iconColor: Colors.black,
-          ),
-        );
+        return status == PlayerStatus.playing
+            ? const SizedBox.shrink()
+            : Center(
+                child: _actionItem(
+                  onTap: () => _onCall(() => playerController.togglePlay?.call()),
+                  icon: AppAssets.icPlayMobile,
+                  backgroundColor: Color.fromRGBO(245, 245, 245, 0.9),
+                  iconSize: 32,
+                  parentSize: 72,
+                  iconColor: Colors.black,
+                ),
+              );
       },
     );
   }
@@ -242,57 +267,57 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
       right: 20,
       bottom: 0,
       top: 0,
-      child: IgnorePointer(
-        ignoring: !_visible.value,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _actionItem(
-                parentSize: 46,
-                icon: AppAssets.icCamera01,
-                onTap: () => _onCall(
-                  () => widget.detailBloc.add(
-                    TakeSnapshot(
-                      onSuccess: () => ToastUtil.toastSuccess(
-                        title: Text(
-                          "Đã lưu ảnh chụp",
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.white,
-                          ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _actionItem(
+              parentSize: 46,
+              icon: AppAssets.icCamera01,
+              onTap: () => _onCall(
+                () => widget.detailBloc.add(
+                  TakeSnapshot(
+                    onSuccess: () => ToastUtil.toastSuccess(
+                      title: Text(
+                        "Đã lưu ảnh chụp",
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.white,
                         ),
                       ),
                     ),
                   ),
                 ),
-                iconSize: 28,
-                iconColor: Colors.black,
-                backgroundColor: Color.fromRGBO(245, 245, 245, 0.9),
               ),
+              iconSize: 28,
+              iconColor: Colors.black,
+              backgroundColor: Color.fromRGBO(245, 245, 245, 0.9),
+            ),
 
-              if (widget.mode.isPlayback) ...[
-                SizedBox(height: 20),
-                BlocSelector<CameraDetailBloc, CameraDetailState, double>(
-                  bloc: widget.detailBloc,
-                  selector: (state) => state.speed,
-                  builder: (context, speed) => Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(245, 245, 245, 0.9),
-                      shape: BoxShape.circle,
-                    ),
-                    child: MobileControlSpeed(
-                      speed: speed,
-                      onSpeedChanged: (spd) => widget.detailBloc.add(ChangeSpeed(spd)),
-                    ),
+            if (widget.mode.isPlayback) ...[
+              SizedBox(height: 20),
+              BlocSelector<CameraDetailBloc, CameraDetailState, double>(
+                bloc: widget.detailBloc,
+                selector: (state) => state.speed,
+                builder: (context, speed) => Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(245, 245, 245, 0.9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: MobileControlSpeed(
+                    canChangeSpeed: () =>
+                        widget.detailBloc.state.playerController.getPlayerState?.call() ==
+                        PlayerState.initialized,
+                    speed: speed,
+                    onSpeedChanged: (spd) => widget.detailBloc.add(ChangeSpeed(spd)),
                   ),
                 ),
-              ],
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );
@@ -303,42 +328,37 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
       top: 0,
       left: 0,
       right: 0,
-      child: IgnorePointer(
-        ignoring: !_visible.value,
-        child: Container(
-          padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
-          child: Row(
-            children: [
-              _actionItem(
-                onTap: () => Navigator.of(context).maybePop(),
-                icon: AppAssets.icArrowCircleLeft,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(8, 0, 20, 0),
+        child: Row(
+          children: [
+            _actionItem(
+              onTap: () => Navigator.of(context).maybePop(),
+              icon: AppAssets.icArrowCircleLeft,
+              iconColor: AppColors.white,
+              iconSize: 24,
+              parentSize: 48,
+              splashColor: Colors.grey.withValues(alpha: 0.25),
+            ),
+            // SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                widget.name,
+                style: AppTypography.style(13, fontWeight: FontWeight.w600, color: AppColors.white),
+                maxLines: 1,
+              ),
+            ),
+            BlocSelector<CameraDetailBloc, CameraDetailState, double>(
+              bloc: widget.detailBloc,
+              selector: (state) => state.volume,
+              builder: (context, volume) => _actionItem(
+                onTap: () => widget.detailBloc.add(ToggleMute()),
+                icon: volume == 0 ? AppAssets.icVolumeMutedFullscreen : AppAssets.icVolume,
                 iconColor: AppColors.white,
                 iconSize: 24,
               ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  widget.name,
-                  style: AppTypography.style(
-                    13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.white,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-              BlocSelector<CameraDetailBloc, CameraDetailState, double>(
-                bloc: widget.detailBloc,
-                selector: (state) => state.volume,
-                builder: (context, volume) => _actionItem(
-                  onTap: () => widget.detailBloc.add(ToggleMute()),
-                  icon: volume == 0 ? AppAssets.icVolumeMutedFullscreen : AppAssets.icVolume,
-                  iconColor: AppColors.white,
-                  iconSize: 24,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -352,15 +372,16 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
     Color? iconColor,
     Color? backgroundColor,
     Widget? child,
+    Color? splashColor,
   }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        splashColor: parentSize == null ? null : AppColors.primary,
-        highlightColor: parentSize == null ? null : AppColors.primary,
-        focusColor: parentSize == null ? null : AppColors.primary,
-        hoverColor: parentSize == null ? null : AppColors.primary,
+        splashColor: parentSize == null ? null : splashColor ?? AppColors.primary,
+        highlightColor: parentSize == null ? null : splashColor ?? AppColors.primary,
+        focusColor: parentSize == null ? null : splashColor ?? AppColors.primary,
+        hoverColor: parentSize == null ? null : splashColor ?? AppColors.primary,
         borderRadius: BorderRadius.circular(100),
         child: Container(
           width: parentSize,

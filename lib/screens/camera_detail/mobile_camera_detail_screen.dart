@@ -34,8 +34,6 @@ class MobileCameraDetailScreen extends StatefulWidget {
 class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   late final CameraDetailBloc bloc;
 
-  ValueNotifier<bool> isMuted = ValueNotifier(false);
-
   @override
   void initState() {
     super.initState();
@@ -120,7 +118,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                       key: Key(widget.args.data?.camId ?? 'unknown'),
                       syncSystemVolume: true,
                       onVolumeChanged: (volume) {
-                        isMuted.value = volume <= 0;
+                        bloc.add(ChangeVolume(volume));
                       },
                       enableZoom: true,
                       mode: MonitorMode.liveview,
@@ -131,10 +129,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                         context.read<CameraDetailBloc>().add(ChangePlayerStatus(status));
                       },
                       onInitializedValues: ({required double volume, required double speed}) {
-                        isMuted.value = volume <= 0;
-                        context.read<CameraDetailBloc>().add(ChangeVolume(volume));
-                        context.read<CameraDetailBloc>().add(ChangeSpeed(speed));
-                        context.read<CameraDetailBloc>().add(OnRecording(cancelStatus: 0));
+                        context.read<CameraDetailBloc>().add(OnDefaultValues(volume, speed));
                       },
                       onLostConnection: () {
                         final bloc = context.read<CameraDetailBloc>();
@@ -142,12 +137,13 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                           bloc.add(OnRecording(cancelStatus: -1));
                         }
                       },
-                      controlsBuilder: (isFullscreen) => MobileControlsOverlay(
+                      controlsBuilder: (isFullscreen, state) => MobileControlsOverlay(
                         name: widget.args.data?.name ?? '',
                         isFullscreen: isFullscreen,
                         mode: CameraDetailMode.live,
                         detailBloc: bloc,
                         initialVisible: bloc.state.status == PlayerStatus.paused,
+                        state: state,
                       ),
                     );
                   },
@@ -186,15 +182,15 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   ),
                   Expanded(
                     child: IconButton(
-                      icon: ValueListenableBuilder(
-                        valueListenable: isMuted,
-                        builder: (context, value, child) {
-                          return SvgPicture.asset(
-                            value ? AppAssets.icVolumeMuted : AppAssets.icVolume,
-                          );
-                        },
+                      icon: BlocSelector<CameraDetailBloc, CameraDetailState, double>(
+                        selector: (state) => state.volume,
+                        builder: (context, volume) => SvgPicture.asset(
+                          volume == 0 ? AppAssets.icVolumeMuted : AppAssets.icVolume,
+                        ),
                       ),
-                      onPressed: widget.args.data?.isOnline == true ? toggleMute : null,
+                      onPressed: widget.args.data?.isOnline == true
+                          ? () => bloc.add(ToggleMute())
+                          : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -270,10 +266,5 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
     await bloc.state.playerController.captureThumbnail?.call(path);
 
     return path;
-  }
-
-  void toggleMute() {
-    bloc.state.playerController.changeVolume?.call(isMuted.value ? 100 : 0);
-    isMuted.value = !isMuted.value;
   }
 }

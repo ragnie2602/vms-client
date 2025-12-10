@@ -19,13 +19,11 @@ import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
-import 'package:vms_flutter_client/screens/playback/widgets/empty_record_camera_widget.dart';
 import 'package:volume_controller/volume_controller.dart';
 
 import 'components/accumulating_seek_queue.dart';
 import 'components/dual_task_queue.dart';
 import 'components/fullscreen_portal.dart';
-import 'components/mobile_controls.dart';
 import 'player_controller.dart';
 
 class PlaybackPlayer extends StatefulWidget {
@@ -60,7 +58,7 @@ class PlaybackPlayer extends StatefulWidget {
   final bool enableZoom;
   final bool syncSystemVolume;
   final Function(double volume)? onVolumeChanged;
-  final Widget Function(bool isFullscreen)? controlsBuilder;
+  final Widget Function(bool isFullscreen, PlayerState state)? controlsBuilder;
   final bool pauseUponEnteringBackgroundMode;
   final bool resumeUponEnteringForegroundMode;
   final bool wakelock;
@@ -188,6 +186,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
   @override
   void dispose() {
+    widget.controller.detach();
     try {
       _player.pause();
     } catch (_) {}
@@ -281,8 +280,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     widget.controller.isInitialized = isInitialized;
     widget.controller.status = () => _status;
     widget.controller.isSeeking = () => _isSeeking;
-    widget.controller.playerTime = () =>
-        currentPlayback.startTime.add(Duration(milliseconds: _lastPosition));
+    widget.controller.playerTime = () {
+      if (_state.value == PlayerState.empty) return _dateAtEmptyState;
+      return currentPlayback.startTime.add(Duration(milliseconds: _player.position));
+    };
     widget.controller.getPlayerState = () => _state.value;
     widget.controller.getCurrentPosition = () =>
         Duration(milliseconds: _player.position);
@@ -415,6 +416,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     setGlobalOption('videoout.clear_on_stop', 0);
 
     _player.videoDecoders = AppConfig.MDK_DECODERS;
+    if (Platform.isAndroid) _player.audioDecoders = ['MFT'];
     // Nếu trong 15 giây không nhận được gói tin nào, ngắt kết nối và báo lỗi.
     _player.setProperty("avformat.timeout", "15000000");
     _player.setProperty("avformat.stimeout", "15000000");
@@ -607,6 +609,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   }
 
   bool _newestIsEmpty = false;
+  DateTime _dateAtEmptyState = DateTime.now().roundToSecond;
   Future<Completer?> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
     if (!mounted) return null;
 
@@ -618,6 +621,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     final index = dateIndex ?? widget.playlist.atTime(date);
     widget.controller.markPlaybackChanged(index ?? -1);
     if (index == null) {
+      _dateAtEmptyState = date.roundToSecond;
       _isSeeking.value = false;
       _newestIsEmpty = true;
       _state.value = PlayerState.empty;
@@ -649,6 +653,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
     // Click ngoài khoảng playback
     if (index == null) {
+      _dateAtEmptyState = date.roundToSecond;
       widget.controller.markPlaybackChanged(-1);
       _state.value = PlayerState.empty;
       _player.pause();
@@ -751,13 +756,13 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   bool isInitialized() => _state.value == PlayerState.initialized;
 
   // Dual task queue
-  void changeVolume(double volume) {
+  void changeVolume(double volume, {bool syncSystemVolume = false}) {
     _volumeQueue.add(() async {
       if (volume == _player.volume) return;
       _player.volume = volume;
 
       // Đồng bộ volume với hệ thống
-      if (widget.syncSystemVolume) {
+      if (widget.syncSystemVolume && syncSystemVolume) {
         VolumeController.instance.showSystemUI = true;
         await VolumeController.instance.setVolume(_player.volume);
         VolumeController.instance.showSystemUI = false;
@@ -865,24 +870,20 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
         decoration: BoxDecoration(color: Colors.black),
         width: double.infinity,
         height: double.infinity,
-        child: wrapWithInteractiveViewerIfEnabled(
-          key: isFullscreen ? null : _ivKey,
-          child: ValueListenableBuilder(
-            valueListenable: _state,
-            builder: (context, value, child) => switch (value) {
-              PlayerState.initializing => const Center(
-                child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
-              ),
-              PlayerState.empty =>
-                widget.isMultiPlayback == true
-                    ? EmptyRecordCameraWidget()
-                    : _buildNoPlayback(),
-              PlayerState.error || PlayerState.error_again => _buildError(),
-              _ => Stack(
-                fit: StackFit.expand,
-                children: [
-                  /* Player */
-                  Center(
+        child: ValueListenableBuilder(
+          valueListenable: _state,
+          builder: (context, value, child) => Stack(
+            fit: StackFit.expand,
+            children: [
+              switch (value) {
+                PlayerState.initializing => const Center(
+                  child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
+                ),
+                PlayerState.empty => _buildNoPlayback(),
+                PlayerState.error || PlayerState.error_again => _buildError(),
+                _ => wrapWithInteractiveViewerIfEnabled(
+                  key: isFullscreen ? null : _ivKey,
+                  child: Center(
                     child: AspectRatio(
                       aspectRatio: _aspectRatio,
                       child: ValueListenableBuilder(
@@ -897,27 +898,19 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
                       ),
                     ),
                   ),
+                ),
+              },
 
-                  if (widget.labelBuilder != null) widget.labelBuilder!.call(widget.name),
+              if (widget.labelBuilder != null && value == PlayerState.initialized)
+                widget.labelBuilder!.call(widget.name),
 
-                  if (Platform.isAndroid || Platform.isIOS)
-                    Positioned.fill(
-                      child:
-                          widget.controlsBuilder?.call(isFullscreen) ??
-                          MobileControls(
-                            status: _status,
-                            isSeeking: _isSeeking,
-                            togglePlay: togglePlay,
-                            seek: seekQueue,
-                          ),
-                    )
-                  else ...[
-                    Positioned.fill(child: _buildPlaybackStatus()),
-                    _buildSeekingStatus(),
-                  ],
-                ],
-              ),
-            },
+              if (widget.controlsBuilder != null)
+                widget.controlsBuilder!.call(isFullscreen, value)
+              else if (value == PlayerState.initialized) ...[
+                _buildPlaybackStatus(),
+                _buildSeekingStatus(),
+              ],
+            ],
           ),
         ),
       ),
@@ -963,11 +956,12 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       builder: (context, status, child) {
         if (status == PlayerStatus.playing) return const SizedBox.shrink();
 
-        return InkWell(
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent, // Nhận event khi chạm vào khoảng không
           onTap: togglePlay,
           child: Container(
             alignment: Alignment.center,
-            color: Colors.black.withValues(alpha: 0.25),
+            // color: Colors.black.withValues(alpha: 0.25),
             child: SvgPicture.asset(
               AppAssets.icPlay,
               width: 60,
@@ -991,7 +985,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
           bottom: 0,
           child: value
               ? Container(
-                  color: Colors.black.withValues(alpha: 0.15),
+                  // color: Colors.black.withValues(alpha: 0.15),
                   width: double.infinity,
                   height: double.infinity,
                   alignment: Alignment.center,
