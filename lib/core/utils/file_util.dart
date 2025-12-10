@@ -7,6 +7,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 
 extension PathExtension on String {
@@ -56,8 +57,12 @@ class FileUtil {
   static Future<String?> selectFolderLocation({
     String? title,
     String? initialPath,
+    bool needFullAccess = false,
   }) async {
-    if (Platform.isIOS) return await _selectFolderWithFullAccess();
+    if (needFullAccess && Platform.isIOS) return await _selectFolderWithFullAccess();
+    if (needFullAccess && Platform.isAndroid && !(await Permission.storage.request().isGranted)) {
+      await Permission.storage.request();
+    }
 
     return await FilePicker.platform.getDirectoryPath(
       dialogTitle: title,

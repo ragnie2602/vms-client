@@ -1,7 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -416,7 +415,6 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     setGlobalOption('videoout.clear_on_stop', 0);
 
     _player.videoDecoders = AppConfig.MDK_DECODERS;
-    if (Platform.isAndroid) _player.audioDecoders = ['MFT'];
     // Nếu trong 15 giây không nhận được gói tin nào, ngắt kết nối và báo lỗi.
     _player.setProperty("avformat.timeout", "15000000");
     _player.setProperty("avformat.stimeout", "15000000");

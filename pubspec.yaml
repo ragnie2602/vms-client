@@ -86,6 +86,7 @@ dependencies:
   # Mobile
   gal: ^2.3.2
   volume_controller: ^3.4.0
+  permission_handler: ^12.0.1
 
   # add group
   dropdown_search: ^6.0.2
