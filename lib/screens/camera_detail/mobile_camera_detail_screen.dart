@@ -233,42 +233,16 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   }
 
   screenshot() async {
-    String path = '';
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
-
-    if (Platform.isIOS) {
-      bool granted = await Gal.hasAccess();
-      if (!granted) granted = await Gal.requestAccess();
-      if (!granted) return null;
-
-      path = '${(await getLibraryDirectory()).path}/${widget.args.data?.camId}_$currentTime.jpg';
-    } else if (Platform.isAndroid) {
-      path =
-          '${(await getExternalStorageDirectory())?.path}/../../../../Pictures/VMS/${widget.args.data?.camId}_$currentTime.jpg';
-    }
-
-    bool? isSuccess = false;
-    if (path.isNotEmpty) isSuccess = await bloc.state.playerController.snapshot?.call(path);
-
-    if (isSuccess == true) {
-      ToastUtil.toastSuccess(
-        // ignore: use_build_context_synchronously
-        context: context,
+    bloc.add(
+      TakeSnapshot(
+        onSuccess: () => ToastUtil.toastSuccess(
         title: Text(
-          'Ảnh chụp thành công!',
-          style: AppTypography.style(10, color: AppColors.white, fontWeight: FontWeight.w400),
+            "Đã lưu ảnh chụp",
+            style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+          ),
         ),
-      );
-    } else {
-      ToastUtil.toastFail(
-        // ignore: use_build_context_synchronously
-        context: context,
-        title: Text(
-          'Có lỗi xảy ra!',
-          style: AppTypography.style(10, color: AppColors.white, fontWeight: FontWeight.w400),
-        ),
-      );
-    }
+      ),
+    );
   }
 
   Future<String?> thumbnail() async {
