@@ -238,7 +238,10 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                               ? ListView.builder(
                                   controller: _scrollController,
                                   itemBuilder: (context, index) =>
-                                      MobileCameraItem(_cameras[index]),
+                                      MobileCameraItem(
+                                    _cameras[index],
+                                    key: ValueKey(_cameras[index].camId),
+                                  ),
                                   itemCount: _cameras.length,
                                 )
                               : Center(
