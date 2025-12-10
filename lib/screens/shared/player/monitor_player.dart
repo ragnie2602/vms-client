@@ -403,13 +403,13 @@ class MonitorPlayerState extends State<MonitorPlayer>
   /* =============================== CONTROL FUNCTIONS =============================== */
   bool isInitialized() => _state.value == PlayerState.initialized;
 
-  void changeVolume(double volume) {
+  void changeVolume(double volume, {bool syncSystemVolume = false}) {
     _dualQueue.add(() async {
       if (volume == _player.volume) return;
       _player.volume = volume;
 
       // Đồng bộ volume với hệ thống
-      if (widget.syncSystemVolume) {
+      if (widget.syncSystemVolume && syncSystemVolume) {
         VolumeController.instance.showSystemUI = true;
         await VolumeController.instance.setVolume(_player.volume);
         VolumeController.instance.showSystemUI = false;

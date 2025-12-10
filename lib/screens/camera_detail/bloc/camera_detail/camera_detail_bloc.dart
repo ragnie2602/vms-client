@@ -10,6 +10,7 @@ import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 import '../../../shared/player/sources.dart';
 import '../../components/player_timeline.dart';
@@ -40,6 +41,7 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     on<ChangeStream>(_onChangeStream);
     on<ToggleMute>(_onToggleMute, transformer: sequential());
     on<TakeSnapshot>(_onTakeSnapshot, transformer: droppable());
+    on<OnDefaultValues>(_onOnDefaultValues);
   }
 
   FutureOr<void> _onChaneViewMode(ChangeViewMode event, Emitter<CameraDetailState> emit) async {
@@ -95,19 +97,15 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     emit(state.copyWith(volume: event.volume));
   }
 
-  double _volumeBeforeMuted = 0;
   FutureOr<void> _onToggleMute(ToggleMute event, Emitter<CameraDetailState> emit) async {
     if (state.playerController.isInitialized?.call() != true) return;
 
-    final isMuted = state.volume <= 0;
-
-    if (isMuted) {
-      double volume = _volumeBeforeMuted <= 0 ? 1 : _volumeBeforeMuted;
-      state.playerController.changeVolume?.call(volume);
-      emit(state.copyWith(volume: volume));
+    if (state.volume <= 0) {
+      final deviceVolume = await VolumeController.instance.getVolume();
+      state.playerController.changeVolume?.call(deviceVolume, syncSystemVolume: false);
+      emit(state.copyWith(volume: deviceVolume));
     } else {
-      _volumeBeforeMuted = state.volume;
-      state.playerController.changeVolume?.call(0);
+      state.playerController.changeVolume?.call(0, syncSystemVolume: false);
       emit(state.copyWith(volume: 0));
     }
   }
@@ -185,5 +183,9 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
 
       event.onSuccess?.call();
     }
+  }
+
+  FutureOr<void> _onOnDefaultValues(OnDefaultValues event, Emitter<CameraDetailState> emit) async {
+    emit(state.copyWith(volume: event.volume, speed: event.speed, recordingStatus: 0));
   }
 }

@@ -47,7 +47,7 @@ class PlayerController {
   DateTime Function()? playerTime;
 
   /* Function control player */
-  void Function(double volume)? changeVolume;
+  void Function(double volume, {bool syncSystemVolume})? changeVolume;
   void Function(int type)? zoom;
   void Function()? toggleFullscreen;
   void Function(Duration duration)? seek;

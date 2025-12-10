@@ -100,10 +100,7 @@ class CameraDetailMobileLayout extends StatelessWidget with StateBuilderMixin {
             _detailBloc(context).add(ChangeVolume(volume));
           },
           onInitializedValues: ({required double volume, required double speed}) {
-            _detailBloc(context)
-              ..add(ChangeVolume(volume))
-              ..add(ChangeSpeed(speed))
-              ..add(OnRecording(cancelStatus: 0));
+            _detailBloc(context).add(OnDefaultValues(volume, speed));
           },
           controlsBuilder: (isFullscreen, state) => MobileControlsOverlay(
             name: _detailBloc(context).state.camera!.name,

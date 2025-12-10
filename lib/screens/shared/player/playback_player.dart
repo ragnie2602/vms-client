@@ -692,13 +692,13 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   bool isInitialized() => _state.value == PlayerState.initialized;
 
   // Dual task queue
-  void changeVolume(double volume) {
+  void changeVolume(double volume, {bool syncSystemVolume = false}) {
     _volumeQueue.add(() async {
       if (volume == _player.volume) return;
       _player.volume = volume;
 
       // Đồng bộ volume với hệ thống
-      if (widget.syncSystemVolume) {
+      if (widget.syncSystemVolume && syncSystemVolume) {
         VolumeController.instance.showSystemUI = true;
         await VolumeController.instance.setVolume(_player.volume);
         VolumeController.instance.showSystemUI = false;
