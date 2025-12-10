@@ -119,7 +119,7 @@ class _DownloadLogHandlerState extends State<_DownloadLogHandler> {
   void _scheduleDownloadLog(_) {
     _timer?.cancel();
     _timer = Timer(Duration(seconds: 5), () async {
-      final des = await FileUtil.selectFolderLocation(title: 'Chọn vị trí để tải log');
+      final des = await FileUtil.selectFolderLocation(needFullAccess: true);
       if (des == null) return;
 
       final res = await ErrorService.downloadLog(des);
