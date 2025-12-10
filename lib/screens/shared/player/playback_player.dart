@@ -268,8 +268,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     widget.controller.isInitialized = isInitialized;
     widget.controller.status = () => _status;
     widget.controller.isSeeking = () => _isSeeking;
-    widget.controller.playerTime = () =>
-        currentPlayback.startTime.add(Duration(milliseconds: _lastPosition));
+    widget.controller.playerTime = () {
+      if (_state.value == PlayerState.empty) return _dateAtEmptyState;
+      return currentPlayback.startTime.add(Duration(milliseconds: _player.position));
+    };
     widget.controller.getPlayerState = () => _state.value;
     widget.controller.getCurrentPosition = () =>
         Duration(milliseconds: _player.position);
@@ -545,6 +547,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   }
 
   bool _newestIsEmpty = false;
+  DateTime _dateAtEmptyState = DateTime.now().roundToSecond;
   Future<void> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
     if (!mounted) return;
 
@@ -556,6 +559,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     final index = dateIndex ?? widget.playlist.atTime(date);
     widget.controller.markPlaybackChanged(index ?? -1);
     if (index == null) {
+      _dateAtEmptyState = date.roundToSecond;
       _isSeeking.value = false;
       _newestIsEmpty = true;
       _state.value = PlayerState.empty;
@@ -586,6 +590,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
     // Click ngoài khoảng playback
     if (index == null) {
+      _dateAtEmptyState = date.roundToSecond;
       widget.controller.markPlaybackChanged(-1);
       _state.value = PlayerState.empty;
       _player.pause();

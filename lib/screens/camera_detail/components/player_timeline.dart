@@ -244,6 +244,13 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                           child: RepaintBoundary(
                             child: BlocBuilder<PlaybackBloc, PlaybackState>(
                               buildWhen: (previous, current) {
+                                // Trường hợp update selected index (list playbacks o thay đổi) --> không cần build lại
+                                if (previous is PlaybackSuccess &&
+                                    current is PlaybackSuccess &&
+                                    previous.playbacks != current.playbacks) {
+                                  return false;
+                                }
+
                                 if (previous is! PlaybackSuccess &&
                                     current is PlaybackSuccess &&
                                     current.playbacks.isNotEmpty) {

@@ -73,6 +73,13 @@ class CameraDetailMobileLayout extends StatelessWidget with StateBuilderMixin {
 
   Widget _buildPlayback(BuildContext context) {
     return BlocBuilder<PlaybackBloc, PlaybackState>(
+      buildWhen: (pre, cur) {
+        if (pre is PlaybackSuccess && cur is PlaybackSuccess) {
+          // So sánh tham chiếu 2 list
+          return pre.playbacks != cur.playbacks || pre.initialIndex != cur.initialIndex;
+        }
+        return true;
+      },
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,
         loadingBuilder: () => Container(
