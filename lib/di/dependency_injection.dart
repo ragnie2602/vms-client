@@ -122,6 +122,6 @@ class DependencyInjection {
     Provider<GetCameraUseCase>(create: (context) => GetCameraUseCase(context.read())),
 
     // Bloc
-    Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),
+    Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read(), context.read<SocketApiClient>())),
   ];
 }
