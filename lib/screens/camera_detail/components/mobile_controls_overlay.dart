@@ -171,7 +171,7 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
               iconColor: AppColors.white,
               iconSize: 30,
               parentSize: 42,
-              splashColor: Colors.grey
+              splashColor: Colors.grey,
             ),
             SizedBox(width: 20),
           ],
@@ -224,21 +224,40 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
   }
 
   Widget _centerActionsForLive() {
+    bool fullScreen = widget.isFullscreen;
+
     return ValueListenableBuilder(
       valueListenable: status!,
       builder: (context, status, child) {
-        if (status == PlayerStatus.playing) return const SizedBox.shrink();
+        if (fullScreen) {
+          return Center(
+            child: _actionItem(
+              onTap: () => _onCall(() => playerController.togglePlay?.call()),
+              icon: status == PlayerStatus.paused
+                  ? AppAssets.icPlayMobile
+                  : AppAssets.icPauseMobile,
+              backgroundColor: fullScreen
+                  ? Color.fromRGBO(245, 245, 245, 0.9)
+                  : Colors.black.withValues(alpha: 0.6),
+              iconSize: fullScreen ? 32 : 28,
+              parentSize: fullScreen ? 72 : 55,
+              iconColor: fullScreen ? Colors.black : Colors.white,
+            ),
+          );
+        }
 
-        return Center(
-          child: _actionItem(
-            onTap: () => _onCall(() => playerController.togglePlay?.call()),
-            icon: AppAssets.icPlayMobile,
-            backgroundColor: Color.fromRGBO(245, 245, 245, 0.9),
-            iconSize: 32,
-            parentSize: 72,
-            iconColor: Colors.black,
-          ),
-        );
+        return status == PlayerStatus.playing
+            ? const SizedBox.shrink()
+            : Center(
+                child: _actionItem(
+                  onTap: () => _onCall(() => playerController.togglePlay?.call()),
+                  icon: AppAssets.icPlayMobile,
+                  backgroundColor: Color.fromRGBO(245, 245, 245, 0.9),
+                  iconSize: 32,
+                  parentSize: 72,
+                  iconColor: Colors.black,
+                ),
+              );
       },
     );
   }
@@ -322,11 +341,7 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
             Expanded(
               child: Text(
                 widget.name,
-                style: AppTypography.style(
-                  13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.white,
-                ),
+                style: AppTypography.style(13, fontWeight: FontWeight.w600, color: AppColors.white),
                 maxLines: 1,
               ),
             ),
