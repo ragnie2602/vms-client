@@ -38,23 +38,27 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            // keyAlias and passwords must be cast to String explicitly in Kotlin DSL
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storePassword = keystoreProperties["storePassword"] as String
-            
-            // Handle the file path safely
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                // keyAlias and passwords must be cast to String explicitly in Kotlin DSL
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storePassword = keystoreProperties["storePassword"] as String
+
+                // Handle the file path safely
+                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            }
         }
     }
 
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
-            
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+
             // Standard Flutter release settings
-            isMinifyEnabled = false 
+            isMinifyEnabled = false
             isShrinkResources = false
         }
     }
