@@ -72,10 +72,24 @@ class MobileControlSpeed extends StatelessWidget {
             SizedBox(height: 22),
             Wrap(
               spacing: 5,
-              runSpacing: 5,
+              runSpacing: 8,
               alignment: WrapAlignment.center,
               children: _speeds.map((speed) => _buildItemSpeed(context, speed)).toList(),
             ),
+
+            /*  */
+            if (speed == 1.0)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  'Bình thường',
+                  style: AppTypography.style(
+                    11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.black,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -83,51 +97,25 @@ class MobileControlSpeed extends StatelessWidget {
   }
 
   Widget _buildItemSpeed(BuildContext context, double speed) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          child: InkWell(
-            onTap: () => Navigator.of(context, rootNavigator: true).pop(speed),
-            child: IntrinsicWidth(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  color: speed == this.speed ? AppColors.blue15ABFF : AppColors.grey64748B,
-                ),
-                constraints: BoxConstraints(minWidth: 42, minHeight: 23),
-                alignment: Alignment.center,
-                padding: EdgeInsets.symmetric(horizontal: 13, vertical: 4),
-                child: Text(
-                  speed.toString(),
-                  style: AppTypography.style(12, fontWeight: FontWeight.w500, color: AppColors.white),
-                ),
-              ),
+    return Material(
+      child: InkWell(
+        onTap: () => Navigator.of(context, rootNavigator: true).pop(speed),
+        child: IntrinsicWidth(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              color: speed == this.speed ? AppColors.blue15ABFF : AppColors.grey64748B,
+            ),
+            constraints: BoxConstraints(minWidth: 42, minHeight: 23),
+            alignment: Alignment.center,
+            padding: EdgeInsets.symmetric(horizontal: 13, vertical: 4),
+            child: Text(
+              speed.toString(),
+              style: AppTypography.style(12, fontWeight: FontWeight.w500, color: AppColors.white),
             ),
           ),
         ),
-
-        /*  */
-        Container(
-          margin: EdgeInsets.only(top: 9),
-          width: 42,
-          height: 23,
-          child: speed == 1.0
-              ? OverflowBox(
-                  maxWidth: double.infinity,
-                  maxHeight: double.infinity,
-                  child: Text(
-                    'Bình thường',
-                    style: AppTypography.style(
-                      11,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.black,
-                    ),
-                  ),
-                )
-              : SizedBox.shrink(),
-        ),
-      ],
+      ),
     );
   }
 }
