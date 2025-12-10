@@ -12,7 +12,8 @@ import 'package:vms_flutter_client/screens/playback/widgets/camera_selection_pop
 import 'package:vms_flutter_client/screens/playback/widgets/item_camera_playback_widget.dart';
 
 class GridviewPlaybackView extends StatefulWidget {
-  const GridviewPlaybackView({super.key});
+  const GridviewPlaybackView({super.key, required this.isOpenFullscreen});
+  final bool isOpenFullscreen;
 
   @override
   State<GridviewPlaybackView> createState() => _GridviewPlaybackViewState();
@@ -89,12 +90,14 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
 
   @override
   Widget build(BuildContext context) {
+    double paddingHorizontal = widget.isOpenFullscreen ? 0 : 100;
+    double paddingTop = widget.isOpenFullscreen ? 0 : 20;
     return LayoutBuilder(
       builder: (context, constraints) {
         const double spacing = 5;
-        const double padding = 100;
-        final double availableWidth = constraints.maxWidth - (padding * 2);
-        final double availableHeight = constraints.maxHeight - 20;
+        final double availableWidth =
+            constraints.maxWidth - (paddingHorizontal * 2);
+        final double availableHeight = constraints.maxHeight - paddingTop;
 
         final double itemWidth = (availableWidth - spacing) / 2;
         final double itemHeight = (availableHeight - spacing) / 2;
@@ -102,7 +105,11 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
         final double aspectRatio = itemWidth / itemHeight;
 
         return Container(
-          padding: EdgeInsets.only(left: padding, right: padding, top: 20),
+          padding: EdgeInsets.only(
+            left: paddingHorizontal,
+            right: paddingHorizontal,
+            top: paddingTop,
+          ),
           child: GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             padding: EdgeInsets.zero,
@@ -156,4 +163,3 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
     );
   }
 }
-
