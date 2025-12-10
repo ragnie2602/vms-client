@@ -71,3 +71,7 @@ class OnDefaultValues extends CameraDetailEvent {
   final double speed;
   const OnDefaultValues(this.volume, this.speed);
 }
+
+class PausePlayer extends CameraDetailEvent {
+  const PausePlayer();
+}

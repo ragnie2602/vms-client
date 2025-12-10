@@ -42,6 +42,14 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
     on<ToggleMute>(_onToggleMute, transformer: sequential());
     on<TakeSnapshot>(_onTakeSnapshot, transformer: droppable());
     on<OnDefaultValues>(_onOnDefaultValues);
+    on<PausePlayer>(_onPausePlayer);
+  }
+
+  FutureOr<void> _onPausePlayer(
+    PausePlayer event,
+    Emitter<CameraDetailState> emit,
+  ) async {
+    await state.playerController.pause?.call();
   }
 
   FutureOr<void> _onChaneViewMode(ChangeViewMode event, Emitter<CameraDetailState> emit) async {

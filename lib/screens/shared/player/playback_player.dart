@@ -43,6 +43,8 @@ class PlaybackPlayer extends StatefulWidget {
     this.pauseUponEnteringBackgroundMode = true,
     this.resumeUponEnteringForegroundMode = true,
     this.wakelock = true,
+    this.isMultiPlayback,
+    this.initialVolume,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -60,6 +62,8 @@ class PlaybackPlayer extends StatefulWidget {
   final bool pauseUponEnteringBackgroundMode;
   final bool resumeUponEnteringForegroundMode;
   final bool wakelock;
+  final bool? isMultiPlayback;
+  final double? initialVolume;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
@@ -141,7 +145,12 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     _isSeeking.addListener(() {
       if (_status.value == PlayerStatus.finished) _status.value = PlayerStatus.playing;
     });
-    _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
+    // với multi playback -> tắt reconnecting để tránh ảnh hưởng đồng bộ thời gian
+    if (widget.isMultiPlayback != true) {
+      _state.addListener(
+        () => _tryReconnecting(_state.value == PlayerState.error),
+      );
+    }
     _status.addListener(() {
       if (_status.value == PlayerStatus.playing) _shouldSyncPlayerTime = true;
       widget.onStatusChanged?.call(_status.value);
@@ -257,6 +266,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
   void _attachController() {
     widget.controller.changeVolume = changeVolume;
+    widget.controller.getVolume = getVolume;
     widget.controller.seek = seekQueue;
     widget.controller.changeSpeed = changeSpeed;
     widget.controller.togglePlay = togglePlay;
@@ -279,6 +289,49 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
         Duration(milliseconds: _player.position);
     widget.controller.getCurrentDate = () =>
         currentPlayback.startTime.add(Duration(milliseconds: _player.position));
+    widget.controller.waitForReady = waitForReady;
+
+    widget.controller.waitForAttached.safeComplete();
+  }
+
+  Future<void> waitForReady({Duration? timeout}) async {
+    if (!mounted) return;
+
+    // Check if already ready
+    if (_state.value != PlayerState.initializing && !_isSeeking.value) {
+      return;
+    }
+    final completer = Completer<void>();
+    // check
+    void _checkReady() {
+      if (!mounted) {
+        if (!completer.isCompleted) completer.complete();
+        return;
+      }
+      // check ko phải init cũng ko phải đang seek -> complete
+      if (_state.value != PlayerState.initializing && !_isSeeking.value) {
+        if (!completer.isCompleted) completer.complete();
+      }
+    }
+
+    void _listener() => _checkReady();
+    //
+
+    _state.addListener(_listener);
+    _isSeeking.addListener(_listener);
+
+    try {
+      if (timeout != null) {
+        await completer.future.timeout(timeout);
+      } else {
+        await completer.future;
+      }
+    } catch (_) {
+      // Timeout or other error
+    } finally {
+      _state.removeListener(_listener);
+      _isSeeking.removeListener(_listener);
+    }
   }
 
   void _initPlayer() {
@@ -383,6 +436,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       max: 1000 * 60 * 10, // Cache ~ 10 phút
       drop: false, // TUYỆT ĐỐI KHÔNG DROP (để đảm bảo không mất dữ liệu khi tua)
     );
+    // set inital volume
+    if(widget.initialVolume != null){
+      _player.volume = widget.initialVolume!;
+    }
   }
 
   void _tryReconnecting(bool isError) {
@@ -474,7 +531,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
           if (_shouldSyncPlayerTime) {
             // Case đang dừng --> tự động play bởi thư viện --> update _status
-            if (_status.value != PlayerStatus.playing) _status.value = PlayerStatus.playing;
+            if (_status.value != PlayerStatus.playing && _player.state == PlaybackState.playing){
+              _status.value = PlayerStatus.playing;
+            }
 
             // Syncing time
             widget.controller.markTimeChanged(
@@ -551,8 +610,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
   bool _newestIsEmpty = false;
   DateTime _dateAtEmptyState = DateTime.now().roundToSecond;
-  Future<void> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
-    if (!mounted) return;
+  Future<Completer?> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
+    if (!mounted) return null;
 
     _shouldSyncPlayerTime = _newestIsEmpty = false;
     _isSeeking.value = true;
@@ -568,7 +627,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       _state.value = PlayerState.empty;
       _player.pause();
       await _dualQueue.cancelAndReset();
-      return;
+      return null;
     }
 
     _dualQueue.add(() async {
@@ -586,6 +645,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
         _seekingCompleter = null;
       }
     });
+    return _seekingCompleter;
   }
 
   Future<void> _jumpToDate(DateTime date, {int? dateIndex}) async {
@@ -610,7 +670,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      if (diff != Duration.zero) await _seek(diff, needInitialized: false, waitSeeking: false);
+      if (widget.isMultiPlayback == true) await pause();
+      if (diff != Duration.zero) await _player.seek(position: diff.inMilliseconds, flags: SeekFlag(SeekFlag.fromStart));
     }
     // Playback khác --> đổi playlist và jump
     else {
@@ -623,7 +684,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       _player.state = PlaybackState.paused;
       _player.media = widget.playlist[index].urlPlayback;
       await _player.prepare(position: diff.inMilliseconds);
-      _player.state = PlaybackState.playing;
+      // với mode multi playback ko tự set auto play
+      if (widget.isMultiPlayback != true) {
+        _player.state = PlaybackState.playing;
+      }
       _waitForUnloadedOldMedia.safeComplete();
     }
   }
@@ -707,6 +771,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       widget.onVolumeChanged?.call(_player.volume);
       await Future.delayed(Duration(milliseconds: 100));
     });
+  }
+
+  double getVolume() {
+    return _player.volume;
   }
 
   Future<void> togglePlay() async {
