@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playbac
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/widgets/empty_record_camera_widget.dart';
 import 'package:vms_flutter_client/screens/shared/player/playback_player.dart';
+import 'package:vms_flutter_client/screens/shared/player/player_controller.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 class ItemCameraPlaybackWidget extends StatefulWidget {
@@ -29,7 +30,6 @@ class ItemCameraPlaybackWidget extends StatefulWidget {
 
 class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
   bool _isHovering = false;
-  bool _isMuted = true;
 
   @override
   void initState() {
@@ -37,9 +37,6 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isMultiPlayback) {
         widget.item.playerController.changeVolume?.call(0);
-        setState(() {
-          _isMuted = true;
-        });
       }
     });
   }
@@ -141,19 +138,7 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // âm thanh
-                    _buildControlItem(
-                      _isMuted
-                          ? AppAssets.icVolumeMuted
-                          : AppAssets.icVolumeFull,
-                      () {
-                        setState(() {
-                          _isMuted = !_isMuted;
-                        });
-                        widget.item.playerController.changeVolume?.call(
-                          _isMuted ? 0 : 1,
-                        );
-                      },
-                    ),
+                    _VolumeControl(controller: widget.item.playerController),
                     // chụp màn hình
                     _buildControlItem(AppAssets.iconCamera, () async {
                       await _takeSnapshot(context);
@@ -217,6 +202,98 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
           height: 24,
           colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
         ),
+      ),
+    );
+  }
+}
+
+class _VolumeControl extends StatefulWidget {
+  const _VolumeControl({required this.controller});
+
+  final PlayerController controller;
+
+  @override
+  State<_VolumeControl> createState() => _VolumeControlState();
+}
+
+class _VolumeControlState extends State<_VolumeControl> {
+  bool _isHovering = false;
+  late double _volume;
+  late double _preVolume;
+
+  @override
+  void initState() {
+    super.initState();
+    _volume = widget.controller.getVolume?.call() ?? 0;
+    _preVolume = _volume > 0 ? _volume : 1;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                if (_volume > 0) {
+                  _preVolume = _volume;
+                  _volume = 0;
+                } else {
+                  _volume = _preVolume;
+                }
+                widget.controller.changeVolume?.call(_volume);
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: SvgPicture.asset(
+                _volume == 0
+                    ? AppAssets.icVolumeMuted
+                    : _volume < 0.5
+                    ? AppAssets.icVolumeHalf
+                    : AppAssets.icVolumeFull,
+                width: 24,
+                height: 24,
+                colorFilter: const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
+          AnimatedContainer(
+            duration: Durations.short4,
+            width: _isHovering ? 80 : 0,
+            child: _isHovering
+                ? SizedBox(
+                    width: 80,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 6,
+                        ),
+                        trackHeight: 2,
+                        overlayShape: SliderComponentShape.noOverlay,
+                      ),
+                      child: Slider(
+                        min: 0,
+                        max: 1,
+                        activeColor: Colors.white,
+                        inactiveColor: Colors.grey,
+                        value: _volume,
+                        onChanged: (value) {
+                          setState(() => _volume = value);
+                          widget.controller.changeVolume?.call(value);
+                        },
+                      ),
+                    ),
+                  )
+                : const SizedBox(),
+          ),
+        ],
       ),
     );
   }

@@ -267,6 +267,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
   void _attachController() {
     widget.controller.changeVolume = changeVolume;
+    widget.controller.getVolume = getVolume;
     widget.controller.seek = seekQueue;
     widget.controller.changeSpeed = changeSpeed;
     widget.controller.togglePlay = togglePlay;
@@ -765,6 +766,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       widget.onVolumeChanged?.call(_player.volume);
       await Future.delayed(Duration(milliseconds: 100));
     });
+  }
+
+  double getVolume() {
+    return _player.volume;
   }
 
   Future<void> togglePlay() async {

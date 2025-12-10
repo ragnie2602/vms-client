@@ -23,6 +23,7 @@ class MultiPlaybackBloc
          MultiPlaybackState(
            playbackDate: DateTime.now(),
            multiPlaybackStatus: MultiPlaybackStatus.init,
+           isPlaying: false,
          ),
        ) {
     on<InitEvent>(_init);
@@ -45,6 +46,7 @@ class MultiPlaybackBloc
       MultiPlaybackState(
         playbackDate: DateTime.now(),
         multiPlaybackStatus: MultiPlaybackStatus.success,
+        isPlaying: false,
       ),
     );
     // get luôn list cam tại đây
@@ -93,7 +95,7 @@ class MultiPlaybackBloc
 
     await _pauseAllCamera();
 
-    emit(state.copyWith(playbackDate: event.date));
+    emit(state.copyWith(playbackDate: event.date, isPlaying: false));
 
     // step 2: Get video playback của tất cả các camera
     List<ItemPlaybackModel> updatedList = [];
@@ -128,6 +130,7 @@ class MultiPlaybackBloc
     final checked = await _isAllReady();
     if (checked) {
       await _playAllCamera();
+      emit(state.copyWith(isPlaying: true));
     }
   }
 
@@ -158,6 +161,7 @@ class MultiPlaybackBloc
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
     // 1. Pause all existing cameras
     await _pauseAllCamera();
+    emit(state.copyWith(isPlaying: false));
     // 2. Get sync date from first camera
     DateTime? syncDate;
     if (_list.isNotEmpty) {
@@ -225,6 +229,7 @@ class MultiPlaybackBloc
     final checked = await _isAllReady();
     if (checked) {
       await _playAllCamera();
+      emit(state.copyWith(isPlaying: true));
     }
   }
 
@@ -356,6 +361,7 @@ class MultiPlaybackBloc
   ) async {
     // 1. pause
     await _pauseAllCamera();
+    emit(state.copyWith(isPlaying: false));
     // 2. jump to new date
     print('jump new date = ${event.newTime}');
     await _seekAllCamera(event.newTime);
@@ -363,6 +369,7 @@ class MultiPlaybackBloc
     final checked = await _isAllReady();
     if (checked) {
       await _playAllCamera();
+      emit(state.copyWith(isPlaying: true));
     }
   }
 

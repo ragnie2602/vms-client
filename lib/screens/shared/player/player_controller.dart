@@ -51,6 +51,7 @@ class PlayerController {
 
   /* Function control player */
   void Function(double volume)? changeVolume;
+  double Function()? getVolume;
   void Function(int type)? zoom;
   void Function()? toggleFullscreen;
   void Function(Duration duration)? seek;
