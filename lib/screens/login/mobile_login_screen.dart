@@ -102,7 +102,11 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
                             if (state.isSuccess) {
                               context.goNamed(Routes.monitoring.name);
                             } else if (state.errorMessage?.isNotEmpty == true) {
-                              showAppMessageDialog(context, message: state.errorMessage!);
+                              showAppMessageDialog(
+                                context,
+                                message: state.errorMessage!,
+                                type: AppMessageType.error,
+                              );
                             }
                           },
                           builder: (context, state) {

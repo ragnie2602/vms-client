@@ -75,7 +75,14 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
                 if (state.isSuccess) {
                   ToastUtil.toastSuccess(
                     context: context,
-                    title: Text('Cập nhật thông tin tài khoản thành công!'),
+                    title: Text(
+                      'Cập nhật thông tin tài khoản thành công!',
+                      style: AppTypography.style(
+                        13,
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   );
                 } else if (state.errorMessage != null) {
                   showAppMessageDialog(
@@ -121,8 +128,10 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
             InfoTextField(
               controller: phoneController,
               hintText: 'Nhập số điện thoại',
+              keyboardType: TextInputType.number,
               label: 'Số điện thoại',
               maxLength: 11,
+              regExp: r'^[0-9]{10,}$',
             ),
             const SizedBox(height: 44),
             Row(
@@ -144,33 +153,61 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => context.read<ChangeMyInfoBloc>().add(
-                      ChangeMyInfoEvent(
-                        updateProfile: AppData.instance.profile?.copyWith(
-                          displayName: nameController.text,
-                          email: emailController.text,
-                          tel: phoneController.text,
-                        ),
-                      ),
-                    ),
+                    onPressed: _validateAndSubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                     ),
-                    child: Text(
-                      'Lưu',
-                      style: AppTypography.style(
-                        14,
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: BlocBuilder<ChangeMyInfoBloc, ChangeMyInfoState>(
+                      builder: (context, state) {
+                        if (state.isLoading) {
+                          return const Center(child: CupertinoActivityIndicator());
+                        }
+
+                        return Text(
+                          'Lưu',
+                          style: AppTypography.style(
+                            14,
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  bool _validateFields() {
+    if (nameController.text.isEmpty) return false;
+
+    if (emailController.text.isEmpty) return false;
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]').hasMatch(emailController.text)) return false;
+
+    if (phoneController.text.isEmpty) return false;
+    if (!RegExp(r'^[0-9]{10,}$').hasMatch(phoneController.text)) return false;
+
+    return true;
+  }
+
+  void _validateAndSubmit() {
+    if (!_validateFields()) {
+      return;
+    }
+
+    context.read<ChangeMyInfoBloc>().add(
+      ChangeMyInfoEvent(
+        updateProfile: AppData.instance.profile?.copyWith(
+          displayName: nameController.text,
+          email: emailController.text,
+          tel: phoneController.text,
         ),
       ),
     );

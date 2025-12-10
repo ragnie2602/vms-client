@@ -10,6 +10,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/camera_detail/camera_detail_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
@@ -115,6 +117,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   bloc: bloc,
                   builder: (context, state) {
                     return MonitorPlayer(
+                      key: Key(widget.args.data?.camId ?? 'unknown'),
                       syncSystemVolume: true,
                       onVolumeChanged: (volume) {
                         isMuted.value = volume <= 0;
@@ -154,7 +157,6 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                 children: [
                   Expanded(
                     child: IconButton(
-                      onPressed: () => bloc.state.playerController.togglePlay?.call(),
                       icon: BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
                         selector: (state) => state.status,
                         builder: (context, status) => SvgPicture.asset(
@@ -163,6 +165,9 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                               : AppAssets.icPlayMobile,
                         ),
                       ),
+                      onPressed: widget.args.data?.isOnline == true
+                          ? () => bloc.state.playerController.togglePlay?.call()
+                          : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -171,8 +176,8 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   ),
                   Expanded(
                     child: IconButton(
-                      onPressed: () => screenshot(),
                       icon: SvgPicture.asset(AppAssets.icCamera01),
+                      onPressed: widget.args.data?.isOnline == true ? () => screenshot() : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -181,7 +186,6 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   ),
                   Expanded(
                     child: IconButton(
-                      onPressed: toggleMute,
                       icon: ValueListenableBuilder(
                         valueListenable: isMuted,
                         builder: (context, value, child) {
@@ -190,6 +194,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                           );
                         },
                       ),
+                      onPressed: widget.args.data?.isOnline == true ? toggleMute : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -198,8 +203,8 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   ),
                   Expanded(
                     child: IconButton(
-                      onPressed: fullscreen,
                       icon: SvgPicture.asset(AppAssets.icFullAltRight),
+                      onPressed: widget.args.data?.isOnline == true ? fullscreen : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -231,39 +236,28 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   }
 
   screenshot() async {
-    String path = '';
-    final currentTime = DateTime.now().millisecondsSinceEpoch;
+    bool granted = await Gal.hasAccess();
+    if (!granted) granted = await Gal.requestAccess();
+    if (!granted) return;
 
-    if (Platform.isIOS) {
-      bool granted = await Gal.hasAccess();
-      if (!granted) granted = await Gal.requestAccess();
-      if (!granted) return null;
+    final tempPath = Directory.systemTemp.path.joinPath(
+      '${widget.args.data?.name ?? 'unknown'}_${DateTime.now().format("yyyyMMdd_HHmmss")}.jpg',
+    );
 
-      path = '${(await getLibraryDirectory()).path}/${widget.args.data?.camId}_$currentTime.jpg';
-    } else if (Platform.isAndroid) {
-      path =
-          '${(await getExternalStorageDirectory())?.path}/../../../../Pictures/VMS/${widget.args.data?.camId}_$currentTime.jpg';
-    }
+    if (await bloc.state.playerController.snapshot?.call(tempPath) == true) {
+      await Gal.putImage(tempPath);
 
-    bool? isSuccess = false;
-    if (path.isNotEmpty) isSuccess = await bloc.state.playerController.snapshot?.call(path);
-
-    if (isSuccess == true) {
       ToastUtil.toastSuccess(
-        // ignore: use_build_context_synchronously
-        context: context,
         title: Text(
-          'Ảnh chụp thành công!',
-          style: AppTypography.style(10, color: AppColors.white, fontWeight: FontWeight.w400),
+          "Đã lưu ảnh chụp",
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
         ),
       );
     } else {
       ToastUtil.toastFail(
-        // ignore: use_build_context_synchronously
-        context: context,
         title: Text(
-          'Có lỗi xảy ra!',
-          style: AppTypography.style(10, color: AppColors.white, fontWeight: FontWeight.w400),
+          "Có lỗi xảy ra",
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
         ),
       );
     }
