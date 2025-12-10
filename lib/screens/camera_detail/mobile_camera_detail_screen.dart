@@ -10,6 +10,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/camera_detail/camera_detail_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
@@ -115,6 +117,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   bloc: bloc,
                   builder: (context, state) {
                     return MonitorPlayer(
+                      key: Key(widget.args.data?.camId ?? 'unknown'),
                       syncSystemVolume: true,
                       onVolumeChanged: (volume) {
                         isMuted.value = volume <= 0;
@@ -233,16 +236,31 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
   }
 
   screenshot() async {
-    bloc.add(
-      TakeSnapshot(
-        onSuccess: () => ToastUtil.toastSuccess(
-        title: Text(
-            "Đã lưu ảnh chụp",
-            style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
-          ),
-        ),
-      ),
+    bool granted = await Gal.hasAccess();
+    if (!granted) granted = await Gal.requestAccess();
+    if (!granted) return;
+
+    final tempPath = Directory.systemTemp.path.joinPath(
+      '${widget.args.data?.name ?? 'unknown'}_${DateTime.now().format("yyyyMMdd_HHmmss")}.jpg',
     );
+
+    if (await bloc.state.playerController.snapshot?.call(tempPath) == true) {
+      await Gal.putImage(tempPath);
+
+      ToastUtil.toastSuccess(
+        title: Text(
+          "Đã lưu ảnh chụp",
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+        ),
+      );
+    } else {
+      ToastUtil.toastFail(
+        title: Text(
+          "Có lỗi xảy ra",
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+        ),
+      );
+    }
   }
 
   Future<String?> thumbnail() async {
