@@ -244,16 +244,19 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
       '${widget.args.data?.name ?? 'unknown'}_${DateTime.now().format("yyyyMMdd_HHmmss")}.jpg',
     );
 
-    // Gọi hàm snapshot thông qua controller có sẵn, không cần dùng GlobalKey
-    final success = await bloc.state.playerController.snapshot?.call(tempPath);
-
-    if (success == true) {
-      // Lưu ảnh vào thư viện
+    if (await bloc.state.playerController.snapshot?.call(tempPath) == true) {
       await Gal.putImage(tempPath);
 
       ToastUtil.toastSuccess(
         title: Text(
           "Đã lưu ảnh chụp",
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+        ),
+      );
+    } else {
+      ToastUtil.toastFail(
+        title: Text(
+          "Có lỗi xảy ra",
           style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
         ),
       );
