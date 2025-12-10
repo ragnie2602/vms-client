@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dar
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
+import 'package:vms_flutter_client/screens/account/bloc/account_bloc.dart';
 import 'package:vms_flutter_client/screens/account/mobile_account_screen.dart';
 import 'package:vms_flutter_client/screens/account/mobile_info_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
@@ -245,8 +246,14 @@ class AppRouter {
           GoRoute(
             path: Routes.account.path,
             name: Routes.account.name,
-            pageBuilder: (context, state) =>
-                fadeTransition(context: context, state: state, child: MobileAccountScreen()),
+            pageBuilder: (context, state) => fadeTransition(
+              context: context,
+              state: state,
+              child: BlocProvider(
+                create: (context) => AccountBloc(context.read()),
+                child: MobileAccountScreen(),
+              ),
+            ),
           ),
 
           GoRoute(
