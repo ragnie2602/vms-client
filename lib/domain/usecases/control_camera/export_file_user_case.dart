@@ -65,7 +65,11 @@ class ExportFileUserCase {
 
     final List<int>? fileBytes = excel.save();
     if (fileBytes != null) {
-      final XFile textFile = XFile.fromData(Uint8List.fromList(fileBytes), name: 'Camera_list.xlsx');
+      final XFile textFile = XFile.fromData(
+        Uint8List.fromList(fileBytes),
+        name: 'Camera_list.xlsx',
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
       await textFile.saveTo(result.path);
     }
   }
