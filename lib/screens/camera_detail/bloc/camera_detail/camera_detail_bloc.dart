@@ -82,10 +82,13 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
   }
 
   FutureOr<void> _onSeekPlayer(SeekPlayer event, Emitter<CameraDetailState> emit) async {
+    if (state.playerController.isInitialized?.call() != true) return;
+
     state.playerController.seek?.call(event.amount);
   }
 
   FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraDetailState> emit) async {
+    if (state.playerController.isInitialized?.call() != true) return;
     if (state.volume == event.volume) return;
 
     state.playerController.changeVolume?.call(event.volume);
@@ -94,6 +97,8 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
 
   double _volumeBeforeMuted = 0;
   FutureOr<void> _onToggleMute(ToggleMute event, Emitter<CameraDetailState> emit) async {
+    if (state.playerController.isInitialized?.call() != true) return;
+
     final isMuted = state.volume <= 0;
 
     if (isMuted) {
@@ -108,6 +113,8 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
   }
 
   FutureOr<void> _onChangeSpeed(ChangeSpeed event, Emitter<CameraDetailState> emit) async {
+    if (state.playerController.isInitialized?.call() != true) return;
+
     await state.playerController.changeSpeed?.call(event.speed);
 
     emit(state.copyWith(speed: event.speed));
@@ -133,6 +140,8 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
   }
 
   FutureOr<void> _onOnRecording(OnRecording event, Emitter<CameraDetailState> emit) async {
+    if (state.playerController.isInitialized?.call() != true) return;
+
     if (event.cancelStatus != null) {
       return emit(state.copyWith(recordingStatus: event.cancelStatus));
     }

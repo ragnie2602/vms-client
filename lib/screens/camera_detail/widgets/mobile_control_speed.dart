@@ -10,12 +10,16 @@ class MobileControlSpeed extends StatelessWidget {
     required this.speed,
     this.disabled = false,
     required this.onSpeedChanged,
+    this.canChangeSpeed,
   });
   final double speed;
   final bool disabled;
   final Function(double) onSpeedChanged;
+  final bool Function()? canChangeSpeed;
 
   void _showDialogSpeed(BuildContext context) {
+    if (canChangeSpeed != null && canChangeSpeed!() == false) return;
+
     showDialog(context: context, builder: (context) => _buildDialogSpeed(context)).then((value) {
       if (value != null && value is double) onSpeedChanged(value);
     });

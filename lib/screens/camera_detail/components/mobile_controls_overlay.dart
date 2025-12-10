@@ -308,6 +308,9 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
                     shape: BoxShape.circle,
                   ),
                   child: MobileControlSpeed(
+                    canChangeSpeed: () =>
+                        widget.detailBloc.state.playerController.getPlayerState?.call() ==
+                        PlayerState.initialized,
                     speed: speed,
                     onSpeedChanged: (spd) => widget.detailBloc.add(ChangeSpeed(spd)),
                   ),
