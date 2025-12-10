@@ -171,6 +171,7 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
               iconColor: AppColors.white,
               iconSize: 30,
               parentSize: 42,
+              splashColor: Colors.grey
             ),
             SizedBox(width: 20),
           ],
@@ -306,7 +307,7 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
       left: 0,
       right: 0,
       child: Container(
-        padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
+        padding: EdgeInsets.fromLTRB(8, 0, 20, 0),
         child: Row(
           children: [
             _actionItem(
@@ -314,8 +315,10 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
               icon: AppAssets.icArrowCircleLeft,
               iconColor: AppColors.white,
               iconSize: 24,
+              parentSize: 48,
+              splashColor: Colors.grey.withValues(alpha: 0.25),
             ),
-            SizedBox(width: 10),
+            // SizedBox(width: 10),
             Expanded(
               child: Text(
                 widget.name,
@@ -351,15 +354,16 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
     Color? iconColor,
     Color? backgroundColor,
     Widget? child,
+    Color? splashColor,
   }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        splashColor: parentSize == null ? null : AppColors.primary,
-        highlightColor: parentSize == null ? null : AppColors.primary,
-        focusColor: parentSize == null ? null : AppColors.primary,
-        hoverColor: parentSize == null ? null : AppColors.primary,
+        splashColor: parentSize == null ? null : splashColor ?? AppColors.primary,
+        highlightColor: parentSize == null ? null : splashColor ?? AppColors.primary,
+        focusColor: parentSize == null ? null : splashColor ?? AppColors.primary,
+        hoverColor: parentSize == null ? null : splashColor ?? AppColors.primary,
         borderRadius: BorderRadius.circular(100),
         child: Container(
           width: parentSize,
