@@ -125,6 +125,7 @@ class _FilterDrawerState extends State<FilterDrawer> {
                                 final tag = state.tags[index];
 
                                 return MobileTagItem(
+                                  key: UniqueKey(),
                                   tag: tag,
                                   initValue: _tempSelectedTags.contains(tag),
                                   onChecked: (checked) {
