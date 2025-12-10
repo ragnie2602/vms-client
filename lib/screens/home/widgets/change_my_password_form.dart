@@ -85,7 +85,7 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
               Form(
                 key: _formKey,
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(18),
                   child: Column(
                     children: [
                       AppField(
