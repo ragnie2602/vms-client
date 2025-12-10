@@ -7,89 +7,70 @@ import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
-import 'package:vms_flutter_client/core/base_view.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
-import 'package:vms_flutter_client/screens/account/bloc/account_bloc.dart';
 import 'package:vms_flutter_client/screens/account/components/account_item.dart';
 import 'package:vms_flutter_client/screens/account/mobile_change_password_screen.dart';
+import 'package:vms_flutter_client/screens/account/util/log_out_util.dart';
 
-class MobileAccountScreen extends BaseView<AccountBloc> {
+class MobileAccountScreen extends StatefulWidget {
   const MobileAccountScreen({super.key});
 
   @override
-  Widget buildView(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<AccountBloc, AccountState>(
-          listenWhen: (previous, current) =>
-              previous.isSignOutCompleted != current.isSignOutCompleted,
-          listener: (context, state) {
-            if (state.isSignOutCompleted) {
-              context.read<AppBloc>().add(SignOut());
-            }
-          },
-        ),
-        BlocListener<AppBloc, AppState>(
-          listenWhen: (previous, current) =>
-              previous.isSignOut != current.isSignOut ||
-              previous.myProfileUpdatedAt != current.myProfileUpdatedAt,
-          listener: (context, state) {
-            if (state.isSignOut) {
-              if (Navigator.canPop(context)) Navigator.pop(context);
-              context.goNamed(Routes.login.name);
-            }
-            // Rebuild widget when profile is updated
-            // Note: In Stateless widget, we rely on BlocBuilder to rebuild UI if data changes.
-            // But here the profile data is static in AppData.instance.
-            // If we need to rebuild, we might need a BlocBuilder wrapping the profile section.
-          },
-        ),
-      ],
+  State<MobileAccountScreen> createState() => _MobileAccountScreenState();
+}
+
+class _MobileAccountScreenState extends State<MobileAccountScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AppBloc, AppState>(
+      listenWhen: (previous, current) =>
+          previous.isSignOut != current.isSignOut ||
+          previous.myProfileUpdatedAt != current.myProfileUpdatedAt,
+      listener: (context, state) {
+        if (state.isSignOut) {
+          if (Navigator.canPop(context)) Navigator.pop(context);
+          LogOutUtil.logOut(context);
+        }
+        // Rebuild widget when profile is updated
+        if (state.myProfileUpdatedAt > 0) {}
+      },
       child: Scaffold(
         appBar: AppBar(
-          title: BlocBuilder<AppBloc, AppState>(
-            buildWhen: (previous, current) =>
-                previous.myProfileUpdatedAt != current.myProfileUpdatedAt,
-            builder: (context, state) {
-              return Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(32),
-                    child: SizedBox(
-                      height: 50,
-                      width: 50,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: Image.network(
-                          AppData.instance.profile?.avatar ?? "",
-                          errorBuilder: (context, error, stackTrace) =>
-                              Image.asset(AppAssets.defaultAvatar),
-                          loadingBuilder: (context, child, loadingProgress) =>
-                              CupertinoActivityIndicator(),
-                        ),
-                      ),
+          title: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(32),
+                child: SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: Image.network(
+                      AppData.instance.profile?.avatar ?? "",
+                      errorBuilder: (context, error, stackTrace) =>
+                          Image.asset(AppAssets.defaultAvatar),
+                      loadingBuilder: (context, child, loadingProgress) =>
+                          CupertinoActivityIndicator(),
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      AppData.instance.profile?.displayNamePreview ?? 'Giám sát viên',
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.style(
-                        18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.blackOrWhite,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                ),
+              ),
+              SizedBox(width: 12),
+              Text(
+                AppData.instance.profile?.displayNamePreview ?? 'Giám sát viên',
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.style(
+                  18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.blackOrWhite,
+                ),
+              ),
+            ],
           ),
           toolbarHeight: 70,
         ),
@@ -120,7 +101,8 @@ class MobileAccountScreen extends BaseView<AccountBloc> {
                       }
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const MobileChangePasswordScreen(),
+                          builder: (context) =>
+                              const MobileChangePasswordScreen(),
                         ),
                       );
                     },
@@ -137,17 +119,17 @@ class MobileAccountScreen extends BaseView<AccountBloc> {
                     svgPath: AppAssets.icCube,
                     title: 'Chính sách quyền riêng tư',
                   ),
-                  AccountItem(
-                    onTap: () {},
-                    svgPath: AppAssets.icFeedback,
-                    title: 'Liên hệ & Phản hồi',
-                  ),
-                  AccountItem(
-                    onTap: () {},
-                    svgPath: AppAssets.icLanguage,
-                    title: 'Đổi ngôn ngữ',
-                    trailing: Container(),
-                  ),
+                  // AccountItem(
+                  //   onTap: () {},
+                  //   svgPath: AppAssets.icFeedback,
+                  //   title: 'Liên hệ & Phản hồi',
+                  // ),
+                  // AccountItem(
+                  //   onTap: () {},
+                  //   svgPath: AppAssets.icLanguage,
+                  //   title: 'Đổi ngôn ngữ',
+                  //   trailing: Container(),
+                  // ),
                   AccountItem(
                     onTap: () {
                       showSignOutConfirmationPopup(context);
@@ -223,62 +205,52 @@ class MobileAccountScreen extends BaseView<AccountBloc> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.blackOrWhiteReverse,
-                            elevation: 0,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blackOrWhiteReverse,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
                           ),
-                          child: Text(
-                            'Hủy',
-                            style: AppTypography.style(
-                              14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.blackOrWhite,
-                            ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          side: BorderSide(
+                            color: AppColors.greyE2E8F0,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          'Hủy',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhite,
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Close dialog first? Or wait for navigation?
-                            // Usually we close dialog then perform action.
-                            // The listener in BaseView handles navigation.
-                            // Here we just trigger the event.
-                            // But wait, the original code popped dialog inside listener.
-                            // So here we keep it open until listener handles it?
-                            // Original:
-                            // if (state.isSignOut) { if (Navigator.canPop) pop(); ... }
-                            // So we just add event here.
-                            
-                            // Using AccountBloc to handle sign out flow
-                            bloc(context).add(AccountSignOutPressed());
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.blackOrWhite,
-                            elevation: 0,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3),
-                            ),
+                      ElevatedButton(
+                        onPressed: () => context.read<AppBloc>().add(SignOut()),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blackOrWhite,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
                           ),
-                          child: Text(
-                            'Xác nhận',
-                            style: AppTypography.style(
-                              14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.blackOrWhiteReverse,
-                            ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        child: Text(
+                          'Xác nhận',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhiteReverse,
                           ),
                         ),
                       ),
@@ -322,24 +294,23 @@ class _DownloadLogHandlerState extends State<_DownloadLogHandler> {
   void _scheduleDownloadLog(_) {
     _timer?.cancel();
     _timer = Timer(Duration(seconds: 5), () async {
-      final des = await FileUtil.selectFolderLocation(title: 'Chọn vị trí để tải log');
+      final des = await FileUtil.selectFolderLocation(
+        title: 'Chọn vị trí để tải log',
+      );
       if (des == null) return;
 
       final res = await ErrorService.downloadLog(des);
       if (res != null) {
-        if (mounted) {
-           ToastUtil.toastSuccess(
-            context: context, // Explicitly pass context if needed or rely on global key if ToastUtil supports it.
-            // Original code: ToastUtil.toastSuccess(title: ...). 
-            // Checking original file imports... ToastUtil seems to require context usually or has global.
-            // Original line 228: ToastUtil.toastSuccess(title: Text(...));
-            // Let's assume the signature allows it.
-            title: Text(
-              'Đã tải xuống log',
-              style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+        ToastUtil.toastSuccess(
+          title: Text(
+            'Đã tải xuống log',
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.white,
             ),
-          );
-        }
+          ),
+        );
       }
     });
   }

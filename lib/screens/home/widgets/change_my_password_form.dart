@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
+import 'package:vms_flutter_client/screens/account/util/log_out_util.dart';
 import 'package:vms_flutter_client/screens/home/bloc/change_my_password_bloc.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
@@ -56,7 +57,7 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
               context: context,
               title: Text('Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!', maxLines: 5),
             );
-            context.read<SocketApiClient>().disconnect();
+            LogOutUtil.logOut(context);
             context.read<AppBloc>().add(SignOut());
             context.goNamed(Routes.login.name);
           } else if (state.errorMessage != null) {

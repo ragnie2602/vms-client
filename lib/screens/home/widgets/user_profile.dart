@@ -4,18 +4,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
-import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
-import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
+import 'package:vms_flutter_client/screens/account/util/log_out_util.dart';
 import 'package:vms_flutter_client/screens/home/change_my_info_dialog.dart';
 import 'package:vms_flutter_client/screens/home/change_my_password_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/popup_menu.dart';
@@ -39,8 +37,7 @@ class _UserProfileState extends State<UserProfile> {
       listener: (context, state) {
         if (state.isSignOut) {
           if (Navigator.canPop(context)) Navigator.pop(context);
-          context.read<SocketApiClient>().disconnect();
-          context.goNamed(Routes.login.name);
+          LogOutUtil.logOut(context);
         }
         // Rebuild widget when profile is updated
         if (state.myProfileUpdatedAt > 0) {
@@ -48,7 +45,9 @@ class _UserProfileState extends State<UserProfile> {
         }
       },
       child: IgnorePointer(
-        ignoring: !MultiWindowUtil.isMainWindow(context.read<AppBloc>().windowId),
+        ignoring: !MultiWindowUtil.isMainWindow(
+          context.read<AppBloc>().windowId,
+        ),
         child: CustomPopupMenu(
           controller: controller,
           menuBuilder: () => IntrinsicWidth(child: _buildMenu()),
@@ -82,7 +81,8 @@ class _UserProfileState extends State<UserProfile> {
                   ),
                   SizedBox(width: 12),
                   Text(
-                    AppData.instance.profile?.displayNamePreview ?? 'Giám sát viên',
+                    AppData.instance.profile?.displayNamePreview ??
+                        'Giám sát viên',
                     overflow: TextOverflow.ellipsis,
                     style: AppTypography.style(
                       14,
@@ -91,7 +91,9 @@ class _UserProfileState extends State<UserProfile> {
                     ),
                   ),
                   SizedBox(width: 12),
-                  if (MultiWindowUtil.isMainWindow(context.read<AppBloc>().windowId))
+                  if (MultiWindowUtil.isMainWindow(
+                    context.read<AppBloc>().windowId,
+                  ))
                     AnimatedBuilder(
                       animation: controller,
                       builder: (context, _) => TweenAnimationBuilder<double>(
@@ -102,13 +104,17 @@ class _UserProfileState extends State<UserProfile> {
                         duration: Durations.medium2,
                         builder: (context, angle, child) {
                           return Transform.rotate(
-                            angle: angle * (math.pi / 180), // đổi độ sang radian
+                            angle:
+                                angle * (math.pi / 180), // đổi độ sang radian
                             child: child,
                           );
                         },
                         child: SvgPicture.asset(
                           AppAssets.icArrowCircleUp,
-                          colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
+                          colorFilter: ColorFilter.mode(
+                            AppColors.contentFg,
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                     ),
@@ -127,7 +133,12 @@ class _UserProfileState extends State<UserProfile> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(3),
         boxShadow: [
-          BoxShadow(color: Colors.black26, blurRadius: 2, spreadRadius: 0, offset: Offset(1, 1)),
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 2,
+            spreadRadius: 0,
+            offset: Offset(1, 1),
+          ),
         ],
       ),
       // padding: EdgeInsets.symmetric(vertical: 20),
@@ -151,16 +162,23 @@ class _UserProfileState extends State<UserProfile> {
               onTap: () {
                 context.read<AppBloc>().add(CreateNewWindow());
               },
-              showTooltip: MultiWindowUtil.getSubWindowCount() >= AppConfig.MAXIMUM_SUB_WINDOWS,
+              showTooltip:
+                  MultiWindowUtil.getSubWindowCount() >=
+                  AppConfig.MAXIMUM_SUB_WINDOWS,
               tooltipMessage: 'Bạn chỉ được hiển thị tối đa 3 cửa sổ phụ',
-              enabled: MultiWindowUtil.getSubWindowCount() < AppConfig.MAXIMUM_SUB_WINDOWS,
+              enabled:
+                  MultiWindowUtil.getSubWindowCount() <
+                  AppConfig.MAXIMUM_SUB_WINDOWS,
             ),
             _buildMenuItem(
               onTap: () {
                 if (AppData.instance.profile?.changePassDenied ?? false) {
                   ToastUtil.toastFail(
                     context: context,
-                    title: Text('Bạn không có quyền sử dụng chức năng này!', maxLines: 5),
+                    title: Text(
+                      'Bạn không có quyền sử dụng chức năng này!',
+                      maxLines: 5,
+                    ),
                   );
                   return;
                 }
@@ -196,7 +214,11 @@ class _UserProfileState extends State<UserProfile> {
       leading: icon,
       title: Text(
         title,
-        style: AppTypography.style(14, color: AppColors.blackOrWhite, fontWeight: FontWeight.w500),
+        style: AppTypography.style(
+          14,
+          color: AppColors.blackOrWhite,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       // horizontalTitleGap: 20,
       // contentPadding: EdgeInsets.fromLTRB(20, 10, 20, 10),
@@ -214,7 +236,12 @@ class _UserProfileState extends State<UserProfile> {
     required String tooltipMessage,
     bool enabled = true,
   }) {
-    final menuItem = _buildMenuItem(title: title, icon: icon, onTap: onTap, enabled: enabled);
+    final menuItem = _buildMenuItem(
+      title: title,
+      icon: icon,
+      onTap: onTap,
+      enabled: enabled,
+    );
 
     if (!showTooltip) return menuItem;
 
@@ -223,7 +250,10 @@ class _UserProfileState extends State<UserProfile> {
       preferBelow: false,
       verticalOffset: 10,
       waitDuration: Duration(milliseconds: 100),
-      decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(
+        color: Colors.black87,
+        borderRadius: BorderRadius.circular(4),
+      ),
       textStyle: TextStyle(color: Colors.white, fontSize: 12),
       child: menuItem,
     );
@@ -271,8 +301,13 @@ class _UserProfileState extends State<UserProfile> {
                             backgroundColor: AppColors.blackOrWhiteReverse,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            side: BorderSide(
+                              color: AppColors.greyE2E8F0,
+                              width: 1,
+                            ),
                           ),
                           child: Text(
                             'Hủy',
@@ -288,12 +323,15 @@ class _UserProfileState extends State<UserProfile> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 130.5 / 1600,
                         child: ElevatedButton(
-                          onPressed: () => context.read<AppBloc>().add(SignOut()),
+                          onPressed: () =>
+                              context.read<AppBloc>().add(SignOut()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.blackOrWhite,
                             elevation: 0,
                             padding: EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
                           ),
                           child: Text(
                             'Xác nhận',
