@@ -15,7 +15,12 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
     required List<int> uid,
     required List<int> sessionId,
   }) async {
-    await authenticateService.connectSocket(host: host, port: port, uid: uid, sessionId: sessionId);
+    await authenticateService.connectSocket(
+      host: host,
+      port: port,
+      uid: uid,
+      sessionId: sessionId,
+    );
   }
 
   @override
@@ -24,7 +29,11 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   }
 
   @override
-  Future<Authentication> authenticate(String server, String username, String password) async {
+  Future<Authentication> authenticate(
+    String server,
+    String username,
+    String password,
+  ) async {
     // Call the real authenticate API - let exceptions propagate
     final authReply = await authenticateService.authenticate(
       username: username,
@@ -44,7 +53,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
 
   @override
   Future<void> logout() async {
-    throw UnimplementedError();
+    await authenticateService.logOutSocket();
   }
 
   @override
