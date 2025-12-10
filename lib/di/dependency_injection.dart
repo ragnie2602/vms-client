@@ -170,11 +170,13 @@ class DependencyInjection {
         context.read(),
         context.read(),
         context.read(),
-        context.read<SocketApiClient>(),
+        context.read(),
       ),
     ),
 
     // Controller
-    Provider<FilterDrawerController>(create: (context) => FilterDrawerController()),
+    Provider<FilterDrawerController>(
+      create: (context) => FilterDrawerController(),
+    ),
   ];
 }

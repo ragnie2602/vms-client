@@ -13,9 +13,9 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
-import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/data/models/multi_window_event_model.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_auth_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_input.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_input.dart';
@@ -28,7 +28,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   final CreateNewWindowUseCase createNewWindowUseCase;
   final SendMultiWindowEventUseCase sendMultiWindowEventUseCase;
   final SubscribeMultiWindowEventUseCase subscribeMultiWindowEventUseCase;
-  final SocketApiClient socketApiClient;
+  final IAuthRepository authRepository;
 
   int windowId = 0; // businessWindowID
 
@@ -40,10 +40,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   StreamSubscription? _multiWindowEventSubscription;
 
   AppBloc(
+    this.authRepository,
     this.createNewWindowUseCase,
     this.sendMultiWindowEventUseCase,
     this.subscribeMultiWindowEventUseCase,
-    this.socketApiClient,
   ) : super(AppState(false)) {
     on<ChangeTheme>(_onChangeTheme);
     on<AppStarted>(_onAppStarted);
@@ -205,7 +205,7 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
 
   FutureOr<void> _onSignOut(SignOut event, Emitter<AppState> emit) async {
     await MultiWindowUtil.save();
-    socketApiClient.disconnect();
+    await authRepository.logout();
     AppData.instance.profile = null;
 
     if (!Platform.isAndroid && !Platform.isIOS) {

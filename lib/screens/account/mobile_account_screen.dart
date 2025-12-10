@@ -233,7 +233,10 @@ class _MobileAccountScreenState extends State<MobileAccountScreen> {
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton(
-                        onPressed: () => context.read<AppBloc>().add(SignOut()),
+                        onPressed: () {
+                          context.read<AppBloc>().add(SignOut());
+                          context.goNamed(Routes.login.name);
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.blackOrWhite,
                           elevation: 0,
