@@ -176,6 +176,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
   @override
   void dispose() {
+    widget.controller.detach();
     try {
       _player.pause();
     } catch (_) {}

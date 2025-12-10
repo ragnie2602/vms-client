@@ -195,6 +195,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   @override
   void dispose() {
+    widget.controller?.detach();
     try {
       _player.pause();
     } catch (_) {}

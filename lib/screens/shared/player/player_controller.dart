@@ -58,4 +58,30 @@ class PlayerController {
   Future<Process?> Function(String output)? recording;
   Future<bool> Function(String path)? snapshot;
   Future<bool> Function(String path)? captureThumbnail;
+
+  void detach() {
+    onPlaybackChanged.clear();
+    onTimeChanged.clear();
+
+    changeVolume = null;
+    seek = null;
+    changeSpeed = null;
+    togglePlay = null;
+    getPlayerStatus = null;
+    jumpToDate = null;
+    recording = null;
+    snapshot = null;
+    captureThumbnail = null;
+    toggleFullscreen = null;
+    zoom = null;
+    isInitialized = null;
+    status = null;
+    isSeeking = null;
+    playerTime = null;
+    getPlayerState = null;
+    getCurrentPosition = null;
+    getCurrentDate = null;
+    play = null;
+    pause = null;
+  }
 }
