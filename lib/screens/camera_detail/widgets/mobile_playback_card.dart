@@ -37,17 +37,48 @@ class MobilePlaybackCard extends StatefulWidget {
   State<MobilePlaybackCard> createState() => _MobilePlaybackCardState();
 }
 
-class _MobilePlaybackCardState extends State<MobilePlaybackCard> {
+class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBindingObserver {
   late final ValueNotifier<double?> _progress = ValueNotifier(null);
   late final ValueNotifier<bool> _isError = ValueNotifier(false);
   ChunkedDownloader? _chunkedDownloader;
 
+  String? _pendingToastMessage;
+  bool _pendingToastIsSuccess = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _progress.dispose();
     _isError.dispose();
     _chunkedDownloader?.dispose(cleanup: true);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed && _pendingToastMessage != null) {
+      while (!mounted) {}
+
+      final message = Text(
+        _pendingToastMessage!,
+        style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+      );
+      if (_pendingToastIsSuccess) {
+        ToastUtil.toastSuccess(title: message);
+      } else {
+        ToastUtil.toastFail(title: message);
+      }
+
+      _pendingToastMessage = null;
+    }
   }
 
   Future<bool> _continueIfUsingMobileData() async {
@@ -240,20 +271,32 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> {
     try {
       // Lưu vào thư viện ảnh + toast + xoá file
       if (saveToGallery) await Gal.putVideo(path);
-      ToastUtil.toastSuccess(
-        title: Text(
-          'Tải xuống thành công',
-          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
-        ),
-      );
+
+      if (mounted && WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        ToastUtil.toastSuccess(
+          title: Text(
+            'Tải xuống thành công',
+            style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+          ),
+        );
+      } else {
+        _pendingToastMessage = 'Tải xuống thành công';
+        _pendingToastIsSuccess = true;
+      }
     } catch (e) {
       Logger.error(e);
-      ToastUtil.toastFail(
-        title: Text(
-          'Có lỗi xảy ra trong quá trình lưu video vào thư viện',
-          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
-        ),
-      );
+
+      if (mounted && WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        ToastUtil.toastFail(
+          title: Text(
+            'Có lỗi xảy ra trong quá trình lưu video vào thư viện',
+            style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+          ),
+        );
+      } else {
+        _pendingToastMessage = 'Có lỗi xảy ra trong quá trình lưu video vào thư viện';
+        _pendingToastIsSuccess = false;
+      }
     }
 
     _resetProgress();

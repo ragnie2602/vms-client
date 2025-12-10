@@ -3,11 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 
 class HomeMobileLayout extends StatefulWidget {
   final Widget content;
@@ -20,6 +22,14 @@ class HomeMobileLayout extends StatefulWidget {
 }
 
 class _HomeMobileLayoutState extends State<HomeMobileLayout> {
+  late final FilterDrawer _filterDrawer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (mounted) _filterDrawer = FilterDrawer(controller: context.read());
+  }
+
   @override
   Widget build(BuildContext context) {
     final data = _bottomNavigationBarData(widget.currentPath);
@@ -71,6 +81,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
                 color: AppColors.grey666666,
               ),
             ),
+      endDrawer: data?.endDrawer,
     );
   }
 
@@ -78,19 +89,26 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
     final location = Routes.fromName(currentPath.substring(1));
     switch (location) {
       case Routes.monitoring:
-      case Routes.account:
         return _BottomNavigationBarData(
-          labels: ['Trang chủ', 'Tài khoản'],
           activeAssets: [AppAssets.icHomeFilled, AppAssets.icUserFilled],
           assets: [AppAssets.icHome, AppAssets.icUser],
+          endDrawer: _filterDrawer,
+          labels: ['Trang chủ', 'Tài khoản'],
+          routes: [Routes.monitoring, Routes.account],
+        );
+      case Routes.account:
+        return _BottomNavigationBarData(
+          activeAssets: [AppAssets.icHomeFilled, AppAssets.icUserFilled],
+          assets: [AppAssets.icHome, AppAssets.icUser],
+          labels: ['Trang chủ', 'Tài khoản'],
           routes: [Routes.monitoring, Routes.account],
         );
       case Routes.cameraDetail:
       case Routes.playback:
         return _BottomNavigationBarData(
-          labels: ['Xem trực tiếp', 'Xem lại'],
           activeAssets: [AppAssets.icVideoOnlineFilled, AppAssets.icPlaybackFilled],
           assets: [AppAssets.icVideoOn, AppAssets.icPlayback],
+          labels: ['Xem trực tiếp', 'Xem lại'],
           routes: [Routes.cameraDetail, Routes.playback],
         );
       default:
@@ -101,15 +119,17 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
 }
 
 class _BottomNavigationBarData {
-  final List<String> labels;
   final List<String> activeAssets;
   final List<String> assets;
+  final Widget? endDrawer;
+  final List<String> labels;
   final List<Routes> routes;
 
   const _BottomNavigationBarData({
-    required this.labels,
     required this.activeAssets,
     required this.assets,
+    this.endDrawer,
+    required this.labels,
     required this.routes,
   });
 }

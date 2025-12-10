@@ -40,14 +40,38 @@ class _MobileCameraItemState extends State<MobileCameraItem> {
           children: [
             FutureBuilder(
               future: thumbnailPath,
-              builder: (context, snapshot) => snapshot.data != null
-                  ? Positioned.fill(
-                      child: Image.file(
-                        File(snapshot.data!),
-                        errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+              builder: (context, snapshot) {
+                final unhappyCaseWidget = Stack(
+                  children: [
+                    Opacity(
+                      opacity: 0.82,
+                      child: Center(
+                        child: SvgPicture.asset(
+                          AppAssets.logoFull,
+                          width: MediaQuery.widthOf(context) * 260 / 375,
+                        ),
                       ),
-                    )
-                  : const SizedBox.shrink(),
+                    ),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.black.withValues(alpha: 0.45),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+
+                return snapshot.data != null
+                    ? Positioned.fill(
+                        child: Image.file(
+                          File(snapshot.data!),
+                          errorBuilder: (context, error, stackTrace) => unhappyCaseWidget,
+                        ),
+                      )
+                    : unhappyCaseWidget;
+              },
             ),
             InkWell(
               onTap: () async {
@@ -62,22 +86,31 @@ class _MobileCameraItemState extends State<MobileCameraItem> {
                 }
               },
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SvgPicture.asset(
-                      widget.camera.isOnline ? AppAssets.icVideoOnline : AppAssets.icVideoOffline,
-                      color: AppColors.white,
-                      height: 40,
-                      width: 40,
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      widget.camera.isOnline ? 'Xem camera' : 'Camera đang ngoại tuyến',
-                      style: AppTypography.style(13, color: AppColors.white, fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
+                child: widget.camera.isOnline
+                    ? SvgPicture.asset(
+                        AppAssets.icPlay01,
+                        width: MediaQuery.widthOf(context) * 50 / 375,
+                      )
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset(
+                            AppAssets.icVideoOffline,
+                            color: AppColors.white,
+                            height: 40,
+                            width: 40,
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Camera đang ngoại tuyến',
+                            style: AppTypography.style(
+                              13,
+                              color: AppColors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
             Positioned(
@@ -89,12 +122,21 @@ class _MobileCameraItemState extends State<MobileCameraItem> {
                   Expanded(
                     child: Text(
                       widget.camera.name,
-                      style: AppTypography.style(13, color: AppColors.white, fontWeight: FontWeight.w600),
+                      style: AppTypography.style(
+                        13,
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   InkWell(
                     onTap: () {},
-                    child: SvgPicture.asset(AppAssets.tabSettings, color: AppColors.white, height: 24, width: 24),
+                    child: SvgPicture.asset(
+                      AppAssets.tabSettings,
+                      color: AppColors.white,
+                      height: 24,
+                      width: 24,
+                    ),
                   ),
                 ],
               ),
