@@ -15,7 +15,6 @@ import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/account/components/account_item.dart';
 import 'package:vms_flutter_client/screens/account/mobile_change_password_screen.dart';
-import 'package:vms_flutter_client/screens/account/util/log_out_util.dart';
 
 class MobileAccountScreen extends StatefulWidget {
   const MobileAccountScreen({super.key});
@@ -34,7 +33,8 @@ class _MobileAccountScreenState extends State<MobileAccountScreen> {
       listener: (context, state) {
         if (state.isSignOut) {
           if (Navigator.canPop(context)) Navigator.pop(context);
-          LogOutUtil.logOut(context);
+          context.read<AppBloc>().add(SignOut());
+          context.goNamed(Routes.login.name);
         }
         // Rebuild widget when profile is updated
         if (state.myProfileUpdatedAt > 0) {}

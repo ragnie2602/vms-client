@@ -5,9 +5,7 @@ import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
-import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
-import 'package:vms_flutter_client/screens/account/util/log_out_util.dart';
 import 'package:vms_flutter_client/screens/home/bloc/change_my_password_bloc.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
 import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
@@ -24,9 +22,11 @@ class ChangeMyPasswordForm extends StatefulWidget {
 }
 
 class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
@@ -55,13 +55,19 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
             }
             ToastUtil.toastSuccess(
               context: context,
-              title: Text('Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!', maxLines: 5),
+              title: Text(
+                'Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!',
+                maxLines: 5,
+              ),
             );
-            LogOutUtil.logOut(context);
             context.read<AppBloc>().add(SignOut());
             context.goNamed(Routes.login.name);
           } else if (state.errorMessage != null) {
-            showAppMessageDialog(context, message: state.errorMessage!, type: AppMessageType.error);
+            showAppMessageDialog(
+              context,
+              message: state.errorMessage!,
+              type: AppMessageType.error,
+            );
           }
         },
         builder: (context, state) {
@@ -71,13 +77,26 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
               if (widget.isDialog) ...[
                 // Title for Dialog
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 20,
+                    horizontal: 24,
+                  ),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Đổi mật khẩu', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
-                      IconButton(iconSize: 24, onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close), tooltip: 'Đóng'),
+                      Text(
+                        'Đổi mật khẩu',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      IconButton(
+                        iconSize: 24,
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                        tooltip: 'Đóng',
+                      ),
                     ],
                   ),
                 ),
@@ -102,9 +121,17 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
                           return null;
                         },
                         suffix: IconButton(
-                          icon: Icon(_obscureCurrentPassword ? Icons.visibility_off : Icons.visibility, color: AppColors.black),
+                          icon: Icon(
+                            _obscureCurrentPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: AppColors.black,
+                          ),
                           iconSize: 20,
-                          onPressed: () => setState(() => _obscureCurrentPassword = !_obscureCurrentPassword),
+                          onPressed: () => setState(
+                            () => _obscureCurrentPassword =
+                                !_obscureCurrentPassword,
+                          ),
                         ),
                       ),
                       Padding(
@@ -123,9 +150,16 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
                             return null;
                           },
                           suffix: IconButton(
-                            icon: Icon(_obscureNewPassword ? Icons.visibility_off : Icons.visibility, color: AppColors.black),
+                            icon: Icon(
+                              _obscureNewPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: AppColors.black,
+                            ),
                             iconSize: 20,
-                            onPressed: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
+                            onPressed: () => setState(
+                              () => _obscureNewPassword = !_obscureNewPassword,
+                            ),
                           ),
                         ),
                       ),
@@ -145,16 +179,25 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
                           return null;
                         },
                         suffix: IconButton(
-                          icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility, color: AppColors.black),
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: AppColors.black,
+                          ),
                           iconSize: 20,
-                          onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                          onPressed: () => setState(
+                            () => _obscureConfirmPassword =
+                                !_obscureConfirmPassword,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              if (widget.isDialog) Divider(color: AppColors.greyF2F4FA, thickness: 1),
+              if (widget.isDialog)
+                Divider(color: AppColors.greyF2F4FA, thickness: 1),
               // Actions
               Padding(
                 padding: const EdgeInsets.all(24),
@@ -163,7 +206,12 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Expanded(
-                        child: AppButton.outline(label: 'Hủy', onPressed: widget.onCancel ?? () => Navigator.pop(context, false)),
+                        child: AppButton.outline(
+                          label: 'Hủy',
+                          onPressed:
+                              widget.onCancel ??
+                              () => Navigator.pop(context, false),
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -175,8 +223,10 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
                                   if (_formKey.currentState!.validate()) {
                                     context.read<ChangeMyPasswordBloc>().add(
                                       ChangeMyPasswordEvent(
-                                        currentPassword: _currentPasswordController.text,
-                                        newPassword: _newPasswordController.text,
+                                        currentPassword:
+                                            _currentPasswordController.text,
+                                        newPassword:
+                                            _newPasswordController.text,
                                         kickOthers: false,
                                       ),
                                     );
@@ -196,7 +246,8 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
                               if (_formKey.currentState!.validate()) {
                                 context.read<ChangeMyPasswordBloc>().add(
                                   ChangeMyPasswordEvent(
-                                    currentPassword: _currentPasswordController.text,
+                                    currentPassword:
+                                        _currentPasswordController.text,
                                     newPassword: _newPasswordController.text,
                                     kickOthers: false,
                                   ),

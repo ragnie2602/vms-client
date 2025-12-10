@@ -4,16 +4,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
-import 'package:vms_flutter_client/screens/account/util/log_out_util.dart';
 import 'package:vms_flutter_client/screens/home/change_my_info_dialog.dart';
 import 'package:vms_flutter_client/screens/home/change_my_password_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/popup_menu.dart';
@@ -37,7 +38,8 @@ class _UserProfileState extends State<UserProfile> {
       listener: (context, state) {
         if (state.isSignOut) {
           if (Navigator.canPop(context)) Navigator.pop(context);
-          LogOutUtil.logOut(context);
+          context.read<AppBloc>().add(SignOut());
+          context.goNamed(Routes.login.name);
         }
         // Rebuild widget when profile is updated
         if (state.myProfileUpdatedAt > 0) {
@@ -323,8 +325,9 @@ class _UserProfileState extends State<UserProfile> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 130.5 / 1600,
                         child: ElevatedButton(
-                          onPressed: () =>
-                              context.read<AppBloc>().add(SignOut()),
+                          onPressed: () {
+                            context.read<AppBloc>().add(SignOut());
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.blackOrWhite,
                             elevation: 0,
