@@ -156,7 +156,6 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                 children: [
                   Expanded(
                     child: IconButton(
-                      onPressed: () => bloc.state.playerController.togglePlay?.call(),
                       icon: BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
                         selector: (state) => state.status,
                         builder: (context, status) => SvgPicture.asset(
@@ -165,6 +164,9 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                               : AppAssets.icPlayMobile,
                         ),
                       ),
+                      onPressed: widget.args.data?.isOnline == true
+                          ? () => bloc.state.playerController.togglePlay?.call()
+                          : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -173,8 +175,8 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   ),
                   Expanded(
                     child: IconButton(
-                      onPressed: () => screenshot(),
                       icon: SvgPicture.asset(AppAssets.icCamera01),
+                      onPressed: widget.args.data?.isOnline == true ? () => screenshot() : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -183,7 +185,6 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   ),
                   Expanded(
                     child: IconButton(
-                      onPressed: toggleMute,
                       icon: ValueListenableBuilder(
                         valueListenable: isMuted,
                         builder: (context, value, child) {
@@ -192,6 +193,7 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                           );
                         },
                       ),
+                      onPressed: widget.args.data?.isOnline == true ? toggleMute : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
@@ -200,8 +202,8 @@ class _MobileCameraDetailScreenState extends State<MobileCameraDetailScreen> {
                   ),
                   Expanded(
                     child: IconButton(
-                      onPressed: fullscreen,
                       icon: SvgPicture.asset(AppAssets.icFullAltRight),
+                      onPressed: widget.args.data?.isOnline == true ? fullscreen : null,
                       padding: EdgeInsets.symmetric(vertical: 18),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
