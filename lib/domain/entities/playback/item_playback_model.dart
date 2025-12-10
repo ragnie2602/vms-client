@@ -8,12 +8,15 @@ class ItemPlaybackModel extends Equatable {
   final CameraEntity camera;
   final List<PlaybackVideo>? listVideoPlaybacks;
   final PlayerController playerController;
+  // init date
+  final DateTime? initialDate;
 
   const ItemPlaybackModel({
     required this.index,
     required this.camera,
     this.listVideoPlaybacks,
     required this.playerController,
+    this.initialDate,
   });
 
   ItemPlaybackModel copyWith({
@@ -21,12 +24,14 @@ class ItemPlaybackModel extends Equatable {
     CameraEntity? camera,
     List<PlaybackVideo>? listVideoPlaybacks,
     PlayerController? playerController,
+    DateTime? initialDate,
   }) {
     return ItemPlaybackModel(
       index: index ?? this.index,
       camera: camera ?? this.camera,
       listVideoPlaybacks: listVideoPlaybacks ?? this.listVideoPlaybacks,
       playerController: playerController ?? this.playerController,
+      initialDate: initialDate,
     );
   }
 

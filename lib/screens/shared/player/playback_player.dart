@@ -33,6 +33,7 @@ class PlaybackPlayer extends StatefulWidget {
     required this.playlist,
     required this.name,
     this.initialIndex = 0,
+    this.initialDate,
     required this.controller,
     this.onStatusChanged,
     this.onInitializedValues,
@@ -47,11 +48,15 @@ class PlaybackPlayer extends StatefulWidget {
     this.wakelock = true,
     this.isMultiPlayback,
     this.initialVolume,
-  }) : super(key: controller.ref);
+  }) : _computedInitialIndex = initialDate != null
+           ? (playlist.atTime(initialDate) ?? 0)
+           : initialIndex,
+       super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
   final String name;
   final int initialIndex;
+  final DateTime? initialDate;
   final PlayerController controller;
   final Function(PlayerStatus)? onStatusChanged;
   final Function({required double volume, required double speed})? onInitializedValues;
@@ -67,6 +72,9 @@ class PlaybackPlayer extends StatefulWidget {
   final bool? isMultiPlayback;
   final double? initialVolume;
 
+  // Computed initial index based on initialDate or initialIndex
+  final int _computedInitialIndex;
+
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
 }
@@ -77,7 +85,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   final ValueNotifier<PlayerState> _state = ValueNotifier(PlayerState.initializing);
 
   final ValueNotifier<bool> _isSeeking = ValueNotifier(false);
-  late final ValueNotifier<int> _playlistIndex = ValueNotifier(widget.initialIndex);
+  late final ValueNotifier<int> _playlistIndex = ValueNotifier(
+    widget._computedInitialIndex,
+  );
 
   final GlobalKey<FullscreenPortalState> _fullscreenKey = GlobalKey();
 
@@ -106,7 +116,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   late final AccumulatingSeekQueue _accumulatingSeekQueue = AccumulatingSeekQueue(onSeek: _seek);
 
   late Map<String, int> _playlistMapper;
-  int get initialIndex => widget.initialIndex;
+  int get initialIndex => widget._computedInitialIndex;
   int get currentIndex => _playlistIndex.value;
   PlaybackVideo get currentPlayback => widget.playlist[currentIndex];
   PlaybackVideo? get nextPlayback =>
@@ -137,7 +147,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   void initState() {
     _initZoom();
     _attachController();
-    _playlistIndex.value = widget.initialIndex;
+    _playlistIndex.value = widget._computedInitialIndex;
 
     if (widget.wakelock) {
       _status.addListener(
@@ -221,7 +231,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       _playlistMapper = Map.fromEntries(
         widget.playlist.mapIndexed((idx, e) => MapEntry(e.urlPlayback, idx)),
       );
-      _playlistIndex.value = widget.initialIndex;
+      _playlistIndex.value = widget._computedInitialIndex;
 
       _cancelTimers();
       _completerTimeoutTimer?.cancel();

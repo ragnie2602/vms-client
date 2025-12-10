@@ -109,23 +109,32 @@ class MultiPlaybackBloc
       );
     }
 
+   // step 3: Save thời gian play = thời gian đầu tiên của _mergerList
+    final mergedList = _mergePlaybacks(updatedList);
+    DateTime? initialDate;
+    if (mergedList.isNotEmpty) {
+      initialDate = mergedList.first.startTime;
+    }
+
+    // Update all items with initialDate
+    updatedList = updatedList.map((item) {
+      return item.copyWith(initialDate: initialDate);
+    }).toList();
+
     // Update state with new playbacks
     emit(
       state.copyWith(
         listItemCamPlayback: updatedList,
-        mergedPlaybackList: _mergePlaybacks(updatedList),
+        mergedPlaybackList: mergedList,
       ),
     );
 
     // step 3: Save thời gian play = thời gian đầu tiên của _mergerList
-    DateTime? _startTime;
-    if (state.mergedPlaybackList.isNotEmpty) {
-      _startTime = state.mergedPlaybackList.first.startTime;
-    }
+
 
     // step 4: Setup (mute âm thanh + jumptDate = thời gian vừa lưu) dành cho tất cả các camera
     // seek all camera
-    await _seekAllCamera(_startTime);
+    await _seekAllCamera(initialDate);
     // step 5: check loading
     final checked = await _isAllReady();
     if (checked) {
@@ -190,6 +199,7 @@ class MultiPlaybackBloc
       camera: event.newCam,
       listVideoPlaybacks: [], // Empty initially
       playerController: playerController,
+      initialDate: syncDate, // Save the sync date as initial date
     );
     _list.add(newItem);
     emit(
@@ -210,6 +220,7 @@ class MultiPlaybackBloc
     if (index != -1) {
       _list[index] = _list[index].copyWith(
         listVideoPlaybacks: videos?.reversed.toList(),
+        initialDate: syncDate, // Keep the sync date as initial date
       );
       emit(
         state.copyWith(

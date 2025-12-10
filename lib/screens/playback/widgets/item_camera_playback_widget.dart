@@ -48,7 +48,7 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
       onExit: (_) => setState(() => _isHovering = false),
       child: Stack(
         children: [
-          (widget.item.listVideoPlaybacks ?? []).isEmpty
+          (widget.item.isNoVideo)
               ? EmptyRecordCameraWidget()
               : PlaybackPlayer(
                   initialIndex: 0,
@@ -58,6 +58,7 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
                   enableZoom: true,
                   isMultiPlayback: true,
                   initialVolume: 0,
+                  initialDate: widget.item.initialDate,
                 ),
           // Close button
           Positioned(
