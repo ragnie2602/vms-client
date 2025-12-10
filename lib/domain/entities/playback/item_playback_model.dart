@@ -37,4 +37,7 @@ class ItemPlaybackModel extends Equatable {
     listVideoPlaybacks,
     playerController,
   ];
+  bool get isNoVideo {
+    return ((listVideoPlaybacks ?? []).isEmpty);
+  }
 }

@@ -219,7 +219,9 @@ class MultiPlaybackBloc
       );
     }
 
-    await playerController.waitForAttached.future;
+    if (state.listItemCamPlayback?[index].isNoVideo != true) {
+      await playerController.waitForAttached.future;
+    }
 
     // 4. Seek new camera to sync date and mute
     // seek all camera
@@ -381,7 +383,11 @@ class MultiPlaybackBloc
       return;
     }
     await Future.wait(
-      _listCam.map((e) => e.playerController.pause?.call() ?? Future.value()),
+      _listCam.map(
+        (e) => e.isNoVideo
+            ? Future.value()
+            : e.playerController.pause?.call() ?? Future.value(),
+      ),
     );
     // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
     //   await e.playerController.pause?.call();
@@ -396,8 +402,10 @@ class MultiPlaybackBloc
     }
     final data = <Future>[];
     for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
-      final completer = await e.playerController.jumpToDate?.call(newDate);
-      if (completer != null) data.add(completer.future);
+      if (!e.isNoVideo) {
+        final completer = await e.playerController.jumpToDate?.call(newDate);
+        if (completer != null) data.add(completer.future);
+      }
     }
     await Future.wait(data);
     // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
@@ -415,7 +423,9 @@ class MultiPlaybackBloc
     try {
       await Future.wait(
         _listCam.map(
-          (e) => e.playerController.waitForReady?.call() ?? Future.value(),
+          (e) => e.isNoVideo
+              ? Future.value()
+              : e.playerController.waitForReady?.call() ?? Future.value(),
         ),
       );
       return true;
@@ -431,7 +441,11 @@ class MultiPlaybackBloc
       return;
     }
     await Future.wait(
-      _listCam.map((e) => e.playerController.play?.call() ?? Future.value()),
+      _listCam.map(
+        (e) => e.isNoVideo
+            ? Future.value()
+            : e.playerController.play?.call() ?? Future.value(),
+      ),
     );
     // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
     //   await e.playerController.play?.call();
