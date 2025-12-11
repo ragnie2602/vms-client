@@ -109,7 +109,7 @@ class MultiPlaybackBloc
       );
     }
 
-   // step 3: Save thời gian play = thời gian đầu tiên của _mergerList
+    // step 3: Save thời gian play = thời gian đầu tiên của _mergerList
     final mergedList = _mergePlaybacks(updatedList);
     DateTime? initialDate;
     if (mergedList.isNotEmpty) {
@@ -130,7 +130,6 @@ class MultiPlaybackBloc
     );
 
     // step 3: Save thời gian play = thời gian đầu tiên của _mergerList
-
 
     // step 4: Setup (mute âm thanh + jumptDate = thời gian vừa lưu) dành cho tất cả các camera
     // seek all camera
@@ -193,11 +192,17 @@ class MultiPlaybackBloc
     }
 
     // 3. Add new camera (Emit immediately to show loading)
+    // get danh sách video playback
+    final videos = await getVideoPlaybacksByCameraId(
+      camera: event.newCam,
+      playbackDate: state.playbackDate,
+    );
     final playerController = PlayerController();
+
     ItemPlaybackModel newItem = ItemPlaybackModel(
       index: event.indexCam,
       camera: event.newCam,
-      listVideoPlaybacks: [], // Empty initially
+      listVideoPlaybacks: videos?.reversed.toList(),
       playerController: playerController,
       initialDate: syncDate, // Save the sync date as initial date
     );
@@ -208,29 +213,8 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(_list),
       ),
     );
-
-    // 4. Fetch videos and update
-    final videos = await getVideoPlaybacksByCameraId(
-      camera: event.newCam,
-      playbackDate: state.playbackDate,
-    );
-
-    // tìm vị trí camera để update list video playback cho đúng camera đó trong list
-    final index = _list.indexWhere((e) => e.index == event.indexCam);
-    if (index != -1) {
-      _list[index] = _list[index].copyWith(
-        listVideoPlaybacks: videos?.reversed.toList(),
-        initialDate: syncDate, // Keep the sync date as initial date
-      );
-      emit(
-        state.copyWith(
-          listItemCamPlayback: List.from(_list), // Create new list reference
-          mergedPlaybackList: _mergePlaybacks(_list),
-        ),
-      );
-    }
-
-    if (state.listItemCamPlayback?[index].isNoVideo != true) {
+    // check cam mới nếu có video(-> UI là 1 player) -> await initial
+    if (newItem.isNoVideo != true) {
       await playerController.waitForAttached.future;
     }
 

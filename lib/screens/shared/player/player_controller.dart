@@ -24,7 +24,7 @@ class PlayerController {
   Future<void> Function()? pause;
   PlayerState Function()? getPlayerState;
   Duration Function()? getCurrentPosition;
-  DateTime Function()? getCurrentDate;
+  DateTime? Function()? getCurrentDate;
   GlobalKey ref = GlobalKey();
 
   /* Listeners */
@@ -47,7 +47,7 @@ class PlayerController {
   bool Function()? isInitialized;
   ValueNotifier<PlayerStatus> Function()? status;
   ValueNotifier<bool> Function()? isSeeking;
-  DateTime Function()? playerTime;
+  DateTime? Function()? playerTime;
 
   /* Function control player */
   void Function(double volume)? changeVolume;

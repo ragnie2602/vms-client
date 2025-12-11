@@ -32,7 +32,7 @@ class PlaybackPlayer extends StatefulWidget {
   PlaybackPlayer({
     required this.playlist,
     required this.name,
-    this.initialIndex = 0,
+    int initialIndex = 0,
     this.initialDate,
     required this.controller,
     this.onStatusChanged,
@@ -48,8 +48,8 @@ class PlaybackPlayer extends StatefulWidget {
     this.wakelock = true,
     this.isMultiPlayback,
     this.initialVolume,
-  }) : _computedInitialIndex = initialDate != null
-           ? (playlist.atTime(initialDate) ?? 0)
+  }) : initialIndex = initialDate != null
+           ? (playlist.atTime(initialDate) ?? -1)
            : initialIndex,
        super(key: controller.ref);
 
@@ -72,9 +72,6 @@ class PlaybackPlayer extends StatefulWidget {
   final bool? isMultiPlayback;
   final double? initialVolume;
 
-  // Computed initial index based on initialDate or initialIndex
-  final int _computedInitialIndex;
-
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
 }
@@ -86,7 +83,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
   final ValueNotifier<bool> _isSeeking = ValueNotifier(false);
   late final ValueNotifier<int> _playlistIndex = ValueNotifier(
-    widget._computedInitialIndex,
+    widget.initialIndex,
   );
 
   final GlobalKey<FullscreenPortalState> _fullscreenKey = GlobalKey();
@@ -116,9 +113,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   late final AccumulatingSeekQueue _accumulatingSeekQueue = AccumulatingSeekQueue(onSeek: _seek);
 
   late Map<String, int> _playlistMapper;
-  int get initialIndex => widget._computedInitialIndex;
+  int get initialIndex => widget.initialIndex;
   int get currentIndex => _playlistIndex.value;
-  PlaybackVideo get currentPlayback => widget.playlist[currentIndex];
+  PlaybackVideo? get currentPlayback => currentIndex < 0 ? null : widget.playlist[currentIndex];
   PlaybackVideo? get nextPlayback =>
       currentIndex < widget.playlist.length - 1 ? widget.playlist[currentIndex + 1] : null;
 
@@ -147,7 +144,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   void initState() {
     _initZoom();
     _attachController();
-    _playlistIndex.value = widget._computedInitialIndex;
+    _playlistIndex.value = widget.initialIndex;
 
     if (widget.wakelock) {
       _status.addListener(
@@ -192,7 +189,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       }
 
       widget.controller.markPlaybackChanged(currentIndex);
-      widget.controller.markTimeChanged(currentPlayback.startTime.roundToSecond);
+      if(currentPlayback != null) {
+        widget.controller.markTimeChanged(currentPlayback!.startTime.roundToSecond);
+      }
     });
   }
 
@@ -231,7 +230,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       _playlistMapper = Map.fromEntries(
         widget.playlist.mapIndexed((idx, e) => MapEntry(e.urlPlayback, idx)),
       );
-      _playlistIndex.value = widget._computedInitialIndex;
+      _playlistIndex.value = widget.initialIndex;
 
       _cancelTimers();
       _completerTimeoutTimer?.cancel();
@@ -292,12 +291,12 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     widget.controller.status = () => _status;
     widget.controller.isSeeking = () => _isSeeking;
     widget.controller.playerTime = () =>
-        currentPlayback.startTime.add(Duration(milliseconds: _lastPosition));
+        currentPlayback?.startTime.add(Duration(milliseconds: _lastPosition));
     widget.controller.getPlayerState = () => _state.value;
     widget.controller.getCurrentPosition = () =>
         Duration(milliseconds: _player.position);
     widget.controller.getCurrentDate = () =>
-        currentPlayback.startTime.add(Duration(milliseconds: _player.position));
+        currentPlayback?.startTime.add(Duration(milliseconds: _player.position));
     widget.controller.waitForReady = waitForReady;
 
     widget.controller.waitForAttached.safeComplete();
@@ -401,7 +400,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       }
 
       // Case bị lỗi
-      if (!pre.test(MediaStatus.invalid) && cur.test(MediaStatus.invalid)) {
+      if (!pre.test(MediaStatus.invalid) && cur.test(MediaStatus.invalid) && currentPlayback != null) {
         Logger.warn("Camera '${widget.name}' invalid ($pre -> $cur)");
         _state.value = PlayerState.error;
       }
@@ -465,6 +464,12 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     if (!mounted) return;
 
     _cancelTimers();
+
+    if (currentPlayback == null) {
+      _state.value = PlayerState.empty;
+      return;
+    }
+
     _state.value = showLoading ? PlayerState.initializing : PlayerState.error_again;
     _waitForFirstFrame = Completer<bool>();
 
@@ -472,7 +477,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     _player.setNext("", from: -1);
 
     // Nếu kết nối lại sau khi bị disconnect --> set rỗng --> set lại source cũ
-    if (_player.media == currentPlayback.urlPlayback) {
+    if (_player.media == currentPlayback!.urlPlayback) {
       _waitForUnloadedOldMedia = Completer<void>();
       _player.media = "";
       await _waitForUnloadedOldMedia.future.timeout(Duration(seconds: 1), onTimeout: () => false);
@@ -481,7 +486,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     }
 
     _player
-      ..media = currentPlayback.urlPlayback
+      ..media = currentPlayback!.urlPlayback
       ..state = PlaybackState.playing;
 
     int textureId = -1;
@@ -544,9 +549,11 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
             }
 
             // Syncing time
-            widget.controller.markTimeChanged(
-              currentPlayback.startTime.add(Duration(milliseconds: pos)).roundToSecond,
-            );
+            if (currentPlayback != null) {
+              widget.controller.markTimeChanged(
+                currentPlayback!.startTime.add(Duration(milliseconds: pos)).roundToSecond,
+              );
+            }
           }
           // _debounceConnectionLost();
         }
@@ -733,7 +740,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     } else {
       _shouldSyncPlayerTime = false;
       _isSeeking.value = true;
-      await _jumpToDate(currentPlayback.startTime.add(Duration(milliseconds: _toMs)));
+      await _jumpToDate(currentPlayback!.startTime.add(Duration(milliseconds: _toMs)));
       _shouldSyncPlayerTime = true;
       _isSeeking.value = false;
     }

@@ -41,6 +41,7 @@ class ItemPlaybackModel extends Equatable {
     camera,
     listVideoPlaybacks,
     playerController,
+    initialDate,
   ];
   bool get isNoVideo {
     return ((listVideoPlaybacks ?? []).isEmpty);
