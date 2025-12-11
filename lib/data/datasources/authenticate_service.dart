@@ -38,7 +38,8 @@ class AuthenticateService {
         platform: 5, // Fixed platform value as requested
       );
 
-      loginStatus.text += "--- Thực hiện xác thực tài khoản '$username' tại '$server' ---\n";
+      loginStatus.text +=
+          "--- Thực hiện xác thực tài khoản '$username' tại '$server' ---\n";
 
       // Serialize the request to protobuf bytes
       final requestBytes = request.writeToBuffer();
@@ -51,7 +52,9 @@ class AuthenticateService {
 
       if (reply.isSuccess) {
         final authenticateReplyBytes = reply.reply.value;
-        final authenticateReply = Authenticate_Reply.fromBuffer(authenticateReplyBytes);
+        final authenticateReply = Authenticate_Reply.fromBuffer(
+          authenticateReplyBytes,
+        );
 
         loginStatus.text += "Xác thực thành công ($username)\n";
 
@@ -105,12 +108,16 @@ class AuthenticateService {
   }
 
   Future<bool> login(Authentication data) async {
-    if (data.uid.isEmpty || data.sessionId.isEmpty || data.host.isEmpty) return false;
+    if (data.uid.isEmpty || data.sessionId.isEmpty || data.host.isEmpty)
+      return false;
 
     loginStatus.text += "--- Thực hiện đăng nhập ---\n";
-    loginStatus.text += "Đang kết nối socket ws://${data.host}:${data.port}...\n";
+    loginStatus.text +=
+        "Đang kết nối socket ws://${data.host}:${data.port}...\n";
 
-    final status = await _socketApiClient.connect(SocketConnectionParams(data.host, data.port));
+    final status = await _socketApiClient.connect(
+      SocketConnectionParams(data.host, data.port),
+    );
     if (status) {
       loginStatus.text += "Kết nối socket thành công\n";
       loginStatus.text += "Thực hiện đăng nhập...\n";
@@ -118,7 +125,10 @@ class AuthenticateService {
         SocketRequestPayload(
           Packet(
             id: DateTime.now().microsecondsSinceEpoch,
-            data: Login_Request(uid: data.uid, sessionId: data.sessionId).writeToBuffer(),
+            data: Login_Request(
+              uid: data.uid,
+              sessionId: data.sessionId,
+            ).writeToBuffer(),
             type: PacketType.login,
           ),
         ),
@@ -158,5 +168,10 @@ class AuthenticateService {
 
     loginStatus.text += "Kết nối socket thất bại\n";
     return false;
+  }
+
+  Future<void> logOutSocket() async {
+    await _socketApiClient.disconnect();
+    AppData.instance.profile = null;
   }
 }

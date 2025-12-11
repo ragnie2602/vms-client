@@ -31,7 +31,11 @@ class MobilePlayerControls extends StatelessWidget {
               selector: (state) => state.status,
               builder: (context, status) => _controlItem(
                 status == PlayerStatus.playing ? AppAssets.icPauseMobile : AppAssets.icPlayMobile,
-                () => controller(context)?.togglePlay?.call(),
+                () {
+                  if (controller(context)?.getPlayerState?.call() == PlayerState.initialized) {
+                    controller(context)?.togglePlay?.call();
+                  }
+                },
               ),
             ),
 
@@ -41,6 +45,8 @@ class MobilePlayerControls extends StatelessWidget {
               builder: (context, speed) => Expanded(
                 child: MobileControlSpeed(
                   speed: speed,
+                  canChangeSpeed: () =>
+                      controller(context)?.getPlayerState?.call() == PlayerState.initialized,
                   onSpeedChanged: (spd) => context.read<CameraDetailBloc>().add(ChangeSpeed(spd)),
                 ),
               ),

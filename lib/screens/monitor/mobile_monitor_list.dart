@@ -79,8 +79,6 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
               ValueListenableBuilder(
                 valueListenable: _searchValue,
                 builder: (context, value, child) {
-                  if (value.isEmpty) _scrollValue.value = true;
-
                   return Row(
                     children: [
                       if (value.isNotEmpty) ...[
@@ -142,7 +140,9 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                               minHeight: 22,
                             ),
                           ),
-                          onChanged: (value) => _searchValue.value = value,
+                          onChanged: (value) {
+                            if ((_searchValue.value = value).isEmpty) _scrollValue.value = true;
+                          },
                           style: AppTypography.style(14, fontWeight: FontWeight.w400),
                         ),
                       ),
@@ -238,7 +238,10 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                               ? ListView.builder(
                                   controller: _scrollController,
                                   itemBuilder: (context, index) =>
-                                      MobileCameraItem(_cameras[index]),
+                                      MobileCameraItem(
+                                    _cameras[index],
+                                    key: ValueKey(_cameras[index].camId),
+                                  ),
                                   itemCount: _cameras.length,
                                 )
                               : Center(

@@ -73,6 +73,13 @@ class CameraDetailMobileLayout extends StatelessWidget with StateBuilderMixin {
 
   Widget _buildPlayback(BuildContext context) {
     return BlocBuilder<PlaybackBloc, PlaybackState>(
+      buildWhen: (pre, cur) {
+        if (pre is PlaybackSuccess && cur is PlaybackSuccess) {
+          // So sánh tham chiếu 2 list
+          return pre.playbacks != cur.playbacks || pre.initialIndex != cur.initialIndex;
+        }
+        return true;
+      },
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,
         loadingBuilder: () => Container(
@@ -93,17 +100,15 @@ class CameraDetailMobileLayout extends StatelessWidget with StateBuilderMixin {
             _detailBloc(context).add(ChangeVolume(volume));
           },
           onInitializedValues: ({required double volume, required double speed}) {
-            _detailBloc(context)
-              ..add(ChangeVolume(volume))
-              ..add(ChangeSpeed(speed))
-              ..add(OnRecording(cancelStatus: 0));
+            _detailBloc(context).add(OnDefaultValues(volume, speed));
           },
-          controlsBuilder: (isFullscreen) => MobileControlsOverlay(
+          controlsBuilder: (isFullscreen, state) => MobileControlsOverlay(
             name: _detailBloc(context).state.camera!.name,
             isFullscreen: isFullscreen,
             mode: CameraDetailMode.playback,
             detailBloc: _detailBloc(context),
             initialVisible: _detailBloc(context).state.status == PlayerStatus.paused,
+            state: state,
             bottomBuilder: () => MultiBlocProvider(
               providers: [
                 BlocProvider.value(value: context.read<PlaybackBloc>()),

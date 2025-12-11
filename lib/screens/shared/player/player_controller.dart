@@ -20,11 +20,11 @@ enum PlayerStatus { playing, paused, finished }
 class PlayerController {
   Completer waitForAttached = Completer();
 
-  Future<void> Function()? play;
-  Future<void> Function()? pause;
-  PlayerState Function()? getPlayerState;
-  Duration Function()? getCurrentPosition;
-  DateTime? Function()? getCurrentDate;
+  // Future<void> Function()? play;
+  // Future<void> Function()? pause;
+  // PlayerState Function()? getPlayerState;
+  // Duration Function()? getCurrentPosition;
+  // DateTime? Function()? getCurrentDate;
   GlobalKey ref = GlobalKey();
 
   /* Listeners */
@@ -48,19 +48,52 @@ class PlayerController {
   ValueNotifier<PlayerStatus> Function()? status;
   ValueNotifier<bool> Function()? isSeeking;
   DateTime? Function()? playerTime;
+  PlayerState Function()? getPlayerState;
+  Duration Function()? getCurrentPosition;
+  DateTime? Function()? getCurrentDate;
 
   /* Function control player */
-  void Function(double volume)? changeVolume;
+  void Function(double volume, {bool syncSystemVolume})? changeVolume;
   double Function()? getVolume;
   void Function(int type)? zoom;
   void Function()? toggleFullscreen;
   void Function(Duration duration)? seek;
   Future<void> Function(double speed)? changeSpeed;
   Future<void> Function()? togglePlay;
+  Future<void> Function()? play;
+  Future<void> Function()? pause;
   PlayerStatus Function()? getPlayerStatus;
   Future<Completer?> Function(DateTime date, {int? dateIndex})? jumpToDate;
   Future<Process?> Function(String output)? recording;
   Future<bool> Function(String path)? snapshot;
   Future<bool> Function(String path)? captureThumbnail;
   Future<void> Function({Duration? timeout})? waitForReady;
+
+  void detach() {
+    waitForAttached = Completer();
+    onPlaybackChanged.clear();
+    onTimeChanged.clear();
+
+    changeVolume = null;
+    seek = null;
+    changeSpeed = null;
+    togglePlay = null;
+    getPlayerStatus = null;
+    jumpToDate = null;
+    recording = null;
+    snapshot = null;
+    captureThumbnail = null;
+    toggleFullscreen = null;
+    zoom = null;
+    isInitialized = null;
+    status = null;
+    isSeeking = null;
+    playerTime = null;
+    getPlayerState = null;
+    getCurrentPosition = null;
+    getCurrentDate = null;
+    play = null;
+    pause = null;
+    waitForReady = null;
+  }
 }

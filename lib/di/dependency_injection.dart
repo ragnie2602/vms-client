@@ -44,73 +44,113 @@ class DependencyInjection {
       ),
     ),
     Provider<CameraService>(create: (context) => CameraService(context.read())),
-    Provider<ControlCameraService>(create: (context) => ControlCameraService(context.read())),
+    Provider<ControlCameraService>(
+      create: (context) => ControlCameraService(context.read()),
+    ),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
-    Provider<ScheduleRecordService>(create: (context) => ScheduleRecordService(context.read())),
-    Provider<EmapService>(create: (context) => EmapService(context.read(), context.read())),
+    Provider<ScheduleRecordService>(
+      create: (context) => ScheduleRecordService(context.read()),
+    ),
+    Provider<EmapService>(
+      create: (context) => EmapService(context.read(), context.read()),
+    ),
     Provider<UserService>(create: (context) => UserService(context.read())),
-    Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
-    Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
-    Provider<EmapService>(create: (context) => EmapService(context.read(), context.read())),
+    Provider<CustomLiveViewService>(
+      create: (context) => CustomLiveViewService(context.read()),
+    ),
+    Provider<PlaybackService>(
+      create: (context) => PlaybackService(context.read()),
+    ),
+    Provider<EmapService>(
+      create: (context) => EmapService(context.read(), context.read()),
+    ),
 
     // Repositories
     Provider<IAuthRepository>(
-      create: (context) => AuthRepository(authenticateService: context.read<AuthenticateService>()),
+      create: (context) => AuthRepository(
+        authenticateService: context.read<AuthenticateService>(),
+      ),
     ),
-    Provider<ICameraRepository>(create: (context) => CameraRepository(context.read())),
+    Provider<ICameraRepository>(
+      create: (context) => CameraRepository(context.read()),
+    ),
     Provider<SearchGroupUseCase>(create: (context) => SearchGroupUseCase()),
     Provider<IControlCameraRepository>(
-      create: (context) => ControlCameraRepository(context.read(), context.read()),
+      create: (context) =>
+          ControlCameraRepository(context.read(), context.read()),
     ),
-    Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
-    Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
+    Provider<IGroupRepository>(
+      create: (context) => GroupRepository(context.read()),
+    ),
+    Provider<IEmapRepository>(
+      create: (context) => EmapRepository(context.read()),
+    ),
     Provider<IScheduleRepository>(
-      create: (context) => ScheduleRepository( context.read()),
+      create: (context) => ScheduleRepository(context.read()),
     ),
-    Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
+    Provider<IPlaybackRepository>(
+      create: (context) => PlaybackRepository(context.read()),
+    ),
     Provider<IUserManagementRepository>(
       create: (context) => UserManagementRepository(context.read()),
     ),
     Provider<ICustomLiveViewRepository>(
       create: (context) => CustomLiveViewRepository(context.read()),
     ),
-    Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
+    Provider<IEmapRepository>(
+      create: (context) => EmapRepository(context.read()),
+    ),
 
     // Use Cases
-    Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
-    Provider<SendMultiWindowEventUseCase>(create: (context) => SendMultiWindowEventUseCase()),
+    Provider<CreateNewWindowUseCase>(
+      create: (context) => CreateNewWindowUseCase(),
+    ),
+    Provider<SendMultiWindowEventUseCase>(
+      create: (context) => SendMultiWindowEventUseCase(),
+    ),
     Provider<SubscribeMultiWindowEventUseCase>(
-      create: (context) => SubscribeMultiWindowEventUseCase(context.read<IAuthRepository>()),
+      create: (context) =>
+          SubscribeMultiWindowEventUseCase(context.read<IAuthRepository>()),
     ),
 
     Provider<LoginUseCase>(
-      create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>()),
+      create: (context) =>
+          LoginUseCase(authRepository: context.read<IAuthRepository>()),
     ),
 
     Provider<DeleteCameraUseCase>(
-      create: (context) => DeleteCameraUseCase(cameraService: context.read<CameraService>()),
+      create: (context) =>
+          DeleteCameraUseCase(cameraService: context.read<CameraService>()),
     ),
 
     Provider<CreateCustomLiveViewUseCase>(
-      create: (context) => CreateCustomLiveViewUseCase(context.read(), context.read()),
+      create: (context) =>
+          CreateCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<CreateTempCustomLiveViewUseCase>(
       create: (context) => CreateTempCustomLiveViewUseCase(),
     ),
     Provider<GetListCustomLiveViewUseCase>(
-      create: (context) => GetListCustomLiveViewUseCase(context.read(), context.read()),
+      create: (context) =>
+          GetListCustomLiveViewUseCase(context.read(), context.read()),
     ),
     Provider<UpdateCustomLiveViewUseCase>(
-      create: (context) => UpdateCustomLiveViewUseCase(context.read(), context.read()),
+      create: (context) =>
+          UpdateCustomLiveViewUseCase(context.read(), context.read()),
     ),
 
     Provider<FilterCameraUseCase>(create: (context) => FilterCameraUseCase()),
     Provider<ExportFileUserCase>(create: (context) => ExportFileUserCase()),
-    Provider<FilterTagCameraUseCase>(create: (context) => FilterTagCameraUseCase()),
-    Provider<FilterCameraNoGroupUseCase>(create: (context) => FilterCameraNoGroupUseCase()),
+    Provider<FilterTagCameraUseCase>(
+      create: (context) => FilterTagCameraUseCase(),
+    ),
+    Provider<FilterCameraNoGroupUseCase>(
+      create: (context) => FilterCameraNoGroupUseCase(),
+    ),
     Provider<FilterCameraNotInGroupUsecase>(
-      create: (context) =>
-          FilterCameraNotInGroupUsecase(cameraRepository: context.read<ICameraRepository>()),
+      create: (context) => FilterCameraNotInGroupUsecase(
+        cameraRepository: context.read<ICameraRepository>(),
+      ),
     ),
     Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
     Provider<UpdateMyProfileUseCase>(
@@ -120,12 +160,23 @@ class DependencyInjection {
     ),
     Provider<SearchEmapUseCase>(create: (context) => SearchEmapUseCase()),
 
-    Provider<GetCameraUseCase>(create: (context) => GetCameraUseCase(context.read())),
+    Provider<GetCameraUseCase>(
+      create: (context) => GetCameraUseCase(context.read()),
+    ),
 
     // Bloc
-    Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),
+    Provider<AppBloc>(
+      create: (context) => AppBloc(
+        context.read(),
+        context.read(),
+        context.read(),
+        context.read(),
+      ),
+    ),
 
     // Controller
-    Provider<FilterDrawerController>(create: (context) => FilterDrawerController()),
+    Provider<FilterDrawerController>(
+      create: (context) => FilterDrawerController(),
+    ),
   ];
 }

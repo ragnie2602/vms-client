@@ -66,6 +66,12 @@ class TakeSnapshot extends CameraDetailEvent {
   const TakeSnapshot({this.onSuccess});
 }
 
+class OnDefaultValues extends CameraDetailEvent {
+  final double volume;
+  final double speed;
+  const OnDefaultValues(this.volume, this.speed);
+}
+
 class PausePlayer extends CameraDetailEvent {
   const PausePlayer();
 }
