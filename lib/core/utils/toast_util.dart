@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
 
 class ToastUtil {
-  static void mobileToast({BuildContext? context, Widget? title}) {
+  static void mobileToast({BuildContext? context, Widget? title, Alignment? alignment}) {
     toastification.showCustom(
       context: context,
       autoCloseDuration: const Duration(seconds: 3),
-      alignment: Alignment.center,
+      alignment: alignment,
       builder: (context, item) => Center(
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -22,12 +22,13 @@ class ToastUtil {
     );
   }
 
-  static toastSuccess({BuildContext? context, Widget? title}) {
+  static toastSuccess({BuildContext? context, Widget? title, Alignment? alignment}) {
     if (Platform.isAndroid || Platform.isIOS) {
-      mobileToast(context: context, title: title);
+      mobileToast(context: context, title: title, alignment: alignment);
     } else {
       toastification.show(
         context: context,
+        alignment: alignment,
         title: title ?? Text('Thành công!'),
         autoCloseDuration: const Duration(seconds: 3),
         type: ToastificationType.success,
@@ -36,12 +37,13 @@ class ToastUtil {
     }
   }
 
-  static void toastFail({BuildContext? context, Widget? title}) {
+  static void toastFail({BuildContext? context, Widget? title, Alignment? alignment}) {
     if (Platform.isAndroid || Platform.isIOS) {
-      mobileToast(context: context, title: title);
+      mobileToast(context: context, title: title, alignment: alignment);
     } else {
       toastification.show(
         context: context,
+        alignment: alignment,
         title: title ?? Text('Thất bại'),
         autoCloseDuration: const Duration(seconds: 3),
         type: ToastificationType.error,
@@ -54,12 +56,14 @@ class ToastUtil {
     BuildContext? context,
     required Widget title,
     int autoCloseDuration = 3,
+    Alignment? alignment
   }) {
     if (Platform.isAndroid || Platform.isIOS) {
-      mobileToast(context: context, title: title);
+      mobileToast(context: context, title: title, alignment: alignment);
     } else {
       toastification.show(
         context: context,
+        alignment: alignment,
         title: title,
         autoCloseDuration: Duration(seconds: autoCloseDuration),
         type: ToastificationType.warning,

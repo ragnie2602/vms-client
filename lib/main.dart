@@ -125,15 +125,14 @@ class _MyAppState extends State<MyApp> with WindowListener {
               ..add(AppStarted(widget.bWindowID)),
         child: BlocSelector<AppBloc, AppState, ThemeMode>(
           selector: (state) => state.themeMode,
-          builder: (context, theme) => ToastificationWrapper(
-            child: MaterialApp.router(
-              debugShowCheckedModeBanner: false,
-              title: 'VNPT Secure Vision',
-              theme: AppTheme.light,
-              darkTheme: AppTheme.dark,
-              themeMode: theme,
-              routerConfig: AppRouter.router,
-            ),
+          builder: (context, theme) => MaterialApp.router(
+            builder: (context, child) => ToastificationWrapper(child: child!),
+            darkTheme: AppTheme.dark,
+            debugShowCheckedModeBanner: false,
+            routerConfig: AppRouter.router,
+            theme: AppTheme.light,
+            title: 'VNPT Secure Vision',
+            themeMode: theme,
           ),
         ),
       ),
