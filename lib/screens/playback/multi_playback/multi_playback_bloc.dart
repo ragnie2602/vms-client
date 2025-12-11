@@ -342,6 +342,11 @@ class MultiPlaybackBloc
     for (var item in state.listItemCamPlayback ?? []) {
       item.playerController.seek?.call(event.duration);
     }
+
+    // Update lại global time
+    if (timeGlobal.value != null) {
+      timeGlobal.value = timeGlobal.value!.add(event.duration);
+    }
   }
 
   FutureOr<void> _onChangeSpeed(
