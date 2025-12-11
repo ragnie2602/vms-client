@@ -460,6 +460,29 @@ class MultiPlaybackBloc
     );
   }
 
+  // 5. Đồng bộ thời gian cho cam lỗi/ cam không có dữ liệu trong khoảng thời gian
+  Future<void> syncTime(DateTime syncTime) async {
+    List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
+    if (_list.isEmpty) {
+      return;
+    }
+    final data = <Future>[];
+    for (var e in _list) {
+      // điều kiện
+      // 1. cam có video playback
+      // 2. cam  đang có state :playerState là PlayerState = error/empty
+      // 3. cam có bản ghi hình ở thời điểm syncTime
+      PlayerState? currState = e.playerController.getPlayerState?.call();
+      if (!e.isNoVideo &&
+          (currState == PlayerState.empty || currState == PlayerState.error) &&
+          e.listVideoPlaybacks?.atTime(syncTime) != null) {
+        final completer = await e.playerController.jumpToDate?.call(syncTime);
+        if (completer != null) data.add(completer.future);
+      }
+      await Future.wait(data);
+    }
+  }
+
   // check global time
   void checkGlobal({required DateTime initialDate, bool? isPausing}) {
     if (isPausing != null) {
