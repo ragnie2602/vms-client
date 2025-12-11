@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -12,7 +11,6 @@ import 'package:vms_flutter_client/screens/playback/widgets/gridview_playback_vi
 import 'package:vms_flutter_client/screens/playback/widgets/menu_select_date_playback.dart';
 import 'package:vms_flutter_client/screens/playback/widgets/multi_playback_timeshift_widget.dart';
 import 'package:vms_flutter_client/screens/shared/action_item.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 
 class MultiPlaybackScreen extends StatefulWidget {
   const MultiPlaybackScreen({super.key});
@@ -23,37 +21,12 @@ class MultiPlaybackScreen extends StatefulWidget {
 
 class _MultiPlaybackScreenState extends State<MultiPlaybackScreen> {
   @override
-  void initState() {
-    _initState();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  void _initState() {
-    context.read<MultiPlaybackBloc>().add(InitEvent());
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Focus(
-      autofocus: true,
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.escape) {
-          final appBloc = context.read<AppBloc>();
-          if (appBloc.state.displayFullScreenLiveView) {
-            appBloc.add(ToggleMonitorDisplayMode());
-            defaultExitNativeFullscreen();
-            return KeyEventResult.handled;
-          }
-        }
-        return KeyEventResult.ignored;
-      },
-
+    return BlocProvider(
+      lazy: false,
+      create: (context) =>
+          MultiPlaybackBloc(cameraRepository: context.read(), playbackRepository: context.read())
+            ..add(InitEvent()),
       child: BlocSelector<AppBloc, AppState, bool>(
         selector: (state) => state.displayFullScreenLiveView,
         builder: (context, isFullscreen) => Container(

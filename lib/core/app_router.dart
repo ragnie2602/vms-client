@@ -29,7 +29,6 @@ import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dar
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
-import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
@@ -213,12 +212,6 @@ class AppRouter {
               create: (context) => EmapBloc(
                 emapRepository: context.read(),
                 searchEmapUseCase: context.read<SearchEmapUseCase>(),
-              ),
-            ),
-            BlocProvider(
-              create: (context) => MultiPlaybackBloc(
-                cameraRepository: context.read(),
-                playbackRepository: context.read(),
               ),
             ),
             BlocProvider(
