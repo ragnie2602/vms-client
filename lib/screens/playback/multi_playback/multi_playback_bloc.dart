@@ -222,12 +222,14 @@ class MultiPlaybackBloc
     );
     final playerController = PlayerController();
 
+    syncDate ??= videos?.lastOrNull?.startTime;
+
     ItemPlaybackModel newItem = ItemPlaybackModel(
       index: event.indexCam,
       camera: event.newCam,
       listVideoPlaybacks: videos?.reversed.toList(),
       playerController: playerController,
-      initialDate: syncDate, // Save the sync date as initial date
+      initialDate: syncDate ?? DateTime.now().subtract(const Duration(days: 365)),
     );
     _list.add(newItem);
     emit(
