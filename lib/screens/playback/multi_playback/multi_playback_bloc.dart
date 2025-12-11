@@ -8,6 +8,8 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/screens/playback/config_golbal_time.dart'
+    as globaltime;
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_state.dart';
 import 'package:vms_flutter_client/screens/shared/player/sources.dart';
@@ -37,6 +39,21 @@ class MultiPlaybackBloc
     on<MultiChangeVolumeEvent>(_onChangeVolume);
     on<MultiJumpDateEvent>(_onJumpNewDate);
   }
+  // count time
+  Timer? _timer;
+
+  @override
+  Future<void> close() {
+    _resetGlobalTime();
+    return super.close();
+  }
+
+  void _resetGlobalTime() {
+    _timer?.cancel();
+    globaltime.timeGlobal = null;
+    globaltime.flagPauseTime = true;
+  }
+
   FutureOr<void> _init(
     InitEvent event,
     Emitter<MultiPlaybackState> emit,
@@ -96,6 +113,7 @@ class MultiPlaybackBloc
     await _pauseAllCamera();
 
     emit(state.copyWith(playbackDate: event.date, isPlaying: false));
+    updateFlagPause();
 
     // step 2: Get video playback của tất cả các camera
     List<ItemPlaybackModel> updatedList = [];
@@ -139,6 +157,7 @@ class MultiPlaybackBloc
     if (checked) {
       await _playAllCamera();
       emit(state.copyWith(isPlaying: true));
+      updateFlagPause();
     }
   }
 
@@ -170,6 +189,7 @@ class MultiPlaybackBloc
     // 1. Pause all existing cameras
     await _pauseAllCamera();
     emit(state.copyWith(isPlaying: false));
+    updateFlagPause();
     // 2. Get sync date from first camera
     DateTime? syncDate;
     if (_list.isNotEmpty) {
@@ -213,6 +233,15 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(_list),
       ),
     );
+    // set global
+    if (syncDate != null) {
+      checkGlobal(initialDate: syncDate);
+    } else {
+      // case cam đầu tiên
+      if (state.mergedPlaybackList.isNotEmpty) {
+        checkGlobal(initialDate: state.mergedPlaybackList.first.startTime);
+      }
+    }
     // check cam mới nếu có video(-> UI là 1 player) -> await initial
     if (newItem.isNoVideo != true) {
       await playerController.waitForAttached.future;
@@ -220,13 +249,13 @@ class MultiPlaybackBloc
 
     // 4. Seek new camera to sync date and mute
     // seek all camera
-    print('date pause = $syncDate');
     await _seekAllCamera(syncDate);
     // 5. Check loading
     final checked = await _isAllReady();
     if (checked) {
       await _playAllCamera();
       emit(state.copyWith(isPlaying: true));
+      updateFlagPause();
     }
   }
 
@@ -260,6 +289,9 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(_list),
       ),
     );
+    if ((state.listItemCamPlayback ?? []).isEmpty) {
+      _resetGlobalTime();
+    }
   }
 
   /// merge các section thời gian nếu liền nhau/ giao cắt nhau => dùng để view timeshift
@@ -312,6 +344,7 @@ class MultiPlaybackBloc
       item.playerController.togglePlay?.call();
     }
     emit(state.copyWith(isPlaying: isPlaying));
+    updateFlagPause();
   }
 
   FutureOr<void> _onSeek(
@@ -359,14 +392,15 @@ class MultiPlaybackBloc
     // 1. pause
     await _pauseAllCamera();
     emit(state.copyWith(isPlaying: false));
+    updateFlagPause();
     // 2. jump to new date
-    print('jump new date = ${event.newTime}');
     await _seekAllCamera(event.newTime);
     // 3. check loading
     final checked = await _isAllReady();
     if (checked) {
       await _playAllCamera();
       emit(state.copyWith(isPlaying: true));
+      updateFlagPause();
     }
   }
 
@@ -445,5 +479,29 @@ class MultiPlaybackBloc
     // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
     //   await e.playerController.play?.call();
     // }
+  }
+
+  // check global time
+  void checkGlobal({required DateTime initialDate, bool? isPausing}) {
+    if (isPausing != null) {
+      globaltime.flagPauseTime = isPausing;
+    }
+    if (globaltime.timeGlobal == null) {
+      globaltime.timeGlobal = initialDate;
+      // đếm thời gian
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        // nếu không phải trong quá trình pause thì đếm thời gian tiếp
+        if (!globaltime.flagPauseTime) {
+          globaltime.timeGlobal = globaltime.timeGlobal?.add(
+            Duration(seconds: 1),
+          );
+        }
+      });
+    }
+  }
+
+  // update flag
+  void updateFlagPause() {
+    globaltime.flagPauseTime = !state.isPlaying;
   }
 }
