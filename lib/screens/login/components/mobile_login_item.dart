@@ -63,7 +63,11 @@ class _MobileLoginItemState extends State<MobileLoginItem> {
               borderRadius: BorderRadius.circular(3),
               borderSide: BorderSide(color: Colors.red),
             ),
-            hintStyle: AppTypography.style(14, fontWeight: FontWeight.w400),
+            hintStyle: AppTypography.style(
+              14,
+              color: AppColors.grey92929D,
+              fontWeight: FontWeight.w400,
+            ),
             hintText: widget.hintText,
             isDense: true,
             suffixIcon: widget.obscureText
