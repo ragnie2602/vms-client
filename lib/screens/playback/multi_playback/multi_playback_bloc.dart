@@ -45,8 +45,8 @@ class MultiPlaybackBloc
 
   @override
   Future<void> close() {
-    timeGlobal.dispose();
     _resetGlobalTime();
+    timeGlobal.dispose();
     return super.close();
   }
 
@@ -195,43 +195,26 @@ class MultiPlaybackBloc
     await _pauseAllCamera();
     emit(state.copyWith(isPlaying: false));
     updateFlagPause();
-    // 2. Get sync date from first camera
-    DateTime? syncDate;
-    if (_list.isNotEmpty) {
-      // check cam đầu tiên trong list có dữ liệu đang play
-      for (ItemPlaybackModel e in _list) {
-        if ((e.listVideoPlaybacks ?? []).isNotEmpty) {
-          final refController = e.playerController;
-          if (refController.isInitialized?.call() == true &&
-              refController.getCurrentDate != null) {
-            syncDate = refController.getCurrentDate!();
-            break;
-          }
-        }
-      }
-    }
 
-    // Fallback: nếu chưa có cam nào play (syncDate == null) thì lấy mốc start của merged list
-    if (syncDate == null && state.mergedPlaybackList.isNotEmpty) {
-      syncDate = state.mergedPlaybackList.first.startTime;
-    }
-
-    // 3. Add new camera (Emit immediately to show loading)
     // get danh sách video playback
     final videos = await getVideoPlaybacksByCameraId(
       camera: event.newCam,
       playbackDate: state.playbackDate,
     );
-    final playerController = PlayerController();
 
+    // 2. Save thời gian pause -> gán cho cam mới
+    DateTime? syncDate = timeGlobal.value;
     syncDate ??= videos?.lastOrNull?.startTime;
 
+    // 3. Add new camera
+    final playerController = PlayerController();
     ItemPlaybackModel newItem = ItemPlaybackModel(
       index: event.indexCam,
       camera: event.newCam,
       listVideoPlaybacks: videos?.reversed.toList(),
       playerController: playerController,
-      initialDate: syncDate ?? DateTime.now().subtract(const Duration(days: 365)),
+      initialDate:
+          syncDate ?? DateTime.now().subtract(const Duration(days: 365)),
     );
     _list.add(newItem);
     emit(
@@ -240,6 +223,7 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(_list),
       ),
     );
+
     // set global
     if (syncDate != null) {
       checkGlobal(initialDate: syncDate);
@@ -488,9 +472,7 @@ class MultiPlaybackBloc
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         // nếu không phải trong quá trình pause thì đếm thời gian tiếp
         if (!flagPauseTime) {
-          timeGlobal.value = timeGlobal.value?.add(
-            Duration(seconds: 1),
-          );
+          timeGlobal.value = timeGlobal.value?.add(Duration(seconds: 1));
           print('count =${timeGlobal.value}');
         }
       });

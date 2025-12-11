@@ -17,6 +17,7 @@ import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
+import 'package:vms_flutter_client/screens/playback/widgets/empty_record_camera_widget.dart';
 import 'package:volume_controller/volume_controller.dart';
 
 import 'components/accumulating_seek_queue.dart';
@@ -846,7 +847,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
                 PlayerState.initializing => const Center(
                   child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
                 ),
-                PlayerState.empty => _buildNoPlayback(),
+                PlayerState.empty => EmptyRecordCameraWidget(),
                 PlayerState.error || PlayerState.error_again => _buildError(),
                 _ => wrapWithInteractiveViewerIfEnabled(
                   key: isFullscreen ? null : _ivKey,
