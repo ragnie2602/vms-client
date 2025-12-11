@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fvp/fvp.dart' as fvp;
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:toastification/toastification.dart';
@@ -12,15 +14,15 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/theme/app_theme.dart';
+import 'package:vms_flutter_client/core/utils/ios_network_helper.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:window_manager/window_manager.dart';
+
 import 'app_bloc.dart';
 import 'core/app_router.dart';
 import 'core/env_service.dart';
 import 'core/utils/chunked_downloader.dart';
 import 'di/dependency_injection.dart';
-import 'package:fvp/fvp.dart' as fvp;
-import 'package:media_kit/media_kit.dart';
 
 Future<int> initialMultiWindowConfig(List<String> args) async {
   if (Platform.isAndroid || Platform.isIOS) return 0;
@@ -61,7 +63,8 @@ void main(List<String> args) async {
     await EnvService.init();
 
     /// Dọn dẹp các file .partX và file đích đang tải dở bị sót lại từ các phiên download trước đó
-    if (Platform.isAndroid || Platform.isIOS) ChunkedDownloader.cleanupResidualFiles();
+    if (Platform.isAndroid || Platform.isIOS)
+      ChunkedDownloader.cleanupResidualFiles();
 
     final windowID = await initialMultiWindowConfig(args);
 
@@ -109,6 +112,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
   @override
   void initState() {
     super.initState();
+    IosNetworkHelper.triggerPermission();
     if (!Platform.isAndroid && !Platform.isIOS) {
       windowManager.addListener(this);
       windowManager.setPreventClose(true);
