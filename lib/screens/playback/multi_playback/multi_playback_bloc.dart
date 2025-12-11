@@ -113,7 +113,8 @@ class MultiPlaybackBloc
     await _pauseAllCamera();
 
     emit(state.copyWith(playbackDate: event.date, isPlaying: false));
-    updateFlagPause();
+    // case đổi ngày -> reset lại global time
+    _resetGlobalTime();
 
     // step 2: Get video playback của tất cả các camera
     List<ItemPlaybackModel> updatedList = [];
@@ -147,7 +148,9 @@ class MultiPlaybackBloc
       ),
     );
 
-    // step 3: Save thời gian play = thời gian đầu tiên của _mergerList
+    if (initialDate != null) {
+      checkGlobal(initialDate: initialDate);
+    }
 
     // step 4: Setup (mute âm thanh + jumptDate = thời gian vừa lưu) dành cho tất cả các camera
     // seek all camera
@@ -305,11 +308,6 @@ class MultiPlaybackBloc
 
     if (allPlaybacks.isEmpty) return [];
 
-    //   // sắp xếp các mốc time của play video dựa vào start time của từng mốc
-    //   allPlaybacks.sort((a, b) => a.startTime.compareTo(b.startTime));
-
-    //  return allPlaybacks;
-
     // sắp xếp các mốc time của playvideo dựa vào start time của từng mốc
     allPlaybacks.sort((a, b) => a.startTime.compareTo(b.startTime));
 
@@ -395,6 +393,8 @@ class MultiPlaybackBloc
     updateFlagPause();
     // 2. jump to new date
     await _seekAllCamera(event.newTime);
+    // set lại global time
+    globaltime.timeGlobal = event.newTime;
     // 3. check loading
     final checked = await _isAllReady();
     if (checked) {
@@ -418,9 +418,6 @@ class MultiPlaybackBloc
             : e.playerController.pause?.call() ?? Future.value(),
       ),
     );
-    // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
-    //   await e.playerController.pause?.call();
-    // }
   }
 
   // 2. Seek
@@ -437,9 +434,6 @@ class MultiPlaybackBloc
       }
     }
     await Future.wait(data);
-    // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
-    //   await e.playerController.jumpToDate?.call(newDate);
-    // }
   }
 
   // 3. Check loading
@@ -476,9 +470,6 @@ class MultiPlaybackBloc
             : e.playerController.play?.call() ?? Future.value(),
       ),
     );
-    // for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
-    //   await e.playerController.play?.call();
-    // }
   }
 
   // check global time
@@ -495,6 +486,7 @@ class MultiPlaybackBloc
           globaltime.timeGlobal = globaltime.timeGlobal?.add(
             Duration(seconds: 1),
           );
+          print('count =${globaltime.timeGlobal}');
         }
       });
     }
