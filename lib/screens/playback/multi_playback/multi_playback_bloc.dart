@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
@@ -8,8 +9,6 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
-import 'package:vms_flutter_client/screens/playback/config_golbal_time.dart'
-    as globaltime;
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_state.dart';
 import 'package:vms_flutter_client/screens/shared/player/sources.dart';
@@ -41,17 +40,20 @@ class MultiPlaybackBloc
   }
   // count time
   Timer? _timer;
+  ValueNotifier<DateTime?> timeGlobal = ValueNotifier(null);
+  bool flagPauseTime = true;
 
   @override
   Future<void> close() {
+    timeGlobal.dispose();
     _resetGlobalTime();
     return super.close();
   }
 
   void _resetGlobalTime() {
     _timer?.cancel();
-    globaltime.timeGlobal = null;
-    globaltime.flagPauseTime = true;
+    timeGlobal.value = null;
+    flagPauseTime = true;
   }
 
   FutureOr<void> _init(
@@ -396,7 +398,7 @@ class MultiPlaybackBloc
     // 2. jump to new date
     await _seekAllCamera(event.newTime);
     // set lại global time
-    globaltime.timeGlobal = event.newTime;
+    timeGlobal.value = event.newTime;
     // 3. check loading
     final checked = await _isAllReady();
     if (checked) {
@@ -477,18 +479,19 @@ class MultiPlaybackBloc
   // check global time
   void checkGlobal({required DateTime initialDate, bool? isPausing}) {
     if (isPausing != null) {
-      globaltime.flagPauseTime = isPausing;
+      flagPauseTime = isPausing;
     }
-    if (globaltime.timeGlobal == null) {
-      globaltime.timeGlobal = initialDate;
+    if (timeGlobal.value == null) {
+      timeGlobal.value = initialDate;
+      _timer?.cancel();
       // đếm thời gian
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         // nếu không phải trong quá trình pause thì đếm thời gian tiếp
-        if (!globaltime.flagPauseTime) {
-          globaltime.timeGlobal = globaltime.timeGlobal?.add(
+        if (!flagPauseTime) {
+          timeGlobal.value = timeGlobal.value?.add(
             Duration(seconds: 1),
           );
-          print('count =${globaltime.timeGlobal}');
+          print('count =${timeGlobal.value}');
         }
       });
     }
@@ -496,6 +499,6 @@ class MultiPlaybackBloc
 
   // update flag
   void updateFlagPause() {
-    globaltime.flagPauseTime = !state.isPlaying;
+    flagPauseTime = !state.isPlaying;
   }
 }

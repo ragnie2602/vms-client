@@ -106,6 +106,7 @@ class _MultiPlaybackScreenState extends State<MultiPlaybackScreen> {
                     vertical: 10,
                   ),
                   child: MultiPlaybackTimeshiftWidget(
+                    timer: context.read<MultiPlaybackBloc>().timeGlobal,
                     size: Size(double.infinity, 55),
                     normalStyle: const TextStyle(
                       color: Color.fromRGBO(255, 255, 255, 0.2),
@@ -132,7 +133,7 @@ class _MultiPlaybackScreenState extends State<MultiPlaybackScreen> {
 }
 
 class _MenuAction extends StatelessWidget {
-  const _MenuAction({super.key});
+  const _MenuAction();
 
   @override
   Widget build(BuildContext context) {

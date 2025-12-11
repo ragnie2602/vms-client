@@ -6,7 +6,6 @@ import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/size_observer.dart';
-import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.dart';
 import 'package:vms_flutter_client/screens/camera_detail/components/player_timeline.dart';
 import 'package:vms_flutter_client/screens/camera_detail/widgets/timeline_painter.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
@@ -15,6 +14,7 @@ import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playbac
 
 class MultiPlaybackTimeshiftWidget extends StatefulWidget {
   const MultiPlaybackTimeshiftWidget({
+    required this.timer,
     super.key,
     this.tickWidth = 1,
     this.minorTickCount = 5, // 10
@@ -28,6 +28,7 @@ class MultiPlaybackTimeshiftWidget extends StatefulWidget {
     this.centralLineColor,
   });
 
+  final ValueNotifier<DateTime?> timer;
   final double tickWidth;
   final int minorTickCount;
   final double majorTickHeight;
@@ -45,7 +46,6 @@ class MultiPlaybackTimeshiftWidget extends StatefulWidget {
 
 class _MultiPlaybackTimeshiftWidgetState
     extends State<MultiPlaybackTimeshiftWidget> {
-  late final _time = ValueNotifier(DateTime.now().roundToSecond);
   late final _centralDate = ValueNotifier(DateTime.now().roundToSecond);
 
   OverlayEntry? _overlayEntry;
@@ -81,12 +81,6 @@ class _MultiPlaybackTimeshiftWidgetState
 
   @override
   void dispose() {
-    for (var item
-        in _multiPlaybackBloc.state.listItemCamPlayback ??
-            <ItemPlaybackModel>[]) {
-      item.playerController.onTimeChanged.remove(_onTimeChanged);
-    }
-    _time.dispose();
     _overlayEntry?.remove();
     _centralDate.dispose();
     super.dispose();
@@ -181,11 +175,6 @@ class _MultiPlaybackTimeshiftWidgetState
     Overlay.of(context, rootOverlay: true).insert(_overlayEntry!);
   }
 
-  void _onTimeChanged(DateTime time, [bool shouldUpdateCentralDate = false]) {
-    _time.value = time;
-    if (shouldUpdateCentralDate) _clampCentralDate(time);
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MultiPlaybackBloc, MultiPlaybackState>(
@@ -194,12 +183,8 @@ class _MultiPlaybackTimeshiftWidgetState
             previous.timelineDisplayMode != current.timelineDisplayMode ||
             previous.mergedPlaybackList != current.mergedPlaybackList ||
             previous.listItemCamPlayback != current.listItemCamPlayback;
-        if (shouldRebuild) {
-          _clampCentralDate(_time.value);
-          for (var item
-              in current.listItemCamPlayback ?? <ItemPlaybackModel>[]) {
-            item.playerController.onTimeChanged.add(_onTimeChanged);
-          }
+        if (shouldRebuild && widget.timer.value != null) {
+          _clampCentralDate(widget.timer.value!);
         }
 
         return shouldRebuild;
@@ -233,18 +218,8 @@ class _MultiPlaybackTimeshiftWidgetState
                         // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
                         onTapUp: (details) {
                           final date =
-                              _hoverDate ??
-                              _calculateDateFromOffset(
-                                details.localPosition.dx,
-                              );
-                          // for (ItemPlaybackModel? e
-                          //     in _multiPlaybackBloc.state.listItemCamPlayback ??
-                          //         []) {
-                          //   e?.playerController.jumpToDate?.call(date);
-                          // }
-                          _multiPlaybackBloc.add(
-                            MultiJumpDateEvent(newTime: date),
-                          );
+                              _hoverDate ?? _calculateDateFromOffset(details.localPosition.dx);
+                          _multiPlaybackBloc.add(MultiJumpDateEvent(newTime: date));
                         },
                         onHorizontalDragUpdate: _onHorizontalDragUpdate,
                         onHorizontalDragStart: (_) {
@@ -267,7 +242,7 @@ class _MultiPlaybackTimeshiftWidgetState
                                 >(
                                   builder: (context, state) {
                                     return ValueListenableBuilder(
-                                      valueListenable: _time,
+                                      valueListenable: widget.timer,
                                       builder: (context, currentTime, child) {
                                         return CustomPaint(
                                           size: Size(
@@ -292,7 +267,7 @@ class _MultiPlaybackTimeshiftWidgetState
                                             interval: _interval, //
                                             tickWidth: widget.tickWidth,
                                             centralDate: _centralDate,
-                                            currentTime: currentTime,
+                                            currentTime: currentTime ?? DateTime.now().roundToSecond,
                                             playbacks: state.mergedPlaybackList,
                                             startDate: _startDate,
                                             endDate: _endDate,
