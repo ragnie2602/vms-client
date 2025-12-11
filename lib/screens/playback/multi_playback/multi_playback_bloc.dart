@@ -42,6 +42,7 @@ class MultiPlaybackBloc
   Timer? _timer;
   ValueNotifier<DateTime?> timeGlobal = ValueNotifier(null);
   bool flagPauseTime = true;
+  int _syncTimeCounter = 0; // Đếm số giây để gọi syncTime
 
   @override
   Future<void> close() {
@@ -52,6 +53,7 @@ class MultiPlaybackBloc
 
   void _resetGlobalTime() {
     _timer?.cancel();
+    _syncTimeCounter = 0;
     timeGlobal.value = null;
     flagPauseTime = true;
   }
@@ -470,11 +472,11 @@ class MultiPlaybackBloc
     for (var e in _list) {
       // điều kiện
       // 1. cam có video playback
-      // 2. cam  đang có state :playerState là PlayerState = error/empty
+      // 2. cam  đang có state :playerState là PlayerState = empty
       // 3. cam có bản ghi hình ở thời điểm syncTime
       PlayerState? currState = e.playerController.getPlayerState?.call();
       if (!e.isNoVideo &&
-          (currState == PlayerState.empty || currState == PlayerState.error) &&
+          currState == PlayerState.empty &&
           e.listVideoPlaybacks?.atTime(syncTime) != null) {
         final completer = await e.playerController.jumpToDate?.call(syncTime);
         if (completer != null) data.add(completer.future);
@@ -491,12 +493,19 @@ class MultiPlaybackBloc
     if (timeGlobal.value == null) {
       timeGlobal.value = initialDate;
       _timer?.cancel();
-      // đếm thời gian
+      _syncTimeCounter = 0; // Reset counter
+
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         // nếu không phải trong quá trình pause thì đếm thời gian tiếp
         if (!flagPauseTime) {
           timeGlobal.value = timeGlobal.value?.add(Duration(seconds: 1));
-          print('count =${timeGlobal.value}');
+          _syncTimeCounter++;
+          // Gọi syncTime mỗi 3 giây một lần
+          if (_syncTimeCounter >= 3 && timeGlobal.value != null) {
+            syncTime(timeGlobal.value!);
+            _syncTimeCounter = 0;
+            print('count =${timeGlobal.value}');
+          }
         }
       });
     }
