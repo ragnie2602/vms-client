@@ -19,12 +19,6 @@ enum PlayerStatus { playing, paused, finished }
 
 class PlayerController {
   Completer waitForAttached = Completer();
-
-  // Future<void> Function()? play;
-  // Future<void> Function()? pause;
-  // PlayerState Function()? getPlayerState;
-  // Duration Function()? getCurrentPosition;
-  // DateTime? Function()? getCurrentDate;
   GlobalKey ref = GlobalKey();
 
   /* Listeners */
@@ -51,10 +45,11 @@ class PlayerController {
   PlayerState Function()? getPlayerState;
   Duration Function()? getCurrentPosition;
   DateTime? Function()? getCurrentDate;
+  double Function()? getVolume;
+  PlayerStatus Function()? getPlayerStatus;
 
   /* Function control player */
   void Function(double volume, {bool syncSystemVolume})? changeVolume;
-  double Function()? getVolume;
   void Function(int type)? zoom;
   void Function()? toggleFullscreen;
   void Function(Duration duration)? seek;
@@ -62,12 +57,12 @@ class PlayerController {
   Future<void> Function()? togglePlay;
   Future<void> Function()? play;
   Future<void> Function()? pause;
-  PlayerStatus Function()? getPlayerStatus;
   Future<Completer?> Function(DateTime date, {int? dateIndex})? jumpToDate;
   Future<Process?> Function(String output)? recording;
   Future<bool> Function(String path)? snapshot;
   Future<bool> Function(String path)? captureThumbnail;
   Future<void> Function({Duration? timeout})? waitForReady;
+  Future<void> Function(DateTime time)? syncGlobalTime;
 
   void detach() {
     waitForAttached = Completer();
@@ -95,5 +90,7 @@ class PlayerController {
     play = null;
     pause = null;
     waitForReady = null;
+    syncGlobalTime = null;
+    getVolume = null;
   }
 }

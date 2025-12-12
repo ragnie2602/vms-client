@@ -389,7 +389,7 @@ class MultiPlaybackBloc
     // 2. jump to new date
     await _seekAllCamera(event.newTime);
     // set lại global time
-    timeGlobal.value = event.newTime;
+    timeGlobal.value = event.newTime.roundToSecond;
     // 3. check loading
     final checked = await _isAllReady();
     if (checked) {
@@ -470,24 +470,16 @@ class MultiPlaybackBloc
   // 5. Đồng bộ thời gian cho cam lỗi/ cam không có dữ liệu trong khoảng thời gian
   Future<void> syncTime(DateTime syncTime) async {
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
-    if (_list.isEmpty) {
-      return;
-    }
+    if (_list.isEmpty) return;
+
     final data = <Future>[];
     for (var e in _list) {
-      // điều kiện
-      // 1. cam có video playback
-      // 2. cam  đang có state :playerState là PlayerState = empty
-      // 3. cam có bản ghi hình ở thời điểm syncTime
-      PlayerState? currState = e.playerController.getPlayerState?.call();
-      if (!e.isNoVideo &&
-          currState == PlayerState.empty &&
-          e.listVideoPlaybacks?.atTime(syncTime) != null) {
-        final completer = await e.playerController.jumpToDate?.call(syncTime);
-        if (completer != null) data.add(completer.future);
+      if (!e.isNoVideo && e.playerController.syncGlobalTime != null) {
+        data.add(e.playerController.syncGlobalTime!.call(syncTime));
       }
-      await Future.wait(data);
     }
+
+    await Future.wait(data);
   }
 
   // check global time
@@ -496,7 +488,7 @@ class MultiPlaybackBloc
       flagPauseTime = isPausing;
     }
     if (timeGlobal.value == null) {
-      timeGlobal.value = initialDate;
+      timeGlobal.value = initialDate.roundToSecond;
       _timer?.cancel();
       _syncTimeCounter = 0; // Reset counter
 
