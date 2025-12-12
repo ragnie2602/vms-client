@@ -1,8 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:async';
+import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
@@ -42,7 +42,6 @@ class PlaybackPlayer extends StatefulWidget {
     this.pauseUponEnteringBackgroundMode = true,
     this.resumeUponEnteringForegroundMode = true,
     this.wakelock = true,
-    this.isMultiPlayback,
     this.initialVolume,
   }) : super(key: controller.ref);
 
@@ -61,7 +60,6 @@ class PlaybackPlayer extends StatefulWidget {
   final bool pauseUponEnteringBackgroundMode;
   final bool resumeUponEnteringForegroundMode;
   final bool wakelock;
-  final bool? isMultiPlayback;
   final double? initialVolume;
 
   @override
@@ -144,10 +142,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     _isSeeking.addListener(() {
       if (_status.value == PlayerStatus.finished) _status.value = PlayerStatus.playing;
     });
-    // với multi playback -> tắt reconnecting để tránh ảnh hưởng đồng bộ thời gian
-    if (widget.isMultiPlayback != true) {
-      _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
-    }
+    _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
     _status.addListener(() {
       if (_status.value == PlayerStatus.playing) _shouldSyncPlayerTime = true;
       widget.onStatusChanged?.call(_status.value);
@@ -212,33 +207,6 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     super.didUpdateWidget(oldWidget);
     if (widget.enableZoom != oldWidget.enableZoom) _initZoom();
     _attachController();
-    // dành cho case update màn multi playback
-    if (!_isPlaylistEquals(widget.playlist, oldWidget.playlist)) {
-      _playlistMapper = Map.fromEntries(
-        widget.playlist.mapIndexed((idx, e) => MapEntry(e.urlPlayback, idx)),
-      );
-      _playlistIndex.value = widget.initialIndex;
-
-      _cancelTimers();
-      _completerTimeoutTimer?.cancel();
-      try {
-        _player.dispose(synchronized: false);
-      } catch (_) {}
-      _init();
-    }
-  }
-
-  bool _isPlaylistEquals(List<PlaybackVideo> list1, List<PlaybackVideo> list2) {
-    if (list1.length != list2.length) return false;
-    for (int i = 0; i < list1.length; i++) {
-      if (list1[i].urlPlayback != list2[i].urlPlayback ||
-          list1[i].startTime != list2[i].startTime ||
-          list1[i].endTime != list2[i].endTime ||
-          !listEquals(list1[i].playbackId, list2[i].playbackId)) {
-        return false;
-      }
-    }
-    return true;
   }
 
   Future<void> _init() async {
@@ -591,6 +559,20 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     }
   }
 
+  // Trên android khi tua/jump xong sẽ có tiếng lạ
+  Future<void> _muteOnAction(FutureOr Function() action) async {
+    if (!Platform.isAndroid) {
+      await action();
+      return;
+    }
+
+    final lastVolume = _player.volume;
+    _player.volume = 0;
+    await action();
+    await Future.delayed(Duration(milliseconds: 150));
+    _player.volume = lastVolume;
+  }
+
   bool _newestIsEmpty = false;
   DateTime _dateAtEmptyState = DateTime.now().roundToSecond;
   Future<Completer?> jumpToDateQueue(DateTime date, {int? dateIndex}) async {
@@ -653,9 +635,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      if (widget.isMultiPlayback == true) await pause();
       if (diff != Duration.zero) {
-        await _player.seek(position: diff.inMilliseconds, flags: SeekFlag(SeekFlag.fromStart));
+        await _muteOnAction(
+          () => _player.seek(position: diff.inMilliseconds, flags: SeekFlag(SeekFlag.fromStart)),
+        );
       }
     }
     // Playback khác --> đổi playlist và jump
@@ -664,16 +647,15 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       _playlistIndex.value = index;
       _lastPosition = diff.inMilliseconds;
 
-      _player.setNext("", from: -1); // disable next media (đề phòng)
-      _waitForUnloadedOldMedia = Completer<void>();
-      _player.state = PlaybackState.paused;
-      _player.media = widget.playlist[index].urlPlayback;
-      await _player.prepare(position: diff.inMilliseconds);
-      // với mode multi playback ko tự set auto play
-      if (widget.isMultiPlayback != true) {
+      await _muteOnAction(() async {
+        _player.setNext("", from: -1); // disable next media (đề phòng)
+        _waitForUnloadedOldMedia = Completer<void>();
+        _player.state = PlaybackState.paused;
+        _player.media = widget.playlist[index].urlPlayback;
+        await _player.prepare(position: diff.inMilliseconds);
         _player.state = PlaybackState.playing;
-      }
-      _waitForUnloadedOldMedia.safeComplete();
+        _waitForUnloadedOldMedia.safeComplete();
+      });
     }
   }
 
@@ -695,21 +677,20 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
     // Đầu playlist
     if (_toMs <= 0 && currentIndex == 0) {
-      await _player.seek(position: 0, flags: _seekFlag);
+      await _muteOnAction(() => _player.seek(position: 0, flags: _seekFlag));
       return;
     }
     // Cuối playlist
     if (_toMs >= _totalMs && currentIndex == widget.playlist.length - 1) {
       // Để video nhảy 1 phát xong hiện pause luôn
-      await _player.seek(position: _totalMs - 500, flags: _seekFlag);
+      await _muteOnAction(() => _player.seek(position: _totalMs - 500, flags: _seekFlag));
       return;
     }
 
     // Tua sang playback tiếp theo
     if (_toMs <= _totalMs && _toMs >= 0) {
       _lastPosition = _toMs;
-
-      await _player.seek(position: _toMs, flags: _seekFlag);
+      await _muteOnAction(() => _player.seek(position: _toMs, flags: _seekFlag));
     } else {
       _shouldSyncPlayerTime = false;
       _isSeeking.value = true;
