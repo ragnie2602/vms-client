@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/playback/widgets/multi_control_speed_box.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_state.dart';
+import 'package:vms_flutter_client/screens/shared/player/components/fullscreen_portal.dart';
 
 class MultiPlayerControls extends StatelessWidget {
   const MultiPlayerControls({super.key});
@@ -64,7 +66,8 @@ class MultiPlayerControls extends StatelessWidget {
                   ),
                   /* Fullscreen */
                   _controlItem(AppAssets.icFullscreen, () {
-                    // Toggle fullscreen
+                    context.read<AppBloc>().add(ToggleMonitorDisplayMode());
+                    defaultEnterNativeFullscreen();
                   }),
                 ],
               ),

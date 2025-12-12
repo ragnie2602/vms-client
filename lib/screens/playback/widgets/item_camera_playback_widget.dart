@@ -10,9 +10,10 @@ import 'package:vms_flutter_client/domain/entities/playback/item_playback_model.
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_bloc.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback/multi_playback_event.dart';
 import 'package:vms_flutter_client/screens/playback/widgets/empty_record_camera_widget.dart';
-import 'package:vms_flutter_client/screens/shared/player/playback_player.dart';
 import 'package:vms_flutter_client/screens/shared/player/player_controller.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
+
+import '../../shared/player/multi_playback_player.dart';
 
 class ItemCameraPlaybackWidget extends StatefulWidget {
   const ItemCameraPlaybackWidget({
@@ -48,16 +49,15 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
       onExit: (_) => setState(() => _isHovering = false),
       child: Stack(
         children: [
-          (widget.item.listVideoPlaybacks ?? []).isEmpty
+          (widget.item.isNoVideo)
               ? EmptyRecordCameraWidget()
-              : PlaybackPlayer(
-                  initialIndex: 0,
+              : MultiPlaybackPlayer(
                   name: widget.item.camera.name,
                   controller: widget.item.playerController,
                   playlist: widget.item.listVideoPlaybacks ?? [],
                   enableZoom: true,
-                  isMultiPlayback: true,
                   initialVolume: 0,
+                  initialDate: widget.item.initialDate,
                 ),
           // Close button
           Positioned(
