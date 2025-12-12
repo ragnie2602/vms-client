@@ -335,15 +335,15 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBin
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      widget.playback.urlThumbnail,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (_, __, ___) => Center(child: CircularProgressIndicator()),
-                      errorBuilder: (_, __, ___) => Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: SvgPicture.asset(AppAssets.logoFull),
-                      ),
-                    ),
+                    widget.playback.urlThumbnail.isEmpty
+                        ? _buildErrorThumbnail()
+                        : Image.network(
+                            widget.playback.urlThumbnail,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (_, __, ___) =>
+                                Center(child: CircularProgressIndicator()),
+                            errorBuilder: (_, __, ___) => _buildErrorThumbnail(),
+                          ),
 
                     Positioned.fill(
                       child: DecoratedBox(
@@ -447,6 +447,13 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBin
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildErrorThumbnail() {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: SvgPicture.asset(AppAssets.logoFull),
     );
   }
 
