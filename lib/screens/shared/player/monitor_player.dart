@@ -195,6 +195,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   @override
   void dispose() {
+    _realignTimer?.cancel();
     widget.controller?.detach();
     try {
       _player.pause();
@@ -225,6 +226,28 @@ class MonitorPlayerState extends State<MonitorPlayer>
     if (widget.source != oldWidget.source) {
       _dualQueue.add(() async => await _connecting(shortDelay: true));
     }
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    _debounceRealign();
+  }
+
+  Timer? _realignTimer;
+  void _debounceRealign() {
+    _realignTimer?.cancel();
+    _realignTimer = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        final RenderBox? box = _ivKey.currentContext?.findRenderObject() as RenderBox?;
+        if (box == null || _zoomController == null) return;
+
+        final currentMatrix = _zoomController!.value;
+        final fixedMatrix = currentMatrix.clampMatrixToBounds(box.size);
+
+        if (fixedMatrix != currentMatrix) _zoomController!.value = fixedMatrix;
+      }
+    });
   }
 
   Future<void> _tryDisposePlayer() async {
@@ -560,7 +583,12 @@ class MonitorPlayerState extends State<MonitorPlayer>
     return FullscreenPortal(
       key: _fullscreenKey,
       tag: hashCode.toString(),
-      builder: (isFullscreen) => Container(
+      builder: (isFullscreen) {
+        if (!isFullscreen && widget.enableZoom) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _debounceRealign());
+        }
+
+        return Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadiusGeometry.circular(widget.borderRadius ?? 0),
           color: Colors.black,
@@ -618,7 +646,8 @@ class MonitorPlayerState extends State<MonitorPlayer>
             ],
           ),
         ),
-      ),
+        );
+      },
     );
   }
 

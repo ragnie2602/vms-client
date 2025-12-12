@@ -174,7 +174,7 @@ class _MobileMonitorListState extends State<MobileMonitorList> {
                               : AppColors.greyF5F5F5,
                           elevation: 0,
                           minimumSize: Size.zero,
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.all(5),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(33)),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           visualDensity: VisualDensity.compact,

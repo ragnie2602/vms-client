@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/playback/widgets/multi_player_controls.dart';
@@ -20,92 +23,110 @@ class MultiPlaybackScreen extends StatefulWidget {
 
 class _MultiPlaybackScreenState extends State<MultiPlaybackScreen> {
   @override
-  void initState() {
-    _initState();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  void _initState() {
-    context.read<MultiPlaybackBloc>().add(InitEvent());
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // thanh menu: date + back
-          _MenuAction(),
-          Container(
-            width: double.infinity,
-            height: 1,
-            color: AppColors.scaffoldBg,
-          ),
-          // gridview camera
-          Flexible(
-            child:
-                BlocSelector<
-                  MultiPlaybackBloc,
-                  MultiPlaybackState,
-                  MultiPlaybackStatus
-                >(
-                  selector: (state) => state.multiPlaybackStatus,
-                  builder: (context, multiPlaybackStatus) => Stack(
-                    children: [
-                      GridviewPlaybackView(),
-                      if (multiPlaybackStatus == MultiPlaybackStatus.loading)
-                        Positioned.fill(
-                          child: Container(
-                            margin: EdgeInsets.symmetric(
-                              horizontal: 100,
-                              vertical: 10,
-                            ),
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                        ),
-                    ],
+    return BlocProvider(
+      lazy: false,
+      create: (context) => MultiPlaybackBloc(
+        cameraRepository: context.read(),
+        playbackRepository: context.read(),
+      )..add(InitEvent()),
+      child: Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.escape) {
+            final appBloc = context.read<AppBloc>();
+            if (appBloc.state.displayFullScreenLiveView) {
+              appBloc.add(ToggleMonitorDisplayMode());
+              defaultExitNativeFullscreen();
+              return KeyEventResult.handled;
+            }
+          }
+          return KeyEventResult.ignored;
+        },
+        child: BlocSelector<AppBloc, AppState, bool>(
+          selector: (state) => state.displayFullScreenLiveView,
+          builder: (context, isFullscreen) => Container(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // thanh menu: date + back
+                if (!isFullscreen) _MenuAction(),
+                if (!isFullscreen)
+                  Container(
+                    width: double.infinity,
+                    height: 1,
+                    color: AppColors.scaffoldBg,
                   ),
+                // gridview camera
+                Flexible(
+                  child:
+                      BlocSelector<
+                        MultiPlaybackBloc,
+                        MultiPlaybackState,
+                        MultiPlaybackStatus
+                      >(
+                        selector: (state) => state.multiPlaybackStatus,
+                        builder: (context, multiPlaybackStatus) => Stack(
+                          children: [
+                            GridviewPlaybackView(
+                              isOpenFullscreen: isFullscreen,
+                            ),
+                            if (multiPlaybackStatus ==
+                                MultiPlaybackStatus.loading)
+                              Positioned.fill(
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: 100,
+                                    vertical: 10,
+                                  ),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                 ),
-          ),
-          // time shift
-          Padding(
-            padding: EdgeInsetsGeometry.symmetric(
-              horizontal: 100,
-              vertical: 10,
+                // time shift
+                if (!isFullscreen)
+                  Padding(
+                    padding: EdgeInsetsGeometry.symmetric(
+                      horizontal: 100,
+                      vertical: 10,
+                    ),
+                    child: MultiPlaybackTimeshiftWidget(
+                      timer: context.read<MultiPlaybackBloc>().timeGlobal,
+                      size: Size(double.infinity, 55),
+                      normalStyle: const TextStyle(
+                        color: Color.fromRGBO(255, 255, 255, 0.2),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      highlightStyle: TextStyle(
+                        color: Color.fromRGBO(255, 255, 255, 0.2),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      playbackColor: Color.fromRGBO(21, 171, 255, 0.4),
+                      centralLineColor: Color.fromRGBO(33, 204, 195, 1),
+                    ),
+                  ),
+                // thanh điều khiển (pause, tua)
+                if (!isFullscreen) MultiPlayerControls(),
+              ],
             ),
-            child: MultiPlaybackTimeshiftWidget(
-              size: Size(double.infinity, 55),
-              normalStyle: const TextStyle(
-                color: Color.fromRGBO(255, 255, 255, 0.2),
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-              ),
-              highlightStyle: TextStyle(
-                color: Color.fromRGBO(255, 255, 255, 0.2),
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-              ),
-              playbackColor: Color.fromRGBO(21, 171, 255, 0.4),
-              centralLineColor: Color.fromRGBO(33, 204, 195, 1),
-            ),
           ),
-          // thanh điều khiển (pause, tua)
-          MultiPlayerControls(),
-        ],
+        ),
       ),
     );
   }
 }
 
 class _MenuAction extends StatelessWidget {
-  const _MenuAction({super.key});
+  const _MenuAction();
 
   @override
   Widget build(BuildContext context) {

@@ -21,6 +21,7 @@ import 'core/utils/chunked_downloader.dart';
 import 'di/dependency_injection.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
+import 'package:vms_flutter_client/core/utils/ios_network_helper.dart';
 
 Future<int> initialMultiWindowConfig(List<String> args) async {
   if (Platform.isAndroid || Platform.isIOS) return 0;
@@ -61,7 +62,8 @@ void main(List<String> args) async {
     await EnvService.init();
 
     /// Dọn dẹp các file .partX và file đích đang tải dở bị sót lại từ các phiên download trước đó
-    if (Platform.isAndroid || Platform.isIOS) ChunkedDownloader.cleanupResidualFiles();
+    if (Platform.isAndroid || Platform.isIOS)
+      ChunkedDownloader.cleanupResidualFiles();
 
     final windowID = await initialMultiWindowConfig(args);
 
@@ -109,6 +111,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
   @override
   void initState() {
     super.initState();
+    IosNetworkHelper.triggerPermission();
     if (!Platform.isAndroid && !Platform.isIOS) {
       windowManager.addListener(this);
       windowManager.setPreventClose(true);
@@ -125,15 +128,14 @@ class _MyAppState extends State<MyApp> with WindowListener {
               ..add(AppStarted(widget.bWindowID)),
         child: BlocSelector<AppBloc, AppState, ThemeMode>(
           selector: (state) => state.themeMode,
-          builder: (context, theme) => ToastificationWrapper(
-            child: MaterialApp.router(
-              debugShowCheckedModeBanner: false,
-              title: 'VNPT Secure Vision',
-              theme: AppTheme.light,
-              darkTheme: AppTheme.dark,
-              themeMode: theme,
-              routerConfig: AppRouter.router,
-            ),
+          builder: (context, theme) => MaterialApp.router(
+            builder: (context, child) => ToastificationWrapper(child: child!),
+            darkTheme: AppTheme.dark,
+            debugShowCheckedModeBanner: false,
+            routerConfig: AppRouter.router,
+            theme: AppTheme.light,
+            title: 'VNPT Secure Vision',
+            themeMode: theme,
           ),
         ),
       ),

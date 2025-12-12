@@ -178,6 +178,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Flexible(
+                              fit: FlexFit.loose,
                               child: Text(
                                 _selectedTags.isEmpty
                                     ? "Thẻ Tags"

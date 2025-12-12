@@ -74,6 +74,7 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
               listener: (context, state) {
                 if (state.isSuccess) {
                   ToastUtil.toastSuccess(
+                    alignment: Alignment.bottomCenter,
                     context: context,
                     title: Text(
                       'Cập nhật thông tin tài khoản thành công!',
