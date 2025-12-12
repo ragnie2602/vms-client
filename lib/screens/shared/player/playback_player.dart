@@ -146,9 +146,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     });
     // với multi playback -> tắt reconnecting để tránh ảnh hưởng đồng bộ thời gian
     if (widget.isMultiPlayback != true) {
-      _state.addListener(
-        () => _tryReconnecting(_state.value == PlayerState.error),
-      );
+      _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
     }
     _status.addListener(() {
       if (_status.value == PlayerStatus.playing) _shouldSyncPlayerTime = true;
@@ -284,8 +282,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       return currentPlayback.startTime.add(Duration(milliseconds: _player.position));
     };
     widget.controller.getPlayerState = () => _state.value;
-    widget.controller.getCurrentPosition = () =>
-        Duration(milliseconds: _player.position);
+    widget.controller.getCurrentPosition = () => Duration(milliseconds: _player.position);
     widget.controller.getCurrentDate = () =>
         currentPlayback.startTime.add(Duration(milliseconds: _player.position));
     widget.controller.waitForReady = waitForReady;
@@ -339,8 +336,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     _player = Player();
     _player.onMediaChanged(() {
       if (!mounted) return;
-      _playlistIndex.value =
-          _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
+      _playlistIndex.value = _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
     });
     _player.onStateChanged((pre, cur) {
       if (!mounted) return;
@@ -352,16 +348,6 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
           if (mounted) _status.value = PlayerStatus.finished;
         });
       }
-      // _player.onMediaChanged(() {
-      //   _playlistIndex.value = _playlistMapper[_player.nativeMedia] ?? _playlistIndex.value;
-      // });
-      // _player.onStateChanged((pre, cur) {
-      //   if (cur == PlaybackState.stopped &&
-      //       currentIndex == widget.playlist.length - 1 &&
-      //       !_isSeeking.value) {
-      //     // Delay để tránh bị override lại khi check timer 1s
-      //     Future.delayed(Duration(milliseconds: 1100), () => _status.value = PlayerStatus.finished);
-      //   }
 
       // print("=========================> STATE: $pre - $cur");
     });
@@ -434,10 +420,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       max: 1000 * 60 * 10, // Cache ~ 10 phút
       drop: false, // TUYỆT ĐỐI KHÔNG DROP (để đảm bảo không mất dữ liệu khi tua)
     );
+
     // set inital volume
-    if(widget.initialVolume != null){
-      _player.volume = widget.initialVolume!;
-    }
+    if (widget.initialVolume != null) _player.volume = widget.initialVolume!;
   }
 
   void _tryReconnecting(bool isError) {
@@ -529,7 +514,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
           if (_shouldSyncPlayerTime) {
             // Case đang dừng --> tự động play bởi thư viện --> update _status
-            if (_status.value != PlayerStatus.playing && _player.state == PlaybackState.playing){
+            if (_status.value != PlayerStatus.playing && _player.state == PlaybackState.playing) {
               _status.value = PlayerStatus.playing;
             }
 
@@ -563,7 +548,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
 
   void _handlePlaylistChanged() {
     // Gần hết đoạn playback hiện tại thì setNext tiếp theo để không bị gián đoạn
-    if (_player.position + 3000 >= _player.mediaInfo.duration) {
+    if (_player.position + (5000 * _player.playbackRate) >= _player.mediaInfo.duration) {
       if (_player.nextMedia.isEmpty && nextPlayback?.urlPlayback != null) {
         // setNext <=> đổi media <=> status từ [unloaded+end] sau đó sang [loading+loaded/invalid]
         // --> FIX: khi hết playback hiện tại và chuyển sang playback tiếp theo --> báo lỗi
@@ -669,7 +654,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
       if (widget.isMultiPlayback == true) await pause();
-      if (diff != Duration.zero) await _player.seek(position: diff.inMilliseconds, flags: SeekFlag(SeekFlag.fromStart));
+      if (diff != Duration.zero) {
+        await _player.seek(position: diff.inMilliseconds, flags: SeekFlag(SeekFlag.fromStart));
+      }
     }
     // Playback khác --> đổi playlist và jump
     else {
