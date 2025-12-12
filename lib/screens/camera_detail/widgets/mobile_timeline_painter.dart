@@ -11,7 +11,6 @@ class MobileTimelinePainter extends CustomPainter {
   final DateTime? startDate;
   final DateTime? endDate;
   final ValueNotifier<DateTime> _centralDate;
-  final DateTime currentTime;
   final List<PlaybackVideo> playbacks;
 
   final void Function(double offset)? onCentralOffset;
@@ -56,7 +55,6 @@ class MobileTimelinePainter extends CustomPainter {
     this.startDate,
     this.endDate,
     required ValueNotifier<DateTime> centralDate,
-    required this.currentTime,
     required this.formatPattern,
     required this.timeStyle,
     this.playbacks = const [],
@@ -87,7 +85,6 @@ class MobileTimelinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant MobileTimelinePainter oldDelegate) {
     return oldDelegate.playbacks != playbacks ||
-        oldDelegate.currentTime != currentTime ||
         oldDelegate.interval != interval ||
         oldDelegate.tickGap != tickGap;
   }
@@ -181,7 +178,7 @@ class MobileTimelinePainter extends CustomPainter {
     }
 
     // Vẽ central
-    _drawCurrentTick(canvas, size, _getOffset(currentTime, central));
+    _drawCurrentTick(canvas, size, 0);
     onCentralOffset?.call(0);
   }
 
@@ -225,7 +222,7 @@ class MobileTimelinePainter extends CustomPainter {
     }
 
     // Vẽ central --> offset convert về sát 0 do check = 0 thì tương ứng với center
-    _drawCurrentTick(canvas, size, _getOffset(currentTime, startDate!));
+    _drawCurrentTick(canvas, size, _getOffset(central, startDate!));
     onCentralOffset?.call(max(centralOffsetX, 0.0000000001) - size.width / 2);
   }
 
@@ -256,7 +253,7 @@ class MobileTimelinePainter extends CustomPainter {
     }
 
     // Vẽ central
-    _drawCurrentTick(canvas, size, size.width - _getOffset(currentTime, endDate!).abs());
+    _drawCurrentTick(canvas, size, size.width - _getOffset(central, endDate!).abs());
     onCentralOffset?.call(centralOffsetX - size.width / 2);
   }
 
@@ -304,7 +301,7 @@ class MobileTimelinePainter extends CustomPainter {
 
   void _drawCurrentTick(Canvas canvas, Size size, double offsetX) {
     // Case nằm ngoài startDate và endDate --> không vẽ nữa
-    if (startDate != null && endDate != null && !currentTime.isBetween(startDate!, endDate!)) {
+    if (startDate != null && endDate != null && !central.isBetween(startDate!, endDate!)) {
       return;
     }
 
@@ -332,7 +329,7 @@ class MobileTimelinePainter extends CustomPainter {
       final endOffset = _getOffset(playback.endTime, comparedTime);
       final durationOffset = _getOffset(playback.endTime, playback.startTime);
 
-      if (endOffset + durationOffset > size.width) continue;
+      if (currentOffset + endOffset - durationOffset > size.width) continue;
 
       currentOffset += endOffset;
       canvas.drawRect(

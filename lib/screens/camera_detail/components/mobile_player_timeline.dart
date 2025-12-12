@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -46,20 +47,23 @@ class MobilePlayerTimeline extends StatefulWidget {
 
 class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
   late final _centralDate = ValueNotifier(DateTime.now().roundToSecond);
-  late final _time = ValueNotifier(widget.initialTime ?? DateTime.now().roundToSecond);
   late final _gap = ValueNotifier<double>(
     max((_timelineWidth - 4 * 5) / (4 * widget.minorTickCount), 3),
   );
   late final _overlayOffset = ValueNotifier<double?>(null);
+  late final _overlayText = ValueNotifier<String?>(null);
 
   double _centralOffset = 0;
   double _timelineWidth = 0;
+
+  Timer? _debounceJump;
+  bool _isInteracting = false;
 
   static const Duration _interval = Duration(hours: 1);
   static const int _dragSpeed = 40000;
 
   double get _tickGap => _gap.value;
-  late final double _showTimeFlag = _calculateGap(1.25);
+  late final double _showTimeFlag = _calculateGap(2);
   late final double _maxGap = _calculateGap(1);
   late final double _minGap = _calculateGap(7);
 
@@ -73,15 +77,14 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
 
   @override
   void initState() {
+    if (widget.initialTime != null) _clampCentralDate(widget.initialTime!);
+
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _cameraLiveBloc.state.playerController
         ..onPlaybackChanged.add(_onPlaybackChanged)
         ..onTimeChanged.add(_onTimeChanged);
-
-      if (widget.initialTime != null) {
-        _clampCentralDate(widget.initialTime!);
-      }
     });
   }
 
@@ -90,9 +93,10 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
     _cameraLiveBloc.state.playerController.onPlaybackChanged.remove(_onPlaybackChanged);
     _cameraLiveBloc.state.playerController.onTimeChanged.remove(_onTimeChanged);
     _centralDate.dispose();
-    _time.dispose();
     _gap.dispose();
     _overlayOffset.dispose();
+    _overlayText.dispose();
+    _debounceJump?.cancel();
     super.dispose();
   }
 
@@ -107,26 +111,17 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
         .clamp(_startDate, _endDate);
   }
 
-  DateTime? _centralDateFromStart;
-  DateTime? _centralDateFromEnd;
-  void _initCentralDateFromStartAndEnd() {
-    final offset =
-        _timelineWidth /
-        2 /
-        (_tickGap + widget.tickWidth) *
-        (_interval.inMicroseconds / widget.minorTickCount);
-
-    _centralDateFromStart = _startDate.add(Duration(microseconds: offset.floor()));
-    _centralDateFromEnd = _endDate.subtract(Duration(microseconds: offset.floor()));
+  void _clampCentralDate(DateTime target) {
+    if (target == _centralDate.value) return;
+    _centralDate.value = target.clamp(_startDate, _endDate);
   }
 
-  void _clampCentralDate(DateTime target) {
-    _initCentralDateFromStartAndEnd();
-
-    if (target.isBefore(_centralDateFromStart!)) target = _centralDateFromStart!;
-    if (target.isAfter(_centralDateFromEnd!)) target = _centralDateFromEnd!;
-
-    _centralDate.value = target;
+  void _scheduleJump() {
+    _debounceJump?.cancel();
+    _debounceJump = Timer(Duration(milliseconds: 250), () {
+      _cameraLiveBloc.state.playerController.jumpToDate?.call(_centralDate.value);
+      _isInteracting = false;
+    });
   }
 
   void _onPlaybackChanged(int index) {
@@ -134,23 +129,24 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
   }
 
   void _onTimeChanged(DateTime time, [bool shouldUpdateCentralDate = false]) {
-    _time.value = time;
-    if (shouldUpdateCentralDate) _clampCentralDate(time);
+    if (_isInteracting) return;
+    _clampCentralDate(time);
   }
 
-  late final int _minorIntervalSize = Duration(
-    microseconds: _interval.inMicroseconds ~/ widget.minorTickCount,
-  ).inMicroseconds;
   double overlayWidth = 56;
+  double? _lastDx;
   void _showCurentTimeOverlay() {
-    final offsetCentral =
-        _time.value.difference(_centralDate.value).inMicroseconds /
-        _minorIntervalSize *
-        (_tickGap + widget.tickWidth);
-
-    double? dx = _timelineWidth / 2 + offsetCentral;
-    if (dx <= 0 || dx >= _timelineWidth) dx = null;
-    Future.delayed(Duration.zero, () => _overlayOffset.value = dx);
+    double? dx = _timelineWidth / 2 + _centralOffset;
+    if (dx <= 0.1 || dx >= _timelineWidth) dx = null;
+    Future.delayed(Duration.zero, () {
+      if (_lastDx == dx) {
+        _overlayText.value = _centralDate.value.format("HH:mm");
+      } else {
+        _lastDx = dx;
+        _overlayOffset.value = dx;
+        _overlayText.value = null;
+      }
+    });
   }
 
   @override
@@ -167,7 +163,7 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
           return Stack(
             children: [
               GestureDetector(
-                behavior: HitTestBehavior.translucent,
+                // behavior: HitTestBehavior.translucent,
                 // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
                 onTapUp: (details) {
                   _cameraLiveBloc.state.playerController.jumpToDate?.call(
@@ -176,20 +172,22 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
                 },
                 // Xử lý chugn cho pinch to zoom và drag
                 onScaleUpdate: (details) {
-                  final isPinch = (details.scale - 1.0).abs() > 0.01;
-
-                  if (isPinch) {
-                    double gap = _tickGap + details.scale / 2 * (details.scale > 1 ? 1 : -1);
-                    if (gap >= _maxGap) gap = _maxGap;
-                    if (gap <= _minGap) gap = _minGap;
-                    _gap.value = gap;
-                  } else {
-                    _clampCentralDate(
-                      _centralDate.value.subtract(
-                        Duration(milliseconds: details.focalPointDelta.dx.toInt() * _dragSpeed),
-                      ),
-                    );
-                  }
+                  double gap = _tickGap + details.scale / 2 * (details.scale > 1 ? 1 : -1);
+                  if (gap >= _maxGap) gap = _maxGap;
+                  if (gap <= _minGap) gap = _minGap;
+                  _gap.value = gap;
+                },
+                onHorizontalDragUpdate: (details) {
+                  _debounceJump?.cancel();
+                  _isInteracting = true;
+                  _clampCentralDate(
+                    _centralDate.value.subtract(
+                      Duration(milliseconds: details.delta.dx.toInt() * _dragSpeed),
+                    ),
+                  );
+                },
+                onHorizontalDragEnd: (details) {
+                  _scheduleJump();
                 },
                 // Không bị vẽ ra ngoài
                 child: ClipRRect(
@@ -212,41 +210,35 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
                       },
                       builder: (context, state) {
                         return ValueListenableBuilder(
-                          valueListenable: _time,
-                          builder: (context, currentTime, child) {
-                            return ValueListenableBuilder(
-                              valueListenable: _gap,
-                              builder: (context, gap, child) => CustomPaint(
-                                size: Size(_timelineWidth, widget.size?.height ?? double.infinity),
-                                isComplex: true,
-                                willChange: true,
-                                painter: MobileTimelinePainter(
-                                  showMinorTickTime: _tickGap >= _showTimeFlag,
-                                  onCentralOffset: (offset) {
-                                    _centralOffset = offset;
-                                    _showCurentTimeOverlay();
-                                  },
-                                  minorTickCount: widget.minorTickCount,
-                                  tickGap: _tickGap, //
-                                  interval: _interval, //
-                                  tickWidth: widget.tickWidth,
-                                  centralDate: _centralDate,
-                                  currentTime: currentTime,
-                                  playbacks: state.type.isSuccess
-                                      ? (state as PlaybackSuccess).playbacks
-                                      : [],
-                                  startDate: _startDate,
-                                  endDate: _endDate,
-                                  formatPattern: widget.formatPattern,
-                                  timeStyle: widget.timeStyle,
-                                  playbackColor: widget.playbackColor,
-                                  unplaybackColor: widget.unplaybackColor,
-                                  centralLineColor: widget.centralLineColor,
-                                  tickColor: widget.tickColor,
-                                ),
-                              ),
-                            );
-                          },
+                          valueListenable: _gap,
+                          builder: (context, gap, child) => CustomPaint(
+                            size: Size(_timelineWidth, widget.size?.height ?? double.infinity),
+                            isComplex: true,
+                            willChange: true,
+                            painter: MobileTimelinePainter(
+                              showMinorTickTime: _tickGap >= _showTimeFlag,
+                              onCentralOffset: (offset) {
+                                _centralOffset = offset;
+                                _showCurentTimeOverlay();
+                              },
+                              minorTickCount: widget.minorTickCount,
+                              tickGap: _tickGap, //
+                              interval: _interval, //
+                              tickWidth: widget.tickWidth,
+                              centralDate: _centralDate,
+                              playbacks: state.type.isSuccess
+                                  ? (state as PlaybackSuccess).playbacks
+                                  : [],
+                              startDate: _startDate,
+                              endDate: _endDate,
+                              formatPattern: widget.formatPattern,
+                              timeStyle: widget.timeStyle,
+                              playbackColor: widget.playbackColor,
+                              unplaybackColor: widget.unplaybackColor,
+                              centralLineColor: widget.centralLineColor,
+                              tickColor: widget.tickColor,
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -273,14 +265,19 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            _time.value.format("HH:mm"),
-                            style: AppTypography.style(
-                              11,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                            ),
-                            textAlign: TextAlign.start,
+                          ValueListenableBuilder(
+                            valueListenable: _overlayText,
+                            builder: (context, label, child) {
+                              return Text(
+                                label ?? _centralDate.value.format("HH:mm"),
+                                style: AppTypography.style(
+                                  11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.start,
+                              );
+                            },
                           ),
                           SvgPicture.asset(AppAssets.icArrowChevronRight, width: 9, height: 12),
                         ],

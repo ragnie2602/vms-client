@@ -226,7 +226,7 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBin
 
     // Trên ios do codec của audio nên không lưu được vào thư viện ảnh --> chọn vị trí để lưu
     if (Platform.isIOS) {
-      savedPath = await FileUtil.selectFolderLocation(title: 'Chọn vị trí để lưu video');
+      savedPath = await FileUtil.selectFolderLocation(needFullAccess: true);
       if (savedPath == null) return _resetProgress();
     } else {
       // Check quyền
@@ -335,15 +335,15 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBin
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      widget.playback.urlThumbnail,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (_, __, ___) => Center(child: CircularProgressIndicator()),
-                      errorBuilder: (_, __, ___) => Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: SvgPicture.asset(AppAssets.logoFull),
-                      ),
-                    ),
+                    widget.playback.urlThumbnail.isEmpty
+                        ? _buildErrorThumbnail()
+                        : Image.network(
+                            widget.playback.urlThumbnail,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (_, __, ___) =>
+                                Center(child: CircularProgressIndicator()),
+                            errorBuilder: (_, __, ___) => _buildErrorThumbnail(),
+                          ),
 
                     Positioned.fill(
                       child: DecoratedBox(
@@ -447,6 +447,13 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBin
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildErrorThumbnail() {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: SvgPicture.asset(AppAssets.logoFull),
     );
   }
 
