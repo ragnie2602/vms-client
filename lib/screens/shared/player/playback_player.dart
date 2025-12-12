@@ -813,12 +813,12 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     _fullscreenKey.currentState?.toggleFullscreen(context);
   }
 
-  void zoom(int type) {
+  void zoom(int type, {bool rebound = false}) {
     if (_zoomController == null || _zoomAnimationController == null) return;
 
     final currentScale = _zoomController!.value.getMaxScaleOnAxis();
     final targetScale = (currentScale + type).clamp(1.0, 16.0);
-    if (targetScale == currentScale) return;
+    if (targetScale == currentScale && !rebound) return;
 
     final box = _ivKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return;
@@ -864,6 +864,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     return FullscreenPortal(
       key: _fullscreenKey,
       tag: hashCode.toString(),
+      onExitFullscreen: () =>
+          WidgetsBinding.instance.addPostFrameCallback((_) => zoom(0, rebound: true)),
       builder: (isFullscreen) => Container(
         decoration: BoxDecoration(color: Colors.black),
         width: double.infinity,

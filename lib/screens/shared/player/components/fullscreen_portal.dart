@@ -54,11 +54,13 @@ class FullscreenPortal extends StatefulWidget {
   final Widget Function(bool) builder;
   final String tag;
   final bool isFullscreen;
+  final void Function()? onExitFullscreen;
   const FullscreenPortal({
     super.key,
     required this.builder,
     required this.tag,
     this.isFullscreen = false,
+    this.onExitFullscreen,
   });
 
   @override
@@ -80,7 +82,12 @@ class FullscreenPortalState extends State<FullscreenPortal> {
     Navigator.of(context, rootNavigator: true).push(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => Material(
-          child: FullscreenPortal(tag: widget.tag, isFullscreen: true, builder: widget.builder),
+          child: FullscreenPortal(
+            tag: widget.tag,
+            isFullscreen: true,
+            builder: widget.builder,
+            onExitFullscreen: widget.onExitFullscreen,
+          ),
         ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
@@ -99,25 +106,26 @@ class FullscreenPortalState extends State<FullscreenPortal> {
 
     return widget.isFullscreen
         ? PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) async {
-            if (didPop) return;
+            canPop: false,
+            onPopInvokedWithResult: (didPop, result) async {
+              if (didPop) return;
 
-            await defaultExitNativeFullscreen();
-            await Future.delayed(Duration(milliseconds: 100));
-            if (context.mounted) Navigator.of(context).pop();
-          },
-          child: PlatformBuilder.builder(
-            onMobile: (_) => child,
-            onDesktop: (_) => Stack(
+              await defaultExitNativeFullscreen();
+              await Future.delayed(Duration(milliseconds: 100));
+              if (context.mounted) Navigator.of(context).pop();
+              widget.onExitFullscreen?.call();
+            },
+            child: PlatformBuilder.builder(
+              onMobile: (_) => child,
+              onDesktop: (_) => Stack(
                 fit: StackFit.expand,
                 children: <Widget>[
                   Positioned.fill(child: child),
                   FullScreenActions(onExit: () => exitFullscreen(context)),
                 ],
               ),
-          ),
-        )
+            ),
+          )
         : child;
   }
 }
