@@ -120,17 +120,21 @@ class MultiPlaybackBloc
     // case đổi ngày -> reset lại global time
     _resetGlobalTime();
 
-    // step 2: Get video playback của tất cả các camera
-    List<ItemPlaybackModel> updatedList = [];
-    for (ItemPlaybackModel item in (state.listItemCamPlayback ?? [])) {
-      final videos = await getVideoPlaybacksByCameraId(
-        camera: item.camera,
-        playbackDate: event.date,
-      );
-      updatedList.add(
-        item.copyWith(listVideoPlaybacks: videos?.reversed.toList()),
-      );
-    }
+    // step 2: Get video playback của tất cả các camera (Parallel fetch)
+    List<ItemPlaybackModel> currentList = state.listItemCamPlayback ?? [];
+
+    List<ItemPlaybackModel> updatedList = await Future.wait(
+      currentList.map((item) async {
+        final videos = await getVideoPlaybacksByCameraId(
+          camera: item.camera,
+          playbackDate: event.date,
+        );
+        return item.copyWith(
+          listVideoPlaybacks: videos?.reversed.toList(),
+          playerController: PlayerController(),
+        );
+      }),
+    );
 
     // step 3: Save thời gian play = thời gian đầu tiên của _mergerList
     final mergedList = _mergePlaybacks(updatedList);
@@ -138,33 +142,37 @@ class MultiPlaybackBloc
     if (mergedList.isNotEmpty) {
       initialDate = mergedList.first.startTime;
     }
-
     // Update all items with initialDate
     updatedList = updatedList.map((item) {
       return item.copyWith(initialDate: initialDate);
     }).toList();
-
-    // Update state with new playbacks
     emit(
       state.copyWith(
         listItemCamPlayback: updatedList,
         mergedPlaybackList: mergedList,
       ),
     );
+    await Future.wait(
+      updatedList.map(
+        (e) => e.isNoVideo
+            ? Future.value()
+            : e.playerController.waitForAttached.future,
+      ),
+    );
 
     if (initialDate != null) {
       checkGlobal(initialDate: initialDate);
-    }
 
-    // step 4: Setup (mute âm thanh + jumptDate = thời gian vừa lưu) dành cho tất cả các camera
-    // seek all camera
-    await _seekAllCamera(initialDate);
-    // step 5: check loading
-    final checked = await _isAllReady();
-    if (checked) {
-      await _playAllCamera();
-      emit(state.copyWith(isPlaying: true));
-      updateFlagPause();
+      // step 4: Setup (mute âm thanh + jumptDate = thời gian vừa lưu) dành cho tất cả các camera
+      // seek all camera
+      await _seekAllCamera(initialDate);
+      // step 5: check loading
+      final checked = await _isAllReady();
+      if (checked) {
+        await _playAllCamera();
+        emit(state.copyWith(isPlaying: true));
+        updateFlagPause();
+      }
     }
   }
 
@@ -273,7 +281,7 @@ class MultiPlaybackBloc
   FutureOr<void> _onRemoveCamera(
     RemoveCameraEvent event,
     Emitter<MultiPlaybackState> emit,
-  ) {
+  ) async {
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
     _list.removeWhere((e) => e.index == event.indexCam);
     emit(
@@ -282,9 +290,10 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(_list),
       ),
     );
-    if ((state.listItemCamPlayback ?? []).isEmpty) {
+    if ((state.listItemCamPlayback ?? []).isEmpty || !_anyCamPlaying()) {
       _resetGlobalTime();
     }
+    await _reNewPlayTime(emit);
   }
 
   /// merge các section thời gian nếu liền nhau/ giao cắt nhau => dùng để view timeshift
@@ -514,5 +523,36 @@ class MultiPlaybackBloc
   // update flag
   void updateFlagPause() {
     flagPauseTime = !state.isPlaying;
+  }
+
+  // case khi xóa cam -> check xem list cam còn lại có cái nào đang playing ko?
+  // nếu ko có cam nào đang playing nhưng vẫn có video (timeline xanh)
+  // => update lại global time và play lại đoạn mới
+  Future<void> _reNewPlayTime(Emitter<MultiPlaybackState> emit) async {
+    if (!_anyCamPlaying() && (state.listItemCamPlayback ?? []).isNotEmpty) {
+      await _pauseAllCamera();
+      DateTime newInitDate = state.mergedPlaybackList.first.startTime;
+      checkGlobal(initialDate: newInitDate);
+      // seek all camera
+      await _seekAllCamera(newInitDate);
+      // 5. Check loading
+      final checked = await _isAllReady();
+      if (checked) {
+        await _playAllCamera();
+        emit(state.copyWith(isPlaying: true));
+        updateFlagPause();
+      }
+    }
+  }
+
+  bool _anyCamPlaying() {
+    for (ItemPlaybackModel e in state.listItemCamPlayback ?? []) {
+      if (e.playerController.getPlayerStatus?.call() == PlayerStatus.playing &&
+          e.playerController.getPlayerState?.call() ==
+              PlayerState.initialized) {
+        return true;
+      }
+    }
+    return false;
   }
 }
