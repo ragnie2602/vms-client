@@ -226,7 +226,7 @@ class _MobilePlaybackCardState extends State<MobilePlaybackCard> with WidgetsBin
 
     // Trên ios do codec của audio nên không lưu được vào thư viện ảnh --> chọn vị trí để lưu
     if (Platform.isIOS) {
-      savedPath = await FileUtil.selectFolderLocation(title: 'Chọn vị trí để lưu video');
+      savedPath = await FileUtil.selectFolderLocation(needFullAccess: true);
       if (savedPath == null) return _resetProgress();
     } else {
       // Check quyền
