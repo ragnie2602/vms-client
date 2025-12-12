@@ -99,45 +99,43 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: GestureDetector(
-        // [IMPORTANT] Cho phép các event chạm được truyền qua widget này (kể cả khi click vào khoảng trắng)
-        behavior: HitTestBehavior.translucent,
-        onTap: () => Future.delayed(Duration.zero, () => _visible.value = !_visible.value),
-        child: ValueListenableBuilder(
-          valueListenable: _visible,
-          builder: (context, visible, child) => AnimatedOpacity(
-            curve: Curves.fastOutSlowIn,
-            opacity: visible ? 1.0 : 0.0,
-            duration: Durations.medium1,
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              alignment: Alignment.center,
-              // [IMPORTANT] Không set color để InteractiveViewer bên dưới có thể nhận
-              // HitTestBehavior.translucent --> giúp bắt đc event khi chạm vào khoảng trắng (trong suốt)
-              // color: Colors.transparent,
-              child: IgnorePointer(
-                ignoring: !visible,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (widget.isFullscreen) _topActions(),
-                    if (widget.state == PlayerState.initialized)
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        child: widget.mode.isPlayback
-                            ? _centerActionsForPlayback()
-                            : _centerActionsForLive(),
-                      ),
-                    if (widget.isFullscreen) _rightActions(),
-                    if (widget.bottomBuilder != null && widget.isFullscreen)
-                      Positioned(bottom: 0, left: 0, right: 0, child: widget.bottomBuilder!()),
-                  ],
-                ),
+    return GestureDetector(
+      // [IMPORTANT] Cho phép các event chạm được truyền qua widget này (kể cả khi click vào khoảng trắng)
+      behavior: HitTestBehavior.translucent,
+      onTap: () => Future.delayed(Duration.zero, () => _visible.value = !_visible.value),
+      child: ValueListenableBuilder(
+        valueListenable: _visible,
+        builder: (context, visible, child) => AnimatedOpacity(
+          curve: Curves.fastOutSlowIn,
+          opacity: visible ? 1.0 : 0.0,
+          duration: Durations.medium1,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            alignment: Alignment.center,
+            // [IMPORTANT] Không set color để InteractiveViewer bên dưới có thể nhận
+            // HitTestBehavior.translucent --> giúp bắt đc event khi chạm vào khoảng trắng (trong suốt)
+            // color: Colors.transparent,
+            child: IgnorePointer(
+              ignoring: !visible,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (widget.isFullscreen) _topActions(),
+                  if (widget.state == PlayerState.initialized)
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      child: widget.mode.isPlayback
+                          ? _centerActionsForPlayback()
+                          : _centerActionsForLive(),
+                    ),
+                  if (widget.isFullscreen) _rightActions(),
+                  if (widget.bottomBuilder != null && widget.isFullscreen)
+                    Positioned(bottom: 0, left: 0, right: 0, child: widget.bottomBuilder!()),
+                ],
               ),
             ),
           ),
