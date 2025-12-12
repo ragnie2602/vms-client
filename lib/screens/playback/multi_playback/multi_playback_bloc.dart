@@ -495,7 +495,10 @@ class MultiPlaybackBloc
       _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
         // nếu không phải trong quá trình pause thì đếm thời gian tiếp
         if (!flagPauseTime) {
-          timeGlobal.value = timeGlobal.value?.add(Duration(seconds: 1));
+          // Tăng timeGlobal theo speed hiện tại
+          timeGlobal.value = timeGlobal.value?.add(
+            Duration(milliseconds: (1000 * state.speed).round()),
+          );
           _syncTimeCounter++;
           // Gọi syncTime mỗi 3 giây một lần
           if (_syncTimeCounter >= 3 && timeGlobal.value != null) {
