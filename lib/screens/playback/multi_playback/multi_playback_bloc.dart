@@ -200,11 +200,27 @@ class MultiPlaybackBloc
     AddCameraEvent event,
     Emitter<MultiPlaybackState> emit,
   ) async {
-    List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
     // 1. Pause all existing cameras
     await _pauseAllCamera();
     emit(state.copyWith(isPlaying: false));
     updateFlagPause();
+
+    // Create item mới để loading trước (do wait API -> đơ 1 lúc mới emit state mới update UI)
+    final _playerController = PlayerController();
+    final _tempDate = timeGlobal.value ?? DateTime.now();
+
+    ItemPlaybackModel _newItem = ItemPlaybackModel(
+      index: event.indexCam,
+      camera: event.newCam,
+      listVideoPlaybacks: null, // Loading state
+      playerController: _playerController,
+      initialDate: _tempDate,
+    );
+    List<ItemPlaybackModel> _currentList = List.from(
+      state.listItemCamPlayback ?? [],
+    );
+    _currentList.add(_newItem);
+    emit(state.copyWith(listItemCamPlayback: _currentList));
 
     // get danh sách video playback
     final videos = await getVideoPlaybacksByCameraId(
@@ -216,47 +232,48 @@ class MultiPlaybackBloc
     DateTime? syncDate = timeGlobal.value;
     syncDate ??= videos?.lastOrNull?.startTime;
 
-    // 3. Add new camera
-    final playerController = PlayerController();
-    ItemPlaybackModel newItem = ItemPlaybackModel(
-      index: event.indexCam,
-      camera: event.newCam,
+    // Update lại item mới (update list video và initDate chuẩn)
+    final updatedItem = _newItem.copyWith(
       listVideoPlaybacks: videos?.reversed.toList(),
-      playerController: playerController,
       initialDate:
           syncDate ?? DateTime.now().subtract(const Duration(days: 365)),
     );
-    _list.add(newItem);
-    emit(
-      state.copyWith(
-        listItemCamPlayback: _list,
-        mergedPlaybackList: _mergePlaybacks(_list),
-      ),
-    );
+    // Re-fetch list to handle concurrent updates
+    _currentList = List.from(state.listItemCamPlayback ?? []);
+    final index = _currentList.indexWhere((e) => e.index == event.indexCam);
+    if (index != -1) {
+      _currentList[index] = updatedItem;
+      emit(
+        state.copyWith(
+          listItemCamPlayback: _currentList,
+          mergedPlaybackList: _mergePlaybacks(_currentList),
+        ),
+      );
 
-    // set global
-    if (syncDate != null) {
-      checkGlobal(initialDate: syncDate);
-    } else {
-      // case cam đầu tiên
-      if (state.mergedPlaybackList.isNotEmpty) {
-        checkGlobal(initialDate: state.mergedPlaybackList.first.startTime);
+      // set global
+      if (syncDate != null) {
+        checkGlobal(initialDate: syncDate);
+      } else {
+        // case cam đầu tiên
+        if (state.mergedPlaybackList.isNotEmpty) {
+          checkGlobal(initialDate: state.mergedPlaybackList.first.startTime);
+        }
       }
-    }
-    // check cam mới nếu có video(-> UI là 1 player) -> await initial
-    if (newItem.isNoVideo != true) {
-      await playerController.waitForAttached.future;
-    }
+      // check cam mới nếu có video(-> UI là 1 player) -> await initial
+      if (updatedItem.isNoVideo != true) {
+        await _playerController.waitForAttached.future;
+      }
 
-    // 4. Seek new camera to sync date and mute
-    // seek all camera
-    await _seekAllCamera(syncDate);
-    // 5. Check loading
-    final checked = await _isAllReady();
-    if (checked) {
-      await _playAllCamera();
-      emit(state.copyWith(isPlaying: true));
-      updateFlagPause();
+      // 4. Seek new camera to sync date and mute
+      // seek all camera
+      await _seekAllCamera(syncDate);
+      // 5. Check loading
+      final checked = await _isAllReady();
+      if (checked) {
+        await _playAllCamera();
+        emit(state.copyWith(isPlaying: true));
+        updateFlagPause();
+      }
     }
   }
 
