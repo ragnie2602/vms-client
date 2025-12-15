@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -130,6 +131,8 @@ class _MyAppState extends State<MyApp> with WindowListener {
           selector: (state) => state.themeMode,
           builder: (context, theme) => MaterialApp.router(
             builder: (context, child) => ToastificationWrapper(child: child!),
+            localizationsDelegates: [GlobalMaterialLocalizations.delegate],
+            supportedLocales: [const Locale('en'), const Locale('vi')],
             darkTheme: AppTheme.dark,
             debugShowCheckedModeBanner: false,
             routerConfig: AppRouter.router,

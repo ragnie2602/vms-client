@@ -169,7 +169,6 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
               iconColor: AppColors.white,
               iconSize: 30,
               parentSize: 42,
-              splashColor: Colors.grey,
             ),
             SizedBox(width: 20),
           ],
@@ -185,7 +184,7 @@ class _MobileControlsOverlayState extends State<MobileControlsOverlay> {
                       if (_isSeeking) return;
                       playerController.togglePlay?.call();
                     }),
-                    icon: status == PlayerStatus.paused
+                    icon: (status == PlayerStatus.paused || status == PlayerStatus.finished)
                         ? AppAssets.icPlayMobile
                         : AppAssets.icPauseMobile,
                     backgroundColor: fullScreen

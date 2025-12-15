@@ -29,8 +29,7 @@ class PlaybackPlayer extends StatefulWidget {
   PlaybackPlayer({
     required this.playlist,
     required this.name,
-    int initialIndex = 0,
-    this.initialDate,
+    required this.initialIndex,
     required this.controller,
     this.onStatusChanged,
     this.onInitializedValues,
@@ -44,15 +43,11 @@ class PlaybackPlayer extends StatefulWidget {
     this.resumeUponEnteringForegroundMode = true,
     this.wakelock = true,
     this.initialVolume,
-  }) : initialIndex = initialDate != null
-           ? (playlist.atTime(initialDate) ?? -1)
-           : initialIndex,
-       super(key: controller.ref);
+  }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
   final String name;
   final int initialIndex;
-  final DateTime? initialDate;
   final PlayerController controller;
   final Function(PlayerStatus)? onStatusChanged;
   final Function({required double volume, required double speed})? onInitializedValues;
@@ -77,9 +72,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   final ValueNotifier<PlayerState> _state = ValueNotifier(PlayerState.initializing);
 
   final ValueNotifier<bool> _isSeeking = ValueNotifier(false);
-  late final ValueNotifier<int> _playlistIndex = ValueNotifier(
-    widget.initialIndex,
-  );
+  late final ValueNotifier<int> _playlistIndex = ValueNotifier(widget.initialIndex);
 
   final GlobalKey<FullscreenPortalState> _fullscreenKey = GlobalKey();
 
@@ -179,7 +172,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       }
 
       widget.controller.markPlaybackChanged(currentIndex);
-      if(currentPlayback != null) {
+      if (currentPlayback != null) {
         widget.controller.markTimeChanged(currentPlayback!.startTime.roundToSecond);
       }
     });
@@ -343,7 +336,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
           cur.test(MediaStatus.unloaded) &&
           cur.test(MediaStatus.end) &&
           !(currentIndex == widget.playlist.length - 1 &&
-              _player.position + 1000 >= _player.mediaInfo.duration)) {
+              _player.position + 3000 >= _player.mediaInfo.duration)) {
         Logger.warn("Camera '${widget.name}' disconnected ($pre -> $cur)");
         _state.value = PlayerState.error;
       }
@@ -354,7 +347,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       }
 
       // Case bị lỗi
-      if (!pre.test(MediaStatus.invalid) && cur.test(MediaStatus.invalid) && currentPlayback != null) {
+      if (!pre.test(MediaStatus.invalid) &&
+          cur.test(MediaStatus.invalid) &&
+          currentPlayback != null) {
         Logger.warn("Camera '${widget.name}' invalid ($pre -> $cur)");
         _state.value = PlayerState.error;
       }
@@ -653,9 +648,13 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
       if (diff != Duration.zero) {
-        await _muteOnAction(
-          () => _player.seek(position: diff.inMilliseconds, flags: SeekFlag(SeekFlag.fromStart)),
-        );
+        await _muteOnAction(() async {
+          // Nếu đang finished thì play lại để có thể jump/seek
+          // Không dùng được _status.value == PlayerStatus.finished vì khi trigger seeking thì _status sang playing
+          if (_player.state == PlaybackState.stopped) _player.play();
+
+          _player.seek(position: diff.inMilliseconds, flags: SeekFlag(SeekFlag.fromStart));
+        });
       }
     }
     // Playback khác --> đổi playlist và jump
@@ -698,17 +697,25 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
       return;
     }
     // Cuối playlist
-    if (_toMs >= _totalMs && currentIndex == widget.playlist.length - 1) {
+    if (_toMs >= _totalMs - 500 && currentIndex == widget.playlist.length - 1) {
       // Để video nhảy 1 phát xong hiện pause luôn
       await _muteOnAction(() => _player.seek(position: _totalMs - 500, flags: _seekFlag));
       return;
     }
 
-    // Tua sang playback tiếp theo
+    // Tua trong khoảng hiện tại
     if (_toMs <= _totalMs && _toMs >= 0) {
       _lastPosition = _toMs;
-      await _muteOnAction(() => _player.seek(position: _toMs, flags: _seekFlag));
-    } else {
+      await _muteOnAction(() async {
+        if (_player.state == PlaybackState.stopped) {
+          _player.play();
+          await Future.delayed(Duration(milliseconds: 150));
+        }
+        await _player.seek(position: _toMs, flags: _seekFlag);
+      });
+    }
+    // Tua sang playback tiếp theo
+    else {
       _shouldSyncPlayerTime = false;
       _isSeeking.value = true;
       await _jumpToDate(currentPlayback!.startTime.add(Duration(milliseconds: _toMs)));
