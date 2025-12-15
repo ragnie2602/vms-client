@@ -55,8 +55,8 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(32),
               child: SizedBox(
-                height: 50,
-                width: 50,
+                height: 85,
+                width: 85,
                 child: FittedBox(
                   fit: BoxFit.cover,
                   child: Image.network(

@@ -9,7 +9,7 @@ class AppAssets {
 
   /* Images */
   static const imgPlaceholder = '$_imagePath/no_image.png';
-  static const defaultAvatar = '$_imagePath/default_avatar.jpg';
+  static const defaultAvatar = '$_imagePath/default_avatar.png';
 
   /* Icons */
   static const tabMonitor = '$_svgPath/tab_monitor.svg';
