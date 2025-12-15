@@ -49,13 +49,10 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
     return BlocProvider(
       create: (context) => ChangeMyPasswordBloc(repository),
       child: BlocConsumer<ChangeMyPasswordBloc, ChangeMyPasswordState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state.isSuccess) {
-            if (widget.isDialog) {
-              Navigator.pop(context, true);
-            }
             if (context.isMobile) {
-              showAppMessageDialog(
+              await showAppMessageDialog(
                 context,
                 message:
                     'Đổi mật khẩu thành công! Vui lòng sử dụng mật khẩu mới để đăng nhập vào tài khoản!',
@@ -70,8 +67,14 @@ class _ChangeMyPasswordFormState extends State<ChangeMyPasswordForm> {
                 ),
               );
             }
-            context.read<AppBloc>().add(SignOut());
-            context.goNamed(Routes.login.name);
+
+            if (context.mounted) {
+              if (widget.isDialog && context.isDesktop) {
+                Navigator.pop(context, true);
+              }
+              context.read<AppBloc>().add(SignOut());
+              context.goNamed(Routes.login.name);
+            }
           } else if (state.errorMessage != null) {
             showAppMessageDialog(
               context,
