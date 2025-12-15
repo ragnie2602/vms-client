@@ -116,7 +116,13 @@ class MultiPlaybackBloc
 
     await _pauseAllCamera();
 
-    emit(state.copyWith(playbackDate: event.date, isPlaying: false));
+    emit(
+      state.copyWith(
+        playbackDate: event.date,
+        isPlaying: false,
+        multiPlaybackStatus: MultiPlaybackStatus.loading,
+      ),
+    );
     // case đổi ngày -> reset lại global time
     _resetGlobalTime();
 
@@ -128,6 +134,7 @@ class MultiPlaybackBloc
         final videos = await getVideoPlaybacksByCameraId(
           camera: item.camera,
           playbackDate: event.date,
+          indexCam: item.index,
         );
         return item.copyWith(
           listVideoPlaybacks: videos?.reversed.toList(),
@@ -174,6 +181,7 @@ class MultiPlaybackBloc
         updateFlagPause();
       }
     }
+    emit(state.copyWith(multiPlaybackStatus: MultiPlaybackStatus.success));
   }
 
   FutureOr<void> _onChangeTimelineDisplayMode(
@@ -226,6 +234,7 @@ class MultiPlaybackBloc
     final videos = await getVideoPlaybacksByCameraId(
       camera: event.newCam,
       playbackDate: state.playbackDate,
+      indexCam: _newItem.index,
     );
 
     // 2. Save thời gian pause -> gán cho cam mới
@@ -280,11 +289,13 @@ class MultiPlaybackBloc
   Future<List<PlaybackVideo>?> getVideoPlaybacksByCameraId({
     required CameraEntity camera,
     required DateTime playbackDate,
+    required int indexCam,
   }) async {
     return (await playbackRepository.getTimeShiftVideoCloudCamera(
       cameraId: camera.id,
       currentTime: playbackDate.endOfDay.millisecondsSinceEpoch ~/ 1000,
       timeZone: 7,
+      indexPlayback: indexCam,
     )).fold(
       (failure) {
         return [];

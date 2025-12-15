@@ -15,6 +15,8 @@ class PlaybackService {
     required int currentTime,
     int timeZone = 0,
     List<List<int>>? cameraIdList,
+    int?
+    indexPlayback, // dùng cho màn multi playback (gọi 4 lần API cho 4 cam cùng 1 lúc)
   }) async {
     final request = GetTimeShiftVideoCloudCamera_Request(
       cameraId: cameraId,
@@ -26,7 +28,7 @@ class PlaybackService {
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
         Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
+          id: DateTime.now().microsecondsSinceEpoch + (indexPlayback ?? 0),
           data: request.writeToBuffer(),
           type: PacketType.getTimeShiftVideoCloudCamera,
         ),
