@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -53,9 +54,9 @@ class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
         _belongDate = event.date;
         emit(
           PlaybackSuccess(
-            initialIndex: 0,
+            initialIndex: max(0, playbacks.length - 1),
             playbacks: playbacks.reversed.toList(),
-            currentIndex: 0,
+            currentIndex: max(0, playbacks.length - 1),
           ),
         );
       },
