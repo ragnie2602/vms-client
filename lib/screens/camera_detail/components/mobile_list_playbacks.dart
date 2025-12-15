@@ -70,13 +70,13 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
               textStyle: WidgetStatePropertyAll(
                 AppTypography.style(15, fontWeight: FontWeight.w600),
               ),
-              foregroundColor: WidgetStatePropertyAll(AppColors.secondary),
+              foregroundColor: WidgetStatePropertyAll(AppColors.blue005AA9),
               // shape: WidgetStatePropertyAll(
               //   RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               // ),
             ),
             backgroundColor: AppColors.scaffoldBgLight,
-            headerBackgroundColor: AppColors.primary,
+            headerBackgroundColor: AppColors.blue005AA9,
             headerForegroundColor: Colors.white,
             headerHelpStyle: AppTypography.style(15, fontWeight: FontWeight.w500),
             headerHeadlineStyle: AppTypography.style(28, fontWeight: FontWeight.w600),
@@ -105,7 +105,9 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
               focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.secondary)),
             ),
             dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
-              return states.contains(WidgetState.selected) ? AppColors.primary : Colors.transparent;
+              return states.contains(WidgetState.selected)
+                  ? AppColors.blue005AA9
+                  : Colors.transparent;
             }),
             dayForegroundColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
@@ -117,18 +119,22 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
               return AppColors.black171725;
             }),
             todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
-              return states.contains(WidgetState.selected) ? AppColors.primary : Colors.transparent;
+              return states.contains(WidgetState.selected)
+                  ? AppColors.blue005AA9
+                  : Colors.transparent;
             }),
             todayForegroundColor: WidgetStateProperty.resolveWith((states) {
-              return states.contains(WidgetState.selected) ? Colors.white : AppColors.primary;
+              return states.contains(WidgetState.selected) ? Colors.white : AppColors.blue005AA9;
             }),
             yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
-              return states.contains(WidgetState.selected) ? AppColors.primary : Colors.transparent;
+              return states.contains(WidgetState.selected)
+                  ? AppColors.blue005AA9
+                  : Colors.transparent;
             }),
             yearForegroundColor: WidgetStateProperty.resolveWith((states) {
               return states.contains(WidgetState.selected) ? Colors.white : Colors.black;
             }),
-            yearOverlayColor: WidgetStatePropertyAll(AppColors.primary),
+            yearOverlayColor: WidgetStatePropertyAll(AppColors.blue005AA9),
           ),
         ),
         child: child!,
