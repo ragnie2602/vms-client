@@ -17,6 +17,7 @@ class PlaybackRepository extends BaseRepository implements IPlaybackRepository {
     required int currentTime,
     int timeZone = 0,
     List<List<int>>? cameraIdList,
+    int? indexPlayback
   }) async {
     return await catchError<List<PlaybackVideo>>(() async {
       final data = await service.getTimeShiftVideoCloudCamera(
@@ -24,6 +25,7 @@ class PlaybackRepository extends BaseRepository implements IPlaybackRepository {
         currentTime: currentTime,
         timeZone: timeZone,
         cameraIdList: cameraIdList,
+        indexPlayback: indexPlayback
       );
 
       return Right(data.map((e) => e.toDomain()).toList());

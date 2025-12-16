@@ -49,7 +49,13 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
       onExit: (_) => setState(() => _isHovering = false),
       child: Stack(
         children: [
-          (widget.item.isNoVideo)
+          (widget.item.listVideoPlaybacks == null)
+              ? Center(
+                  child: CircularProgressIndicator.adaptive(
+                    backgroundColor: Colors.white,
+                  ),
+                )
+              : (widget.item.isNoVideo)
               ? EmptyRecordCameraWidget()
               : MultiPlaybackPlayer(
                   name: widget.item.camera.name,

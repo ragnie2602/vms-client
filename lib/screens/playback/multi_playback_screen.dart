@@ -48,76 +48,87 @@ class _MultiPlaybackScreenState extends State<MultiPlaybackScreen> {
           selector: (state) => state.displayFullScreenLiveView,
           builder: (context, isFullscreen) => Container(
             color: Theme.of(context).scaffoldBackgroundColor,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // thanh menu: date + back
-                if (!isFullscreen) _MenuAction(),
-                if (!isFullscreen)
-                  Container(
-                    width: double.infinity,
-                    height: 1,
-                    color: AppColors.scaffoldBg,
-                  ),
-                // gridview camera
-                Flexible(
-                  child:
-                      BlocSelector<
-                        MultiPlaybackBloc,
-                        MultiPlaybackState,
-                        MultiPlaybackStatus
-                      >(
-                        selector: (state) => state.multiPlaybackStatus,
-                        builder: (context, multiPlaybackStatus) => Stack(
-                          children: [
-                            GridviewPlaybackView(
+            child:
+                BlocSelector<
+                  MultiPlaybackBloc,
+                  MultiPlaybackState,
+                  MultiPlaybackStatus
+                >(
+                  selector: (state) => state.multiPlaybackStatus,
+                  builder: (context, multiPlaybackStatus) => Stack(
+                    children: [
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // thanh menu: date + back
+                          if (!isFullscreen) _MenuAction(),
+                          if (!isFullscreen)
+                            Container(
+                              width: double.infinity,
+                              height: 1,
+                              color: AppColors.scaffoldBg,
+                            ),
+                          // gridview camera
+                          Flexible(
+                            child: GridviewPlaybackView(
                               isOpenFullscreen: isFullscreen,
                             ),
-                            if (multiPlaybackStatus ==
-                                MultiPlaybackStatus.loading)
-                              Positioned.fill(
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(
-                                    horizontal: 100,
-                                    vertical: 10,
-                                  ),
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
+                          ),
+                          // time shift
+                          if (!isFullscreen)
+                            Padding(
+                              padding: EdgeInsetsGeometry.symmetric(
+                                horizontal: 100,
+                                vertical: 10,
+                              ),
+                              child: MultiPlaybackTimeshiftWidget(
+                                timer: context
+                                    .read<MultiPlaybackBloc>()
+                                    .timeGlobal,
+                                size: Size(double.infinity, 55),
+                                normalStyle: const TextStyle(
+                                  color: Color.fromRGBO(255, 255, 255, 0.2),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                highlightStyle: TextStyle(
+                                  color: Color.fromRGBO(255, 255, 255, 0.2),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                playbackColor: Color.fromRGBO(
+                                  21,
+                                  171,
+                                  255,
+                                  0.4,
+                                ),
+                                centralLineColor: Color.fromRGBO(
+                                  33,
+                                  204,
+                                  195,
+                                  1,
                                 ),
                               ),
-                          ],
+                            ),
+                          // thanh điều khiển (pause, tua)
+                          if (!isFullscreen) MultiPlayerControls(),
+                        ],
+                      ),
+                      if (multiPlaybackStatus == MultiPlaybackStatus.loading)
+                        Positioned.fill(
+                          child: Container(
+                            // khi đang loading (case lấy danh sách cam + case đổi ngày phải laoding lại list video)
+                            color: Colors.transparent,
+                            margin: EdgeInsets.symmetric(
+                              horizontal: 100,
+                              vertical: 10,
+                            ),
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
                         ),
-                      ),
-                ),
-                // time shift
-                if (!isFullscreen)
-                  Padding(
-                    padding: EdgeInsetsGeometry.symmetric(
-                      horizontal: 100,
-                      vertical: 10,
-                    ),
-                    child: MultiPlaybackTimeshiftWidget(
-                      timer: context.read<MultiPlaybackBloc>().timeGlobal,
-                      size: Size(double.infinity, 55),
-                      normalStyle: const TextStyle(
-                        color: Color.fromRGBO(255, 255, 255, 0.2),
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      highlightStyle: TextStyle(
-                        color: Color.fromRGBO(255, 255, 255, 0.2),
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      playbackColor: Color.fromRGBO(21, 171, 255, 0.4),
-                      centralLineColor: Color.fromRGBO(33, 204, 195, 1),
-                    ),
+                    ],
                   ),
-                // thanh điều khiển (pause, tua)
-                if (!isFullscreen) MultiPlayerControls(),
-              ],
-            ),
+                ),
           ),
         ),
       ),

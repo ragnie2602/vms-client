@@ -8,5 +8,6 @@ abstract class IPlaybackRepository {
     required int currentTime,
     int timeZone = 0,
     List<List<int>>? cameraIdList,
+    int? indexPlayback
   });
 }
