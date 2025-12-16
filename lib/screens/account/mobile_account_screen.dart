@@ -15,6 +15,8 @@ import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/account/components/account_item.dart';
 import 'package:vms_flutter_client/screens/account/mobile_change_password_screen.dart';
+import 'package:vms_flutter_client/screens/account/mobile_data_policy.dart';
+import 'package:vms_flutter_client/screens/account/mobile_term_usage.dart';
 
 class MobileAccountScreen extends StatefulWidget {
   const MobileAccountScreen({super.key});
@@ -110,14 +112,26 @@ class _MobileAccountScreenState extends State<MobileAccountScreen> {
                     title: 'Đổi mật khẩu',
                   ),
                   AccountItem(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const MobileTermUsageScreen(),
+                        ),
+                      );
+                    },
                     svgPath: AppAssets.icCube,
-                    title: 'Điều khoản & Điều kiện',
+                    title: 'Điều khoản sử dụng',
                   ),
                   AccountItem(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const MobileDataPolicyScreen(),
+                        ),
+                      );
+                    },
                     svgPath: AppAssets.icCube,
-                    title: 'Chính sách quyền riêng tư',
+                    title: 'Chính sách bảo vệ dữ liệu cá nhân',
                   ),
                   // AccountItem(
                   //   onTap: () {},
@@ -152,7 +166,7 @@ class _MobileAccountScreenState extends State<MobileAccountScreen> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          'v1.0',
+                          'v1.1.1 build 8',
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w400,

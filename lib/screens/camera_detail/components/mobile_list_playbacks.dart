@@ -16,6 +16,137 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
 
   CameraDetailBloc _dBloc(BuildContext context) => context.read<CameraDetailBloc>();
 
+  Future<void> _showPopupSelectDate(BuildContext context) async {
+    final result = await showDatePicker(
+      context: context,
+      currentDate: DateTime.now(),
+      initialDate: _dBloc(context).state.playbackDate,
+      firstDate: DateTime.fromMillisecondsSinceEpoch(0),
+      lastDate: DateTime.now(),
+      helpText: "Lựa chọn ngày",
+      cancelText: "Huỷ",
+      confirmText: "Xác nhận",
+      fieldHintText: "dd/mm/yyyy",
+      errorFormatText: "Định dạng không hợp lệ (dd/mm/yyyy)",
+      errorInvalidText: "Ngày không hợp lệ",
+      locale: Locale('vi', 'VN'),
+      builder: (context, child) => Theme(
+        data: ThemeData(
+          dividerTheme: const DividerThemeData(color: Colors.transparent),
+          textTheme: TextTheme(
+            // text field style
+            bodyLarge: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.black171725,
+            ),
+            // text field style
+            titleMedium: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.black171725,
+            ),
+          ),
+          datePickerTheme: DatePickerThemeData(
+            dividerColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            toggleButtonTextStyle: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.secondary,
+            ),
+            subHeaderForegroundColor: AppColors.secondary,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            cancelButtonStyle: ButtonStyle(
+              textStyle: WidgetStatePropertyAll(
+                AppTypography.style(15, fontWeight: FontWeight.w600),
+              ),
+              foregroundColor: WidgetStatePropertyAll(AppColors.redFF0000),
+              // shape: WidgetStatePropertyAll(
+              //   RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              // ),
+            ),
+            confirmButtonStyle: ButtonStyle(
+              textStyle: WidgetStatePropertyAll(
+                AppTypography.style(15, fontWeight: FontWeight.w600),
+              ),
+              foregroundColor: WidgetStatePropertyAll(AppColors.blue005AA9),
+              // shape: WidgetStatePropertyAll(
+              //   RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              // ),
+            ),
+            backgroundColor: AppColors.scaffoldBgLight,
+            headerBackgroundColor: AppColors.blue005AA9,
+            headerForegroundColor: Colors.white,
+            headerHelpStyle: AppTypography.style(15, fontWeight: FontWeight.w500),
+            headerHeadlineStyle: AppTypography.style(28, fontWeight: FontWeight.w600),
+            weekdayStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
+            dayStyle: AppTypography.style(14, fontWeight: FontWeight.w400),
+            yearStyle: AppTypography.style(14, fontWeight: FontWeight.w400),
+            inputDecorationTheme: InputDecorationTheme(
+              hintStyle: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w400,
+                color: AppColors.grey94A3B8,
+              ),
+              labelStyle: AppTypography.style(
+                16,
+                fontWeight: FontWeight.w500,
+                color: AppColors.secondary,
+              ),
+              errorStyle: AppTypography.style(
+                12,
+                fontWeight: FontWeight.w400,
+                color: AppColors.redFF0909,
+              ),
+              isDense: true,
+              floatingLabelBehavior: FloatingLabelBehavior.auto,
+              errorBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.redFF0909)),
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.secondary)),
+            ),
+            dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+              return states.contains(WidgetState.selected)
+                  ? AppColors.blue005AA9
+                  : Colors.transparent;
+            }),
+            dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return Colors.white;
+              }
+              if (states.contains(WidgetState.disabled)) {
+                return AppColors.grey94A3B8;
+              }
+              return AppColors.black171725;
+            }),
+            todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+              return states.contains(WidgetState.selected)
+                  ? AppColors.blue005AA9
+                  : Colors.transparent;
+            }),
+            todayForegroundColor: WidgetStateProperty.resolveWith((states) {
+              return states.contains(WidgetState.selected) ? Colors.white : AppColors.blue005AA9;
+            }),
+            yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+              return states.contains(WidgetState.selected)
+                  ? AppColors.blue005AA9
+                  : Colors.transparent;
+            }),
+            yearForegroundColor: WidgetStateProperty.resolveWith((states) {
+              return states.contains(WidgetState.selected) ? Colors.white : Colors.black;
+            }),
+            yearOverlayColor: WidgetStatePropertyAll(AppColors.blue005AA9),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+
+    if (result != null) {
+      // ignore: use_build_context_synchronously
+      _dBloc(context).add(ChangePlaybackDate(result));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -36,14 +167,18 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
                   AppAssets.icArrowChevronLeft,
                   () => _dBloc(context).add(ChangePlaybackDate(date.subtract(Duration(days: 1)))),
                 ),
-                Text(
-                  date.format('dd/MM/yyyy'),
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.blackOrWhite,
+                GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () => _showPopupSelectDate(context),
+                  child: Text(
+                    date.format('dd/MM/yyyy'),
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.blackOrWhite,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
                 _icon(
                   AppAssets.icArrowChevronRight,
