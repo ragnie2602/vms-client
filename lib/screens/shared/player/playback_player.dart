@@ -698,8 +698,14 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     }
     // Cuối playlist
     if (_toMs >= _totalMs - 500 && currentIndex == widget.playlist.length - 1) {
-      // Để video nhảy 1 phát xong hiện pause luôn
-      await _muteOnAction(() => _player.seek(position: _totalMs - 500, flags: _seekFlag));
+      await _muteOnAction(() async {
+        // flag fromStart (chính xác hơn) --> đảm bảo seek thành công --> Khi unloaded+end thì đọc position đúng
+        // flag keyFrame + inCache --> thất bại (-1) --> Khi unloaded+end thì position cũ --> error thay vì finished
+        // Tua tới sát cuối --> Video play 1 phát xong thành finished luôn
+        await _player.seek(position: _totalMs - 500, flags: SeekFlag(SeekFlag.fromStart));
+      });
+
+      _accumulatingSeekQueue.cancelPending();
       return;
     }
 
@@ -711,6 +717,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
           _player.play();
           await Future.delayed(Duration(milliseconds: 150));
         }
+
+        // Thuộc khoảng --> Ưu tiên flag tốc độ
         await _player.seek(position: _toMs, flags: _seekFlag);
       });
     }
