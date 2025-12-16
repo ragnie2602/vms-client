@@ -161,13 +161,12 @@ class _UserProfileState extends State<UserProfile> {
             _buildMenuItemWithTooltip(
               title: 'Đa màn hình',
               icon: SvgPicture.asset(AppAssets.icNewWindow),
-              onTap: () {
-                context.read<AppBloc>().add(CreateNewWindow());
-              },
+              onTap: () => context.read<AppBloc>().add(CreateNewWindow()),
               showTooltip:
                   MultiWindowUtil.getSubWindowCount() >=
                   AppConfig.MAXIMUM_SUB_WINDOWS,
-              tooltipMessage: 'Bạn chỉ được hiển thị tối đa 3 cửa sổ phụ',
+              tooltipMessage:
+                  'Bạn chỉ được hiển thị tối đa ${AppConfig.MAXIMUM_SUB_WINDOWS} cửa sổ phụ',
               enabled:
                   MultiWindowUtil.getSubWindowCount() <
                   AppConfig.MAXIMUM_SUB_WINDOWS,

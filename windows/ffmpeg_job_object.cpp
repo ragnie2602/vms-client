@@ -1,6 +1,7 @@
 #include "ffmpeg_job_object.h"
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
+#include <flutter/plugin_registrar_windows.h>
 
 #include <windows.h>
 #include <atomic>
@@ -207,16 +208,16 @@ void BindPidAndWatcher(int ffmpegPid,
 // ======================================================
 namespace ffjob {
 
-void RegisterFFmpegJobChannel(flutter::FlutterEngine* engine) {
+static void RegisterFFmpegJobChannelWithMessenger(flutter::BinaryMessenger* messenger) {
     CreateAppJobIfNeeded();
     AssignCurrentProcessToAppJob();
 
     static std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel;
     channel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-        engine->messenger(), "ffmpeg_job", &flutter::StandardMethodCodec::GetInstance());
+        messenger, "ffmpeg_job", &flutter::StandardMethodCodec::GetInstance());
 
-    channel->SetMethodCallHandler([](const flutter::MethodCall<flutter::EncodableValue>& call,
-                                     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    auto handler = [](const flutter::MethodCall<flutter::EncodableValue>& call,
+                     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
         if (call.method_name() == "bindPid") {
             const auto* args = std::get_if<flutter::EncodableMap>(call.arguments());
             if (!args) {
@@ -284,9 +285,25 @@ void RegisterFFmpegJobChannel(flutter::FlutterEngine* engine) {
             return;
         }
         result->NotImplemented();
-    });
+    };
 
+    channel->SetMethodCallHandler(handler);
     LOGI("Registered ffmpeg_job channel");
+}
+
+void RegisterFFmpegJobChannel(flutter::FlutterEngine* engine) {
+    if (engine && engine->messenger()) {
+        RegisterFFmpegJobChannelWithMessenger(engine->messenger());
+    }
+}
+
+void FFmpegJobRegisterWithRegistrar(FlutterDesktopPluginRegistrarRef registrar) {
+    auto plugin_registrar = flutter::PluginRegistrarManager::GetInstance()
+        ->GetRegistrar<flutter::PluginRegistrarWindows>(registrar);
+    
+    if (plugin_registrar && plugin_registrar->messenger()) {
+        RegisterFFmpegJobChannelWithMessenger(plugin_registrar->messenger());
+    }
 }
 
 } // namespace ffjob

@@ -32,11 +32,14 @@ class MonitorCameras extends StatefulWidget {
   State<MonitorCameras> createState() => _MonitorCamerasState();
 }
 
-class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin {
+class _MonitorCamerasState extends State<MonitorCameras>
+    with StateBuilderMixin {
   late Function(CameraEntity) onTap;
   late CameraEntity? selectedCamera;
 
-  late final _searchController = TextEditingController(text: _monitorBloc.filterData.searchText);
+  late final _searchController = TextEditingController(
+    text: _monitorBloc.filterData.searchText,
+  );
   late final MonitorBloc _monitorBloc = context.read<MonitorBloc>();
 
   final LayerLink layerLink = LayerLink();
@@ -57,7 +60,7 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
 
     super.initState();
 
-    if (mounted && _monitorBloc.state is! MonitorSuccess) _monitorBloc.add(GetAllCamera());
+    if (mounted) _monitorBloc.add(GetAllCamera());
   }
 
   @override
@@ -86,7 +89,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     bool matchesTags = true;
     if (_selectedTags.isNotEmpty) {
       // Check if camera has ANY of the selected tags
-      matchesTags = camera.tags.any((cameraTag) => _selectedTags.contains(cameraTag));
+      matchesTags = camera.tags.any(
+        (cameraTag) => _selectedTags.contains(cameraTag),
+      );
     }
 
     return matchesSearch && matchesTags;
@@ -128,7 +133,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                       margin: EdgeInsets.only(right: 16, left: 12),
                       child: SvgPicture.asset(AppAssets.icSearch),
                     ),
-                    prefixIconConstraints: BoxConstraints.tight(Size(20 + 16 + 12, 20)),
+                    prefixIconConstraints: BoxConstraints.tight(
+                      Size(20 + 16 + 12, 20),
+                    ),
                     suffixIcon: ValueListenableBuilder(
                       valueListenable: _searchController,
                       builder: (context, value, child) => value.text.isEmpty
@@ -204,7 +211,11 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                                     _selectedTags.clear();
                                   });
                                 },
-                                child: Icon(Icons.cancel, size: 16, color: AppColors.blue005AA9),
+                                child: Icon(
+                                  Icons.cancel,
+                                  size: 16,
+                                  color: AppColors.blue005AA9,
+                                ),
                               ),
                             ],
                             if (_selectedTags.isEmpty) ...[
@@ -229,7 +240,8 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                     builder: (context, value, child) {
                       final cameras = state.cameras.where(_filterFunc).toList();
 
-                      if (cameras.isEmpty && (value.text.isNotEmpty || _selectedTags.isNotEmpty)) {
+                      if (cameras.isEmpty &&
+                          (value.text.isNotEmpty || _selectedTags.isNotEmpty)) {
                         return _buildSearchEmpty();
                       }
 
@@ -237,7 +249,8 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                         padding: EdgeInsets.only(bottom: 20),
                         primary: true,
                         itemCount: cameras.length,
-                        itemBuilder: (context, index) => _cameraItem(context, cameras[index]),
+                        itemBuilder: (context, index) =>
+                            _cameraItem(context, cameras[index]),
                       );
                     },
                   ),
@@ -254,7 +267,11 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     return Center(
       child: Text(
         'Không có dữ liệu hiển thị',
-        style: AppTypography.style(14, fontWeight: FontWeight.w600, color: AppColors.blackOrWhite),
+        style: AppTypography.style(
+          14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.blackOrWhite,
+        ),
       ),
     );
   }
@@ -274,7 +291,8 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
       builder: (context) => BlocProvider.value(
         value: mainContext.read<ControlCameraBloc>(),
         child: TagDropdown(
-          excludedCameraNames: excludedCameraNames, // Truyền danh sách camera đã có
+          excludedCameraNames:
+              excludedCameraNames, // Truyền danh sách camera đã có
           onClose: () {
             _overlayEntry?.remove();
             _overlayEntry = null;
@@ -303,7 +321,10 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  void _showTagManagementDialog(BuildContext mainContext, List<TagEntity> tags) {
+  void _showTagManagementDialog(
+    BuildContext mainContext,
+    List<TagEntity> tags,
+  ) {
     showDialog(
       context: mainContext,
       builder: (context) => BlocProvider.value(
@@ -322,7 +343,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        color: selectedCamera?.camId == camera.camId ? AppColors.greyF2F4FA : Colors.transparent,
+        color: selectedCamera?.camId == camera.camId
+            ? AppColors.greyF2F4FA
+            : Colors.transparent,
         child: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [
@@ -330,7 +353,11 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 Container(
                   height: 35,
                   alignment: Alignment.topCenter,
-                  child: SvgPicture.asset(AppAssets.icVideoOn, width: 20, height: 20),
+                  child: SvgPicture.asset(
+                    AppAssets.icVideoOn,
+                    width: 20,
+                    height: 20,
+                  ),
                 ),
                 SizedBox(width: 16),
               ],
@@ -368,7 +395,9 @@ class _MonitorCamerasState extends State<MonitorCameras> with StateBuilderMixin 
                 SizedBox.square(
                   dimension: 8,
                   child: CircleAvatar(
-                    backgroundColor: camera.isOnline ? Color(0xFF21CCC3) : Color(0xFF64748B),
+                    backgroundColor: camera.isOnline
+                        ? Color(0xFF21CCC3)
+                        : Color(0xFF64748B),
                   ),
                 ),
                 SizedBox(width: 8),
