@@ -9,7 +9,7 @@
     <!-- Gal: For supporting API <= 29 :Gal-->
 
     <application
-        android:label="VNPT Secure Vision"
+        android:label="Secure Vision"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true"> <!-- Gal: For saving to album in API 29 :Gal-->
