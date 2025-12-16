@@ -572,8 +572,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   }
 
   // Trên android khi tua/jump xong sẽ có tiếng lạ
-  Future<void> _muteOnAction(FutureOr Function() action) async {
-    if (!Platform.isAndroid) {
+  Future<void> _muteOnAction(FutureOr Function() action, {int? delayMs}) async {
+    if (!Platform.isAndroid || _player.volume == 0) {
       await action();
       return;
     }
@@ -581,7 +581,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     final lastVolume = _player.volume;
     _player.volume = 0;
     await action();
-    await Future.delayed(Duration(milliseconds: 150));
+    await Future.delayed(Duration(milliseconds: delayMs ?? 250));
     _player.volume = lastVolume;
   }
 
@@ -671,7 +671,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
         await _player.prepare(position: diff.inMilliseconds);
         _player.state = PlaybackState.playing;
         _waitForUnloadedOldMedia.safeComplete();
-      });
+      }, delayMs: 1000);
     }
   }
 
