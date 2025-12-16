@@ -961,7 +961,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
             return GestureDetector(
               behavior: HitTestBehavior.translucent, // Nhận event khi chạm vào khoảng không
-              onTap: togglePlay,
+              // onTap: togglePlay, // chặn không cho tap vào nút play/pause
               child: Container(
                 alignment: Alignment.center,
                 // color: Colors.black.withValues(alpha: 0.25),
