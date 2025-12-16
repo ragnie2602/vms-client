@@ -64,6 +64,10 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
                   enableZoom: true,
                   initialVolume: 0,
                   initialDate: widget.item.initialDate,
+                  playbackDate: context
+                      .read<MultiPlaybackBloc>()
+                      .state
+                      .playbackDate,
                 ),
           // Close button
           Positioned(

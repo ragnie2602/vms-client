@@ -31,6 +31,7 @@ class MultiPlaybackPlayer extends StatefulWidget {
     required this.playlist,
     required this.name,
     required this.initialDate,
+    required this.playbackDate,
     required this.controller,
     this.onStatusChanged,
     this.onInitializedValues,
@@ -49,6 +50,7 @@ class MultiPlaybackPlayer extends StatefulWidget {
   final List<PlaybackVideo> playlist;
   final String name;
   final DateTime initialDate;
+  final DateTime playbackDate;
   final PlayerController controller;
   final Function(PlayerStatus)? onStatusChanged;
   final Function({required double volume, required double speed})? onInitializedValues;
@@ -113,6 +115,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
   final _wakelock = Wakelock();
   bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  DateTime get _endDate => widget.playbackDate.startOfNextDay;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -313,7 +316,12 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
           !_isSeeking.value) {
         // Delay để tránh bị override lại khi check timer 1s
         Future.delayed(Duration(milliseconds: 1100), () {
-          if (mounted) _status.value = PlayerStatus.finished;
+          if (!mounted) return;
+          if (widget.playlist.last.endTime.isBefore(_endDate)) {
+            _state.value = PlayerState.empty; // không có bản ghi video để tiếp tục play => view empty
+          } else {
+            _status.value = PlayerStatus.finished;
+          }
         });
       }
 
