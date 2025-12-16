@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 
@@ -46,6 +47,7 @@ class _MobileListPlaybacksState extends State<MobileListPlaybacks> with StateBui
       errorFormatText: "Định dạng không hợp lệ (dd/mm/yyyy)",
       errorInvalidText: "Ngày không hợp lệ",
       locale: Locale('vi', 'VN'),
+      // calendarDelegate: MobileListPlaybackCalendarDelegate(), // custom lại format date
       builder: (context, child) => Theme(
         data: ThemeData(
           dividerTheme: const DividerThemeData(color: Colors.transparent),
@@ -283,5 +285,29 @@ class _MobileListPlaybacksState extends State<MobileListPlaybacks> with StateBui
         colorFilter: disabled ? ColorFilter.mode(Color(0xFFB2B2B2), BlendMode.srcIn) : null,
       ),
     );
+  }
+}
+
+class MobileListPlaybackCalendarDelegate extends GregorianCalendarDelegate {
+  final _mapDayOfWeek = {
+    DateTime.sunday: 'CN',
+    DateTime.monday: 'Thứ 2',
+    DateTime.tuesday: 'Thứ 3',
+    DateTime.wednesday: 'Thứ 4',
+    DateTime.thursday: 'Thứ 5',
+    DateTime.friday: 'Thứ 6',
+    DateTime.saturday: 'Thứ 7',
+  };
+
+  @override
+  String formatMediumDate(DateTime date, MaterialLocalizations localizations) {
+    // 'Thứ 3, 16 tháng 12'
+    return date.format("'${_mapDayOfWeek[date.weekday]}', d MMMM", locale: 'vi');
+  }
+
+  @override
+  String formatMonthYear(DateTime date, MaterialLocalizations localizations) {
+    // 'Tháng 12, 2025'
+    return date.format("MMMM, yyyy", locale: 'vi').capitalizeFirstLetter;
   }
 }
