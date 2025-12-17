@@ -3,24 +3,41 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 
+import '../../../core/utils/size_observer.dart';
 import '../../shared/state_builder_mixin.dart';
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 import '../bloc/playback/playback_bloc.dart';
 import '../widgets/mobile_playback_card.dart';
 
-class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
+class MobileListPlaybacks extends StatefulWidget {
   const MobileListPlaybacks({super.key});
 
-  CameraDetailBloc _dBloc(BuildContext context) => context.read<CameraDetailBloc>();
+  @override
+  State<MobileListPlaybacks> createState() => _MobileListPlaybacksState();
+}
 
-  Future<void> _showPopupSelectDate(BuildContext context) async {
+class _MobileListPlaybacksState extends State<MobileListPlaybacks> with StateBuilderMixin {
+  CameraDetailBloc get _dBloc => context.read<CameraDetailBloc>();
+
+  late final ScrollController _scrollController = ScrollController();
+  double? _cardHeight;
+  double? _listHeight;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showPopupSelectDate() async {
     final result = await showDatePicker(
       context: context,
       currentDate: DateTime.now(),
-      initialDate: _dBloc(context).state.playbackDate,
+      initialDate: _dBloc.state.playbackDate,
       firstDate: DateTime.fromMillisecondsSinceEpoch(0),
       lastDate: DateTime.now(),
       helpText: "Lựa chọn ngày",
@@ -30,6 +47,7 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
       errorFormatText: "Định dạng không hợp lệ (dd/mm/yyyy)",
       errorInvalidText: "Ngày không hợp lệ",
       locale: Locale('vi', 'VN'),
+      // calendarDelegate: MobileListPlaybackCalendarDelegate(), // custom lại format date
       builder: (context, child) => Theme(
         data: ThemeData(
           dividerTheme: const DividerThemeData(color: Colors.transparent),
@@ -141,9 +159,8 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
       ),
     );
 
-    if (result != null) {
-      // ignore: use_build_context_synchronously
-      _dBloc(context).add(ChangePlaybackDate(result));
+    if (result != null && mounted) {
+      _dBloc.add(ChangePlaybackDate(result));
     }
   }
 
@@ -165,11 +182,11 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
               children: <Widget>[
                 _icon(
                   AppAssets.icArrowChevronLeft,
-                  () => _dBloc(context).add(ChangePlaybackDate(date.subtract(Duration(days: 1)))),
+                  () => _dBloc.add(ChangePlaybackDate(date.subtract(Duration(days: 1)))),
                 ),
                 GestureDetector(
                   behavior: HitTestBehavior.translucent,
-                  onTap: () => _showPopupSelectDate(context),
+                  onTap: _showPopupSelectDate,
                   child: Text(
                     date.format('dd/MM/yyyy'),
                     style: AppTypography.style(
@@ -182,10 +199,8 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
                 ),
                 _icon(
                   AppAssets.icArrowChevronRight,
-                  () => _dBloc(context).add(ChangePlaybackDate(date.add(Duration(days: 1)))),
-                  disabled: _dBloc(
-                    context,
-                  ).state.playbackDate.startOfNextDay.isAfter(DateTime.now()),
+                  () => _dBloc.add(ChangePlaybackDate(date.add(Duration(days: 1)))),
+                  disabled: _dBloc.state.playbackDate.startOfNextDay.isAfter(DateTime.now()),
                 ),
               ],
             ),
@@ -194,36 +209,63 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
 
         /* List playbacks */
         Expanded(
-          child: BlocBuilder<PlaybackBloc, PlaybackState>(
-            builder: (context, state) => stateBuilder<PlaybackSuccess>(
-              state,
-              emptyBuilder: () => Center(
-                child: Text(
-                  'Không có đoạn video nào được lưu trong khoảng thời gian này.',
-                  textAlign: TextAlign.center,
-                  maxLines: 5,
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.grey666666,
+          child: SizeObserver(
+            onChange: (size) => _listHeight = size.height,
+            child: BlocBuilder<PlaybackBloc, PlaybackState>(
+              buildWhen: (pre, current) {
+                final preSelectedIndex = pre is PlaybackSuccess ? pre.currentIndex : null;
+                if (current is PlaybackSuccess && current.currentIndex != preSelectedIndex) {
+                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                    if (_scrollController.hasClients == false) return;
+
+                    _scrollController.animateTo(
+                      // scroll tới vị trí sao cho currentIndex nằm ở giữa màn hình
+                      current.currentIndex * (_cardHeight ?? 72) -
+                          (_listHeight ?? 0) / 2 +
+                          (_cardHeight ?? 0) / 2,
+                      duration: Durations.medium1,
+                      curve: Curves.easeOutCubic,
+                    );
+                  });
+                }
+
+                return true;
+              },
+              builder: (context, state) => stateBuilder<PlaybackSuccess>(
+                state,
+                emptyBuilder: () => Center(
+                  child: Text(
+                    'Không có đoạn video nào được lưu trong khoảng thời gian này.',
+                    textAlign: TextAlign.center,
+                    maxLines: 5,
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.grey666666,
+                    ),
                   ),
                 ),
-              ),
-              child: (state) => ListView.builder(
-                itemCount: state.playbacks.length,
-                itemBuilder: (context, index) => MobilePlaybackCard(
-                  onTap: () => context
-                      .read<CameraDetailBloc>()
-                      .state
-                      .playerController
-                      .jumpToDate
-                      ?.call(state.playbacks[index].startTime, dateIndex: index),
-                  key: ValueKey(state.playbacks[index].playbackId),
-                  playback: state.playbacks[index],
-                  isSelected: state.currentIndex == index,
-                  backgroundColor: state.currentIndex == index
-                      ? AppColors.greyF2F4FA
-                      : Colors.white,
+                child: (state) => ListView.builder(
+                  physics: ClampingScrollPhysics(),
+                  controller: _scrollController,
+                  itemCount: state.playbacks.length,
+                  itemBuilder: (context, index) => SizeObserver(
+                    onChange: (size) => _cardHeight = size.height,
+                    child: MobilePlaybackCard(
+                      onTap: () => context
+                          .read<CameraDetailBloc>()
+                          .state
+                          .playerController
+                          .jumpToDate
+                          ?.call(state.playbacks[index].startTime, dateIndex: index),
+                      key: ValueKey(state.playbacks[index].playbackId),
+                      playback: state.playbacks[index],
+                      isSelected: state.currentIndex == index,
+                      backgroundColor: state.currentIndex == index
+                          ? AppColors.greyF2F4FA
+                          : Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -243,5 +285,29 @@ class MobileListPlaybacks extends StatelessWidget with StateBuilderMixin {
         colorFilter: disabled ? ColorFilter.mode(Color(0xFFB2B2B2), BlendMode.srcIn) : null,
       ),
     );
+  }
+}
+
+class MobileListPlaybackCalendarDelegate extends GregorianCalendarDelegate {
+  final _mapDayOfWeek = {
+    DateTime.sunday: 'CN',
+    DateTime.monday: 'Thứ 2',
+    DateTime.tuesday: 'Thứ 3',
+    DateTime.wednesday: 'Thứ 4',
+    DateTime.thursday: 'Thứ 5',
+    DateTime.friday: 'Thứ 6',
+    DateTime.saturday: 'Thứ 7',
+  };
+
+  @override
+  String formatMediumDate(DateTime date, MaterialLocalizations localizations) {
+    // 'Thứ 3, 16 tháng 12'
+    return date.format("'${_mapDayOfWeek[date.weekday]}', d MMMM", locale: 'vi');
+  }
+
+  @override
+  String formatMonthYear(DateTime date, MaterialLocalizations localizations) {
+    // 'Tháng 12, 2025'
+    return date.format("MMMM, yyyy", locale: 'vi').capitalizeFirstLetter;
   }
 }
