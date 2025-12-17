@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/screens/event/components/custom_tab_bar.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 
 class EventDetailDialog extends StatefulWidget {
@@ -57,7 +58,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _CustomTabBar(
+                    CustomTabBar(
                       controller: tabController,
                       tabs: const ['Ảnh sự kiện', 'Video ghi hình'],
                     ),
@@ -262,53 +263,6 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
     return Image.network(
       'https://cdn.wikimg.net/en/hkwiki/images/5/57/SoSpromo1.jpg',
       fit: BoxFit.contain,
-    );
-  }
-}
-
-class _CustomTabBar extends StatefulWidget {
-  final TabController controller;
-  final List<String> tabs;
-
-  const _CustomTabBar({required this.controller, required this.tabs});
-
-  @override
-  State<_CustomTabBar> createState() => _CustomTabBarState();
-}
-
-class _CustomTabBarState extends State<_CustomTabBar> {
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(() => setState(() {}));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(widget.tabs.length, (index) {
-        final isSelected = widget.controller.index == index;
-
-        return InkWell(
-          onTap: () => widget.controller.animateTo(index),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isSelected ? AppColors.secondary : AppColors.greyFBFBFB,
-              border: isSelected ? null : Border.all(color: AppColors.greyF2F4FA),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 11),
-            child: Text(
-              widget.tabs[index],
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : AppColors.grey64748B,
-              ),
-            ),
-          ),
-        );
-      }),
     );
   }
 }

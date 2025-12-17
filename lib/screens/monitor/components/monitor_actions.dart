@@ -25,6 +25,7 @@ class MonitorActions extends StatefulWidget {
 
 class _MonitorActionsState extends State<MonitorActions> {
   final ValueNotifier<int?> _leftPanelIndex = ValueNotifier(null);
+  final ValueNotifier<int?> _rightPanelIndex = ValueNotifier(null);
 
   @override
   void dispose() {
@@ -122,24 +123,21 @@ class _MonitorActionsState extends State<MonitorActions> {
                 ],
               ),
             ),
-
-            /*  */
-            // TODO: Do in the future
-            // ValueListenableBuilder(
-            //   valueListenable: _rightPanelIndex,
-            //   builder: (context, value, child) => Row(
-            //     mainAxisSize: MainAxisSize.min,
-            //     children: [
-            //       ActionItem.alert(
-            //         isSelected: value == 0,
-            //         id: 0,
-            //         controller: widget.rightController,
-            //         onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
-            //         count: '09',
-            //       ),
-            //     ],
-            //   ),
-            // ),
+            ValueListenableBuilder(
+              valueListenable: _rightPanelIndex,
+              builder: (context, value, child) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ActionItem.alert(
+                    isSelected: value == 0,
+                    id: 0,
+                    controller: widget.rightController,
+                    onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
+                    count: '09',
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

@@ -42,7 +42,7 @@ class EventScreen extends StatelessWidget {
                 SizedBox(width: 16),
                 Expanded(
                   child: EventFilterDropdown<String>(
-                    items: [],
+                    items: ['Intrusion detection', 'Object detection', 'Face detection'],
                     label: 'Sự kiện',
                     onChanged: (_) {},
                   ),
@@ -50,7 +50,7 @@ class EventScreen extends StatelessWidget {
                 SizedBox(width: 16),
                 Expanded(
                   child: EventFilterDropdown<String>(
-                    items: [],
+                    items: ['Camera 1', 'Camera 2', 'Camera 3'],
                     label: 'Thiết bị',
                     onChanged: (_) {},
                   ),

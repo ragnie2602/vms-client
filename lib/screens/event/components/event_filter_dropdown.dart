@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -86,19 +87,39 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
         border: Border.all(color: AppColors.greyE2E8F0, width: 1),
         borderRadius: BorderRadius.circular(3),
       ),
-      child: DropdownButton(
+      child: DropdownButton2<T>(
+        buttonStyleData: ButtonStyleData(
+          height: 42,
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        ),
+        dropdownStyleData: DropdownStyleData(
+          offset: const Offset(0, -8),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
+        ),
         hint: Text(
           widget.hint ?? '',
           style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.grey64748B),
         ),
-        isDense: true,
         isExpanded: true,
         items: widget.items
-            .map((item) => DropdownMenuItem(value: item, child: Text(item.toString())))
+            .map(
+              (item) => DropdownMenuItem<T>(
+                value: item,
+                child: Text(
+                  item.toString(),
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.black,
+                  ),
+                ),
+              ),
+            )
             .toList(),
-        onChanged: widget.onChanged,
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+        onChanged: (value) {
+          setState(() => _selectedValue = value);
+          widget.onChanged(value);
+        },
         underline: Container(),
         value: _selectedValue,
       ),
