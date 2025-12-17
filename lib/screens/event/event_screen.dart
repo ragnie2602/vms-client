@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/screens/event/components/event_custom_button.
 import 'package:vms_flutter_client/screens/event/components/event_filter_dropdown.dart';
 import 'package:vms_flutter_client/screens/event/components/event_item.dart';
 import 'package:vms_flutter_client/screens/event/components/search_box.dart';
+import 'package:vms_flutter_client/screens/event/components/setup_info_field_dialog.dart';
 
 class EventScreen extends StatelessWidget {
   const EventScreen({super.key});
@@ -64,7 +65,7 @@ class EventScreen extends StatelessWidget {
                         borderColor: AppColors.blue005AA9,
                         borderRadius: 3,
                         label: 'Cài đặt',
-                        onPressed: () {},
+                        onPressed: () => showSetupInfoFieldsDialog(context),
                         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         textStyle: AppTypography.style(
                           14,
@@ -102,5 +103,9 @@ class EventScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  showSetupInfoFieldsDialog(BuildContext context) {
+    showDialog(context: context, builder: (context) => SetupInfoFieldDialog());
   }
 }
