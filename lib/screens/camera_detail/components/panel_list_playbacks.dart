@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/size_observer.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
@@ -14,9 +15,46 @@ import '../bloc/camera_detail/camera_detail_bloc.dart';
 import '../bloc/playback/playback_bloc.dart';
 import '../widgets/playback_painter.dart';
 
-class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
+class PanelListPlaybacks extends StatefulWidget {
   const PanelListPlaybacks({super.key, required this.maxWidth});
   final double maxWidth;
+
+  @override
+  State<PanelListPlaybacks> createState() => _PanelListPlaybacksState();
+}
+
+class _PanelListPlaybacksState extends State<PanelListPlaybacks> with StateBuilderMixin {
+  late final ScrollController _scrollController = ScrollController();
+  double _cardHeight = 36;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _scrollToCurrentIndex();
+  }
+
+  void _scrollToCurrentIndex() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (_scrollController.hasClients == false ||
+          context.read<PlaybackBloc>().state is! PlaybackSuccess) {
+        return;
+      }
+
+      _scrollController.animateTo(
+        // scroll tới vị trí sao cho currentIndex nằm ở giữa màn hình
+        (context.read<PlaybackBloc>().state as PlaybackSuccess).currentIndex * _cardHeight,
+        duration: Durations.medium1,
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,32 +62,44 @@ class PanelListPlaybacks extends StatelessWidget with StateBuilderMixin {
     if (context.read<CameraDetailBloc>().state.camera == null) return buildEmpty();
 
     return BlocBuilder<PlaybackBloc, PlaybackState>(
+      buildWhen: (pre, current) {
+        final preSelectedIndex = pre is PlaybackSuccess ? pre.currentIndex : null;
+        if (current is PlaybackSuccess && current.currentIndex != preSelectedIndex) {
+          _scrollToCurrentIndex();
+        }
+
+        return true;
+      },
       builder: (context, state) => stateBuilder<PlaybackSuccess>(
         state,
         child: (state) => Material(
           color: Colors.transparent,
           child: ListView.builder(
+            controller: _scrollController,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: state.playbacks.length,
             itemBuilder: (context, index) {
               final playback = state.playbacks[index];
 
-              return InkWell(
-                onTap: () => context
-                    .read<CameraDetailBloc>()
-                    .state
-                    .playerController
-                    .jumpToDate
-                    ?.call(playback.startTime, dateIndex: index),
-                child: PlaybackItem(
-                  maxWidth: maxWidth,
-                  playback: playback,
-                  backgroundColor: state.currentIndex == index
-                      ? AppColors.primary.withValues(alpha: 0.25)
-                      : index % 2 == 0
-                      ? null
-                      : AppColors.greyF2F4FA.withValues(alpha: 0.75),
-                  key: ValueKey(playback.playbackId),
+              return SizeObserver(
+                onChange: (size) => _cardHeight = size.height,
+                child: InkWell(
+                  onTap: () => context
+                      .read<CameraDetailBloc>()
+                      .state
+                      .playerController
+                      .jumpToDate
+                      ?.call(playback.startTime, dateIndex: index),
+                  child: PlaybackItem(
+                    maxWidth: widget.maxWidth,
+                    playback: playback,
+                    backgroundColor: state.currentIndex == index
+                        ? AppColors.primary.withValues(alpha: 0.25)
+                        : index % 2 == 0
+                        ? null
+                        : AppColors.greyF2F4FA.withValues(alpha: 0.75),
+                    key: ValueKey(playback.playbackId),
+                  ),
                 ),
               );
             },
