@@ -62,7 +62,7 @@ class AppConfig {
   /* MDK (FVP) */
   static const MDK_LOG_LEVEL = LogLevel.off; // off < error < warning < info < debug < all
   static const SHOW_MDK_LOG = false;
-  static const MDK_DECODERS = ['D3D11', 'DXVA', 'MFT:d3d=11', 'CUDA', 'FFmpeg'];
+  static const MDK_DECODERS = ['auto'];
 
   /* [Player] Timeout khi khởi tạo player (VideoPlayerController) */
   static const PLAYER_INITIALIZATION_TIMEOUT = Duration(seconds: 45);
