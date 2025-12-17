@@ -5,6 +5,7 @@ abstract class IAuthRepository {
   Future<bool> login(Authentication authentication);
   Future<void> logout();
   Future<bool> isLoggedIn();
+  Future<void> register(String server, String account, String password);
 
   Future<void> connectSocket({
     required String host,

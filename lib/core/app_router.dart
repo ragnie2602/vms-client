@@ -40,11 +40,14 @@ import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
+import '../domain/usecases/register/register_usecase.dart';
 import '../screens/about/about_screen.dart';
 import '../screens/home/bloc/home_bloc.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/login/bloc/login_bloc.dart';
 import '../screens/login/login_screen.dart';
+import '../screens/register/bloc/register_bloc.dart';
+import '../screens/register/mobile_register_screen.dart';
 
 enum Routes {
   splash(name: 'splash', path: '/splash'),
@@ -57,6 +60,7 @@ enum Routes {
         'Cho phép tổ chức và sắp xếp các thiết bị camera thành các nhóm logic để dễ dàng theo dõi và quản lý',
   ),
   login(name: 'login', path: '/login'),
+  register(name: 'register', path: '/register'),
   monitoring(
     name: 'monitoring',
     path: '/monitoring',
@@ -152,6 +156,15 @@ class AppRouter {
             onDesktop: (_) => LoginScreen(),
             onMobile: (_) => MobileLoginScreen(),
           ),
+        ),
+      ),
+      GoRoute(
+        path: Routes.register.path,
+        name: Routes.register.name,
+        builder: (context, state) => BlocProvider(
+          create: (context) =>
+              RegisterBloc(registerUseCase: context.read<RegisterUseCase>()),
+          child: MobileRegisterScreen(),
         ),
       ),
       ShellRoute(
