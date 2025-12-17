@@ -19,6 +19,7 @@ class AppAssets {
   static const tabCameras = '$_svgPath/tab_camera.svg';
   static const tabSettings = '$_svgPath/settings.svg';
   static const tabMap = '$_svgPath/ic_map.svg';
+  static const tabEvents = '$_svgPath/tab_events.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
   static const tabSystemConfig = '$_svgPath/tab_setting.svg';
 
@@ -116,7 +117,6 @@ class AppAssets {
   static const iconCamera = '$_svgPath/ic_camera.svg';
   static const icMultiPlayback = '$_svgPath/ic_multi_playback.svg';
 
-
   static const icLogout = '$_svgPath/ic_logout.svg';
   static const icKey = '$_svgPath/ic_key.svg';
   static const icCameraMap = '$_svgPath/ic_camera_map.svg';
@@ -151,7 +151,7 @@ class AppAssets {
   static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
   static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
 
-   static const icUpload = '$_svgPath/ic_upload.svg';
+  static const icUpload = '$_svgPath/ic_upload.svg';
 
   static const icSpeed = '$_svgPath/ic_speed.svg';
 

@@ -69,7 +69,10 @@ class _UserProfileState extends State<UserProfile> {
               color: Colors.transparent,
               child: Row(
                 children: <Widget>[
-                  ClipRRect(
+                  SizedBox(
+                    height: 32,
+                    width: 32,
+                    child: ClipRRect(
                     borderRadius: BorderRadius.circular(32),
                     child: Image.network(
                       AppData.instance.profile?.avatar ?? "",
@@ -79,6 +82,7 @@ class _UserProfileState extends State<UserProfile> {
                           CupertinoActivityIndicator(),
                       errorBuilder: (context, error, stackTrace) =>
                           Image.asset(AppAssets.defaultAvatar),
+                      ),
                     ),
                   ),
                   SizedBox(width: 12),
