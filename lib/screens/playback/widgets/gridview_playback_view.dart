@@ -34,7 +34,7 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
     _overlayEntry = null;
   }
 
-  void _showCameraPopup(BuildContext context, int index) {
+  void _showCameraPopup(BuildContext context, int index, double parentWidth, double parentHeight) {
     _removeOverlay();
 
     final bloc = context.read<MultiPlaybackBloc>();
@@ -78,6 +78,9 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
                   bloc.add(AddCameraEvent(newCam: camera, indexCam: index));
                   _removeOverlay();
                 },
+                maxHeight: parentHeight,
+                maxWidth:
+                    (parentWidth - _layerLinks[index].leaderSize!.width) / 2 - offset.dx.abs(),
               ),
             ),
           ],
@@ -142,7 +145,7 @@ class _GridviewPlaybackViewState extends State<GridviewPlaybackView> {
                           child: CompositedTransformTarget(
                             link: _layerLinks[index],
                             child: InkWell(
-                              onTap: () => _showCameraPopup(context, index),
+                              onTap: () => _showCameraPopup(context, index, itemWidth, itemHeight),
                               child: SvgPicture.asset(
                                 AppAssets.icAddCam,
                                 colorFilter: ColorFilter.mode(
