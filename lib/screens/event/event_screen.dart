@@ -65,7 +65,7 @@ class EventScreen extends StatelessWidget {
                         borderRadius: 3,
                         label: 'Cài đặt',
                         onPressed: () {},
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         textStyle: AppTypography.style(
                           14,
                           fontWeight: FontWeight.w500,

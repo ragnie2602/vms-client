@@ -24,7 +24,7 @@ class _SearchBoxState extends State<SearchBox> {
             borderRadius: 3,
             label: 'Tìm kiếm',
             onPressed: () => setState(() => isSearching = true),
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             textStyle: AppTypography.style(
               14,
               color: AppColors.blue005AA9,
