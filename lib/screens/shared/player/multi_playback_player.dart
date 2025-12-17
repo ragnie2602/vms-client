@@ -621,7 +621,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
       }
 
       await _ensureConnectingFinished();
-      await _jumpToDate(date, dateIndex: index);
+      await _jumpToDate(date, dateIndex: index, autoPlay: false);
 
       // Spam click và sau đó click ra ngoài --> bị nhảy về cái trước đó
       if (_dualQueue.nextJobIsEmpty && !_newestIsEmpty) {
@@ -634,7 +634,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     return _seekingCompleter;
   }
 
-  Future<void> _jumpToDate(DateTime date, {int? dateIndex}) async {
+  Future<void> _jumpToDate(DateTime date, {int? dateIndex, bool autoPlay = true}) async {
     final index = dateIndex ?? widget.playlist.atTime(date);
 
     // Click ngoài khoảng playback
@@ -656,7 +656,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      await pause();
+      if(!autoPlay) await pause();
       if (diff != Duration.zero) {
         await _player.seek(position: diff.inMilliseconds, flags: _seekFlag);
       }
@@ -673,6 +673,8 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
       _player.media = widget.playlist[index].urlPlayback;
       await _player.prepare(position: diff.inMilliseconds);
       _waitForUnloadedOldMedia.safeComplete();
+
+      if(autoPlay) _player.play();
     }
   }
 
