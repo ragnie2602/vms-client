@@ -122,6 +122,14 @@ class AppAssets {
   static const icCameraMap = '$_svgPath/ic_camera_map.svg';
   static const icUserInfo = '$_svgPath/ic_user_info.svg';
 
+  // Behavior detection
+  static const icDangerousObjectDetection = '$_svgPath/ic_dangerous_object_detection.svg';
+  static const icFaceDetection = '$_svgPath/ic_face_detection.svg';
+  static const icIntrusionDetection = '$_svgPath/ic_intrusion_detection.svg';
+  static const icLineCrossingDetection = '$_svgPath/ic_line_crossing_detection.svg';
+  static const icLostObjectDetection = '$_svgPath/ic_lost_object_detection.svg';
+  static const icMotionDetection = '$_svgPath/ic_motion_detection.svg';
+
   // Mobile
   static const icCamera01 = '$_svgPath/ic_camera-01.svg';
   static const icCloseRounded = '$_svgPath/ic_close_rounded.svg';

@@ -1,24 +1,34 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 
 class EventFilterDropdown<T> extends StatefulWidget {
   final String? hint;
+  final bool isDense;
+  final bool isExpanded;
   final List<T> items;
   final T? initialValue;
   final String? label;
   final void Function(dynamic) onChanged;
+  final EdgeInsetsGeometry? padding;
+  final TextStyle? style;
   final EventFilterDropdownType type;
 
   const EventFilterDropdown({
     super.key,
     this.hint,
+    this.isDense = false,
+    this.isExpanded = true,
     required this.items,
     this.initialValue,
     this.label,
     required this.onChanged,
+    this.padding,
+    this.style,
     this.type = EventFilterDropdownType.normal,
   });
 
@@ -89,8 +99,8 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
       ),
       child: DropdownButton2<T>(
         buttonStyleData: ButtonStyleData(
-          height: 42,
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          height: widget.isDense ? 29 : 42,
+          padding: widget.padding ?? EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         ),
         dropdownStyleData: DropdownStyleData(
           offset: const Offset(0, -8),
@@ -100,26 +110,27 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
           widget.hint ?? '',
           style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.grey64748B),
         ),
-        isExpanded: true,
+        iconStyleData: IconStyleData(icon: SvgPicture.asset(AppAssets.icDropdown)),
+        isDense: widget.isDense,
+        isExpanded: widget.isExpanded,
         items: widget.items
-            .map(
-              (item) => DropdownMenuItem<T>(
-                value: item,
-                child: Text(
-                  item.toString(),
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.black,
-                  ),
-                ),
-              ),
-            )
+            .map((item) => DropdownMenuItem<T>(value: item, child: Text(item.toString())))
             .toList(),
         onChanged: (value) {
           setState(() => _selectedValue = value);
           widget.onChanged(value);
         },
+        selectedItemBuilder: (context) => widget.items
+            .map(
+              (item) => Text(
+                item.toString(),
+                style:
+                    widget.style ??
+                    AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+              ),
+            )
+            .toList(),
+        style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
         underline: Container(),
         value: _selectedValue,
       ),

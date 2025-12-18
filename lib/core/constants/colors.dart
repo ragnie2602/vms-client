@@ -17,20 +17,20 @@ class AppColors {
   static Color get contentBg => isDarkMode ? contentBgDark : contentBgLight;
 
   static Color get blackOrWhite => isDarkMode ? Colors.white : Colors.black;
-  static Color get blackOrWhiteReverse =>
-      isDarkMode ? Colors.black : Colors.white;
+  static Color get blackOrWhiteReverse => isDarkMode ? Colors.black : Colors.white;
 
   static const contentFgLight = Color(0xFF000000);
   static const contentFgDark = Color(0xFFC3D3D9);
   static Color get contentFg => isDarkMode ? contentFgDark : contentFgLight;
 
-  static const black171725 = Color(0xFF171725);
   static const black = Color(0xFF000000);
+  static const black171725 = Color(0xFF171725);
+  static const black262C38 = Color(0xFF262C38);
   static const black4A4A4A = Color(0xFF4A4A4A);
   static const black0D0D0D = Color(0xFF0D0D0D);
 
   static const greyC3D3D9 = Color(0xFFC3D3D9);
-
+  static const greyE4E4E4 = Color(0xFFE4E4E4);
   static const greyF1F5F9 = Color(0xFFF1F5F9);
   static const grey334155 = Color(0xFF334155);
 
@@ -42,6 +42,7 @@ class AppColors {
   static const blue15ABFF = Color(0xFF15ABFF);
   static const blue3182CE = Color(0xFF3182CE);
   static const blueE7F3FF = Color(0xFFE7F3FF);
+  static const blueDAE3FF = Color(0xFFDAE3FF);
   static const blueD7E5F1 = Color(0xFFD7E5F1);
 
   static const greyE2E8F0 = Color(0xFFE2E8F0);
@@ -74,4 +75,6 @@ class AppColors {
   static const redFF0909 = Color(0xFFFF0909);
 
   static const white = Colors.white;
+
+  static const yellowFFFBEB = Color(0xFFFFFBEB);
 }
