@@ -9,8 +9,9 @@ import 'package:vms_flutter_client/screens/schedule_recording/widgets/region_mar
 
 class DetectionSettingDialog extends StatefulWidget {
   final String title;
+  final bool timeout;
 
-  const DetectionSettingDialog({super.key, required this.title});
+  const DetectionSettingDialog({super.key, required this.title, this.timeout = false});
 
   @override
   State<DetectionSettingDialog> createState() => _DetectionSettingDialogState();
@@ -20,6 +21,24 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
   bool on = true;
   bool recordEvent = false;
   bool sendWarning = true;
+
+  TextEditingController? timeoutController;
+
+  double _timeoutFieldWidth = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    timeoutController = TextEditingController()..text = '15';
+
+    final textStyle = AppTypography.style(14, fontWeight: FontWeight.w600);
+    final painter = TextPainter(
+      text: TextSpan(text: '000', style: textStyle), // 3 ký tự mẫu
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    _timeoutFieldWidth = painter.width + 32;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,16 +112,16 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                             style: AppTypography.style(14, fontWeight: FontWeight.w400),
                           ),
                         ),
-                        Expanded(
+                        Flexible(
                           flex: 357,
                           child: SizedBox(
-                            width: 270,
+                            width: MediaQuery.widthOf(context) * 270 / 1600,
                             child: EventFilterDropdown<String>(
                               initialValue: 'Trung bình',
                               isDense: true,
                               items: ['Rất thấp', 'Thấp', 'Trung bình', 'Cao', 'Rất cao'],
                               onChanged: (_) {},
-                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: EdgeInsets.only(bottom: 6, right: 10, top: 6),
                               style: AppTypography.style(
                                 14,
                                 fontWeight: FontWeight.w600,
@@ -158,6 +177,59 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
+                    if (widget.timeout) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 210,
+                            child: Text(
+                              'Thời gian:',
+                              style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 357,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: _timeoutFieldWidth,
+                                  child: TextField(
+                                    controller: timeoutController,
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 12,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.blue005AA9),
+                                      ),
+                                      isDense: true,
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    style: AppTypography.style(14, fontWeight: FontWeight.w600),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                Text(
+                                  '(s) ',
+                                  style: AppTypography.style(14, fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  'Thời gian xuất hiện trong khu vực quá',
+                                  style: AppTypography.style(14, isItalic: true),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 10),
                     Expanded(
                       child: Row(

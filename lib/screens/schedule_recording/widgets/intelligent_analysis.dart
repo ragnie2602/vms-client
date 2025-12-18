@@ -24,7 +24,11 @@ class IntelligentAnalysisWidget extends StatelessWidget {
         ),
         children: [
           _IAItem(svgPath: AppAssets.icMotionDetection, title: 'Phát hiện chuyển động'),
-          _IAItem(svgPath: AppAssets.icIntrusionDetection, title: 'Phát hiện xâm nhập'),
+          _IAItem(
+            svgPath: AppAssets.icIntrusionDetection,
+            title: 'Phát hiện xâm nhập',
+            timeoutField: true,
+          ),
           _IAItem(svgPath: AppAssets.icFaceDetection, title: 'Phân biệt đối tượng'),
           _IAItem(svgPath: AppAssets.icLineCrossingDetection, title: 'Phát hiện vượt hàng rào ảo'),
           _IAItem(svgPath: AppAssets.icLostObjectDetection, title: 'Phát hiện vật bị bỏ quên'),
@@ -38,8 +42,9 @@ class IntelligentAnalysisWidget extends StatelessWidget {
 class _IAItem extends StatefulWidget {
   final String svgPath;
   final String title;
+  final bool timeoutField;
 
-  const _IAItem({required this.svgPath, required this.title});
+  const _IAItem({required this.svgPath, required this.title, this.timeoutField = false});
 
   @override
   State<_IAItem> createState() => _IAItemState();
@@ -76,7 +81,11 @@ class _IAItemState extends State<_IAItem> {
                       activeThumbColor: AppColors.white,
                       inactiveTrackColor: AppColors.greyE4E4E4,
                       inactiveThumbColor: AppColors.white,
-                      onChanged: (value) => _openSetting(value, title: widget.title),
+                      onChanged: (value) => _openSetting(
+                        value,
+                        timeoutField: widget.timeoutField,
+                        title: widget.title,
+                      ),
                       trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
                       value: on,
                     ),
@@ -92,12 +101,12 @@ class _IAItemState extends State<_IAItem> {
     );
   }
 
-  _openSetting(bool expected, {required String title}) async {
+  _openSetting(bool expected, {required bool timeoutField, required String title}) async {
     if (!expected) return setState(() => on = expected);
 
     final result = await showDialog(
       context: context,
-      builder: (context) => DetectionSettingDialog(title: title),
+      builder: (context) => DetectionSettingDialog(title: title, timeout: timeoutField),
     );
 
     if (result == true) setState(() => on = expected);
