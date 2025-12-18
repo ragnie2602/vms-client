@@ -39,11 +39,15 @@ class MobileTimelinePainter extends CustomPainter {
   /*  */
   late final TextPainter _textPainter = TextPainter(textDirection: TextDirection.ltr);
   late TextSpan _textSpan;
-  late final Path _path = Path();
   late final Paint centralLinePaint;
   late final Paint tickPaint;
   late final Paint playbackPaint;
   late final Paint unplaybackPaint;
+
+  /// Paths
+  final Path _tickPath = Path();
+  final Path _playbackPath = Path();
+  final Path _currentTickPath = Path();
 
   MobileTimelinePainter({
     this.onCentralOffset,
@@ -89,8 +93,18 @@ class MobileTimelinePainter extends CustomPainter {
         oldDelegate.tickGap != tickGap;
   }
 
+  void _onDrawAll(Canvas canvas) {
+    canvas.drawPath(_tickPath, tickPaint);
+    canvas.drawPath(_currentTickPath, centralLinePaint);
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
+    // ** RESET PATHS
+    _tickPath.reset();
+    _playbackPath.reset();
+    _currentTickPath.reset();
+
     /// Trường hợp central gần về start
     final leftCentralOffset = startDate?.let((startDate) {
       final offset = _getOffset(central, startDate);
@@ -98,7 +112,8 @@ class MobileTimelinePainter extends CustomPainter {
     });
     if (leftCentralOffset != null) {
       _drawPlaybacks(canvas, size, leftCentralOffset);
-      return _drawTimelineFromStart(canvas, size, leftCentralOffset);
+      _drawTimelineFromStart(canvas, size, leftCentralOffset);
+      return _onDrawAll(canvas);
     }
 
     /// Trường hợp central gần về start
@@ -108,13 +123,15 @@ class MobileTimelinePainter extends CustomPainter {
     });
     if (rightCentralOffset != null) {
       _drawPlaybacks(canvas, size, size.width - rightCentralOffset);
-      return _drawTimelineFromEnd(canvas, size, size.width - rightCentralOffset);
+      _drawTimelineFromEnd(canvas, size, size.width - rightCentralOffset);
+      return _onDrawAll(canvas);
     }
 
     /// Trường hợp central ở giữa
     _drawPlaybacks(canvas, size, size.width / 2);
     canvas.translate(size.width / 2, 0); // Bắt đầu từ chính giữa
     _drawTimelineFromMiddle(canvas, Size(size.width / 2, size.height));
+    return _onDrawAll(canvas);
   }
 
   void _drawTimelineFromMiddle(Canvas canvas, Size size) {
@@ -148,7 +165,7 @@ class MobileTimelinePainter extends CustomPainter {
         textSize = _drawTime(canvas, size, offsetX, displayDate.add(minorInterval * index));
       }
 
-      _drawTick(canvas, size, offsetX, isMajorTick, textSize);
+      _addTickToPath(size, offsetX, isMajorTick, textSize);
     }
 
     // Vẽ bên phải central
@@ -174,11 +191,11 @@ class MobileTimelinePainter extends CustomPainter {
       }
 
       // Vẽ bên trái central
-      _drawTick(canvas, size, offsetX, isMajorTick, textSize);
+      _addTickToPath(size, offsetX, isMajorTick, textSize);
     }
 
     // Vẽ central
-    _drawCurrentTick(canvas, size, 0);
+    _addCurrentTickToPath(size, 0);
     onCentralOffset?.call(0);
   }
 
@@ -218,11 +235,11 @@ class MobileTimelinePainter extends CustomPainter {
         );
       }
 
-      _drawTick(canvas, size, offsetX, isMajorTick, textSize);
+      _addTickToPath(size, offsetX, isMajorTick, textSize);
     }
 
     // Vẽ central --> offset convert về sát 0 do check = 0 thì tương ứng với center
-    _drawCurrentTick(canvas, size, _getOffset(central, startDate!));
+    _addCurrentTickToPath(size, _getOffset(central, startDate!));
     onCentralOffset?.call(max(centralOffsetX, 0.0000000001) - size.width / 2);
   }
 
@@ -249,11 +266,11 @@ class MobileTimelinePainter extends CustomPainter {
         textSize = _drawTime(canvas, size, j, displayDate.add(minorInterval * index));
       }
 
-      _drawTick(canvas, size, j, isMajorTick, textSize);
+      _addTickToPath(size, j, isMajorTick, textSize);
     }
 
     // Vẽ central
-    _drawCurrentTick(canvas, size, size.width - _getOffset(central, endDate!).abs());
+    _addCurrentTickToPath(size, size.width - _getOffset(central, endDate!).abs());
     onCentralOffset?.call(centralOffsetX - size.width / 2);
   }
 
@@ -268,8 +285,7 @@ class MobileTimelinePainter extends CustomPainter {
   }) {
     _textSpan = TextSpan(text: DateFormat(formatPattern).format(currentTime), style: timeStyle);
     _textPainter.text = _textSpan;
-
-    _textPainter.layout(minWidth: 0, maxWidth: size.width);
+    _textPainter.layout(minWidth: 0, maxWidth: double.infinity);
 
     double _offsetX = offsetX - _textPainter.width / 2;
     if (isFirst) _offsetX = offsetX + 2;
@@ -280,38 +296,31 @@ class MobileTimelinePainter extends CustomPainter {
   }
 
   double? _cachedTextHeight;
-  void _drawTick(Canvas canvas, Size size, double offsetX, bool isMajorTick, Size textSize) {
-    _cachedTextHeight ??= (TextPainter(
-      text: TextSpan(text: '00:00', style: timeStyle),
-      textDirection: TextDirection.ltr,
-    )..layout(minWidth: 0, maxWidth: size.width)).height;
+  void _addTickToPath(Size size, double offsetX, bool isMajorTick, Size textSize) {
+    _cachedTextHeight ??=
+        (_textPainter
+              ..text = TextSpan(text: '00:00', style: timeStyle)
+              ..layout())
+            .height;
 
     double lineStartPoint = 6 + _cachedTextHeight! + 4;
     if (!isMajorTick) lineStartPoint += 3;
     double lineEndPoint = 6 + _cachedTextHeight! + 14 - 1;
 
-    canvas.drawPath(
-      _path
-        ..reset()
-        ..moveTo(offsetX, lineStartPoint) // Đáy trên
-        ..lineTo(offsetX, lineEndPoint), // Đáy dưới
-      tickPaint,
-    );
+    _tickPath
+      ..moveTo(offsetX, lineStartPoint) // Đáy trên
+      ..lineTo(offsetX, lineEndPoint); // Đáy dưới
   }
 
-  void _drawCurrentTick(Canvas canvas, Size size, double offsetX) {
+  void _addCurrentTickToPath(Size size, double offsetX) {
     // Case nằm ngoài startDate và endDate --> không vẽ nữa
     if (startDate != null && endDate != null && !central.isBetween(startDate!, endDate!)) {
       return;
     }
 
-    canvas.drawPath(
-      _path
-        ..reset()
-        ..moveTo(offsetX, size.height) // Xuống đáy dưới tại offsetX
-        ..lineTo(offsetX, 0), // Vẽ từ đáy dưới lên đáy trên
-      centralLinePaint,
-    );
+    _currentTickPath
+      ..moveTo(offsetX, size.height) // Xuống đáy dưới tại offsetX
+      ..lineTo(offsetX, 0); // Vẽ từ đáy dưới lên đáy trên
   }
 
   void _drawPlaybacks(Canvas canvas, Size size, double centralOffsetX) {
@@ -332,18 +341,19 @@ class MobileTimelinePainter extends CustomPainter {
       if (currentOffset + endOffset - durationOffset > size.width) continue;
 
       currentOffset += endOffset;
-      canvas.drawRect(
+      _playbackPath.addRect(
         Rect.fromPoints(
           Offset(currentOffset, size.height - 11),
           Offset(currentOffset - durationOffset, 33),
         ),
-        playbackPaint,
       );
       comparedTime = playback.startTime;
       currentOffset -= durationOffset;
 
       if (currentOffset < 0) break;
     }
+
+    canvas.drawPath(_playbackPath, playbackPaint);
   }
 
   double _getOffset(DateTime from, DateTime to) {
