@@ -223,6 +223,10 @@ class AppBloc extends BaseBloc<AppEvent, AppState> {
   ) async {
     if (Platform.isAndroid || Platform.isIOS) return;
 
+    isDefaultMode = event.isDefaultMode ?? true;
+    reopenViewId = event.id ?? [];
+    reopenViewMode = event.viewMode?.value ?? 1;
+
     final rect = await windowManager.getBounds();
     sendMultiWindowEventUseCase.execute(
       SendMultiWindowEventInput(

@@ -174,4 +174,63 @@ class AuthenticateService {
     await _socketApiClient.disconnect();
     AppData.instance.profile = null;
   }
+
+  Future<void> register({
+    required String account,
+    required String password,
+    required String server,
+  }) async {
+    try {
+      final request = Register_Request(
+        account: account,
+        password: password,
+      );
+
+      loginStatus.text +=
+          "--- Thực hiện đăng ký tài khoản '$account' tại '$server' ---\n";
+
+      final requestBytes = request.writeToBuffer();
+      final responseBytes = await _httpClient.post(
+        url: '$server${EnvService.registerEndpoint}',
+        data: Uint8List.fromList(requestBytes),
+      );
+      final reply = Reply.fromBuffer(responseBytes);
+
+      if (reply.isSuccess) {
+        loginStatus.text += "Đăng ký thành công ($account)\n";
+      } else {
+        final registerError = Register_Error.valueOf(reply.type);
+        final errorMessage = _getRegisterErrorMessage(registerError);
+        loginStatus.text += "Đăng ký thất bại: $errorMessage\n";
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  String _getRegisterErrorMessage(Register_Error? error) {
+    switch (error) {
+      case Register_Error.ACCOUNT_EXIST:
+        return 'Tài khoản đã tồn tại';
+      case Register_Error.OTP_NOT_MATCH:
+        return 'Mã OTP không khớp';
+      case Register_Error.OTP_EXPIRED:
+        return 'Mã OTP đã hết hạn';
+      case Register_Error.EMAIL_INVALID:
+        return 'Email không hợp lệ';
+      case Register_Error.TEL_INVALID:
+        return 'Số điện thoại không hợp lệ';
+      case Register_Error.PASSWORD_INVALID:
+        return 'Mật khẩu không hợp lệ';
+      case Register_Error.ACCOUNT_INVALID:
+        return 'Tài khoản không hợp lệ';
+      case Register_Error.PASSWORD_CONTAINING_SPECIAL_CHARACTERS:
+        return 'Mật khẩu chứa ký tự đặc biệt không hợp lệ';
+      case Register_Error.PASSWORD_WEAKNESS:
+        return 'Mật khẩu quá yếu';
+      default:
+        return 'Đăng ký thất bại';
+    }
+  }
 }

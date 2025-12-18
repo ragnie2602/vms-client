@@ -60,4 +60,13 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   Future<bool> isLoggedIn() async {
     return false;
   }
+
+  @override
+  Future<void> register(String server, String account, String password) async {
+    await authenticateService.register(
+      account: account,
+      password: password,
+      server: server,
+    );
+  }
 }

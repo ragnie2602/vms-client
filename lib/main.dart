@@ -131,7 +131,11 @@ class _MyAppState extends State<MyApp> with WindowListener {
           selector: (state) => state.themeMode,
           builder: (context, theme) => MaterialApp.router(
             builder: (context, child) => ToastificationWrapper(child: child!),
-            localizationsDelegates: [GlobalMaterialLocalizations.delegate],
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             supportedLocales: [const Locale('en'), const Locale('vi')],
             darkTheme: AppTheme.dark,
             debugShowCheckedModeBanner: false,

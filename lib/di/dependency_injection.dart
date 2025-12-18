@@ -24,6 +24,7 @@ import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/fi
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
@@ -116,6 +117,11 @@ class DependencyInjection {
     Provider<LoginUseCase>(
       create: (context) =>
           LoginUseCase(authRepository: context.read<IAuthRepository>()),
+    ),
+
+    Provider<RegisterUseCase>(
+      create: (context) =>
+          RegisterUseCase(authRepository: context.read<IAuthRepository>()),
     ),
 
     Provider<DeleteCameraUseCase>(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -39,11 +40,7 @@ class HomeDrawer extends StatelessWidget {
                   _buildToggleSection(constraints.maxWidth >= maxWidth),
 
                   ...tabs.map(
-                    (tab) => DrawerTile(
-                      tab: tab,
-                      selectedTab: currentTab,
-                      maxWidth: maxWidth,
-                    ),
+                    (tab) => DrawerTile(tab: tab, selectedTab: currentTab, maxWidth: maxWidth),
                   ),
                 ],
               );
@@ -86,15 +83,10 @@ class HomeDrawer extends StatelessWidget {
               onTap: onToggleExpanded,
               borderRadius: BorderRadius.circular(16),
               child: SvgPicture.asset(
-                isExpanded
-                    ? AppAssets.icArrowSquareLeft
-                    : AppAssets.icArrowSquareRight,
+                isExpanded ? AppAssets.icArrowSquareLeft : AppAssets.icArrowSquareRight,
                 width: 16,
                 height: 16,
-                colorFilter: ColorFilter.mode(
-                  AppColors.contentFg,
-                  BlendMode.srcIn,
-                ),
+                colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
               ),
             ),
           ],
@@ -129,6 +121,12 @@ class DrawerTile extends StatelessWidget {
     if (tab.route == Routes.monitoring &&
         GoRouter.of(context).state.name == Routes.cameraDetail.name) {
       _force = true;
+    }
+
+    if (tab.route == Routes.monitoring) {
+      final isDefaultMode = context.read<AppBloc>().isDefaultMode;
+
+      _route = isDefaultMode ? Routes.monitoring : Routes.custom_live_view;
     }
 
     // Mở tab playback <=> mở tab camera detail (với trạng thái empty)
@@ -168,11 +166,7 @@ class DrawerTile extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return tab.nested.isEmpty
-              ? _buildTitle(
-                  context,
-                  isSelected,
-                  onTap: () => _handleTap(context),
-                )
+              ? _buildTitle(context, isSelected, onTap: () => _handleTap(context))
               : TileExpansion(
                   body: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -195,11 +189,7 @@ class DrawerTile extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(
-    BuildContext context,
-    bool isSelected, {
-    VoidCallback? onTap,
-  }) {
+  Widget _buildTitle(BuildContext context, bool isSelected, {VoidCallback? onTap}) {
     return AnimatedContainer(
       duration: Durations.long2,
       height: 52,
@@ -215,9 +205,7 @@ class DrawerTile extends StatelessWidget {
               decoration: isSelected
                   ? BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.horizontal(
-                        right: Radius.circular(100),
-                      ),
+                      borderRadius: BorderRadius.horizontal(right: Radius.circular(100)),
                     )
                   : null,
             ),
@@ -247,8 +235,6 @@ class DrawerTile extends StatelessWidget {
           ],
         ),
       ),
-    ).let(
-      (child) => onTap != null ? InkWell(onTap: onTap, child: child) : child,
-    );
+    ).let((child) => onTap != null ? InkWell(onTap: onTap, child: child) : child);
   }
 }
