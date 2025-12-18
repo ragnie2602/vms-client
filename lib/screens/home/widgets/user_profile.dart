@@ -69,16 +69,19 @@ class _UserProfileState extends State<UserProfile> {
               color: Colors.transparent,
               child: Row(
                 children: <Widget>[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(32),
-                    child: Image.network(
-                      AppData.instance.profile?.avatar ?? "",
-                      width: 32,
-                      height: 32,
-                      loadingBuilder: (context, child, loadingProgress) =>
-                          CupertinoActivityIndicator(),
-                      errorBuilder: (context, error, stackTrace) =>
-                          Image.asset(AppAssets.defaultAvatar),
+                  SizedBox(
+                    height: 32,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(32),
+                      child: Image.network(
+                        AppData.instance.profile?.avatar ?? "",
+                        width: 32,
+                        height: 32,
+                        loadingBuilder: (context, child, loadingProgress) =>
+                            CupertinoActivityIndicator(),
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(AppAssets.defaultAvatar),
+                      ),
                     ),
                   ),
                   SizedBox(width: 12),
