@@ -419,14 +419,17 @@ class MultiPlaybackBloc
     MultiJumpDateEvent event,
     Emitter<MultiPlaybackState> emit,
   ) async {
+    // set lại global time -> update thanh timeshift trước
+    timeGlobal.value = event.newTime.roundToSecond;
+    // check (nếu cam đang loading init/ loading seek thì chờ)
+    // tránh trường hợp cam đang loading init mà user đã click jump
+    await _isAllReady();
     // 1. pause
     await _pauseAllCamera();
     emit(state.copyWith(isPlaying: false));
     updateFlagPause();
     // 2. jump to new date
     await _seekAllCamera(event.newTime);
-    // set lại global time
-    timeGlobal.value = event.newTime.roundToSecond;
     // 3. check loading
     final checked = await _isAllReady();
     if (checked) {

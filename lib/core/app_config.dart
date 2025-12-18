@@ -65,8 +65,8 @@ class AppConfig {
   static const MDK_DECODERS = ['D3D11', 'DXVA', 'MFT:d3d=11', 'CUDA', 'FFmpeg'];
 
   /* [Player] Timeout khi khởi tạo player (VideoPlayerController) */
-  static const PLAYER_INITIALIZATION_TIMEOUT = Duration(seconds: 30);
-  static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 30);
+  static const PLAYER_INITIALIZATION_TIMEOUT = Duration(seconds: 45);
+  static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 45);
   static const SOCKET_CONNECTION_TIMEOUT = 60;
 
   static const RECORDING_MAX_DURATION = Duration(minutes: 5);
