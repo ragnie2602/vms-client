@@ -86,6 +86,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   late Player _player;
   Completer<bool>? _waitForFirstFrame;
+  Completer<void> _waitForUnloadedOldMedia = Completer<void>()..safeComplete();
 
   Timer? _reconnectingTimer;
   Timer? _timer;
@@ -101,6 +102,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   final _wakelock = Wakelock();
   bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  bool _shouldReconnectOnResume = false;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -108,12 +110,17 @@ class MonitorPlayerState extends State<MonitorPlayer>
       if ([AppLifecycleState.paused, AppLifecycleState.detached].contains(state)) {
         if (_player.state == PlaybackState.playing) {
           _pauseDueToPauseUponEnteringBackgroundMode = true;
+          _shouldReconnectOnResume = false;
           togglePlay();
         }
       } else {
         if (widget.resumeUponEnteringForegroundMode && _pauseDueToPauseUponEnteringBackgroundMode) {
           _pauseDueToPauseUponEnteringBackgroundMode = false;
           togglePlay();
+          if (_shouldReconnectOnResume) {
+            _shouldReconnectOnResume = false;
+            _connecting();
+          }
         }
       }
     }
@@ -272,6 +279,16 @@ class MonitorPlayerState extends State<MonitorPlayer>
         }
       }
 
+      // Completer unloaded old media
+      if (!_waitForUnloadedOldMedia.isCompleted && cur.test(MediaStatus.unloaded)) {
+        _waitForUnloadedOldMedia.safeComplete();
+      }
+
+      if (_pauseDueToPauseUponEnteringBackgroundMode && cur.test(MediaStatus.end)) {
+        _shouldReconnectOnResume = true;
+      }
+
+      // print("=========================> STATUS: $pre - $cur");
       return true;
     });
 
@@ -334,8 +351,11 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
     // Nếu kết nối lại sau khi bị disconnect --> set rỗng --> set lại source cũ
     if (_player.media == widget.source) {
+      _waitForUnloadedOldMedia = Completer<void>();
       _player.media = "";
-      await Future.delayed(const Duration(seconds: 1));
+      await _waitForUnloadedOldMedia.future.timeout(Duration(seconds: 1), onTimeout: () => false);
+      await Future.delayed(Duration(milliseconds: 50));
+      _waitForUnloadedOldMedia.safeComplete();
     }
 
     _waitForFirstFrame = Completer<bool>();
@@ -413,6 +433,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
       if (!mounted ||
           _status.value == PlayerStatus.finished ||
           _status.value == PlayerStatus.paused ||
+          _pauseDueToPauseUponEnteringBackgroundMode ||
           _state.value.isError) {
         return;
       }
@@ -589,63 +610,65 @@ class MonitorPlayerState extends State<MonitorPlayer>
         }
 
         return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadiusGeometry.circular(widget.borderRadius ?? 0),
-          color: Colors.black,
-        ),
-        width: double.infinity,
-        height: double.infinity,
-        child: ValueListenableBuilder<PlayerState>(
-          valueListenable: _state,
-          builder: (context, state, _) => Stack(
-            fit: StackFit.expand,
-            children: [
-              switch (state) {
-                PlayerState.empty => Center(
-                  child: Text(
-                    'Không có dữ liệu!',
-                    style: TextStyle(fontSize: 13, color: Colors.white),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadiusGeometry.circular(widget.borderRadius ?? 0),
+            color: Colors.black,
+          ),
+          width: double.infinity,
+          height: double.infinity,
+          child: ValueListenableBuilder<PlayerState>(
+            valueListenable: _state,
+            builder: (context, state, _) => Stack(
+              fit: StackFit.expand,
+              children: [
+                switch (state) {
+                  PlayerState.empty => Center(
+                    child: Text(
+                      'Không có dữ liệu!',
+                      style: TextStyle(fontSize: 13, color: Colors.white),
+                    ),
                   ),
-                ),
-                PlayerState.initializing => const Center(
-                  child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
-                ),
-                PlayerState.error || PlayerState.error_again => _buildError(),
-                _ => wrapWithInteractiveViewerIfEnabled(
-                  key: isFullscreen ? null : _ivKey,
-                  child: Center(
-                    child: AspectRatio(
-                      aspectRatio: _aspectRatio,
-                      child: ValueListenableBuilder(
-                        valueListenable: _player.textureId,
-                        builder: (context, id, _) {
-                          final player = id == null
-                              ? const SizedBox.shrink()
-                              : widget.borderRadius != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadiusGeometry.circular(widget.borderRadius!),
-                                  child: Texture(textureId: id),
-                                )
-                              : Texture(textureId: id);
+                  PlayerState.initializing => const Center(
+                    child: CircularProgressIndicator.adaptive(backgroundColor: Colors.white),
+                  ),
+                  PlayerState.error || PlayerState.error_again => _buildError(),
+                  _ => wrapWithInteractiveViewerIfEnabled(
+                    key: isFullscreen ? null : _ivKey,
+                    child: Center(
+                      child: AspectRatio(
+                        aspectRatio: _aspectRatio,
+                        child: ValueListenableBuilder(
+                          valueListenable: _player.textureId,
+                          builder: (context, id, _) {
+                            final player = id == null
+                                ? const SizedBox.shrink()
+                                : widget.borderRadius != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadiusGeometry.circular(
+                                      widget.borderRadius!,
+                                    ),
+                                    child: Texture(textureId: id),
+                                  )
+                                : Texture(textureId: id);
 
-                          return RepaintBoundary(
-                            key: isFullscreen ? null : _captureKey,
-                            child: player,
-                          );
-                        },
+                            return RepaintBoundary(
+                              key: isFullscreen ? null : _captureKey,
+                              child: player,
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
-                ),
-              },
+                },
 
-              if (widget.labelBuilder != null && state == PlayerState.initialized)
-                widget.labelBuilder!.call(widget.name),
+                if (widget.labelBuilder != null && state == PlayerState.initialized)
+                  widget.labelBuilder!.call(widget.name),
 
-              widget.controlsBuilder?.call(isFullscreen, state) ?? _buildPlayerStatus(),
-            ],
+                widget.controlsBuilder?.call(isFullscreen, state) ?? _buildPlayerStatus(),
+              ],
+            ),
           ),
-        ),
         );
       },
     );
