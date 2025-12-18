@@ -542,7 +542,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
   bool _nextMediaIsEmpty = false;
   void _handlePlaylistChanged() {
     // Gần hết đoạn playback hiện tại thì setNext tiếp theo để không bị gián đoạn
-    if (_player.position + 2000 >= _player.mediaInfo.duration &&
+    if (_player.position + (3000 * _player.playbackRate) >= _player.mediaInfo.duration &&
         currentPlayback != null &&
         nextPlayback?.urlPlayback != null) {
       if (nextPlayback!.startTime.difference(currentPlayback!.endTime) < Duration(seconds: 3)) {
