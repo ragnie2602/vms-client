@@ -248,6 +248,10 @@ class _VolumeControlState extends State<_VolumeControl> {
           InkWell(
             onTap: () {
               setState(() {
+                // check state là error thì không cho đổi âm lượng
+                if (widget.controller.getPlayerState?.call().isError ?? false) {
+                  return;
+                }
                 if (_volume > 0) {
                   _preVolume = _volume;
                   _volume = 0;
@@ -295,6 +299,13 @@ class _VolumeControlState extends State<_VolumeControl> {
                         inactiveColor: Colors.grey,
                         value: _volume,
                         onChanged: (value) {
+                          // check state là error thì không cho đổi âm lượng
+                          if (widget.controller.getPlayerState
+                                  ?.call()
+                                  .isError ??
+                              false) {
+                            return;
+                          }
                           setState(() => _volume = value);
                           widget.controller.changeVolume?.call(value);
                         },
