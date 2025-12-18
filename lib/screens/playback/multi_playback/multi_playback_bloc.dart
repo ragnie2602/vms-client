@@ -421,6 +421,9 @@ class MultiPlaybackBloc
   ) async {
     // set lại global time -> update thanh timeshift trước
     timeGlobal.value = event.newTime.roundToSecond;
+    // check (nếu cam đang loading init/ loading seek thì chờ)
+    // tránh trường hợp cam đang loading init mà user đã click jump
+    await _isAllReady();
     // 1. pause
     await _pauseAllCamera();
     emit(state.copyWith(isPlaying: false));
