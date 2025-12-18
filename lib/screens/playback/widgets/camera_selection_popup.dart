@@ -10,12 +10,16 @@ class CameraSelectionPopup extends StatefulWidget {
   final List<CameraEntity> cameras;
   final Function(CameraEntity) onCameraSelected;
   final VoidCallback onClose;
+  final double? maxHeight;
+  final double? maxWidth;
 
   const CameraSelectionPopup({
     super.key,
     required this.cameras,
     required this.onCameraSelected,
     required this.onClose,
+    this.maxHeight,
+    this.maxWidth,
   });
 
   @override
@@ -36,7 +40,10 @@ class _CameraSelectionPopupState extends State<CameraSelectionPopup> {
     return Material(
       type: MaterialType.transparency,
       child: Container(
-        constraints: BoxConstraints(maxWidth: 300, maxHeight: 400),
+        constraints: BoxConstraints(
+          maxWidth: widget.maxWidth ?? 300,
+          maxHeight: widget.maxHeight ?? 400,
+        ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
           boxShadow: [

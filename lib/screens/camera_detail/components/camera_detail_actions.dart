@@ -5,6 +5,8 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/screens/monitor/components/monitor_cameras.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 
 import '../../shared/action_item.dart';
 import '../../shared/panel.dart';
@@ -124,7 +126,10 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
               ),
             ),
             // thêm multi playback action item
-            if (widget.mode.isPlayback)
+            if (widget.mode.isPlayback &&
+                MultiWindowUtil.isMainWindow(
+                  context.read<AppBloc>().windowId,
+                )) // check thêm đây có phải màn phụ không
               ValueListenableBuilder(
                 valueListenable: _leftPanelIndex,
                 builder: (context, index, child) => ActionItem(

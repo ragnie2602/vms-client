@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -126,10 +127,8 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
     _centralDateFromEnd = _endDate.subtract(Duration(microseconds: offset.floor()));
   }
 
-  void _onHorizontalDragUpdate(DragUpdateDetails details) {
-    _clampCentralDate(
-      _centralDate.value.subtract(Duration(milliseconds: details.delta.dx.toInt() * _dragSpeed)),
-    );
+  void _onHorizontalDragUpdate(double dx) {
+    _clampCentralDate(_centralDate.value.subtract(Duration(milliseconds: dx.toInt() * _dragSpeed)));
   }
 
   void _clampCentralDate(DateTime target) {
@@ -223,80 +222,95 @@ class _PlayerTimelineState extends State<PlayerTimeline> {
                         if (_isInteracting) return;
                         _showOverlay(event.localPosition.dx);
                       },
-                      child: GestureDetector(
-                        // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
-                        onTapUp: (details) {
-                          _cameraLiveBloc.state.playerController.jumpToDate?.call(
-                            _hoverDate ?? _calculateDateFromOffset(details.localPosition.dx),
-                          );
+                      child: Listener(
+                        onPointerSignal: (pointerSignal) {
+                          if (pointerSignal is PointerScrollEvent) {
+                            _onHorizontalDragUpdate(-pointerSignal.scrollDelta.dy);
+                            _showOverlay(pointerSignal.localPosition.dx);
+                          }
                         },
-                        onHorizontalDragUpdate: _onHorizontalDragUpdate,
-                        onHorizontalDragStart: (_) {
-                          _overlayEntry?.remove();
-                          _overlayEntry = null;
-                        },
-                        onHorizontalDragEnd: (details) {
-                          _isInteracting = false;
-                          _showOverlay(details.localPosition.dx); // Hiển thị luôn lúc thả
-                        },
-                        // Không bị vẽ ra ngoài
-                        child: ClipRRect(
-                          child: RepaintBoundary(
-                            child: BlocBuilder<PlaybackBloc, PlaybackState>(
-                              buildWhen: (previous, current) {
-                                // Trường hợp update selected index (list playbacks o thay đổi) --> không cần build lại
-                                if (previous is PlaybackSuccess &&
-                                    current is PlaybackSuccess &&
-                                    previous.playbacks != current.playbacks) {
-                                  return false;
-                                }
+                        child: GestureDetector(
+                          // Khi nhả click, nếu drag thì sẽ không chạy hàm này nữa (onTapDown sẽ gọi trước khi click để drag)
+                          onTapUp: (details) {
+                            _cameraLiveBloc.state.playerController.jumpToDate?.call(
+                              _hoverDate ?? _calculateDateFromOffset(details.localPosition.dx),
+                            );
+                          },
+                          onHorizontalDragUpdate: (data) => _onHorizontalDragUpdate(data.delta.dx),
+                          onHorizontalDragStart: (_) {
+                            _overlayEntry?.remove();
+                            _overlayEntry = null;
+                          },
+                          onHorizontalDragEnd: (details) {
+                            _isInteracting = false;
+                            _showOverlay(details.localPosition.dx); // Hiển thị luôn lúc thả
+                          },
+                          // Không bị vẽ ra ngoài
+                          child: ClipRRect(
+                            child: RepaintBoundary(
+                              child: BlocBuilder<PlaybackBloc, PlaybackState>(
+                                buildWhen: (previous, current) {
+                                  // Trường hợp update selected index (list playbacks o thay đổi) --> không cần build lại
+                                  if (previous is PlaybackSuccess &&
+                                      current is PlaybackSuccess &&
+                                      previous.playbacks == current.playbacks) {
+                                    return false;
+                                  }
 
-                                if (previous is! PlaybackSuccess &&
-                                    current is PlaybackSuccess &&
-                                    current.playbacks.isNotEmpty) {
-                                  _clampCentralDate(
-                                    current.playbacks[current.initialIndex].startTime,
-                                  );
-                                }
-                                return true;
-                              },
-                              builder: (context, state) {
-                                return ValueListenableBuilder(
-                                  valueListenable: _time,
-                                  builder: (context, currentTime, child) {
-                                    return CustomPaint(
-                                      size: Size(
-                                        _timelineWidth,
-                                        widget.size?.height ?? widget.majorTickHeight,
-                                      ),
-                                      isComplex: true,
-                                      willChange: true,
-                                      painter: TimelinePainter(
-                                        showMinorTickTime: mode == TimelineDisplayMode.h1,
-                                        onCentralOffset: (offset) => _centralOffset = offset,
-                                        majorTickHeight: widget.majorTickHeight,
-                                        minorTickHeight: widget.minorTickHeight,
-                                        minorTickCount: widget.minorTickCount,
-                                        tickGap: _tickGap, //
-                                        interval: _interval, //
-                                        tickWidth: widget.tickWidth,
-                                        centralDate: _centralDate,
-                                        currentTime: currentTime,
-                                        playbacks: state.type.isSuccess
-                                            ? (state as PlaybackSuccess).playbacks
-                                            : [],
-                                        startDate: _startDate,
-                                        endDate: _endDate,
-                                        formatPattern: widget.formatPattern,
-                                        normalStyle: widget.normalStyle,
-                                        highlightStyle: widget.highlightStyle,
-                                        playbackColor: widget.playbackColor,
-                                        centralLineColor: widget.centralLineColor,
-                                      ),
+                                  if (previous is! PlaybackSuccess &&
+                                      current is PlaybackSuccess &&
+                                      current.playbacks.isNotEmpty) {
+                                    _clampCentralDate(
+                                      current.playbacks[current.initialIndex].startTime,
                                     );
-                                  },
-                                );
-                              },
+
+                                    // Case đổi date --> player bị dispose (detach listener)
+                                    // --> timeline vẫn keep --> mất listener
+                                    _cameraLiveBloc.state.playerController
+                                      ..onPlaybackChanged.add(_onPlaybackChanged)
+                                      ..onTimeChanged.add(_onTimeChanged);
+                                  }
+
+                                  return true;
+                                },
+                                builder: (context, state) {
+                                  return ValueListenableBuilder(
+                                    valueListenable: _time,
+                                    builder: (context, currentTime, child) {
+                                      return CustomPaint(
+                                        size: Size(
+                                          _timelineWidth,
+                                          widget.size?.height ?? widget.majorTickHeight,
+                                        ),
+                                        isComplex: true,
+                                        willChange: true,
+                                        painter: TimelinePainter(
+                                          showMinorTickTime: mode == TimelineDisplayMode.h1,
+                                          onCentralOffset: (offset) => _centralOffset = offset,
+                                          majorTickHeight: widget.majorTickHeight,
+                                          minorTickHeight: widget.minorTickHeight,
+                                          minorTickCount: widget.minorTickCount,
+                                          tickGap: _tickGap, //
+                                          interval: _interval, //
+                                          tickWidth: widget.tickWidth,
+                                          centralDate: _centralDate,
+                                          currentTime: currentTime,
+                                          playbacks: state.type.isSuccess
+                                              ? (state as PlaybackSuccess).playbacks
+                                              : [],
+                                          startDate: _startDate,
+                                          endDate: _endDate,
+                                          formatPattern: widget.formatPattern,
+                                          normalStyle: widget.normalStyle,
+                                          highlightStyle: widget.highlightStyle,
+                                          playbackColor: widget.playbackColor,
+                                          centralLineColor: widget.centralLineColor,
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
                             ),
                           ),
                         ),

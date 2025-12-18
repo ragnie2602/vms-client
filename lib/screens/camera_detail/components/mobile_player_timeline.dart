@@ -197,7 +197,7 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
                         // Trường hợp update selected index (list playbacks o thay đổi) --> không cần build lại
                         if (previous is PlaybackSuccess &&
                             current is PlaybackSuccess &&
-                            previous.playbacks != current.playbacks) {
+                            previous.playbacks == current.playbacks) {
                           return false;
                         }
 
@@ -205,7 +205,14 @@ class _MobilePlayerTimelineState extends State<MobilePlayerTimeline> {
                             current is PlaybackSuccess &&
                             current.playbacks.isNotEmpty) {
                           _clampCentralDate(current.playbacks[current.initialIndex].startTime);
+
+                          // Case đổi date --> player bị dispose (detach listener)
+                          // --> timeline vẫn keep --> mất listener
+                          _cameraLiveBloc.state.playerController
+                            ..onPlaybackChanged.add(_onPlaybackChanged)
+                            ..onTimeChanged.add(_onTimeChanged);
                         }
+                        
                         return true;
                       },
                       builder: (context, state) {

@@ -31,6 +31,7 @@ class MultiPlaybackPlayer extends StatefulWidget {
     required this.playlist,
     required this.name,
     required this.initialDate,
+    required this.playbackDate,
     required this.controller,
     this.onStatusChanged,
     this.onInitializedValues,
@@ -49,6 +50,7 @@ class MultiPlaybackPlayer extends StatefulWidget {
   final List<PlaybackVideo> playlist;
   final String name;
   final DateTime initialDate;
+  final DateTime playbackDate;
   final PlayerController controller;
   final Function(PlayerStatus)? onStatusChanged;
   final Function({required double volume, required double speed})? onInitializedValues;
@@ -113,6 +115,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
   final _wakelock = Wakelock();
   bool _pauseDueToPauseUponEnteringBackgroundMode = false;
+  DateTime get _endDate => widget.playbackDate.startOfNextDay;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -313,7 +316,12 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
           !_isSeeking.value) {
         // Delay để tránh bị override lại khi check timer 1s
         Future.delayed(Duration(milliseconds: 1100), () {
-          if (mounted) _status.value = PlayerStatus.finished;
+          if (!mounted) return;
+          if (widget.playlist.last.endTime.isBefore(_endDate)) {
+            _state.value = PlayerState.empty; // không có bản ghi video để tiếp tục play => view empty
+          } else {
+            _status.value = PlayerStatus.finished;
+          }
         });
       }
 
@@ -534,7 +542,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
   bool _nextMediaIsEmpty = false;
   void _handlePlaylistChanged() {
     // Gần hết đoạn playback hiện tại thì setNext tiếp theo để không bị gián đoạn
-    if (_player.position + 2000 >= _player.mediaInfo.duration &&
+    if (_player.position + (3000 * _player.playbackRate) >= _player.mediaInfo.duration &&
         currentPlayback != null &&
         nextPlayback?.urlPlayback != null) {
       if (nextPlayback!.startTime.difference(currentPlayback!.endTime) < Duration(seconds: 3)) {
@@ -613,7 +621,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
       }
 
       await _ensureConnectingFinished();
-      await _jumpToDate(date, dateIndex: index);
+      await _jumpToDate(date, dateIndex: index, autoPlay: false);
 
       // Spam click và sau đó click ra ngoài --> bị nhảy về cái trước đó
       if (_dualQueue.nextJobIsEmpty && !_newestIsEmpty) {
@@ -626,7 +634,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     return _seekingCompleter;
   }
 
-  Future<void> _jumpToDate(DateTime date, {int? dateIndex}) async {
+  Future<void> _jumpToDate(DateTime date, {int? dateIndex, bool autoPlay = true}) async {
     final index = dateIndex ?? widget.playlist.atTime(date);
 
     // Click ngoài khoảng playback
@@ -648,7 +656,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      await pause();
+      if(!autoPlay) await pause();
       if (diff != Duration.zero) {
         await _player.seek(position: diff.inMilliseconds, flags: _seekFlag);
       }
@@ -665,6 +673,8 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
       _player.media = widget.playlist[index].urlPlayback;
       await _player.prepare(position: diff.inMilliseconds);
       _waitForUnloadedOldMedia.safeComplete();
+
+      if(autoPlay) _player.play();
     }
   }
 
@@ -961,7 +971,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
             return GestureDetector(
               behavior: HitTestBehavior.translucent, // Nhận event khi chạm vào khoảng không
-              onTap: togglePlay,
+              // onTap: togglePlay, // chặn không cho tap vào nút play/pause
               child: Container(
                 alignment: Alignment.center,
                 // color: Colors.black.withValues(alpha: 0.25),

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -36,7 +37,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
       text: AppData.instance.read<String>(AppKeys.SP_PASSWORD_KEY),
     );
     serverController = TextEditingController(
-      text: AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ?? EnvService.apiBaseUrl,
+      text:
+          AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ??
+          EnvService.apiBaseUrl,
     );
     usernameController = TextEditingController(
       text: AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY),
@@ -95,7 +98,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
                       ),
                       child: BlocConsumer<LoginBloc, LoginState>(
                         listener: (context, state) {
@@ -113,7 +118,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
                           if (state.isLoading) {
                             return Padding(
                               padding: const EdgeInsets.all(2),
-                              child: CircularProgressIndicator(color: AppColors.white),
+                              child: CircularProgressIndicator(
+                                color: AppColors.white,
+                              ),
                             );
                           }
 
@@ -129,6 +136,33 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
                       ),
                     ),
                   ),
+                  if (Platform.isIOS) ...[
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Chưa có tài khoản? ',
+                          style: AppTypography.style(
+                            14,
+                            color: AppColors.black,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => context.pushNamed(Routes.register.name),
+                          child: Text(
+                            'Đăng ký',
+                            style: AppTypography.style(
+                              14,
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

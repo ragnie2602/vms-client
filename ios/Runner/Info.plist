@@ -26,12 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>We need camera to upload medias</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need add only access to save medias</string>
+	<string>Ứng dụng cần truy cập này để lưu các hình ảnh chụp màn hình từ camera giám sát vào thư viện ảnh của bạn.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to save medias</string>
+	<string>Ứng dụng cần quyền truy cập để lưu và quản lý các ảnh chụp nhanh từ luồng camera vào thư viện ảnh của bạn.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
