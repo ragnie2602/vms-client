@@ -152,6 +152,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     });
     // _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
     _status.addListener(() {
+      if (!mounted) return;
       if (_status.value == PlayerStatus.playing) _shouldSyncPlayerTime = true;
       widget.onStatusChanged?.call(_status.value);
     });
@@ -473,6 +474,10 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     // Một vài trường hợp loading lâu nên khi tới đây thì widget có thể đã bị dispose
     if (!mounted) return;
 
+    // Race condition: Nếu trong lúc đang connect mà user jump sang ngày khác (empty)
+    // thì không được set lại state là initialized nữa
+    if (_state.value == PlayerState.empty) return;
+
     textureId < 0 ? _state.value = PlayerState.error : await _onInitialized();
   }
 
@@ -492,6 +497,10 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
         waitSeeking: false,
       );
     }
+    // Race condition check again
+    if (_state.value == PlayerState.empty) return;
+
+    if (!mounted) return;
     _state.value = PlayerState.initialized;
 
     _cancelTimers();
@@ -505,7 +514,9 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
           if (_shouldSyncPlayerTime) {
             // Case đang dừng --> tự động play bởi thư viện --> update _status
-            if (_status.value != PlayerStatus.playing && _player.state == PlaybackState.playing) {
+            if (mounted &&
+                _status.value != PlayerStatus.playing &&
+                _player.state == PlaybackState.playing) {
               _status.value = PlayerStatus.playing;
             }
 
