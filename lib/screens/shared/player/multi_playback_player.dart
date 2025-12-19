@@ -315,9 +315,11 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     });
     _player.onStateChanged((pre, cur) {
       if (!mounted) return;
+      if (pre == PlaybackState.stopped && cur != PlaybackState.stopped) _isPlaylistFinished = false;
       if (cur == PlaybackState.stopped &&
           currentIndex == widget.playlist.length - 1 &&
           !_isSeeking.value) {
+        _isPlaylistFinished = true;
         // Delay để tránh bị override lại khi check timer 1s
         Future.delayed(Duration(milliseconds: 1100), () {
           if (!mounted) return;
@@ -859,8 +861,9 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
   }
 
   int? _lastSyncIndex;
+  bool? _isPlaylistFinished;
   Future<void> syncGlobalTime(DateTime time) async {
-    if (_state.value != PlayerState.empty) return;
+    if (_state.value != PlayerState.empty || _isPlaylistFinished == true) return;
 
     final index = widget.playlist.atTime(time);
     // index == _lastSyncIndex --> tránh bị call lại sau khi vừa sync xong
@@ -871,7 +874,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
         _playlistIndex.value = index;
         await _connecting();
       }
-      
+
       await _jumpToDate(time, dateIndex: index);
       await play(force: true);
 
