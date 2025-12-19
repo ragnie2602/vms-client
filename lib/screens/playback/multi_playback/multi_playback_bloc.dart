@@ -527,14 +527,11 @@ class MultiPlaybackBloc
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
     if (_list.isEmpty) return;
 
-    final data = <Future>[];
     for (var e in _list) {
       if (!e.isNoVideo && e.playerController.syncGlobalTime != null) {
-        data.add(e.playerController.syncGlobalTime!.call(syncTime));
+        e.playerController.syncGlobalTime!.call(syncTime);
       }
     }
-
-    await Future.wait(data);
   }
 
   // check global time

@@ -150,7 +150,10 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     _isSeeking.addListener(() {
       if (_status.value == PlayerStatus.finished) _status.value = PlayerStatus.playing;
     });
-    // _state.addListener(() => _tryReconnecting(_state.value == PlayerState.error));
+    _state.addListener(() {
+      if (_state.value == PlayerState.empty) _lastSyncIndex = null;
+      // _tryReconnecting(_state.value == PlayerState.error);
+    });
     _status.addListener(() {
       if (!mounted) return;
       if (_status.value == PlayerStatus.playing) _shouldSyncPlayerTime = true;
@@ -556,7 +559,9 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     if (_player.position + (3000 * _player.playbackRate) >= _player.mediaInfo.duration &&
         currentPlayback != null &&
         nextPlayback?.urlPlayback != null) {
-      if (nextPlayback!.startTime.difference(currentPlayback!.endTime) < Duration(seconds: 3)) {
+      // Case các khoảng overlap (nextPlayback.startTime sẽ đè lên currentPlayback.endTime) --> coi như liền mạch
+      if (nextPlayback!.startTime.isBefore(currentPlayback!.endTime) ||
+          nextPlayback!.startTime.difference(currentPlayback!.endTime) < Duration(seconds: 3)) {
         if (_player.nextMedia.isNotEmpty) return; // Đã được xử lý rồi
 
         // setNext <=> đổi media <=> status từ [unloaded+end] sau đó sang [loading+loaded/invalid]
@@ -667,7 +672,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
     // Trong khoảng hiện tại --> seek
     if (index == currentIndex) {
-      if(!autoPlay) await pause();
+      if (!autoPlay) await pause();
       if (diff != Duration.zero) {
         await _player.seek(position: diff.inMilliseconds, flags: _seekFlag);
       }
@@ -685,7 +690,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
       await _player.prepare(position: diff.inMilliseconds);
       _waitForUnloadedOldMedia.safeComplete();
 
-      if(autoPlay) _player.play();
+      if (autoPlay) _player.play();
     }
   }
 
@@ -853,25 +858,27 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     _zoomAnimationController!.forward();
   }
 
+  int? _lastSyncIndex;
   Future<void> syncGlobalTime(DateTime time) async {
     if (_state.value != PlayerState.empty) return;
 
     final index = widget.playlist.atTime(time);
-    // Đang empty + vẫn ở index hiện tại --> bỏ qua
-    if (index == null || index == currentIndex) return;
-
-    // // Case vừa sang trạng thái empty --> ngay sau đó gọi sync (time ~ giây cuối) --> Từ empty sang paused
-    // // Trường hợp [time] là giây gần cuối cùng thì bỏ qua
-    // if (currentPlayback != null &&
-    //     index == currentIndex &&
-    //     time.millisecondsSinceEpoch + 2000 >= getCurrentDate()!.millisecondsSinceEpoch) {
-    //   return;
-    // }
+    // index == _lastSyncIndex --> tránh bị call lại sau khi vừa sync xong
+    if (index == null || index == _lastSyncIndex) return;
 
     _syncGlobalTimeQueue.add(() async {
+      if (_emptyOnInit) {
+        _playlistIndex.value = index;
+        await _connecting();
+      }
+      
       await _jumpToDate(time, dateIndex: index);
       await play(force: true);
-      _syncGlobalTimeQueue.cancelAndReset();
+
+      await Future.delayed(Duration(milliseconds: 100));
+      await _syncGlobalTimeQueue.cancelAndReset();
+
+      _lastSyncIndex = currentIndex;
     });
   }
 
