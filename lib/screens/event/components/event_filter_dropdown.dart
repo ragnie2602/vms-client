@@ -103,8 +103,8 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
           padding: widget.padding ?? EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         ),
         dropdownStyleData: DropdownStyleData(
-          offset: const Offset(0, -8),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
+          offset: const Offset(0, -8),
         ),
         hint: Text(
           widget.hint ?? '',
@@ -122,11 +122,14 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
         },
         selectedItemBuilder: (context) => widget.items
             .map(
-              (item) => Text(
-                item.toString(),
-                style:
-                    widget.style ??
-                    AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+              (item) => Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  item.toString(),
+                  style:
+                      widget.style ??
+                      AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+                ),
               ),
             )
             .toList(),

@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/event/components/event_filter_dropdown.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/region_marker.dart';
+import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 class DetectionSettingDialog extends StatefulWidget {
   final String title;
@@ -71,211 +72,181 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 210,
-                          child: Text(
-                            '${widget.title}:',
-                            style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                          ),
+                child: CustomTable(
+                  data: CustomTableData(
+                    columnFlexes: [210, 357],
+                    data: [
+                      [
+                        Text(
+                          '${widget.title}:',
+                          style: AppTypography.style(14, fontWeight: FontWeight.w400),
                         ),
-                        Expanded(
-                          flex: 357,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Transform.rotate(
-                              angle: math.pi,
-                              child: Switch(
-                                activeTrackColor: AppColors.blue005AA9,
-                                activeThumbColor: AppColors.white,
-                                inactiveTrackColor: AppColors.greyE4E4E4,
-                                inactiveThumbColor: AppColors.white,
-                                onChanged: (value) => setState(() => on = value),
-                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                                value: on,
-                              ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Transform.rotate(
+                            angle: math.pi,
+                            child: Switch(
+                              activeTrackColor: AppColors.blue005AA9,
+                              activeThumbColor: AppColors.white,
+                              inactiveTrackColor: AppColors.greyE4E4E4,
+                              inactiveThumbColor: AppColors.white,
+                              onChanged: (value) => setState(() => on = value),
+                              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                              value: on,
                             ),
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 210,
-                          child: Text(
-                            'Độ nhạy:',
-                            style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                          ),
+                      [
+                        Text(
+                          'Độ nhạy:',
+                          style: AppTypography.style(14, fontWeight: FontWeight.w400),
                         ),
-                        Flexible(
-                          flex: 357,
-                          child: SizedBox(
-                            width: MediaQuery.widthOf(context) * 270 / 1600,
-                            child: EventFilterDropdown<String>(
-                              initialValue: 'Trung bình',
-                              isDense: true,
-                              items: ['Rất thấp', 'Thấp', 'Trung bình', 'Cao', 'Rất cao'],
-                              onChanged: (_) {},
-                              padding: EdgeInsets.only(bottom: 6, right: 10, top: 6),
-                              style: AppTypography.style(
-                                14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.black,
-                              ),
-                              type: EventFilterDropdownType.normal,
+                        SizedBox(
+                          width: MediaQuery.widthOf(context) * 270 / 1600,
+                          child: EventFilterDropdown<String>(
+                            initialValue: 'Trung bình',
+                            isDense: true,
+                            items: ['Rất thấp', 'Thấp', 'Trung bình', 'Cao', 'Rất cao'],
+                            onChanged: (_) {},
+                            padding: EdgeInsets.only(bottom: 6, right: 10, top: 6),
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.black,
                             ),
+                            type: EventFilterDropdownType.normal,
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 210,
-                          child: Text(
-                            'Hành động:',
+                      [
+                        Text(
+                          'Hành động:',
+                          style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                        ),
+                        Column(
+                          children: [
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: sendWarning,
+                                  onChanged: (value) => setState(() => sendWarning = value!),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Gửi cảnh báo',
+                                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: recordEvent,
+                                  onChanged: (value) => setState(() => recordEvent = value!),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Ghi hình sự kiện',
+                                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (widget.timeout) ...[
+                        [
+                          Text(
+                            'Thời gian:',
                             style: AppTypography.style(14, fontWeight: FontWeight.w400),
                           ),
-                        ),
-                        Expanded(
-                          flex: 357,
-                          child: Column(
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: sendWarning,
-                                    onChanged: (value) => setState(() => sendWarning = value!),
-                                  ),
-                                  Text(
-                                    'Gửi cảnh báo',
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                                  ),
-                                ],
+                              Text(
+                                'Thời gian xuất hiện trong khu vực quá ',
+                                style: AppTypography.style(14, isItalic: true),
                               ),
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: recordEvent,
-                                    onChanged: (value) => setState(() => recordEvent = value!),
+                              const SizedBox(width: 5),
+                              SizedBox(
+                                width: _timeoutFieldWidth,
+                                child: TextField(
+                                  controller: timeoutController,
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                                    ),
+                                    constraints: BoxConstraints(),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 15,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                                    ),
+                                    isDense: true,
                                   ),
-                                  Text(
-                                    'Ghi hình sự kiện',
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                                  ),
-                                ],
+                                  keyboardType: TextInputType.number,
+                                  style: AppTypography.style(14, fontWeight: FontWeight.w600),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                '(s)',
+                                style: AppTypography.style(14, fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),
+                        ],
+                      ],
+                      [
+                        Text(
+                          'Thiết lập vùng cảnh báo:',
+                          style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                        ),
+                        Column(
+                          children: [
+                            Expanded(child: RegionMarker()),
+                            const SizedBox(height: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.greyF2F4FA, width: 1),
+                                color: AppColors.yellowFFFBEB,
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Hướng dẫn',
+                                    style: AppTypography.style(14, fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    '• Nhấn chuột trái để tạo điểm và vẽ vùng cảnh báo. Nhấn đúp chuột hoặc Enter để hoàn tất.',
+                                    maxLines: 100,
+                                    style: AppTypography.style(12, fontWeight: FontWeight.w400),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 10),
-                    if (widget.timeout) ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 210,
-                            child: Text(
-                              'Thời gian:',
-                              style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 357,
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: _timeoutFieldWidth,
-                                  child: TextField(
-                                    controller: timeoutController,
-                                    decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 12,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(3),
-                                        borderSide: BorderSide(color: AppColors.greyE2E8F0),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(3),
-                                        borderSide: BorderSide(color: AppColors.blue005AA9),
-                                      ),
-                                      isDense: true,
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w600),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Text(
-                                  '(s) ',
-                                  style: AppTypography.style(14, fontWeight: FontWeight.w600),
-                                ),
-                                Text(
-                                  'Thời gian xuất hiện trong khu vực quá',
-                                  style: AppTypography.style(14, isItalic: true),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 210,
-                            child: Text(
-                              'Thiết lập vùng cảnh báo:',
-                              style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                            ),
-                          ),
-                          Expanded(
-                            flex: 357,
-                            child: Column(
-                              children: [
-                                Expanded(child: RegionMarker()),
-                                const SizedBox(height: 10),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: AppColors.greyF2F4FA, width: 1),
-                                    color: AppColors.yellowFFFBEB,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Hướng dẫn',
-                                        style: AppTypography.style(14, fontWeight: FontWeight.w600),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        '• Nhấn chuột trái để tạo điểm và vẽ vùng cảnh báo. Nhấn đúp chuột hoặc Enter để hoàn tất.',
-                                        maxLines: 100,
-                                        style: AppTypography.style(12, fontWeight: FontWeight.w400),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    rowFlexes: widget.timeout ? [0, 0, 0, 0, 1] : [0, 0, 0, 1],
+                  ),
+                  rowSpacing: 8,
+                  verticalAlignments: [
+                    CrossAxisAlignment.center,
+                    CrossAxisAlignment.center,
+                    CrossAxisAlignment.start,
+                    CrossAxisAlignment.start,
+                    CrossAxisAlignment.start,
                   ],
                 ),
               ),
