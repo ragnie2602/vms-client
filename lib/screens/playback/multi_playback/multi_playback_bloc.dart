@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
@@ -36,13 +37,21 @@ class MultiPlaybackBloc
     on<MultiSeekEvent>(_onSeek);
     on<MultiChangeSpeedEvent>(_onChangeSpeed);
     on<MultiChangeVolumeEvent>(_onChangeVolume);
-    on<MultiJumpDateEvent>(_onJumpNewDate);
+    on<MultiJumpDateEvent>(
+      _onJumpNewDate,
+      transformer: restartable(),
+    ); // jump nhiều lần -> lấy cái jump mới nhất
+    on<MultiWaitAndPlayEvent>(
+      _onWaitAndPlay,
+      transformer: restartable(),
+    ); // chỉ check loading mới nhất tránh trường hợp có cam play trước khi các cam khác chưa kịp loading xong
   }
   // count time
   Timer? _timer;
   ValueNotifier<DateTime?> timeGlobal = ValueNotifier(null);
   bool flagPauseTime = true;
   int _syncTimeCounter = 0; // Đếm số giây để gọi syncTime
+  DateTime? _targetJumpTime;
 
   @override
   Future<void> close() {
@@ -174,12 +183,7 @@ class MultiPlaybackBloc
       // seek all camera
       await _seekAllCamera(initialDate);
       // step 5: check loading
-      final checked = await _isAllReady();
-      if (checked) {
-        await _playAllCamera();
-        emit(state.copyWith(isPlaying: true));
-        updateFlagPause();
-      }
+      add(const MultiWaitAndPlayEvent());
     }
     emit(state.copyWith(multiPlaybackStatus: MultiPlaybackStatus.success));
   }
@@ -277,12 +281,21 @@ class MultiPlaybackBloc
       // seek all camera
       await _seekAllCamera(syncDate);
       // 5. Check loading
-      final checked = await _isAllReady();
-      if (checked) {
-        await _playAllCamera();
-        emit(state.copyWith(isPlaying: true));
-        updateFlagPause();
-      }
+      add(
+        const MultiWaitAndPlayEvent(),
+      ); // check trạng thái loading mới nhất -> play
+    }
+  }
+
+  FutureOr<void> _onWaitAndPlay(
+    MultiWaitAndPlayEvent event,
+    Emitter<MultiPlaybackState> emit,
+  ) async {
+    final checked = await _isAllReady();
+    if (checked) {
+      await _playAllCamera();
+      emit(state.copyWith(isPlaying: true));
+      updateFlagPause();
     }
   }
 
@@ -419,24 +432,26 @@ class MultiPlaybackBloc
     MultiJumpDateEvent event,
     Emitter<MultiPlaybackState> emit,
   ) async {
+    _targetJumpTime = event.newTime;
     // set lại global time -> update thanh timeshift trước
     timeGlobal.value = event.newTime.roundToSecond;
     // check (nếu cam đang loading init/ loading seek thì chờ)
     // tránh trường hợp cam đang loading init mà user đã click jump
     await _isAllReady();
+    if (_targetJumpTime != event.newTime) return;
+
     // 1. pause
     await _pauseAllCamera();
+    if (_targetJumpTime != event.newTime) return;
+
     emit(state.copyWith(isPlaying: false));
     updateFlagPause();
     // 2. jump to new date
     await _seekAllCamera(event.newTime);
+    if (_targetJumpTime != event.newTime) return;
+
     // 3. check loading
-    final checked = await _isAllReady();
-    if (checked) {
-      await _playAllCamera();
-      emit(state.copyWith(isPlaying: true));
-      updateFlagPause();
-    }
+    add(const MultiWaitAndPlayEvent());
   }
 
   // các hàm phục vụ đồng bộ
@@ -512,14 +527,11 @@ class MultiPlaybackBloc
     List<ItemPlaybackModel> _list = List.from(state.listItemCamPlayback ?? []);
     if (_list.isEmpty) return;
 
-    final data = <Future>[];
     for (var e in _list) {
       if (!e.isNoVideo && e.playerController.syncGlobalTime != null) {
-        data.add(e.playerController.syncGlobalTime!.call(syncTime));
+        e.playerController.syncGlobalTime!.call(syncTime);
       }
     }
-
-    await Future.wait(data);
   }
 
   // check global time
