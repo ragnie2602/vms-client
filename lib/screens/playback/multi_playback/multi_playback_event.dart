@@ -50,7 +50,12 @@ class MultiChangeVolumeEvent extends MultiPlaybackEvent {
   final double volume;
   const MultiChangeVolumeEvent(this.volume);
 }
-class MultiJumpDateEvent extends MultiPlaybackEvent{
+
+class MultiJumpDateEvent extends MultiPlaybackEvent {
   final DateTime newTime;
   const MultiJumpDateEvent({required this.newTime});
+}
+
+class MultiWaitAndPlayEvent extends MultiPlaybackEvent {
+  const MultiWaitAndPlayEvent();
 }
