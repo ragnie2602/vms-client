@@ -157,13 +157,17 @@ class _EventScreenState extends State<EventScreen> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(color: AppColors.white),
-              margin: EdgeInsets.all(10),
-              padding: EdgeInsets.only(left: 10, right: 10, top: 8),
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.only(left: 10, right: 10, top: 20),
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      Text(
+                        'Danh sách sự kiện',
+                        style: AppTypography.style(16, fontWeight: FontWeight.w600),
+                      ),
+                      const Spacer(),
                       EventCustomButton(
                         backgroundColor: AppColors.white,
                         borderColor: AppColors.blue005AA9,
@@ -240,7 +244,9 @@ class _EventScreenState extends State<EventScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 10),
                   const Divider(color: AppColors.greyF2F4FA),
+                  const SizedBox(height: 20),
                   Expanded(
                     child: GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
