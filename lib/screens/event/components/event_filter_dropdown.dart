@@ -10,6 +10,7 @@ class EventFilterDropdown<T> extends StatefulWidget {
   final String? hint;
   final bool isDense;
   final bool isExpanded;
+  final Widget Function(T item)? itemBuilder;
   final List<T> items;
   final T? initialValue;
   final String? label;
@@ -23,6 +24,7 @@ class EventFilterDropdown<T> extends StatefulWidget {
     this.hint,
     this.isDense = false,
     this.isExpanded = true,
+    this.itemBuilder,
     required this.items,
     this.initialValue,
     this.label,
@@ -69,7 +71,7 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
           borderSide: BorderSide(color: AppColors.greyE2E8F0),
         ),
         constraints: BoxConstraints(minHeight: 0, minWidth: 0),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+        contentPadding: widget.padding ?? EdgeInsets.symmetric(horizontal: 12, vertical: 13),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(3),
           borderSide: BorderSide(color: AppColors.greyE2E8F0),
@@ -99,12 +101,15 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
       ),
       child: DropdownButton2<T>(
         buttonStyleData: ButtonStyleData(
-          height: widget.isDense ? 29 : 42,
-          padding: widget.padding ?? EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          height:
+              (widget.padding?.vertical ?? 0) +
+              (widget.isDense ? widget.style?.fontSize ?? 13 : 13) +
+              1,
+          padding: widget.padding ?? EdgeInsets.zero,
         ),
         dropdownStyleData: DropdownStyleData(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
-          offset: const Offset(0, -8),
+          offset: const Offset(0, -4),
         ),
         hint: Text(
           widget.hint ?? '',
@@ -114,7 +119,12 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
         isDense: widget.isDense,
         isExpanded: widget.isExpanded,
         items: widget.items
-            .map((item) => DropdownMenuItem<T>(value: item, child: Text(item.toString())))
+            .map(
+              (item) => DropdownMenuItem<T>(
+                value: item,
+                child: widget.itemBuilder?.call(item) ?? Text(item.toString()),
+              ),
+            )
             .toList(),
         onChanged: (value) {
           setState(() => _selectedValue = value);
@@ -124,17 +134,23 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
             .map(
               (item) => Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  item.toString(),
-                  style:
-                      widget.style ??
-                      AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
-                ),
+                child:
+                    widget.itemBuilder?.call(item) ??
+                    Text(
+                      item.toString(),
+                      style:
+                          widget.style ??
+                          AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.black,
+                          ),
+                    ),
               ),
             )
             .toList(),
         style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
-        underline: Container(),
+        underline: const SizedBox.shrink(),
         value: _selectedValue,
       ),
     );

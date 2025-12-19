@@ -102,20 +102,23 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                           'Độ nhạy:',
                           style: AppTypography.style(14, fontWeight: FontWeight.w400),
                         ),
-                        SizedBox(
-                          width: MediaQuery.widthOf(context) * 270 / 1600,
-                          child: EventFilterDropdown<String>(
-                            initialValue: 'Trung bình',
-                            isDense: true,
-                            items: ['Rất thấp', 'Thấp', 'Trung bình', 'Cao', 'Rất cao'],
-                            onChanged: (_) {},
-                            padding: EdgeInsets.only(bottom: 6, right: 10, top: 6),
-                            style: AppTypography.style(
-                              14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.black,
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: MediaQuery.widthOf(context) * 270 / 1600,
+                            child: EventFilterDropdown<String>(
+                              initialValue: 'Trung bình',
+                              isDense: true,
+                              items: ['Rất thấp', 'Thấp', 'Trung bình', 'Cao', 'Rất cao'],
+                              onChanged: (_) {},
+                              padding: EdgeInsets.only(left: 0, right: 10, top: 6, bottom: 6),
+                              style: AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.black,
+                              ),
+                              type: EventFilterDropdownType.normal,
                             ),
-                            type: EventFilterDropdownType.normal,
                           ),
                         ),
                       ],

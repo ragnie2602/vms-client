@@ -7,6 +7,7 @@ class EventCustomButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
   final EdgeInsetsGeometry? padding;
+  final Widget? prefix;
   final TextStyle? textStyle;
 
   const EventCustomButton({
@@ -17,6 +18,7 @@ class EventCustomButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.padding,
+    this.prefix,
     this.textStyle,
   });
 
@@ -35,7 +37,13 @@ class EventCustomButton extends StatelessWidget {
       ),
       child: Padding(
         padding: padding ?? EdgeInsets.zero,
-        child: Text(label, style: textStyle),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (prefix != null) prefix!,
+            Text(label, style: textStyle),
+          ],
+        ),
       ),
     );
   }
