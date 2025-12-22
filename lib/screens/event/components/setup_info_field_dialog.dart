@@ -94,14 +94,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: AppColors.greyF2F4FA,
-            ),
-            padding: const EdgeInsets.all(16),
-            child: CustomReorderableListView(),
-          ),
+          CustomReorderableListView(),
           const SizedBox(height: 16),
 
           const SizedBox(height: 16),
@@ -171,7 +164,20 @@ class CustomReorderableListView extends StatefulWidget {
 }
 
 class _CustomReorderableListViewState extends State<CustomReorderableListView> {
-  final List<String> _items = ["Loại sự kiện", "Thời gian", "Thiết bị"];
+  final GlobalKey _listKey = GlobalKey();
+
+  final List<String> _items = ["Thời gian", "Thiết bị"];
+  final List<String> _allOptions = [
+    "Thời gian",
+    "Thiết bị",
+    "Địa điểm",
+    "Biển số xe",
+    "Kênh camera",
+    "Người xử lý",
+  ];
+
+  OverlayEntry? _popupEntry;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +186,19 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
       children: [
         Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
         const SizedBox(height: 10),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.greyE2E8F0),
+            borderRadius: BorderRadius.circular(3),
+            color: AppColors.greyF2F4FA,
+          ),
+          padding: EdgeInsets.only(bottom: 10, left: 15, right: 12, top: 10),
+          width: double.infinity,
+          child: Text('Loại sự kiện'),
+        ),
+        const SizedBox(height: 5),
         ReorderableListView(
+          key: _listKey,
           buildDefaultDragHandles: false,
           onReorder: (int oldIndex, int newIndex) => setState(() {
             if (oldIndex < newIndex) newIndex -= 1;
@@ -227,7 +245,7 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
         ),
         const SizedBox(height: 10),
         InkWell(
-          onTap: () => setState(() => _items.add('New item')),
+          onTap: showAddDataPopup,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -245,5 +263,140 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _removePopup();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void showAddDataPopup() {
+    if (_popupEntry != null) {
+      _removePopup();
+      return;
+    }
+
+    final listContext = _listKey.currentContext;
+    if (listContext == null) return;
+
+    final overlayState = Overlay.of(context);
+    final RenderBox listBox = listContext.findRenderObject() as RenderBox;
+    final RenderBox overlayBox = overlayState.context.findRenderObject() as RenderBox;
+
+    final Offset listBottom = listBox.localToGlobal(
+      Offset(0, listBox.size.height),
+      ancestor: overlayBox,
+    );
+
+    _searchController.clear();
+
+    _popupEntry = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _removePopup,
+              child: const SizedBox.shrink(),
+            ),
+          ),
+          Positioned(
+            left: listBottom.dx,
+            top: listBottom.dy + 4,
+            width: listBox.size.width,
+            child: Material(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [BoxShadow(blurRadius: 60, color: AppColors.grey93989A.withAlpha(52))],
+                  color: AppColors.white,
+                ),
+                padding: const EdgeInsets.all(8.0),
+                child: StatefulBuilder(
+                  builder: (context, setStatePopup) {
+                    final keyword = _searchController.text.trim().toLowerCase();
+                    final availableOptions = _allOptions
+                        .where((o) => !_items.contains(o))
+                        .where((o) => keyword.isEmpty || o.toLowerCase().contains(keyword))
+                        .toList();
+
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(4),
+                              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(4),
+                              borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(4),
+                              borderSide: BorderSide(color: AppColors.secondary, width: 1),
+                            ),
+                            hintText: 'Nhập tên dữ liệu',
+                            hintStyle: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.grey92929D,
+                            ),
+                            isDense: true,
+                          ),
+                          onChanged: (_) => setStatePopup(() {}),
+                        ),
+                        const SizedBox(height: 8),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 220),
+                          child: availableOptions.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Không có kết quả phù hợp',
+                                    style: AppTypography.style(12, color: AppColors.grey64748B),
+                                  ),
+                                )
+                              : ListView.separated(
+                                  itemBuilder: (context, index) => TextButton(
+                                    onPressed: () {
+                                      setState(() => _items.add(availableOptions[index]));
+                                      _removePopup();
+                                    },
+                                    style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 4),
+                                      child: Text(
+                                        availableOptions[index],
+                                        style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                                      ),
+                                    ),
+                                  ),
+                                  itemCount: availableOptions.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 4),
+                                ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    overlayState.insert(_popupEntry!);
+  }
+
+  void _removePopup() {
+    _popupEntry?.remove();
+    _popupEntry = null;
   }
 }

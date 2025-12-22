@@ -89,6 +89,8 @@ class AppAssets {
   static const icCheck = '$_svgPath/check.svg';
   static const icNewWindow = '$_svgPath/ic_multi_window.svg';
   static const icImage = '$_svgPath/ic_image.svg';
+  static const icTimeCircle = '$_svgPath/time_circle.svg';
+  static const icLocation2 = '$_svgPath/location.svg';
   // map
   static const icMarkerMap = '$_svgPath/ic_marker_map.svg';
   static const icPlus = '$_svgPath/plus.svg';

@@ -117,6 +117,26 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                     textAlignVertical: TextAlignVertical.top,
                                   ),
                                 ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Expanded(
+                                      child: AppButton.outline(
+                                        borderColor: AppColors.greyE2E8F0,
+                                        label: 'Hủy',
+                                        onPressed: () => Navigator.pop(context),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: AppButton.filled(
+                                        label: 'Lưu',
+                                        onPressed: () => Navigator.pop(context),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -134,35 +154,18 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  Text(
+                                    'Phát hiện xâm nhập',
+                                    style: AppTypography.style(16, fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 8),
                                   CustomTable(
                                     columnSpacing: 10,
                                     data: CustomTableData(
-                                      columnFlexes: [116, 209],
+                                      columnFlexes: [0, 1],
                                       data: [
                                         [
-                                          Text(
-                                            'Loại sự kiện: ',
-                                            style: AppTypography.style(
-                                              16,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                          Text(
-                                            'Phát hiện xâm nhập',
-                                            style: AppTypography.style(
-                                              16,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                        [
-                                          Text(
-                                            'Thời gian:',
-                                            style: AppTypography.style(
-                                              16,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
+                                          SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
                                           Text(
                                             '20:30 20/12/2025',
                                             style: AppTypography.style(
@@ -172,13 +175,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                           ),
                                         ],
                                         [
-                                          Text(
-                                            'Thiết bị:',
-                                            style: AppTypography.style(
-                                              16,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
+                                          SvgPicture.asset(AppAssets.icVideoOn, height: 20),
                                           Text(
                                             'Camera cổng 1',
                                             style: AppTypography.style(
@@ -188,13 +185,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                           ),
                                         ],
                                         [
-                                          Text(
-                                            'Vị trí:',
-                                            style: AppTypography.style(
-                                              16,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
+                                          SvgPicture.asset(AppAssets.icLocation2, height: 20),
                                           Text(
                                             'Cổng 1',
                                             style: AppTypography.style(
@@ -210,7 +201,6 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                       CrossAxisAlignment.center,
                                       CrossAxisAlignment.center,
                                       CrossAxisAlignment.center,
-                                      CrossAxisAlignment.center,
                                     ],
                                   ),
                                 ],
@@ -219,19 +209,6 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        AppButton.outline(
-                          borderColor: AppColors.greyE2E8F0,
-                          label: 'Hủy',
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const SizedBox(width: 16),
-                        AppButton.filled(label: 'Lưu', onPressed: () => Navigator.pop(context)),
-                      ],
                     ),
                   ],
                 ),
@@ -261,7 +238,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
 class _CustomTabBar extends StatefulWidget {
   final TabController controller;
 
-  const _CustomTabBar({super.key, required this.controller});
+  const _CustomTabBar({required this.controller});
 
   @override
   State<_CustomTabBar> createState() => _CustomTabBarState();
@@ -283,8 +260,8 @@ class _CustomTabBarState extends State<_CustomTabBar> {
           decoration: BoxDecoration(
             border: widget.controller.index == 0 ? null : Border.all(color: AppColors.greyF2F4FA),
             borderRadius: BorderRadius.only(
-              bottomRight: Radius.circular(3),
-              topRight: Radius.circular(3),
+              bottomLeft: Radius.circular(3),
+              topLeft: Radius.circular(3),
             ),
             color: widget.controller.index == 0 ? AppColors.secondary : AppColors.greyFBFBFB,
           ),
@@ -324,8 +301,8 @@ class _CustomTabBarState extends State<_CustomTabBar> {
           decoration: BoxDecoration(
             border: widget.controller.index == 1 ? null : Border.all(color: AppColors.greyF2F4FA),
             borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(3),
-              topLeft: Radius.circular(3),
+              bottomRight: Radius.circular(3),
+              topRight: Radius.circular(3),
             ),
             color: widget.controller.index == 1 ? AppColors.secondary : AppColors.greyFBFBFB,
           ),
@@ -359,6 +336,33 @@ class _CustomTabBarState extends State<_CustomTabBar> {
                 ],
               ),
             ),
+          ),
+        ),
+        const Spacer(),
+        ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.blueD7E5F1,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(3),
+              side: BorderSide(color: AppColors.secondary),
+            ),
+          ),
+          child: Row(
+            children: [
+              SvgPicture.asset(AppAssets.icDownloadFile, color: AppColors.secondary),
+              const SizedBox(width: 8),
+              Text(
+                'Tải xuống',
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.secondary,
+                ),
+              ),
+            ],
           ),
         ),
       ],

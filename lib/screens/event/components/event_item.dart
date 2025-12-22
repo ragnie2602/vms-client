@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
@@ -59,41 +58,38 @@ class EventItem extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 15),
+              Text(
+                'Phát hiện xâm nhập',
+                style: AppTypography.style(16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
               CustomTable(
                 columnSpacing: 10,
                 data: CustomTableData(
-                  columnFlexes: [116, 292],
+                  columnFlexes: [0, 1],
                   data: [
                     [
-                      Text('Loại sự kiện:'),
+                      SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
                       Text(
-                        'Instrution detection',
-                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                        '20:30 20/12/2025',
+                        style: AppTypography.style(16, fontWeight: FontWeight.w500),
                       ),
                     ],
                     [
-                      Text('Time: '),
-                      Text(
-                        DateTime.now().format('HH:mm dd/MM/yyyy'),
-                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                    [
-                      Text('Thiết bị: '),
+                      SvgPicture.asset(AppAssets.icVideoOn, height: 20),
                       Text(
                         'Camera cổng 1',
-                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                        style: AppTypography.style(16, fontWeight: FontWeight.w500),
                       ),
                     ],
                     [
-                      Text('Vị trí: '),
-                      Text('Cổng 1', style: AppTypography.style(14, fontWeight: FontWeight.w500)),
+                      SvgPicture.asset(AppAssets.icLocation2, height: 20),
+                      Text('Cổng 1', style: AppTypography.style(16, fontWeight: FontWeight.w500)),
                     ],
                   ],
                 ),
                 rowSpacing: 8,
                 verticalAlignments: [
-                  CrossAxisAlignment.center,
                   CrossAxisAlignment.center,
                   CrossAxisAlignment.center,
                   CrossAxisAlignment.center,

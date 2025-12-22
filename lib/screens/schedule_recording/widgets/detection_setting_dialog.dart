@@ -352,12 +352,12 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
 }
 
 enum DetectionSettingDialogType {
-  motion,
-  intrusion,
+  dangerousObject,
   face,
+  intrusion,
   lineCrossing,
   lostObject,
-  dangerousObject;
+  motion;
 
   String get title {
     switch (this) {
