@@ -47,9 +47,11 @@ class _PanelListPlaybacksState extends State<PanelListPlaybacks> with StateBuild
         return;
       }
 
+      final currentIndex = (context.read<PlaybackBloc>().state as PlaybackSuccess).currentIndex;
+      if (currentIndex < 0) return;
+
       _scrollController.animateTo(
-        // scroll tới vị trí sao cho currentIndex nằm ở giữa màn hình
-        (context.read<PlaybackBloc>().state as PlaybackSuccess).currentIndex * _cardHeight,
+        currentIndex * _cardHeight,
         duration: Durations.medium1,
         curve: Curves.easeOutCubic,
       );

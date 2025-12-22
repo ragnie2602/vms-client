@@ -58,6 +58,7 @@ class _ItemCameraPlaybackWidgetState extends State<ItemCameraPlaybackWidget> {
               : (widget.item.isNoVideo)
               ? EmptyRecordCameraWidget()
               : MultiPlaybackPlayer(
+                  getGlobalTime: () => context.read<MultiPlaybackBloc>().timeGlobal.value,
                   name: widget.item.camera.name,
                   controller: widget.item.playerController,
                   playlist: widget.item.listVideoPlaybacks ?? [],
