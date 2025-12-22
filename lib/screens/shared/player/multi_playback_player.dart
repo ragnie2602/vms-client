@@ -709,6 +709,22 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
     bool needInitialized = true,
     bool waitSeeking = true,
   }) async {
+    if (_state.value == PlayerState.empty && mounted) {
+      var globalTime = widget.getGlobalTime?.call();
+      if (globalTime == null) return;
+
+      final index = widget.playlist.atTime(globalTime);
+      if (index != null) {
+        _lastSyncIndex = null;
+        _isPlaylistFinished = false;
+        _syncGlobalTimeCompleter = Completer<void>();
+        syncGlobalTime(globalTime);
+        await _syncGlobalTimeCompleter!.future.timeout(Duration(seconds: 15), onTimeout: () {});
+      }
+
+      return;
+    }
+
     if ((needInitialized && !isInitialized()) || !mounted) return;
 
     // (Ấn backward/forward) Đang jump --> đợi xong mới thực thi seek
@@ -869,6 +885,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
   int? _lastSyncIndex;
   bool? _isPlaylistFinished;
+  Completer<void>? _syncGlobalTimeCompleter;
   Future<void> syncGlobalTime(DateTime time) async {
     if (_state.value != PlayerState.empty || _isPlaylistFinished == true) return;
 
@@ -885,13 +902,14 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
       await _jumpToDate(time, dateIndex: index);
       // Đồng bộ lại global time (do khi xong có thể sẽ bị chậm)
       final globalTime = widget.getGlobalTime?.call();
-      if (globalTime != null) await jumpToDateQueue(globalTime.add(Duration(seconds: 2)));
+      if (globalTime != null) await jumpToDateQueue(globalTime.add(Duration(seconds: 1)));
       await play(force: true);
 
       await Future.delayed(Duration(milliseconds: 100));
       await _syncGlobalTimeQueue.cancelAndReset();
 
       _lastSyncIndex = currentIndex;
+      _syncGlobalTimeCompleter?.safeComplete();
     });
   }
 
