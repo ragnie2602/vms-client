@@ -821,7 +821,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
   }
 
   Future<void> play({bool force = false}) async {
-    if (_status.value != PlayerStatus.playing || force) {
+    if ((_status.value != PlayerStatus.playing && _state.value != PlayerState.empty) || force) {
       _shouldSyncPlayerTime = true;
       _player.play();
       _status.value = PlayerStatus.playing;
@@ -829,7 +829,7 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
   }
 
   Future<void> pause({bool force = false}) async {
-    if (_status.value == PlayerStatus.playing || force) {
+    if ((_status.value == PlayerStatus.playing && _state.value != PlayerState.empty) || force) {
       _shouldSyncPlayerTime = false;
       _player.pause();
       _status.value = PlayerStatus.paused;
