@@ -23,16 +23,37 @@ class IntelligentAnalysisWidget extends StatelessWidget {
           mainAxisSpacing: 13,
         ),
         children: [
-          _IAItem(svgPath: AppAssets.icMotionDetection, title: 'Phát hiện chuyển động'),
+          _IAItem(
+            svgPath: AppAssets.icMotionDetection,
+            title: 'Phát hiện chuyển động',
+            type: DetectionSettingDialogType.motion,
+          ),
           _IAItem(
             svgPath: AppAssets.icIntrusionDetection,
             title: 'Phát hiện xâm nhập',
             timeoutField: true,
+            type: DetectionSettingDialogType.intrusion,
           ),
-          _IAItem(svgPath: AppAssets.icFaceDetection, title: 'Phân biệt đối tượng'),
-          _IAItem(svgPath: AppAssets.icLineCrossingDetection, title: 'Phát hiện vượt hàng rào ảo'),
-          _IAItem(svgPath: AppAssets.icLostObjectDetection, title: 'Phát hiện vật bị bỏ quên'),
-          _IAItem(svgPath: AppAssets.icDangerousObjectDetection, title: 'Phát hiện vật nguy hiểm'),
+          _IAItem(
+            svgPath: AppAssets.icFaceDetection,
+            title: 'Phân biệt đối tượng',
+            type: DetectionSettingDialogType.face,
+          ),
+          _IAItem(
+            svgPath: AppAssets.icLineCrossingDetection,
+            title: 'Phát hiện vượt hàng rào ảo',
+            type: DetectionSettingDialogType.lineCrossing,
+          ),
+          _IAItem(
+            svgPath: AppAssets.icLostObjectDetection,
+            title: 'Phát hiện vật bị bỏ quên',
+            type: DetectionSettingDialogType.lostObject,
+          ),
+          _IAItem(
+            svgPath: AppAssets.icDangerousObjectDetection,
+            title: 'Phát hiện vật nguy hiểm',
+            type: DetectionSettingDialogType.dangerousObject,
+          ),
         ],
       ),
     );
@@ -43,8 +64,14 @@ class _IAItem extends StatefulWidget {
   final String svgPath;
   final String title;
   final bool timeoutField;
+  final DetectionSettingDialogType type;
 
-  const _IAItem({required this.svgPath, required this.title, this.timeoutField = false});
+  const _IAItem({
+    required this.svgPath,
+    required this.title,
+    this.timeoutField = false,
+    required this.type,
+  });
 
   @override
   State<_IAItem> createState() => _IAItemState();
@@ -81,11 +108,7 @@ class _IAItemState extends State<_IAItem> {
                       activeThumbColor: AppColors.white,
                       inactiveTrackColor: AppColors.greyE4E4E4,
                       inactiveThumbColor: AppColors.white,
-                      onChanged: (value) => _openSetting(
-                        value,
-                        timeoutField: widget.timeoutField,
-                        title: widget.title,
-                      ),
+                      onChanged: (value) => _openSetting(value),
                       trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
                       value: on,
                     ),
@@ -101,12 +124,12 @@ class _IAItemState extends State<_IAItem> {
     );
   }
 
-  _openSetting(bool expected, {required bool timeoutField, required String title}) async {
+  _openSetting(bool expected) async {
     if (!expected) return setState(() => on = expected);
 
     final result = await showDialog(
       context: context,
-      builder: (context) => DetectionSettingDialog(title: title, timeout: timeoutField),
+      builder: (context) => DetectionSettingDialog(type: widget.type),
     );
 
     if (result == true) setState(() => on = expected);

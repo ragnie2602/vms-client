@@ -73,6 +73,7 @@ class AppColors {
   static const redFF0004 = Color(0xFFFF0004);
   static const redFF0000 = Color(0xFFFF0000);
   static const redFF0909 = Color(0xFFFF0909);
+  static const redFF2F2F = Color(0xFFFF2F2F);
 
   static const white = Colors.white;
 

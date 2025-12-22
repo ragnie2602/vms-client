@@ -9,16 +9,18 @@ import 'package:vms_flutter_client/screens/schedule_recording/widgets/region_mar
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 class DetectionSettingDialog extends StatefulWidget {
-  final String title;
-  final bool timeout;
+  final DetectionSettingDialogType type;
 
-  const DetectionSettingDialog({super.key, required this.title, this.timeout = false});
+  const DetectionSettingDialog({super.key, required this.type});
 
   @override
   State<DetectionSettingDialog> createState() => _DetectionSettingDialogState();
 }
 
 class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
+  final GlobalKey<RegionMarkerState> regionMarkerKey = GlobalKey<RegionMarkerState>();
+  final GlobalKey<LineMarkerState> lineMarkerKey = GlobalKey<LineMarkerState>();
+
   bool on = true;
   bool recordEvent = false;
   bool sendWarning = true;
@@ -34,7 +36,7 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
 
     final textStyle = AppTypography.style(14, fontWeight: FontWeight.w600);
     final painter = TextPainter(
-      text: TextSpan(text: '000', style: textStyle), // 3 ký tự mẫu
+      text: TextSpan(text: '000', style: textStyle),
       textDirection: TextDirection.ltr,
     )..layout();
 
@@ -59,7 +61,7 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Cài đặt ${widget.title.toLowerCase()}',
+                    'Cài đặt ${widget.type.title.toLowerCase()}',
                     style: AppTypography.style(20, fontWeight: FontWeight.w600),
                   ),
                   IconButton(
@@ -78,7 +80,7 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                     data: [
                       [
                         Text(
-                          '${widget.title}:',
+                          '${widget.type.title}:',
                           style: AppTypography.style(14, fontWeight: FontWeight.w400),
                         ),
                         Align(
@@ -158,7 +160,7 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                           ],
                         ),
                       ],
-                      if (widget.timeout) ...[
+                      if (widget.type == DetectionSettingDialogType.intrusion) ...[
                         [
                           Text(
                             'Thời gian:',
@@ -206,14 +208,61 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                           ),
                         ],
                       ],
+                      if (widget.type == DetectionSettingDialogType.lineCrossing) ...[
+                        [
+                          Text(
+                            'Hướng di chuyển:',
+                            style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: SizedBox(
+                              width: MediaQuery.widthOf(context) * 270 / 1600,
+                              child: EventFilterDropdown<String>(
+                                initialValue: 'A -> B',
+                                isDense: true,
+                                items: ['A -> B', 'B -> A'],
+                                onChanged: (_) {},
+                                padding: EdgeInsets.only(left: 0, right: 10, top: 6, bottom: 6),
+                                style: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.black,
+                                ),
+                                type: EventFilterDropdownType.normal,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                       [
                         Text(
                           'Thiết lập vùng cảnh báo:',
                           style: AppTypography.style(14, fontWeight: FontWeight.w400),
                         ),
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(child: RegionMarker()),
+                            Expanded(
+                              child: widget.type == DetectionSettingDialogType.lineCrossing
+                                  ? LineMarker(key: lineMarkerKey)
+                                  : RegionMarker(key: regionMarkerKey),
+                            ),
+                            const SizedBox(height: 10),
+                            InkWell(
+                              onTap: _clearRegion,
+                              child: Text(
+                                'Xóa vùng cảnh báo',
+                                style: AppTypography.style(
+                                  14,
+                                  color: AppColors.redFF2F2F,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: AppColors.redFF2F2F,
+                                  fontWeight: FontWeight.w400,
+                                  isItalic: true,
+                                ),
+                              ),
+                            ),
                             const SizedBox(height: 10),
                             Container(
                               decoration: BoxDecoration(
@@ -241,7 +290,7 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                         ),
                       ],
                     ],
-                    rowFlexes: widget.timeout ? [0, 0, 0, 0, 1] : [0, 0, 0, 1],
+                    rowFlexes: _getRowFlexes(),
                   ),
                   rowSpacing: 8,
                   verticalAlignments: [
@@ -281,5 +330,49 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
         ),
       ),
     );
+  }
+
+  void _clearRegion() {
+    if (widget.type == DetectionSettingDialogType.lineCrossing) {
+      lineMarkerKey.currentState?.clearRegion();
+    } else {
+      regionMarkerKey.currentState?.clearRegion();
+    }
+  }
+
+  _getRowFlexes() {
+    switch (widget.type) {
+      case DetectionSettingDialogType.intrusion:
+      case DetectionSettingDialogType.lineCrossing:
+        return [0, 0, 0, 0, 1];
+      default:
+        return [0, 0, 0, 1];
+    }
+  }
+}
+
+enum DetectionSettingDialogType {
+  motion,
+  intrusion,
+  face,
+  lineCrossing,
+  lostObject,
+  dangerousObject;
+
+  String get title {
+    switch (this) {
+      case DetectionSettingDialogType.motion:
+        return 'Phát hiện chuyển động';
+      case DetectionSettingDialogType.intrusion:
+        return 'Phát hiện xâm nhập';
+      case DetectionSettingDialogType.face:
+        return 'Phân biệt đối tượng';
+      case DetectionSettingDialogType.lineCrossing:
+        return 'Phát hiện vượt hàng rào ảo';
+      case DetectionSettingDialogType.lostObject:
+        return 'Phát hiện vật bị bỏ quên';
+      case DetectionSettingDialogType.dangerousObject:
+        return 'Phát hiện vật nguy hiểm';
+    }
   }
 }
