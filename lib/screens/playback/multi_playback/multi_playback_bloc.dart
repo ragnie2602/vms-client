@@ -275,6 +275,8 @@ class MultiPlaybackBloc
       // check cam mới nếu có video(-> UI là 1 player) -> await initial
       if (updatedItem.isNoVideo != true) {
         await _playerController.waitForAttached.future;
+        // setup speed for new camera
+        _playerController.changeSpeed?.call(state.speed);
       }
 
       // 4. Seek new camera to sync date and mute
