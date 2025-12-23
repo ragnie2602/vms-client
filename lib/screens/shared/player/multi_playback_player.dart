@@ -357,6 +357,8 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
           _player.pause();
         } else {
           Logger.warn("Camera '${widget.name}' disconnected ($pre -> $cur)");
+          // mute âm lượng
+          changeVolume(0);
           _state.value = PlayerState.error;
         }
       }
