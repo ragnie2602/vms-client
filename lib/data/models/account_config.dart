@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'app_data.dart';
+import '../../core/app_data.dart';
 
 class AccountConfig {
   final String videoFolder;
@@ -14,9 +14,11 @@ class AccountConfig {
   AccountConfig({required this.videoFolder, required this.snapshotFolder});
   factory AccountConfig.empty() => AccountConfig(videoFolder: '', snapshotFolder: '');
 
-  static AccountConfig? current() {
+  static Future<AccountConfig?> current({bool bypassCache = false}) async {
     try {
-      final json = AppData.instance.read<String>(ACCOUNT_CONFIG_SP_KEY);
+      final json = bypassCache
+          ? await AppData.instance.readNewest<String>(ACCOUNT_CONFIG_SP_KEY)
+          : AppData.instance.read<String>(ACCOUNT_CONFIG_SP_KEY);
 
       if (json == null) return null;
       return AccountConfig.fromJson(json);

@@ -25,3 +25,7 @@ class MWERestoreMonitorMode extends MWE {
 class MWESignOut extends MWE {
   const MWESignOut();
 }
+
+class MWESyncStorageConfig extends MWE {
+  const MWESyncStorageConfig();
+}

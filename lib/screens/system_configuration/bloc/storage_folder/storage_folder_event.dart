@@ -2,7 +2,10 @@ part of 'storage_folder_bloc.dart';
 
 sealed class StorageFolderEvent extends BaseEvent {}
 
-class StorageFolderStarted extends StorageFolderEvent {}
+class StorageFolderStarted extends StorageFolderEvent {
+  final bool bypassCache;
+  StorageFolderStarted({this.bypassCache = false});
+}
 
 class SaveStorageFolders extends StorageFolderEvent {
   final String videoFolder;

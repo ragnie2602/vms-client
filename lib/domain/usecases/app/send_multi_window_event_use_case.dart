@@ -63,6 +63,12 @@ class SendMultiWindowEventUseCase
           DesktopMultiWindow.invokeMethod(targetId, input.methodName);
         }
         break;
+      case 'sync_storage_config':
+        final subIds = await DesktopMultiWindow.getAllSubWindowIds();
+        for (var subId in subIds) {
+          DesktopMultiWindow.invokeMethod(subId, input.methodName);
+        }
+        break;
       default:
         DesktopMultiWindow.invokeMethod(input.targetWindowID, input.methodName, input.data);
     }
