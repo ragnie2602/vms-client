@@ -35,7 +35,7 @@ class _MonitorScreenState extends State<MonitorScreen> {
       child: PlatformBuilder.builder(
         onDesktop: (context) => MonitorDesktopLayout(
           content: widget.child,
-          rightPanelWidth: MediaQuery.widthOf(context) * 294 / 1600,
+          rightPanelWidth: MediaQuery.widthOf(context) * 280 / 1600,
         ),
         onMobile: (context) => MobileMonitorList(),
       ),

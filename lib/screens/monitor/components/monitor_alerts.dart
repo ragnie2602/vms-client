@@ -61,12 +61,12 @@ class _EventItemState extends State<_EventItem> {
         child: InkWell(
           onTap: () => showDetailDialog(context),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  flex: 72,
+                  flex: 63,
                   child: Stack(
                     children: [
                       AspectRatio(
@@ -74,7 +74,7 @@ class _EventItemState extends State<_EventItem> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(3),
                           child: Image.network(
-                            'https://assets.nintendo.com/image/upload/q_auto/f_auto/store/software/switch2/70010000105851/8787627be7f26ae7984456ffd9af17bea845032cebbf59fe6eeb596dea6bb20e',
+                            'https://static.wikia.nocookie.net/p__/images/7/71/Sherma.png/revision/latest?cb=20250924113412&path-prefix=protagonist',
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -87,7 +87,7 @@ class _EventItemState extends State<_EventItem> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 5),
+                const SizedBox(width: 11),
                 Expanded(
                   flex: 198,
                   child: Column(

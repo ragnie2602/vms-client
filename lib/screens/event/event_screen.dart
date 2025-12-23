@@ -25,6 +25,8 @@ class EventScreen extends StatefulWidget {
 class _EventScreenState extends State<EventScreen> {
   late final ControlCameraBloc controlCameraBloc;
 
+  int presetHour = 0;
+
   @override
   void initState() {
     super.initState();
@@ -45,7 +47,7 @@ class _EventScreenState extends State<EventScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
-                  child: EventFilterDropdown<String>(
+                  child: EventFilterDropdown<DateTime>(
                     isDense: true,
                     items: [],
                     label: 'Từ ngày',
@@ -56,7 +58,7 @@ class _EventScreenState extends State<EventScreen> {
                 ),
                 SizedBox(width: 16),
                 Expanded(
-                  child: EventFilterDropdown<String>(
+                  child: EventFilterDropdown<DateTime>(
                     isDense: true,
                     items: [],
                     label: 'Đến ngày',
@@ -161,103 +163,109 @@ class _EventScreenState extends State<EventScreen> {
               padding: const EdgeInsets.only(left: 10, right: 10, top: 20),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Danh sách sự kiện',
-                        style: AppTypography.style(16, fontWeight: FontWeight.w600),
-                      ),
-                      const Spacer(),
-                      EventCustomButton(
-                        backgroundColor: AppColors.white,
-                        borderColor: AppColors.blue005AA9,
-                        borderRadius: 3,
-                        label: '1 giờ trước',
-                        onPressed: () {},
-                        padding: const EdgeInsets.all(8),
-                        textStyle: AppTypography.style(
-                          14,
-                          color: AppColors.blue005AA9,
-                          fontWeight: FontWeight.w500,
+                  StatefulBuilder(
+                    builder: (context, setState) => Row(
+                      children: [
+                        Text(
+                          'Danh sách sự kiện',
+                          style: AppTypography.style(16, fontWeight: FontWeight.w600),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      EventCustomButton(
-                        backgroundColor: AppColors.white,
-                        borderColor: AppColors.blue005AA9,
-                        borderRadius: 3,
-                        label: 'Hôm nay',
-                        onPressed: () {},
-                        padding: const EdgeInsets.all(8),
-                        textStyle: AppTypography.style(
-                          14,
-                          color: AppColors.blue005AA9,
-                          fontWeight: FontWeight.w500,
+                        const Spacer(),
+                        EventCustomButton(
+                          backgroundColor: presetHour == 1 ? AppColors.blue005AA9 : AppColors.white,
+                          borderColor: AppColors.blue005AA9,
+                          borderRadius: 3,
+                          label: '1 giờ trước',
+                          onPressed: () => setState(() => presetHour = 1),
+                          padding: const EdgeInsets.all(8),
+                          textStyle: AppTypography.style(
+                            14,
+                            color: presetHour == 1 ? AppColors.white : AppColors.blue005AA9,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      EventCustomButton(
-                        backgroundColor: AppColors.white,
-                        borderColor: AppColors.blue005AA9,
-                        borderRadius: 3,
-                        label: '7 ngày trước',
-                        onPressed: () {},
-                        padding: const EdgeInsets.all(8),
-                        textStyle: AppTypography.style(
-                          14,
-                          color: AppColors.blue005AA9,
-                          fontWeight: FontWeight.w500,
+                        const SizedBox(width: 10),
+                        EventCustomButton(
+                          backgroundColor: presetHour == 24
+                              ? AppColors.blue005AA9
+                              : AppColors.white,
+                          borderColor: AppColors.blue005AA9,
+                          borderRadius: 3,
+                          label: 'Hôm nay',
+                          onPressed: () => setState(() => presetHour = 24),
+                          padding: const EdgeInsets.all(8),
+                          textStyle: AppTypography.style(
+                            14,
+                            color: presetHour == 24 ? AppColors.white : AppColors.blue005AA9,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      EventCustomButton(
-                        backgroundColor: AppColors.white,
-                        borderColor: AppColors.blue005AA9,
-                        borderRadius: 3,
-                        label: '30 ngày trước',
-                        onPressed: () {},
-                        padding: const EdgeInsets.all(8),
-                        textStyle: AppTypography.style(
-                          14,
-                          color: AppColors.blue005AA9,
-                          fontWeight: FontWeight.w500,
+                        const SizedBox(width: 10),
+                        EventCustomButton(
+                          backgroundColor: presetHour == 168
+                              ? AppColors.blue005AA9
+                              : AppColors.white,
+                          borderColor: AppColors.blue005AA9,
+                          borderRadius: 3,
+                          label: '7 ngày trước',
+                          onPressed: () => setState(() => presetHour = 168),
+                          padding: const EdgeInsets.all(8),
+                          textStyle: AppTypography.style(
+                            14,
+                            color: presetHour == 168 ? AppColors.white : AppColors.blue005AA9,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      EventCustomButton(
-                        backgroundColor: AppColors.white,
-                        borderColor: AppColors.blue005AA9,
-                        borderRadius: 3,
-                        label: '',
-                        prefix: SvgPicture.asset(
-                          AppAssets.tabSettings,
-                          color: AppColors.blue005AA9,
-                          height: 20,
+                        const SizedBox(width: 10),
+                        EventCustomButton(
+                          backgroundColor: presetHour == 720
+                              ? AppColors.blue005AA9
+                              : AppColors.white,
+                          borderColor: AppColors.blue005AA9,
+                          borderRadius: 3,
+                          label: '30 ngày trước',
+                          onPressed: () => setState(() => presetHour = 720),
+                          padding: const EdgeInsets.all(8),
+                          textStyle: AppTypography.style(
+                            14,
+                            color: presetHour == 720 ? AppColors.white : AppColors.blue005AA9,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        onPressed: () => showSetupInfoFieldsDialog(context),
-                        padding: const EdgeInsets.all(5),
-                        textStyle: AppTypography.style(
-                          14,
-                          color: AppColors.blue005AA9,
-                          fontWeight: FontWeight.w500,
+                        const SizedBox(width: 10),
+                        EventCustomButton(
+                          backgroundColor: AppColors.white,
+                          borderColor: AppColors.blue005AA9,
+                          borderRadius: 3,
+                          label: '',
+                          prefix: SvgPicture.asset(
+                            AppAssets.tabSettings,
+                            color: AppColors.blue005AA9,
+                            height: 20,
+                          ),
+                          onPressed: () => showSetupInfoFieldsDialog(context),
+                          padding: const EdgeInsets.all(5),
+                          textStyle: AppTypography.style(
+                            14,
+                            color: AppColors.blue005AA9,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
                   const Divider(color: AppColors.greyF2F4FA),
                   const SizedBox(height: 20),
                   Expanded(
                     child: GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        childAspectRatio: 338 / 304,
+                        childAspectRatio: 324.5 / 306,
                         crossAxisCount: 4,
-                        crossAxisSpacing: 6,
-                        mainAxisSpacing: 11,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
                       ),
-                      itemBuilder: (context, index) {
-                        return EventItem();
-                      },
+                      itemBuilder: (context, index) => EventItem(),
                       itemCount: 12,
                     ),
                   ),

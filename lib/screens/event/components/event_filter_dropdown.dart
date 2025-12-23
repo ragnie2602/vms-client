@@ -87,6 +87,14 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
           color: AppColors.grey64748B,
         ),
         isDense: true,
+        suffixIcon: Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: SvgPicture.asset(AppAssets.icCalendar, height: 16, width: 16),
+        ),
+        suffixIconConstraints: const BoxConstraints(
+          minWidth: 16 + 12, // width icon + padding right
+          minHeight: 16,
+        ),
       ),
       keyboardType: TextInputType.none,
       onTap: () async => await _showDatePicker(),

@@ -34,7 +34,7 @@ class EventItem extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    bottom: 17,
+                    bottom: 16,
                     right: 15,
                     child: Container(
                       decoration: BoxDecoration(
@@ -60,9 +60,9 @@ class EventItem extends StatelessWidget {
               const SizedBox(height: 15),
               Text(
                 'Phát hiện xâm nhập',
-                style: AppTypography.style(16, fontWeight: FontWeight.w600),
+                style: AppTypography.style(14, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               CustomTable(
                 columnSpacing: 10,
                 data: CustomTableData(
@@ -72,23 +72,23 @@ class EventItem extends StatelessWidget {
                       SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
                       Text(
                         '20:30 20/12/2025',
-                        style: AppTypography.style(16, fontWeight: FontWeight.w500),
+                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
                       ),
                     ],
                     [
                       SvgPicture.asset(AppAssets.icVideoOn, height: 20),
                       Text(
                         'Camera cổng 1',
-                        style: AppTypography.style(16, fontWeight: FontWeight.w500),
+                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
                       ),
                     ],
                     [
                       SvgPicture.asset(AppAssets.icLocation2, height: 20),
-                      Text('Cổng 1', style: AppTypography.style(16, fontWeight: FontWeight.w500)),
+                      Text('Cổng 1', style: AppTypography.style(14, fontWeight: FontWeight.w500)),
                     ],
                   ],
                 ),
-                rowSpacing: 8,
+                rowSpacing: 5,
                 verticalAlignments: [
                   CrossAxisAlignment.center,
                   CrossAxisAlignment.center,

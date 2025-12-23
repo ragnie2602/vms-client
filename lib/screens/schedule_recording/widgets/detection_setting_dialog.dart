@@ -131,11 +131,18 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                         ),
                         Column(
                           children: [
+                            const SizedBox(height: 4),
                             Row(
                               children: [
-                                Checkbox(
-                                  value: sendWarning,
-                                  onChanged: (value) => setState(() => sendWarning = value!),
+                                SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: Checkbox(
+                                    activeColor: AppColors.secondary,
+                                    onChanged: (value) => setState(() => sendWarning = value!),
+                                    side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                                    value: sendWarning,
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -144,11 +151,18 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 13),
                             Row(
                               children: [
-                                Checkbox(
-                                  value: recordEvent,
-                                  onChanged: (value) => setState(() => recordEvent = value!),
+                                SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: Checkbox(
+                                    activeColor: AppColors.secondary,
+                                    onChanged: (value) => setState(() => recordEvent = value!),
+                                    side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                                    value: recordEvent,
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -157,6 +171,7 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 4),
                           ],
                         ),
                       ],
@@ -277,7 +292,7 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                                     'Hướng dẫn',
                                     style: AppTypography.style(14, fontWeight: FontWeight.w600),
                                   ),
-                                  const SizedBox(height: 5),
+                                  const SizedBox(height: 8),
                                   Text(
                                     '• Nhấn chuột trái để tạo điểm và vẽ vùng cảnh báo. Nhấn đúp chuột hoặc Enter để hoàn tất.',
                                     maxLines: 100,
@@ -292,7 +307,7 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                     ],
                     rowFlexes: _getRowFlexes(),
                   ),
-                  rowSpacing: 8,
+                  rowSpacing: 10,
                   verticalAlignments: [
                     CrossAxisAlignment.center,
                     CrossAxisAlignment.center,

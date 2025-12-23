@@ -149,16 +149,16 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                 borderRadius: BorderRadius.circular(6),
                                 color: AppColors.greyF2F4FA,
                               ),
-                              padding: const EdgeInsets.all(16.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     'Phát hiện xâm nhập',
-                                    style: AppTypography.style(16, fontWeight: FontWeight.w600),
+                                    style: AppTypography.style(14, fontWeight: FontWeight.w600),
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 10),
                                   CustomTable(
                                     columnSpacing: 10,
                                     data: CustomTableData(
@@ -169,7 +169,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                           Text(
                                             '20:30 20/12/2025',
                                             style: AppTypography.style(
-                                              16,
+                                              14,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -179,7 +179,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                           Text(
                                             'Camera cổng 1',
                                             style: AppTypography.style(
-                                              16,
+                                              14,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -189,14 +189,14 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                           Text(
                                             'Cổng 1',
                                             style: AppTypography.style(
-                                              16,
+                                              14,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                         ],
                                       ],
                                     ),
-                                    rowSpacing: 8,
+                                    rowSpacing: 5,
                                     verticalAlignments: [
                                       CrossAxisAlignment.center,
                                       CrossAxisAlignment.center,
@@ -221,9 +221,12 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
   }
 
   Widget _imageTab() {
-    return Image.network(
-      'https://assets.nintendo.com/image/upload/q_auto/f_auto/store/software/switch2/70010000105851/8787627be7f26ae7984456ffd9af17bea845032cebbf59fe6eeb596dea6bb20e',
-      fit: BoxFit.contain,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: Image.network(
+        'https://assets.nintendo.com/image/upload/q_auto/f_auto/store/software/switch2/70010000105851/8787627be7f26ae7984456ffd9af17bea845032cebbf59fe6eeb596dea6bb20e',
+        fit: BoxFit.contain,
+      ),
     );
   }
 
@@ -256,88 +259,8 @@ class _CustomTabBarState extends State<_CustomTabBar> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Ink(
-          decoration: BoxDecoration(
-            border: widget.controller.index == 0 ? null : Border.all(color: AppColors.greyF2F4FA),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(3),
-              topLeft: Radius.circular(3),
-            ),
-            color: widget.controller.index == 0 ? AppColors.secondary : AppColors.greyFBFBFB,
-          ),
-          child: InkWell(
-            onTap: () => widget.controller.animateTo(0),
-            borderRadius: BorderRadius.circular(4),
-            hoverColor: widget.controller.index == 0
-                ? AppColors.secondary.withOpacity(0.9)
-                : AppColors.greyF2F4FA.withOpacity(0.5),
-            splashColor: widget.controller.index == 0
-                ? Colors.white.withOpacity(0.2)
-                : AppColors.grey64748B.withOpacity(0.1),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 9),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(
-                    AppAssets.icImage,
-                    color: widget.controller.index == 0 ? Colors.white : AppColors.black,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Ảnh sự kiện',
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: widget.controller.index == 0 ? Colors.white : AppColors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Ink(
-          decoration: BoxDecoration(
-            border: widget.controller.index == 1 ? null : Border.all(color: AppColors.greyF2F4FA),
-            borderRadius: BorderRadius.only(
-              bottomRight: Radius.circular(3),
-              topRight: Radius.circular(3),
-            ),
-            color: widget.controller.index == 1 ? AppColors.secondary : AppColors.greyFBFBFB,
-          ),
-          child: InkWell(
-            onTap: () => widget.controller.animateTo(1),
-            borderRadius: BorderRadius.circular(4),
-            hoverColor: widget.controller.index == 1
-                ? AppColors.secondary.withOpacity(0.9)
-                : AppColors.greyF2F4FA.withOpacity(0.5),
-            splashColor: widget.controller.index == 1
-                ? Colors.white.withOpacity(0.2)
-                : AppColors.grey64748B.withOpacity(0.1),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 9),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(
-                    AppAssets.icVideoOn,
-                    color: widget.controller.index == 1 ? Colors.white : AppColors.black,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Video ghi hình',
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: widget.controller.index == 1 ? Colors.white : AppColors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        _getTab(icon: AppAssets.icImage, index: 0, title: 'Ảnh sự kiện'),
+        _getTab(icon: AppAssets.icVideoOn, index: 1, title: 'Video ghi hình'),
         const Spacer(),
         ElevatedButton(
           onPressed: () {},
@@ -366,6 +289,50 @@ class _CustomTabBarState extends State<_CustomTabBar> {
           ),
         ),
       ],
+    );
+  }
+
+  _getTab({required String icon, required int index, required String title}) {
+    return Ink(
+      decoration: BoxDecoration(
+        border: widget.controller.index == index ? null : Border.all(color: AppColors.greyF2F4FA),
+        borderRadius: index == 0
+            ? BorderRadius.only(bottomLeft: Radius.circular(3), topLeft: Radius.circular(3))
+            : BorderRadius.only(bottomRight: Radius.circular(3), topRight: Radius.circular(3)),
+        color: widget.controller.index == index ? AppColors.secondary : AppColors.greyFBFBFB,
+      ),
+      child: InkWell(
+        onTap: () => widget.controller.animateTo(index),
+        borderRadius: BorderRadius.circular(4),
+        hoverColor: widget.controller.index == index
+            ? AppColors.secondary.withOpacity(0.9)
+            : AppColors.greyF2F4FA.withOpacity(0.5),
+        splashColor: widget.controller.index == index
+            ? Colors.white.withOpacity(0.2)
+            : AppColors.grey64748B.withOpacity(0.1),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                icon,
+                color: widget.controller.index == index ? Colors.white : AppColors.black,
+                height: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: widget.controller.index == index ? Colors.white : AppColors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
