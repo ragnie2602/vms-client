@@ -82,44 +82,52 @@ class _IAItemState extends State<_IAItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        color: on ? AppColors.blueDAE3FF : AppColors.greyF2F4FA,
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: SvgPicture.asset(widget.svgPath, alignment: AlignmentGeometry.centerLeft),
-                ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Transform.rotate(
-                    angle: math.pi,
-                    child: Switch(
-                      activeTrackColor: AppColors.blue005AA9,
-                      activeThumbColor: AppColors.white,
-                      inactiveTrackColor: AppColors.greyE4E4E4,
-                      inactiveThumbColor: AppColors.white,
-                      onChanged: (value) => _openSetting(value),
-                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                      value: on,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return Material(
+      child: InkWell(
+        onTap: () => _openSetting(true),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            color: on ? AppColors.blueDAE3FF : AppColors.greyF2F4FA,
           ),
-          const SizedBox(height: 4),
-          Text(widget.title, style: AppTypography.style(14, fontWeight: FontWeight.w600)),
-        ],
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: SvgPicture.asset(
+                        widget.svgPath,
+                        alignment: AlignmentGeometry.centerLeft,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Transform.rotate(
+                        angle: math.pi,
+                        child: Switch(
+                          activeTrackColor: AppColors.blue005AA9,
+                          activeThumbColor: AppColors.white,
+                          inactiveTrackColor: AppColors.greyE4E4E4,
+                          inactiveThumbColor: AppColors.white,
+                          onChanged: (value) => _openSetting(value),
+                          trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                          value: on,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(widget.title, style: AppTypography.style(14, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
       ),
     );
   }
