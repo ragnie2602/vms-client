@@ -412,6 +412,7 @@ class MultiPlaybackBloc
   ) async {
     // wait cho tất cả cam đổi tốc độ
     await _isAllReady();
+    emit(state.copyWith(speed: event.speed));
     await Future.wait(
       (state.listItemCamPlayback ?? []).map(
         (item) =>
@@ -419,7 +420,12 @@ class MultiPlaybackBloc
             Future.value(),
       ),
     );
-    emit(state.copyWith(speed: event.speed));
+    // đồng bộ lại thời gian
+    await _pauseAllCamera();
+    emit(state.copyWith(isPlaying: false));
+    updateFlagPause();
+    await _seekAllCamera(timeGlobal.value);
+    add(const MultiWaitAndPlayEvent());
   }
 
   FutureOr<void> _onChangeVolume(
