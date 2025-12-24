@@ -278,7 +278,7 @@ class _CustomTabBarState extends State<_CustomTabBar> {
               SvgPicture.asset(AppAssets.icDownloadFile, color: AppColors.secondary),
               const SizedBox(width: 8),
               Text(
-                'Tải xuống',
+                'Tải ${widget.controller.index == 0 ? 'ảnh' : 'video'}',
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,

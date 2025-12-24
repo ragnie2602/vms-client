@@ -14,7 +14,8 @@ class RegionMarker extends StatefulWidget {
 }
 
 class RegionMarkerState extends State<RegionMarker> {
-  Size? widgetSize;
+  final GlobalKey _stackKey = GlobalKey();
+  Size? _size;
 
   final FocusNode _focusNode = FocusNode();
   bool isDrawing = true;
@@ -29,73 +30,43 @@ class RegionMarkerState extends State<RegionMarker> {
           setState(() => isDrawing = false);
         }
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          widgetSize = Size(constraints.maxWidth, constraints.maxHeight);
-
-          return
-          // Stack(
-          // children: [
-          MouseRegion(
-            cursor: SystemMouseCursors.precise,
-            onEnter: (event) => _addPoint(event.localPosition),
-            onHover: (event) => _updateHoverPoint(event.localPosition),
-            onExit: (_) => _removeLastPoint(),
-            child: Listener(
-              onPointerDown: (event) {
-                _focusNode.requestFocus();
-                _addPoint(event.localPosition);
-              },
-              child: GestureDetector(
-                onDoubleTap: () => isDrawing = false,
-                child: Stack(
-                  children: [
-                    Image.network(
-                      'https://preview.redd.it/silksong-100-map-v0-3qcwvcx0phrf1.png?width=640&crop=smart&auto=webp&s=85efdac4b8ccfd8a81039ecb447fe59ff70629bc',
-                      fit: BoxFit.cover,
-                      height: constraints.maxHeight,
-                      width: constraints.maxWidth,
-                    ),
-                    RepaintBoundary(
-                      child: ValueListenableBuilder<List<Offset>>(
-                        valueListenable: pointsNotifier,
-                        builder: (_, points, _) => CustomPaint(
-                          painter: PolygonPainter(points: points),
-                          size: widgetSize!,
-                        ),
-                      ),
-                    ),
-                  ],
+      child: MouseRegion(
+        cursor: SystemMouseCursors.precise,
+        onEnter: (event) => _addPoint(event.localPosition),
+        onHover: (event) => _updateHoverPoint(event.localPosition),
+        onExit: (_) => _removeLastPoint(),
+        child: Listener(
+          onPointerDown: (event) {
+            _focusNode.requestFocus();
+            _addPoint(event.localPosition);
+          },
+          child: GestureDetector(
+            onDoubleTap: () => isDrawing = false,
+            child: Stack(
+              key: _stackKey,
+              fit: StackFit.passthrough,
+              children: [
+                Image.network(
+                  'https://preview.redd.it/silksong-100-map-v0-3qcwvcx0phrf1.png?width=640&crop=smart&auto=webp&s=85efdac4b8ccfd8a81039ecb447fe59ff70629bc',
+                  fit: BoxFit.cover,
+                  frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) => _size = context.size);
+                    return child;
+                  },
                 ),
-              ),
+                Positioned.fill(
+                  child: RepaintBoundary(
+                    child: ValueListenableBuilder<List<Offset>>(
+                      valueListenable: pointsNotifier,
+                      builder: (_, points, _) =>
+                          CustomPaint(painter: PolygonPainter(points: points)),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          );
-          // ValueListenableBuilder<List<Offset>>(
-          //   valueListenable: pointsNotifier,
-          //   builder: (_, points, _) {
-          //     final clearPosition = _getClearPosition(points, constraints);
-
-          //     return Positioned(
-          //       left: clearPosition.dx,
-          //       top: clearPosition.dy,
-          //       child: isDrawing
-          //           ? SizedBox.shrink()
-          //           : InkWell(
-          //               onTap: clearRegion,
-          //               child: Container(
-          //                 decoration: BoxDecoration(
-          //                   color: Colors.black.withAlpha(154),
-          //                   shape: BoxShape.circle,
-          //                 ),
-          //                 child: Icon(Icons.close, color: Colors.white, size: ICON_SIZE),
-          //               ),
-          //             ),
-          //     );
-          //   },
-          // ),
-          // ],
-          // );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -108,11 +79,11 @@ class RegionMarkerState extends State<RegionMarker> {
   }
 
   void _addPoint(Offset localPosition) {
-    if (widgetSize == null || !isDrawing) return;
+    if (_size == null || !isDrawing) return;
 
     final normalizedPoint = Offset(
-      localPosition.dx / widgetSize!.width,
-      localPosition.dy / widgetSize!.height,
+      localPosition.dx / _size!.width,
+      localPosition.dy / _size!.height,
     );
 
     final currentPoints = List<Offset>.from(pointsNotifier.value);
@@ -184,11 +155,11 @@ class RegionMarkerState extends State<RegionMarker> {
   }
 
   void _updateHoverPoint(Offset localPosition) {
-    if (widgetSize == null || !isDrawing || pointsNotifier.value.isEmpty) return;
+    if (_size == null || !isDrawing || pointsNotifier.value.isEmpty) return;
 
     final normalizedPoint = Offset(
-      localPosition.dx / widgetSize!.width,
-      localPosition.dy / widgetSize!.height,
+      localPosition.dx / _size!.width,
+      localPosition.dy / _size!.height,
     );
 
     final currentPoints = List<Offset>.from(pointsNotifier.value);
@@ -240,62 +211,62 @@ class LineMarker extends StatefulWidget {
 }
 
 class LineMarkerState extends State<LineMarker> {
-  Size? widgetSize;
+  Size? _size;
 
   bool isDrawing = true;
   final ValueNotifier<List<Offset>> pointsNotifier = ValueNotifier<List<Offset>>([]);
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        widgetSize = Size(constraints.maxWidth, constraints.maxHeight);
-
-        return MouseRegion(
-          cursor: SystemMouseCursors.precise,
-          onEnter: (event) => _addPoint(event.localPosition),
-          onHover: (event) => _updateHoverPoint(event.localPosition),
-          onExit: (_) => _removeLastPoint(),
-          child: Listener(
-            onPointerDown: (event) {
-              _addPoint(event.localPosition);
-              if (pointsNotifier.value.length > 2) {
-                isDrawing = false;
-                _removeLastPoint();
-              }
-            },
-            child: GestureDetector(
-              onDoubleTap: () => isDrawing = false,
-              child: Stack(
-                children: [
-                  Image.network(
-                    'https://cdn.mos.cms.futurecdn.net/8iKiEgFUf7fhvoApnwGUCW.jpg',
-                    fit: BoxFit.cover,
-                    height: constraints.maxHeight,
-                    width: constraints.maxWidth,
-                  ),
-                  ValueListenableBuilder(
+    return Padding(
+      padding: const EdgeInsets.only(top: 30),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.precise,
+        onEnter: (event) => _addPoint(event.localPosition),
+        onHover: (event) => _updateHoverPoint(event.localPosition),
+        onExit: (_) => _removeLastPoint(),
+        child: Listener(
+          onPointerDown: (event) {
+            _addPoint(event.localPosition);
+            if (pointsNotifier.value.length > 2) {
+              isDrawing = false;
+              _removeLastPoint();
+            }
+          },
+          child: GestureDetector(
+            onDoubleTap: () => isDrawing = false,
+            child: Stack(
+              fit: StackFit.passthrough,
+              children: [
+                Image.network(
+                  'https://cdn.mos.cms.futurecdn.net/8iKiEgFUf7fhvoApnwGUCW.jpg',
+                  fit: BoxFit.cover,
+                  frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) => _size = context.size);
+                    return child;
+                  },
+                ),
+                Positioned.fill(
+                  child: ValueListenableBuilder(
                     valueListenable: pointsNotifier,
-                    builder: (context, points, _) => CustomPaint(
-                      painter: LinePainter(points: points),
-                      size: widgetSize!,
-                    ),
+                    builder: (context, points, _) =>
+                        CustomPaint(painter: LinePainter(points: points)),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   void _addPoint(Offset localPosition) {
-    if (widgetSize == null || !isDrawing) return;
+    if (_size == null || !isDrawing) return;
 
     final normalizedPoint = Offset(
-      localPosition.dx / widgetSize!.width,
-      localPosition.dy / widgetSize!.height,
+      localPosition.dx / _size!.width,
+      localPosition.dy / _size!.height,
     );
 
     final currentPoints = List<Offset>.from(pointsNotifier.value);
@@ -322,11 +293,11 @@ class LineMarkerState extends State<LineMarker> {
   }
 
   void _updateHoverPoint(Offset localPosition) {
-    if (widgetSize == null || !isDrawing || pointsNotifier.value.isEmpty) return;
+    if (_size == null || !isDrawing || pointsNotifier.value.isEmpty) return;
 
     final normalizedPoint = Offset(
-      localPosition.dx / widgetSize!.width,
-      localPosition.dy / widgetSize!.height,
+      localPosition.dx / _size!.width,
+      localPosition.dy / _size!.height,
     );
 
     final currentPoints = List<Offset>.from(pointsNotifier.value);

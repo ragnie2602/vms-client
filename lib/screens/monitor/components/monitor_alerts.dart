@@ -36,7 +36,10 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
             child: _CustomTabBar(controller: tabController),
           ),
           Expanded(
-            child: ListView.builder(itemBuilder: (context, index) => _EventItem(), itemCount: 10),
+            child: ListView.builder(
+              itemBuilder: (context, index) => _EventItem(tmp: index % 2 == 0),
+              itemCount: 10,
+            ),
           ),
         ],
       ),
@@ -45,6 +48,10 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
 }
 
 class _EventItem extends StatefulWidget {
+  final bool tmp;
+
+  const _EventItem({this.tmp = false});
+
   @override
   State<_EventItem> createState() => _EventItemState();
 }
@@ -104,7 +111,22 @@ class _EventItemState extends State<_EventItem> {
                           columnFlexes: [0, 1],
                           data: [
                             [
-                              SvgPicture.asset(AppAssets.icTimeCircle, height: 18),
+                              Tooltip(
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                message: 'Thời gian',
+                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                preferBelow: false,
+                                textStyle: AppTypography.style(
+                                  11,
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                verticalOffset: 8,
+                                child: SvgPicture.asset(AppAssets.icTimeCircle, height: 18),
+                              ),
                               Text(
                                 '20:30 20/12/2025',
                                 style: AppTypography.style(12, fontWeight: FontWeight.w500),
@@ -119,10 +141,35 @@ class _EventItemState extends State<_EventItem> {
                                 style: AppTypography.style(12, fontWeight: FontWeight.w500),
                               ),
                             ],
+                            if (widget.tmp)
+                              [
+                                SvgPicture.asset(AppAssets.icId, height: 18),
+                                Text(
+                                  'ID102939',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTypography.style(12, fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            if (widget.tmp)
+                              [
+                                SvgPicture.asset(AppAssets.icDirection, height: 18),
+                                Text(
+                                  'A -> B',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTypography.style(12, fontWeight: FontWeight.w500),
+                                ),
+                              ],
                           ],
                         ),
                         rowSpacing: 2,
-                        verticalAlignments: [CrossAxisAlignment.center, CrossAxisAlignment.center],
+                        verticalAlignments: [
+                          CrossAxisAlignment.center,
+                          CrossAxisAlignment.center,
+                          CrossAxisAlignment.center,
+                          CrossAxisAlignment.center,
+                        ],
                       ),
                     ],
                   ),

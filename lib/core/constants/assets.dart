@@ -77,6 +77,8 @@ class AppAssets {
   static const icMode6x6Active = '$_svgPath/mode_6x6_active.svg';
   static const icMenu = '$_svgPath/menu.svg';
   static const icVideoOn = '$_svgPath/video_on.svg';
+  static const icId = '$_svgPath/id.svg';
+  static const icDirection = '$_svgPath/direction.svg';
   static const icFastBackward = '$_svgPath/fast_backward.svg';
   static const icFastForward = '$_svgPath/fast_forward.svg';
   static const icPlay = '$_svgPath/play.svg';

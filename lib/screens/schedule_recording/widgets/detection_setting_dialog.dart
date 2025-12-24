@@ -251,19 +251,26 @@ class _DetectionSettingDialogState extends State<DetectionSettingDialog> {
                         ],
                       ],
                       [
-                        Text(
-                          'Thiết lập vùng cảnh báo:',
-                          style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: widget.type == DetectionSettingDialogType.lineCrossing ? 30 : 0,
+                          ),
+                          child: Text(
+                            'Thiết lập vùng cảnh báo:',
+                            style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                          ),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
+                            Flexible(
                               child: widget.type == DetectionSettingDialogType.lineCrossing
                                   ? LineMarker(key: lineMarkerKey)
                                   : RegionMarker(key: regionMarkerKey),
                             ),
                             const SizedBox(height: 10),
+                            if (widget.type == DetectionSettingDialogType.lineCrossing)
+                              const SizedBox(height: 20),
                             InkWell(
                               onTap: _clearRegion,
                               child: Text(
