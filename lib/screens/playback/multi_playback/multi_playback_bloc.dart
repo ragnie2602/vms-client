@@ -409,10 +409,16 @@ class MultiPlaybackBloc
   FutureOr<void> _onChangeSpeed(
     MultiChangeSpeedEvent event,
     Emitter<MultiPlaybackState> emit,
-  ) {
-    for (var item in state.listItemCamPlayback ?? []) {
-      item.playerController.changeSpeed?.call(event.speed);
-    }
+  ) async {
+    // wait cho tất cả cam đổi tốc độ
+    await _isAllReady();
+    await Future.wait(
+      (state.listItemCamPlayback ?? []).map(
+        (item) =>
+            item.playerController.changeSpeed?.call(event.speed) ??
+            Future.value(),
+      ),
+    );
     emit(state.copyWith(speed: event.speed));
   }
 
@@ -499,14 +505,14 @@ class MultiPlaybackBloc
     if (_listCam.isEmpty) {
       return true;
     }
-
+    // check player đã ready chưa + check loading (đang init hoặc seek) xong chưa
     try {
       await Future.wait(
-        _listCam.map(
-          (e) => e.isNoVideo
-              ? Future.value()
-              : e.playerController.waitForReady?.call() ?? Future.value(),
-        ),
+        _listCam.map((e) async {
+          if (e.isNoVideo) return;
+          await e.playerController.waitForAttached.future;
+          await e.playerController.waitForReady?.call();
+        }),
       );
       return true;
     } catch (_) {
