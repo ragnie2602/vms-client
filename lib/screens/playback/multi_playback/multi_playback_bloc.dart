@@ -331,7 +331,12 @@ class MultiPlaybackBloc
         mergedPlaybackList: _mergePlaybacks(_list),
       ),
     );
-    if ((state.listItemCamPlayback ?? []).isEmpty || !_anyCamPlaying()) {
+    if ((state.listItemCamPlayback ?? []).isEmpty ||
+        (!_anyCamPlaying() &&
+            timeGlobal.value != null &&
+            timeGlobal.value!.isBefore(
+              state.mergedPlaybackList.first.startTime,
+            ))) {
       _resetGlobalTime();
     }
     await _reNewPlayTime(emit);
@@ -572,7 +577,10 @@ class MultiPlaybackBloc
   // nếu ko có cam nào đang playing nhưng vẫn có video (timeline xanh)
   // => update lại global time và play lại đoạn mới
   Future<void> _reNewPlayTime(Emitter<MultiPlaybackState> emit) async {
-    if (!_anyCamPlaying() && (state.listItemCamPlayback ?? []).isNotEmpty) {
+    if (!_anyCamPlaying() &&
+        (state.listItemCamPlayback ?? []).isNotEmpty &&
+        timeGlobal.value != null &&
+        timeGlobal.value!.isBefore(state.mergedPlaybackList.first.startTime)) {
       await _pauseAllCamera();
       DateTime newInitDate = state.mergedPlaybackList.first.startTime;
       checkGlobal(initialDate: newInitDate);

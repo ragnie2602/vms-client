@@ -214,7 +214,9 @@ class _MobileListPlaybacksState extends State<MobileListPlaybacks> with StateBui
             child: BlocBuilder<PlaybackBloc, PlaybackState>(
               buildWhen: (pre, current) {
                 final preSelectedIndex = pre is PlaybackSuccess ? pre.currentIndex : null;
-                if (current is PlaybackSuccess && current.currentIndex != preSelectedIndex) {
+                if (current is PlaybackSuccess &&
+                    current.currentIndex != preSelectedIndex &&
+                    current.currentIndex >= 0) {
                   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                     if (_scrollController.hasClients == false) return;
 
