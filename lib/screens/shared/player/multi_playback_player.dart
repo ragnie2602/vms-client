@@ -357,6 +357,8 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
           _player.pause();
         } else {
           Logger.warn("Camera '${widget.name}' disconnected ($pre -> $cur)");
+          // mute âm lượng
+          changeVolume(0);
           _state.value = PlayerState.error;
         }
       }
@@ -838,6 +840,8 @@ class MultiPlaybackPlayerState extends State<MultiPlaybackPlayer>
 
   Future<void> changeSpeed(double speed) async {
     _player.playbackRate = speed;
+    // Seek đến current position tránh case player không apply playbackRate ngay
+    await _player.seek(position: _player.position);
   }
 
   void toggleFullscreen() {
