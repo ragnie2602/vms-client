@@ -60,7 +60,7 @@ class _MonitorCamerasState extends State<MonitorCameras>
 
     super.initState();
 
-    if (mounted) _monitorBloc.add(GetAllCamera());
+    if (mounted) _monitorBloc.add(GetAllCamera(refresh: true));
   }
 
   @override
