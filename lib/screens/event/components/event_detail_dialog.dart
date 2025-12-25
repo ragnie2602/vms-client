@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -76,7 +78,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                     controller: tabController,
                                     children: [
                                       Align(alignment: Alignment.topCenter, child: _imageTab()),
-                                      Align(alignment: Alignment.topCenter, child: _videoTab()),
+                                      Align(alignment: Alignment.topCenter, child: _VideoPlayer()),
                                     ],
                                   ),
                                 ),
@@ -229,13 +231,6 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
       ),
     );
   }
-
-  Widget _videoTab() {
-    return Image.network(
-      'https://cdn.wikimg.net/en/hkwiki/images/5/57/SoSpromo1.jpg',
-      fit: BoxFit.contain,
-    );
-  }
 }
 
 class _CustomTabBar extends StatefulWidget {
@@ -334,5 +329,79 @@ class _CustomTabBarState extends State<_CustomTabBar> {
         ),
       ),
     );
+  }
+}
+
+class _VideoPlayer extends StatefulWidget {
+  const _VideoPlayer();
+
+  @override
+  State<_VideoPlayer> createState() => _VideoPlayerState();
+}
+
+class _VideoPlayerState extends State<_VideoPlayer> {
+  bool playing = false;
+  Timer? timer;
+  ValueNotifier<double> progress = ValueNotifier(0);
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: Stack(
+        children: [
+          Image.network(
+            'https://cdn.wikimg.net/en/hkwiki/images/5/57/SoSpromo1.jpg',
+            fit: BoxFit.contain,
+          ),
+          Positioned.fill(
+            child: IconButton(
+              onPressed: () {
+                setState(() => playing = !playing);
+                if (playing) {
+                  timer?.cancel();
+                  timer = Timer.periodic(Duration(milliseconds: 100), (t) {
+                    if (progress.value >= 4.0) {
+                      timer?.cancel();
+                      progress.value = 0;
+                      setState(() => playing = false);
+                      return;
+                    }
+                    progress.value += 0.1;
+                  });
+                } else {
+                  timer?.cancel();
+                }
+              },
+              icon: Icon(playing ? Icons.pause : Icons.play_circle, size: 48, color: Colors.white),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ValueListenableBuilder(
+              valueListenable: progress,
+              builder: (context, value, child) => LinearProgressIndicator(
+                backgroundColor: AppColors.greyCACACA,
+                color: AppColors.secondary,
+                value: value.clamp(0.0, 4.0) / 4.0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 }
