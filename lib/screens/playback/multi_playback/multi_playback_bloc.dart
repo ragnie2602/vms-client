@@ -411,8 +411,14 @@ class MultiPlaybackBloc
     Emitter<MultiPlaybackState> emit,
   ) async {
     // wait cho tất cả cam đổi tốc độ
+    emit(state.copyWith(multiPlaybackStatus: MultiPlaybackStatus.loading));
     await _isAllReady();
-    emit(state.copyWith(speed: event.speed));
+    emit(
+      state.copyWith(
+        speed: event.speed,
+        multiPlaybackStatus: MultiPlaybackStatus.success,
+      ),
+    );
     await Future.wait(
       (state.listItemCamPlayback ?? []).map(
         (item) =>
