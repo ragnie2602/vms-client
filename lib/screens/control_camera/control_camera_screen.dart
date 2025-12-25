@@ -30,6 +30,7 @@ import 'package:vms_flutter_client/screens/control_camera/widget/remove_camera_w
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/group/widget/share_group_camera_widget.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
@@ -312,6 +313,13 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       //     curr is ListShareCameraSuccessState ||
       //     curr is UpdateCameraSuccessState,
       listener: (context, state) {
+        // Thêm/Sửa/Xóa thành công --> set flag để load lại danh sách camera khi mở lại tab giám sát/xem lại
+        if (state is DeleteCameraSuccessState ||
+            state is AddCameraSuccessState ||
+            state is UpdateCameraSuccessState) {
+          context.read<MonitorBloc>().shouldRefreshAllCameras = true;
+        }
+
         if (state is RemoveCameraFromGroupFailState) {
           ToastUtil.toastFail(context: context, title: Text(state.errorMsg));
           // showAppMessageDialog(

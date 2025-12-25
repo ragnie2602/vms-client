@@ -174,7 +174,7 @@ class AppRouter {
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(
               create: (context) =>
-                  StorageFolderBloc()..add(StorageFolderStarted()),
+                  StorageFolderBloc(context.read(), context.read())..add(StorageFolderStarted()),
               lazy: false,
             ),
             BlocProvider(

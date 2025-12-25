@@ -5,8 +5,9 @@ class MonitorEvent extends BaseEvent {}
 class GetAllCamera extends MonitorEvent {
   final ViewMode? mode;
   final Set<TagEntity>? tags;
+  final bool refresh;
 
-  GetAllCamera({this.mode, this.tags});
+  GetAllCamera({this.mode, this.tags, this.refresh = false});
 }
 
 class GetAllCameraInGroup extends MonitorEvent {
