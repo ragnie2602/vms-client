@@ -167,9 +167,118 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
   _showDatePicker() async {
     final result = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      calendarDelegate: _EventFilterCalendarDelegate(),
       firstDate: DateTime.fromMillisecondsSinceEpoch(0),
+      initialDate: DateTime.now(),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              onPrimary: Colors.white,
+              onSecondary: AppColors.black,
+              onSurface: AppColors.black,
+              primary: AppColors.secondary,
+              surface: Colors.white,
+            ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: Colors.white,
+              cancelButtonStyle: TextButton.styleFrom(
+                foregroundColor: AppColors.secondary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                textStyle: AppTypography.style(14, fontWeight: FontWeight.w500),
+              ),
+              confirmButtonStyle: TextButton.styleFrom(
+                backgroundColor: AppColors.secondary,
+                foregroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                textStyle: AppTypography.style(14, fontWeight: FontWeight.w500),
+              ),
+              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) return AppColors.secondary;
+                if (states.contains(WidgetState.hovered)) return AppColors.blueE7F3FF;
+                return Colors.transparent;
+              }),
+              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) return Colors.white;
+                if (states.contains(WidgetState.disabled)) return AppColors.greyD1D5DB;
+                return AppColors.black;
+              }),
+              dayStyle: AppTypography.style(
+                14,
+                color: AppColors.black,
+                fontWeight: FontWeight.w400,
+              ),
+              dividerColor: AppColors.greyE2E8F0,
+              headerBackgroundColor: Colors.white,
+              headerForegroundColor: AppColors.black,
+              headerHeadlineStyle: AppTypography.style(
+                18,
+                color: AppColors.black,
+                fontWeight: FontWeight.w600,
+              ),
+              headerHelpStyle: AppTypography.style(
+                12,
+                color: AppColors.grey64748B,
+                fontWeight: FontWeight.w400,
+              ),
+              inputDecorationTheme: InputDecorationTheme(
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.secondary),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.secondary),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                hintStyle: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.grey64748B,
+                ),
+                labelStyle: AppTypography.style(
+                  16,
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) return AppColors.secondary;
+                return Colors.transparent;
+              }),
+              todayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) return Colors.white;
+                return AppColors.secondary;
+              }),
+              weekdayStyle: AppTypography.style(
+                12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.grey64748B,
+              ),
+            ),
+            dividerTheme: DividerThemeData(color: AppColors.greyE2E8F0, thickness: 1),
+            dialogTheme: DialogThemeData(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            ),
+            textTheme: TextTheme(
+              bodyLarge: AppTypography.style(
+                14,
+                color: AppColors.black,
+                fontWeight: FontWeight.w400,
+              ),
+              headlineSmall: AppTypography.style(
+                16,
+                color: AppColors.black,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (result != null) _dateController?.text = result.format('dd/MM/yyyy');
@@ -179,3 +288,19 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
 }
 
 enum EventFilterDropdownType { date, normal }
+
+class _EventFilterCalendarDelegate extends GregorianCalendarDelegate {
+  final _mapDayOfWeek = {
+    DateTime.sunday: 'CN',
+    DateTime.monday: 'Thứ 2',
+    DateTime.tuesday: 'Thứ 3',
+    DateTime.wednesday: 'Thứ 4',
+    DateTime.thursday: 'Thứ 5',
+    DateTime.friday: 'Thứ 6',
+    DateTime.saturday: 'Thứ 7',
+  };
+
+  @override
+  String formatMediumDate(DateTime date, MaterialLocalizations localizations) =>
+      date.format("'${_mapDayOfWeek[date.weekday]}', d/MM/yyyy", locale: 'vi');
+}
