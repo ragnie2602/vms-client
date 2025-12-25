@@ -43,8 +43,12 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   final ICameraRepository cameraRepository;
 
   late final filterData = FilterData();
+  bool shouldRefreshAllCameras = false;
 
   FutureOr<void> _onGetAllCamera(GetAllCamera event, Emitter<MonitorState> emit) async {
+    if (state is MonitorSuccess && event.refresh && !shouldRefreshAllCameras) return;
+
+    shouldRefreshAllCameras = false;
     final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
 
     emit(MonitorLoading());

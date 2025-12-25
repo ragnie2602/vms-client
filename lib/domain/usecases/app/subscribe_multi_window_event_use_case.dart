@@ -96,6 +96,9 @@ class SubscribeMultiWindowEventUseCase
           case 'sign_out':
             stream.add(SubscribeMultiWindowEventOutput(const MWESignOut()));
             break;
+          case 'sync_storage_config':
+            stream.add(SubscribeMultiWindowEventOutput(const MWESyncStorageConfig()));
+            break;
           default:
         }
       });
