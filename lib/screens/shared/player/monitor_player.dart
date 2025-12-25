@@ -79,6 +79,10 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   late final DualTaskQueue _dualQueue = DualTaskQueue();
 
+  /// Nếu lần vẽ cuối cùng đó xảy ra sau khi _player.dispose() bắt đầu chạy nhưng trước khi nó hoàn tất
+  /// Widget Texture(textureId: id) sẽ cố gắng vẽ một Texture ID đã bị hủy (invalid) --> Crash App.
+  bool _isDisposing = false;
+
   LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
   @override
@@ -138,6 +142,8 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   @override
   void dispose() {
+    _isDisposing = true;
+
     _zoomAnimationController?.dispose();
     _zoomController?.dispose();
     _dualQueue.dispose();
@@ -458,14 +464,16 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
                       child: ValueListenableBuilder(
                         valueListenable: _player.textureId,
                         builder: (context, id, _) {
+                          if (_isDisposing) return const ColoredBox(color: Colors.black);
+
                           final player = id == null
                               ? const SizedBox.shrink()
                               : widget.borderRadius != null
                               ? ClipRRect(
                                   borderRadius: BorderRadiusGeometry.circular(widget.borderRadius!),
-                                  child: Texture(textureId: id),
+                                  child: RepaintBoundary(child: Texture(textureId: id)),
                                 )
-                              : Texture(textureId: id);
+                              : RepaintBoundary(child: Texture(textureId: id));
 
                           return player;
                         },
