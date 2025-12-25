@@ -121,9 +121,9 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
   FutureOr<void> _onChangeSpeed(ChangeSpeed event, Emitter<CameraDetailState> emit) async {
     if (state.playerController.isInitialized?.call() != true) return;
 
-    await state.playerController.changeSpeed?.call(event.speed);
-
     emit(state.copyWith(speed: event.speed));
+
+    await state.playerController.changeSpeed?.call(event.speed);
   }
 
   FutureOr<void> _onChangePlaybackDate(
