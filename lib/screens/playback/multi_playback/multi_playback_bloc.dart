@@ -421,11 +421,11 @@ class MultiPlaybackBloc
       ),
     );
     // đồng bộ lại thời gian
-    await _pauseAllCamera();
-    emit(state.copyWith(isPlaying: false));
-    updateFlagPause();
-    await _seekAllCamera(timeGlobal.value);
-    add(const MultiWaitAndPlayEvent());
+    // await _pauseAllCamera();
+    // emit(state.copyWith(isPlaying: false));
+    // updateFlagPause();
+    // await _seekAllCamera(timeGlobal.value);
+    // add(const MultiWaitAndPlayEvent());
   }
 
   FutureOr<void> _onChangeVolume(
