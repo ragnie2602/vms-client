@@ -136,7 +136,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
                       ),
                     ),
                   ),
-                  if (Platform.isIOS) ...[
+                  if (Platform.isIOS || Platform.isAndroid) ...[
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

@@ -44,4 +44,5 @@ abstract class IUserManagementRepository {
     String? tel,
     String? address,
   });
+  Future<Either<Failure, bool>> removeAccount();
 }

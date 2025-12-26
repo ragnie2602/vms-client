@@ -195,6 +195,7 @@ enum PacketType {
   editUser(259),
   deleteUser(260),
   resetPassword(270),
+  removeAccount(119),
 
   // HomeVision
   homeVisionFormatSdCard(276),

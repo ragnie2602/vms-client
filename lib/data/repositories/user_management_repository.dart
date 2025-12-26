@@ -141,4 +141,12 @@ class UserManagementRepository extends BaseRepository
       return Right(value);
     });
   }
+
+  @override
+  Future<Either<Failure, bool>> removeAccount() async {
+    return await catchError<bool>(() async {
+      final value = await service.removeAccount();
+      return Right(value);
+    });
+  }
 }
