@@ -462,3 +462,18 @@ message VconnexLogin
 	}
 	uint32 ID = 118;
 }
+
+message RemoveAccount
+{
+	message Request
+	{
+	}
+	message Reply
+	{
+	}
+	enum Error
+	{
+		ERROR_DEFAULT = 0;
+	}
+	int32 ID = 119;
+}

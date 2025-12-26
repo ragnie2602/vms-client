@@ -14,8 +14,8 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'comm.model.pb.dart' as $1;
-import 'comm.model.pbenum.dart' as $1;
+import 'comm.model.pb.dart' as $0;
+import 'comm.model.pbenum.dart' as $0;
 import 'comm.profile.pbenum.dart';
 
 export 'comm.profile.pbenum.dart';
@@ -23,7 +23,7 @@ export 'comm.profile.pbenum.dart';
 class ReceiveProfile extends $pb.GeneratedMessage {
   factory ReceiveProfile({
     $core.int? type,
-    $1.Profile? profile,
+    $0.Profile? profile,
     $core.int? rECEIVEPROFILE,
   }) {
     final $result = create();
@@ -44,7 +44,7 @@ class ReceiveProfile extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveProfile', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OU3)
-    ..aOM<$1.Profile>(2, _omitFieldNames ? '' : 'profile', subBuilder: $1.Profile.create)
+    ..aOM<$0.Profile>(2, _omitFieldNames ? '' : 'profile', subBuilder: $0.Profile.create)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'RECEIVEPROFILE', $pb.PbFieldType.OU3, protoName: 'RECEIVE_PROFILE')
     ..hasRequiredFields = false
   ;
@@ -80,15 +80,15 @@ class ReceiveProfile extends $pb.GeneratedMessage {
   void clearType() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.Profile get profile => $_getN(1);
+  $0.Profile get profile => $_getN(1);
   @$pb.TagNumber(2)
-  set profile($1.Profile v) { setField(2, v); }
+  set profile($0.Profile v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasProfile() => $_has(1);
   @$pb.TagNumber(2)
   void clearProfile() => clearField(2);
   @$pb.TagNumber(2)
-  $1.Profile ensureProfile() => $_ensure(1);
+  $0.Profile ensureProfile() => $_ensure(1);
 
   @$pb.TagNumber(4)
   $core.int get rECEIVEPROFILE => $_getIZ(2);
@@ -347,7 +347,7 @@ class Authenticate_Reply extends $pb.GeneratedMessage {
     $core.String? webSockHost,
     $core.int? webSockPort,
     $core.String? ssid,
-    $1.License_profile? licenseProfile,
+    $0.License_profile? licenseProfile,
     $core.bool? webSocketTlsEnable,
   }) {
     final $result = create();
@@ -392,7 +392,7 @@ class Authenticate_Reply extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'webSockHost', protoName: 'webSock_host')
     ..a<$core.int>(6, _omitFieldNames ? '' : 'webSockPort', $pb.PbFieldType.OU3, protoName: 'webSock_port')
     ..aOS(7, _omitFieldNames ? '' : 'ssid')
-    ..aOM<$1.License_profile>(8, _omitFieldNames ? '' : 'licenseProfile', subBuilder: $1.License_profile.create)
+    ..aOM<$0.License_profile>(8, _omitFieldNames ? '' : 'licenseProfile', subBuilder: $0.License_profile.create)
     ..aOB(9, _omitFieldNames ? '' : 'webSocketTlsEnable')
     ..hasRequiredFields = false
   ;
@@ -482,15 +482,15 @@ class Authenticate_Reply extends $pb.GeneratedMessage {
   void clearSsid() => clearField(7);
 
   @$pb.TagNumber(8)
-  $1.License_profile get licenseProfile => $_getN(7);
+  $0.License_profile get licenseProfile => $_getN(7);
   @$pb.TagNumber(8)
-  set licenseProfile($1.License_profile v) { setField(8, v); }
+  set licenseProfile($0.License_profile v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLicenseProfile() => $_has(7);
   @$pb.TagNumber(8)
   void clearLicenseProfile() => clearField(8);
   @$pb.TagNumber(8)
-  $1.License_profile ensureLicenseProfile() => $_ensure(7);
+  $0.License_profile ensureLicenseProfile() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.bool get webSocketTlsEnable => $_getBF(8);
@@ -556,7 +556,7 @@ class Login_Request extends $pb.GeneratedMessage {
   factory Login_Request({
     $core.List<$core.int>? uid,
     $core.List<$core.int>? sessionId,
-    $1.ProjectTarget? target,
+    $0.ProjectTarget? target,
     $core.int? apiVersion,
     $core.int? platform,
   }) {
@@ -585,7 +585,7 @@ class Login_Request extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Login.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.OY)
     ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'sessionId', $pb.PbFieldType.OY)
-    ..e<$1.ProjectTarget>(3, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $1.ProjectTarget.VIVAS, valueOf: $1.ProjectTarget.valueOf, enumValues: $1.ProjectTarget.values)
+    ..e<$0.ProjectTarget>(3, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $0.ProjectTarget.VIVAS, valueOf: $0.ProjectTarget.valueOf, enumValues: $0.ProjectTarget.values)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'apiVersion', $pb.PbFieldType.O3, protoName: 'apiVersion')
     ..a<$core.int>(5, _omitFieldNames ? '' : 'platform', $pb.PbFieldType.OU3)
     ..hasRequiredFields = false
@@ -631,9 +631,9 @@ class Login_Request extends $pb.GeneratedMessage {
   void clearSessionId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.ProjectTarget get target => $_getN(2);
+  $0.ProjectTarget get target => $_getN(2);
   @$pb.TagNumber(3)
-  set target($1.ProjectTarget v) { setField(3, v); }
+  set target($0.ProjectTarget v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasTarget() => $_has(2);
   @$pb.TagNumber(3)
@@ -660,17 +660,17 @@ class Login_Request extends $pb.GeneratedMessage {
 
 class Login_Reply extends $pb.GeneratedMessage {
   factory Login_Reply({
-    $1.TurnAccount? turnAccount,
+    $0.TurnAccount? turnAccount,
     $fixnum.Int64? serverTime,
-    $1.Profile? profile,
+    $0.Profile? profile,
     $core.int? serverVersionBuild,
     $core.String? baseImageUrl,
     $core.Iterable<$core.String>? listNtpServer,
     $core.int? buildNumber,
     $core.String? linkDownload,
-    $1.ProjectTarget? target,
+    $0.ProjectTarget? target,
     Login_BaseURL? baseUrl,
-    $1.License_profile? licenseProfile,
+    $0.License_profile? licenseProfile,
   }) {
     final $result = create();
     if (turnAccount != null) {
@@ -713,17 +713,17 @@ class Login_Reply extends $pb.GeneratedMessage {
   factory Login_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Login.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.TurnAccount>(1, _omitFieldNames ? '' : 'turnAccount', subBuilder: $1.TurnAccount.create)
+    ..aOM<$0.TurnAccount>(1, _omitFieldNames ? '' : 'turnAccount', subBuilder: $0.TurnAccount.create)
     ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'serverTime', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$1.Profile>(3, _omitFieldNames ? '' : 'profile', subBuilder: $1.Profile.create)
+    ..aOM<$0.Profile>(3, _omitFieldNames ? '' : 'profile', subBuilder: $0.Profile.create)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'serverVersionBuild', $pb.PbFieldType.OU3)
     ..aOS(5, _omitFieldNames ? '' : 'baseImageUrl')
     ..pPS(6, _omitFieldNames ? '' : 'listNtpServer')
     ..a<$core.int>(7, _omitFieldNames ? '' : 'buildNumber', $pb.PbFieldType.OU3)
     ..aOS(8, _omitFieldNames ? '' : 'linkDownload')
-    ..e<$1.ProjectTarget>(9, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $1.ProjectTarget.VIVAS, valueOf: $1.ProjectTarget.valueOf, enumValues: $1.ProjectTarget.values)
+    ..e<$0.ProjectTarget>(9, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $0.ProjectTarget.VIVAS, valueOf: $0.ProjectTarget.valueOf, enumValues: $0.ProjectTarget.values)
     ..aOM<Login_BaseURL>(10, _omitFieldNames ? '' : 'baseUrl', subBuilder: Login_BaseURL.create)
-    ..aOM<$1.License_profile>(11, _omitFieldNames ? '' : 'licenseProfile', subBuilder: $1.License_profile.create)
+    ..aOM<$0.License_profile>(11, _omitFieldNames ? '' : 'licenseProfile', subBuilder: $0.License_profile.create)
     ..hasRequiredFields = false
   ;
 
@@ -749,15 +749,15 @@ class Login_Reply extends $pb.GeneratedMessage {
   static Login_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.TurnAccount get turnAccount => $_getN(0);
+  $0.TurnAccount get turnAccount => $_getN(0);
   @$pb.TagNumber(1)
-  set turnAccount($1.TurnAccount v) { setField(1, v); }
+  set turnAccount($0.TurnAccount v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTurnAccount() => $_has(0);
   @$pb.TagNumber(1)
   void clearTurnAccount() => clearField(1);
   @$pb.TagNumber(1)
-  $1.TurnAccount ensureTurnAccount() => $_ensure(0);
+  $0.TurnAccount ensureTurnAccount() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $fixnum.Int64 get serverTime => $_getI64(1);
@@ -769,15 +769,15 @@ class Login_Reply extends $pb.GeneratedMessage {
   void clearServerTime() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.Profile get profile => $_getN(2);
+  $0.Profile get profile => $_getN(2);
   @$pb.TagNumber(3)
-  set profile($1.Profile v) { setField(3, v); }
+  set profile($0.Profile v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasProfile() => $_has(2);
   @$pb.TagNumber(3)
   void clearProfile() => clearField(3);
   @$pb.TagNumber(3)
-  $1.Profile ensureProfile() => $_ensure(2);
+  $0.Profile ensureProfile() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.int get serverVersionBuild => $_getIZ(3);
@@ -819,9 +819,9 @@ class Login_Reply extends $pb.GeneratedMessage {
   void clearLinkDownload() => clearField(8);
 
   @$pb.TagNumber(9)
-  $1.ProjectTarget get target => $_getN(8);
+  $0.ProjectTarget get target => $_getN(8);
   @$pb.TagNumber(9)
-  set target($1.ProjectTarget v) { setField(9, v); }
+  set target($0.ProjectTarget v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasTarget() => $_has(8);
   @$pb.TagNumber(9)
@@ -839,15 +839,15 @@ class Login_Reply extends $pb.GeneratedMessage {
   Login_BaseURL ensureBaseUrl() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $1.License_profile get licenseProfile => $_getN(10);
+  $0.License_profile get licenseProfile => $_getN(10);
   @$pb.TagNumber(11)
-  set licenseProfile($1.License_profile v) { setField(11, v); }
+  set licenseProfile($0.License_profile v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLicenseProfile() => $_has(10);
   @$pb.TagNumber(11)
   void clearLicenseProfile() => clearField(11);
   @$pb.TagNumber(11)
-  $1.License_profile ensureLicenseProfile() => $_ensure(10);
+  $0.License_profile ensureLicenseProfile() => $_ensure(10);
 }
 
 class Login_BaseURL extends $pb.GeneratedMessage {
@@ -2558,7 +2558,7 @@ class UpdateTelProfile_Request extends $pb.GeneratedMessage {
 
 class UpdateTelProfile_Reply extends $pb.GeneratedMessage {
   factory UpdateTelProfile_Reply({
-    $1.Profile? newProfile,
+    $0.Profile? newProfile,
   }) {
     final $result = create();
     if (newProfile != null) {
@@ -2571,7 +2571,7 @@ class UpdateTelProfile_Reply extends $pb.GeneratedMessage {
   factory UpdateTelProfile_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateTelProfile.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Profile>(1, _omitFieldNames ? '' : 'newProfile', protoName: 'newProfile', subBuilder: $1.Profile.create)
+    ..aOM<$0.Profile>(1, _omitFieldNames ? '' : 'newProfile', protoName: 'newProfile', subBuilder: $0.Profile.create)
     ..hasRequiredFields = false
   ;
 
@@ -2597,15 +2597,15 @@ class UpdateTelProfile_Reply extends $pb.GeneratedMessage {
   static UpdateTelProfile_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Profile get newProfile => $_getN(0);
+  $0.Profile get newProfile => $_getN(0);
   @$pb.TagNumber(1)
-  set newProfile($1.Profile v) { setField(1, v); }
+  set newProfile($0.Profile v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasNewProfile() => $_has(0);
   @$pb.TagNumber(1)
   void clearNewProfile() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Profile ensureNewProfile() => $_ensure(0);
+  $0.Profile ensureNewProfile() => $_ensure(0);
 }
 
 class UpdateTelProfile extends $pb.GeneratedMessage {
@@ -2875,7 +2875,7 @@ class UpdateEmailProfile_Request extends $pb.GeneratedMessage {
 
 class UpdateEmailProfile_Reply extends $pb.GeneratedMessage {
   factory UpdateEmailProfile_Reply({
-    $1.Profile? newProfile,
+    $0.Profile? newProfile,
   }) {
     final $result = create();
     if (newProfile != null) {
@@ -2888,7 +2888,7 @@ class UpdateEmailProfile_Reply extends $pb.GeneratedMessage {
   factory UpdateEmailProfile_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateEmailProfile.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Profile>(1, _omitFieldNames ? '' : 'newProfile', protoName: 'newProfile', subBuilder: $1.Profile.create)
+    ..aOM<$0.Profile>(1, _omitFieldNames ? '' : 'newProfile', protoName: 'newProfile', subBuilder: $0.Profile.create)
     ..hasRequiredFields = false
   ;
 
@@ -2914,15 +2914,15 @@ class UpdateEmailProfile_Reply extends $pb.GeneratedMessage {
   static UpdateEmailProfile_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Profile get newProfile => $_getN(0);
+  $0.Profile get newProfile => $_getN(0);
   @$pb.TagNumber(1)
-  set newProfile($1.Profile v) { setField(1, v); }
+  set newProfile($0.Profile v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasNewProfile() => $_has(0);
   @$pb.TagNumber(1)
   void clearNewProfile() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Profile ensureNewProfile() => $_ensure(0);
+  $0.Profile ensureNewProfile() => $_ensure(0);
 }
 
 class UpdateEmailProfile extends $pb.GeneratedMessage {
@@ -3041,7 +3041,7 @@ class CloudDefaultSetting_Request extends $pb.GeneratedMessage {
 
 class CloudDefaultSetting_Reply extends $pb.GeneratedMessage {
   factory CloudDefaultSetting_Reply({
-    $1.Profile? newProfile,
+    $0.Profile? newProfile,
   }) {
     final $result = create();
     if (newProfile != null) {
@@ -3054,7 +3054,7 @@ class CloudDefaultSetting_Reply extends $pb.GeneratedMessage {
   factory CloudDefaultSetting_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CloudDefaultSetting.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Profile>(1, _omitFieldNames ? '' : 'newProfile', protoName: 'newProfile', subBuilder: $1.Profile.create)
+    ..aOM<$0.Profile>(1, _omitFieldNames ? '' : 'newProfile', protoName: 'newProfile', subBuilder: $0.Profile.create)
     ..hasRequiredFields = false
   ;
 
@@ -3080,15 +3080,15 @@ class CloudDefaultSetting_Reply extends $pb.GeneratedMessage {
   static CloudDefaultSetting_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Profile get newProfile => $_getN(0);
+  $0.Profile get newProfile => $_getN(0);
   @$pb.TagNumber(1)
-  set newProfile($1.Profile v) { setField(1, v); }
+  set newProfile($0.Profile v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasNewProfile() => $_has(0);
   @$pb.TagNumber(1)
   void clearNewProfile() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Profile ensureNewProfile() => $_ensure(0);
+  $0.Profile ensureNewProfile() => $_ensure(0);
 }
 
 class CloudDefaultSetting extends $pb.GeneratedMessage {
@@ -3193,7 +3193,7 @@ class VerifyURL_Request extends $pb.GeneratedMessage {
 
 class VerifyURL_Reply extends $pb.GeneratedMessage {
   factory VerifyURL_Reply({
-    $1.License_profile? licenseProfile,
+    $0.License_profile? licenseProfile,
   }) {
     final $result = create();
     if (licenseProfile != null) {
@@ -3206,7 +3206,7 @@ class VerifyURL_Reply extends $pb.GeneratedMessage {
   factory VerifyURL_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyURL.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.License_profile>(1, _omitFieldNames ? '' : 'licenseProfile', subBuilder: $1.License_profile.create)
+    ..aOM<$0.License_profile>(1, _omitFieldNames ? '' : 'licenseProfile', subBuilder: $0.License_profile.create)
     ..hasRequiredFields = false
   ;
 
@@ -3232,15 +3232,15 @@ class VerifyURL_Reply extends $pb.GeneratedMessage {
   static VerifyURL_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.License_profile get licenseProfile => $_getN(0);
+  $0.License_profile get licenseProfile => $_getN(0);
   @$pb.TagNumber(1)
-  set licenseProfile($1.License_profile v) { setField(1, v); }
+  set licenseProfile($0.License_profile v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasLicenseProfile() => $_has(0);
   @$pb.TagNumber(1)
   void clearLicenseProfile() => clearField(1);
   @$pb.TagNumber(1)
-  $1.License_profile ensureLicenseProfile() => $_ensure(0);
+  $0.License_profile ensureLicenseProfile() => $_ensure(0);
 }
 
 class VerifyURL extends $pb.GeneratedMessage {
@@ -3296,7 +3296,7 @@ class VerifyURL extends $pb.GeneratedMessage {
 class VconnexLogin_Request extends $pb.GeneratedMessage {
   factory VconnexLogin_Request({
     $core.String? token,
-    $1.ProjectTarget? target,
+    $0.ProjectTarget? target,
     $core.int? apiVersion,
     $core.int? platform,
   }) {
@@ -3321,7 +3321,7 @@ class VconnexLogin_Request extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VconnexLogin.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..aOS(2, _omitFieldNames ? '' : 'token')
-    ..e<$1.ProjectTarget>(3, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $1.ProjectTarget.VIVAS, valueOf: $1.ProjectTarget.valueOf, enumValues: $1.ProjectTarget.values)
+    ..e<$0.ProjectTarget>(3, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $0.ProjectTarget.VIVAS, valueOf: $0.ProjectTarget.valueOf, enumValues: $0.ProjectTarget.values)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'apiVersion', $pb.PbFieldType.O3, protoName: 'apiVersion')
     ..a<$core.int>(5, _omitFieldNames ? '' : 'platform', $pb.PbFieldType.OU3)
     ..hasRequiredFields = false
@@ -3358,9 +3358,9 @@ class VconnexLogin_Request extends $pb.GeneratedMessage {
   void clearToken() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.ProjectTarget get target => $_getN(1);
+  $0.ProjectTarget get target => $_getN(1);
   @$pb.TagNumber(3)
-  set target($1.ProjectTarget v) { setField(3, v); }
+  set target($0.ProjectTarget v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasTarget() => $_has(1);
   @$pb.TagNumber(3)
@@ -3387,17 +3387,17 @@ class VconnexLogin_Request extends $pb.GeneratedMessage {
 
 class VconnexLogin_Reply extends $pb.GeneratedMessage {
   factory VconnexLogin_Reply({
-    $1.TurnAccount? turnAccount,
+    $0.TurnAccount? turnAccount,
     $fixnum.Int64? serverTime,
-    $1.Profile? profile,
+    $0.Profile? profile,
     $core.int? serverVersionBuild,
     $core.String? baseImageUrl,
     $core.Iterable<$core.String>? listNtpServer,
     $core.int? buildNumber,
     $core.String? linkDownload,
-    $1.ProjectTarget? target,
+    $0.ProjectTarget? target,
     VconnexLogin_BaseURL? baseUrl,
-    $1.License_profile? licenseProfile,
+    $0.License_profile? licenseProfile,
   }) {
     final $result = create();
     if (turnAccount != null) {
@@ -3440,17 +3440,17 @@ class VconnexLogin_Reply extends $pb.GeneratedMessage {
   factory VconnexLogin_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VconnexLogin.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.TurnAccount>(1, _omitFieldNames ? '' : 'turnAccount', subBuilder: $1.TurnAccount.create)
+    ..aOM<$0.TurnAccount>(1, _omitFieldNames ? '' : 'turnAccount', subBuilder: $0.TurnAccount.create)
     ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'serverTime', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$1.Profile>(3, _omitFieldNames ? '' : 'profile', subBuilder: $1.Profile.create)
+    ..aOM<$0.Profile>(3, _omitFieldNames ? '' : 'profile', subBuilder: $0.Profile.create)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'serverVersionBuild', $pb.PbFieldType.OU3)
     ..aOS(5, _omitFieldNames ? '' : 'baseImageUrl')
     ..pPS(6, _omitFieldNames ? '' : 'listNtpServer')
     ..a<$core.int>(7, _omitFieldNames ? '' : 'buildNumber', $pb.PbFieldType.OU3)
     ..aOS(8, _omitFieldNames ? '' : 'linkDownload')
-    ..e<$1.ProjectTarget>(9, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $1.ProjectTarget.VIVAS, valueOf: $1.ProjectTarget.valueOf, enumValues: $1.ProjectTarget.values)
+    ..e<$0.ProjectTarget>(9, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $0.ProjectTarget.VIVAS, valueOf: $0.ProjectTarget.valueOf, enumValues: $0.ProjectTarget.values)
     ..aOM<VconnexLogin_BaseURL>(10, _omitFieldNames ? '' : 'baseUrl', subBuilder: VconnexLogin_BaseURL.create)
-    ..aOM<$1.License_profile>(11, _omitFieldNames ? '' : 'licenseProfile', subBuilder: $1.License_profile.create)
+    ..aOM<$0.License_profile>(11, _omitFieldNames ? '' : 'licenseProfile', subBuilder: $0.License_profile.create)
     ..hasRequiredFields = false
   ;
 
@@ -3476,15 +3476,15 @@ class VconnexLogin_Reply extends $pb.GeneratedMessage {
   static VconnexLogin_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.TurnAccount get turnAccount => $_getN(0);
+  $0.TurnAccount get turnAccount => $_getN(0);
   @$pb.TagNumber(1)
-  set turnAccount($1.TurnAccount v) { setField(1, v); }
+  set turnAccount($0.TurnAccount v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTurnAccount() => $_has(0);
   @$pb.TagNumber(1)
   void clearTurnAccount() => clearField(1);
   @$pb.TagNumber(1)
-  $1.TurnAccount ensureTurnAccount() => $_ensure(0);
+  $0.TurnAccount ensureTurnAccount() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $fixnum.Int64 get serverTime => $_getI64(1);
@@ -3496,15 +3496,15 @@ class VconnexLogin_Reply extends $pb.GeneratedMessage {
   void clearServerTime() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.Profile get profile => $_getN(2);
+  $0.Profile get profile => $_getN(2);
   @$pb.TagNumber(3)
-  set profile($1.Profile v) { setField(3, v); }
+  set profile($0.Profile v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasProfile() => $_has(2);
   @$pb.TagNumber(3)
   void clearProfile() => clearField(3);
   @$pb.TagNumber(3)
-  $1.Profile ensureProfile() => $_ensure(2);
+  $0.Profile ensureProfile() => $_ensure(2);
 
   @$pb.TagNumber(4)
   $core.int get serverVersionBuild => $_getIZ(3);
@@ -3546,9 +3546,9 @@ class VconnexLogin_Reply extends $pb.GeneratedMessage {
   void clearLinkDownload() => clearField(8);
 
   @$pb.TagNumber(9)
-  $1.ProjectTarget get target => $_getN(8);
+  $0.ProjectTarget get target => $_getN(8);
   @$pb.TagNumber(9)
-  set target($1.ProjectTarget v) { setField(9, v); }
+  set target($0.ProjectTarget v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasTarget() => $_has(8);
   @$pb.TagNumber(9)
@@ -3566,15 +3566,15 @@ class VconnexLogin_Reply extends $pb.GeneratedMessage {
   VconnexLogin_BaseURL ensureBaseUrl() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $1.License_profile get licenseProfile => $_getN(10);
+  $0.License_profile get licenseProfile => $_getN(10);
   @$pb.TagNumber(11)
-  set licenseProfile($1.License_profile v) { setField(11, v); }
+  set licenseProfile($0.License_profile v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLicenseProfile() => $_has(10);
   @$pb.TagNumber(11)
   void clearLicenseProfile() => clearField(11);
   @$pb.TagNumber(11)
-  $1.License_profile ensureLicenseProfile() => $_ensure(10);
+  $0.License_profile ensureLicenseProfile() => $_ensure(10);
 }
 
 class VconnexLogin_BaseURL extends $pb.GeneratedMessage {
@@ -3675,6 +3675,120 @@ class VconnexLogin extends $pb.GeneratedMessage {
   $core.bool hasID() => $_has(0);
   @$pb.TagNumber(118)
   void clearID() => clearField(118);
+}
+
+class RemoveAccount_Request extends $pb.GeneratedMessage {
+  factory RemoveAccount_Request() => create();
+  RemoveAccount_Request._() : super();
+  factory RemoveAccount_Request.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RemoveAccount_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RemoveAccount.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RemoveAccount_Request clone() => RemoveAccount_Request()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RemoveAccount_Request copyWith(void Function(RemoveAccount_Request) updates) => super.copyWith((message) => updates(message as RemoveAccount_Request)) as RemoveAccount_Request;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RemoveAccount_Request create() => RemoveAccount_Request._();
+  RemoveAccount_Request createEmptyInstance() => create();
+  static $pb.PbList<RemoveAccount_Request> createRepeated() => $pb.PbList<RemoveAccount_Request>();
+  @$core.pragma('dart2js:noInline')
+  static RemoveAccount_Request getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveAccount_Request>(create);
+  static RemoveAccount_Request? _defaultInstance;
+}
+
+class RemoveAccount_Reply extends $pb.GeneratedMessage {
+  factory RemoveAccount_Reply() => create();
+  RemoveAccount_Reply._() : super();
+  factory RemoveAccount_Reply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RemoveAccount_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RemoveAccount.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RemoveAccount_Reply clone() => RemoveAccount_Reply()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RemoveAccount_Reply copyWith(void Function(RemoveAccount_Reply) updates) => super.copyWith((message) => updates(message as RemoveAccount_Reply)) as RemoveAccount_Reply;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RemoveAccount_Reply create() => RemoveAccount_Reply._();
+  RemoveAccount_Reply createEmptyInstance() => create();
+  static $pb.PbList<RemoveAccount_Reply> createRepeated() => $pb.PbList<RemoveAccount_Reply>();
+  @$core.pragma('dart2js:noInline')
+  static RemoveAccount_Reply getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveAccount_Reply>(create);
+  static RemoveAccount_Reply? _defaultInstance;
+}
+
+class RemoveAccount extends $pb.GeneratedMessage {
+  factory RemoveAccount({
+    $core.int? iD,
+  }) {
+    final $result = create();
+    if (iD != null) {
+      $result.iD = iD;
+    }
+    return $result;
+  }
+  RemoveAccount._() : super();
+  factory RemoveAccount.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RemoveAccount.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RemoveAccount', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
+    ..a<$core.int>(119, _omitFieldNames ? '' : 'ID', $pb.PbFieldType.O3, protoName: 'ID')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RemoveAccount clone() => RemoveAccount()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RemoveAccount copyWith(void Function(RemoveAccount) updates) => super.copyWith((message) => updates(message as RemoveAccount)) as RemoveAccount;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RemoveAccount create() => RemoveAccount._();
+  RemoveAccount createEmptyInstance() => create();
+  static $pb.PbList<RemoveAccount> createRepeated() => $pb.PbList<RemoveAccount>();
+  @$core.pragma('dart2js:noInline')
+  static RemoveAccount getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveAccount>(create);
+  static RemoveAccount? _defaultInstance;
+
+  @$pb.TagNumber(119)
+  $core.int get iD => $_getIZ(0);
+  @$pb.TagNumber(119)
+  set iD($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(119)
+  $core.bool hasID() => $_has(0);
+  @$pb.TagNumber(119)
+  void clearID() => clearField(119);
 }
 
 
