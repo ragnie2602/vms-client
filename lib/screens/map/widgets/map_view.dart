@@ -305,13 +305,29 @@ class _MapViewState extends State<MapView> {
                             child: Image.network(
                               state.emapSelected?.backgroundPath ?? '',
                               fit: BoxFit.contain,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) =>
-                                      loadingProgress == null
-                                      ? child
-                                      : Center(
-                                          child: CircularProgressIndicator(),
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Icon(Icons.error, color: Colors.redAccent, size: 44),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Có lỗi xảy ra trong quá trình tải bản đồ!',
+                                        style: AppTypography.style(
+                                          14,
+                                          color: Colors.redAccent,
+                                          fontWeight: FontWeight.w500,
                                         ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              loadingBuilder: (context, child, loadingProgress) =>
+                                  loadingProgress == null
+                                  ? child
+                                  : Center(child: CircularProgressIndicator()),
                             ),
                           );
                         },

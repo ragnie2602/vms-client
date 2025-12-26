@@ -89,6 +89,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
   PlaybackVideo? get nextPlayback =>
       currentIndex < widget.playlist.length - 1 ? widget.playlist[currentIndex + 1] : null;
 
+  /// Nếu lần vẽ cuối cùng đó xảy ra sau khi _player.dispose() bắt đầu chạy nhưng trước khi nó hoàn tất
+  /// Widget Texture(textureId: id) sẽ cố gắng vẽ một Texture ID đã bị hủy (invalid) --> Crash App.
+  bool _isDisposing = false;
+
   @override
   void initState() {
     _initZoom();
@@ -122,6 +126,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
 
   @override
   void dispose() {
+    _isDisposing = true;
+
     _accumulatingSeekQueue.dispose();
     _sequentialQueue.dispose();
     _playlistIndex.dispose();
@@ -650,7 +656,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer> with TickerProviderState
                       child: ValueListenableBuilder(
                         valueListenable: _player.textureId,
                         builder: (context, id, _) {
-                          final player = id == null
+                          final player = (id == null || _isDisposing)
                               ? const SizedBox.shrink()
                               : Texture(textureId: id);
 
