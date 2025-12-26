@@ -409,5 +409,18 @@ class VconnexLogin_Error extends $pb.ProtobufEnum {
   const VconnexLogin_Error._($core.int v, $core.String n) : super(v, n);
 }
 
+class RemoveAccount_Error extends $pb.ProtobufEnum {
+  static const RemoveAccount_Error ERROR_DEFAULT = RemoveAccount_Error._(0, _omitEnumNames ? '' : 'ERROR_DEFAULT');
+
+  static const $core.List<RemoveAccount_Error> values = <RemoveAccount_Error> [
+    ERROR_DEFAULT,
+  ];
+
+  static final $core.Map<$core.int, RemoveAccount_Error> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static RemoveAccount_Error? valueOf($core.int value) => _byValue[value];
+
+  const RemoveAccount_Error._($core.int v, $core.String n) : super(v, n);
+}
+
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

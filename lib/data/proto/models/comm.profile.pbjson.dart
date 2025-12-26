@@ -970,3 +970,36 @@ final $typed_data.Uint8List vconnexLoginDescriptor = $convert.base64Decode(
     'SU5WQUxJRBACEh0KGVZFUlNUX0lJT05fQVBJX0RFUFJFQ0FURUQQAxIXChNQUk9KRUNUX1RBUk'
     'dFTlZBTElEEAQSEwoPTElDRU5TRV9FWFBJUkVEEAY=');
 
+@$core.Deprecated('Use removeAccountDescriptor instead')
+const RemoveAccount$json = {
+  '1': 'RemoveAccount',
+  '2': [
+    {'1': 'ID', '3': 119, '4': 1, '5': 5, '10': 'ID'},
+  ],
+  '3': [RemoveAccount_Request$json, RemoveAccount_Reply$json],
+  '4': [RemoveAccount_Error$json],
+};
+
+@$core.Deprecated('Use removeAccountDescriptor instead')
+const RemoveAccount_Request$json = {
+  '1': 'Request',
+};
+
+@$core.Deprecated('Use removeAccountDescriptor instead')
+const RemoveAccount_Reply$json = {
+  '1': 'Reply',
+};
+
+@$core.Deprecated('Use removeAccountDescriptor instead')
+const RemoveAccount_Error$json = {
+  '1': 'Error',
+  '2': [
+    {'1': 'ERROR_DEFAULT', '2': 0},
+  ],
+};
+
+/// Descriptor for `RemoveAccount`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List removeAccountDescriptor = $convert.base64Decode(
+    'Cg1SZW1vdmVBY2NvdW50Eg4KAklEGHcgASgFUgJJRBoJCgdSZXF1ZXN0GgcKBVJlcGx5IhoKBU'
+    'Vycm9yEhEKDUVSUk9SX0RFRkFVTFQQAA==');
+
