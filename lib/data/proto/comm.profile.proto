@@ -68,11 +68,11 @@ message Login
 {
 	message Request
 	{
-		bytes uid = 1;
-		bytes session_id = 2;
-		ProjectTarget target = 3; /// cho dự án nào // lấy trong enum ProjectTarget của comm.model
-		int32 apiVersion = 4; /// lấy ở trong enum API trong comm.model
-        uint32 platform =5 ;
+		string uid = 1; // Lấy từ api authen mới  
+		string session_id = 2; // lấy từ api authen mới 
+//		ProjectTarget target = 3; /// cho dự án nào // lấy trong enum ProjectTarget của comm.model
+//		int32 apiVersion = 4; /// lấy ở trong enum API trong comm.model
+//		uint32 platform =5 ;
 	}
 	message Reply
 	{
@@ -461,19 +461,4 @@ message VconnexLogin
 		LICENSE_EXPIRED = 6;
 	}
 	uint32 ID = 118;
-}
-
-message RemoveAccount
-{
-	message Request
-	{
-	}
-	message Reply
-	{
-	}
-	enum Error
-	{
-		ERROR_DEFAULT = 0;
-	}
-	int32 ID = 119;
 }

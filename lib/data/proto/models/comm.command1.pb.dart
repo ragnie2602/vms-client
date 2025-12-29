@@ -15,15 +15,15 @@ import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'comm.command1.pbenum.dart';
-import 'comm.model.pb.dart' as $1;
-import 'comm.model.pbenum.dart' as $1;
-import 'google/protobuf/any.pb.dart' as $0;
+import 'comm.model.pb.dart' as $0;
+import 'comm.model.pbenum.dart' as $0;
+import 'google/protobuf/any.pb.dart' as $1;
 
 export 'comm.command1.pbenum.dart';
 
 class ReceiveAddCamera extends $pb.GeneratedMessage {
   factory ReceiveAddCamera({
-    $1.Camera? camera,
+    $0.Camera? camera,
     ReceiveAddCamera_Status? status,
     $core.int? rECEIVEADDCAMERA,
   }) {
@@ -44,7 +44,7 @@ class ReceiveAddCamera extends $pb.GeneratedMessage {
   factory ReceiveAddCamera.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveAddCamera', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..e<ReceiveAddCamera_Status>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ReceiveAddCamera_Status.SUCCESS, valueOf: ReceiveAddCamera_Status.valueOf, enumValues: ReceiveAddCamera_Status.values)
     ..a<$core.int>(23, _omitFieldNames ? '' : 'RECEIVEADDCAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_ADD_CAMERA')
     ..hasRequiredFields = false
@@ -72,15 +72,15 @@ class ReceiveAddCamera extends $pb.GeneratedMessage {
   static ReceiveAddCamera? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(2)
   ReceiveAddCamera_Status get status => $_getN(1);
@@ -106,7 +106,7 @@ class ReceiveNotificationCamera extends $pb.GeneratedMessage {
     $core.List<$core.int>? cameraId,
     $core.String? cameraName,
     ReceiveNotificationCamera_Type? type,
-    $1.Alarm? alarm,
+    $0.Alarm? alarm,
     ReceiveNotificationCamera_Status? status,
     ReceiveNotificationCamera_Form? form,
     $core.int? rECEIVENOTIFICATIONCAMERA,
@@ -143,7 +143,7 @@ class ReceiveNotificationCamera extends $pb.GeneratedMessage {
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
     ..aOS(2, _omitFieldNames ? '' : 'cameraName')
     ..e<ReceiveNotificationCamera_Type>(3, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: ReceiveNotificationCamera_Type.MOTION_DETECTION, valueOf: ReceiveNotificationCamera_Type.valueOf, enumValues: ReceiveNotificationCamera_Type.values)
-    ..aOM<$1.Alarm>(4, _omitFieldNames ? '' : 'alarm', subBuilder: $1.Alarm.create)
+    ..aOM<$0.Alarm>(4, _omitFieldNames ? '' : 'alarm', subBuilder: $0.Alarm.create)
     ..e<ReceiveNotificationCamera_Status>(5, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ReceiveNotificationCamera_Status.SUCCESS, valueOf: ReceiveNotificationCamera_Status.valueOf, enumValues: ReceiveNotificationCamera_Status.values)
     ..e<ReceiveNotificationCamera_Form>(6, _omitFieldNames ? '' : 'form', $pb.PbFieldType.OE, defaultOrMaker: ReceiveNotificationCamera_Form.SD_CARD, valueOf: ReceiveNotificationCamera_Form.valueOf, enumValues: ReceiveNotificationCamera_Form.values)
     ..a<$core.int>(25, _omitFieldNames ? '' : 'RECEIVENOTIFICATIONCAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_NOTIFICATION_CAMERA')
@@ -199,15 +199,15 @@ class ReceiveNotificationCamera extends $pb.GeneratedMessage {
   void clearType() => clearField(3);
 
   @$pb.TagNumber(4)
-  $1.Alarm get alarm => $_getN(3);
+  $0.Alarm get alarm => $_getN(3);
   @$pb.TagNumber(4)
-  set alarm($1.Alarm v) { setField(4, v); }
+  set alarm($0.Alarm v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasAlarm() => $_has(3);
   @$pb.TagNumber(4)
   void clearAlarm() => clearField(4);
   @$pb.TagNumber(4)
-  $1.Alarm ensureAlarm() => $_ensure(3);
+  $0.Alarm ensureAlarm() => $_ensure(3);
 
   @$pb.TagNumber(5)
   ReceiveNotificationCamera_Status get status => $_getN(4);
@@ -241,7 +241,7 @@ class ReceiveScheduleCamera extends $pb.GeneratedMessage {
   factory ReceiveScheduleCamera({
     $core.List<$core.int>? cameraId,
     ReceiveScheduleCamera_Status? status,
-    $1.Recording? recording,
+    $0.Recording? recording,
     $core.int? rECEIVERESULTSHEDULECAMERA,
   }) {
     final $result = create();
@@ -266,7 +266,7 @@ class ReceiveScheduleCamera extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveScheduleCamera', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
     ..e<ReceiveScheduleCamera_Status>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ReceiveScheduleCamera_Status.SUCCESS, valueOf: ReceiveScheduleCamera_Status.valueOf, enumValues: ReceiveScheduleCamera_Status.values)
-    ..aOM<$1.Recording>(3, _omitFieldNames ? '' : 'recording', subBuilder: $1.Recording.create)
+    ..aOM<$0.Recording>(3, _omitFieldNames ? '' : 'recording', subBuilder: $0.Recording.create)
     ..a<$core.int>(39, _omitFieldNames ? '' : 'RECEIVERESULTSHEDULECAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_RESULT_SHEDULE_CAMERA')
     ..hasRequiredFields = false
   ;
@@ -311,15 +311,15 @@ class ReceiveScheduleCamera extends $pb.GeneratedMessage {
   void clearStatus() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.Recording get recording => $_getN(2);
+  $0.Recording get recording => $_getN(2);
   @$pb.TagNumber(3)
-  set recording($1.Recording v) { setField(3, v); }
+  set recording($0.Recording v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasRecording() => $_has(2);
   @$pb.TagNumber(3)
   void clearRecording() => clearField(3);
   @$pb.TagNumber(3)
-  $1.Recording ensureRecording() => $_ensure(2);
+  $0.Recording ensureRecording() => $_ensure(2);
 
   @$pb.TagNumber(39)
   $core.int get rECEIVERESULTSHEDULECAMERA => $_getIZ(3);
@@ -334,7 +334,7 @@ class ReceiveScheduleCamera extends $pb.GeneratedMessage {
 class ReceiveTimeShiftCamera_Video extends $pb.GeneratedMessage {
   factory ReceiveTimeShiftCamera_Video({
     $core.String? name,
-    $1.EventType? eventType,
+    $0.EventType? eventType,
     $core.int? duration,
     $fixnum.Int64? time,
   }) {
@@ -359,7 +359,7 @@ class ReceiveTimeShiftCamera_Video extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveTimeShiftCamera.Video', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'name')
-    ..e<$1.EventType>(2, _omitFieldNames ? '' : 'eventType', $pb.PbFieldType.OE, defaultOrMaker: $1.EventType.MOTION_DETECTION, valueOf: $1.EventType.valueOf, enumValues: $1.EventType.values)
+    ..e<$0.EventType>(2, _omitFieldNames ? '' : 'eventType', $pb.PbFieldType.OE, defaultOrMaker: $0.EventType.MOTION_DETECTION, valueOf: $0.EventType.valueOf, enumValues: $0.EventType.values)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'duration', $pb.PbFieldType.OU3)
     ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'time', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
@@ -396,9 +396,9 @@ class ReceiveTimeShiftCamera_Video extends $pb.GeneratedMessage {
   void clearName() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.EventType get eventType => $_getN(1);
+  $0.EventType get eventType => $_getN(1);
   @$pb.TagNumber(2)
-  set eventType($1.EventType v) { setField(2, v); }
+  set eventType($0.EventType v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasEventType() => $_has(1);
   @$pb.TagNumber(2)
@@ -1048,7 +1048,7 @@ class ReceiveOnOffCamera extends $pb.GeneratedMessage {
     $core.List<$core.int>? cameraId,
     $core.String? cameraName,
     ReceiveOnOffCamera_Status? status,
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEONOFFCAMERA,
   }) {
     final $result = create();
@@ -1077,7 +1077,7 @@ class ReceiveOnOffCamera extends $pb.GeneratedMessage {
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
     ..aOS(2, _omitFieldNames ? '' : 'cameraName')
     ..e<ReceiveOnOffCamera_Status>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ReceiveOnOffCamera_Status.OFF, valueOf: ReceiveOnOffCamera_Status.valueOf, enumValues: ReceiveOnOffCamera_Status.values)
-    ..aOM<$1.Camera>(4, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(4, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(49, _omitFieldNames ? '' : 'RECEIVEONOFFCAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_ONOFF_CAMERA')
     ..hasRequiredFields = false
   ;
@@ -1131,15 +1131,15 @@ class ReceiveOnOffCamera extends $pb.GeneratedMessage {
   void clearStatus() => clearField(3);
 
   @$pb.TagNumber(4)
-  $1.Camera get camera => $_getN(3);
+  $0.Camera get camera => $_getN(3);
   @$pb.TagNumber(4)
-  set camera($1.Camera v) { setField(4, v); }
+  set camera($0.Camera v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasCamera() => $_has(3);
   @$pb.TagNumber(4)
   void clearCamera() => clearField(4);
   @$pb.TagNumber(4)
-  $1.Camera ensureCamera() => $_ensure(3);
+  $0.Camera ensureCamera() => $_ensure(3);
 
   @$pb.TagNumber(49)
   $core.int get rECEIVEONOFFCAMERA => $_getIZ(4);
@@ -1153,7 +1153,7 @@ class ReceiveOnOffCamera extends $pb.GeneratedMessage {
 
 class ReceiveSettingCloud extends $pb.GeneratedMessage {
   factory ReceiveSettingCloud({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVESETTINGCLOUDCAMERA,
   }) {
     final $result = create();
@@ -1170,7 +1170,7 @@ class ReceiveSettingCloud extends $pb.GeneratedMessage {
   factory ReceiveSettingCloud.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveSettingCloud', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(51, _omitFieldNames ? '' : 'RECEIVESETTINGCLOUDCAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_SETTING_CLOUD_CAMERA')
     ..hasRequiredFields = false
   ;
@@ -1197,15 +1197,15 @@ class ReceiveSettingCloud extends $pb.GeneratedMessage {
   static ReceiveSettingCloud? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(51)
   $core.int get rECEIVESETTINGCLOUDCAMERA => $_getIZ(1);
@@ -1369,7 +1369,7 @@ class ReceiveTimeShiftCloud extends $pb.GeneratedMessage {
 
 class ReceiveUpdatePositionCamera extends $pb.GeneratedMessage {
   factory ReceiveUpdatePositionCamera({
-    $core.Iterable<$1.Camera>? cameras,
+    $core.Iterable<$0.Camera>? cameras,
     $core.int? rECEIVEUPDATEPOSITIONCAMERA,
   }) {
     final $result = create();
@@ -1386,7 +1386,7 @@ class ReceiveUpdatePositionCamera extends $pb.GeneratedMessage {
   factory ReceiveUpdatePositionCamera.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveUpdatePositionCamera', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Camera>(1, _omitFieldNames ? '' : 'cameras', $pb.PbFieldType.PM, subBuilder: $1.Camera.create)
+    ..pc<$0.Camera>(1, _omitFieldNames ? '' : 'cameras', $pb.PbFieldType.PM, subBuilder: $0.Camera.create)
     ..a<$core.int>(53, _omitFieldNames ? '' : 'RECEIVEUPDATEPOSITIONCAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_UPDATE_POSITION_CAMERA')
     ..hasRequiredFields = false
   ;
@@ -1413,7 +1413,7 @@ class ReceiveUpdatePositionCamera extends $pb.GeneratedMessage {
   static ReceiveUpdatePositionCamera? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Camera> get cameras => $_getList(0);
+  $core.List<$0.Camera> get cameras => $_getList(0);
 
   @$pb.TagNumber(53)
   $core.int get rECEIVEUPDATEPOSITIONCAMERA => $_getIZ(1);
@@ -1611,16 +1611,16 @@ class ReceiveUpdateRoleCamera extends $pb.GeneratedMessage {
 
 class ReceiveEventNotification extends $pb.GeneratedMessage {
   factory ReceiveEventNotification({
-    $1.EventType? eventType,
+    $0.EventType? eventType,
     $core.List<$core.int>? cameraId,
     $fixnum.Int64? time,
     $core.String? cameraName,
-    $0.Any? eventMetadata,
+    $1.Any? eventMetadata,
     $core.String? captureImage,
     $core.String? videoRecordUrl,
     $core.String? captureImageThumb,
     $core.String? description,
-    $1.Event? events,
+    $0.Event? events,
     $core.int? rECEIVEEVENTNOTIFICATION,
   }) {
     final $result = create();
@@ -1664,16 +1664,16 @@ class ReceiveEventNotification extends $pb.GeneratedMessage {
   factory ReceiveEventNotification.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveEventNotification', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..e<$1.EventType>(1, _omitFieldNames ? '' : 'eventType', $pb.PbFieldType.OE, protoName: 'eventType', defaultOrMaker: $1.EventType.MOTION_DETECTION, valueOf: $1.EventType.valueOf, enumValues: $1.EventType.values)
+    ..e<$0.EventType>(1, _omitFieldNames ? '' : 'eventType', $pb.PbFieldType.OE, protoName: 'eventType', defaultOrMaker: $0.EventType.MOTION_DETECTION, valueOf: $0.EventType.valueOf, enumValues: $0.EventType.values)
     ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
     ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'time', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(4, _omitFieldNames ? '' : 'cameraName')
-    ..aOM<$0.Any>(5, _omitFieldNames ? '' : 'eventMetadata', subBuilder: $0.Any.create)
+    ..aOM<$1.Any>(5, _omitFieldNames ? '' : 'eventMetadata', subBuilder: $1.Any.create)
     ..aOS(6, _omitFieldNames ? '' : 'captureImage')
     ..aOS(7, _omitFieldNames ? '' : 'videoRecordUrl')
     ..aOS(8, _omitFieldNames ? '' : 'captureImageThumb')
     ..aOS(9, _omitFieldNames ? '' : 'description')
-    ..aOM<$1.Event>(10, _omitFieldNames ? '' : 'events', subBuilder: $1.Event.create)
+    ..aOM<$0.Event>(10, _omitFieldNames ? '' : 'events', subBuilder: $0.Event.create)
     ..a<$core.int>(55, _omitFieldNames ? '' : 'RECEIVEEVENTNOTIFICATION', $pb.PbFieldType.OU3, protoName: 'RECEIVE_EVENT_NOTIFICATION')
     ..hasRequiredFields = false
   ;
@@ -1700,9 +1700,9 @@ class ReceiveEventNotification extends $pb.GeneratedMessage {
   static ReceiveEventNotification? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.EventType get eventType => $_getN(0);
+  $0.EventType get eventType => $_getN(0);
   @$pb.TagNumber(1)
-  set eventType($1.EventType v) { setField(1, v); }
+  set eventType($0.EventType v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasEventType() => $_has(0);
   @$pb.TagNumber(1)
@@ -1736,15 +1736,15 @@ class ReceiveEventNotification extends $pb.GeneratedMessage {
   void clearCameraName() => clearField(4);
 
   @$pb.TagNumber(5)
-  $0.Any get eventMetadata => $_getN(4);
+  $1.Any get eventMetadata => $_getN(4);
   @$pb.TagNumber(5)
-  set eventMetadata($0.Any v) { setField(5, v); }
+  set eventMetadata($1.Any v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasEventMetadata() => $_has(4);
   @$pb.TagNumber(5)
   void clearEventMetadata() => clearField(5);
   @$pb.TagNumber(5)
-  $0.Any ensureEventMetadata() => $_ensure(4);
+  $1.Any ensureEventMetadata() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get captureImage => $_getSZ(5);
@@ -1783,15 +1783,15 @@ class ReceiveEventNotification extends $pb.GeneratedMessage {
   void clearDescription() => clearField(9);
 
   @$pb.TagNumber(10)
-  $1.Event get events => $_getN(9);
+  $0.Event get events => $_getN(9);
   @$pb.TagNumber(10)
-  set events($1.Event v) { setField(10, v); }
+  set events($0.Event v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasEvents() => $_has(9);
   @$pb.TagNumber(10)
   void clearEvents() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Event ensureEvents() => $_ensure(9);
+  $0.Event ensureEvents() => $_ensure(9);
 
   @$pb.TagNumber(55)
   $core.int get rECEIVEEVENTNOTIFICATION => $_getIZ(10);
@@ -1961,8 +1961,8 @@ class ListCamera_Request extends $pb.GeneratedMessage {
 
 class ListCamera_Reply extends $pb.GeneratedMessage {
   factory ListCamera_Reply({
-    $core.Iterable<$1.Camera>? cameras,
-    $core.Iterable<$1.DeviceGroup>? groups,
+    $core.Iterable<$0.Camera>? cameras,
+    $core.Iterable<$0.DeviceGroup>? groups,
   }) {
     final $result = create();
     if (cameras != null) {
@@ -1978,8 +1978,8 @@ class ListCamera_Reply extends $pb.GeneratedMessage {
   factory ListCamera_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListCamera.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Camera>(1, _omitFieldNames ? '' : 'cameras', $pb.PbFieldType.PM, subBuilder: $1.Camera.create)
-    ..pc<$1.DeviceGroup>(2, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: $1.DeviceGroup.create)
+    ..pc<$0.Camera>(1, _omitFieldNames ? '' : 'cameras', $pb.PbFieldType.PM, subBuilder: $0.Camera.create)
+    ..pc<$0.DeviceGroup>(2, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: $0.DeviceGroup.create)
     ..hasRequiredFields = false
   ;
 
@@ -2005,10 +2005,10 @@ class ListCamera_Reply extends $pb.GeneratedMessage {
   static ListCamera_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Camera> get cameras => $_getList(0);
+  $core.List<$0.Camera> get cameras => $_getList(0);
 
   @$pb.TagNumber(2)
-  $core.List<$1.DeviceGroup> get groups => $_getList(1);
+  $core.List<$0.DeviceGroup> get groups => $_getList(1);
 }
 
 /// ------------NHOM CHUC NANG QUAN LY CAMERA--------------
@@ -2156,7 +2156,7 @@ class AddCamera_Request extends $pb.GeneratedMessage {
 
 class AddCamera_Reply extends $pb.GeneratedMessage {
   factory AddCamera_Reply({
-    $1.Camera? camera,
+    $0.Camera? camera,
     AddCamera_Status? status,
   }) {
     final $result = create();
@@ -2173,7 +2173,7 @@ class AddCamera_Reply extends $pb.GeneratedMessage {
   factory AddCamera_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddCamera.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..e<AddCamera_Status>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: AddCamera_Status.OFF, valueOf: AddCamera_Status.valueOf, enumValues: AddCamera_Status.values)
     ..hasRequiredFields = false
   ;
@@ -2200,15 +2200,15 @@ class AddCamera_Reply extends $pb.GeneratedMessage {
   static AddCamera_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(2)
   AddCamera_Status get status => $_getN(1);
@@ -2279,7 +2279,7 @@ class UpdateCamera_Request extends $pb.GeneratedMessage {
     $core.String? password,
     $core.int? storageDay,
     $core.String? xaddr,
-    $1.MapLocation? location,
+    $0.MapLocation? location,
     $core.Iterable<$core.String>? subStreamUrls,
     $core.Iterable<$core.List<$core.int>>? tagsetId,
   }) {
@@ -2328,7 +2328,7 @@ class UpdateCamera_Request extends $pb.GeneratedMessage {
     ..aOS(5, _omitFieldNames ? '' : 'password')
     ..a<$core.int>(6, _omitFieldNames ? '' : 'storageDay', $pb.PbFieldType.OU3)
     ..aOS(7, _omitFieldNames ? '' : 'xaddr')
-    ..aOM<$1.MapLocation>(8, _omitFieldNames ? '' : 'location', subBuilder: $1.MapLocation.create)
+    ..aOM<$0.MapLocation>(8, _omitFieldNames ? '' : 'location', subBuilder: $0.MapLocation.create)
     ..pPS(9, _omitFieldNames ? '' : 'subStreamUrls')
     ..p<$core.List<$core.int>>(10, _omitFieldNames ? '' : 'tagsetId', $pb.PbFieldType.PY)
     ..hasRequiredFields = false
@@ -2419,15 +2419,15 @@ class UpdateCamera_Request extends $pb.GeneratedMessage {
   void clearXaddr() => clearField(7);
 
   @$pb.TagNumber(8)
-  $1.MapLocation get location => $_getN(7);
+  $0.MapLocation get location => $_getN(7);
   @$pb.TagNumber(8)
-  set location($1.MapLocation v) { setField(8, v); }
+  set location($0.MapLocation v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasLocation() => $_has(7);
   @$pb.TagNumber(8)
   void clearLocation() => clearField(8);
   @$pb.TagNumber(8)
-  $1.MapLocation ensureLocation() => $_ensure(7);
+  $0.MapLocation ensureLocation() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.List<$core.String> get subStreamUrls => $_getList(8);
@@ -2438,7 +2438,7 @@ class UpdateCamera_Request extends $pb.GeneratedMessage {
 
 class UpdateCamera_Reply extends $pb.GeneratedMessage {
   factory UpdateCamera_Reply({
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (camera != null) {
@@ -2451,7 +2451,7 @@ class UpdateCamera_Reply extends $pb.GeneratedMessage {
   factory UpdateCamera_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateCamera.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -2477,15 +2477,15 @@ class UpdateCamera_Reply extends $pb.GeneratedMessage {
   static UpdateCamera_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 }
 
 /// ------------NHOM CHUC NANG CAI DAT CAMERA-------------
@@ -2720,7 +2720,7 @@ class ChangePasswordCamera extends $pb.GeneratedMessage {
 class ScheduleRecordingCamera_Request extends $pb.GeneratedMessage {
   factory ScheduleRecordingCamera_Request({
     $core.List<$core.int>? cameraId,
-    $1.Recording? recording,
+    $0.Recording? recording,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -2737,7 +2737,7 @@ class ScheduleRecordingCamera_Request extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScheduleRecordingCamera.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
-    ..aOM<$1.Recording>(2, _omitFieldNames ? '' : 'recording', subBuilder: $1.Recording.create)
+    ..aOM<$0.Recording>(2, _omitFieldNames ? '' : 'recording', subBuilder: $0.Recording.create)
     ..hasRequiredFields = false
   ;
 
@@ -2772,21 +2772,21 @@ class ScheduleRecordingCamera_Request extends $pb.GeneratedMessage {
   void clearCameraId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.Recording get recording => $_getN(1);
+  $0.Recording get recording => $_getN(1);
   @$pb.TagNumber(2)
-  set recording($1.Recording v) { setField(2, v); }
+  set recording($0.Recording v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasRecording() => $_has(1);
   @$pb.TagNumber(2)
   void clearRecording() => clearField(2);
   @$pb.TagNumber(2)
-  $1.Recording ensureRecording() => $_ensure(1);
+  $0.Recording ensureRecording() => $_ensure(1);
 }
 
 class ScheduleRecordingCamera_Reply extends $pb.GeneratedMessage {
   factory ScheduleRecordingCamera_Reply({
     $core.List<$core.int>? cameraId,
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -2803,7 +2803,7 @@ class ScheduleRecordingCamera_Reply extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScheduleRecordingCamera.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
-    ..aOM<$1.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -2838,15 +2838,15 @@ class ScheduleRecordingCamera_Reply extends $pb.GeneratedMessage {
   void clearCameraId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.Camera get camera => $_getN(1);
+  $0.Camera get camera => $_getN(1);
   @$pb.TagNumber(2)
-  set camera($1.Camera v) { setField(2, v); }
+  set camera($0.Camera v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasCamera() => $_has(1);
   @$pb.TagNumber(2)
   void clearCamera() => clearField(2);
   @$pb.TagNumber(2)
-  $1.Camera ensureCamera() => $_ensure(1);
+  $0.Camera ensureCamera() => $_ensure(1);
 }
 
 class ScheduleRecordingCamera extends $pb.GeneratedMessage {
@@ -3975,7 +3975,7 @@ class ListShareInviteGroup_Request extends $pb.GeneratedMessage {
 
 class ListShareInviteGroup_Reply extends $pb.GeneratedMessage {
   factory ListShareInviteGroup_Reply({
-    $core.Iterable<$1.InviteMessage>? invites,
+    $core.Iterable<$0.InviteMessage>? invites,
   }) {
     final $result = create();
     if (invites != null) {
@@ -3988,7 +3988,7 @@ class ListShareInviteGroup_Reply extends $pb.GeneratedMessage {
   factory ListShareInviteGroup_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListShareInviteGroup.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.InviteMessage>(1, _omitFieldNames ? '' : 'invites', $pb.PbFieldType.PM, subBuilder: $1.InviteMessage.create)
+    ..pc<$0.InviteMessage>(1, _omitFieldNames ? '' : 'invites', $pb.PbFieldType.PM, subBuilder: $0.InviteMessage.create)
     ..hasRequiredFields = false
   ;
 
@@ -4014,7 +4014,7 @@ class ListShareInviteGroup_Reply extends $pb.GeneratedMessage {
   static ListShareInviteGroup_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.InviteMessage> get invites => $_getList(0);
+  $core.List<$0.InviteMessage> get invites => $_getList(0);
 }
 
 class ListShareInviteGroup extends $pb.GeneratedMessage {
@@ -4134,7 +4134,7 @@ class ResponseShareGroupCamera_Request extends $pb.GeneratedMessage {
 class ResponseShareGroupCamera_Reply extends $pb.GeneratedMessage {
   factory ResponseShareGroupCamera_Reply({
     $core.List<$core.int>? inviteMsgId,
-    $core.Iterable<$1.DeviceGroup>? groups,
+    $core.Iterable<$0.DeviceGroup>? groups,
   }) {
     final $result = create();
     if (inviteMsgId != null) {
@@ -4151,7 +4151,7 @@ class ResponseShareGroupCamera_Reply extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResponseShareGroupCamera.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'inviteMsgId', $pb.PbFieldType.OY)
-    ..pc<$1.DeviceGroup>(2, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: $1.DeviceGroup.create)
+    ..pc<$0.DeviceGroup>(2, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: $0.DeviceGroup.create)
     ..hasRequiredFields = false
   ;
 
@@ -4186,7 +4186,7 @@ class ResponseShareGroupCamera_Reply extends $pb.GeneratedMessage {
   void clearInviteMsgId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.List<$1.DeviceGroup> get groups => $_getList(1);
+  $core.List<$0.DeviceGroup> get groups => $_getList(1);
 }
 
 class ResponseShareGroupCamera extends $pb.GeneratedMessage {
@@ -4557,7 +4557,7 @@ class ReceiveDeleteCameraEmapInfo extends $pb.GeneratedMessage {
 
 class ReceiveUpdateCamera extends $pb.GeneratedMessage {
   factory ReceiveUpdateCamera({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEUPDATECAMERA,
   }) {
     final $result = create();
@@ -4574,7 +4574,7 @@ class ReceiveUpdateCamera extends $pb.GeneratedMessage {
   factory ReceiveUpdateCamera.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveUpdateCamera', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(92, _omitFieldNames ? '' : 'RECEIVEUPDATECAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_UPDATE_CAMERA')
     ..hasRequiredFields = false
   ;
@@ -4601,15 +4601,15 @@ class ReceiveUpdateCamera extends $pb.GeneratedMessage {
   static ReceiveUpdateCamera? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(92)
   $core.int get rECEIVEUPDATECAMERA => $_getIZ(1);
@@ -5245,10 +5245,10 @@ class IVALineCrossing_Request extends $pb.GeneratedMessage {
     $core.bool? isSendEmail,
     $core.bool? isRecord,
     $core.bool? isPushNotification,
-    $1.Roi? roiStart,
-    $1.Roi? roiEnd,
-    $1.Roi? directionStart,
-    $1.Roi? directionEnd,
+    $0.Roi? roiStart,
+    $0.Roi? roiEnd,
+    $0.Roi? directionStart,
+    $0.Roi? directionEnd,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -5294,10 +5294,10 @@ class IVALineCrossing_Request extends $pb.GeneratedMessage {
     ..aOB(5, _omitFieldNames ? '' : 'isSendEmail')
     ..aOB(6, _omitFieldNames ? '' : 'isRecord')
     ..aOB(7, _omitFieldNames ? '' : 'isPushNotification', protoName: 'isPushNotification')
-    ..aOM<$1.Roi>(8, _omitFieldNames ? '' : 'roiStart', subBuilder: $1.Roi.create)
-    ..aOM<$1.Roi>(9, _omitFieldNames ? '' : 'roiEnd', subBuilder: $1.Roi.create)
-    ..aOM<$1.Roi>(10, _omitFieldNames ? '' : 'directionStart', subBuilder: $1.Roi.create)
-    ..aOM<$1.Roi>(11, _omitFieldNames ? '' : 'directionEnd', subBuilder: $1.Roi.create)
+    ..aOM<$0.Roi>(8, _omitFieldNames ? '' : 'roiStart', subBuilder: $0.Roi.create)
+    ..aOM<$0.Roi>(9, _omitFieldNames ? '' : 'roiEnd', subBuilder: $0.Roi.create)
+    ..aOM<$0.Roi>(10, _omitFieldNames ? '' : 'directionStart', subBuilder: $0.Roi.create)
+    ..aOM<$0.Roi>(11, _omitFieldNames ? '' : 'directionEnd', subBuilder: $0.Roi.create)
     ..hasRequiredFields = false
   ;
 
@@ -5378,53 +5378,53 @@ class IVALineCrossing_Request extends $pb.GeneratedMessage {
   void clearIsPushNotification() => clearField(7);
 
   @$pb.TagNumber(8)
-  $1.Roi get roiStart => $_getN(6);
+  $0.Roi get roiStart => $_getN(6);
   @$pb.TagNumber(8)
-  set roiStart($1.Roi v) { setField(8, v); }
+  set roiStart($0.Roi v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasRoiStart() => $_has(6);
   @$pb.TagNumber(8)
   void clearRoiStart() => clearField(8);
   @$pb.TagNumber(8)
-  $1.Roi ensureRoiStart() => $_ensure(6);
+  $0.Roi ensureRoiStart() => $_ensure(6);
 
   @$pb.TagNumber(9)
-  $1.Roi get roiEnd => $_getN(7);
+  $0.Roi get roiEnd => $_getN(7);
   @$pb.TagNumber(9)
-  set roiEnd($1.Roi v) { setField(9, v); }
+  set roiEnd($0.Roi v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasRoiEnd() => $_has(7);
   @$pb.TagNumber(9)
   void clearRoiEnd() => clearField(9);
   @$pb.TagNumber(9)
-  $1.Roi ensureRoiEnd() => $_ensure(7);
+  $0.Roi ensureRoiEnd() => $_ensure(7);
 
   @$pb.TagNumber(10)
-  $1.Roi get directionStart => $_getN(8);
+  $0.Roi get directionStart => $_getN(8);
   @$pb.TagNumber(10)
-  set directionStart($1.Roi v) { setField(10, v); }
+  set directionStart($0.Roi v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasDirectionStart() => $_has(8);
   @$pb.TagNumber(10)
   void clearDirectionStart() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Roi ensureDirectionStart() => $_ensure(8);
+  $0.Roi ensureDirectionStart() => $_ensure(8);
 
   @$pb.TagNumber(11)
-  $1.Roi get directionEnd => $_getN(9);
+  $0.Roi get directionEnd => $_getN(9);
   @$pb.TagNumber(11)
-  set directionEnd($1.Roi v) { setField(11, v); }
+  set directionEnd($0.Roi v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasDirectionEnd() => $_has(9);
   @$pb.TagNumber(11)
   void clearDirectionEnd() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Roi ensureDirectionEnd() => $_ensure(9);
+  $0.Roi ensureDirectionEnd() => $_ensure(9);
 }
 
 class IVALineCrossing_Reply extends $pb.GeneratedMessage {
   factory IVALineCrossing_Reply({
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (camera != null) {
@@ -5437,7 +5437,7 @@ class IVALineCrossing_Reply extends $pb.GeneratedMessage {
   factory IVALineCrossing_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IVALineCrossing.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -5463,15 +5463,15 @@ class IVALineCrossing_Reply extends $pb.GeneratedMessage {
   static IVALineCrossing_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 }
 
 class IVALineCrossing extends $pb.GeneratedMessage {
@@ -5526,7 +5526,7 @@ class IVALineCrossing extends $pb.GeneratedMessage {
 
 class ReceiveIVALineCrossing extends $pb.GeneratedMessage {
   factory ReceiveIVALineCrossing({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEIVALINECROSSING,
   }) {
     final $result = create();
@@ -5543,7 +5543,7 @@ class ReceiveIVALineCrossing extends $pb.GeneratedMessage {
   factory ReceiveIVALineCrossing.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveIVALineCrossing', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(95, _omitFieldNames ? '' : 'RECEIVEIVALINECROSSING', $pb.PbFieldType.OU3, protoName: 'RECEIVE_IVA_LINE_CROSSING')
     ..hasRequiredFields = false
   ;
@@ -5570,15 +5570,15 @@ class ReceiveIVALineCrossing extends $pb.GeneratedMessage {
   static ReceiveIVALineCrossing? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(95)
   $core.int get rECEIVEIVALINECROSSING => $_getIZ(1);
@@ -5597,7 +5597,7 @@ class IVAIntrusionDetection_Request extends $pb.GeneratedMessage {
     $core.bool? isSendEmail,
     $core.bool? isRecord,
     $core.bool? isPushNotification,
-    $core.Iterable<$1.Roi>? rois,
+    $core.Iterable<$0.Roi>? rois,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -5630,7 +5630,7 @@ class IVAIntrusionDetection_Request extends $pb.GeneratedMessage {
     ..aOB(4, _omitFieldNames ? '' : 'isSendEmail')
     ..aOB(5, _omitFieldNames ? '' : 'isRecord')
     ..aOB(6, _omitFieldNames ? '' : 'isPushNotification', protoName: 'isPushNotification')
-    ..pc<$1.Roi>(7, _omitFieldNames ? '' : 'rois', $pb.PbFieldType.PM, subBuilder: $1.Roi.create)
+    ..pc<$0.Roi>(7, _omitFieldNames ? '' : 'rois', $pb.PbFieldType.PM, subBuilder: $0.Roi.create)
     ..hasRequiredFields = false
   ;
 
@@ -5702,12 +5702,12 @@ class IVAIntrusionDetection_Request extends $pb.GeneratedMessage {
   void clearIsPushNotification() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.List<$1.Roi> get rois => $_getList(5);
+  $core.List<$0.Roi> get rois => $_getList(5);
 }
 
 class IVAIntrusionDetection_Reply extends $pb.GeneratedMessage {
   factory IVAIntrusionDetection_Reply({
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (camera != null) {
@@ -5720,7 +5720,7 @@ class IVAIntrusionDetection_Reply extends $pb.GeneratedMessage {
   factory IVAIntrusionDetection_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IVAIntrusionDetection.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -5746,15 +5746,15 @@ class IVAIntrusionDetection_Reply extends $pb.GeneratedMessage {
   static IVAIntrusionDetection_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 }
 
 class IVAIntrusionDetection extends $pb.GeneratedMessage {
@@ -5809,7 +5809,7 @@ class IVAIntrusionDetection extends $pb.GeneratedMessage {
 
 class ReceiveIVAIntrusionDetection extends $pb.GeneratedMessage {
   factory ReceiveIVAIntrusionDetection({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEIVAINTDET,
   }) {
     final $result = create();
@@ -5826,7 +5826,7 @@ class ReceiveIVAIntrusionDetection extends $pb.GeneratedMessage {
   factory ReceiveIVAIntrusionDetection.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveIVAIntrusionDetection', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(96, _omitFieldNames ? '' : 'RECEIVEIVAINTDET', $pb.PbFieldType.OU3, protoName: 'RECEIVE_IVA_INT_DET')
     ..hasRequiredFields = false
   ;
@@ -5853,15 +5853,15 @@ class ReceiveIVAIntrusionDetection extends $pb.GeneratedMessage {
   static ReceiveIVAIntrusionDetection? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(96)
   $core.int get rECEIVEIVAINTDET => $_getIZ(1);
@@ -6119,7 +6119,7 @@ class ReceiveUpdateGroupRole extends $pb.GeneratedMessage {
   factory ReceiveUpdateGroupRole({
     $core.List<$core.int>? groupId,
     ReceiveUpdateGroupRole_GroupShareRole? role,
-    $1.DeviceGroup? group,
+    $0.DeviceGroup? group,
     $core.int? rECEIVEUPDATEGROUPROLE,
   }) {
     final $result = create();
@@ -6144,7 +6144,7 @@ class ReceiveUpdateGroupRole extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveUpdateGroupRole', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'groupId', $pb.PbFieldType.OY)
     ..e<ReceiveUpdateGroupRole_GroupShareRole>(2, _omitFieldNames ? '' : 'role', $pb.PbFieldType.OE, defaultOrMaker: ReceiveUpdateGroupRole_GroupShareRole.NOT_USE_, valueOf: ReceiveUpdateGroupRole_GroupShareRole.valueOf, enumValues: ReceiveUpdateGroupRole_GroupShareRole.values)
-    ..aOM<$1.DeviceGroup>(3, _omitFieldNames ? '' : 'group', subBuilder: $1.DeviceGroup.create)
+    ..aOM<$0.DeviceGroup>(3, _omitFieldNames ? '' : 'group', subBuilder: $0.DeviceGroup.create)
     ..a<$core.int>(98, _omitFieldNames ? '' : 'RECEIVEUPDATEGROUPROLE', $pb.PbFieldType.OU3, protoName: 'RECEIVE_UPDATE_GROUP_ROLE')
     ..hasRequiredFields = false
   ;
@@ -6189,15 +6189,15 @@ class ReceiveUpdateGroupRole extends $pb.GeneratedMessage {
   void clearRole() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.DeviceGroup get group => $_getN(2);
+  $0.DeviceGroup get group => $_getN(2);
   @$pb.TagNumber(3)
-  set group($1.DeviceGroup v) { setField(3, v); }
+  set group($0.DeviceGroup v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasGroup() => $_has(2);
   @$pb.TagNumber(3)
   void clearGroup() => clearField(3);
   @$pb.TagNumber(3)
-  $1.DeviceGroup ensureGroup() => $_ensure(2);
+  $0.DeviceGroup ensureGroup() => $_ensure(2);
 
   @$pb.TagNumber(98)
   $core.int get rECEIVEUPDATEGROUPROLE => $_getIZ(3);
@@ -6454,7 +6454,7 @@ class GetAllCamera_Request extends $pb.GeneratedMessage {
 
 class GetAllCamera_Reply extends $pb.GeneratedMessage {
   factory GetAllCamera_Reply({
-    $core.Iterable<$1.Camera>? cameras,
+    $core.Iterable<$0.Camera>? cameras,
   }) {
     final $result = create();
     if (cameras != null) {
@@ -6467,7 +6467,7 @@ class GetAllCamera_Reply extends $pb.GeneratedMessage {
   factory GetAllCamera_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAllCamera.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Camera>(1, _omitFieldNames ? '' : 'cameras', $pb.PbFieldType.PM, subBuilder: $1.Camera.create)
+    ..pc<$0.Camera>(1, _omitFieldNames ? '' : 'cameras', $pb.PbFieldType.PM, subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -6493,7 +6493,7 @@ class GetAllCamera_Reply extends $pb.GeneratedMessage {
   static GetAllCamera_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Camera> get cameras => $_getList(0);
+  $core.List<$0.Camera> get cameras => $_getList(0);
 }
 
 class GetAllCamera extends $pb.GeneratedMessage {
@@ -6580,7 +6580,7 @@ class GetAllGroup_Request extends $pb.GeneratedMessage {
 
 class GetAllGroup_Reply extends $pb.GeneratedMessage {
   factory GetAllGroup_Reply({
-    $core.Iterable<$1.DeviceGroup>? groups,
+    $core.Iterable<$0.DeviceGroup>? groups,
   }) {
     final $result = create();
     if (groups != null) {
@@ -6593,7 +6593,7 @@ class GetAllGroup_Reply extends $pb.GeneratedMessage {
   factory GetAllGroup_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAllGroup.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.DeviceGroup>(2, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: $1.DeviceGroup.create)
+    ..pc<$0.DeviceGroup>(2, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: $0.DeviceGroup.create)
     ..hasRequiredFields = false
   ;
 
@@ -6619,7 +6619,7 @@ class GetAllGroup_Reply extends $pb.GeneratedMessage {
   static GetAllGroup_Reply? _defaultInstance;
 
   @$pb.TagNumber(2)
-  $core.List<$1.DeviceGroup> get groups => $_getList(0);
+  $core.List<$0.DeviceGroup> get groups => $_getList(0);
 }
 
 class GetAllGroup extends $pb.GeneratedMessage {
@@ -6674,7 +6674,7 @@ class GetAllGroup extends $pb.GeneratedMessage {
 
 class ReceiveGroupChange extends $pb.GeneratedMessage {
   factory ReceiveGroupChange({
-    $core.Iterable<$1.DeviceGroup>? groups,
+    $core.Iterable<$0.DeviceGroup>? groups,
     $core.int? rECEIVEUPDATEGROUPDEVICE,
   }) {
     final $result = create();
@@ -6691,7 +6691,7 @@ class ReceiveGroupChange extends $pb.GeneratedMessage {
   factory ReceiveGroupChange.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveGroupChange', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.DeviceGroup>(1, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: $1.DeviceGroup.create)
+    ..pc<$0.DeviceGroup>(1, _omitFieldNames ? '' : 'groups', $pb.PbFieldType.PM, subBuilder: $0.DeviceGroup.create)
     ..a<$core.int>(99, _omitFieldNames ? '' : 'RECEIVEUPDATEGROUPDEVICE', $pb.PbFieldType.OU3, protoName: 'RECEIVE_UPDATE_GROUP_DEVICE')
     ..hasRequiredFields = false
   ;
@@ -6718,7 +6718,7 @@ class ReceiveGroupChange extends $pb.GeneratedMessage {
   static ReceiveGroupChange? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.DeviceGroup> get groups => $_getList(0);
+  $core.List<$0.DeviceGroup> get groups => $_getList(0);
 
   @$pb.TagNumber(99)
   $core.int get rECEIVEUPDATEGROUPDEVICE => $_getIZ(1);
@@ -6946,7 +6946,7 @@ class CheckCameraOnvif extends $pb.GeneratedMessage {
 
 class SetCameraLocation_Request extends $pb.GeneratedMessage {
   factory SetCameraLocation_Request({
-    $1.MapLocation? location,
+    $0.MapLocation? location,
     $core.List<$core.int>? cameraId,
   }) {
     final $result = create();
@@ -6963,7 +6963,7 @@ class SetCameraLocation_Request extends $pb.GeneratedMessage {
   factory SetCameraLocation_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetCameraLocation.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.MapLocation>(1, _omitFieldNames ? '' : 'location', subBuilder: $1.MapLocation.create)
+    ..aOM<$0.MapLocation>(1, _omitFieldNames ? '' : 'location', subBuilder: $0.MapLocation.create)
     ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
     ..hasRequiredFields = false
   ;
@@ -6990,15 +6990,15 @@ class SetCameraLocation_Request extends $pb.GeneratedMessage {
   static SetCameraLocation_Request? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.MapLocation get location => $_getN(0);
+  $0.MapLocation get location => $_getN(0);
   @$pb.TagNumber(1)
-  set location($1.MapLocation v) { setField(1, v); }
+  set location($0.MapLocation v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasLocation() => $_has(0);
   @$pb.TagNumber(1)
   void clearLocation() => clearField(1);
   @$pb.TagNumber(1)
-  $1.MapLocation ensureLocation() => $_ensure(0);
+  $0.MapLocation ensureLocation() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.List<$core.int> get cameraId => $_getN(1);
@@ -7012,7 +7012,7 @@ class SetCameraLocation_Request extends $pb.GeneratedMessage {
 
 class SetCameraLocation_Reply extends $pb.GeneratedMessage {
   factory SetCameraLocation_Reply({
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (camera != null) {
@@ -7025,7 +7025,7 @@ class SetCameraLocation_Reply extends $pb.GeneratedMessage {
   factory SetCameraLocation_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetCameraLocation.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -7051,15 +7051,15 @@ class SetCameraLocation_Reply extends $pb.GeneratedMessage {
   static SetCameraLocation_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 }
 
 class SetCameraLocation extends $pb.GeneratedMessage {
@@ -7114,7 +7114,7 @@ class SetCameraLocation extends $pb.GeneratedMessage {
 
 class ReceiveUpdateCameraLocation extends $pb.GeneratedMessage {
   factory ReceiveUpdateCameraLocation({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEUPDATECAMERALOCATION,
   }) {
     final $result = create();
@@ -7131,7 +7131,7 @@ class ReceiveUpdateCameraLocation extends $pb.GeneratedMessage {
   factory ReceiveUpdateCameraLocation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveUpdateCameraLocation', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(1002, _omitFieldNames ? '' : 'RECEIVEUPDATECAMERALOCATION', $pb.PbFieldType.OU3, protoName: 'RECEIVE_UPDATE_CAMERA_LOCATION')
     ..hasRequiredFields = false
   ;
@@ -7158,15 +7158,15 @@ class ReceiveUpdateCameraLocation extends $pb.GeneratedMessage {
   static ReceiveUpdateCameraLocation? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(1002)
   $core.int get rECEIVEUPDATECAMERALOCATION => $_getIZ(1);
@@ -7287,7 +7287,7 @@ class IVASmokeDetection_Request extends $pb.GeneratedMessage {
 
 class IVASmokeDetection_Reply extends $pb.GeneratedMessage {
   factory IVASmokeDetection_Reply({
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (camera != null) {
@@ -7300,7 +7300,7 @@ class IVASmokeDetection_Reply extends $pb.GeneratedMessage {
   factory IVASmokeDetection_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IVASmokeDetection.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -7326,15 +7326,15 @@ class IVASmokeDetection_Reply extends $pb.GeneratedMessage {
   static IVASmokeDetection_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 }
 
 class IVASmokeDetection extends $pb.GeneratedMessage {
@@ -7389,7 +7389,7 @@ class IVASmokeDetection extends $pb.GeneratedMessage {
 
 class ReceiveIVASmokeDetection extends $pb.GeneratedMessage {
   factory ReceiveIVASmokeDetection({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEIVASMOKEDETECTION,
   }) {
     final $result = create();
@@ -7406,7 +7406,7 @@ class ReceiveIVASmokeDetection extends $pb.GeneratedMessage {
   factory ReceiveIVASmokeDetection.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveIVASmokeDetection', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(1003, _omitFieldNames ? '' : 'RECEIVEIVASMOKEDETECTION', $pb.PbFieldType.OU3, protoName: 'RECEIVE_IVA_SMOKE_DETECTION')
     ..hasRequiredFields = false
   ;
@@ -7433,15 +7433,15 @@ class ReceiveIVASmokeDetection extends $pb.GeneratedMessage {
   static ReceiveIVASmokeDetection? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(1003)
   $core.int get rECEIVEIVASMOKEDETECTION => $_getIZ(1);
@@ -7460,7 +7460,7 @@ class IVAFaceDetection_Request extends $pb.GeneratedMessage {
     $core.bool? isStrangerDetectNoti,
     $core.bool? isRelativeDetectNoti,
     $core.bool? isRecord,
-    $core.Iterable<$1.Roi>? rois,
+    $core.Iterable<$0.Roi>? rois,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -7493,7 +7493,7 @@ class IVAFaceDetection_Request extends $pb.GeneratedMessage {
     ..aOB(3, _omitFieldNames ? '' : 'isStrangerDetectNoti', protoName: 'isStrangerDetectNoti')
     ..aOB(4, _omitFieldNames ? '' : 'isRelativeDetectNoti', protoName: 'isRelativeDetectNoti')
     ..aOB(5, _omitFieldNames ? '' : 'isRecord')
-    ..pc<$1.Roi>(6, _omitFieldNames ? '' : 'rois', $pb.PbFieldType.PM, subBuilder: $1.Roi.create)
+    ..pc<$0.Roi>(6, _omitFieldNames ? '' : 'rois', $pb.PbFieldType.PM, subBuilder: $0.Roi.create)
     ..hasRequiredFields = false
   ;
 
@@ -7564,12 +7564,12 @@ class IVAFaceDetection_Request extends $pb.GeneratedMessage {
   void clearIsRecord() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.List<$1.Roi> get rois => $_getList(5);
+  $core.List<$0.Roi> get rois => $_getList(5);
 }
 
 class IVAFaceDetection_Reply extends $pb.GeneratedMessage {
   factory IVAFaceDetection_Reply({
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (camera != null) {
@@ -7582,7 +7582,7 @@ class IVAFaceDetection_Reply extends $pb.GeneratedMessage {
   factory IVAFaceDetection_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IVAFaceDetection.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -7608,15 +7608,15 @@ class IVAFaceDetection_Reply extends $pb.GeneratedMessage {
   static IVAFaceDetection_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 }
 
 class IVAFaceDetection extends $pb.GeneratedMessage {
@@ -7671,7 +7671,7 @@ class IVAFaceDetection extends $pb.GeneratedMessage {
 
 class ReceiveIVAFaceDetection extends $pb.GeneratedMessage {
   factory ReceiveIVAFaceDetection({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEIVAFACEDETECTION,
   }) {
     final $result = create();
@@ -7688,7 +7688,7 @@ class ReceiveIVAFaceDetection extends $pb.GeneratedMessage {
   factory ReceiveIVAFaceDetection.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveIVAFaceDetection', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(1004, _omitFieldNames ? '' : 'RECEIVEIVAFACEDETECTION', $pb.PbFieldType.OU3, protoName: 'RECEIVE_IVA_FACE_DETECTION')
     ..hasRequiredFields = false
   ;
@@ -7715,15 +7715,15 @@ class ReceiveIVAFaceDetection extends $pb.GeneratedMessage {
   static ReceiveIVAFaceDetection? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(1004)
   $core.int get rECEIVEIVAFACEDETECTION => $_getIZ(1);
@@ -7787,7 +7787,7 @@ class GetEventByLogId_Request extends $pb.GeneratedMessage {
 
 class GetEventByLogId_Reply extends $pb.GeneratedMessage {
   factory GetEventByLogId_Reply({
-    $1.Event? event,
+    $0.Event? event,
   }) {
     final $result = create();
     if (event != null) {
@@ -7800,7 +7800,7 @@ class GetEventByLogId_Reply extends $pb.GeneratedMessage {
   factory GetEventByLogId_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetEventByLogId.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Event>(1, _omitFieldNames ? '' : 'event', subBuilder: $1.Event.create)
+    ..aOM<$0.Event>(1, _omitFieldNames ? '' : 'event', subBuilder: $0.Event.create)
     ..hasRequiredFields = false
   ;
 
@@ -7826,15 +7826,15 @@ class GetEventByLogId_Reply extends $pb.GeneratedMessage {
   static GetEventByLogId_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Event get event => $_getN(0);
+  $0.Event get event => $_getN(0);
   @$pb.TagNumber(1)
-  set event($1.Event v) { setField(1, v); }
+  set event($0.Event v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasEvent() => $_has(0);
   @$pb.TagNumber(1)
   void clearEvent() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Event ensureEvent() => $_ensure(0);
+  $0.Event ensureEvent() => $_ensure(0);
 }
 
 class GetEventByLogId extends $pb.GeneratedMessage {
@@ -7939,7 +7939,7 @@ class BoxGetCameras_Request extends $pb.GeneratedMessage {
 
 class BoxGetCameras_Reply extends $pb.GeneratedMessage {
   factory BoxGetCameras_Reply({
-    $core.Iterable<$1.Camera>? camera,
+    $core.Iterable<$0.Camera>? camera,
   }) {
     final $result = create();
     if (camera != null) {
@@ -7952,7 +7952,7 @@ class BoxGetCameras_Reply extends $pb.GeneratedMessage {
   factory BoxGetCameras_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BoxGetCameras.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Camera>(1, _omitFieldNames ? '' : 'camera', $pb.PbFieldType.PM, subBuilder: $1.Camera.create)
+    ..pc<$0.Camera>(1, _omitFieldNames ? '' : 'camera', $pb.PbFieldType.PM, subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -7978,7 +7978,7 @@ class BoxGetCameras_Reply extends $pb.GeneratedMessage {
   static BoxGetCameras_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Camera> get camera => $_getList(0);
+  $core.List<$0.Camera> get camera => $_getList(0);
 }
 
 class BoxGetCameras extends $pb.GeneratedMessage {
@@ -8097,7 +8097,7 @@ class UserAddBox_Request extends $pb.GeneratedMessage {
 
 class UserAddBox_Reply extends $pb.GeneratedMessage {
   factory UserAddBox_Reply({
-    $core.Iterable<$1.Vbox>? boxs,
+    $core.Iterable<$0.Vbox>? boxs,
   }) {
     final $result = create();
     if (boxs != null) {
@@ -8110,7 +8110,7 @@ class UserAddBox_Reply extends $pb.GeneratedMessage {
   factory UserAddBox_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserAddBox.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Vbox>(1, _omitFieldNames ? '' : 'boxs', $pb.PbFieldType.PM, subBuilder: $1.Vbox.create)
+    ..pc<$0.Vbox>(1, _omitFieldNames ? '' : 'boxs', $pb.PbFieldType.PM, subBuilder: $0.Vbox.create)
     ..hasRequiredFields = false
   ;
 
@@ -8136,7 +8136,7 @@ class UserAddBox_Reply extends $pb.GeneratedMessage {
   static UserAddBox_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Vbox> get boxs => $_getList(0);
+  $core.List<$0.Vbox> get boxs => $_getList(0);
 }
 
 class UserAddBox extends $pb.GeneratedMessage {
@@ -8191,7 +8191,7 @@ class UserAddBox extends $pb.GeneratedMessage {
 
 class ReceiveUserAddBox extends $pb.GeneratedMessage {
   factory ReceiveUserAddBox({
-    $core.Iterable<$1.Vbox>? boxs,
+    $core.Iterable<$0.Vbox>? boxs,
     $core.int? rECEIVEADDVBOX,
   }) {
     final $result = create();
@@ -8208,7 +8208,7 @@ class ReceiveUserAddBox extends $pb.GeneratedMessage {
   factory ReceiveUserAddBox.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveUserAddBox', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Vbox>(1, _omitFieldNames ? '' : 'boxs', $pb.PbFieldType.PM, subBuilder: $1.Vbox.create)
+    ..pc<$0.Vbox>(1, _omitFieldNames ? '' : 'boxs', $pb.PbFieldType.PM, subBuilder: $0.Vbox.create)
     ..a<$core.int>(1100, _omitFieldNames ? '' : 'RECEIVEADDVBOX', $pb.PbFieldType.OU3, protoName: 'RECEIVE_ADD_VBOX')
     ..hasRequiredFields = false
   ;
@@ -8235,7 +8235,7 @@ class ReceiveUserAddBox extends $pb.GeneratedMessage {
   static ReceiveUserAddBox? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Vbox> get boxs => $_getList(0);
+  $core.List<$0.Vbox> get boxs => $_getList(0);
 
   @$pb.TagNumber(1100)
   $core.int get rECEIVEADDVBOX => $_getIZ(1);
@@ -8313,7 +8313,7 @@ class GetListBox_Request extends $pb.GeneratedMessage {
 
 class GetListBox_Reply extends $pb.GeneratedMessage {
   factory GetListBox_Reply({
-    $core.Iterable<$1.Vbox>? boxs,
+    $core.Iterable<$0.Vbox>? boxs,
   }) {
     final $result = create();
     if (boxs != null) {
@@ -8326,7 +8326,7 @@ class GetListBox_Reply extends $pb.GeneratedMessage {
   factory GetListBox_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetListBox.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Vbox>(1, _omitFieldNames ? '' : 'boxs', $pb.PbFieldType.PM, subBuilder: $1.Vbox.create)
+    ..pc<$0.Vbox>(1, _omitFieldNames ? '' : 'boxs', $pb.PbFieldType.PM, subBuilder: $0.Vbox.create)
     ..hasRequiredFields = false
   ;
 
@@ -8352,7 +8352,7 @@ class GetListBox_Reply extends $pb.GeneratedMessage {
   static GetListBox_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Vbox> get boxs => $_getList(0);
+  $core.List<$0.Vbox> get boxs => $_getList(0);
 }
 
 class GetListBox extends $pb.GeneratedMessage {
@@ -8685,7 +8685,7 @@ class UserUpdateNameBox_Request extends $pb.GeneratedMessage {
 
 class UserUpdateNameBox_Reply extends $pb.GeneratedMessage {
   factory UserUpdateNameBox_Reply({
-    $1.Vbox? box,
+    $0.Vbox? box,
   }) {
     final $result = create();
     if (box != null) {
@@ -8698,7 +8698,7 @@ class UserUpdateNameBox_Reply extends $pb.GeneratedMessage {
   factory UserUpdateNameBox_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserUpdateNameBox.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Vbox>(1, _omitFieldNames ? '' : 'box', subBuilder: $1.Vbox.create)
+    ..aOM<$0.Vbox>(1, _omitFieldNames ? '' : 'box', subBuilder: $0.Vbox.create)
     ..hasRequiredFields = false
   ;
 
@@ -8724,15 +8724,15 @@ class UserUpdateNameBox_Reply extends $pb.GeneratedMessage {
   static UserUpdateNameBox_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Vbox get box => $_getN(0);
+  $0.Vbox get box => $_getN(0);
   @$pb.TagNumber(1)
-  set box($1.Vbox v) { setField(1, v); }
+  set box($0.Vbox v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasBox() => $_has(0);
   @$pb.TagNumber(1)
   void clearBox() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Vbox ensureBox() => $_ensure(0);
+  $0.Vbox ensureBox() => $_ensure(0);
 }
 
 class UserUpdateNameBox extends $pb.GeneratedMessage {
@@ -8787,7 +8787,7 @@ class UserUpdateNameBox extends $pb.GeneratedMessage {
 
 class ReceiveUserUpdateNameBox extends $pb.GeneratedMessage {
   factory ReceiveUserUpdateNameBox({
-    $1.Vbox? box,
+    $0.Vbox? box,
     $core.int? rECEIVEUPDATENAMEVBOX,
   }) {
     final $result = create();
@@ -8804,7 +8804,7 @@ class ReceiveUserUpdateNameBox extends $pb.GeneratedMessage {
   factory ReceiveUserUpdateNameBox.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveUserUpdateNameBox', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Vbox>(1, _omitFieldNames ? '' : 'box', subBuilder: $1.Vbox.create)
+    ..aOM<$0.Vbox>(1, _omitFieldNames ? '' : 'box', subBuilder: $0.Vbox.create)
     ..a<$core.int>(1102, _omitFieldNames ? '' : 'RECEIVEUPDATENAMEVBOX', $pb.PbFieldType.OU3, protoName: 'RECEIVE_UPDATE_NAME_VBOX')
     ..hasRequiredFields = false
   ;
@@ -8831,15 +8831,15 @@ class ReceiveUserUpdateNameBox extends $pb.GeneratedMessage {
   static ReceiveUserUpdateNameBox? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Vbox get box => $_getN(0);
+  $0.Vbox get box => $_getN(0);
   @$pb.TagNumber(1)
-  set box($1.Vbox v) { setField(1, v); }
+  set box($0.Vbox v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasBox() => $_has(0);
   @$pb.TagNumber(1)
   void clearBox() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Vbox ensureBox() => $_ensure(0);
+  $0.Vbox ensureBox() => $_ensure(0);
 
   @$pb.TagNumber(1102)
   $core.int get rECEIVEUPDATENAMEVBOX => $_getIZ(1);
@@ -8853,7 +8853,7 @@ class ReceiveUserUpdateNameBox extends $pb.GeneratedMessage {
 
 class ReceiveBoxOffline extends $pb.GeneratedMessage {
   factory ReceiveBoxOffline({
-    $1.Vbox? box,
+    $0.Vbox? box,
     $core.int? rECEIVEBOXOFFLINE,
   }) {
     final $result = create();
@@ -8870,7 +8870,7 @@ class ReceiveBoxOffline extends $pb.GeneratedMessage {
   factory ReceiveBoxOffline.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveBoxOffline', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Vbox>(1, _omitFieldNames ? '' : 'box', subBuilder: $1.Vbox.create)
+    ..aOM<$0.Vbox>(1, _omitFieldNames ? '' : 'box', subBuilder: $0.Vbox.create)
     ..a<$core.int>(1103, _omitFieldNames ? '' : 'RECEIVEBOXOFFLINE', $pb.PbFieldType.OU3, protoName: 'RECEIVE_BOX_OFFLINE')
     ..hasRequiredFields = false
   ;
@@ -8897,15 +8897,15 @@ class ReceiveBoxOffline extends $pb.GeneratedMessage {
   static ReceiveBoxOffline? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Vbox get box => $_getN(0);
+  $0.Vbox get box => $_getN(0);
   @$pb.TagNumber(1)
-  set box($1.Vbox v) { setField(1, v); }
+  set box($0.Vbox v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasBox() => $_has(0);
   @$pb.TagNumber(1)
   void clearBox() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Vbox ensureBox() => $_ensure(0);
+  $0.Vbox ensureBox() => $_ensure(0);
 
   @$pb.TagNumber(1103)
   $core.int get rECEIVEBOXOFFLINE => $_getIZ(1);
@@ -8919,7 +8919,7 @@ class ReceiveBoxOffline extends $pb.GeneratedMessage {
 
 class ReceiveBoxOnline extends $pb.GeneratedMessage {
   factory ReceiveBoxOnline({
-    $1.Vbox? box,
+    $0.Vbox? box,
     $core.int? rECEIVEBOXONLINE,
   }) {
     final $result = create();
@@ -8936,7 +8936,7 @@ class ReceiveBoxOnline extends $pb.GeneratedMessage {
   factory ReceiveBoxOnline.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveBoxOnline', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Vbox>(1, _omitFieldNames ? '' : 'box', subBuilder: $1.Vbox.create)
+    ..aOM<$0.Vbox>(1, _omitFieldNames ? '' : 'box', subBuilder: $0.Vbox.create)
     ..a<$core.int>(1104, _omitFieldNames ? '' : 'RECEIVEBOXONLINE', $pb.PbFieldType.OU3, protoName: 'RECEIVE_BOX_ONLINE')
     ..hasRequiredFields = false
   ;
@@ -8963,15 +8963,15 @@ class ReceiveBoxOnline extends $pb.GeneratedMessage {
   static ReceiveBoxOnline? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Vbox get box => $_getN(0);
+  $0.Vbox get box => $_getN(0);
   @$pb.TagNumber(1)
-  set box($1.Vbox v) { setField(1, v); }
+  set box($0.Vbox v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasBox() => $_has(0);
   @$pb.TagNumber(1)
   void clearBox() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Vbox ensureBox() => $_ensure(0);
+  $0.Vbox ensureBox() => $_ensure(0);
 
   @$pb.TagNumber(1104)
   $core.int get rECEIVEBOXONLINE => $_getIZ(1);
@@ -8995,7 +8995,7 @@ class AddUser_Request extends $pb.GeneratedMessage {
     $core.String? password,
     $core.bool? changePassDenied,
     $core.bool? addCamDenied,
-    $1.UserStatus? status,
+    $0.UserStatus? status,
   }) {
     final $result = create();
     if (account != null) {
@@ -9048,7 +9048,7 @@ class AddUser_Request extends $pb.GeneratedMessage {
     ..aOS(8, _omitFieldNames ? '' : 'password')
     ..aOB(9, _omitFieldNames ? '' : 'changePassDenied', protoName: 'changePassDenied')
     ..aOB(10, _omitFieldNames ? '' : 'addCamDenied', protoName: 'addCamDenied')
-    ..e<$1.UserStatus>(11, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $1.UserStatus.ACTIVE, valueOf: $1.UserStatus.valueOf, enumValues: $1.UserStatus.values)
+    ..e<$0.UserStatus>(11, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $0.UserStatus.ACTIVE, valueOf: $0.UserStatus.valueOf, enumValues: $0.UserStatus.values)
     ..hasRequiredFields = false
   ;
 
@@ -9164,9 +9164,9 @@ class AddUser_Request extends $pb.GeneratedMessage {
   void clearAddCamDenied() => clearField(10);
 
   @$pb.TagNumber(11)
-  $1.UserStatus get status => $_getN(10);
+  $0.UserStatus get status => $_getN(10);
   @$pb.TagNumber(11)
-  set status($1.UserStatus v) { setField(11, v); }
+  set status($0.UserStatus v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasStatus() => $_has(10);
   @$pb.TagNumber(11)
@@ -9175,7 +9175,7 @@ class AddUser_Request extends $pb.GeneratedMessage {
 
 class AddUser_Reply extends $pb.GeneratedMessage {
   factory AddUser_Reply({
-    $1.User? user,
+    $0.User? user,
   }) {
     final $result = create();
     if (user != null) {
@@ -9188,7 +9188,7 @@ class AddUser_Reply extends $pb.GeneratedMessage {
   factory AddUser_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddUser.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.User>(1, _omitFieldNames ? '' : 'user', subBuilder: $1.User.create)
+    ..aOM<$0.User>(1, _omitFieldNames ? '' : 'user', subBuilder: $0.User.create)
     ..hasRequiredFields = false
   ;
 
@@ -9214,15 +9214,15 @@ class AddUser_Reply extends $pb.GeneratedMessage {
   static AddUser_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.User get user => $_getN(0);
+  $0.User get user => $_getN(0);
   @$pb.TagNumber(1)
-  set user($1.User v) { setField(1, v); }
+  set user($0.User v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasUser() => $_has(0);
   @$pb.TagNumber(1)
   void clearUser() => clearField(1);
   @$pb.TagNumber(1)
-  $1.User ensureUser() => $_ensure(0);
+  $0.User ensureUser() => $_ensure(0);
 }
 
 class AddUser extends $pb.GeneratedMessage {
@@ -9289,7 +9289,7 @@ class EditUser_Request extends $pb.GeneratedMessage {
     $core.String? uidStr,
     $core.bool? changePassDenied,
     $core.bool? addCamDenied,
-    $1.UserStatus? status,
+    $0.UserStatus? status,
   }) {
     final $result = create();
     if (userId != null) {
@@ -9350,7 +9350,7 @@ class EditUser_Request extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'uidStr')
     ..aOB(11, _omitFieldNames ? '' : 'changePassDenied', protoName: 'changePassDenied')
     ..aOB(12, _omitFieldNames ? '' : 'addCamDenied', protoName: 'addCamDenied')
-    ..e<$1.UserStatus>(13, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $1.UserStatus.ACTIVE, valueOf: $1.UserStatus.valueOf, enumValues: $1.UserStatus.values)
+    ..e<$0.UserStatus>(13, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: $0.UserStatus.ACTIVE, valueOf: $0.UserStatus.valueOf, enumValues: $0.UserStatus.values)
     ..hasRequiredFields = false
   ;
 
@@ -9484,9 +9484,9 @@ class EditUser_Request extends $pb.GeneratedMessage {
   void clearAddCamDenied() => clearField(12);
 
   @$pb.TagNumber(13)
-  $1.UserStatus get status => $_getN(12);
+  $0.UserStatus get status => $_getN(12);
   @$pb.TagNumber(13)
-  set status($1.UserStatus v) { setField(13, v); }
+  set status($0.UserStatus v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasStatus() => $_has(12);
   @$pb.TagNumber(13)
@@ -9495,7 +9495,7 @@ class EditUser_Request extends $pb.GeneratedMessage {
 
 class EditUser_Reply extends $pb.GeneratedMessage {
   factory EditUser_Reply({
-    $1.User? user,
+    $0.User? user,
   }) {
     final $result = create();
     if (user != null) {
@@ -9508,7 +9508,7 @@ class EditUser_Reply extends $pb.GeneratedMessage {
   factory EditUser_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'EditUser.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.User>(1, _omitFieldNames ? '' : 'user', subBuilder: $1.User.create)
+    ..aOM<$0.User>(1, _omitFieldNames ? '' : 'user', subBuilder: $0.User.create)
     ..hasRequiredFields = false
   ;
 
@@ -9534,15 +9534,15 @@ class EditUser_Reply extends $pb.GeneratedMessage {
   static EditUser_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.User get user => $_getN(0);
+  $0.User get user => $_getN(0);
   @$pb.TagNumber(1)
-  set user($1.User v) { setField(1, v); }
+  set user($0.User v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasUser() => $_has(0);
   @$pb.TagNumber(1)
   void clearUser() => clearField(1);
   @$pb.TagNumber(1)
-  $1.User ensureUser() => $_ensure(0);
+  $0.User ensureUser() => $_ensure(0);
 }
 
 class EditUser extends $pb.GeneratedMessage {
@@ -9793,7 +9793,7 @@ class ListUser_Request extends $pb.GeneratedMessage {
 
 class ListUser_Reply extends $pb.GeneratedMessage {
   factory ListUser_Reply({
-    $core.Iterable<$1.User>? users,
+    $core.Iterable<$0.User>? users,
   }) {
     final $result = create();
     if (users != null) {
@@ -9806,7 +9806,7 @@ class ListUser_Reply extends $pb.GeneratedMessage {
   factory ListUser_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListUser.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.User>(1, _omitFieldNames ? '' : 'users', $pb.PbFieldType.PM, subBuilder: $1.User.create)
+    ..pc<$0.User>(1, _omitFieldNames ? '' : 'users', $pb.PbFieldType.PM, subBuilder: $0.User.create)
     ..hasRequiredFields = false
   ;
 
@@ -9832,7 +9832,7 @@ class ListUser_Reply extends $pb.GeneratedMessage {
   static ListUser_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.User> get users => $_getList(0);
+  $core.List<$0.User> get users => $_getList(0);
 }
 
 class ListUser extends $pb.GeneratedMessage {
@@ -9891,7 +9891,7 @@ class AddCameraHomeVision_Request extends $pb.GeneratedMessage {
     $core.String? cameraUserName,
     $core.String? cameraPassword,
     $core.String? cameraName,
-    $1.MapLocation? location,
+    $0.MapLocation? location,
     $core.List<$core.int>? groupId,
     $core.String? macAddress,
   }) {
@@ -9928,7 +9928,7 @@ class AddCameraHomeVision_Request extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'cameraUserName')
     ..aOS(3, _omitFieldNames ? '' : 'cameraPassword')
     ..aOS(4, _omitFieldNames ? '' : 'cameraName')
-    ..aOM<$1.MapLocation>(5, _omitFieldNames ? '' : 'location', subBuilder: $1.MapLocation.create)
+    ..aOM<$0.MapLocation>(5, _omitFieldNames ? '' : 'location', subBuilder: $0.MapLocation.create)
     ..a<$core.List<$core.int>>(6, _omitFieldNames ? '' : 'groupId', $pb.PbFieldType.OY)
     ..aOS(7, _omitFieldNames ? '' : 'macAddress')
     ..hasRequiredFields = false
@@ -9992,15 +9992,15 @@ class AddCameraHomeVision_Request extends $pb.GeneratedMessage {
   void clearCameraName() => clearField(4);
 
   @$pb.TagNumber(5)
-  $1.MapLocation get location => $_getN(4);
+  $0.MapLocation get location => $_getN(4);
   @$pb.TagNumber(5)
-  set location($1.MapLocation v) { setField(5, v); }
+  set location($0.MapLocation v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasLocation() => $_has(4);
   @$pb.TagNumber(5)
   void clearLocation() => clearField(5);
   @$pb.TagNumber(5)
-  $1.MapLocation ensureLocation() => $_ensure(4);
+  $0.MapLocation ensureLocation() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.List<$core.int> get groupId => $_getN(5);
@@ -10024,7 +10024,7 @@ class AddCameraHomeVision_Request extends $pb.GeneratedMessage {
 class AddCameraHomeVision_Reply extends $pb.GeneratedMessage {
   factory AddCameraHomeVision_Reply({
     $core.List<$core.int>? cameraId,
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -10041,7 +10041,7 @@ class AddCameraHomeVision_Reply extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddCameraHomeVision.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
-    ..aOM<$1.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -10076,15 +10076,15 @@ class AddCameraHomeVision_Reply extends $pb.GeneratedMessage {
   void clearCameraId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.Camera get camera => $_getN(1);
+  $0.Camera get camera => $_getN(1);
   @$pb.TagNumber(2)
-  set camera($1.Camera v) { setField(2, v); }
+  set camera($0.Camera v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasCamera() => $_has(1);
   @$pb.TagNumber(2)
   void clearCamera() => clearField(2);
   @$pb.TagNumber(2)
-  $1.Camera ensureCamera() => $_ensure(1);
+  $0.Camera ensureCamera() => $_ensure(1);
 }
 
 class AddCameraHomeVision extends $pb.GeneratedMessage {
@@ -10140,7 +10140,7 @@ class AddCameraHomeVision extends $pb.GeneratedMessage {
 class PTZCameraHomeVision_Request extends $pb.GeneratedMessage {
   factory PTZCameraHomeVision_Request({
     $core.List<$core.int>? cameraId,
-    $1.PtzAction? action,
+    $0.PtzAction? action,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -10157,7 +10157,7 @@ class PTZCameraHomeVision_Request extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PTZCameraHomeVision.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
-    ..e<$1.PtzAction>(2, _omitFieldNames ? '' : 'action', $pb.PbFieldType.OE, defaultOrMaker: $1.PtzAction.PTZ_STOP, valueOf: $1.PtzAction.valueOf, enumValues: $1.PtzAction.values)
+    ..e<$0.PtzAction>(2, _omitFieldNames ? '' : 'action', $pb.PbFieldType.OE, defaultOrMaker: $0.PtzAction.PTZ_STOP, valueOf: $0.PtzAction.valueOf, enumValues: $0.PtzAction.values)
     ..hasRequiredFields = false
   ;
 
@@ -10192,9 +10192,9 @@ class PTZCameraHomeVision_Request extends $pb.GeneratedMessage {
   void clearCameraId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.PtzAction get action => $_getN(1);
+  $0.PtzAction get action => $_getN(1);
   @$pb.TagNumber(2)
-  set action($1.PtzAction v) { setField(2, v); }
+  set action($0.PtzAction v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasAction() => $_has(1);
   @$pb.TagNumber(2)
@@ -10853,7 +10853,7 @@ class MDCameraHomeVision_Request extends $pb.GeneratedMessage {
     $core.bool? isSendEmail,
     $core.bool? isRecord,
     $core.bool? isPushNotification,
-    $core.Iterable<$1.Roi>? rois,
+    $core.Iterable<$0.Roi>? rois,
     $core.bool? soundAlarm,
   }) {
     final $result = create();
@@ -10894,7 +10894,7 @@ class MDCameraHomeVision_Request extends $pb.GeneratedMessage {
     ..aOB(4, _omitFieldNames ? '' : 'isSendEmail')
     ..aOB(5, _omitFieldNames ? '' : 'isRecord')
     ..aOB(6, _omitFieldNames ? '' : 'isPushNotification', protoName: 'isPushNotification')
-    ..pc<$1.Roi>(7, _omitFieldNames ? '' : 'rois', $pb.PbFieldType.PM, subBuilder: $1.Roi.create)
+    ..pc<$0.Roi>(7, _omitFieldNames ? '' : 'rois', $pb.PbFieldType.PM, subBuilder: $0.Roi.create)
     ..aOB(8, _omitFieldNames ? '' : 'SoundAlarm', protoName: 'SoundAlarm')
     ..hasRequiredFields = false
   ;
@@ -10975,7 +10975,7 @@ class MDCameraHomeVision_Request extends $pb.GeneratedMessage {
   void clearIsPushNotification() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.List<$1.Roi> get rois => $_getList(6);
+  $core.List<$0.Roi> get rois => $_getList(6);
 
   @$pb.TagNumber(8)
   $core.bool get soundAlarm => $_getBF(7);
@@ -10990,7 +10990,7 @@ class MDCameraHomeVision_Request extends $pb.GeneratedMessage {
 class MDCameraHomeVision_Reply extends $pb.GeneratedMessage {
   factory MDCameraHomeVision_Reply({
     $core.List<$core.int>? cameraId,
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -11007,7 +11007,7 @@ class MDCameraHomeVision_Reply extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MDCameraHomeVision.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
-    ..aOM<$1.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -11042,15 +11042,15 @@ class MDCameraHomeVision_Reply extends $pb.GeneratedMessage {
   void clearCameraId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.Camera get camera => $_getN(1);
+  $0.Camera get camera => $_getN(1);
   @$pb.TagNumber(2)
-  set camera($1.Camera v) { setField(2, v); }
+  set camera($0.Camera v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasCamera() => $_has(1);
   @$pb.TagNumber(2)
   void clearCamera() => clearField(2);
   @$pb.TagNumber(2)
-  $1.Camera ensureCamera() => $_ensure(1);
+  $0.Camera ensureCamera() => $_ensure(1);
 }
 
 class MDCameraHomeVision extends $pb.GeneratedMessage {
@@ -11962,7 +11962,7 @@ class ListNotification_Request extends $pb.GeneratedMessage {
 
 class ListNotification_Reply extends $pb.GeneratedMessage {
   factory ListNotification_Reply({
-    $core.Iterable<$1.NotificationMsg>? messages,
+    $core.Iterable<$0.NotificationMsg>? messages,
     $core.bool? isEnd,
   }) {
     final $result = create();
@@ -11979,7 +11979,7 @@ class ListNotification_Reply extends $pb.GeneratedMessage {
   factory ListNotification_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListNotification.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.NotificationMsg>(1, _omitFieldNames ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: $1.NotificationMsg.create)
+    ..pc<$0.NotificationMsg>(1, _omitFieldNames ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: $0.NotificationMsg.create)
     ..aOB(2, _omitFieldNames ? '' : 'isEnd', protoName: 'isEnd')
     ..hasRequiredFields = false
   ;
@@ -12006,7 +12006,7 @@ class ListNotification_Reply extends $pb.GeneratedMessage {
   static ListNotification_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.NotificationMsg> get messages => $_getList(0);
+  $core.List<$0.NotificationMsg> get messages => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.bool get isEnd => $_getBF(1);
@@ -12205,7 +12205,7 @@ class MarkReadNotification extends $pb.GeneratedMessage {
 
 class ReceiveNotification extends $pb.GeneratedMessage {
   factory ReceiveNotification({
-    $1.NotificationMsg? messages,
+    $0.NotificationMsg? messages,
     $core.int? unreadMsgCount,
     $core.int? rECEIVEMESSAGE,
   }) {
@@ -12226,7 +12226,7 @@ class ReceiveNotification extends $pb.GeneratedMessage {
   factory ReceiveNotification.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveNotification', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.NotificationMsg>(1, _omitFieldNames ? '' : 'messages', subBuilder: $1.NotificationMsg.create)
+    ..aOM<$0.NotificationMsg>(1, _omitFieldNames ? '' : 'messages', subBuilder: $0.NotificationMsg.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'unreadMsgCount', $pb.PbFieldType.OU3)
     ..a<$core.int>(277, _omitFieldNames ? '' : 'RECEIVEMESSAGE', $pb.PbFieldType.OU3, protoName: 'RECEIVE_MESSAGE')
     ..hasRequiredFields = false
@@ -12254,15 +12254,15 @@ class ReceiveNotification extends $pb.GeneratedMessage {
   static ReceiveNotification? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.NotificationMsg get messages => $_getN(0);
+  $0.NotificationMsg get messages => $_getN(0);
   @$pb.TagNumber(1)
-  set messages($1.NotificationMsg v) { setField(1, v); }
+  set messages($0.NotificationMsg v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasMessages() => $_has(0);
   @$pb.TagNumber(1)
   void clearMessages() => clearField(1);
   @$pb.TagNumber(1)
-  $1.NotificationMsg ensureMessages() => $_ensure(0);
+  $0.NotificationMsg ensureMessages() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.int get unreadMsgCount => $_getIZ(1);
@@ -12503,7 +12503,7 @@ class UpdateVolumeCameraHomeVision extends $pb.GeneratedMessage {
 
 class ReceiveBeginUpdateFWCamera extends $pb.GeneratedMessage {
   factory ReceiveBeginUpdateFWCamera({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEBEGINUPDATEFWCAMERA,
   }) {
     final $result = create();
@@ -12520,7 +12520,7 @@ class ReceiveBeginUpdateFWCamera extends $pb.GeneratedMessage {
   factory ReceiveBeginUpdateFWCamera.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveBeginUpdateFWCamera', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(280, _omitFieldNames ? '' : 'RECEIVEBEGINUPDATEFWCAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_BEGIN_UPDATE_FW_CAMERA')
     ..hasRequiredFields = false
   ;
@@ -12547,15 +12547,15 @@ class ReceiveBeginUpdateFWCamera extends $pb.GeneratedMessage {
   static ReceiveBeginUpdateFWCamera? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(280)
   $core.int get rECEIVEBEGINUPDATEFWCAMERA => $_getIZ(1);
@@ -12715,7 +12715,7 @@ class sdCardTypeCameraHomeVision extends $pb.GeneratedMessage {
 
 class ReceiveUpdateFWSuccessCamera extends $pb.GeneratedMessage {
   factory ReceiveUpdateFWSuccessCamera({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? status,
     $core.int? rECEIVEUPDATEFWSUCCESSCAMERA,
   }) {
@@ -12736,7 +12736,7 @@ class ReceiveUpdateFWSuccessCamera extends $pb.GeneratedMessage {
   factory ReceiveUpdateFWSuccessCamera.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveUpdateFWSuccessCamera', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.O3)
     ..a<$core.int>(282, _omitFieldNames ? '' : 'RECEIVEUPDATEFWSUCCESSCAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_UPDATE_FW_SUCCESS_CAMERA')
     ..hasRequiredFields = false
@@ -12764,15 +12764,15 @@ class ReceiveUpdateFWSuccessCamera extends $pb.GeneratedMessage {
   static ReceiveUpdateFWSuccessCamera? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.int get status => $_getIZ(1);
@@ -12859,7 +12859,7 @@ class ListFileInSDCard_Request extends $pb.GeneratedMessage {
 
 class ListFileInSDCard_Reply extends $pb.GeneratedMessage {
   factory ListFileInSDCard_Reply({
-    $1.SDCardFiles? sdCardFiles,
+    $0.SDCardFiles? sdCardFiles,
   }) {
     final $result = create();
     if (sdCardFiles != null) {
@@ -12872,7 +12872,7 @@ class ListFileInSDCard_Reply extends $pb.GeneratedMessage {
   factory ListFileInSDCard_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListFileInSDCard.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.SDCardFiles>(1, _omitFieldNames ? '' : 'sdCardFiles', protoName: 'sdCardFiles', subBuilder: $1.SDCardFiles.create)
+    ..aOM<$0.SDCardFiles>(1, _omitFieldNames ? '' : 'sdCardFiles', protoName: 'sdCardFiles', subBuilder: $0.SDCardFiles.create)
     ..hasRequiredFields = false
   ;
 
@@ -12898,15 +12898,15 @@ class ListFileInSDCard_Reply extends $pb.GeneratedMessage {
   static ListFileInSDCard_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.SDCardFiles get sdCardFiles => $_getN(0);
+  $0.SDCardFiles get sdCardFiles => $_getN(0);
   @$pb.TagNumber(1)
-  set sdCardFiles($1.SDCardFiles v) { setField(1, v); }
+  set sdCardFiles($0.SDCardFiles v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasSdCardFiles() => $_has(0);
   @$pb.TagNumber(1)
   void clearSdCardFiles() => clearField(1);
   @$pb.TagNumber(1)
-  $1.SDCardFiles ensureSdCardFiles() => $_ensure(0);
+  $0.SDCardFiles ensureSdCardFiles() => $_ensure(0);
 }
 
 class ListFileInSDCard extends $pb.GeneratedMessage {
@@ -12966,7 +12966,7 @@ class IVAALPRConfig_Request extends $pb.GeneratedMessage {
     $core.bool? isSendEmail,
     $core.bool? isRecord,
     $core.bool? isPushNotification,
-    $core.Iterable<$1.Roi>? rois,
+    $core.Iterable<$0.Roi>? rois,
     $core.bool? in_8,
   }) {
     final $result = create();
@@ -13003,7 +13003,7 @@ class IVAALPRConfig_Request extends $pb.GeneratedMessage {
     ..aOB(4, _omitFieldNames ? '' : 'isSendEmail')
     ..aOB(5, _omitFieldNames ? '' : 'isRecord')
     ..aOB(6, _omitFieldNames ? '' : 'isPushNotification', protoName: 'isPushNotification')
-    ..pc<$1.Roi>(7, _omitFieldNames ? '' : 'rois', $pb.PbFieldType.PM, subBuilder: $1.Roi.create)
+    ..pc<$0.Roi>(7, _omitFieldNames ? '' : 'rois', $pb.PbFieldType.PM, subBuilder: $0.Roi.create)
     ..aOB(8, _omitFieldNames ? '' : 'in')
     ..hasRequiredFields = false
   ;
@@ -13075,7 +13075,7 @@ class IVAALPRConfig_Request extends $pb.GeneratedMessage {
   void clearIsPushNotification() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.List<$1.Roi> get rois => $_getList(5);
+  $core.List<$0.Roi> get rois => $_getList(5);
 
   @$pb.TagNumber(8)
   $core.bool get in_8 => $_getBF(6);
@@ -13089,7 +13089,7 @@ class IVAALPRConfig_Request extends $pb.GeneratedMessage {
 
 class IVAALPRConfig_Reply extends $pb.GeneratedMessage {
   factory IVAALPRConfig_Reply({
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (camera != null) {
@@ -13102,7 +13102,7 @@ class IVAALPRConfig_Reply extends $pb.GeneratedMessage {
   factory IVAALPRConfig_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IVAALPRConfig.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -13128,15 +13128,15 @@ class IVAALPRConfig_Reply extends $pb.GeneratedMessage {
   static IVAALPRConfig_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 }
 
 /// / iva nhận diện biển số xe
@@ -13192,7 +13192,7 @@ class IVAALPRConfig extends $pb.GeneratedMessage {
 
 class ReceiveALPRConfig extends $pb.GeneratedMessage {
   factory ReceiveALPRConfig({
-    $1.Camera? camera,
+    $0.Camera? camera,
     $core.int? rECEIVEIVAALPR,
   }) {
     final $result = create();
@@ -13209,7 +13209,7 @@ class ReceiveALPRConfig extends $pb.GeneratedMessage {
   factory ReceiveALPRConfig.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveALPRConfig', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(1, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..a<$core.int>(285, _omitFieldNames ? '' : 'RECEIVEIVAALPR', $pb.PbFieldType.OU3, protoName: 'RECEIVE_IVA_ALPR')
     ..hasRequiredFields = false
   ;
@@ -13236,15 +13236,15 @@ class ReceiveALPRConfig extends $pb.GeneratedMessage {
   static ReceiveALPRConfig? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Camera get camera => $_getN(0);
+  $0.Camera get camera => $_getN(0);
   @$pb.TagNumber(1)
-  set camera($1.Camera v) { setField(1, v); }
+  set camera($0.Camera v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasCamera() => $_has(0);
   @$pb.TagNumber(1)
   void clearCamera() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Camera ensureCamera() => $_ensure(0);
+  $0.Camera ensureCamera() => $_ensure(0);
 
   @$pb.TagNumber(285)
   $core.int get rECEIVEIVAALPR => $_getIZ(1);
@@ -14260,7 +14260,7 @@ class ListVehicle_Request extends $pb.GeneratedMessage {
 
 class ListVehicle_Reply extends $pb.GeneratedMessage {
   factory ListVehicle_Reply({
-    $core.Iterable<$1.Vehicle>? vehicles,
+    $core.Iterable<$0.Vehicle>? vehicles,
   }) {
     final $result = create();
     if (vehicles != null) {
@@ -14273,7 +14273,7 @@ class ListVehicle_Reply extends $pb.GeneratedMessage {
   factory ListVehicle_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListVehicle.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Vehicle>(1, _omitFieldNames ? '' : 'vehicles', $pb.PbFieldType.PM, subBuilder: $1.Vehicle.create)
+    ..pc<$0.Vehicle>(1, _omitFieldNames ? '' : 'vehicles', $pb.PbFieldType.PM, subBuilder: $0.Vehicle.create)
     ..hasRequiredFields = false
   ;
 
@@ -14299,7 +14299,7 @@ class ListVehicle_Reply extends $pb.GeneratedMessage {
   static ListVehicle_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Vehicle> get vehicles => $_getList(0);
+  $core.List<$0.Vehicle> get vehicles => $_getList(0);
 }
 
 /// / Lấy danh sách phương tiện
@@ -14355,7 +14355,7 @@ class ListVehicle extends $pb.GeneratedMessage {
 
 class UpdateInfoVehicle_Request extends $pb.GeneratedMessage {
   factory UpdateInfoVehicle_Request({
-    $1.Vehicle? vehicle,
+    $0.Vehicle? vehicle,
   }) {
     final $result = create();
     if (vehicle != null) {
@@ -14368,7 +14368,7 @@ class UpdateInfoVehicle_Request extends $pb.GeneratedMessage {
   factory UpdateInfoVehicle_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInfoVehicle.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Vehicle>(1, _omitFieldNames ? '' : 'vehicle', subBuilder: $1.Vehicle.create)
+    ..aOM<$0.Vehicle>(1, _omitFieldNames ? '' : 'vehicle', subBuilder: $0.Vehicle.create)
     ..hasRequiredFields = false
   ;
 
@@ -14394,20 +14394,20 @@ class UpdateInfoVehicle_Request extends $pb.GeneratedMessage {
   static UpdateInfoVehicle_Request? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Vehicle get vehicle => $_getN(0);
+  $0.Vehicle get vehicle => $_getN(0);
   @$pb.TagNumber(1)
-  set vehicle($1.Vehicle v) { setField(1, v); }
+  set vehicle($0.Vehicle v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasVehicle() => $_has(0);
   @$pb.TagNumber(1)
   void clearVehicle() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Vehicle ensureVehicle() => $_ensure(0);
+  $0.Vehicle ensureVehicle() => $_ensure(0);
 }
 
 class UpdateInfoVehicle_Reply extends $pb.GeneratedMessage {
   factory UpdateInfoVehicle_Reply({
-    $1.Vehicle? vehicle,
+    $0.Vehicle? vehicle,
   }) {
     final $result = create();
     if (vehicle != null) {
@@ -14420,7 +14420,7 @@ class UpdateInfoVehicle_Reply extends $pb.GeneratedMessage {
   factory UpdateInfoVehicle_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateInfoVehicle.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.Vehicle>(1, _omitFieldNames ? '' : 'vehicle', subBuilder: $1.Vehicle.create)
+    ..aOM<$0.Vehicle>(1, _omitFieldNames ? '' : 'vehicle', subBuilder: $0.Vehicle.create)
     ..hasRequiredFields = false
   ;
 
@@ -14446,15 +14446,15 @@ class UpdateInfoVehicle_Reply extends $pb.GeneratedMessage {
   static UpdateInfoVehicle_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Vehicle get vehicle => $_getN(0);
+  $0.Vehicle get vehicle => $_getN(0);
   @$pb.TagNumber(1)
-  set vehicle($1.Vehicle v) { setField(1, v); }
+  set vehicle($0.Vehicle v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasVehicle() => $_has(0);
   @$pb.TagNumber(1)
   void clearVehicle() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Vehicle ensureVehicle() => $_ensure(0);
+  $0.Vehicle ensureVehicle() => $_ensure(0);
 }
 
 /// / Cập nhật thông tin phương tiện
@@ -14510,7 +14510,7 @@ class UpdateInfoVehicle extends $pb.GeneratedMessage {
 
 class AddVehicle_Request extends $pb.GeneratedMessage {
   factory AddVehicle_Request({
-    $core.Iterable<$1.Vehicle>? vehicles,
+    $core.Iterable<$0.Vehicle>? vehicles,
   }) {
     final $result = create();
     if (vehicles != null) {
@@ -14523,7 +14523,7 @@ class AddVehicle_Request extends $pb.GeneratedMessage {
   factory AddVehicle_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddVehicle.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Vehicle>(1, _omitFieldNames ? '' : 'vehicles', $pb.PbFieldType.PM, subBuilder: $1.Vehicle.create)
+    ..pc<$0.Vehicle>(1, _omitFieldNames ? '' : 'vehicles', $pb.PbFieldType.PM, subBuilder: $0.Vehicle.create)
     ..hasRequiredFields = false
   ;
 
@@ -14549,12 +14549,12 @@ class AddVehicle_Request extends $pb.GeneratedMessage {
   static AddVehicle_Request? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Vehicle> get vehicles => $_getList(0);
+  $core.List<$0.Vehicle> get vehicles => $_getList(0);
 }
 
 class AddVehicle_Reply extends $pb.GeneratedMessage {
   factory AddVehicle_Reply({
-    $core.Iterable<$1.Vehicle>? vehicles,
+    $core.Iterable<$0.Vehicle>? vehicles,
   }) {
     final $result = create();
     if (vehicles != null) {
@@ -14567,7 +14567,7 @@ class AddVehicle_Reply extends $pb.GeneratedMessage {
   factory AddVehicle_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddVehicle.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Vehicle>(1, _omitFieldNames ? '' : 'vehicles', $pb.PbFieldType.PM, subBuilder: $1.Vehicle.create)
+    ..pc<$0.Vehicle>(1, _omitFieldNames ? '' : 'vehicles', $pb.PbFieldType.PM, subBuilder: $0.Vehicle.create)
     ..hasRequiredFields = false
   ;
 
@@ -14593,7 +14593,7 @@ class AddVehicle_Reply extends $pb.GeneratedMessage {
   static AddVehicle_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Vehicle> get vehicles => $_getList(0);
+  $core.List<$0.Vehicle> get vehicles => $_getList(0);
 }
 
 /// / Thêm phương tiện
@@ -14814,7 +14814,7 @@ class GetConfigBarrier_Request extends $pb.GeneratedMessage {
 
 class GetConfigBarrier_Reply extends $pb.GeneratedMessage {
   factory GetConfigBarrier_Reply({
-    $1.ConfigBarrier? config,
+    $0.ConfigBarrier? config,
     $core.int? carIn,
     $core.int? carOut,
   }) {
@@ -14835,7 +14835,7 @@ class GetConfigBarrier_Reply extends $pb.GeneratedMessage {
   factory GetConfigBarrier_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetConfigBarrier.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.ConfigBarrier>(1, _omitFieldNames ? '' : 'config', subBuilder: $1.ConfigBarrier.create)
+    ..aOM<$0.ConfigBarrier>(1, _omitFieldNames ? '' : 'config', subBuilder: $0.ConfigBarrier.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'carIn', $pb.PbFieldType.OU3)
     ..a<$core.int>(3, _omitFieldNames ? '' : 'carOut', $pb.PbFieldType.OU3)
     ..hasRequiredFields = false
@@ -14863,15 +14863,15 @@ class GetConfigBarrier_Reply extends $pb.GeneratedMessage {
   static GetConfigBarrier_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.ConfigBarrier get config => $_getN(0);
+  $0.ConfigBarrier get config => $_getN(0);
   @$pb.TagNumber(1)
-  set config($1.ConfigBarrier v) { setField(1, v); }
+  set config($0.ConfigBarrier v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasConfig() => $_has(0);
   @$pb.TagNumber(1)
   void clearConfig() => clearField(1);
   @$pb.TagNumber(1)
-  $1.ConfigBarrier ensureConfig() => $_ensure(0);
+  $0.ConfigBarrier ensureConfig() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.int get carIn => $_getIZ(1);
@@ -14945,8 +14945,8 @@ class GetConfigBarrier extends $pb.GeneratedMessage {
 
 class ConfigInOutCam_Request extends $pb.GeneratedMessage {
   factory ConfigInOutCam_Request({
-    $1.InOutCam? inOutCar,
-    $1.InOutCam? inOutBike,
+    $0.InOutCam? inOutCar,
+    $0.InOutCam? inOutBike,
   }) {
     final $result = create();
     if (inOutCar != null) {
@@ -14962,8 +14962,8 @@ class ConfigInOutCam_Request extends $pb.GeneratedMessage {
   factory ConfigInOutCam_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConfigInOutCam.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.InOutCam>(1, _omitFieldNames ? '' : 'inOutCar', subBuilder: $1.InOutCam.create)
-    ..aOM<$1.InOutCam>(2, _omitFieldNames ? '' : 'inOutBike', subBuilder: $1.InOutCam.create)
+    ..aOM<$0.InOutCam>(1, _omitFieldNames ? '' : 'inOutCar', subBuilder: $0.InOutCam.create)
+    ..aOM<$0.InOutCam>(2, _omitFieldNames ? '' : 'inOutBike', subBuilder: $0.InOutCam.create)
     ..hasRequiredFields = false
   ;
 
@@ -14989,26 +14989,26 @@ class ConfigInOutCam_Request extends $pb.GeneratedMessage {
   static ConfigInOutCam_Request? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.InOutCam get inOutCar => $_getN(0);
+  $0.InOutCam get inOutCar => $_getN(0);
   @$pb.TagNumber(1)
-  set inOutCar($1.InOutCam v) { setField(1, v); }
+  set inOutCar($0.InOutCam v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasInOutCar() => $_has(0);
   @$pb.TagNumber(1)
   void clearInOutCar() => clearField(1);
   @$pb.TagNumber(1)
-  $1.InOutCam ensureInOutCar() => $_ensure(0);
+  $0.InOutCam ensureInOutCar() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $1.InOutCam get inOutBike => $_getN(1);
+  $0.InOutCam get inOutBike => $_getN(1);
   @$pb.TagNumber(2)
-  set inOutBike($1.InOutCam v) { setField(2, v); }
+  set inOutBike($0.InOutCam v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasInOutBike() => $_has(1);
   @$pb.TagNumber(2)
   void clearInOutBike() => clearField(2);
   @$pb.TagNumber(2)
-  $1.InOutCam ensureInOutBike() => $_ensure(1);
+  $0.InOutCam ensureInOutBike() => $_ensure(1);
 }
 
 class ConfigInOutCam_Reply extends $pb.GeneratedMessage {
@@ -15441,7 +15441,7 @@ class AddCameraRTMP_Request extends $pb.GeneratedMessage {
     $core.String? encoder,
     $core.int? bitrate,
     $core.int? framerate,
-    $1.MapLocation? location,
+    $0.MapLocation? location,
     $core.List<$core.int>? groupId,
   }) {
     final $result = create();
@@ -15474,7 +15474,7 @@ class AddCameraRTMP_Request extends $pb.GeneratedMessage {
     ..aOS(2, _omitFieldNames ? '' : 'encoder')
     ..a<$core.int>(3, _omitFieldNames ? '' : 'bitrate', $pb.PbFieldType.OU3)
     ..a<$core.int>(4, _omitFieldNames ? '' : 'framerate', $pb.PbFieldType.OU3)
-    ..aOM<$1.MapLocation>(5, _omitFieldNames ? '' : 'location', subBuilder: $1.MapLocation.create)
+    ..aOM<$0.MapLocation>(5, _omitFieldNames ? '' : 'location', subBuilder: $0.MapLocation.create)
     ..a<$core.List<$core.int>>(7, _omitFieldNames ? '' : 'groupId', $pb.PbFieldType.OY)
     ..hasRequiredFields = false
   ;
@@ -15537,15 +15537,15 @@ class AddCameraRTMP_Request extends $pb.GeneratedMessage {
   void clearFramerate() => clearField(4);
 
   @$pb.TagNumber(5)
-  $1.MapLocation get location => $_getN(4);
+  $0.MapLocation get location => $_getN(4);
   @$pb.TagNumber(5)
-  set location($1.MapLocation v) { setField(5, v); }
+  set location($0.MapLocation v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasLocation() => $_has(4);
   @$pb.TagNumber(5)
   void clearLocation() => clearField(5);
   @$pb.TagNumber(5)
-  $1.MapLocation ensureLocation() => $_ensure(4);
+  $0.MapLocation ensureLocation() => $_ensure(4);
 
   @$pb.TagNumber(7)
   $core.List<$core.int> get groupId => $_getN(5);
@@ -15560,7 +15560,7 @@ class AddCameraRTMP_Request extends $pb.GeneratedMessage {
 class AddCameraRTMP_Reply extends $pb.GeneratedMessage {
   factory AddCameraRTMP_Reply({
     $core.List<$core.int>? cameraId,
-    $1.Camera? camera,
+    $0.Camera? camera,
   }) {
     final $result = create();
     if (cameraId != null) {
@@ -15577,7 +15577,7 @@ class AddCameraRTMP_Reply extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddCameraRTMP.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'cameraId', $pb.PbFieldType.OY)
-    ..aOM<$1.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $1.Camera.create)
+    ..aOM<$0.Camera>(2, _omitFieldNames ? '' : 'camera', subBuilder: $0.Camera.create)
     ..hasRequiredFields = false
   ;
 
@@ -15612,15 +15612,15 @@ class AddCameraRTMP_Reply extends $pb.GeneratedMessage {
   void clearCameraId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.Camera get camera => $_getN(1);
+  $0.Camera get camera => $_getN(1);
   @$pb.TagNumber(2)
-  set camera($1.Camera v) { setField(2, v); }
+  set camera($0.Camera v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasCamera() => $_has(1);
   @$pb.TagNumber(2)
   void clearCamera() => clearField(2);
   @$pb.TagNumber(2)
-  $1.Camera ensureCamera() => $_ensure(1);
+  $0.Camera ensureCamera() => $_ensure(1);
 }
 
 class AddCameraRTMP extends $pb.GeneratedMessage {
@@ -15675,7 +15675,7 @@ class AddCameraRTMP extends $pb.GeneratedMessage {
 
 class ReceiveStatusCamera extends $pb.GeneratedMessage {
   factory ReceiveStatusCamera({
-    $core.Iterable<$1.Camera>? camera,
+    $core.Iterable<$0.Camera>? camera,
     $core.int? rECEIVESTATUSCAMERA,
   }) {
     final $result = create();
@@ -15692,7 +15692,7 @@ class ReceiveStatusCamera extends $pb.GeneratedMessage {
   factory ReceiveStatusCamera.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiveStatusCamera', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Camera>(1, _omitFieldNames ? '' : 'camera', $pb.PbFieldType.PM, subBuilder: $1.Camera.create)
+    ..pc<$0.Camera>(1, _omitFieldNames ? '' : 'camera', $pb.PbFieldType.PM, subBuilder: $0.Camera.create)
     ..a<$core.int>(1300, _omitFieldNames ? '' : 'RECEIVESTATUSCAMERA', $pb.PbFieldType.OU3, protoName: 'RECEIVE_STATUS_CAMERA')
     ..hasRequiredFields = false
   ;
@@ -15719,7 +15719,7 @@ class ReceiveStatusCamera extends $pb.GeneratedMessage {
   static ReceiveStatusCamera? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Camera> get camera => $_getList(0);
+  $core.List<$0.Camera> get camera => $_getList(0);
 
   @$pb.TagNumber(1300)
   $core.int get rECEIVESTATUSCAMERA => $_getIZ(1);
