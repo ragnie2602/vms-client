@@ -53,6 +53,7 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   @override
   Future<void> logout() async {
     await authenticateService.logOutSocket();
+    await authenticateService.logout();
   }
 
   @override

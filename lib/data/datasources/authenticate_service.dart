@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/models/response/authenticate_response.dart';
@@ -45,8 +46,9 @@ class AuthenticateService {
         data: request,
       );
 
+      await AppData.instance.save<String>(AppKeys.SP_ACCESS_TOKEN, response['accessToken']);
+
       return AuthenticateResponse.fromJson(response);
-            
     } catch (e) {
       rethrow;
     }
@@ -128,6 +130,11 @@ class AuthenticateService {
   Future<void> logOutSocket() async {
     await _socketApiClient.disconnect();
     AppData.instance.profile = null;
+  }
+
+  Future<void> logout() async {
+    final String token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN) ?? '';
+    await _httpClient.post(url: EndPoints.logout, data: null, token: token);
   }
 
   Future<void> register({

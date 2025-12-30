@@ -33,11 +33,12 @@ class ProtobufHttpClient {
     }
   }
 
-  post({required String url, required dynamic data}) async {
+  post({required String url, required dynamic data, String? token}) async {
     try {
       final response = await _dio.post(
         url,
         data: data,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200 && response.data != null) {
