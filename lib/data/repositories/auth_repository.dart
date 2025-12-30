@@ -12,8 +12,8 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   Future<void> connectSocket({
     required String host,
     required int port,
-    required List<int> uid,
-    required List<int> sessionId,
+    required String uid,
+    required String sessionId,
   }) async {
     await authenticateService.connectSocket(
       host: host,
@@ -45,9 +45,8 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
       account: username,
       sessionId: authReply.sessionId,
       uid: authReply.uid,
-      ssid: authReply.ssid,
-      host: authReply.webSockHost,
-      port: authReply.webSockPort,
+      host: authReply.websocketHost,
+      port: authReply.websocketPort,
     );
   }
 

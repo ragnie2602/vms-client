@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/utils/pretty_dio_logger.dart';
 
 class ProtobufHttpClient {
@@ -9,14 +10,15 @@ class ProtobufHttpClient {
   ProtobufHttpClient() {
     _dio = Dio(
       BaseOptions(
+        baseUrl: EnvService.apiBaseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
-        headers: {'Content-Type': 'application/octet-stream'},
+        headers: {'Content-Type': 'application/json'},
       ),
     );
 
     // Add interceptors for logging
-    if (!kReleaseMode) {
+    if (kDebugMode) {
       _dio.interceptors.add(
         PrettyDioLogger(
           requestHeader: true,
@@ -31,16 +33,15 @@ class ProtobufHttpClient {
     }
   }
 
-  Future<Uint8List> post({required String url, required Uint8List data}) async {
+  post({required String url, required dynamic data}) async {
     try {
-      final response = await _dio.post<List<int>>(
+      final response = await _dio.post(
         url,
         data: data,
-        options: Options(responseType: ResponseType.bytes, contentType: 'application/octet-stream'),
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        return Uint8List.fromList(response.data!);
+        return response.data;
       } else {
         throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
       }

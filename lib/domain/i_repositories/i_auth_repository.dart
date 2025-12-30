@@ -10,7 +10,7 @@ abstract class IAuthRepository {
   Future<void> connectSocket({
     required String host,
     required int port,
-    required List<int> uid,
-    required List<int> sessionId,
+    required String uid,
+    required String sessionId,
   });
 }

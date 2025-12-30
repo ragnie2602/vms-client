@@ -69,8 +69,8 @@ class SubscribeMultiWindowEventUseCase
             await authRepository.connectSocket(
               host: AppData.instance.profile?.host ?? '',
               port: AppData.instance.profile?.port ?? 0,
-              uid: AppData.instance.profile?.uid ?? [],
-              sessionId: AppData.instance.profile?.sessionId ?? [],
+              uid: AppData.instance.profile?.uid ?? '',
+              sessionId: AppData.instance.profile?.sessionId ?? '',
             );
             stream.add(
               SubscribeMultiWindowEventOutput(const MWEProfileReady()),

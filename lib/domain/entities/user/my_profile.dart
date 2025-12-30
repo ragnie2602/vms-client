@@ -6,13 +6,12 @@ class MyProfile {
   final String account;
   final bool addCamDenied;
   final bool changePassDenied;
-  final List<int> uid;
-  final List<int> sessionId;
+  final String uid;
+  final String sessionId;
   final String email;
   final String tel;
   final String host;
   final int port;
-  final String ssid;
   final UserType userType;
 
   MyProfile({
@@ -27,7 +26,6 @@ class MyProfile {
     required this.tel,
     required this.host,
     required this.port,
-    required this.ssid,
     required this.userType,
   });
 
@@ -37,8 +35,8 @@ class MyProfile {
     String? account,
     bool? addCamDenied,
     bool? changePassDenied,
-    List<int>? uid,
-    List<int>? sessionId,
+    String? uid,
+    String? sessionId,
     String? email,
     String? tel,
     String? host,
@@ -58,7 +56,6 @@ class MyProfile {
       tel: tel ?? this.tel,
       host: host ?? this.host,
       port: port ?? this.port,
-      ssid: ssid ?? this.ssid,
       userType: userType ?? this.userType,
     );
   }
@@ -70,13 +67,12 @@ class MyProfile {
       account: json['account'],
       addCamDenied: json['addCamDenied'],
       changePassDenied: json['changePassDenied'],
-      uid: List<int>.from(json['uid']),
-      sessionId: List<int>.from(json['sessionId']),
+      uid: json['uid'],
+      sessionId: json['sessionId'],
       email: json['email'],
       tel: json['tel'],
       host: json['host'],
       port: json['port'],
-      ssid: json['ssid'],
       userType: UserType.fromValue(json['userType']),
     );
   }
@@ -94,7 +90,6 @@ class MyProfile {
       'tel': tel,
       'host': host,
       'port': port,
-      'ssid': ssid,
       'userType': userType.value,
     };
   }

@@ -217,8 +217,8 @@ class SocketApiClient extends BaseApiClient {
         Packet(
           id: RELOGIN_ID,
           data: Login_Request(
-            uid: AppData.instance.profile!.uid,
-            sessionId: AppData.instance.profile!.sessionId,
+            uid: AppData.instance.profile?.uid,
+            sessionId: AppData.instance.profile?.sessionId,
           ).writeToBuffer(),
           type: PacketType.login,
         ).writeToBuffer(),
