@@ -38,7 +38,7 @@ class _UserProfileState extends State<UserProfile> {
       listener: (context, state) {
         if (state.isSignOut) {
           if (Navigator.canPop(context)) Navigator.pop(context);
-          context.read<AppBloc>().add(SignOut());
+          // context.read<AppBloc>().add(SignOut());
           context.goNamed(Routes.login.name);
         }
         // Rebuild widget when profile is updated
