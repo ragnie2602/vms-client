@@ -1,6 +1,9 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/constants/endpoints.dart';
+import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.profile.pb.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
 import '../proto/models/comm.command1.pb.dart';
 import '../proto/models/comm.command2.pb.dart';
@@ -9,27 +12,16 @@ import 'socket_api_client.dart';
 
 class UserService {
   final SocketApiClient socketClient;
+  final HttpClient httpClient;
 
-  const UserService(this.socketClient);
+  const UserService(this.socketClient, this.httpClient);
 
-  Future<List<User>> getListUser() async {
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: ListUser_Request().writeToBuffer(),
-          type: PacketType.listUser,
-        ),
-      ),
-    );
-
-    return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(),
-      (buffer) => ListUser_Reply.fromBuffer(buffer).users,
-    );
+  Future<List<UserEntity>> getListUser() async {
+    final List<dynamic> response = await httpClient.get(EndPoints.getListUser);
+    return response.map((e) => UserEntity.fromJson(e)).toList();
   }
 
-  Future<User> addUser({
+  Future<UserEntity> addUser({
     required String account,
     required String password,
     String? tel,
@@ -37,53 +29,39 @@ class UserService {
     String? address,
     String? desc,
     String? fullName,
-    bool? isAmin,
+    bool? isAdmin,
     bool? changePassDenied,
     bool? addCamDenied,
   }) async {
-    final addUserRequest = AddUser_Request();
-    if (account != null) {
-      addUserRequest.account = account;
-    }
-    if (password != null) {
-      addUserRequest.password = password;
-    }
-    addUserRequest.tel = tel ?? "";
-    addUserRequest.email = email ?? "";
-    addUserRequest.desc = desc ?? "";
-    addUserRequest.userName = fullName ?? "";
-    addUserRequest.address = address ?? "";
-    addUserRequest.isAdmin = isAmin ?? false;
-    addUserRequest.changePassDenied = changePassDenied ?? false;
-    addUserRequest.addCamDenied = addCamDenied ?? false;
+    final requestData = {
+      "username": account,
+      "password": password,
+      "email": email,
+      "phone": tel,
+      "fullname": fullName,
+      "tenantId": 1,
+    };
+    if (isAdmin == true) {
+      requestData["isAdmin"] = true;
+    } else {
+      List<String> _permissions = [];
+      if (changePassDenied != false) _permissions.add("auth.change-password");
+      if (addCamDenied != false) _permissions.add("camera.create");
 
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: addUserRequest.writeToBuffer(),
-          type: PacketType.addUser,
-        ),
-      ),
-    );
+      requestData["permissions"] = _permissions;
+    }
 
-    return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        AddUser_Error.valueOf,
-        PacketType.addUser.value,
-      ),
-      (buffer) => AddUser_Reply.fromBuffer(buffer).user,
+    final response = await httpClient.post(
+      url: EndPoints.addUser,
+      data: requestData,
+      successCode: [201],
     );
+    return UserEntity.fromJson(response);
   }
 
-  Future<List<int>> deleteUser({
-    required List<int> userId,
-    String? rtspUrl,
-  }) async {
+  Future<List<int>> deleteUser({required List<int> userId, String? rtspUrl}) async {
     final deleteUserRequest = DeleteUser_Request();
-    if (userId != null) {
-      deleteUserRequest.userId = userId;
-    }
+    deleteUserRequest.userId = userId;
 
     final responseBuffer = await socketClient.send<List<int>>(
       SocketRequestPayload(
@@ -96,22 +74,15 @@ class UserService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        DeleteUser_Error.valueOf,
-        PacketType.deleteUser.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(DeleteUser_Error.valueOf, PacketType.deleteUser.value),
       (buffer) => DeleteUser_Reply.fromBuffer(buffer).userId,
     );
   }
 
-  Future<bool> resetPassword({
-    required List<int> userId,
-    String? newPassword,
-  }) async {
+  Future<bool> resetPassword({required List<int> userId, String? newPassword}) async {
     final resetPasswordRequest = ResetPassword_Request();
-    if (userId != null) {
-      resetPasswordRequest.userId = userId;
-    }
+    resetPasswordRequest.userId = userId;
     if (newPassword != null) {
       resetPasswordRequest.newPassword = newPassword;
     }
@@ -155,15 +126,9 @@ class UserService {
     bool? addCamDenied,
   }) async {
     final editUserRequest = EditUser_Request();
-    if (account != null) {
-      editUserRequest.account = account;
-    }
-    if (userId != null) {
-      editUserRequest.userId = userId;
-    }
-    if (password != null) {
-      editUserRequest.password = password;
-    }
+    editUserRequest.account = account;
+    editUserRequest.userId = userId;
+    editUserRequest.password = password;
     editUserRequest.tel = tel ?? "";
     editUserRequest.email = email ?? "";
     editUserRequest.desc = desc ?? "";
@@ -184,10 +149,8 @@ class UserService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        EditUser_Error.valueOf,
-        PacketType.editUser.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(EditUser_Error.valueOf, PacketType.editUser.value),
       (buffer) => EditUser_Reply.fromBuffer(buffer).user,
     );
   }
@@ -213,7 +176,10 @@ class UserService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(ChangePassword_Error.valueOf, PacketType.changePassword.value),
+      (failure) => throw failure.toMessageFailure(
+        ChangePassword_Error.valueOf,
+        PacketType.changePassword.value,
+      ),
       (buffer) => true,
     );
   }

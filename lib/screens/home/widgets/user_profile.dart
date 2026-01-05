@@ -176,7 +176,7 @@ class _UserProfileState extends State<UserProfile> {
             ),
             _buildMenuItem(
               onTap: () {
-                if (AppData.instance.profile?.changePassDenied ?? false) {
+                if (AppData.instance.profile?.canChangePassword ?? true) {
                   ToastUtil.toastFail(
                     context: context,
                     title: Text(

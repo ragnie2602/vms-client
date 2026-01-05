@@ -1,7 +1,9 @@
+import 'package:vms_flutter_client/data/models/response/authenticate_response.dart';
+
 import '../entities/authentication/authentication.dart';
 
 abstract class IAuthRepository {
-  Future<Authentication> authenticate(String server, String username, String password);
+  Future<AuthenticateResponse> authenticate(String server, String username, String password);
   Future<bool> login(Authentication authentication);
   Future<void> logout();
   Future<bool> isLoggedIn();

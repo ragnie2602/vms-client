@@ -9,21 +9,19 @@ import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/models/response/authenticate_response.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
-import 'package:vms_flutter_client/domain/entities/user/my_profile.dart';
-import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 import 'package:vms_flutter_client/screens/login/login_screen.dart';
 
 import '../models/packet.dart';
 import '../proto/models/comm.profile.pb.dart';
-import 'protobuf_http_client.dart';
+import 'http_client.dart';
 import 'socket_api_client.dart';
 
 class AuthenticateService {
-  final ProtobufHttpClient _httpClient;
+  final HttpClient _httpClient;
   final SocketApiClient _socketApiClient;
 
   AuthenticateService({
-    required ProtobufHttpClient httpClient,
+    required HttpClient httpClient,
     required SocketApiClient socketApiClient,
   }) : _httpClient = httpClient,
        _socketApiClient = socketApiClient;
@@ -47,7 +45,7 @@ class AuthenticateService {
       );
 
       await AppData.instance.save<String>(AppKeys.SP_ACCESS_TOKEN, response['accessToken']);
-
+      
       return AuthenticateResponse.fromJson(response);
     } catch (e) {
       rethrow;
@@ -103,21 +101,6 @@ class AuthenticateService {
           Logger.log("Logged in as: ${loginReply.profile.account}");
           loginStatus.text += "Đang đăng thành công\n";
 
-          AppData.instance.profile = MyProfile(
-            avatar: loginReply.baseImageUrl,
-            displayName: loginReply.profile.displayName,
-            account: loginReply.profile.account,
-            addCamDenied: loginReply.profile.addCamDenied,
-            changePassDenied: loginReply.profile.changePassDenied,
-            uid: data.uid,
-            sessionId: data.sessionId,
-            email: loginReply.profile.email,
-            tel: loginReply.profile.tel,
-            host: data.host,
-            port: data.port,
-            userType: UserType.fromValue(loginReply.profile.userType.value),
-          );
-
           return true;
         },
       );
@@ -133,8 +116,7 @@ class AuthenticateService {
   }
 
   Future<void> logout() async {
-    final String token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN) ?? '';
-    await _httpClient.post(url: EndPoints.logout, data: null, token: token);
+    await _httpClient.post(url: EndPoints.logout, data: null);
   }
 
   Future<void> register({

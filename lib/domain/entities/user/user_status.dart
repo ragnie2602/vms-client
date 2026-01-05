@@ -1,13 +1,13 @@
 enum UserStatus {
-  inactive(0),
-  active(1),
-  agencreate(2);
+  inactive,
+  active,
+  suspend,
+  lock;
 
-  final int value;
-  const UserStatus(this.value);
-  static UserStatus fromValue(int value) {
+  const UserStatus();
+  static UserStatus fromValue(String name) {
     return UserStatus.values.firstWhere(
-      (type) => type.value == value,
+      (status) => status.name == name,
       orElse: () => UserStatus.inactive,
     );
   }

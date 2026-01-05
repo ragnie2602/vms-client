@@ -1,13 +1,12 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/user_service.dart';
-import 'package:vms_flutter_client/data/mappers/user_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_status.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
 
 import 'base_repository.dart';
 
-class UserManagementRepository extends BaseRepository
-    implements IUserManagementRepository {
+class UserManagementRepository extends BaseRepository implements IUserManagementRepository {
   final UserService service;
 
   const UserManagementRepository(this.service);
@@ -16,7 +15,7 @@ class UserManagementRepository extends BaseRepository
   Future<Either<Failure, List<UserEntity>>> listUser() async {
     return await catchError<List<UserEntity>>(() async {
       final groups = await service.getListUser();
-      return Right(groups.map((e) => e.toDomain()).toList());
+      return Right(groups);
     });
   }
 
@@ -33,29 +32,26 @@ class UserManagementRepository extends BaseRepository
     bool? changePassDenied,
     bool? addCamDenied,
   }) async {
-    {
-      return await catchError<UserEntity>(() async {
-        final groups = await service.addUser(
-          account: account,
-          password: password,
-          tel: tel,
-          address: address,
-          email: email,
-          desc: desc,
-          fullName: fullName,
-          isAmin: isAmin,
-          changePassDenied: changePassDenied,
-          addCamDenied: addCamDenied,
-        );
-        return Right(groups.toDomain());
-      });
-    }
+    return await catchError<UserEntity>(() async {
+      final user = await service.addUser(
+        account: account,
+        password: password,
+        tel: tel,
+        address: address,
+        email: email,
+        desc: desc,
+        fullName: fullName,
+        isAdmin: isAmin,
+        changePassDenied: changePassDenied,
+        addCamDenied: addCamDenied,
+      );
+
+      return Right(user);
+    });
   }
 
   @override
-  Future<Either<Failure, List<int>>> deleteUser({
-    required List<int> userId,
-  }) async {
+  Future<Either<Failure, List<int>>> deleteUser({required List<int> userId}) async {
     return await catchError<List<int>>(() async {
       final groups = await service.deleteUser(userId: userId);
       return Right(groups.toList());
@@ -68,10 +64,7 @@ class UserManagementRepository extends BaseRepository
     required String newPassword,
   }) async {
     return await catchError<bool>(() async {
-      final value = await service.resetPassword(
-        userId: userId,
-        newPassword: newPassword,
-      );
+      final value = await service.resetPassword(userId: userId, newPassword: newPassword);
       return Right(value);
     });
   }
@@ -104,7 +97,22 @@ class UserManagementRepository extends BaseRepository
         changePassDenied: changePassDenied,
         addCamDenied: addCamDenied,
       );
-      return Right(groups.toDomain());
+      return Right(
+        UserEntity(
+          id: DateTime.now().millisecondsSinceEpoch ~/ 1000, // Mock ID từ timestamp
+          username: account,
+          status: UserStatus.active,
+          userType: 'tenant_user',
+          tenantId: 1,
+          tenantName: 'Default Tenant',
+          fullname: fullName ?? account,
+          email: email ?? '',
+          phone: tel ?? '',
+          description: desc,
+          type: null,
+          permissions: isAmin == true ? ['ADMIN'] : ['USER'],
+        ),
+      );
     });
   }
 

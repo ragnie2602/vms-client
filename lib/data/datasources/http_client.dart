@@ -1,13 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/utils/pretty_dio_logger.dart';
 
-class ProtobufHttpClient {
+class HttpClient {
   late final Dio _dio;
   Dio get dio => _dio;
 
-  ProtobufHttpClient() {
+  HttpClient() {
     _dio = Dio(
       BaseOptions(
         baseUrl: EnvService.apiBaseUrl,
@@ -33,15 +35,37 @@ class ProtobufHttpClient {
     }
   }
 
-  post({required String url, required dynamic data, String? token}) async {
+  get(String url, {Map<String, dynamic>? queryParameters}) async {
     try {
+      final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+      final response = await _dio.get(
+        url,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+        queryParameters: queryParameters,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data;
+      } else {
+        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
+      }
+    } on DioException catch (e) {
+      throw Exception('Network error: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
+
+  post({required String url, required dynamic data, List<int>? successCode}) async {
+    try {
+      final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
       final response = await _dio.post(
         url,
         data: data,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      if (response.statusCode == 200 && response.data != null) {
+      if ((successCode ?? [200]).contains(response.statusCode) && response.data != null) {
         return response.data;
       } else {
         throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');

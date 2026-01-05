@@ -1,5 +1,8 @@
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
+import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
+import 'package:vms_flutter_client/domain/entities/user/my_profile.dart';
+import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 
 import '../../i_repositories/i_auth_repository.dart';
 import '../future_use_case.dart';
@@ -19,12 +22,35 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
         input.username,
         input.password,
       );
-      final status = await authRepository.login(authentication);
+      final status = await authRepository.login(
+        Authentication(
+          account: input.username,
+          sessionId: authentication.sessionId,
+          uid: authentication.uid,
+          host: "ipcam.vivas.vn",
+          port: 50012,
+        ),
+      );
 
       if (status) {
         await AppData.instance.save<String>(AppKeys.SP_USERNAME_KEY, input.username);
         await AppData.instance.save<String>(AppKeys.SP_PASSWORD_KEY, input.password);
         await AppData.instance.save<String>(AppKeys.SP_SERVER_KEY, input.server);
+
+        AppData.instance.profile = MyProfile(
+          avatar: '',
+          displayName: authentication.fullname,
+          account: input.username,
+          uid: authentication.uid,
+          sessionId: authentication.sessionId,
+          email: authentication.email,
+          tel: authentication.phone,
+          permissions: authentication.permissions,
+          host: "ipcam.vivas.vn",
+          port: 50012,
+          userType: UserType.admin,
+        );
+
         return LoginOutput(account: input.username, isSuccess: true);
       } else {
         return LoginOutput(

@@ -21,10 +21,16 @@ User _$UserFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$User {
-  String get id => throw _privateConstructorUsedError;
+  int get id => throw _privateConstructorUsedError;
+  String get username => throw _privateConstructorUsedError;
+  UserStatus get status => throw _privateConstructorUsedError;
+  String get userType => throw _privateConstructorUsedError;
+  String get createAt => throw _privateConstructorUsedError;
+  String get lastUpdate => throw _privateConstructorUsedError;
+  String get desc => throw _privateConstructorUsedError;
+  String get fullname => throw _privateConstructorUsedError;
+  String get phone => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  String get token => throw _privateConstructorUsedError;
 
   /// Serializes this User to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -40,7 +46,18 @@ abstract class $UserCopyWith<$Res> {
   factory $UserCopyWith(User value, $Res Function(User) then) =
       _$UserCopyWithImpl<$Res, User>;
   @useResult
-  $Res call({String id, String email, String name, String token});
+  $Res call({
+    int id,
+    String username,
+    UserStatus status,
+    String userType,
+    String createAt,
+    String lastUpdate,
+    String desc,
+    String fullname,
+    String phone,
+    String email,
+  });
 }
 
 /// @nodoc
@@ -59,27 +76,57 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
   @override
   $Res call({
     Object? id = null,
+    Object? username = null,
+    Object? status = null,
+    Object? userType = null,
+    Object? createAt = null,
+    Object? lastUpdate = null,
+    Object? desc = null,
+    Object? fullname = null,
+    Object? phone = null,
     Object? email = null,
-    Object? name = null,
-    Object? token = null,
   }) {
     return _then(
       _value.copyWith(
             id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
+                      as int,
+            username: null == username
+                ? _value.username
+                : username // ignore: cast_nullable_to_non_nullable
+                      as String,
+            status: null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as UserStatus,
+            userType: null == userType
+                ? _value.userType
+                : userType // ignore: cast_nullable_to_non_nullable
+                      as String,
+            createAt: null == createAt
+                ? _value.createAt
+                : createAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+            lastUpdate: null == lastUpdate
+                ? _value.lastUpdate
+                : lastUpdate // ignore: cast_nullable_to_non_nullable
+                      as String,
+            desc: null == desc
+                ? _value.desc
+                : desc // ignore: cast_nullable_to_non_nullable
+                      as String,
+            fullname: null == fullname
+                ? _value.fullname
+                : fullname // ignore: cast_nullable_to_non_nullable
+                      as String,
+            phone: null == phone
+                ? _value.phone
+                : phone // ignore: cast_nullable_to_non_nullable
                       as String,
             email: null == email
                 ? _value.email
                 : email // ignore: cast_nullable_to_non_nullable
-                      as String,
-            name: null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                      as String,
-            token: null == token
-                ? _value.token
-                : token // ignore: cast_nullable_to_non_nullable
                       as String,
           )
           as $Val,
@@ -95,7 +142,18 @@ abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
   ) = __$$UserImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String email, String name, String token});
+  $Res call({
+    int id,
+    String username,
+    UserStatus status,
+    String userType,
+    String createAt,
+    String lastUpdate,
+    String desc,
+    String fullname,
+    String phone,
+    String email,
+  });
 }
 
 /// @nodoc
@@ -111,27 +169,57 @@ class __$$UserImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? username = null,
+    Object? status = null,
+    Object? userType = null,
+    Object? createAt = null,
+    Object? lastUpdate = null,
+    Object? desc = null,
+    Object? fullname = null,
+    Object? phone = null,
     Object? email = null,
-    Object? name = null,
-    Object? token = null,
   }) {
     return _then(
       _$UserImpl(
         id: null == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
+                  as int,
+        username: null == username
+            ? _value.username
+            : username // ignore: cast_nullable_to_non_nullable
+                  as String,
+        status: null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as UserStatus,
+        userType: null == userType
+            ? _value.userType
+            : userType // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createAt: null == createAt
+            ? _value.createAt
+            : createAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+        lastUpdate: null == lastUpdate
+            ? _value.lastUpdate
+            : lastUpdate // ignore: cast_nullable_to_non_nullable
+                  as String,
+        desc: null == desc
+            ? _value.desc
+            : desc // ignore: cast_nullable_to_non_nullable
+                  as String,
+        fullname: null == fullname
+            ? _value.fullname
+            : fullname // ignore: cast_nullable_to_non_nullable
+                  as String,
+        phone: null == phone
+            ? _value.phone
+            : phone // ignore: cast_nullable_to_non_nullable
                   as String,
         email: null == email
             ? _value.email
             : email // ignore: cast_nullable_to_non_nullable
-                  as String,
-        name: null == name
-            ? _value.name
-            : name // ignore: cast_nullable_to_non_nullable
-                  as String,
-        token: null == token
-            ? _value.token
-            : token // ignore: cast_nullable_to_non_nullable
                   as String,
       ),
     );
@@ -143,26 +231,44 @@ class __$$UserImplCopyWithImpl<$Res>
 class _$UserImpl implements _User {
   const _$UserImpl({
     required this.id,
+    required this.username,
+    required this.status,
+    required this.userType,
+    required this.createAt,
+    required this.lastUpdate,
+    required this.desc,
+    required this.fullname,
+    required this.phone,
     required this.email,
-    required this.name,
-    required this.token,
   });
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserImplFromJson(json);
 
   @override
-  final String id;
+  final int id;
+  @override
+  final String username;
+  @override
+  final UserStatus status;
+  @override
+  final String userType;
+  @override
+  final String createAt;
+  @override
+  final String lastUpdate;
+  @override
+  final String desc;
+  @override
+  final String fullname;
+  @override
+  final String phone;
   @override
   final String email;
-  @override
-  final String name;
-  @override
-  final String token;
 
   @override
   String toString() {
-    return 'User(id: $id, email: $email, name: $name, token: $token)';
+    return 'User(id: $id, username: $username, status: $status, userType: $userType, createAt: $createAt, lastUpdate: $lastUpdate, desc: $desc, fullname: $fullname, phone: $phone, email: $email)';
   }
 
   @override
@@ -171,14 +277,37 @@ class _$UserImpl implements _User {
         (other.runtimeType == runtimeType &&
             other is _$UserImpl &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.token, token) || other.token == token));
+            (identical(other.username, username) ||
+                other.username == username) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.userType, userType) ||
+                other.userType == userType) &&
+            (identical(other.createAt, createAt) ||
+                other.createAt == createAt) &&
+            (identical(other.lastUpdate, lastUpdate) ||
+                other.lastUpdate == lastUpdate) &&
+            (identical(other.desc, desc) || other.desc == desc) &&
+            (identical(other.fullname, fullname) ||
+                other.fullname == fullname) &&
+            (identical(other.phone, phone) || other.phone == phone) &&
+            (identical(other.email, email) || other.email == email));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, email, name, token);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    username,
+    status,
+    userType,
+    createAt,
+    lastUpdate,
+    desc,
+    fullname,
+    phone,
+    email,
+  );
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
@@ -196,22 +325,40 @@ class _$UserImpl implements _User {
 
 abstract class _User implements User {
   const factory _User({
-    required final String id,
+    required final int id,
+    required final String username,
+    required final UserStatus status,
+    required final String userType,
+    required final String createAt,
+    required final String lastUpdate,
+    required final String desc,
+    required final String fullname,
+    required final String phone,
     required final String email,
-    required final String name,
-    required final String token,
   }) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
 
   @override
-  String get id;
+  int get id;
+  @override
+  String get username;
+  @override
+  UserStatus get status;
+  @override
+  String get userType;
+  @override
+  String get createAt;
+  @override
+  String get lastUpdate;
+  @override
+  String get desc;
+  @override
+  String get fullname;
+  @override
+  String get phone;
   @override
   String get email;
-  @override
-  String get name;
-  @override
-  String get token;
 
   /// Create a copy of User
   /// with the given fields replaced by the non-null parameter values.
