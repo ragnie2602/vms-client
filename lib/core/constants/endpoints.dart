@@ -5,5 +5,7 @@ class EndPoints {
 
   // User management
   static const String addUser = '/api/users';
+  static const String deleteUser = '/api/users';
+  static const String editUser = '/api/users';
   static const String getListUser = '/api/users';
 }

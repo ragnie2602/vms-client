@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 
 class MyProfile {
+  final int id;
   final String avatar;
   final String displayName;
   final String account;
@@ -14,6 +15,7 @@ class MyProfile {
   final UserType userType;
 
   MyProfile({
+    required this.id,
     required this.avatar,
     required this.displayName,
     required this.account,
@@ -28,6 +30,7 @@ class MyProfile {
   });
 
   MyProfile copyWith({
+    int? id,
     String? avatar,
     String? displayName,
     String? account,
@@ -44,6 +47,7 @@ class MyProfile {
     UserType? userType,
   }) {
     return MyProfile(
+      id: id ?? this.id,
       avatar: avatar ?? this.avatar,
       displayName: displayName ?? this.displayName,
       account: account ?? this.account,
@@ -60,6 +64,7 @@ class MyProfile {
 
   static MyProfile fromJson(Map<dynamic, dynamic> json) {
     return MyProfile(
+      id: json['id'],
       avatar: json['avatar'],
       displayName: json['displayName'],
       account: json['account'],
@@ -76,6 +81,7 @@ class MyProfile {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'avatar': avatar,
       'displayName': displayName,
       'account': account,

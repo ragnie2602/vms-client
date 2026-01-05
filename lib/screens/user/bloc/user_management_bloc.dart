@@ -85,7 +85,6 @@ class UserManagementBloc extends BaseBloc<UserManagementEvent, UserManagementSta
     final groups = await userManagermentRepository.editUser(
       userId: event.userId,
       account: event.account,
-      password: event.password,
       tel: event.tel,
       email: event.email,
       address: event.address,

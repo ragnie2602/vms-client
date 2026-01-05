@@ -7,7 +7,6 @@ import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
 import '../proto/models/comm.command1.pb.dart';
 import '../proto/models/comm.command2.pb.dart';
-import '../proto/models/comm.model.pb.dart';
 import 'socket_api_client.dart';
 
 class UserService {
@@ -45,8 +44,8 @@ class UserService {
       requestData["isAdmin"] = true;
     } else {
       List<String> _permissions = [];
-      if (changePassDenied != false) _permissions.add("auth.change-password");
-      if (addCamDenied != false) _permissions.add("camera.create");
+      if (changePassDenied != true) _permissions.add("auth.change-password");
+      if (addCamDenied != true) _permissions.add("camera.create");
 
       requestData["permissions"] = _permissions;
     }
@@ -59,25 +58,9 @@ class UserService {
     return UserEntity.fromJson(response);
   }
 
-  Future<List<int>> deleteUser({required List<int> userId, String? rtspUrl}) async {
-    final deleteUserRequest = DeleteUser_Request();
-    deleteUserRequest.userId = userId;
-
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: deleteUserRequest.writeToBuffer(),
-          type: PacketType.deleteUser,
-        ),
-      ),
-    );
-
-    return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(DeleteUser_Error.valueOf, PacketType.deleteUser.value),
-      (buffer) => DeleteUser_Reply.fromBuffer(buffer).userId,
-    );
+  Future<int> deleteUser({required int userId, String? rtspUrl}) async {
+    await httpClient.delete(url: '${EndPoints.deleteUser}/$userId', successCode: [204]);
+    return userId;
   }
 
   Future<bool> resetPassword({required List<int> userId, String? newPassword}) async {
@@ -112,47 +95,41 @@ class UserService {
     // return true;
   }
 
-  Future<User> editUser({
-    required List<int> userId,
+  Future<UserEntity> editUser({
+    required int userId,
     required String account,
-    required String password,
     String? tel,
     String? email,
     String? address,
     String? desc,
     String? fullName,
-    bool? isAmin,
+    bool? isAdmin,
     bool? changePassDenied,
     bool? addCamDenied,
   }) async {
-    final editUserRequest = EditUser_Request();
-    editUserRequest.account = account;
-    editUserRequest.userId = userId;
-    editUserRequest.password = password;
-    editUserRequest.tel = tel ?? "";
-    editUserRequest.email = email ?? "";
-    editUserRequest.desc = desc ?? "";
-    editUserRequest.userName = fullName ?? "";
-    editUserRequest.address = address ?? "";
-    editUserRequest.isAdmin = isAmin ?? false;
-    editUserRequest.changePassDenied = changePassDenied ?? false;
-    editUserRequest.addCamDenied = addCamDenied ?? false;
+    final Map<String, dynamic> requestData = {
+      "username": account,
+      "email": email,
+      "phone": tel,
+      "fullname": fullName,
+    };
+    if (isAdmin == true) {
+      requestData["isAdmin"] = true;
+    } else {
+      List<String> _permissions = [];
+      if (changePassDenied != true) _permissions.add("auth.change-password");
+      if (addCamDenied != true) _permissions.add("camera.create");
 
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: editUserRequest.writeToBuffer(),
-          type: PacketType.editUser,
-        ),
-      ),
+      requestData["permissions"] = _permissions;
+    }
+
+    final response = await httpClient.put(
+      url: '${EndPoints.editUser}/$userId',
+      data: requestData,
+      successCode: [200],
     );
 
-    return responseBuffer.fold(
-      (failure) =>
-          throw failure.toMessageFailure(EditUser_Error.valueOf, PacketType.editUser.value),
-      (buffer) => EditUser_Reply.fromBuffer(buffer).user,
-    );
+    return UserEntity.fromJson(response);
   }
 
   Future<bool> changeMyPassword({

@@ -38,7 +38,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     context.read<UserManagementBloc>().add(GetListUserEvent());
   }
 
-  void _onDeleteUser({required List<int> userId}) {
+  void _onDeleteUser({required int userId}) {
     context.read<UserManagementBloc>().add(DeleteUserEvent(userId: userId, uidStr: ''));
   }
 
@@ -71,9 +71,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   }
 
   void _editUser({
-    required List<int> userId,
+    required int userId,
     required String account,
-    required String password,
     String? email,
     String? tel,
     String? address,
@@ -92,7 +91,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         address: address,
         isAdmin: isAdmin,
         desc: desc,
-        password: password,
         changePassDenied: changePassDenied,
         addCamDenied: addCamDenied,
         fullName: fullName,
@@ -270,7 +268,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         showDialogRemoveCameraFromGroup(
                                           context,
                                           onConfirm: () {
-                                            _onDeleteUser(userId: [state.users![index].id]);
+                                            _onDeleteUser(userId: state.users![index].id);
                                           },
                                           title:
                                               "Các camera được thêm bởi tài khoản này cũng sẽ bị xóa. \n Bạn có chắc chắn muốn xóa tài khoản?",
@@ -287,12 +285,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                                   : false,
                                               changePassDenied: !payload.canChangePassword,
                                               addCamDenied: !payload.canAddCamera,
-                                              password: '',
                                               email: payload.email,
                                               tel: payload.phoneNumber,
                                               desc: payload.description,
                                               fullName: payload.fullName,
-                                              userId: [state.users![index].id],
+                                              userId: state.users![index].id,
                                               account: payload.username,
                                             );
                                           },
