@@ -7,19 +7,10 @@ class TagEntity {
   final Color color;
   bool isSelected;
 
-  TagEntity({
-    required this.id,
-    required this.name,
-    required this.color,
-    this.isSelected =false,
-  });
+  TagEntity({required this.id, required this.name, required this.color, this.isSelected = false});
 
   TagEntity copyWith({List<int>? id, String? name, Color? color}) {
-    return TagEntity(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      color: color ?? this.color,
-    );
+    return TagEntity(id: id ?? this.id, name: name ?? this.name, color: color ?? this.color);
   }
 
   @override
@@ -27,7 +18,9 @@ class TagEntity {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is TagEntity && id.equals(other.id));
+    return identical(this, other) || (other is TagEntity && id.equals(other.id));
   }
+
+  @override
+  String toString() => name;
 }

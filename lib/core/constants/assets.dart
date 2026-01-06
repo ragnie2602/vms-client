@@ -19,6 +19,7 @@ class AppAssets {
   static const tabCameras = '$_svgPath/tab_camera.svg';
   static const tabSettings = '$_svgPath/settings.svg';
   static const tabMap = '$_svgPath/ic_map.svg';
+  static const tabEvents = '$_svgPath/tab_events.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
   static const tabSystemConfig = '$_svgPath/tab_setting.svg';
 
@@ -76,6 +77,8 @@ class AppAssets {
   static const icMode6x6Active = '$_svgPath/mode_6x6_active.svg';
   static const icMenu = '$_svgPath/menu.svg';
   static const icVideoOn = '$_svgPath/video_on.svg';
+  static const icId = '$_svgPath/id.svg';
+  static const icDirection = '$_svgPath/direction.svg';
   static const icFastBackward = '$_svgPath/fast_backward.svg';
   static const icFastForward = '$_svgPath/fast_forward.svg';
   static const icPlay = '$_svgPath/play.svg';
@@ -87,6 +90,11 @@ class AppAssets {
   static const icDownload = '$_svgPath/download.svg';
   static const icCheck = '$_svgPath/check.svg';
   static const icNewWindow = '$_svgPath/ic_multi_window.svg';
+  static const icImage = '$_svgPath/ic_image.svg';
+  static const icTimeCircle = '$_svgPath/time_circle.svg';
+  static const icLocation2 = '$_svgPath/location.svg';
+  static const icAlertIntrution = '$_svgPath/alert_intrution.svg';
+  static const icCalendar = '$_svgPath/calendar.svg';
   // map
   static const icMarkerMap = '$_svgPath/ic_marker_map.svg';
   static const icPlus = '$_svgPath/plus.svg';
@@ -116,11 +124,18 @@ class AppAssets {
   static const iconCamera = '$_svgPath/ic_camera.svg';
   static const icMultiPlayback = '$_svgPath/ic_multi_playback.svg';
 
-
   static const icLogout = '$_svgPath/ic_logout.svg';
   static const icKey = '$_svgPath/ic_key.svg';
   static const icCameraMap = '$_svgPath/ic_camera_map.svg';
   static const icUserInfo = '$_svgPath/ic_user_info.svg';
+
+  // Behavior detection
+  static const icDangerousObjectDetection = '$_svgPath/ic_dangerous_object_detection.svg';
+  static const icFaceDetection = '$_svgPath/ic_face_detection.svg';
+  static const icIntrusionDetection = '$_svgPath/ic_intrusion_detection.svg';
+  static const icLineCrossingDetection = '$_svgPath/ic_line_crossing_detection.svg';
+  static const icLostObjectDetection = '$_svgPath/ic_lost_object_detection.svg';
+  static const icMotionDetection = '$_svgPath/ic_motion_detection.svg';
 
   // Mobile
   static const icCamera01 = '$_svgPath/ic_camera-01.svg';
@@ -151,7 +166,7 @@ class AppAssets {
   static const icEyeClosed = '$_svgPath/ic_eye_closed.svg';
   static const icEyeOpened = '$_svgPath/ic_eye_opened.svg';
 
-   static const icUpload = '$_svgPath/ic_upload.svg';
+  static const icUpload = '$_svgPath/ic_upload.svg';
 
   static const icSpeed = '$_svgPath/ic_speed.svg';
 
