@@ -1,3 +1,4 @@
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
@@ -6,7 +7,6 @@ import 'package:vms_flutter_client/data/proto/models/comm.profile.pb.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
 import '../proto/models/comm.command1.pb.dart';
-import '../proto/models/comm.command2.pb.dart';
 import 'socket_api_client.dart';
 
 class UserService {
@@ -167,36 +167,11 @@ class UserService {
     String? tel,
     String? address,
   }) async {
-    final updateRequest = updateUserAddress_Request();
-    if (displayName != null) {
-      updateRequest.newDisplayName = displayName;
-    }
-    if (email != null) {
-      updateRequest.email = email;
-    }
-    if (tel != null) {
-      updateRequest.tel = tel;
-    }
-    if (address != null) {
-      updateRequest.newAddress = address;
-    }
-
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: updateRequest.writeToBuffer(),
-          type: PacketType.updateUserAddress,
-        ),
-      ),
+    await httpClient.post(
+      url: '${EndPoints.updateProfile}/${AppData.instance.profile?.uid}',
+      data: {'fullName': displayName, 'email': email, 'phone': tel},
     );
 
-    return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        updateUserAddress_Error.valueOf,
-        PacketType.updateUserAddress.value,
-      ),
-      (buffer) => true,
-    );
+    return true;
   }
 }
