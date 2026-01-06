@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
-import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart';
 
 class UploadApiClient {
@@ -33,12 +32,12 @@ class UploadApiClient {
       // uid
       write('--$boundary$crlf');
       write('Content-Disposition: form-data; name="uid"$crlf$crlf');
-      write('${base64Encode(profile.uid)}$crlf');
+      write('${profile.uid}$crlf');
 
       // sid
       write('--$boundary$crlf');
       write('Content-Disposition: form-data; name="sid"$crlf$crlf');
-      write('${base64Encode(profile.sessionId)}$crlf');
+      write('${profile.sessionId}$crlf');
 
       // request (⚠️ no Content-Type, no extra \r\n after binary)
       write('--$boundary$crlf');

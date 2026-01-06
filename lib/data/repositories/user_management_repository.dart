@@ -1,13 +1,11 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/user_service.dart';
-import 'package:vms_flutter_client/data/mappers/user_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_user_management_repository.dart';
 
 import 'base_repository.dart';
 
-class UserManagementRepository extends BaseRepository
-    implements IUserManagementRepository {
+class UserManagementRepository extends BaseRepository implements IUserManagementRepository {
   final UserService service;
 
   const UserManagementRepository(this.service);
@@ -16,7 +14,7 @@ class UserManagementRepository extends BaseRepository
   Future<Either<Failure, List<UserEntity>>> listUser() async {
     return await catchError<List<UserEntity>>(() async {
       final groups = await service.getListUser();
-      return Right(groups.map((e) => e.toDomain()).toList());
+      return Right(groups);
     });
   }
 
@@ -33,32 +31,29 @@ class UserManagementRepository extends BaseRepository
     bool? changePassDenied,
     bool? addCamDenied,
   }) async {
-    {
-      return await catchError<UserEntity>(() async {
-        final groups = await service.addUser(
-          account: account,
-          password: password,
-          tel: tel,
-          address: address,
-          email: email,
-          desc: desc,
-          fullName: fullName,
-          isAmin: isAmin,
-          changePassDenied: changePassDenied,
-          addCamDenied: addCamDenied,
-        );
-        return Right(groups.toDomain());
-      });
-    }
+    return await catchError<UserEntity>(() async {
+      final user = await service.addUser(
+        account: account,
+        password: password,
+        tel: tel,
+        address: address,
+        email: email,
+        desc: desc,
+        fullName: fullName,
+        isAdmin: isAmin,
+        changePassDenied: changePassDenied,
+        addCamDenied: addCamDenied,
+      );
+
+      return Right(user);
+    });
   }
 
   @override
-  Future<Either<Failure, List<int>>> deleteUser({
-    required List<int> userId,
-  }) async {
-    return await catchError<List<int>>(() async {
-      final groups = await service.deleteUser(userId: userId);
-      return Right(groups.toList());
+  Future<Either<Failure, int>> deleteUser({required int userId}) async {
+    return await catchError<int>(() async {
+      final deletedUserId = await service.deleteUser(userId: userId);
+      return Right(deletedUserId);
     });
   }
 
@@ -68,19 +63,15 @@ class UserManagementRepository extends BaseRepository
     required String newPassword,
   }) async {
     return await catchError<bool>(() async {
-      final value = await service.resetPassword(
-        userId: userId,
-        newPassword: newPassword,
-      );
+      final value = await service.resetPassword(userId: userId, newPassword: newPassword);
       return Right(value);
     });
   }
 
   @override
   Future<Either<Failure, UserEntity>> editUser({
-    required List<int> userId,
+    required int userId,
     required String account,
-    required String password,
     String? tel,
     String? email,
     String? address,
@@ -91,20 +82,19 @@ class UserManagementRepository extends BaseRepository
     bool? addCamDenied,
   }) async {
     return await catchError<UserEntity>(() async {
-      final groups = await service.editUser(
+      final user = await service.editUser(
         userId: userId,
         account: account,
-        password: password,
         tel: tel,
         address: address,
         email: email,
         desc: desc,
         fullName: fullName,
-        isAmin: isAmin,
+        isAdmin: isAmin,
         changePassDenied: changePassDenied,
         addCamDenied: addCamDenied,
       );
-      return Right(groups.toDomain());
+      return Right(user);
     });
   }
 

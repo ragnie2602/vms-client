@@ -15,35 +15,16 @@ class UpdateMyProfileUseCase extends FutureUseCase<UpdateMyProfileInput, UpdateM
       final current = AppData.instance.profile;
       final updated = input.updatedProfile;
 
-      // Only send changed fields to the API
-      String? displayName;
-      String? email;
-      String? tel;
-
-      if (current?.displayName != updated.displayName) {
-        displayName = updated.displayName;
-      }
-
-      if (current?.email != updated.email) {
-        email = updated.email;
-      }
-
-      if (current?.tel != updated.tel) {
-        tel = updated.tel;
-      }
-
-      // Only call API if there are changes
-      if (displayName == null && email == null && tel == null) {
-        return UpdateMyProfileOutput(
-          updatedProfile: current,
-          isSuccess: true,
-        );
+      if (current?.displayName == updated.displayName &&
+          current?.email == updated.email &&
+          current?.tel == updated.tel) {
+        return UpdateMyProfileOutput(updatedProfile: current, isSuccess: true);
       }
 
       final result = await userManagementRepository.updateMyProfile(
-        displayName: displayName,
-        email: email,
-        tel: tel,
+        displayName: updated.displayName,
+        email: updated.email,
+        tel: updated.tel,
       );
 
       return result.fold(
@@ -55,10 +36,7 @@ class UpdateMyProfileUseCase extends FutureUseCase<UpdateMyProfileInput, UpdateM
         (success) {
           // Update AppData with new profile
           AppData.instance.profile = updated;
-          return UpdateMyProfileOutput(
-            updatedProfile: updated,
-            isSuccess: true,
-          );
+          return UpdateMyProfileOutput(updatedProfile: updated, isSuccess: true);
         },
       );
     } catch (e) {

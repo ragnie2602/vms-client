@@ -32,7 +32,7 @@ class AddUserEvent extends UserManagementEvent {
 }
 
 class DeleteUserEvent extends UserManagementEvent {
-  final List<int> userId;
+  final int userId;
   final String uidStr;
   const DeleteUserEvent({required this.userId, required this.uidStr});
   @override
@@ -48,17 +48,17 @@ class ResetPassWordEvent extends UserManagementEvent {
 }
 
 class EditUserEvent extends UserManagementEvent {
-  final List<int> userId;
+  final int userId;
   final String account;
   final String? email;
   final String? tel;
   final String? address;
   final bool isAdmin;
   final String? desc;
-  final String password;
   final bool changePassDenied;
   final bool addCamDenied;
   final String? fullName;
+
   const EditUserEvent({
     required this.userId,
     required this.account,
@@ -67,7 +67,6 @@ class EditUserEvent extends UserManagementEvent {
     this.address,
     required this.isAdmin,
     this.desc,
-    required this.password,
     required this.changePassDenied,
     required this.addCamDenied,
     this.fullName,

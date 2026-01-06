@@ -58,7 +58,7 @@ class AddUserSuccess extends UserManagementState {
 }
 
 class DeleteUserSuccess extends UserManagementState {
-  final List<int>? userId;
+  final int? userId;
   const DeleteUserSuccess({required this.userId});
 
   @override

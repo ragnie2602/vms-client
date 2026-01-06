@@ -10,15 +10,12 @@ import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dar
 import 'package:vms_flutter_client/screens/user/bloc/user_management_event.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_state.dart';
 
-class UserManagementBloc
-    extends BaseBloc<UserManagementEvent, UserManagementState> {
+class UserManagementBloc extends BaseBloc<UserManagementEvent, UserManagementState> {
   List<UserEntity> listUser = [];
   final SearchUserUseCase searchUserUseCase;
   final IUserManagementRepository userManagermentRepository;
-  UserManagementBloc({
-    required this.userManagermentRepository,
-    required this.searchUserUseCase,
-  }) : super(const UserManagementState()) {
+  UserManagementBloc({required this.userManagermentRepository, required this.searchUserUseCase})
+    : super(const UserManagementState()) {
     on<GetListUserEvent>(_onGetListUser);
     on<AddUserEvent>(_onAddUser);
     on<DeleteUserEvent>(_onDeleteUser);
@@ -27,10 +24,7 @@ class UserManagementBloc
     on<SearchUserEvent>(_onSearch);
   }
 
-  FutureOr<void> _onGetListUser(
-    GetListUserEvent event,
-    Emitter<UserManagementState> emit,
-  ) async {
+  FutureOr<void> _onGetListUser(GetListUserEvent event, Emitter<UserManagementState> emit) async {
     emit(UserManagementLoadingState());
     final groups = await userManagermentRepository.listUser();
     groups.fold(
@@ -45,10 +39,7 @@ class UserManagementBloc
     );
   }
 
-  FutureOr<void> _onAddUser(
-    AddUserEvent event,
-    Emitter<UserManagementState> emit,
-  ) async {
+  FutureOr<void> _onAddUser(AddUserEvent event, Emitter<UserManagementState> emit) async {
     emit(UserManagementLoadingState());
     final groups = await userManagermentRepository.addUser(
       account: event.account,
@@ -62,24 +53,15 @@ class UserManagementBloc
       changePassDenied: event.changePassDenied,
       fullName: event.fullName,
     );
-    groups.fold((onFailure) => emit(AddUserFail(groups.left.toString())), (
-      onSuccess,
-    ) {
+    groups.fold((onFailure) => emit(AddUserFail(groups.left.toString())), (onSuccess) {
       emit(AddUserSuccess(user: groups.right));
     });
   }
 
-  FutureOr<void> _onDeleteUser(
-    DeleteUserEvent event,
-    Emitter<UserManagementState> emit,
-  ) async {
+  FutureOr<void> _onDeleteUser(DeleteUserEvent event, Emitter<UserManagementState> emit) async {
     emit(UserManagementLoadingState());
-    final groups = await userManagermentRepository.deleteUser(
-      userId: event.userId,
-    );
-    groups.fold((onFailure) => emit(DeleteUserFail(groups.left.toString())), (
-      onSuccess,
-    ) {
+    final groups = await userManagermentRepository.deleteUser(userId: event.userId);
+    groups.fold((onFailure) => emit(DeleteUserFail(groups.left.toString())), (onSuccess) {
       emit(DeleteUserSuccess(userId: groups.right));
     });
   }
@@ -93,23 +75,16 @@ class UserManagementBloc
       newPassword: event.newPassword,
       userId: event.userId,
     );
-    groups.fold(
-      (onFailure) => emit(ResetPassWordFail(groups.left.toString())),
-      (onSuccess) {
-        emit(ResetPassWordSuccess());
-      },
-    );
+    groups.fold((onFailure) => emit(ResetPassWordFail(groups.left.toString())), (onSuccess) {
+      emit(ResetPassWordSuccess());
+    });
   }
 
-  FutureOr<void> _onEditUser(
-    EditUserEvent event,
-    Emitter<UserManagementState> emit,
-  ) async {
+  FutureOr<void> _onEditUser(EditUserEvent event, Emitter<UserManagementState> emit) async {
     emit(UserManagementLoadingState());
     final groups = await userManagermentRepository.editUser(
       userId: event.userId,
       account: event.account,
-      password: event.password,
       tel: event.tel,
       email: event.email,
       address: event.address,
@@ -119,9 +94,7 @@ class UserManagementBloc
       changePassDenied: event.changePassDenied,
       fullName: event.fullName,
     );
-    groups.fold((onFailure) => emit(EditUserFail(groups.left.toString())), (
-      onSuccess,
-    ) {
+    groups.fold((onFailure) => emit(EditUserFail(groups.left.toString())), (onSuccess) {
       emit(EditUserSuccess(user: groups.right));
     });
   }

@@ -19,13 +19,13 @@ class SearchUserUseCase extends SyncUseCase<SearchUserInput, SearchUserOutput> {
         .where(
           (e) =>
               // Tìm kiếm theo tài khoản
-              e.account.toLowerCase().trim().contains(searchQuery) ||
+              e.username.toLowerCase().trim().contains(searchQuery) ||
               // Tìm kiếm theo họ tên
-              e.fullName.toLowerCase().trim().contains(searchQuery) ||
+              e.fullname.toLowerCase().trim().contains(searchQuery) ||
               // Tìm kiếm theo số điện thoại
-              e.telNumber.toLowerCase().trim().contains(searchQuery) ||
+              (e.phone != null && e.phone!.toLowerCase().trim().contains(searchQuery)) ||
               // Tìm kiếm theo email
-              e.emailAddress.toLowerCase().trim().contains(searchQuery),
+              (e.email != null && e.email!.toLowerCase().trim().contains(searchQuery)),
         )
         .toList();
     return SearchUserOutput(listUserResult: listUserResult);

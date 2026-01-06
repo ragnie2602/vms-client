@@ -38,7 +38,7 @@ class _UserProfileState extends State<UserProfile> {
       listener: (context, state) {
         if (state.isSignOut) {
           if (Navigator.canPop(context)) Navigator.pop(context);
-          context.read<AppBloc>().add(SignOut());
+          // context.read<AppBloc>().add(SignOut());
           context.goNamed(Routes.login.name);
         }
         // Rebuild widget when profile is updated
@@ -158,7 +158,7 @@ class _UserProfileState extends State<UserProfile> {
             ),
             _buildMenuItem(
               onTap: () {
-                if (AppData.instance.profile?.changePassDenied ?? false) {
+                if (AppData.instance.profile?.canChangePassword ?? true) {
                   ToastUtil.toastFail(
                     context: context,
                     title: Text('Bạn không có quyền sử dụng chức năng này!', maxLines: 5),

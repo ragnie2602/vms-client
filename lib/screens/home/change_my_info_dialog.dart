@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 // (removed unused imports)
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
@@ -52,6 +54,9 @@ Future<bool?> showChangeMyInfoDialog(BuildContext context) {
             // Populate controllers when profile data is loaded
             if (state.profile != null) {
               _usernameController.text = state.profile!.account;
+              if (_usernameController.text.isEmpty) {
+                _usernameController.text = AppData.instance.read(AppKeys.SP_USERNAME_KEY) ?? '';
+              }
               _fullNameController.text = state.profile!.displayName;
               _emailController.text = state.profile!.email;
               _phoneController.text = state.profile!.tel;

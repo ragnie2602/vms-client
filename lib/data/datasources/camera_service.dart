@@ -100,18 +100,12 @@ class CameraService {
       ),
     );
 
-    return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        AddCameraOnVif_Error.valueOf,
-        PacketType.addCameraOnVif.value,
-      ),
-      (buffer) => AddCameraOnVif_Reply.fromBuffer(buffer).toDomain(),
-    );
+    return responseBuffer.fold((failure) {
+      throw failure.toMessageFailure(AddCameraOnVif_Error.valueOf, PacketType.addCameraOnVif.value);
+    }, (buffer) => AddCameraOnVif_Reply.fromBuffer(buffer).toDomain());
   }
 
-  Future<ImportCameraEntity> importCamera({
-    required List<ImportCameraCell> cameras,
-  }) async {
+  Future<ImportCameraEntity> importCamera({required List<ImportCameraCell> cameras}) async {
     final request = ImportCamera_Request()
       ..cameras.addAll(
         cameras.map(
@@ -140,10 +134,8 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        ImportCamera_Error.valueOf,
-        PacketType.importCamera.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(ImportCamera_Error.valueOf, PacketType.importCamera.value),
       (buffer) => ImportCamera_Reply.fromBuffer(buffer).toDomain(),
     );
   }
@@ -182,10 +174,8 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        UpdateCamera_Error.valueOf,
-        PacketType.updateCamera.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(UpdateCamera_Error.valueOf, PacketType.updateCamera.value),
       (buffer) => UpdateCamera_Reply.fromBuffer(buffer).camera,
     );
   }
@@ -221,11 +211,7 @@ class CameraService {
     );
   }
 
-  Future<List<Camera>> getAllCamera({
-    List<int>? cameraId,
-    int? status,
-    int? ivaType,
-  }) async {
+  Future<List<Camera>> getAllCamera({List<int>? cameraId, int? status, int? ivaType}) async {
     final request = GetAllCamera_Request();
     if (cameraId != null) request.cameraId = cameraId;
     if (status != null) request.status = GetAllCamera_Status.valueOf(status)!;
@@ -244,17 +230,13 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        GetAllCamera_Error.valueOf,
-        PacketType.getAllCamera.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(GetAllCamera_Error.valueOf, PacketType.getAllCamera.value),
       (buffer) => GetAllCamera_Reply.fromBuffer(buffer).cameras,
     );
   }
 
-  Future<List<Camera>> getAllCamerasInGroup({
-    required List<int> groupId,
-  }) async {
+  Future<List<Camera>> getAllCamerasInGroup({required List<int> groupId}) async {
     final request = GetCameraInGroup_Request(groupId: groupId);
 
     final responseBuffer = await socketClient.send<List<int>>(
@@ -317,10 +299,8 @@ class CameraService {
     );
 
     return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        ShareCamera_Error.valueOf,
-        PacketType.shareCamera.value,
-      ),
+      (failure) =>
+          throw failure.toMessageFailure(ShareCamera_Error.valueOf, PacketType.shareCamera.value),
       (buffer) => ShareCamera_Reply.fromBuffer(buffer).cameraId,
     );
   }
@@ -432,9 +412,7 @@ class CameraService {
   //   );
   // }
 
-  Future<List<InviteMessage>> listShareCamera({
-    required List<int> cameraId,
-  }) async {
+  Future<List<InviteMessage>> listShareCamera({required List<int> cameraId}) async {
     final request = ListShareCamera_Request()..cameraId = cameraId;
 
     final responseBuffer = await socketClient.send<List<int>>(
@@ -483,9 +461,7 @@ class CameraService {
   }
 
   // get camera info
-  Future<GetCameraInfo_Reply> getCameraInfo({
-    required List<int> cameraId,
-  }) async {
+  Future<GetCameraInfo_Reply> getCameraInfo({required List<int> cameraId}) async {
     final request = GetCameraInfo_Request()..camerasId = cameraId;
 
     final responseBuffer = await socketClient.send<List<int>>(

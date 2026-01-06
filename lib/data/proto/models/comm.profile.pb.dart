@@ -554,11 +554,8 @@ class Authenticate extends $pb.GeneratedMessage {
 
 class Login_Request extends $pb.GeneratedMessage {
   factory Login_Request({
-    $core.List<$core.int>? uid,
-    $core.List<$core.int>? sessionId,
-    $0.ProjectTarget? target,
-    $core.int? apiVersion,
-    $core.int? platform,
+    $core.String? uid,
+    $core.String? sessionId,
   }) {
     final $result = create();
     if (uid != null) {
@@ -567,15 +564,6 @@ class Login_Request extends $pb.GeneratedMessage {
     if (sessionId != null) {
       $result.sessionId = sessionId;
     }
-    if (target != null) {
-      $result.target = target;
-    }
-    if (apiVersion != null) {
-      $result.apiVersion = apiVersion;
-    }
-    if (platform != null) {
-      $result.platform = platform;
-    }
     return $result;
   }
   Login_Request._() : super();
@@ -583,11 +571,8 @@ class Login_Request extends $pb.GeneratedMessage {
   factory Login_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Login.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'uid', $pb.PbFieldType.OY)
-    ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'sessionId', $pb.PbFieldType.OY)
-    ..e<$0.ProjectTarget>(3, _omitFieldNames ? '' : 'target', $pb.PbFieldType.OE, defaultOrMaker: $0.ProjectTarget.VIVAS, valueOf: $0.ProjectTarget.valueOf, enumValues: $0.ProjectTarget.values)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'apiVersion', $pb.PbFieldType.O3, protoName: 'apiVersion')
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'platform', $pb.PbFieldType.OU3)
+    ..aOS(1, _omitFieldNames ? '' : 'uid')
+    ..aOS(2, _omitFieldNames ? '' : 'sessionId')
     ..hasRequiredFields = false
   ;
 
@@ -613,49 +598,22 @@ class Login_Request extends $pb.GeneratedMessage {
   static Login_Request? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$core.int> get uid => $_getN(0);
+  $core.String get uid => $_getSZ(0);
   @$pb.TagNumber(1)
-  set uid($core.List<$core.int> v) { $_setBytes(0, v); }
+  set uid($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasUid() => $_has(0);
   @$pb.TagNumber(1)
   void clearUid() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.List<$core.int> get sessionId => $_getN(1);
+  $core.String get sessionId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set sessionId($core.List<$core.int> v) { $_setBytes(1, v); }
+  set sessionId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasSessionId() => $_has(1);
   @$pb.TagNumber(2)
   void clearSessionId() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $0.ProjectTarget get target => $_getN(2);
-  @$pb.TagNumber(3)
-  set target($0.ProjectTarget v) { setField(3, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasTarget() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearTarget() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.int get apiVersion => $_getIZ(3);
-  @$pb.TagNumber(4)
-  set apiVersion($core.int v) { $_setSignedInt32(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasApiVersion() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearApiVersion() => clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.int get platform => $_getIZ(4);
-  @$pb.TagNumber(5)
-  set platform($core.int v) { $_setUnsignedInt32(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasPlatform() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearPlatform() => clearField(5);
 }
 
 class Login_Reply extends $pb.GeneratedMessage {
@@ -3675,120 +3633,6 @@ class VconnexLogin extends $pb.GeneratedMessage {
   $core.bool hasID() => $_has(0);
   @$pb.TagNumber(118)
   void clearID() => clearField(118);
-}
-
-class RemoveAccount_Request extends $pb.GeneratedMessage {
-  factory RemoveAccount_Request() => create();
-  RemoveAccount_Request._() : super();
-  factory RemoveAccount_Request.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RemoveAccount_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RemoveAccount.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  RemoveAccount_Request clone() => RemoveAccount_Request()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RemoveAccount_Request copyWith(void Function(RemoveAccount_Request) updates) => super.copyWith((message) => updates(message as RemoveAccount_Request)) as RemoveAccount_Request;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static RemoveAccount_Request create() => RemoveAccount_Request._();
-  RemoveAccount_Request createEmptyInstance() => create();
-  static $pb.PbList<RemoveAccount_Request> createRepeated() => $pb.PbList<RemoveAccount_Request>();
-  @$core.pragma('dart2js:noInline')
-  static RemoveAccount_Request getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveAccount_Request>(create);
-  static RemoveAccount_Request? _defaultInstance;
-}
-
-class RemoveAccount_Reply extends $pb.GeneratedMessage {
-  factory RemoveAccount_Reply() => create();
-  RemoveAccount_Reply._() : super();
-  factory RemoveAccount_Reply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RemoveAccount_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RemoveAccount.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  RemoveAccount_Reply clone() => RemoveAccount_Reply()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RemoveAccount_Reply copyWith(void Function(RemoveAccount_Reply) updates) => super.copyWith((message) => updates(message as RemoveAccount_Reply)) as RemoveAccount_Reply;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static RemoveAccount_Reply create() => RemoveAccount_Reply._();
-  RemoveAccount_Reply createEmptyInstance() => create();
-  static $pb.PbList<RemoveAccount_Reply> createRepeated() => $pb.PbList<RemoveAccount_Reply>();
-  @$core.pragma('dart2js:noInline')
-  static RemoveAccount_Reply getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveAccount_Reply>(create);
-  static RemoveAccount_Reply? _defaultInstance;
-}
-
-class RemoveAccount extends $pb.GeneratedMessage {
-  factory RemoveAccount({
-    $core.int? iD,
-  }) {
-    final $result = create();
-    if (iD != null) {
-      $result.iD = iD;
-    }
-    return $result;
-  }
-  RemoveAccount._() : super();
-  factory RemoveAccount.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RemoveAccount.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RemoveAccount', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..a<$core.int>(119, _omitFieldNames ? '' : 'ID', $pb.PbFieldType.O3, protoName: 'ID')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  RemoveAccount clone() => RemoveAccount()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  RemoveAccount copyWith(void Function(RemoveAccount) updates) => super.copyWith((message) => updates(message as RemoveAccount)) as RemoveAccount;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static RemoveAccount create() => RemoveAccount._();
-  RemoveAccount createEmptyInstance() => create();
-  static $pb.PbList<RemoveAccount> createRepeated() => $pb.PbList<RemoveAccount>();
-  @$core.pragma('dart2js:noInline')
-  static RemoveAccount getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveAccount>(create);
-  static RemoveAccount? _defaultInstance;
-
-  @$pb.TagNumber(119)
-  $core.int get iD => $_getIZ(0);
-  @$pb.TagNumber(119)
-  set iD($core.int v) { $_setSignedInt32(0, v); }
-  @$pb.TagNumber(119)
-  $core.bool hasID() => $_has(0);
-  @$pb.TagNumber(119)
-  void clearID() => clearField(119);
 }
 
 

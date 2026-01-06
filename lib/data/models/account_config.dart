@@ -8,8 +8,7 @@ class AccountConfig {
   final String snapshotFolder;
 
   // ignore: non_constant_identifier_names
-  static String get ACCOUNT_CONFIG_SP_KEY =>
-      '${AppData.instance.profile?.uid.join() ?? 'user'}_configurations';
+  static String get ACCOUNT_CONFIG_SP_KEY => '${AppData.instance.profile?.uid ?? 'user'}_configurations';
 
   AccountConfig({required this.videoFolder, required this.snapshotFolder});
   factory AccountConfig.empty() => AccountConfig(videoFolder: '', snapshotFolder: '');

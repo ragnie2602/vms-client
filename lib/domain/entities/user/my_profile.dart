@@ -1,100 +1,96 @@
 import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 
 class MyProfile {
+  final int id;
   final String avatar;
   final String displayName;
   final String account;
-  final bool addCamDenied;
-  final bool changePassDenied;
-  final List<int> uid;
-  final List<int> sessionId;
+  final String uid;
+  final String sessionId;
   final String email;
   final String tel;
   final String host;
   final int port;
-  final String ssid;
+  final List<String> permissions;
   final UserType userType;
 
   MyProfile({
+    required this.id,
     required this.avatar,
     required this.displayName,
     required this.account,
-    required this.addCamDenied,
-    required this.changePassDenied,
     required this.uid,
     required this.sessionId,
     required this.email,
     required this.tel,
     required this.host,
     required this.port,
-    required this.ssid,
+    required this.permissions,
     required this.userType,
   });
 
   MyProfile copyWith({
+    int? id,
     String? avatar,
     String? displayName,
     String? account,
     bool? addCamDenied,
     bool? changePassDenied,
-    List<int>? uid,
-    List<int>? sessionId,
+    String? uid,
+    String? sessionId,
     String? email,
     String? tel,
     String? host,
     int? port,
     String? ssid,
+    List<String>? permissions,
     UserType? userType,
   }) {
     return MyProfile(
+      id: id ?? this.id,
       avatar: avatar ?? this.avatar,
       displayName: displayName ?? this.displayName,
       account: account ?? this.account,
-      addCamDenied: addCamDenied ?? this.addCamDenied,
-      changePassDenied: changePassDenied ?? this.changePassDenied,
       uid: uid ?? this.uid,
       sessionId: sessionId ?? this.sessionId,
       email: email ?? this.email,
       tel: tel ?? this.tel,
       host: host ?? this.host,
       port: port ?? this.port,
-      ssid: ssid ?? this.ssid,
+      permissions: permissions ?? this.permissions,
       userType: userType ?? this.userType,
     );
   }
 
   static MyProfile fromJson(Map<dynamic, dynamic> json) {
     return MyProfile(
+      id: json['id'],
       avatar: json['avatar'],
       displayName: json['displayName'],
       account: json['account'],
-      addCamDenied: json['addCamDenied'],
-      changePassDenied: json['changePassDenied'],
-      uid: List<int>.from(json['uid']),
-      sessionId: List<int>.from(json['sessionId']),
+      uid: json['uid'],
+      sessionId: json['sessionId'],
       email: json['email'],
       tel: json['tel'],
       host: json['host'],
       port: json['port'],
-      ssid: json['ssid'],
+      permissions: json['permissions'],
       userType: UserType.fromValue(json['userType']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'avatar': avatar,
       'displayName': displayName,
       'account': account,
-      'addCamDenied': addCamDenied,
-      'changePassDenied': changePassDenied,
       'uid': uid,
       'sessionId': sessionId,
       'email': email,
       'tel': tel,
       'host': host,
       'port': port,
-      'ssid': ssid,
       'userType': userType.value,
     };
   }
@@ -106,6 +102,9 @@ class MyProfile {
     if (contentMax <= 0) return displayName.substring(0, maxChars);
     return displayName.substring(0, contentMax) + ellipsis;
   }
+
+  bool get canAddCamera => permissions.contains('camera.create');
+  bool get canChangePassword => permissions.contains('auth.change-password');
 
   String get displayNamePreview => displayNameLimited(maxChars: 50);
 }

@@ -17,7 +17,6 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
 import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
-import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_user_case.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -102,15 +101,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         cameraName: cameraNameController.text,
         isOnline: cameraStatus?.getValue,
         tagName: tagSelected?.name,
-      ),
-    );
-  }
-
-  void _onFilterTag() {
-    context.read<ControlCameraBloc>().add(
-      FilterTagCameraEvent(
-        tagName: tagSelected?.name,
-        keyWord: cameraNameController.text,
       ),
     );
   }
@@ -559,8 +549,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                         const SizedBox(width: 25),
                         InkWell(
                           onTap: () {
-                            if (AppData.instance.profile?.addCamDenied ??
-                                false) {
+                            if (!(AppData.instance.profile?.canAddCamera ?? true)) {
                               ToastUtil.toastFail(
                                 context: context,
                                 title: Text(
