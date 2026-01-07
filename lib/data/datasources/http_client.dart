@@ -35,7 +35,7 @@ class HttpClient {
     }
   }
 
-  delete({required String url, dynamic data, List<int>? successCode}) async {
+  delete({required String url, dynamic data}) async {
     try {
       final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
       final response = await _dio.delete(
@@ -44,7 +44,7 @@ class HttpClient {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      if ((successCode ?? [204]).contains(response.statusCode)) {
+      if (response.statusCode == 204) {
         return response.data;
       } else {
         throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
@@ -75,7 +75,7 @@ class HttpClient {
     }
   }
 
-  post({required String url, required dynamic data, List<int>? successCode}) async {
+  post({required String url, required dynamic data}) async {
     try {
       final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
       final response = await _dio.post(
@@ -84,7 +84,7 @@ class HttpClient {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      if ((successCode ?? [200]).contains(response.statusCode) && response.data != null) {
+      if ([200, 201].contains(response.statusCode) && response.data != null) {
         return response.data;
       } else {
         throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');

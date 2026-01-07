@@ -119,13 +119,18 @@ class ControlCameraService {
       ),
     );
 
-    return responseBuffer.fold((failure) => throw failure.toMessageFailure(), (buffer) {
-      final tagResponse = UpdateTag_Reply.fromBuffer(buffer).tag;
-      return TagEntity(
-        id: tagResponse.tagId,
-        name: tagResponse.tagName,
-        color: Color(int.parse(tagResponse.tagColor)),
-      );
-    });
+    return responseBuffer.fold(
+      (failure) {
+        throw failure.toMessageFailure();
+      },
+      (buffer) {
+        final tagResponse = UpdateTag_Reply.fromBuffer(buffer).tag;
+        return TagEntity(
+          id: tagResponse.tagId,
+          name: tagResponse.tagName,
+          color: Color(int.parse(tagResponse.tagColor)),
+        );
+      },
+    );
   }
 }

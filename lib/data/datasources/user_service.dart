@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
+import 'package:vms_flutter_client/data/models/response/base_response.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.profile.pb.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
@@ -41,7 +42,7 @@ class UserService {
       "tenantId": 1,
     };
     if (isAdmin == true) {
-      requestData["isAdmin"] = true;
+      requestData['roleId'] = 1;
     } else {
       List<String> _permissions = [];
       if (changePassDenied != true) _permissions.add("auth.change-password");
@@ -50,16 +51,22 @@ class UserService {
       requestData["permissions"] = _permissions;
     }
 
-    final response = await httpClient.post(
-      url: EndPoints.addUser,
-      data: requestData,
-      successCode: [201],
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.post(url: EndPoints.addUser, data: requestData),
     );
-    return UserEntity.fromJson(response);
+
+    if (response.code != 201) throw Exception(response.message);
+
+    return UserEntity.fromJson(response.data);
   }
 
   Future<int> deleteUser({required int userId, String? rtspUrl}) async {
-    await httpClient.delete(url: '${EndPoints.deleteUser}/$userId', successCode: [204]);
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.delete(url: '${EndPoints.deleteUser}/$userId'),
+    );
+
+    if (response.code != 204) throw Exception(response.message);
+
     return userId;
   }
 
@@ -137,28 +144,29 @@ class UserService {
     required String password,
     bool? kickOthers,
   }) async {
-    final changePasswordRequest = ChangePassword_Request();
-    changePasswordRequest.current = current;
-    changePasswordRequest.password = password;
-    changePasswordRequest.kickOthers = kickOthers ?? false;
+    // final changePasswordRequest = ChangePassword_Request();
+    // changePasswordRequest.current = current;
+    // changePasswordRequest.password = password;
+    // changePasswordRequest.kickOthers = kickOthers ?? false;
 
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: changePasswordRequest.writeToBuffer(),
-          type: PacketType.changePassword,
-        ),
-      ),
-    );
+    // final responseBuffer = await socketClient.send<List<int>>(
+    //   SocketRequestPayload(
+    //     Packet(
+    //       id: DateTime.now().microsecondsSinceEpoch,
+    //       data: changePasswordRequest.writeToBuffer(),
+    //       type: PacketType.changePassword,
+    //     ),
+    //   ),
+    // );
 
-    return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        ChangePassword_Error.valueOf,
-        PacketType.changePassword.value,
-      ),
-      (buffer) => true,
-    );
+    // return responseBuffer.fold(
+    //   (failure) => throw failure.toMessageFailure(
+    //     ChangePassword_Error.valueOf,
+    //     PacketType.changePassword.value,
+    //   ),
+    //   (buffer) => true,
+    // );
+    return true;
   }
 
   Future<bool> updateMyProfile({
@@ -167,10 +175,14 @@ class UserService {
     String? tel,
     String? address,
   }) async {
-    await httpClient.post(
-      url: '${EndPoints.updateProfile}/${AppData.instance.profile?.uid}',
-      data: {'fullName': displayName, 'email': email, 'phone': tel},
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.post(
+        url: '${EndPoints.updateProfile}/${AppData.instance.profile?.uid}',
+        data: {'fullName': displayName, 'email': email, 'phone': tel},
+      ),
     );
+
+    if (response.code != 200) throw Exception(response.message);
 
     return true;
   }
