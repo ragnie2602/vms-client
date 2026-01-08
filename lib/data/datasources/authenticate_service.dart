@@ -36,7 +36,7 @@ class AuthenticateService {
     };
 
     final BaseResponse response = BaseResponse.fromJson(
-      await _httpClient.post(url: EndPoints.authenticate, data: request),
+      await _httpClient.post(url: '${EndPoints.baseAuth}${EndPoints.authenticate}', data: request),
     );
 
     if (response.code != 200) throw Exception(response.message);
@@ -108,7 +108,7 @@ class AuthenticateService {
 
   Future<void> logout() async {
     final BaseResponse response = BaseResponse.fromJson(
-      await _httpClient.post(url: EndPoints.logout, data: null),
+      await _httpClient.post(url: '${EndPoints.baseAuth}${EndPoints.logout}', data: null),
     );
 
     if (response.code != 200) throw Exception(response.message);

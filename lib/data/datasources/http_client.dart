@@ -36,82 +36,62 @@ class HttpClient {
   }
 
   delete({required String url, dynamic data}) async {
-    try {
-      final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
-      final response = await _dio.delete(
-        url,
-        data: data,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final response = await _dio.delete(
+      url,
+      data: data,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
 
-      if (response.statusCode == 204) {
-        return response.data;
-      } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
-      }
-    } catch (e) {
-      throw Exception('Unexpected error: $e');
+    if (response.statusCode == 200) {
+      return response.data;
+    } else {
+      throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 
   get(String url, {Map<String, dynamic>? queryParameters}) async {
-    try {
-      final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
-      final response = await _dio.get(
-        url,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-        queryParameters: queryParameters,
-      );
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final response = await _dio.get(
+      url,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+      queryParameters: queryParameters,
+    );
 
-      if (response.statusCode == 200 && response.data != null) {
-        return response.data;
-      } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
-      }
-    } on DioException catch (e) {
-      throw Exception('Network error: ${e.message}');
-    } catch (e) {
-      throw Exception('Unexpected error: $e');
+    if (response.statusCode == 200 && response.data != null) {
+      return response.data;
+    } else {
+      throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 
   post({required String url, required dynamic data}) async {
-    try {
-      final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
-      final response = await _dio.post(
-        url,
-        data: data,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final response = await _dio.post(
+      url,
+      data: data,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
 
-      if ([200, 201].contains(response.statusCode) && response.data != null) {
-        return response.data;
-      } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
-      }
-    } on DioException catch (e) {
-      throw Exception('Network error: ${e.message}');
-    } catch (e) {
-      throw Exception('Unexpected error: $e');
+    if ([200, 201].contains(response.statusCode) && response.data != null) {
+      return response.data;
+    } else {
+      throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 
-  put({required String url, required dynamic data, List<int>? successCode}) async {
-    try {
-      final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
-      final response = await _dio.put(
-        url,
-        data: data,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
+  put({required String url, required dynamic data}) async {
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final response = await _dio.put(
+      url,
+      data: data,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
 
-      if ((successCode ?? [200]).contains(response.statusCode) && response.data != null) {
-        return response.data;
-      } else {
-        throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
-      }
-    } catch (e) {
-      throw Exception('Unexpected error: $e');
+    if ([200].contains(response.statusCode) && response.data != null) {
+      return response.data;
+    } else {
+      throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 }

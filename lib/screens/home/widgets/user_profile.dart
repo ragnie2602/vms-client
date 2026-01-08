@@ -158,7 +158,7 @@ class _UserProfileState extends State<UserProfile> {
             ),
             _buildMenuItem(
               onTap: () {
-                if (AppData.instance.profile?.canChangePassword ?? true) {
+                if (!(AppData.instance.profile?.canChangePassword ?? false)) {
                   ToastUtil.toastFail(
                     context: context,
                     title: Text('Bạn không có quyền sử dụng chức năng này!', maxLines: 5),

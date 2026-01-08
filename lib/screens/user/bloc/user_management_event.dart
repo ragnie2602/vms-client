@@ -40,7 +40,7 @@ class DeleteUserEvent extends UserManagementEvent {
 }
 
 class ResetPassWordEvent extends UserManagementEvent {
-  final List<int> userId;
+  final int userId;
   final String newPassword;
   const ResetPassWordEvent({required this.userId, required this.newPassword});
   @override

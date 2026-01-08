@@ -98,7 +98,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  void _onResetPassword({required List<int> userId, required String newPassword}) {
+  void _onResetPassword({required int userId, required String newPassword}) {
     context.read<UserManagementBloc>().add(
       ResetPassWordEvent(userId: userId, newPassword: newPassword),
     );
@@ -303,7 +303,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                           onSubmit: (newPassword) async {
                                             _onResetPassword(
                                               newPassword: newPassword,
-                                              userId: [state.users![index].id],
+                                              userId: state.users![index].id,
                                             );
                                           },
                                         );

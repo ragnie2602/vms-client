@@ -13,6 +13,7 @@ class UserEntity {
   final String? description;
   final int? type;
   final List<String> permissions;
+  final String? roleName;
 
   const UserEntity({
     required this.id,
@@ -27,6 +28,7 @@ class UserEntity {
     this.description,
     this.type,
     required this.permissions,
+    this.roleName,
   });
 
   factory UserEntity.fromJson(Map<String, dynamic> json) {
@@ -42,7 +44,8 @@ class UserEntity {
       phone: json['phone'],
       description: json['description'],
       type: json['type'],
-      permissions: List<String>.from(json['permissions']),
+      permissions: json['permissions'] != null ? List<String>.from(json['permissions']) : [],
+      roleName: json['roleName'],
     );
   }
 }
