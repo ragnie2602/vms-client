@@ -35,9 +35,18 @@ class AuthenticateService {
       'platform': EnvService.platform,
     };
 
-    final BaseResponse response = BaseResponse.fromJson(
-      await _httpClient.post(url: '${EndPoints.baseAuth}${EndPoints.authenticate}', data: request),
-    );
+    Map<String, dynamic>? raw;
+    try {
+      raw = await _httpClient.post(
+        url: '${EndPoints.baseAuth}${EndPoints.authenticate}',
+        data: request,
+      );
+    } catch (e) {
+      throw Exception("Tên đăng nhập hoặc mật khẩu không đúng");
+    }
+
+    if (raw == null) throw Exception("Tên đăng nhập hoặc mật khẩu không đúng");
+    final BaseResponse response = BaseResponse.fromJson(raw);
 
     if (response.code != 200) throw Exception(response.message);
 

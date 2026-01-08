@@ -1,12 +1,8 @@
-import 'package:vms_flutter_client/core/app_data.dart';
-import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
-import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/models/response/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
-import '../proto/models/comm.command1.pb.dart';
 import 'socket_api_client.dart';
 
 class UserService {

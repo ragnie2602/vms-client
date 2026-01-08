@@ -45,8 +45,6 @@ class HttpClient {
 
     if (response.statusCode == 200) {
       return response.data;
-    } else {
-      throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 
@@ -60,8 +58,6 @@ class HttpClient {
 
     if (response.statusCode == 200 && response.data != null) {
       return response.data;
-    } else {
-      throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 
@@ -75,8 +71,6 @@ class HttpClient {
 
     if ([200, 201].contains(response.statusCode) && response.data != null) {
       return response.data;
-    } else {
-      throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 
@@ -90,8 +84,6 @@ class HttpClient {
 
     if ([200].contains(response.statusCode) && response.data != null) {
       return response.data;
-    } else {
-      throw Exception('HTTP ${response.statusCode}: ${response.statusMessage}');
     }
   }
 }
