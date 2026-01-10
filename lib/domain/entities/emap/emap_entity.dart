@@ -1,37 +1,49 @@
-import 'package:flutter/foundation.dart';
+import 'package:vms_flutter_client/core/env_service.dart';
 
 class EmapEntity {
-  final List<int>? emapId;
-  final String? emapName;
-  final String? backgroundPath;
+  final int id;
+  final String name;
+  final String imageUrl;
+  final List<CameraEmapInfoEntity> cameraMaps;
 
-  EmapEntity({this.emapId, this.emapName, this.backgroundPath});
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is EmapEntity &&
-            runtimeType == other.runtimeType &&
-            listEquals(emapId, other.emapId) &&
-            emapName == other.emapName &&
-            backgroundPath == other.backgroundPath);
+  const EmapEntity({
+    required this.id,
+    required this.name,
+    required this.imageUrl,
+    required this.cameraMaps,
+  });
+
+  factory EmapEntity.fromJson(Map<String, dynamic> json) {
+    return EmapEntity(
+      id: json['id'],
+      name: json['name'],
+      imageUrl: '${EnvService.apiBaseUrl}${json['imageUrl']}',
+      cameraMaps: json['cameraMaps']
+          .map<CameraEmapInfoEntity>((e) => CameraEmapInfoEntity.fromJson(e))
+          .toList(),
+    );
   }
-
-  @override
-  int get hashCode => Object.hash(emapId, emapName, backgroundPath);
 }
 
 class CameraEmapInfoEntity {
+  final int id;
   final List<int> cameraId;
-  final int typeIcon;
-  final int xCoordinate;
-  final int yCoordinate;
-  final List<int> cameraEmapInfoId;
+  final double xRatio;
+  final double yRatio;
 
-  CameraEmapInfoEntity({
+  const CameraEmapInfoEntity({
+    required this.id,
     required this.cameraId,
-    required this.typeIcon,
-    required this.xCoordinate,
-    required this.yCoordinate,
-    required this.cameraEmapInfoId,
+    required this.xRatio,
+    required this.yRatio,
   });
+
+  factory CameraEmapInfoEntity.fromJson(Map<String, dynamic> json) {
+    return CameraEmapInfoEntity(
+      id: json['id'],
+      cameraId: (json['cameraId'] as String).codeUnits,
+      xRatio: json['xratio'],
+      yRatio: json['yratio'],
+    );
+  }
 }

@@ -13,47 +13,65 @@ class EmapLoadingState extends EmapState {
 }
 
 class RemoveEmapSucessSate extends EmapState {
+  final int id;
+
+  const RemoveEmapSucessSate(this.id);
+
   @override
   StateType get type => StateType.success;
+
+  @override
+  List<Object?> get props => [id];
 }
 
 class AddEmapSuccessState extends EmapState {
+  final EmapEntity emap;
+
+  const AddEmapSuccessState(this.emap);
+
   @override
   StateType get type => StateType.success;
+
+  @override
+  List<Object?> get props => [emap];
 }
-class EditEmapSuccessState extends EmapState{
-   @override
+
+class EditEmapSuccessState extends EmapState {
+  final EmapEntity emap;
+
+  const EditEmapSuccessState(this.emap);
+
+  @override
   StateType get type => StateType.success;
+
+  @override
+  List<Object?> get props => [emap];
 }
 
 class EmapSuccessState extends EmapState {
-  final List<EmapEntity>? listEmap;
-  final EmapEntity? emapSelected;
+  final List<EmapEntity> listEmap;
   final bool? isSearching;
   final List<DragItemModel>? dragItems;
   final List<CameraEntity>? listCamera;
 
   const EmapSuccessState({
-    this.listEmap,
-    this.emapSelected,
+    required this.listEmap,
     this.isSearching,
     this.dragItems,
     this.listCamera,
   });
 
   @override
-  List<Object?> get props => [listEmap, emapSelected, isSearching, dragItems, listCamera];
+  List<Object?> get props => [listEmap, isSearching, dragItems, listCamera];
 
   EmapSuccessState copyWith({
     List<EmapEntity>? listEmap,
-    EmapEntity? emapSelected,
     bool? isSearching,
     List<DragItemModel>? dragItems,
     List<CameraEntity>? listCamera,
   }) {
     return EmapSuccessState(
       listEmap: listEmap ?? this.listEmap,
-      emapSelected: emapSelected ?? this.emapSelected,
       isSearching: isSearching,
       dragItems: dragItems ?? this.dragItems,
       listCamera: listCamera ?? this.listCamera,
@@ -62,10 +80,12 @@ class EmapSuccessState extends EmapState {
 }
 
 class AddCameraEmapSuccessState extends EmapState {
-  final CameraEmapInfoEntity? cameraEmapInfo;
-  const AddCameraEmapSuccessState({this.cameraEmapInfo});
+  final EmapEntity emap;
+
+  const AddCameraEmapSuccessState(this.emap);
+
   @override
-  List<Object?> get props => [cameraEmapInfo];
+  List<Object?> get props => [emap];
 }
 
 class ListAllCameraSuccessState extends EmapState {
@@ -86,4 +106,16 @@ class ListAllCameraFailState extends EmapState {
   StateType get type => StateType.failure;
   @override
   String get errorMsg => message;
+}
+
+class SearchEmapSuccessState extends EmapState {
+  final List<EmapEntity> listEmap;
+
+  const SearchEmapSuccessState({required this.listEmap});
+
+  @override
+  StateType get type => StateType.success;
+
+  @override
+  List<Object?> get props => [listEmap];
 }

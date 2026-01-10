@@ -17,7 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$SearchEmapOutput {
-  List<EmapEntity>? get listEmapResult => throw _privateConstructorUsedError;
+  List<EmapEntity> get listEmapResult => throw _privateConstructorUsedError;
 
   /// Create a copy of SearchEmapOutput
   /// with the given fields replaced by the non-null parameter values.
@@ -33,7 +33,7 @@ abstract class $SearchEmapOutputCopyWith<$Res> {
     $Res Function(SearchEmapOutput) then,
   ) = _$SearchEmapOutputCopyWithImpl<$Res, SearchEmapOutput>;
   @useResult
-  $Res call({List<EmapEntity>? listEmapResult});
+  $Res call({List<EmapEntity> listEmapResult});
 }
 
 /// @nodoc
@@ -50,13 +50,13 @@ class _$SearchEmapOutputCopyWithImpl<$Res, $Val extends SearchEmapOutput>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? listEmapResult = freezed}) {
+  $Res call({Object? listEmapResult = null}) {
     return _then(
       _value.copyWith(
-            listEmapResult: freezed == listEmapResult
+            listEmapResult: null == listEmapResult
                 ? _value.listEmapResult
                 : listEmapResult // ignore: cast_nullable_to_non_nullable
-                      as List<EmapEntity>?,
+                      as List<EmapEntity>,
           )
           as $Val,
     );
@@ -72,7 +72,7 @@ abstract class _$$SearchEmapOutputImplCopyWith<$Res>
   ) = __$$SearchEmapOutputImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<EmapEntity>? listEmapResult});
+  $Res call({List<EmapEntity> listEmapResult});
 }
 
 /// @nodoc
@@ -88,13 +88,13 @@ class __$$SearchEmapOutputImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? listEmapResult = freezed}) {
+  $Res call({Object? listEmapResult = null}) {
     return _then(
       _$SearchEmapOutputImpl(
-        listEmapResult: freezed == listEmapResult
+        listEmapResult: null == listEmapResult
             ? _value._listEmapResult
             : listEmapResult // ignore: cast_nullable_to_non_nullable
-                  as List<EmapEntity>?,
+                  as List<EmapEntity>,
       ),
     );
   }
@@ -103,17 +103,15 @@ class __$$SearchEmapOutputImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$SearchEmapOutputImpl implements _SearchEmapOutput {
-  const _$SearchEmapOutputImpl({final List<EmapEntity>? listEmapResult})
+  const _$SearchEmapOutputImpl({required final List<EmapEntity> listEmapResult})
     : _listEmapResult = listEmapResult;
 
-  final List<EmapEntity>? _listEmapResult;
+  final List<EmapEntity> _listEmapResult;
   @override
-  List<EmapEntity>? get listEmapResult {
-    final value = _listEmapResult;
-    if (value == null) return null;
+  List<EmapEntity> get listEmapResult {
     if (_listEmapResult is EqualUnmodifiableListView) return _listEmapResult;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableListView(_listEmapResult);
   }
 
   @override
@@ -151,11 +149,12 @@ class _$SearchEmapOutputImpl implements _SearchEmapOutput {
 }
 
 abstract class _SearchEmapOutput implements SearchEmapOutput {
-  const factory _SearchEmapOutput({final List<EmapEntity>? listEmapResult}) =
-      _$SearchEmapOutputImpl;
+  const factory _SearchEmapOutput({
+    required final List<EmapEntity> listEmapResult,
+  }) = _$SearchEmapOutputImpl;
 
   @override
-  List<EmapEntity>? get listEmapResult;
+  List<EmapEntity> get listEmapResult;
 
   /// Create a copy of SearchEmapOutput
   /// with the given fields replaced by the non-null parameter values.

@@ -1,9 +1,8 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
-import 'package:vms_flutter_client/data/mappers/emap_mapper.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_emap_repository.dart';
@@ -16,81 +15,64 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
   const EmapRepository(this.service);
 
   @override
-  Future<Either<Failure, EmapEntity>> postEmap({
-    required String emapName,
-    required String imagePath,
-    required Uint8List imageBytes,
-    // required String serverUrl,
-    List<int>? emapId,
-    List<int>? userId,
-  }) async {
-    return await catchError<EmapEntity>(() async {
-      final emapInfo = await service.postEmap(
-        emapName: emapName,
-        imagePath: imagePath,
-        imageBytes: imageBytes,
-        // serverUrl: serverUrl,
-        emapId: emapId,
-        userId: userId,
-      );
-
-      return Right(emapInfo.toDomain());
-    });
-  }
-
-  @override
   Future<Either<Failure, List<EmapEntity>>> listEmap() async {
     return await catchError<List<EmapEntity>>(() async {
-      final emaps = await service.listEmap();
-      return Right(emaps.map((e) => e.toDomain()).toList());
+      final data = await service.listEmap();
+      return Right(data.map<EmapEntity>((e) => EmapEntity.fromJson(e)).toList());
     });
   }
 
   @override
-  Future<Either<Failure, List<int>>> removeEmap({
-    required List<int> emapId,
+  Future<Either<Failure, EmapEntity>> postEmap({
+    required String emapName,
+    required File imageFile,
   }) async {
-    return await catchError<List<int>>(() async {
-      final removedId = await service.removeEmap(emapId: emapId);
-      return Right(removedId);
+    return await catchError<EmapEntity>(() async {
+      final data = await service.postEmap(emapName: emapName, imageFile: imageFile);
+
+      return Right(EmapEntity.fromJson(data));
     });
   }
 
   @override
-  Future<Either<Failure, List<CameraEmapInfoEntity>>> listCameraEmapInfo({
-    required List<int> emapId,
-  }) async {
-    return await catchError<List<CameraEmapInfoEntity>>(() async {
-      final cameraInfos = await service.listCameraEmapInfo(emapId: emapId);
-      return Right(cameraInfos.map((e) => e.toDomain()).toList());
+  Future<Either<Failure, int>> removeEmap(int id) async {
+    return await catchError<int>(() async {
+      await service.removeEmap(id);
+
+      return Right(id);
     });
   }
 
   @override
-  Future<Either<Failure, CameraEmapInfoEntity>> addCameraEmapInfo({
-    required List<int> emapId,
-    required CameraEmapInfoEntity cameraEmapinfo,
+  Future<Either<Failure, EmapEntity>> addCameraEmapInfo({
+    required int emapId,
+    required double xRatio,
+    required double yRatio,
+    required List<int> camId,
   }) async {
-    return await catchError<CameraEmapInfoEntity>(() async {
-      final cameraInfo = await service.addCameraEmapInfo(
+    return await catchError<EmapEntity>(() async {
+      final data = await service.addCameraEmapInfo(
         emapId: emapId,
-        info: cameraEmapinfo.toProto(),
+        xRatio: xRatio,
+        yRatio: yRatio,
+        camId: String.fromCharCodes(camId),
       );
-      return Right(cameraInfo.toDomain());
+
+      return Right(EmapEntity.fromJson(data));
     });
   }
 
   @override
-  Future<Either<Failure, void>> deleteCameraEmapInfo({
-    required List<int> emapId,
-    required List<int> cameraEmapInfoId,
+  Future<Either<Failure, EmapEntity>> deleteCameraEmapInfo({
+    required int emapId,
+    required int cameraEmapInfoId,
   }) async {
-    return await catchError<void>(() async {
-      await service.deleteCameraEmapInfo(
+    return await catchError<EmapEntity>(() async {
+      final data = await service.deleteCameraEmapInfo(
         emapId: emapId,
         cameraEmapInfoId: cameraEmapInfoId,
       );
-      return const Right(null);
+      return Right(EmapEntity.fromJson(data));
     });
   }
 
@@ -108,6 +90,18 @@ class EmapRepository extends BaseRepository implements IEmapRepository {
       );
 
       return Right(cameras.map((e) => e.toDomain()).toList());
+    });
+  }
+
+  @override
+  Future<Either<Failure, EmapEntity>> editEmap({
+    required int emapId,
+    String? emapName,
+    File? imageFile,
+  }) async {
+    return await catchError<EmapEntity>(() async {
+      final data = await service.editEmap(emapId: emapId, emapName: emapName, imageFile: imageFile);
+      return Right(EmapEntity.fromJson(data));
     });
   }
 }

@@ -61,6 +61,19 @@ class HttpClient {
     }
   }
 
+  patch({required String url, required dynamic data}) async {
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final response = await _dio.patch(
+      url,
+      data: data,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    if ([200].contains(response.statusCode) && response.data != null) {
+      return response.data;
+    }
+  }
+
   post({required String url, required dynamic data}) async {
     final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
     final response = await _dio.post(
@@ -83,6 +96,40 @@ class HttpClient {
     );
 
     if ([200].contains(response.statusCode) && response.data != null) {
+      return response.data;
+    }
+  }
+
+  postMultipart({required String url, required Map<String, dynamic> data}) async {
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+
+    final response = await _dio.post(
+      url,
+      data: FormData.fromMap(data),
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'},
+        contentType: 'multipart/form-data',
+      ),
+    );
+
+    if ([200, 201].contains(response.statusCode) && response.data != null) {
+      return response.data;
+    }
+  }
+
+  putMultipart({required String url, required Map<String, dynamic> data}) async {
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+
+    final response = await _dio.put(
+      url,
+      data: FormData.fromMap(data),
+      options: Options(
+        headers: {'Authorization': 'Bearer $token'},
+        contentType: 'multipart/form-data',
+      ),
+    );
+
+    if ([200, 201].contains(response.statusCode) && response.data != null) {
       return response.data;
     }
   }

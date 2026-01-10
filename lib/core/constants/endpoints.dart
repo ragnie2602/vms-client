@@ -9,4 +9,7 @@ class EndPoints {
   // User management
   static const String baseUser = '/api/users';
   static const String resetPassword = '/password';
+
+  // Map
+  static const String baseMap = '/api/map';
 }
