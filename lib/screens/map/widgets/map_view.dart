@@ -5,15 +5,15 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/common_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_event.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_state.dart';
 import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
+import 'package:vms_flutter_client/screens/map/widgets/emap_camera_portal.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/camera_list_popup.dart';
-
-import 'emap_camera_portal.dart';
 
 class MapView extends StatefulWidget {
   final ValueNotifier<EmapEntity?> selectedEmap;
@@ -36,12 +36,16 @@ class _MapViewState extends State<MapView> {
   OverlayEntry? _overlayEntry;
   final GlobalKey _imageKey = GlobalKey();
   final GlobalKey _addCameraButtonKey = GlobalKey();
-  // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
-  final Map<String, Offset> _dragOffsets = {};
-  // Lưu GlobalKey cho mỗi item để lấy kích thước thực tế
+
+  Offset _dragOffset = Offset.zero;
+  final Map<String, Offset> _dragPositions = {};
+
   final Map<String, GlobalKey> _itemKeys = {};
   final Map<String, GlobalKey> _iconKeys = {};
   final Map<String, GlobalKey> _highlightedIconKeys = {};
+
+  bool _imageRendered = false;
+  String? _currentImageUrl;
 
   @override
   void initState() {
@@ -53,7 +57,20 @@ class _MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-      child: BlocBuilder<EmapBloc, EmapState>(
+      child: BlocConsumer<EmapBloc, EmapState>(
+        listener: (context, state) {
+          if (state is AddCameraEmapSuccessState) {
+            widget.selectedEmap.value = state.emap;
+          } else if (state is UpdateCameraEmapSuccessState) {
+            widget.selectedEmap.value = state.emap;
+          } else if (state is RemoveCameraEmapSuccessState) {
+            widget.selectedEmap.value = state.emap;
+          } else if (state is AddCameraEmapFailState ||
+              state is UpdateCameraEmapFailState ||
+              state is RemoveCameraEmapFailState) {
+            ToastUtil.toastFail(context: context, title: Text('Có lỗi xảy ra!'));
+          }
+        },
         builder: (context, state) => _buildContent(context, state),
       ),
     );
@@ -91,7 +108,17 @@ class _MapViewState extends State<MapView> {
     return ValueListenableBuilder(
       valueListenable: widget.selectedEmap,
       builder: (context, value, child) {
-        if (value == null) return const SizedBox();
+        if (value == null) {
+          if (_imageRendered && mounted) {
+            _imageRendered = false;
+            _currentImageUrl = null;
+          }
+          return const SizedBox();
+        }
+        if (_currentImageUrl != null && _currentImageUrl != value.imageUrl) _imageRendered = false;
+
+        _currentImageUrl = value.imageUrl;
+
         return Column(
           children: [
             _buildTopBar(context),
@@ -107,13 +134,21 @@ class _MapViewState extends State<MapView> {
                         key: _imageKey,
                         value.imageUrl,
                         fit: BoxFit.contain,
-                        loadingBuilder: (context, child, loadingProgress) => loadingProgress == null
-                            ? child
-                            : Center(child: CircularProgressIndicator()),
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (mounted) setState(() => _imageRendered = true);
+                            });
+                            return child;
+                          }
+                          return Center(child: CircularProgressIndicator());
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(child: Text('Lỗi tải ảnh: ${error.toString()}'));
+                        },
                       ),
-                      ...widget.selectedEmap.value!.cameraMaps.map((cm) => _buildDragItem(cm)),
-
-                      // ...widget.selectedEmap.value!.cameraMaps.map((item) => _buildDragItem(item)),
+                      if (_imageRendered)
+                        ...widget.selectedEmap.value!.cameraMaps.map((cm) => _buildDragItem(cm)),
                     ],
                   ),
                 ),
@@ -126,104 +161,119 @@ class _MapViewState extends State<MapView> {
   }
 
   Widget _buildDragItem(CameraEmapInfoEntity cammap) {
+    final RenderBox? imageBox = _imageKey.currentContext?.findRenderObject() as RenderBox?;
+    if (imageBox == null) return const SizedBox();
+    final h = imageBox.size.height;
+    final w = imageBox.size.width;
+    final itemId = cammap.id.toString();
+
+    if (!_itemKeys.containsKey(itemId)) _itemKeys[itemId] = GlobalKey();
+    if (!_iconKeys.containsKey(itemId)) _iconKeys[itemId] = GlobalKey();
+    if (!_highlightedIconKeys.containsKey(itemId)) _highlightedIconKeys[itemId] = GlobalKey();
+
     return BlocBuilder<MonitorBloc, MonitorState>(
       builder: (context, state) {
         if (state is MonitorSuccess) {
           final camera = state.cameras.firstWhere((c) => c.id.equals(cammap.cameraId));
+
+          final basePosition = Offset(cammap.xRatio * w, cammap.yRatio * h);
+          final position = _dragPositions[itemId] ?? basePosition;
+
+          final item = DragItemModel(
+            id: itemId,
+            position: position,
+            cameraId: camera.id.toString(),
+            label: camera.name,
+            source: camera.subStreamUri.toString(),
+            cameraEmapInfoId: [cammap.id],
+          );
+
+          return Positioned(
+            left: position.dx,
+            top: position.dy,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onPanStart: (details) {
+                final cursorPos = imageBox.globalToLocal(details.globalPosition);
+                _dragOffset = cursorPos - position;
+              },
+              onPanUpdate: (details) {
+                final cursorPos = imageBox.globalToLocal(details.globalPosition);
+                final newPosition = cursorPos - _dragOffset;
+
+                final imageSize = imageBox.size;
+
+                final itemKey = _itemKeys[itemId];
+                Size itemSize = const Size(100, 100);
+                if (itemKey?.currentContext != null) {
+                  final RenderBox? itemBox =
+                      itemKey!.currentContext!.findRenderObject() as RenderBox?;
+                  if (itemBox != null) itemSize = itemBox.size;
+                }
+
+                final iconKey = _iconKeys[itemId];
+                Size iconSize = const Size(40, 40);
+                if (iconKey?.currentContext != null) {
+                  final RenderBox? iconBox =
+                      iconKey!.currentContext!.findRenderObject() as RenderBox?;
+                  if (iconBox != null) iconSize = iconBox.size;
+                }
+
+                final iconOffsetX = (itemSize.width - iconSize.width) / 2;
+                final clampedX = newPosition.dx.clamp(
+                  -iconOffsetX,
+                  imageSize.width - iconSize.width - iconOffsetX,
+                );
+                final clampedY = newPosition.dy.clamp(0.0, imageSize.height - iconSize.height);
+
+                setState(() => _dragPositions[itemId] = Offset(clampedX, clampedY));
+              },
+              onPanEnd: (details) {
+                final finalPosition = _dragPositions[itemId];
+                if (finalPosition != null && widget.selectedEmap.value != null) {
+                  bloc.add(
+                    UpdateCameraEmapEvent(
+                      emapId: widget.selectedEmap.value!.id,
+                      cammapId: cammap.id,
+                      xRatio: finalPosition.dx / w,
+                      yRatio: finalPosition.dy / h,
+                    ),
+                  );
+                }
+              },
+              child: IntrinsicWidth(
+                key: _itemKeys[itemId],
+                child: IntrinsicHeight(
+                  child: EmapCameraPortal(
+                    item: item,
+                    onDelete: () => context.read<EmapBloc>().add(
+                      RemoveCameraEmapEvent(
+                        emapId: widget.selectedEmap.value!.id,
+                        cammapId: cammap.id,
+                      ),
+                    ),
+                    highlightChild: Hero(
+                      tag: '${itemId}_portal',
+                      child: _buildCameraIcon(
+                        item,
+                        AppColors.blue005AA9,
+                        iconKey: _highlightedIconKeys[itemId],
+                      ),
+                    ),
+                    child: Hero(
+                      tag: itemId,
+                      child: _buildCameraIcon(item, AppColors.black, iconKey: _iconKeys[itemId]),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
         }
 
         return const SizedBox();
       },
     );
-    // if (!_itemKeys.containsKey(item.id)) {
-    //   _itemKeys[item.id] = GlobalKey();
-    // }
-    // if (!_iconKeys.containsKey(item.id)) {
-    //   _iconKeys[item.id] = GlobalKey();
-    // }
-    // if (!_highlightedIconKeys.containsKey(item.id)) {
-    //   _highlightedIconKeys[item.id] = GlobalKey();
-    // }
-
-    // return Positioned(
-    //   left: item.position.dx,
-    //   top: item.position.dy,
-    //   child: GestureDetector(
-    //     behavior: HitTestBehavior.opaque,
-    //     onPanStart: (details) {
-    //       // Lưu offset của chuột so với góc trên-trái của item khi bắt đầu kéo
-    //       final RenderBox? imageBox = _imageKey.currentContext?.findRenderObject() as RenderBox?;
-    //       if (imageBox != null) {
-    //         final localPosition = imageBox.globalToLocal(details.globalPosition);
-    //         _dragOffsets[item.id] = localPosition - item.position;
-    //       }
-    //     },
-    //     onPanUpdate: (details) {
-    //       // Sử dụng globalPosition để tính toán vị trí chính xác
-    //       _updateItemPosition(item.id, details.globalPosition);
-    //     },
-    //     onPanEnd: (details) {
-    //       // Xóa offset đã lưu khi thả item
-    //       _dragOffsets.remove(item.id);
-
-    //       // Lấy thông tin state và emap hiện tại
-    //       final bloc = context.read<EmapBloc>();
-    //       final state = bloc.state;
-
-    //       if (state is EmapSuccessState /* && state.emapSelected != null */ ) {
-    //         // Tìm item mới nhất từ state để lấy position đã cập nhật
-    //         final updatedItem = state.dragItems?.firstWhere(
-    //           (dragItem) => dragItem.id == item.id,
-    //           orElse: () => item,
-    //         );
-
-    //         // Chỉ gọi API nếu có cameraEmapInfoId (camera đã tồn tại trên map)
-    //         if (updatedItem?.cameraEmapInfoId != null &&
-    //             updatedItem!.cameraEmapInfoId!.isNotEmpty) {
-    //           // Tìm camera trong listCamera để lấy ID gốc
-    //           final camera = bloc.listCamera.firstWhere(
-    //             (c) => c.name == updatedItem.label,
-    //             orElse: () => bloc.listCamera.first, // fallback
-    //           );
-
-    //           // Gọi API update position
-    //           bloc.add(
-    //             UpdateCameraEmapPositionEvent(
-    //               emapId: [],
-    //               cameraEmapInfoId: updatedItem.cameraEmapInfoId!,
-    //               cameraId: camera.id,
-    //               newPosition: updatedItem.position,
-    //               typeIcon: 0, // default type icon
-    //             ),
-    //           );
-    //         }
-    //       }
-    //     },
-    //     child: IntrinsicWidth(
-    //       key: _itemKeys[item.id],
-    //       child: IntrinsicHeight(
-    //         child: EmapCameraPortal(
-    //           item: item,
-    //           onDelete: () {
-    //             _onDeleteCameraEmap(item);
-    //           },
-    //           highlightChild: Hero(
-    //             tag: '${item.id}_portal',
-    //             child: _buildCameraIcon(
-    //               item,
-    //               AppColors.blue005AA9,
-    //               iconKey: _highlightedIconKeys[item.id],
-    //             ),
-    //           ),
-    //           child: Hero(
-    //             tag: item.id,
-    //             child: _buildCameraIcon(item, AppColors.black, iconKey: _iconKeys[item.id]),
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //   ),
-    // );
   }
 
   Widget _buildTopBar(BuildContext context) {
@@ -276,82 +326,12 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  void _onDeleteCameraEmap(DragItemModel item) {
-    final bloc = context.read<EmapBloc>();
-    final state = bloc.state;
-
-    if (state is EmapSuccessState /* && state.emapSelected != null*/ ) {
-      // Kiểm tra nếu có cameraEmapInfoId (camera đã tồn tại trên server)
-      if (item.cameraEmapInfoId != null && item.cameraEmapInfoId!.isNotEmpty) {
-        // Gọi API xóa + xóa UI
-        bloc.add(
-          RemoveCameraEmapEvent(
-            itemId: item.id,
-            emapId: [],
-            cameraEmapInfoId: item.cameraEmapInfoId!,
-          ),
-        );
-      } else {
-        // Camera chưa lưu trên server, chỉ xóa UI
-        bloc.add(RemoveDragItemEvent(itemId: item.id));
-      }
-    }
-  }
-
-  void _updateItemPosition(String itemId, Offset globalPosition) {
-    final RenderBox? imageBox = _imageKey.currentContext?.findRenderObject() as RenderBox?;
-    if (imageBox == null) return;
-
-    // Chuyển đổi global position sang local position (so với image container)
-    final localPosition = imageBox.globalToLocal(globalPosition);
-
-    // Trừ đi offset ban đầu để lấy vị trí góc trên-trái của item
-    final dragOffset = _dragOffsets[itemId] ?? Offset.zero;
-    final newPosition = localPosition - dragOffset;
-
-    final imageSize = imageBox.size;
-
-    // Lấy kích thước thực tế của item từ RenderBox
-    final itemKey = _itemKeys[itemId];
-    Size itemSize = const Size(100, 100); // Kích thước mặc định
-    if (itemKey?.currentContext != null) {
-      final RenderBox? itemBox = itemKey!.currentContext!.findRenderObject() as RenderBox?;
-      if (itemBox != null) {
-        itemSize = itemBox.size;
-      }
-    }
-
-    // Lấy kích thước icon
-    final iconKey = _iconKeys[itemId];
-    Size iconSize = const Size(40, 40); // Kích thước mặc định, fallback
-    if (iconKey?.currentContext != null) {
-      final RenderBox? iconBox = iconKey!.currentContext!.findRenderObject() as RenderBox?;
-      if (iconBox != null) {
-        iconSize = iconBox.size;
-      }
-    }
-
-    // Giới hạn vị trí trong phạm vi của ảnh, chỉ xét icon
-    final iconOffsetX = (itemSize.width - iconSize.width) / 2;
-
-    final clampedX = newPosition.dx.clamp(
-      -iconOffsetX,
-      imageSize.width - iconSize.width - iconOffsetX,
-    );
-    final clampedY = newPosition.dy.clamp(0.0, imageSize.height - iconSize.height);
-
-    context.read<EmapBloc>().add(
-      UpdateDragItemPositionEvent(itemId: itemId, newPosition: Offset(clampedX, clampedY)),
-    );
-  }
-
   Widget _buildCameraIcon(DragItemModel item, Color backgroundColor, {Key? iconKey}) {
     return Material(
       color: Colors.transparent,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Popup
           Container(
             key: iconKey,
             padding: const EdgeInsets.all(12),

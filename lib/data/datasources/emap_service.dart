@@ -72,7 +72,6 @@ class EmapService {
     return response.data;
   }
 
-  /// Add Camera to Emap (ID: 219)
   Future addCameraEmapInfo({
     required int emapId,
     required double xRatio,
@@ -81,7 +80,7 @@ class EmapService {
   }) async {
     final raw = await httpClient.patch(
       url: '${EndPoints.baseMap}/$emapId/camera',
-      data: {'xRatio': xRatio, 'yRatio': yRatio, 'cameraId': camId},
+      data: {'xratio': xRatio, 'yratio': yRatio, 'cameraId': camId},
     );
 
     final response = BaseResponse.fromJson(raw);
@@ -90,9 +89,27 @@ class EmapService {
     return response.data;
   }
 
-  /// Delete Camera from Emap (ID: 237)
+  Future updateCameraEmapInfo({
+    required int emapId,
+    required int cameraEmapInfoId,
+    required double xRatio,
+    required double yRatio,
+  }) async {
+    final raw = await httpClient.patch(
+      url: '${EndPoints.baseMap}/$emapId/camera/$cameraEmapInfoId',
+      data: {'xratio': xRatio, 'yratio': yRatio},
+    );
+
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) throw Exception(response.message);
+
+    return response.data;
+  }
+
   Future deleteCameraEmapInfo({required int emapId, required int cameraEmapInfoId}) async {
-    final raw = httpClient.delete(url: '${EndPoints.baseMap}/$emapId/camera/$cameraEmapInfoId');
+    final raw = await httpClient.delete(
+      url: '${EndPoints.baseMap}/$emapId/camera/$cameraEmapInfoId',
+    );
     final response = BaseResponse.fromJson(raw);
 
     if (response.code != 200) throw Exception(response.message);

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -32,7 +30,7 @@ class _ListMapViewState extends State<ListMapView> {
   @override
   void initState() {
     super.initState();
-    _onGetListEmap();
+    context.read<EmapBloc>().add(GetListEmapEvent());
   }
 
   @override
@@ -87,7 +85,9 @@ class _ListMapViewState extends State<ListMapView> {
                       onSubmit: (payload) async {
                         if (payload.imageFile == null) return;
 
-                        _onAddEmap(emapName: payload.name, imageFile: payload.imageFile!);
+                        context.read<EmapBloc>().add(
+                          AddEmapEvent(emapName: payload.name, imageFile: payload.imageFile!),
+                        );
                       },
                     );
                   },
@@ -105,6 +105,12 @@ class _ListMapViewState extends State<ListMapView> {
           Expanded(
             child: BlocConsumer<EmapBloc, EmapState>(
               listener: (BuildContext context, EmapState state) {
+                void _updateEmap(EmapEntity map) {
+                  final idx = listEmap.indexWhere((element) => element.id == map.id);
+                  if (idx != -1) listEmap[idx] = map;
+                  if (widget.selectedEmap.value?.id == map.id) widget.selectedEmap.value = map;
+                }
+
                 if (state is AddEmapSuccessState) {
                   listEmap.add(state.emap);
 
@@ -115,11 +121,7 @@ class _ListMapViewState extends State<ListMapView> {
                     title: Text('Thêm bản đồ camera thành công!'),
                   );
                 } else if (state is EditEmapSuccessState) {
-                  final idx = listEmap.indexWhere((element) => element.id == state.emap.id);
-                  if (idx != -1) listEmap[idx] = state.emap;
-                  if (widget.selectedEmap.value?.id == state.emap.id) {
-                    widget.selectedEmap.value = state.emap;
-                  }
+                  _updateEmap(state.emap);
 
                   _searchController.text = '';
 
@@ -265,12 +267,6 @@ class _ListMapViewState extends State<ListMapView> {
   void _onChangeSelectEmap({required EmapEntity? newMap}) {
     widget.selectedEmap.value = newMap;
     setState(() => _selectedId = newMap?.id);
-  }
-
-  void _onGetListEmap() => context.read<EmapBloc>().add(GetListEmapEvent());
-
-  void _onAddEmap({required String emapName, required File imageFile}) {
-    context.read<EmapBloc>().add(AddEmapEvent(emapName: emapName, imageFile: imageFile));
   }
 
   Future _onShowDialogEditEmap({

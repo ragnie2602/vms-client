@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/emap/emap_entity.dart';
-import 'package:vms_flutter_client/screens/map/model/drag_item_model.dart';
 
 class EmapEvent extends BaseEvent {}
 
@@ -65,32 +64,22 @@ class GetAllListCameraEvent extends EmapEvent {
   GetAllListCameraEvent({this.cameraId, this.ivaType, this.status});
 }
 
-// Thêm item mới
-class AddDragItemEvent extends EmapEvent {
-  final DragItemModel item;
-  AddDragItemEvent({required this.item});
-  @override
-  List<Object?> get props => [item];
-}
+class UpdateCameraEmapEvent extends EmapEvent {
+  final int emapId;
+  final int cammapId;
+  final double xRatio;
+  final double yRatio;
 
-// Cập nhật vị trí item
-class UpdateDragItemPositionEvent extends EmapEvent {
-  final String itemId;
-  final Offset newPosition;
-  UpdateDragItemPositionEvent({required this.itemId, required this.newPosition});
-  @override
-  List<Object?> get props => [itemId, newPosition];
-}
+  UpdateCameraEmapEvent({
+    required this.emapId,
+    required this.cammapId,
+    required this.xRatio,
+    required this.yRatio,
+  });
 
-// Xóa item
-class RemoveDragItemEvent extends EmapEvent {
-  final String itemId;
-  RemoveDragItemEvent({required this.itemId});
   @override
-  List<Object?> get props => [itemId];
+  List<Object?> get props => [emapId, cammapId, xRatio, yRatio];
 }
-
-class ListCameraEmapInfoEvent extends EmapEvent {}
 
 // Update vị trí camera trên emap
 class UpdateCameraEmapPositionEvent extends EmapEvent {
@@ -114,16 +103,11 @@ class UpdateCameraEmapPositionEvent extends EmapEvent {
 
 // Xóa camera khỏi emap (gọi API + xóa UI)
 class RemoveCameraEmapEvent extends EmapEvent {
-  final String itemId; // ID của DragItem để xóa UI
-  final List<int> emapId;
-  final List<int> cameraEmapInfoId;
+  final int emapId;
+  final int cammapId;
 
-  RemoveCameraEmapEvent({
-    required this.itemId,
-    required this.emapId,
-    required this.cameraEmapInfoId,
-  });
+  RemoveCameraEmapEvent({required this.emapId, required this.cammapId});
 
   @override
-  List<Object?> get props => [itemId, emapId, cameraEmapInfoId];
+  List<Object?> get props => [emapId, cammapId];
 }

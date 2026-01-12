@@ -7,6 +7,7 @@ class EmapState extends BaseState {
   const EmapState();
 }
 
+// EMAP
 class EmapLoadingState extends EmapState {
   @override
   StateType get type => StateType.loading;
@@ -79,6 +80,7 @@ class EmapSuccessState extends EmapState {
   }
 }
 
+// EMAP'S CAMERA
 class AddCameraEmapSuccessState extends EmapState {
   final EmapEntity emap;
 
@@ -87,6 +89,30 @@ class AddCameraEmapSuccessState extends EmapState {
   @override
   List<Object?> get props => [emap];
 }
+
+class AddCameraEmapFailState extends EmapState {}
+
+class UpdateCameraEmapSuccessState extends EmapState {
+  final EmapEntity emap;
+
+  const UpdateCameraEmapSuccessState(this.emap);
+
+  @override
+  List<Object?> get props => [emap];
+}
+
+class UpdateCameraEmapFailState extends EmapState {}
+
+class RemoveCameraEmapSuccessState extends EmapState {
+  final EmapEntity emap;
+
+  const RemoveCameraEmapSuccessState(this.emap);
+
+  @override
+  List<Object?> get props => [emap];
+}
+
+class RemoveCameraEmapFailState extends EmapState {}
 
 class ListAllCameraSuccessState extends EmapState {
   final List<CameraEntity>? cameras;
