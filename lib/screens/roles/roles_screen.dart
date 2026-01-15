@@ -1,0 +1,191 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/roles/role.dart';
+import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
+import 'package:vms_flutter_client/screens/roles/bloc/role_bloc.dart';
+import 'package:vms_flutter_client/screens/shared/custom_table.dart';
+
+class RolesScreen extends StatefulWidget {
+  const RolesScreen({super.key});
+
+  @override
+  State<RolesScreen> createState() => _RolesScreenState();
+}
+
+class _RolesScreenState extends State<RolesScreen> {
+  late final RoleBloc roleBloc;
+
+  List<Role> roles = [];
+  final TextEditingController searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    roleBloc = context.read()..add(GetRoles());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Container(
+            color: AppColors.white,
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 380,
+                  child: TextField(
+                    onChanged: (value) => roleBloc.add(SearchRoles(keyword: value, roles: roles)),
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                      ),
+                      constraints: BoxConstraints(minHeight: 0, minWidth: 0),
+                      contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                      ),
+                      hintStyle: AppTypography.style(
+                        14,
+                        color: AppColors.grey64748B,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      hintText: 'Nhập thông tin tìm kiếm',
+                      isDense: true,
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SvgPicture.asset(AppAssets.icSearch),
+                      ),
+                      prefixIconConstraints: BoxConstraints(maxHeight: 40, maxWidth: 40),
+                    ),
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.black,
+                    ),
+                  ),
+                ),
+                const Spacer(flex: 751),
+                EventCustomButton(
+                  backgroundColor: AppColors.white,
+                  borderColor: AppColors.blue005AA9,
+                  borderRadius: 3,
+                  label: 'Thêm nhóm quyền',
+                  onPressed: () {},
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  prefix: Icon(Icons.add, color: AppColors.blue005AA9, size: 20),
+                  prefixSpacing: 8,
+                  textStyle: AppTypography.style(
+                    14,
+                    color: AppColors.blue005AA9,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: Container(
+              color: AppColors.white,
+              padding: EdgeInsets.all(10),
+              child: BlocConsumer<RoleBloc, RoleState>(
+                listener: (context, state) {
+                  if (state is GetAllRolesSuccess) roles = state.roles;
+                },
+                builder: (context, state) {
+                  if (state is GetAllRolesLoading) return CircularProgressIndicator();
+
+                  List<Role> _roles = roles;
+                  if (state is SearchRolesSuccess) _roles = state.roles;
+
+                  return CustomTable(
+                    data: CustomTableData(
+                      columnFlexes: [66, 400, 600, 150, 112],
+                      data: List.generate(_roles.length, (i) => _roleRow(i, _roles[i])),
+                      headers: ['STT', 'Tên nhóm quyền', 'Mô tả', 'Trạng thái', 'Thao tác'],
+                    ),
+                    headerBuilder: (index, header) => Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: index == 0 ? Radius.circular(3) : Radius.zero,
+                          topLeft: index == 0 ? Radius.circular(3) : Radius.zero,
+                          bottomRight: index == 4 ? Radius.circular(3) : Radius.zero,
+                          topRight: index == 4 ? Radius.circular(3) : Radius.zero,
+                        ),
+                        color: AppColors.greyF2F4FA,
+                      ),
+                      height: 48,
+                      margin: EdgeInsets.only(bottom: 20),
+                      child: Align(
+                        alignment: [1, 2].contains(index) ? Alignment.centerLeft : Alignment.center,
+                        child: Text(
+                          header,
+                          style: AppTypography.style(
+                            13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.grey4A4A4A,
+                          ),
+                        ),
+                      ),
+                    ),
+                    verticalAlignments: List.generate(
+                      _roles.length,
+                      (_) => CrossAxisAlignment.center,
+                    ),
+                    verticalBorder: const Divider(color: AppColors.greyF2F4FA),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _roleRow(int index, Role role) {
+    return [
+      Center(
+        child: Text('${index + 1}', style: AppTypography.style(14, fontWeight: FontWeight.w400)),
+      ),
+      Text(role.name ?? ''),
+      Text(role.description ?? ''),
+      Center(
+        child: Container(
+          decoration: BoxDecoration(
+            color: role.status?.bgColor,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: Text(
+            role.status?.label ?? '',
+            style: AppTypography.style(
+              13,
+              fontWeight: FontWeight.w500,
+              color: role.status?.textColor,
+            ),
+          ),
+        ),
+      ),
+      Center(
+        child: IconButton(onPressed: () {}, icon: SvgPicture.asset(AppAssets.icAction)),
+      ),
+    ];
+  }
+}

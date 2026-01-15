@@ -8,7 +8,7 @@ class CustomTable extends StatelessWidget {
   final double columnSpacing;
   final CustomTableData data;
   final CrossAxisAlignment? defaultVerticalAlignment;
-  final Widget Function(String value)? headerBuilder;
+  final Widget Function(int index, String value)? headerBuilder;
   final List<CrossAxisAlignment>? horizontalAlignments;
   final double rowSpacing;
   final List<CrossAxisAlignment>? verticalAlignments;
@@ -47,11 +47,10 @@ class CustomTable extends StatelessWidget {
             for (var h = 0; h < data.headers!.length; h++)
               Expanded(
                 flex: data.columnFlexes[h],
-                child: headerBuilder?.call(data.headers![h]) ?? Text(data.headers![h]),
+                child: headerBuilder?.call(h, data.headers![h]) ?? Text(data.headers![h]),
               ),
           ],
         ),
-        if (verticalBorder != null) verticalBorder!,
       ];
     }
     return [];

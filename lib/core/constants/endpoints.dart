@@ -6,10 +6,13 @@ class EndPoints {
   static const String logout = '/logout';
   static const String updateProfile = '/profile';
 
+  // Map
+  static const String baseMap = '/api/map';
+
+  // Role
+  static const String baseRole = '/api/roles';
+
   // User management
   static const String baseUser = '/api/users';
   static const String resetPassword = '/password';
-
-  // Map
-  static const String baseMap = '/api/map';
 }

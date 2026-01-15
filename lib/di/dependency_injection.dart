@@ -2,11 +2,14 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
+import 'package:vms_flutter_client/data/datasources/role_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
+import 'package:vms_flutter_client/data/repositories/role_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_role_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
@@ -25,9 +28,11 @@ import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.d
 import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/roles/search_roles_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
+import 'package:vms_flutter_client/screens/roles/bloc/role_bloc.dart';
 
 class DependencyInjection {
   static List<SingleChildWidget> providers = [
@@ -54,6 +59,8 @@ class DependencyInjection {
     Provider<UserService>(create: (context) => UserService(context.read(), context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
+    Provider<RoleService>(create: (context) => RoleService(context.read())),
+    Provider<SearchRolesUseCase>(create: (context) => SearchRolesUseCase()),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -74,6 +81,7 @@ class DependencyInjection {
     Provider<ICustomLiveViewRepository>(
       create: (context) => CustomLiveViewRepository(context.read()),
     ),
+    Provider<IRoleRepository>(create: (context) => RoleRepository(context.read())),
 
     // Use Cases
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
@@ -128,6 +136,9 @@ class DependencyInjection {
     // Bloc
     Provider<AppBloc>(
       create: (context) => AppBloc(context.read(), context.read(), context.read(), context.read()),
+    ),
+    Provider<RoleBloc>(
+      create: (context) => RoleBloc(context.read(), context.read<SearchRolesUseCase>()),
     ),
 
     // Controller

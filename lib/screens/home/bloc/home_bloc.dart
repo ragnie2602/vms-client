@@ -20,6 +20,7 @@ class HomeTab {
     HomeTab(Routes.playback, title: 'Xem lại', svg: AppAssets.tabPlayback),
     HomeTab(Routes.addGroupCamera, title: 'Quản lý camera', svg: AppAssets.tabCameraGroups),
     HomeTab(Routes.emap, title: 'Bản đồ camera', svg: AppAssets.tabMap),
+    HomeTab(Routes.roles, title: 'Quản lý phân quyền', svg: AppAssets.tabRoles),
     HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
     HomeTab(Routes.events, title: 'Quản lý sự kiện', svg: AppAssets.tabEvents),
     HomeTab(Routes.configuration, title: 'Cấu hình hệ thống', svg: AppAssets.tabSystemConfig),
