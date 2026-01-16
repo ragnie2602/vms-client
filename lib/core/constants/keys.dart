@@ -6,4 +6,6 @@ class AppKeys {
   static const String SP_USERNAME_KEY = "username";
   static const String SP_PASSWORD_KEY = "password";
   static const String SP_SERVER_KEY = "server";
+
+  static const String SP_ACCESS_TOKEN = "accessToken";
 }

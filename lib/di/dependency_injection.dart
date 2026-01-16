@@ -35,13 +35,13 @@ class DependencyInjection {
     // Base
     Provider<SocketApiClient>(create: (_) => SocketApiClient()),
     Provider<UploadApiClient>(create: (_) => UploadApiClient()),
-    Provider<ProtobufHttpClient>(create: (_) => ProtobufHttpClient()),
+    Provider<HttpClient>(create: (_) => HttpClient()),
     Provider<UploadApiClient>(create: (_) => UploadApiClient()),
 
     // Data Sources
     Provider<AuthenticateService>(
       create: (context) => AuthenticateService(
-        httpClient: context.read<ProtobufHttpClient>(),
+        httpClient: context.read<HttpClient>(),
         socketApiClient: context.read<SocketApiClient>(),
       ),
     ),
@@ -56,7 +56,7 @@ class DependencyInjection {
     Provider<EmapService>(
       create: (context) => EmapService(context.read(), context.read()),
     ),
-    Provider<UserService>(create: (context) => UserService(context.read())),
+    Provider<UserService>(create: (context) => UserService(context.read(), context.read())),
     Provider<CustomLiveViewService>(
       create: (context) => CustomLiveViewService(context.read()),
     ),

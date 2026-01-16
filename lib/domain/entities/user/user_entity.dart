@@ -1,35 +1,48 @@
-import 'dart:ffi';
-
 import 'package:vms_flutter_client/domain/entities/user/user_status.dart';
-import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 
 class UserEntity {
-  final String account;
-  final String emailAddress;
-  final String telNumber;
-  final String password;
+  final int id;
+  final String username;
   final UserStatus status;
+  final String userType;
+  final int tenantId;
+  final String tenantName;
+  final String fullname;
+  final String? email;
+  final String? phone;
+  final String? description;
+  final int? type;
+  final List<String> permissions;
 
-  final UserType type;
-
-  final String desc;
-  final String fullName;
-  final List<int> id;
-  final bool changePassDenied;
-  final bool addCamDenied;
-  final int msgUnreadCount;
-  UserEntity({
-    required this.account,
-    required this.emailAddress,
-    required this.telNumber,
-    required this.password,
-    required this.status,
-    required this.type,
-    required this.desc,
-    required this.fullName,
+  const UserEntity({
     required this.id,
-    required this.changePassDenied,
-    required this.addCamDenied,
-    required this.msgUnreadCount,
+    required this.username,
+    required this.status,
+    required this.userType,
+    required this.tenantId,
+    required this.tenantName,
+    required this.fullname,
+    required this.email,
+    required this.phone,
+    this.description,
+    this.type,
+    required this.permissions,
   });
+
+  factory UserEntity.fromJson(Map<String, dynamic> json) {
+    return UserEntity(
+      id: json['id'],
+      username: json['username'],
+      status: UserStatus.fromValue(json['status']),
+      userType: json['userType'],
+      tenantId: json['tenantId'],
+      tenantName: json['tenantName'],
+      fullname: json['fullname'] ?? '',
+      email: json['email'],
+      phone: json['phone'],
+      description: json['description'],
+      type: json['type'],
+      permissions: List<String>.from(json['permissions']),
+    );
+  }
 }

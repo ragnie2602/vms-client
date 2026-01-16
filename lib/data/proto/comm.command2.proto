@@ -1,6 +1,5 @@
 syntax = "proto3";
 import "comm.model.proto";
-import "google/protobuf/any.proto";
 package comm;
 //option optimize_for = LITE_RUNTIME;
 //ID: [140-169]

@@ -4,7 +4,7 @@ export 'camera_service.dart';
 export 'custom_live_view_service.dart';
 export 'group_service.dart';
 export 'playback_service.dart';
-export 'protobuf_http_client.dart';
+export 'http_client.dart';
 export 'socket_api_client.dart';
 export 'user_service.dart';
 export 'control_camera_service.dart';

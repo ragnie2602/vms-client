@@ -60,7 +60,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    widget.itemUser.account,
+                    widget.itemUser.username,
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
@@ -74,7 +74,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    widget.itemUser.fullName,
+                    widget.itemUser.fullname,
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
@@ -88,7 +88,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    widget.itemUser.emailAddress,
+                    widget.itemUser.email ?? '',
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
@@ -103,7 +103,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    widget.itemUser.telNumber,
+                    widget.itemUser.phone ?? '',
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
@@ -162,18 +162,11 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                       PopupMenuItem<String>(
                         value: 'reset_password',
                         height: 32,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SvgPicture.asset(
-                              AppAssets.icReset,
-                              width: 16,
-                              height: 16,
-                            ),
+                            SvgPicture.asset(AppAssets.icReset, width: 16, height: 16),
                             SizedBox(width: 8),
                             Text(
                               'Khôi phục mật khẩu',
@@ -186,25 +179,15 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                           ],
                         ),
                       ),
-                      PopupMenuDivider(
-                        height: 0.5,
-                        color: AppColors.greyE2E8F0,
-                      ),
+                      PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                       PopupMenuItem<String>(
                         value: 'edit',
                         height: 32,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SvgPicture.asset(
-                              AppAssets.icEdit,
-                              width: 16,
-                              height: 16,
-                            ),
+                            SvgPicture.asset(AppAssets.icEdit, width: 16, height: 16),
                             SizedBox(width: 8),
                             Text(
                               'Sửa',
@@ -217,25 +200,15 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                           ],
                         ),
                       ),
-                      PopupMenuDivider(
-                        height: 0.5,
-                        color: AppColors.greyE2E8F0,
-                      ),
+                      PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
                       PopupMenuItem<String>(
                         value: 'delete',
                         height: 32,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SvgPicture.asset(
-                              AppAssets.icDelete,
-                              width: 16,
-                              height: 16,
-                            ),
+                            SvgPicture.asset(AppAssets.icDelete, width: 16, height: 16),
                             SizedBox(width: 8),
                             Text(
                               'Xóa',
@@ -249,9 +222,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                         ),
                       ),
                     ],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     // elevation set above
                   ),
                 ),

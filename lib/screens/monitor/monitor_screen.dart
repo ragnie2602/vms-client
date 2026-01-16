@@ -36,7 +36,10 @@ class _MonitorScreenState extends State<MonitorScreen> {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: PlatformBuilder.builder(
-        onDesktop: (context) => MonitorDesktopLayout(content: widget.child),
+        onDesktop: (context) => MonitorDesktopLayout(
+          content: widget.child,
+          rightPanelWidth: MediaQuery.widthOf(context) * 280 / 1600,
+        ),
         onMobile: (context) => MobileMonitorList(),
       ),
     );

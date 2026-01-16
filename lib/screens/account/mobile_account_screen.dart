@@ -91,7 +91,7 @@ class _MobileAccountScreenState extends State<MobileAccountScreen> {
                   ),
                   AccountItem(
                     onTap: () {
-                      if (AppData.instance.profile?.changePassDenied ?? false) {
+                      if (AppData.instance.profile?.canChangePassword ?? true) {
                         ToastUtil.toastFail(
                           context: context,
                           title: Text(

@@ -1,6 +1,34 @@
 syntax = "proto3";
-import "comm.model.proto";
-import "google/protobuf/any.proto";
 package comm;
-//ID: [2000-2020]
 option java_package = "com.vivas.ipcamera.core.protobuf";
+
+message ReceiveEvent
+{
+  string event_type = 1;
+  string event_data = 2;
+  string camera_id = 3;
+  uint32 RECEIVE_EVENT = 2007;
+}
+message ReceiveKick
+{
+  uint32 RECEIVE_KICK_EVENT = 2008;
+}
+
+message GetSettingAvaliable {
+  message Request
+  {
+    bytes cameras_id = 1;
+  }
+  message Reply
+  {
+    string json_data = 1;
+  }
+  enum Error
+  {
+    ERROR_DEFAULT = 0;
+    CAMERA_ID_INVALID = 1;
+    CAMERA_NOT_EXIST = 2;
+    CAMERA_NOT_SUPPORT = 3; // chỉ hỗ trợ camera onvif
+  }
+  uint32 ID = 2009;
+}

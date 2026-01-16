@@ -51,3 +51,5 @@ app.*.map.json
 
 pubspec.lock
 nul
+
+.env

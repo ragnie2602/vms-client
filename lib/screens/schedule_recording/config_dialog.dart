@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_event.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_state.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/general_config_camera_widget.dart';
+import 'package:vms_flutter_client/screens/schedule_recording/widgets/intelligent_analysis.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/widgets/schedule_recording_widget.dart';
 
 Future<T?> showDialogConfig<T>(
@@ -198,21 +199,7 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
                       ),
                     ),
                   ),
-                  Expanded(
-                    flex: 8,
-                    child: state.selectedTab == ConfigCameraTab.generalConfig
-                        ? GeneralConfigCameraWidget(
-                            camera: widget.camera,
-                            cameraInfo: state.cameraInfo,
-                          )
-                        : ScheduleRecordingWidget(
-                            camera: widget.camera,
-                            isSaving: state.isSaving,
-                            onSave: (value) {
-                              _configSchedule(newRecording: value);
-                            },
-                          ),
-                  ),
+                  Expanded(flex: 8, child: _buildTabContent(state, state.selectedTab)),
                 ],
               ),
             ),
@@ -222,9 +209,28 @@ class _ConfigCameraWidgetState extends State<ConfigCameraWidget> {
       },
     );
   }
+
+  Widget _buildTabContent(ScheduleSuccessState state, ConfigCameraTab? tab) {
+    switch (tab) {
+      case ConfigCameraTab.generalConfig:
+        return GeneralConfigCameraWidget(camera: widget.camera, cameraInfo: state.cameraInfo);
+      case ConfigCameraTab.scheduleRecording:
+        return ScheduleRecordingWidget(
+          camera: widget.camera,
+          isSaving: state.isSaving,
+          onSave: (value) {
+            _configSchedule(newRecording: value);
+          },
+        );
+      case ConfigCameraTab.intelligentAnalysis:
+        return IntelligentAnalysisWidget();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
 }
 
-enum ConfigCameraTab { generalConfig, scheduleRecording }
+enum ConfigCameraTab { generalConfig, scheduleRecording, intelligentAnalysis }
 
 extension ConfigCameraTabExtension on ConfigCameraTab {
   String get title {
@@ -233,6 +239,8 @@ extension ConfigCameraTabExtension on ConfigCameraTab {
         return 'Thông tin camera';
       case ConfigCameraTab.scheduleRecording:
         return 'Lập lịch ghi hình';
+      case ConfigCameraTab.intelligentAnalysis:
+        return 'Phân tích thông minh';
     }
   }
 }

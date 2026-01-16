@@ -6,9 +6,8 @@ part 'authentication.g.dart';
 class Authentication with _$Authentication {
   const factory Authentication({
     required String account,
-    required List<int> sessionId,
-    required List<int> uid,
-    required String ssid,
+    required String sessionId,
+    required String uid,
     required String host,
     required int port,
   }) = _Authentication;

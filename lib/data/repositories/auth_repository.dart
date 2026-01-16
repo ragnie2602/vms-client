@@ -1,3 +1,4 @@
+import 'package:vms_flutter_client/data/models/response/authenticate_response.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
 import '../../domain/i_repositories/i_auth_repository.dart';
 import '../datasources/authenticate_service.dart';
@@ -12,8 +13,8 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   Future<void> connectSocket({
     required String host,
     required int port,
-    required List<int> uid,
-    required List<int> sessionId,
+    required String uid,
+    required String sessionId,
   }) async {
     await authenticateService.connectSocket(
       host: host,
@@ -29,31 +30,23 @@ class AuthRepository extends BaseRepository implements IAuthRepository {
   }
 
   @override
-  Future<Authentication> authenticate(
+  Future<AuthenticateResponse> authenticate(
     String server,
     String username,
     String password,
   ) async {
     // Call the real authenticate API - let exceptions propagate
-    final authReply = await authenticateService.authenticate(
+    return await authenticateService.authenticate(
       username: username,
       password: password,
       server: server,
-    );
-
-    return Authentication(
-      account: username,
-      sessionId: authReply.sessionId,
-      uid: authReply.uid,
-      ssid: authReply.ssid,
-      host: authReply.webSockHost,
-      port: authReply.webSockPort,
     );
   }
 
   @override
   Future<void> logout() async {
     await authenticateService.logOutSocket();
+    await authenticateService.logout();
   }
 
   @override

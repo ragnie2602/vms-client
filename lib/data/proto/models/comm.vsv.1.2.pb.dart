@@ -13,8 +13,8 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'comm.model.pb.dart' as $1;
-import 'comm.model.pbenum.dart' as $1;
+import 'comm.model.pb.dart' as $0;
+import 'comm.model.pbenum.dart' as $0;
 
 export 'comm.vsv.1.2.pbenum.dart';
 
@@ -52,7 +52,7 @@ class ListTag_Request extends $pb.GeneratedMessage {
 
 class ListTag_Reply extends $pb.GeneratedMessage {
   factory ListTag_Reply({
-    $core.Iterable<$1.CamTag>? tags,
+    $core.Iterable<$0.CamTag>? tags,
   }) {
     final $result = create();
     if (tags != null) {
@@ -65,7 +65,7 @@ class ListTag_Reply extends $pb.GeneratedMessage {
   factory ListTag_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListTag.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.CamTag>(1, _omitFieldNames ? '' : 'tags', $pb.PbFieldType.PM, subBuilder: $1.CamTag.create)
+    ..pc<$0.CamTag>(1, _omitFieldNames ? '' : 'tags', $pb.PbFieldType.PM, subBuilder: $0.CamTag.create)
     ..hasRequiredFields = false
   ;
 
@@ -91,7 +91,7 @@ class ListTag_Reply extends $pb.GeneratedMessage {
   static ListTag_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.CamTag> get tags => $_getList(0);
+  $core.List<$0.CamTag> get tags => $_getList(0);
 }
 
 class ListTag extends $pb.GeneratedMessage {
@@ -146,7 +146,7 @@ class ListTag extends $pb.GeneratedMessage {
 
 class AddTag_Request extends $pb.GeneratedMessage {
   factory AddTag_Request({
-    $1.CamTag? tag,
+    $0.CamTag? tag,
   }) {
     final $result = create();
     if (tag != null) {
@@ -159,7 +159,7 @@ class AddTag_Request extends $pb.GeneratedMessage {
   factory AddTag_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddTag.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.CamTag>(1, _omitFieldNames ? '' : 'tag', subBuilder: $1.CamTag.create)
+    ..aOM<$0.CamTag>(1, _omitFieldNames ? '' : 'tag', subBuilder: $0.CamTag.create)
     ..hasRequiredFields = false
   ;
 
@@ -185,20 +185,20 @@ class AddTag_Request extends $pb.GeneratedMessage {
   static AddTag_Request? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.CamTag get tag => $_getN(0);
+  $0.CamTag get tag => $_getN(0);
   @$pb.TagNumber(1)
-  set tag($1.CamTag v) { setField(1, v); }
+  set tag($0.CamTag v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTag() => $_has(0);
   @$pb.TagNumber(1)
   void clearTag() => clearField(1);
   @$pb.TagNumber(1)
-  $1.CamTag ensureTag() => $_ensure(0);
+  $0.CamTag ensureTag() => $_ensure(0);
 }
 
 class AddTag_Reply extends $pb.GeneratedMessage {
   factory AddTag_Reply({
-    $1.CamTag? tag,
+    $0.CamTag? tag,
   }) {
     final $result = create();
     if (tag != null) {
@@ -211,7 +211,7 @@ class AddTag_Reply extends $pb.GeneratedMessage {
   factory AddTag_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddTag.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.CamTag>(1, _omitFieldNames ? '' : 'tag', subBuilder: $1.CamTag.create)
+    ..aOM<$0.CamTag>(1, _omitFieldNames ? '' : 'tag', subBuilder: $0.CamTag.create)
     ..hasRequiredFields = false
   ;
 
@@ -237,15 +237,15 @@ class AddTag_Reply extends $pb.GeneratedMessage {
   static AddTag_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.CamTag get tag => $_getN(0);
+  $0.CamTag get tag => $_getN(0);
   @$pb.TagNumber(1)
-  set tag($1.CamTag v) { setField(1, v); }
+  set tag($0.CamTag v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTag() => $_has(0);
   @$pb.TagNumber(1)
   void clearTag() => clearField(1);
   @$pb.TagNumber(1)
-  $1.CamTag ensureTag() => $_ensure(0);
+  $0.CamTag ensureTag() => $_ensure(0);
 }
 
 class AddTag extends $pb.GeneratedMessage {
@@ -432,7 +432,7 @@ class DelTag extends $pb.GeneratedMessage {
 
 class UpdateTag_Request extends $pb.GeneratedMessage {
   factory UpdateTag_Request({
-    $1.CamTag? tag,
+    $0.CamTag? tag,
   }) {
     final $result = create();
     if (tag != null) {
@@ -445,7 +445,7 @@ class UpdateTag_Request extends $pb.GeneratedMessage {
   factory UpdateTag_Request.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateTag.Request', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.CamTag>(1, _omitFieldNames ? '' : 'tag', subBuilder: $1.CamTag.create)
+    ..aOM<$0.CamTag>(1, _omitFieldNames ? '' : 'tag', subBuilder: $0.CamTag.create)
     ..hasRequiredFields = false
   ;
 
@@ -471,20 +471,20 @@ class UpdateTag_Request extends $pb.GeneratedMessage {
   static UpdateTag_Request? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.CamTag get tag => $_getN(0);
+  $0.CamTag get tag => $_getN(0);
   @$pb.TagNumber(1)
-  set tag($1.CamTag v) { setField(1, v); }
+  set tag($0.CamTag v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTag() => $_has(0);
   @$pb.TagNumber(1)
   void clearTag() => clearField(1);
   @$pb.TagNumber(1)
-  $1.CamTag ensureTag() => $_ensure(0);
+  $0.CamTag ensureTag() => $_ensure(0);
 }
 
 class UpdateTag_Reply extends $pb.GeneratedMessage {
   factory UpdateTag_Reply({
-    $1.CamTag? tag,
+    $0.CamTag? tag,
   }) {
     final $result = create();
     if (tag != null) {
@@ -497,7 +497,7 @@ class UpdateTag_Reply extends $pb.GeneratedMessage {
   factory UpdateTag_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateTag.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..aOM<$1.CamTag>(1, _omitFieldNames ? '' : 'tag', subBuilder: $1.CamTag.create)
+    ..aOM<$0.CamTag>(1, _omitFieldNames ? '' : 'tag', subBuilder: $0.CamTag.create)
     ..hasRequiredFields = false
   ;
 
@@ -523,15 +523,15 @@ class UpdateTag_Reply extends $pb.GeneratedMessage {
   static UpdateTag_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.CamTag get tag => $_getN(0);
+  $0.CamTag get tag => $_getN(0);
   @$pb.TagNumber(1)
-  set tag($1.CamTag v) { setField(1, v); }
+  set tag($0.CamTag v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTag() => $_has(0);
   @$pb.TagNumber(1)
   void clearTag() => clearField(1);
   @$pb.TagNumber(1)
-  $1.CamTag ensureTag() => $_ensure(0);
+  $0.CamTag ensureTag() => $_ensure(0);
 }
 
 class UpdateTag extends $pb.GeneratedMessage {
@@ -587,7 +587,7 @@ class UpdateTag extends $pb.GeneratedMessage {
 class ImportCamera_ImportCell extends $pb.GeneratedMessage {
   factory ImportCamera_ImportCell({
     $core.int? indexNumer,
-    $1.CameraType? cameraType,
+    $0.CameraType? cameraType,
     $core.String? cameraName,
     $core.String? onvifXaadr,
     $core.String? userName,
@@ -632,7 +632,7 @@ class ImportCamera_ImportCell extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ImportCamera.ImportCell', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'indexNumer', $pb.PbFieldType.OU3)
-    ..e<$1.CameraType>(2, _omitFieldNames ? '' : 'cameraType', $pb.PbFieldType.OE, defaultOrMaker: $1.CameraType.UNKNOW, valueOf: $1.CameraType.valueOf, enumValues: $1.CameraType.values)
+    ..e<$0.CameraType>(2, _omitFieldNames ? '' : 'cameraType', $pb.PbFieldType.OE, defaultOrMaker: $0.CameraType.UNKNOW, valueOf: $0.CameraType.valueOf, enumValues: $0.CameraType.values)
     ..aOS(3, _omitFieldNames ? '' : 'cameraName')
     ..aOS(4, _omitFieldNames ? '' : 'onvifXaadr')
     ..aOS(5, _omitFieldNames ? '' : 'userName')
@@ -674,9 +674,9 @@ class ImportCamera_ImportCell extends $pb.GeneratedMessage {
   void clearIndexNumer() => clearField(1);
 
   @$pb.TagNumber(2)
-  $1.CameraType get cameraType => $_getN(1);
+  $0.CameraType get cameraType => $_getN(1);
   @$pb.TagNumber(2)
-  set cameraType($1.CameraType v) { setField(2, v); }
+  set cameraType($0.CameraType v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasCameraType() => $_has(1);
   @$pb.TagNumber(2)
@@ -792,7 +792,7 @@ class ImportCamera_Request extends $pb.GeneratedMessage {
 
 class ImportCamera_Reply extends $pb.GeneratedMessage {
   factory ImportCamera_Reply({
-    $core.Iterable<$1.Camera>? caneras,
+    $core.Iterable<$0.Camera>? caneras,
     $core.Iterable<ImportCamera_ImportCell>? cameraError,
   }) {
     final $result = create();
@@ -809,7 +809,7 @@ class ImportCamera_Reply extends $pb.GeneratedMessage {
   factory ImportCamera_Reply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ImportCamera.Reply', package: const $pb.PackageName(_omitMessageNames ? '' : 'comm'), createEmptyInstance: create)
-    ..pc<$1.Camera>(1, _omitFieldNames ? '' : 'caneras', $pb.PbFieldType.PM, subBuilder: $1.Camera.create)
+    ..pc<$0.Camera>(1, _omitFieldNames ? '' : 'caneras', $pb.PbFieldType.PM, subBuilder: $0.Camera.create)
     ..pc<ImportCamera_ImportCell>(2, _omitFieldNames ? '' : 'cameraError', $pb.PbFieldType.PM, subBuilder: ImportCamera_ImportCell.create)
     ..hasRequiredFields = false
   ;
@@ -836,7 +836,7 @@ class ImportCamera_Reply extends $pb.GeneratedMessage {
   static ImportCamera_Reply? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$1.Camera> get caneras => $_getList(0);
+  $core.List<$0.Camera> get caneras => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.List<ImportCamera_ImportCell> get cameraError => $_getList(1);

@@ -147,11 +147,8 @@ const Login$json = {
 const Login_Request$json = {
   '1': 'Request',
   '2': [
-    {'1': 'uid', '3': 1, '4': 1, '5': 12, '10': 'uid'},
-    {'1': 'session_id', '3': 2, '4': 1, '5': 12, '10': 'sessionId'},
-    {'1': 'target', '3': 3, '4': 1, '5': 14, '6': '.comm.ProjectTarget', '10': 'target'},
-    {'1': 'apiVersion', '3': 4, '4': 1, '5': 5, '10': 'apiVersion'},
-    {'1': 'platform', '3': 5, '4': 1, '5': 13, '10': 'platform'},
+    {'1': 'uid', '3': 1, '4': 1, '5': 9, '10': 'uid'},
+    {'1': 'session_id', '3': 2, '4': 1, '5': 9, '10': 'sessionId'},
   ],
 };
 
@@ -196,22 +193,20 @@ const Login_Error$json = {
 
 /// Descriptor for `Login`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List loginDescriptor = $convert.base64Decode(
-    'CgVMb2dpbhIOCgJJRBhmIAEoDVICSUQaowEKB1JlcXVlc3QSEAoDdWlkGAEgASgMUgN1aWQSHQ'
-    'oKc2Vzc2lvbl9pZBgCIAEoDFIJc2Vzc2lvbklkEisKBnRhcmdldBgDIAEoDjITLmNvbW0uUHJv'
-    'amVjdFRhcmdldFIGdGFyZ2V0Eh4KCmFwaVZlcnNpb24YBCABKAVSCmFwaVZlcnNpb24SGgoIcG'
-    'xhdGZvcm0YBSABKA1SCHBsYXRmb3JtGuwDCgVSZXBseRI0Cgx0dXJuX2FjY291bnQYASABKAsy'
-    'ES5jb21tLlR1cm5BY2NvdW50Ugt0dXJuQWNjb3VudBIfCgtzZXJ2ZXJfdGltZRgCIAEoBFIKc2'
-    'VydmVyVGltZRInCgdwcm9maWxlGAMgASgLMg0uY29tbS5Qcm9maWxlUgdwcm9maWxlEjAKFHNl'
-    'cnZlcl92ZXJzaW9uX2J1aWxkGAQgASgNUhJzZXJ2ZXJWZXJzaW9uQnVpbGQSJAoOYmFzZV9pbW'
-    'FnZV91cmwYBSABKAlSDGJhc2VJbWFnZVVybBImCg9saXN0X250cF9zZXJ2ZXIYBiADKAlSDWxp'
-    'c3ROdHBTZXJ2ZXISIQoMYnVpbGRfbnVtYmVyGAcgASgNUgtidWlsZE51bWJlchIjCg1saW5rX2'
-    'Rvd25sb2FkGAggASgJUgxsaW5rRG93bmxvYWQSKwoGdGFyZ2V0GAkgASgOMhMuY29tbS5Qcm9q'
-    'ZWN0VGFyZ2V0UgZ0YXJnZXQSLgoIYmFzZV91cmwYCiABKAsyEy5jb21tLkxvZ2luLkJhc2VVUk'
-    'xSB2Jhc2VVcmwSPgoPbGljZW5zZV9wcm9maWxlGAsgASgLMhUuY29tbS5MaWNlbnNlX3Byb2Zp'
-    'bGVSDmxpY2Vuc2VQcm9maWxlGi0KB0Jhc2VVUkwSIgoNZmFjZV9iYXNlX3VybBgBIAEoCVILZm'
-    'FjZUJhc2VVcmwijgEKBUVycm9yEhEKDUVSUk9SX0RFRkFVTFQQABITCg9TRVNTSU9OX0VYUElS'
-    'RUQQARIQCgxVU0VSX0lOVkFMSUQQAhIdChlWRVJTVF9JSU9OX0FQSV9ERVBSRUNBVEVEEAMSFw'
-    'oTUFJPSkVDVF9UQVJHRU5WQUxJRBAEEhMKD0xJQ0VOU0VfRVhQSVJFRBAG');
+    'CgVMb2dpbhIOCgJJRBhmIAEoDVICSUQaOgoHUmVxdWVzdBIQCgN1aWQYASABKAlSA3VpZBIdCg'
+    'pzZXNzaW9uX2lkGAIgASgJUglzZXNzaW9uSWQa7AMKBVJlcGx5EjQKDHR1cm5fYWNjb3VudBgB'
+    'IAEoCzIRLmNvbW0uVHVybkFjY291bnRSC3R1cm5BY2NvdW50Eh8KC3NlcnZlcl90aW1lGAIgAS'
+    'gEUgpzZXJ2ZXJUaW1lEicKB3Byb2ZpbGUYAyABKAsyDS5jb21tLlByb2ZpbGVSB3Byb2ZpbGUS'
+    'MAoUc2VydmVyX3ZlcnNpb25fYnVpbGQYBCABKA1SEnNlcnZlclZlcnNpb25CdWlsZBIkCg5iYX'
+    'NlX2ltYWdlX3VybBgFIAEoCVIMYmFzZUltYWdlVXJsEiYKD2xpc3RfbnRwX3NlcnZlchgGIAMo'
+    'CVINbGlzdE50cFNlcnZlchIhCgxidWlsZF9udW1iZXIYByABKA1SC2J1aWxkTnVtYmVyEiMKDW'
+    'xpbmtfZG93bmxvYWQYCCABKAlSDGxpbmtEb3dubG9hZBIrCgZ0YXJnZXQYCSABKA4yEy5jb21t'
+    'LlByb2plY3RUYXJnZXRSBnRhcmdldBIuCghiYXNlX3VybBgKIAEoCzITLmNvbW0uTG9naW4uQm'
+    'FzZVVSTFIHYmFzZVVybBI+Cg9saWNlbnNlX3Byb2ZpbGUYCyABKAsyFS5jb21tLkxpY2Vuc2Vf'
+    'cHJvZmlsZVIObGljZW5zZVByb2ZpbGUaLQoHQmFzZVVSTBIiCg1mYWNlX2Jhc2VfdXJsGAEgAS'
+    'gJUgtmYWNlQmFzZVVybCKOAQoFRXJyb3ISEQoNRVJST1JfREVGQVVMVBAAEhMKD1NFU1NJT05f'
+    'RVhQSVJFRBABEhAKDFVTRVJfSU5WQUxJRBACEh0KGVZFUlNUX0lJT05fQVBJX0RFUFJFQ0FURU'
+    'QQAxIXChNQUk9KRUNUX1RBUkdFTlZBTElEEAQSEwoPTElDRU5TRV9FWFBJUkVEEAY=');
 
 @$core.Deprecated('Use logoutDescriptor instead')
 const Logout$json = {
@@ -969,37 +964,4 @@ final $typed_data.Uint8List vconnexLoginDescriptor = $convert.base64Decode(
     'oFRXJyb3ISEQoNRVJST1JfREVGQVVMVBAAEhMKD1NFU1NJT05fRVhQSVJFRBABEhAKDFVTRVJf'
     'SU5WQUxJRBACEh0KGVZFUlNUX0lJT05fQVBJX0RFUFJFQ0FURUQQAxIXChNQUk9KRUNUX1RBUk'
     'dFTlZBTElEEAQSEwoPTElDRU5TRV9FWFBJUkVEEAY=');
-
-@$core.Deprecated('Use removeAccountDescriptor instead')
-const RemoveAccount$json = {
-  '1': 'RemoveAccount',
-  '2': [
-    {'1': 'ID', '3': 119, '4': 1, '5': 5, '10': 'ID'},
-  ],
-  '3': [RemoveAccount_Request$json, RemoveAccount_Reply$json],
-  '4': [RemoveAccount_Error$json],
-};
-
-@$core.Deprecated('Use removeAccountDescriptor instead')
-const RemoveAccount_Request$json = {
-  '1': 'Request',
-};
-
-@$core.Deprecated('Use removeAccountDescriptor instead')
-const RemoveAccount_Reply$json = {
-  '1': 'Reply',
-};
-
-@$core.Deprecated('Use removeAccountDescriptor instead')
-const RemoveAccount_Error$json = {
-  '1': 'Error',
-  '2': [
-    {'1': 'ERROR_DEFAULT', '2': 0},
-  ],
-};
-
-/// Descriptor for `RemoveAccount`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List removeAccountDescriptor = $convert.base64Decode(
-    'Cg1SZW1vdmVBY2NvdW50Eg4KAklEGHcgASgFUgJJRBoJCgdSZXF1ZXN0GgcKBVJlcGx5IhoKBU'
-    'Vycm9yEhEKDUVSUk9SX0RFRkFVTFQQAA==');
 

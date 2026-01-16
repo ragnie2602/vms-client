@@ -32,8 +32,7 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
     return Focus(
       autofocus: true,
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.escape) {
+        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
           final appBloc = context.read<AppBloc>();
           if (appBloc.state.displayFullScreenLiveView) {
             appBloc.add(ToggleMonitorDisplayMode());
@@ -55,19 +54,12 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
                   rightController: _rightController,
                 ),
               ),
-              Container(
-                width: double.infinity,
-                height: 1,
-                color: AppColors.scaffoldBg,
-              ),
+              Container(width: double.infinity, height: 1, color: AppColors.scaffoldBg),
               Expanded(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Panel(
-                      expandedWidth: widget.leftPanelWidth,
-                      controller: _leftController,
-                    ),
+                    Panel(expandedWidth: widget.leftPanelWidth, controller: _leftController),
 
                     Expanded(
                       child: !shouldDisplayFullScreen
@@ -83,6 +75,7 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
                     Panel(
                       expandedWidth: widget.rightPanelWidth,
                       controller: _rightController,
+                      icCloseOnContent: true,
                     ),
                   ],
                 ),

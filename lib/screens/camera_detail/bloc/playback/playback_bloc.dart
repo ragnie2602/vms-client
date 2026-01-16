@@ -7,7 +7,7 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/core/utils/background_task.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
-import 'package:vms_flutter_client/data/datasources/protobuf_http_client.dart';
+import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/domain/entities/playback/playback_video.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 
@@ -16,7 +16,7 @@ part 'playback_state.dart';
 
 class PlaybackBloc extends BaseBloc<PlaybackEvent, PlaybackState> {
   final IPlaybackRepository playbackRepository;
-  final ProtobufHttpClient client;
+  final HttpClient client;
 
   PlaybackBloc(this.playbackRepository, this.client)
     : super(PlaybackInitial()) {

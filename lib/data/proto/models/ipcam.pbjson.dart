@@ -28,6 +28,8 @@ const ResultType$json = {
     {'1': 'NO_CHANGED', '2': 1005},
     {'1': 'NETWORK_ERROR', '2': 1006},
     {'1': 'DATA_ERROR', '2': 1007},
+    {'1': 'INTERNAL_ERROR_500', '2': 1008},
+    {'1': 'PERMISSION_DENIED_401', '2': 1009},
   ],
 };
 
@@ -36,7 +38,8 @@ final $typed_data.Uint8List resultTypeDescriptor = $convert.base64Decode(
     'CgpSZXN1bHRUeXBlEgYKAk9LEAASFAoPUkVRVUVTVF9JTlZBTElEEOgHEhQKD1NFU1NJT05fSU'
     '5WQUxJRBDpBxITCg5TRVNTSU9OX0VYUElSRRDqBxIRCgxTSVpFX0xJTUlURUQQ6wcSDQoIREJf'
     'RVJST1IQ7AcSDwoKTk9fQ0hBTkdFRBDtBxISCg1ORVRXT1JLX0VSUk9SEO4HEg8KCkRBVEFfRV'
-    'JST1IQ7wc=');
+    'JST1IQ7wcSFwoSSU5URVJOQUxfRVJST1JfNTAwEPAHEhoKFVBFUk1JU1NJT05fREVOSUVEXzQw'
+    'MRDxBw==');
 
 @$core.Deprecated('Use requestDescriptor instead')
 const Request$json = {

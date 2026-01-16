@@ -1,0 +1,407 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/home/components/app_button.dart';
+import 'package:vms_flutter_client/screens/shared/custom_table.dart';
+
+class EventDetailDialog extends StatefulWidget {
+  const EventDetailDialog({super.key});
+
+  @override
+  State<EventDetailDialog> createState() => _EventDetailDialogState();
+}
+
+class _EventDetailDialogState extends State<EventDetailDialog> with TickerProviderStateMixin {
+  late TabController tabController;
+
+  bool imageMode = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: SizedBox(
+        height: MediaQuery.heightOf(context) * 624 / 900,
+        width: MediaQuery.widthOf(context) * 980 / 1600,
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: AppColors.greyF2F4FA, width: 1)),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                children: [
+                  Text(
+                    'Chi tiết sự kiện',
+                    style: AppTypography.style(20, fontWeight: FontWeight.w600),
+                  ),
+                  Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close, size: 24),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(25),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _CustomTabBar(controller: tabController),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 555,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: TabBarView(
+                                    controller: tabController,
+                                    children: [
+                                      Align(alignment: Alignment.topCenter, child: _imageTab()),
+                                      Align(alignment: Alignment.topCenter, child: _VideoPlayer()),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  'Ghi chú:',
+                                  style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                                ),
+                                const SizedBox(height: 12),
+                                Expanded(
+                                  child: TextField(
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.secondary),
+                                      ),
+                                      hintStyle: AppTypography.style(
+                                        14,
+                                        color: AppColors.grey92929D,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      hintText: 'Nhập ghi chú',
+                                    ),
+                                    expands: true,
+                                    maxLines: null,
+                                    textAlignVertical: TextAlignVertical.top,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Expanded(
+                                      child: AppButton.outline(
+                                        borderColor: AppColors.greyE2E8F0,
+                                        label: 'Hủy',
+                                        onPressed: () => Navigator.pop(context),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: AppButton.filled(
+                                        label: 'Lưu',
+                                        onPressed: () => Navigator.pop(context),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 365,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.greyE2E8F0),
+                                borderRadius: BorderRadius.circular(6),
+                                color: AppColors.greyF2F4FA,
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Phát hiện xâm nhập',
+                                    style: AppTypography.style(14, fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  CustomTable(
+                                    columnSpacing: 10,
+                                    data: CustomTableData(
+                                      columnFlexes: [0, 1],
+                                      data: [
+                                        [
+                                          SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
+                                          Text(
+                                            '20:30 20/12/2025',
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                        [
+                                          SvgPicture.asset(AppAssets.icVideoOn, height: 20),
+                                          Text(
+                                            'Camera cổng 1',
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                        [
+                                          SvgPicture.asset(AppAssets.icLocation2, height: 20),
+                                          Text(
+                                            'Cổng 1',
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    rowSpacing: 5,
+                                    verticalAlignments: [
+                                      CrossAxisAlignment.center,
+                                      CrossAxisAlignment.center,
+                                      CrossAxisAlignment.center,
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _imageTab() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: Image.network(
+        'https://assets.nintendo.com/image/upload/q_auto/f_auto/store/software/switch2/70010000105851/8787627be7f26ae7984456ffd9af17bea845032cebbf59fe6eeb596dea6bb20e',
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+}
+
+class _CustomTabBar extends StatefulWidget {
+  final TabController controller;
+
+  const _CustomTabBar({required this.controller});
+
+  @override
+  State<_CustomTabBar> createState() => _CustomTabBarState();
+}
+
+class _CustomTabBarState extends State<_CustomTabBar> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(() => setState(() {}));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _getTab(icon: AppAssets.icImage, index: 0, title: 'Ảnh sự kiện'),
+        _getTab(icon: AppAssets.icVideoOn, index: 1, title: 'Video ghi hình'),
+        const Spacer(),
+        ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.blueD7E5F1,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(3),
+              side: BorderSide(color: AppColors.secondary),
+            ),
+          ),
+          child: Row(
+            children: [
+              SvgPicture.asset(AppAssets.icDownloadFile, color: AppColors.secondary),
+              const SizedBox(width: 8),
+              Text(
+                'Tải ${widget.controller.index == 0 ? 'ảnh' : 'video'}',
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.secondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  _getTab({required String icon, required int index, required String title}) {
+    return Ink(
+      decoration: BoxDecoration(
+        border: widget.controller.index == index ? null : Border.all(color: AppColors.greyF2F4FA),
+        borderRadius: index == 0
+            ? BorderRadius.only(bottomLeft: Radius.circular(3), topLeft: Radius.circular(3))
+            : BorderRadius.only(bottomRight: Radius.circular(3), topRight: Radius.circular(3)),
+        color: widget.controller.index == index ? AppColors.secondary : AppColors.greyFBFBFB,
+      ),
+      child: InkWell(
+        onTap: () => widget.controller.animateTo(index),
+        borderRadius: BorderRadius.circular(4),
+        hoverColor: widget.controller.index == index
+            ? AppColors.secondary.withOpacity(0.9)
+            : AppColors.greyF2F4FA.withOpacity(0.5),
+        splashColor: widget.controller.index == index
+            ? Colors.white.withOpacity(0.2)
+            : AppColors.grey64748B.withOpacity(0.1),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SvgPicture.asset(
+                icon,
+                color: widget.controller.index == index ? Colors.white : AppColors.black,
+                height: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                  color: widget.controller.index == index ? Colors.white : AppColors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoPlayer extends StatefulWidget {
+  const _VideoPlayer();
+
+  @override
+  State<_VideoPlayer> createState() => _VideoPlayerState();
+}
+
+class _VideoPlayerState extends State<_VideoPlayer> {
+  bool playing = false;
+  Timer? timer;
+  ValueNotifier<double> progress = ValueNotifier(0);
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: Stack(
+        children: [
+          Image.network(
+            'https://cdn.wikimg.net/en/hkwiki/images/5/57/SoSpromo1.jpg',
+            fit: BoxFit.contain,
+          ),
+          Positioned.fill(
+            child: IconButton(
+              onPressed: () {
+                setState(() => playing = !playing);
+                if (playing) {
+                  timer?.cancel();
+                  timer = Timer.periodic(Duration(milliseconds: 100), (t) {
+                    if (progress.value >= 4.0) {
+                      timer?.cancel();
+                      progress.value = 0;
+                      setState(() => playing = false);
+                      return;
+                    }
+                    progress.value += 0.1;
+                  });
+                } else {
+                  timer?.cancel();
+                }
+              },
+              icon: Icon(playing ? Icons.pause : Icons.play_circle, size: 48, color: Colors.white),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ValueListenableBuilder(
+              valueListenable: progress,
+              builder: (context, value, child) => LinearProgressIndicator(
+                backgroundColor: AppColors.greyCACACA,
+                color: AppColors.secondary,
+                value: value.clamp(0.0, 4.0) / 4.0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+}

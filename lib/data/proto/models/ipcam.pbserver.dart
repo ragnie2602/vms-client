@@ -15,24 +15,24 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'ipcam.pb.dart' as $2;
+import 'ipcam.pb.dart' as $1;
 import 'ipcam.pbjson.dart';
 
 export 'ipcam.pb.dart';
 
 abstract class IPCAMServiceBase extends $pb.GeneratedService {
-  $async.Future<$2.Reply> sendRequest($pb.ServerContext ctx, $2.Request request);
+  $async.Future<$1.Reply> sendRequest($pb.ServerContext ctx, $1.Request request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
-      case 'SendRequest': return $2.Request();
+      case 'SendRequest': return $1.Request();
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
 
   $async.Future<$pb.GeneratedMessage> handleCall($pb.ServerContext ctx, $core.String methodName, $pb.GeneratedMessage request) {
     switch (methodName) {
-      case 'SendRequest': return this.sendRequest(ctx, request as $2.Request);
+      case 'SendRequest': return this.sendRequest(ctx, request as $1.Request);
       default: throw $core.ArgumentError('Unknown method: $methodName');
     }
   }

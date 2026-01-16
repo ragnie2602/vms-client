@@ -19,6 +19,7 @@ import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.da
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
+import 'package:vms_flutter_client/screens/event/event_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/home/bloc/change_my_info_bloc.dart';
@@ -94,12 +95,12 @@ enum Routes {
     description:
         'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
   ),
-  users(
-    name: 'users',
-    path: '/users',
-    title: 'Quản lý tài khoản',
-    description:
-        'Cho phép quản trị viên kiểm soát ai có thể xem camera của mình và cách thức họ truy cập',
+  users(name: 'users', path: '/users', title: 'Quản lý tài khoản', description: ''),
+  events(
+    name: 'events',
+    path: '/events',
+    title: 'Quản lý sự kiện',
+    description: 'Cho phép quản trị viên tạo và quản lý sự kiện',
   ),
   configuration(
     name: 'system_configuration',
@@ -352,11 +353,15 @@ class AppRouter {
             path: Routes.about.path,
             name: Routes.about.name,
             pageBuilder: (context, state) {
-              return fadeTransition(
-                context: context,
-                state: state,
-                child: AboutScreen(),
-              );
+              return fadeTransition(context: context, state: state, child: AboutScreen());
+            },
+          ),
+
+          GoRoute(
+            path: Routes.events.path,
+            name: Routes.events.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: EventScreen());
             },
           ),
 

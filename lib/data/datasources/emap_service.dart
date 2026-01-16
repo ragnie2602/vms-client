@@ -33,7 +33,7 @@ class EmapService {
 
     // Build protobuf request
     final request = PostEmap_Request()
-      ..userId = profile.uid
+      ..userId = profile.uid.codeUnits
       ..emapInfo = (EmapInfo()
         ..emapName = emapName
         ..backgroundPath = ""

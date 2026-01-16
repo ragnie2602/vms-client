@@ -23,6 +23,8 @@ class ResultType extends $pb.ProtobufEnum {
   static const ResultType NO_CHANGED = ResultType._(1005, _omitEnumNames ? '' : 'NO_CHANGED');
   static const ResultType NETWORK_ERROR = ResultType._(1006, _omitEnumNames ? '' : 'NETWORK_ERROR');
   static const ResultType DATA_ERROR = ResultType._(1007, _omitEnumNames ? '' : 'DATA_ERROR');
+  static const ResultType INTERNAL_ERROR_500 = ResultType._(1008, _omitEnumNames ? '' : 'INTERNAL_ERROR_500');
+  static const ResultType PERMISSION_DENIED_401 = ResultType._(1009, _omitEnumNames ? '' : 'PERMISSION_DENIED_401');
 
   static const $core.List<ResultType> values = <ResultType> [
     OK,
@@ -34,6 +36,8 @@ class ResultType extends $pb.ProtobufEnum {
     NO_CHANGED,
     NETWORK_ERROR,
     DATA_ERROR,
+    INTERNAL_ERROR_500,
+    PERMISSION_DENIED_401,
   ];
 
   static final $core.Map<$core.int, ResultType> _byValue = $pb.ProtobufEnum.initByValue(values);
