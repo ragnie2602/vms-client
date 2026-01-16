@@ -369,7 +369,8 @@ class PlaybackPlayerMKState extends State<PlaybackPlayerMK> with TickerProviderS
   // Dual task queue
   void changeVolume(double volume) {
     _dualQueue.add(() async {
-      await _player.setVolume(volume);
+      final clamped = volume.clamp(0, AppConfig.PLAYER_MAX_VOLUME_PERCENT).toDouble();
+      await _player.setVolume(clamped);
     });
   }
 

@@ -69,6 +69,8 @@ class AppConfig {
   static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 30);
   static const SOCKET_CONNECTION_TIMEOUT = 60;
 
+  static const double PLAYER_MAX_VOLUME_PERCENT = 300;
+
   static const RECORDING_MAX_DURATION = Duration(minutes: 5);
 
   /* Monitoring view */
