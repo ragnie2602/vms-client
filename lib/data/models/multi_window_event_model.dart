@@ -1,7 +1,14 @@
+import 'package:vms_flutter_client/core/constants/osd.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
 
 class MWE {
   const MWE();
+}
+
+class MWEChangeOSDPosition extends MWE {
+  final OSDPosition position;
+
+  const MWEChangeOSDPosition(this.position);
 }
 
 class MWECloseWindow extends MWE {
