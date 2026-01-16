@@ -112,7 +112,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
   @override
   void initState() {
     super.initState();
-    IosNetworkHelper.triggerPermission();
+    // IosNetworkHelper.triggerPermission();
     if (!Platform.isAndroid && !Platform.isIOS) {
       windowManager.addListener(this);
       windowManager.setPreventClose(true);
