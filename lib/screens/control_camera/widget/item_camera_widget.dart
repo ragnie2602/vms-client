@@ -15,7 +15,6 @@ class ItemCameraWidget extends StatelessWidget {
     this.onEdit,
     this.onConfig,
     this.onDelete,
-    this.onShare,
     this.onRemoveFromGroup,
   });
 
@@ -25,7 +24,6 @@ class ItemCameraWidget extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onConfig;
   final VoidCallback? onDelete;
-  final VoidCallback? onShare;
   final VoidCallback? onRemoveFromGroup;
 
   @override
@@ -50,11 +48,7 @@ class ItemCameraWidget extends StatelessWidget {
       child: Center(
         child: Text(
           '$index',
-          style: AppTypography.style(
-            14,
-            fontWeight: FontWeight.w400,
-            color: AppColors.black,
-          ),
+          style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
         ),
       ),
     );
@@ -67,11 +61,7 @@ class ItemCameraWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Text(
           itemCamera.name,
-          style: AppTypography.style(
-            14,
-            fontWeight: FontWeight.w500,
-            color: AppColors.black,
-          ),
+          style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black),
         ),
       ),
     );
@@ -84,11 +74,7 @@ class ItemCameraWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Text(
           itemCamera.iPUrlStream,
-          style: AppTypography.style(
-            13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.blue005BAA,
-          ),
+          style: AppTypography.style(13, fontWeight: FontWeight.w500, color: AppColors.blue005BAA),
         ),
       ),
     );
@@ -146,9 +132,6 @@ class ItemCameraWidget extends StatelessWidget {
       case 'delete':
         onDelete?.call();
         break;
-      case 'share':
-        onShare?.call();
-        break;
       case 'remove_from_group':
         onRemoveFromGroup?.call();
         break;
@@ -168,12 +151,8 @@ class ItemCameraWidget extends StatelessWidget {
       _buildDivider(),
       _buildConfigMenuItem(),
       _buildDivider(),
-      _buildShareMenuItem(),
       _buildDivider(),
-      if (isHaveGroupOwner) ...[
-        _buildRemoveFromGroupMenuItem(),
-        _buildDivider(),
-      ],
+      if (isHaveGroupOwner) ...[_buildRemoveFromGroupMenuItem(), _buildDivider()],
       _buildDeleteMenuItem(),
     ];
   }
@@ -195,11 +174,7 @@ class ItemCameraWidget extends StatelessWidget {
           SizedBox(width: 8),
           Text(
             label,
-            style: AppTypography.style(
-              13,
-              fontWeight: FontWeight.w500,
-              color: textColor,
-            ),
+            style: AppTypography.style(13, fontWeight: FontWeight.w500, color: textColor),
           ),
         ],
       ),
@@ -224,15 +199,6 @@ class ItemCameraWidget extends StatelessWidget {
     );
   }
 
-  PopupMenuItem<String> _buildShareMenuItem() {
-    return _buildMenuItem(
-      value: 'share',
-      icon: AppAssets.iconShare,
-      label: 'Chia sẻ',
-      textColor: AppColors.black,
-    );
-  }
-
   PopupMenuItem<String> _buildRemoveFromGroupMenuItem() {
     return _buildMenuItem(
       value: 'remove_from_group',
@@ -246,9 +212,7 @@ class ItemCameraWidget extends StatelessWidget {
     return _buildMenuItem(
       value: 'delete',
       icon: AppAssets.icDelete,
-      label: itemCamera.cameraRole == CameraRole.view
-          ? "Xóa"
-          : 'Xóa khỏi hệ thống',
+      label: itemCamera.cameraRole == CameraRole.view ? "Xóa" : 'Xóa khỏi hệ thống',
       iconColor: AppColors.redFF0004,
       textColor: AppColors.redFF0004,
     );
