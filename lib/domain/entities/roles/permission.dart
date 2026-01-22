@@ -1,10 +1,15 @@
 class Permissions {
-  int? id;
-  String? name;
-  String? description;
-  String? type;
+  int id;
+  String name;
+  String description;
+  String type;
 
-  Permissions({this.id, this.name, this.description, this.type});
+  Permissions({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.type,
+  });
 
   Permissions copyWith({int? id, String? name, String? description, String? type}) {
     return Permissions(
@@ -13,6 +18,10 @@ class Permissions {
       description: description ?? this.description,
       type: type ?? this.type,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'description': description, 'type': type};
   }
 
   factory Permissions.fromJson(Map<String, dynamic> json) {
@@ -24,13 +33,9 @@ class Permissions {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'description': description, 'type': type};
-  }
-
   @override
   String toString() {
-    return '''Permissions(id: $id, name: $name, description: $description, type: $type)''';
+    return description;
   }
 
   @override

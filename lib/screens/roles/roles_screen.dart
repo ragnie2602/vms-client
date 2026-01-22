@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/roles/role.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/roles/bloc/role_bloc.dart';
+import 'package:vms_flutter_client/screens/roles/widget/add_edit_role_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 class RolesScreen extends StatefulWidget {
@@ -86,7 +87,7 @@ class _RolesScreenState extends State<RolesScreen> {
                   borderColor: AppColors.blue005AA9,
                   borderRadius: 3,
                   label: 'Thêm nhóm quyền',
-                  onPressed: () {},
+                  onPressed: () => addRole(),
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   prefix: Icon(Icons.add, color: AppColors.blue005AA9, size: 20),
                   prefixSpacing: 8,
@@ -184,8 +185,92 @@ class _RolesScreenState extends State<RolesScreen> {
         ),
       ),
       Center(
-        child: IconButton(onPressed: () {}, icon: SvgPicture.asset(AppAssets.icAction)),
+        child: PopupMenuButton<String>(
+          tooltip: '',
+          icon: SvgPicture.asset(AppAssets.icAction),
+          padding: EdgeInsets.zero,
+          splashRadius: 20,
+          position: PopupMenuPosition.under,
+          offset: Offset(0, 8),
+          elevation: 3,
+          shadowColor: AppColors.black,
+          surfaceTintColor: Colors.transparent,
+          color: Colors.white,
+          menuPadding: EdgeInsets.zero,
+          onSelected: (String value) {
+            switch (value) {
+              case 'edit':
+                editRole(role);
+                break;
+              case 'delete':
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Chức năng xóa nhóm quyền đang phát triển')),
+                );
+                break;
+            }
+          },
+          itemBuilder: (BuildContext context) => [
+            PopupMenuItem<String>(
+              value: 'edit',
+              height: 32,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(AppAssets.icEdit, width: 16, height: 16),
+                  SizedBox(width: 8),
+                  Text(
+                    'Sửa',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            PopupMenuDivider(height: 0.5, color: AppColors.greyE2E8F0),
+            PopupMenuItem<String>(
+              value: 'delete',
+              height: 32,
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(AppAssets.icDelete, width: 16, height: 16),
+                  SizedBox(width: 8),
+                  Text(
+                    'Xóa',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
       ),
     ];
+  }
+
+  addRole() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: BlocProvider.value(value: roleBloc, child: AddEditRoleDialog()),
+      ),
+    );
+  }
+
+  editRole(Role role) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(child: AddEditRoleDialog(role: role)),
+    );
   }
 }

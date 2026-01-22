@@ -34,8 +34,6 @@ Future<int> initialMultiWindowConfig(List<String> args) async {
   } else {
     final controller = WindowController.main();
 
-    await windowManager.maximize();
-
     return controller.windowId; // Main window ID is always 0
   }
 }

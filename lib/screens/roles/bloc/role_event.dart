@@ -7,6 +7,8 @@ class RoleEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class GetPermissions extends RoleEvent {}
+
 class GetRoles extends RoleEvent {}
 
 class GetRolesById extends RoleEvent {}

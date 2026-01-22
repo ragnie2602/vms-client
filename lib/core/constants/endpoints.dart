@@ -10,6 +10,7 @@ class EndPoints {
   static const String baseMap = '/api/map';
 
   // Role
+  static const String basePermission = '/api/permissions';
   static const String baseRole = '/api/roles';
 
   // User management
