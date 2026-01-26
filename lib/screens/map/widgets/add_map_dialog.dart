@@ -23,12 +23,7 @@ class AddMapPayload {
   final String? imgPath;
   final Uint8List? imgBytes;
 
-  const AddMapPayload({
-    required this.name,
-    this.imageFile,
-    this.imgBytes,
-    this.imgPath,
-  });
+  const AddMapPayload({required this.name, this.imageFile, this.imgBytes, this.imgPath});
 }
 
 /// Entry point để hiển thị dialog thêm bản đồ
@@ -42,11 +37,8 @@ Future<T?> showAddMapDialog<T>(
   return showDialog<T>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => _AddMapDialog(
-      onSubmit: onSubmit,
-      backgroundPath: backgroundPath,
-      emapName: emapName,
-    ),
+    builder: (_) =>
+        _AddMapDialog(onSubmit: onSubmit, backgroundPath: backgroundPath, emapName: emapName),
   );
 }
 
@@ -80,14 +72,262 @@ class _AddMapDialogState extends State<_AddMapDialog> {
     _backgroundPath = widget.backgroundPath;
   }
 
-  bool isEditEmap() {
-    return (widget.emapName != null && widget.backgroundPath != null);
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              isEditEmap() == true ? 'Sửa bản đồ camera' : 'Thêm bản đồ camera',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+            tooltip: 'Đóng',
+          ),
+        ],
+      ),
+
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.35,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _form,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 20),
+                AppField(
+                  paddingBottomLabel: 15,
+                  controller: _nameController,
+                  hintText: 'Nhập tên bản đồ',
+                  label: 'Tên bản đồ',
+                  requiredField: true,
+                  validator: (v) => v!.trim().isEmpty ? 'Tên bản đồ không được để trống' : null,
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CustomPaint(
+                        painter: DashedBorderPainter(isError: _errorImageMessage.isNotEmpty),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_selectedImage == null)
+                              if (isEditEmap())
+                                Container(
+                                  padding: EdgeInsets.only(top: 24, left: 10, right: 10),
+                                  width: double.infinity,
+                                  constraints: BoxConstraints(
+                                    maxHeight: MediaQuery.of(context).size.height * 0.35,
+                                  ),
+                                  child: Image.network(
+                                    _backgroundPath ?? '',
+                                    loadingBuilder: (context, child, loadingProgress) =>
+                                        loadingProgress == null
+                                        ? child
+                                        : Center(child: CircularProgressIndicator()),
+                                  ),
+                                )
+                              else
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: MediaQuery.of(context).size.height * 0.35,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      InkWell(
+                                        onTap: () => _pickImage(),
+                                        child: SvgPicture.asset(AppAssets.icAddImage),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Click + để thêm hình ảnh bản đồ.',
+                                        style: AppTypography.style(
+                                          13,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.grey64748B,
+                                        ),
+                                      ),
+
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 40, right: 40, top: 4),
+                                        child: Text(
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          'Hỗ trợ định dạng .JPG, .JPEG, .PNG, .BMP,\n kích thước tối thiểu 500×500px, dung lượng tối đa 20MB.',
+                                          style: AppTypography.style(
+                                            13,
+                                            fontWeight: FontWeight.w400,
+                                            color: AppColors.grey64748B,
+                                            lineHeight: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                            else
+                              Stack(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.only(top: 24, left: 10, right: 10),
+                                    width: double.infinity,
+                                    constraints: BoxConstraints(
+                                      maxHeight: MediaQuery.of(context).size.height * 0.35,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Image.file(_selectedImage!, fit: BoxFit.contain),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: _removeImage,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withOpacity(0.6),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.close,
+                                              color: Colors.white,
+                                              size: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            if (_selectedImage != null ||
+                                (_selectedImage == null && _backgroundPath != null)) ...[
+                              const SizedBox(height: 16),
+                              InkWell(
+                                onTap: () {
+                                  _pickImage();
+                                },
+                                splashColor: Colors.transparent,
+                                focusColor: Colors.transparent,
+                                hoverColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        SvgPicture.asset(AppAssets.icReplace),
+                                        SizedBox(width: 10),
+                                        const Text(
+                                          'Thay thế ảnh này',
+                                          style: TextStyle(color: AppColors.blue005AA9),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                      (_errorImageMessage.isNotEmpty)
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.error_outline, color: Colors.red, size: 16),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      _errorImageMessage,
+                                      style: AppTypography.style(
+                                        12,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.redFF0004,
+                                        lineHeight: 1.3,
+                                        textOverflow: TextOverflow.visible,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : const SizedBox(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              flex: 1,
+              child: AppButton.outline(label: "Hủy", onPressed: () => Navigator.pop(context)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 1,
+              child: AppButton.filled(
+                onPressed: () {
+                  _handleSubmit();
+                },
+                label: 'Xác nhận',
+                child: isLoading == true
+                    ? Center(
+                        child: SizedBox(
+                          width: 15,
+                          height: 15,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.white,
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
+                      )
+                    : Text('Xác nhận', style: AppTypography.style(14, color: AppColors.white)),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  bool isEditEmap() {
+    return (widget.emapName != null && widget.backgroundPath != null);
   }
 
   Future<void> _pickImage() async {
@@ -186,8 +426,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
       _isValidateImage = true;
     });
     await _validateImage();
-    if ((_form.currentState?.validate() ?? false) &&
-        _errorImageMessage.isEmpty) {
+    if ((_form.currentState?.validate() ?? false) && _errorImageMessage.isEmpty) {
       setState(() {
         isLoading = true;
       });
@@ -200,10 +439,7 @@ class _AddMapDialogState extends State<_AddMapDialog> {
           imgBytes: _tmp,
         );
       } else {
-        payload = AddMapPayload(
-          name: _nameController.text.trim(),
-          imageFile: _selectedImage!,
-        );
+        payload = AddMapPayload(name: _nameController.text.trim(), imageFile: _selectedImage!);
       }
 
       try {
@@ -216,306 +452,9 @@ class _AddMapDialogState extends State<_AddMapDialog> {
         }
       } catch (e) {
         if (mounted) {
-          showAppMessageDialog(
-            context,
-            type: AppMessageType.error,
-            message: e.toString(),
-          );
+          showAppMessageDialog(context, type: AppMessageType.error, message: e.toString());
         }
       }
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titlePadding: const EdgeInsets.fromLTRB(24, 20, 16, 0),
-      contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              isEditEmap() == true ? 'Sửa bản đồ camera' : 'Thêm bản đồ camera',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-          ),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close),
-            tooltip: 'Đóng',
-          ),
-        ],
-      ),
-
-      content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.35,
-        child: SingleChildScrollView(
-          child: Form(
-            key: _form,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(height: 20),
-                AppField(
-                  paddingBottomLabel: 15,
-                  controller: _nameController,
-                  hintText: 'Nhập tên bản đồ',
-                  label: 'Tên bản đồ',
-                  requiredField: true,
-                  validator: (v) => v!.trim().isEmpty
-                      ? 'Tên bản đồ không được để trống'
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomPaint(
-                        painter: DashedBorderPainter(
-                          isError: _errorImageMessage.isNotEmpty,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (_selectedImage == null)
-                              if (isEditEmap())
-                                Container(
-                                  padding: EdgeInsets.only(
-                                    top: 24,
-                                    left: 10,
-                                    right: 10,
-                                  ),
-                                  width: double.infinity,
-                                  constraints: BoxConstraints(
-                                    maxHeight:
-                                        MediaQuery.of(context).size.height *
-                                        0.35,
-                                  ),
-                                  child: Image.network(
-                                    _backgroundPath ?? '',
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) =>
-                                            loadingProgress == null
-                                            ? child
-                                            : Center(
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                  ),
-                                )
-                              else
-                                SizedBox(
-                                  width: double.infinity,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.35,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      InkWell(
-                                        onTap: () => _pickImage(),
-                                        child: SvgPicture.asset(
-                                          AppAssets.icAddImage,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Click + để thêm hình ảnh bản đồ.',
-                                        style: AppTypography.style(
-                                          13,
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors.grey64748B,
-                                        ),
-                                      ),
-
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 40,
-                                          right: 40,
-                                          top: 4,
-                                        ),
-                                        child: Text(
-                                          textAlign: TextAlign.center,
-                                          maxLines: 2,
-                                          'Hỗ trợ định dạng .JPG, .JPEG, .PNG, .BMP,\n kích thước tối thiểu 500×500px, dung lượng tối đa 20MB.',
-                                          style: AppTypography.style(
-                                            13,
-                                            fontWeight: FontWeight.w400,
-                                            color: AppColors.grey64748B,
-                                            lineHeight: 1.5,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                            else
-                              Stack(
-                                children: [
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                      top: 24,
-                                      left: 10,
-                                      right: 10,
-                                    ),
-                                    width: double.infinity,
-                                    constraints: BoxConstraints(
-                                      maxHeight:
-                                          MediaQuery.of(context).size.height *
-                                          0.35,
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Image.file(
-                                        _selectedImage!,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: Row(
-                                      children: [
-                                        InkWell(
-                                          onTap: _removeImage,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.black.withOpacity(
-                                                0.6,
-                                              ),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(
-                                              Icons.close,
-                                              color: Colors.white,
-                                              size: 16,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            if (_selectedImage != null ||
-                                (_selectedImage == null &&
-                                    _backgroundPath != null)) ...[
-                              const SizedBox(height: 16),
-                              InkWell(
-                                onTap: () {
-                                  _pickImage();
-                                },
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        SvgPicture.asset(AppAssets.icReplace),
-                                        SizedBox(width: 10),
-                                        const Text(
-                                          'Thay thế ảnh này',
-                                          style: TextStyle(
-                                            color: AppColors.blue005AA9,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            SizedBox(height: 24),
-                          ],
-                        ),
-                      ),
-                      (_errorImageMessage.isNotEmpty)
-                          ? Padding(
-                              padding: const EdgeInsets.only(top: 5),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Icon(
-                                    Icons.error_outline,
-                                    color: Colors.red,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      _errorImageMessage,
-                                      style: AppTypography.style(
-                                        12,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.redFF0004,
-                                        lineHeight: 1.3,
-                                        textOverflow: TextOverflow.visible,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : const SizedBox(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              flex: 1,
-              child: AppButton.outline(
-                label: "Hủy",
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 1,
-              child: AppButton.filled(
-                onPressed: () {
-                  _handleSubmit();
-                },
-                label: 'Xác nhận',
-                child: isLoading == true
-                    ? Center(
-                        child: SizedBox(
-                          width: 15,
-                          height: 15,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.white,
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
-                      )
-                    : Text(
-                        'Xác nhận',
-                        style: AppTypography.style(14, color: AppColors.white),
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
   }
 }

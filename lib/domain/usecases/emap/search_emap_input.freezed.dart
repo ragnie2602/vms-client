@@ -18,7 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$SearchEmapInput {
   String? get keyword => throw _privateConstructorUsedError;
-  List<EmapEntity>? get listEmapOrigin => throw _privateConstructorUsedError;
+  List<EmapEntity> get listEmapOrigin => throw _privateConstructorUsedError;
 
   /// Create a copy of SearchEmapInput
   /// with the given fields replaced by the non-null parameter values.
@@ -34,7 +34,7 @@ abstract class $SearchEmapInputCopyWith<$Res> {
     $Res Function(SearchEmapInput) then,
   ) = _$SearchEmapInputCopyWithImpl<$Res, SearchEmapInput>;
   @useResult
-  $Res call({String? keyword, List<EmapEntity>? listEmapOrigin});
+  $Res call({String? keyword, List<EmapEntity> listEmapOrigin});
 }
 
 /// @nodoc
@@ -51,17 +51,17 @@ class _$SearchEmapInputCopyWithImpl<$Res, $Val extends SearchEmapInput>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? keyword = freezed, Object? listEmapOrigin = freezed}) {
+  $Res call({Object? keyword = freezed, Object? listEmapOrigin = null}) {
     return _then(
       _value.copyWith(
             keyword: freezed == keyword
                 ? _value.keyword
                 : keyword // ignore: cast_nullable_to_non_nullable
                       as String?,
-            listEmapOrigin: freezed == listEmapOrigin
+            listEmapOrigin: null == listEmapOrigin
                 ? _value.listEmapOrigin
                 : listEmapOrigin // ignore: cast_nullable_to_non_nullable
-                      as List<EmapEntity>?,
+                      as List<EmapEntity>,
           )
           as $Val,
     );
@@ -77,7 +77,7 @@ abstract class _$$SearchEmapInputImplCopyWith<$Res>
   ) = __$$SearchEmapInputImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String? keyword, List<EmapEntity>? listEmapOrigin});
+  $Res call({String? keyword, List<EmapEntity> listEmapOrigin});
 }
 
 /// @nodoc
@@ -93,17 +93,17 @@ class __$$SearchEmapInputImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? keyword = freezed, Object? listEmapOrigin = freezed}) {
+  $Res call({Object? keyword = freezed, Object? listEmapOrigin = null}) {
     return _then(
       _$SearchEmapInputImpl(
         keyword: freezed == keyword
             ? _value.keyword
             : keyword // ignore: cast_nullable_to_non_nullable
                   as String?,
-        listEmapOrigin: freezed == listEmapOrigin
+        listEmapOrigin: null == listEmapOrigin
             ? _value._listEmapOrigin
             : listEmapOrigin // ignore: cast_nullable_to_non_nullable
-                  as List<EmapEntity>?,
+                  as List<EmapEntity>,
       ),
     );
   }
@@ -114,19 +114,17 @@ class __$$SearchEmapInputImplCopyWithImpl<$Res>
 class _$SearchEmapInputImpl implements _SearchEmapInput {
   const _$SearchEmapInputImpl({
     this.keyword,
-    final List<EmapEntity>? listEmapOrigin,
+    required final List<EmapEntity> listEmapOrigin,
   }) : _listEmapOrigin = listEmapOrigin;
 
   @override
   final String? keyword;
-  final List<EmapEntity>? _listEmapOrigin;
+  final List<EmapEntity> _listEmapOrigin;
   @override
-  List<EmapEntity>? get listEmapOrigin {
-    final value = _listEmapOrigin;
-    if (value == null) return null;
+  List<EmapEntity> get listEmapOrigin {
     if (_listEmapOrigin is EqualUnmodifiableListView) return _listEmapOrigin;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableListView(_listEmapOrigin);
   }
 
   @override
@@ -168,13 +166,13 @@ class _$SearchEmapInputImpl implements _SearchEmapInput {
 abstract class _SearchEmapInput implements SearchEmapInput {
   const factory _SearchEmapInput({
     final String? keyword,
-    final List<EmapEntity>? listEmapOrigin,
+    required final List<EmapEntity> listEmapOrigin,
   }) = _$SearchEmapInputImpl;
 
   @override
   String? get keyword;
   @override
-  List<EmapEntity>? get listEmapOrigin;
+  List<EmapEntity> get listEmapOrigin;
 
   /// Create a copy of SearchEmapInput
   /// with the given fields replaced by the non-null parameter values.
