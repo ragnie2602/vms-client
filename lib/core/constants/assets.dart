@@ -180,4 +180,9 @@ class AppAssets {
   static const icFile = '$_svgPath/ic_file.svg';
   static const icError = '$_svgPath/ic_error.svg';
   static const icCloseFilled = '$_svgPath/ic_close.svg';
+
+  // Event
+  static const icConfigure = '$_svgPath/configure.svg';
+  static const icDownload2 = '$_svgPath/download2.svg';
+  static const icRefresh = '$_svgPath/refresh.svg';
 }

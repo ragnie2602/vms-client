@@ -5,14 +5,17 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
-import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/event/components/event_filter_dropdown.dart';
+import 'package:vms_flutter_client/screens/event/components/event_date_range_picker.dart';
 import 'package:vms_flutter_client/screens/event/components/event_item.dart';
+import 'package:vms_flutter_client/screens/event/components/pagination_bar.dart';
 import 'package:vms_flutter_client/screens/event/components/setup_info_field_dialog.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 class EventScreen extends StatefulWidget {
@@ -24,6 +27,7 @@ class EventScreen extends StatefulWidget {
 
 class _EventScreenState extends State<EventScreen> {
   late final ControlCameraBloc controlCameraBloc;
+  late final MonitorBloc monitorBloc;
 
   int presetHour = 0;
 
@@ -32,6 +36,8 @@ class _EventScreenState extends State<EventScreen> {
     super.initState();
 
     controlCameraBloc = context.read<ControlCameraBloc>()..add(GetAllTagsEvent());
+    monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
+      ..add(GetAllCamera());
   }
 
   @override
@@ -47,24 +53,12 @@ class _EventScreenState extends State<EventScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
-                  child: EventFilterDropdown<DateTime>(
+                  child: EventDateRangePicker(
                     isDense: true,
-                    items: [],
-                    label: 'Từ ngày',
+                    label: 'Thời gian',
+                    hintText: 'Từ ngày - đến ngày',
                     onChanged: (_) {},
                     padding: EdgeInsets.only(bottom: 12, left: 16, right: 12, top: 12),
-                    type: EventFilterDropdownType.date,
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: EventFilterDropdown<DateTime>(
-                    isDense: true,
-                    items: [],
-                    label: 'Đến ngày',
-                    onChanged: (_) {},
-                    padding: EdgeInsets.only(bottom: 12, left: 16, right: 12, top: 12),
-                    type: EventFilterDropdownType.date,
                   ),
                 ),
                 SizedBox(width: 16),
@@ -95,7 +89,35 @@ class _EventScreenState extends State<EventScreen> {
                 ),
                 SizedBox(width: 16),
                 Expanded(
+                  child: BlocBuilder<GroupCameraBloc, GroupCameraState>(
+                    buildWhen: (previous, current) =>
+                        current is GetAllGroupCameraSuccessState ||
+                        current is GetAllGroupCameraFailState,
+                    builder: (context, state) => EventFilterDropdown<DeviceGroup?>(
+                      isDense: true,
+                      itemBuilder: (item) => Text(
+                        item?.name ?? 'Tất cả',
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.black,
+                        ),
+                      ),
+                      items: state is GetAllGroupCameraSuccessState
+                          ? [null, ...recursionDeviceGroup(state.groups ?? [])]
+                          : [],
+                      label: 'Nhóm camera',
+                      onChanged: (value) {
+                        monitorBloc.add(GetAllCameraInGroup(value?.groupId ?? []));
+                      },
+                      padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
                   child: BlocBuilder<MonitorBloc, MonitorState>(
+                    bloc: monitorBloc,
                     builder: (context, state) {
                       return EventFilterDropdown<CameraEntity?>(
                         isDense: true,
@@ -108,48 +130,31 @@ class _EventScreenState extends State<EventScreen> {
                           ),
                         ),
                         items: state is MonitorSuccess ? [null, ...state.cameras] : [],
-                        label: 'Thiết bị',
+                        label: 'Tên camera',
                         onChanged: (_) {},
                         padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
                       );
                     },
                   ),
                 ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: BlocBuilder<ControlCameraBloc, ControlCameraState>(
-                    buildWhen: (previous, current) =>
-                        current is GetAllTagsSuccessState ||
-                        current is GetAllTagsLoadingState ||
-                        current is GetAllTagsFailState,
-                    builder: (context, state) => EventFilterDropdown<TagEntity?>(
-                      isDense: true,
-                      itemBuilder: (item) => Text(
-                        item?.name ?? 'Tất cả',
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.black,
-                        ),
-                      ),
-                      items: state is GetAllTagsSuccessState ? [null, ...state.tags] : [],
-                      label: 'Tag',
-                      onChanged: (_) {},
-                      padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
-                    ),
-                  ),
-                ),
                 SizedBox(width: 20),
                 EventCustomButton(
-                  backgroundColor: AppColors.white,
+                  backgroundColor: AppColors.blue005AA9,
                   borderColor: AppColors.blue005AA9,
                   borderRadius: 3,
                   label: 'Tìm kiếm',
                   onPressed: () {},
                   padding: EdgeInsets.symmetric(horizontal: 33, vertical: 12),
+                  prefix: SvgPicture.asset(
+                    AppAssets.icSearch,
+                    color: AppColors.white,
+                    height: 16,
+                    width: 16,
+                  ),
+                  prefixGap: 8,
                   textStyle: AppTypography.style(
                     14,
-                    color: AppColors.blue005AA9,
+                    color: AppColors.white,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -166,11 +171,6 @@ class _EventScreenState extends State<EventScreen> {
                   StatefulBuilder(
                     builder: (context, setState) => Row(
                       children: [
-                        Text(
-                          'Danh sách sự kiện',
-                          style: AppTypography.style(16, fontWeight: FontWeight.w600),
-                        ),
-                        const Spacer(),
                         EventCustomButton(
                           backgroundColor: presetHour == 1 ? AppColors.blue005AA9 : AppColors.white,
                           borderColor: AppColors.blue005AA9,
@@ -232,22 +232,52 @@ class _EventScreenState extends State<EventScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const Spacer(),
                         EventCustomButton(
-                          backgroundColor: AppColors.white,
-                          borderColor: AppColors.blue005AA9,
+                          borderColor: AppColors.greyE5E7EB,
                           borderRadius: 3,
-                          label: '',
-                          prefix: SvgPicture.asset(
-                            AppAssets.tabSettings,
-                            color: AppColors.blue005AA9,
-                            height: 20,
-                          ),
-                          onPressed: () => showSetupInfoFieldsDialog(context),
-                          padding: const EdgeInsets.all(5),
+                          label: 'Làm mới',
+                          onPressed: () {},
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                          prefix: SvgPicture.asset(AppAssets.icRefresh, height: 20),
+                          prefixGap: 8,
                           textStyle: AppTypography.style(
                             14,
-                            color: AppColors.blue005AA9,
+                            color: AppColors.blue374151,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        EventCustomButton(
+                          borderColor: AppColors.greyE5E7EB,
+                          borderRadius: 3,
+                          label: 'Tải về danh sách',
+                          onPressed: () {},
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                          prefix: SvgPicture.asset(AppAssets.icDownload2, height: 20),
+                          prefixGap: 8,
+                          textStyle: AppTypography.style(
+                            14,
+                            color: AppColors.blue374151,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        EventCustomButton(
+                          backgroundColor: AppColors.greyF2F4F6,
+                          borderColor: AppColors.greyE5E7EB,
+                          borderRadius: 3,
+                          label: 'Cấu hình',
+                          onPressed: () => showDialog(
+                            context: context,
+                            builder: (context) => SetupInfoFieldDialog(),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                          prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
+                          prefixGap: 8,
+                          textStyle: AppTypography.style(
+                            14,
+                            color: AppColors.blue374151,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -255,7 +285,7 @@ class _EventScreenState extends State<EventScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Divider(color: AppColors.greyF2F4FA),
+                  const Divider(color: AppColors.greyE2E8F0),
                   const SizedBox(height: 20),
                   Expanded(
                     child: GridView.builder(
@@ -266,9 +296,12 @@ class _EventScreenState extends State<EventScreen> {
                         mainAxisSpacing: 10,
                       ),
                       itemBuilder: (context, index) => EventItem(),
-                      itemCount: 12,
+                      itemCount: 50,
                     ),
                   ),
+                  const SizedBox(height: 30),
+                  PaginationBar(totalEvents: 50),
+                  const SizedBox(height: 7),
                 ],
               ),
             ),
@@ -278,7 +311,12 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
-  showSetupInfoFieldsDialog(BuildContext context) {
-    showDialog(context: context, builder: (context) => SetupInfoFieldDialog());
+  recursionDeviceGroup(List<DeviceGroup> groups) {
+    List<DeviceGroup> result = [];
+    for (var group in groups) {
+      result.add(group);
+      result.addAll(recursionDeviceGroup(group.groups));
+    }
+    return result;
   }
 }
