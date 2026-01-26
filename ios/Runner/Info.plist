@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Ứng dụng cần truy cập vào mạng cục bộ để kết nối với các camera giám sát trong mạng nội bộ.</string>
+    <key>NSCameraUsageDescription</key>
+	<string>Ứng dụng cần truy cập camera để chụp ảnh hoặc video để tìm kiếm thông minh các đối tượng trên camera.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Ứng dụng cần truy cập này để lưu các hình ảnh chụp màn hình từ camera giám sát vào thư viện ảnh của bạn.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

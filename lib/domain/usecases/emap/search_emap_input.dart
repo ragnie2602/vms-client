@@ -6,8 +6,6 @@ part 'search_emap_input.freezed.dart';
 
 @freezed
 class SearchEmapInput extends BaseInput with _$SearchEmapInput {
-  const factory SearchEmapInput({
-    String? keyword,
-    List<EmapEntity>? listEmapOrigin,
-  }) = _SearchEmapInput;
+  const factory SearchEmapInput({String? keyword, required List<EmapEntity> listEmapOrigin}) =
+      _SearchEmapInput;
 }

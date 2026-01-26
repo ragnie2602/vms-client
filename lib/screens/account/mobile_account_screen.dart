@@ -166,7 +166,7 @@ class _MobileAccountScreenState extends State<MobileAccountScreen> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          'v1.1.2 build 1',
+                          'v1.1.1 build 13',
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w400,

@@ -149,4 +149,26 @@ class UserService {
 
     return true;
   }
+
+  Future<bool> removeAccount() async {
+    final removeRequest = RemoveAccount_Request();
+
+    final responseBuffer = await socketClient.send<List<int>>(
+      SocketRequestPayload(
+        Packet(
+          id: DateTime.now().microsecondsSinceEpoch,
+          data: removeRequest.writeToBuffer(),
+          type: PacketType.removeAccount,
+        ),
+      ),
+    );
+
+    return responseBuffer.fold(
+      (failure) => throw failure.toMessageFailure(
+        RemoveAccount_Error.valueOf,
+        PacketType.removeAccount.value,
+      ),
+      (buffer) => true,
+    );
+  }
 }
