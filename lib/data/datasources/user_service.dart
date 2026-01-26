@@ -1,12 +1,8 @@
-import 'package:vms_flutter_client/core/app_data.dart';
-import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
-import 'package:vms_flutter_client/data/models/packet.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.profile.pb.dart';
+import 'package:vms_flutter_client/data/models/response/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
 
-import '../proto/models/comm.command1.pb.dart';
 import 'socket_api_client.dart';
 
 class UserService {
@@ -16,8 +12,12 @@ class UserService {
   const UserService(this.socketClient, this.httpClient);
 
   Future<List<UserEntity>> getListUser() async {
-    final List<dynamic> response = await httpClient.get(EndPoints.getListUser);
-    return response.map((e) => UserEntity.fromJson(e)).toList();
+    final Map<String, dynamic> raw = await httpClient.get(EndPoints.baseUser);
+    final response = BaseResponse.fromJson(raw);
+
+    if (response.code != 200) throw Exception(response.message);
+
+    return (response.data as List<dynamic>).map((e) => UserEntity.fromJson(e)).toList();
   }
 
   Future<UserEntity> addUser({
@@ -41,58 +41,41 @@ class UserService {
       "tenantId": 1,
     };
     if (isAdmin == true) {
-      requestData["isAdmin"] = true;
+      requestData['roleId'] = 1;
     } else {
-      List<String> _permissions = [];
-      if (changePassDenied != true) _permissions.add("auth.change-password");
-      if (addCamDenied != true) _permissions.add("camera.create");
-
-      requestData["permissions"] = _permissions;
+      requestData["roleId"] = 4;
     }
 
-    final response = await httpClient.post(
-      url: EndPoints.addUser,
-      data: requestData,
-      successCode: [201],
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.post(url: EndPoints.baseUser, data: requestData),
     );
-    return UserEntity.fromJson(response);
+
+    if (response.code != 201) throw Exception(response.message);
+
+    return UserEntity.fromJson(response.data);
   }
 
   Future<int> deleteUser({required int userId, String? rtspUrl}) async {
-    await httpClient.delete(url: '${EndPoints.deleteUser}/$userId', successCode: [204]);
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.delete(url: '${EndPoints.baseUser}/$userId'),
+    );
+
+    if (response.code != 204) throw Exception(response.message);
+
     return userId;
   }
 
-  Future<bool> resetPassword({required List<int> userId, String? newPassword}) async {
-    final resetPasswordRequest = ResetPassword_Request();
-    resetPasswordRequest.userId = userId;
-    if (newPassword != null) {
-      resetPasswordRequest.newPassword = newPassword;
-    }
+  Future<bool> resetPassword({required int userId, String? newPassword}) async {
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.put(
+        url: '${EndPoints.baseUser}/$userId/${EndPoints.resetPassword}',
+        data: {'newPassword': newPassword},
+      ),
+    );
 
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: resetPasswordRequest.writeToBuffer(),
-          type: PacketType.resetPassword,
-        ),
-      ),
-    );
-    return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        ResetPassword_Error.valueOf,
-        PacketType.resetPassword.value,
-      ),
-      (buffer) {
-        return true;
-      },
-    );
-    // if (responseBuffer.isLeft) {
-    //   return false;
-    //   // throw responseBuffer.left!.toString();
-    // }
-    // return true;
+    if (response.code != 200) throw Exception(response.message);
+
+    return true;
   }
 
   Future<UserEntity> editUser({
@@ -123,13 +106,13 @@ class UserService {
       requestData["permissions"] = _permissions;
     }
 
-    final response = await httpClient.put(
-      url: '${EndPoints.editUser}/$userId',
-      data: requestData,
-      successCode: [200],
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.put(url: '${EndPoints.baseUser}/$userId', data: requestData),
     );
 
-    return UserEntity.fromJson(response);
+    if (response.code != 200) throw Exception(response.message);
+
+    return UserEntity.fromJson(response.data);
   }
 
   Future<bool> changeMyPassword({
@@ -137,28 +120,16 @@ class UserService {
     required String password,
     bool? kickOthers,
   }) async {
-    final changePasswordRequest = ChangePassword_Request();
-    changePasswordRequest.current = current;
-    changePasswordRequest.password = password;
-    changePasswordRequest.kickOthers = kickOthers ?? false;
-
-    final responseBuffer = await socketClient.send<List<int>>(
-      SocketRequestPayload(
-        Packet(
-          id: DateTime.now().microsecondsSinceEpoch,
-          data: changePasswordRequest.writeToBuffer(),
-          type: PacketType.changePassword,
-        ),
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.put(
+        url: '${EndPoints.baseAuth}${EndPoints.changePassword}',
+        data: {'oldPassword': current, 'newPassword': password},
       ),
     );
 
-    return responseBuffer.fold(
-      (failure) => throw failure.toMessageFailure(
-        ChangePassword_Error.valueOf,
-        PacketType.changePassword.value,
-      ),
-      (buffer) => true,
-    );
+    if (response.code != 200) throw Exception(response.message);
+
+    return true;
   }
 
   Future<bool> updateMyProfile({
@@ -167,10 +138,14 @@ class UserService {
     String? tel,
     String? address,
   }) async {
-    await httpClient.post(
-      url: '${EndPoints.updateProfile}/${AppData.instance.profile?.uid}',
-      data: {'fullName': displayName, 'email': email, 'phone': tel},
+    final BaseResponse response = BaseResponse.fromJson(
+      await httpClient.put(
+        url: '${EndPoints.baseAuth}${EndPoints.updateProfile}',
+        data: {'fullName': displayName, 'email': email, 'phone': tel},
+      ),
     );
+
+    if (response.code != 200) throw Exception(response.message);
 
     return true;
   }

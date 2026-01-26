@@ -106,7 +106,6 @@ Future<String?> showResetPasswordDialog(
                             AppField(
                               controller: _controller,
                               hintText: 'Nhập mật khẩu',
-                              // label: 'Mật khẩu',
                               requiredField: true,
                               obscureText: _obscurePassword,
                               validator: (v) {
@@ -118,6 +117,15 @@ Future<String?> showResetPasswordDialog(
                                 }
                                 if (v.length < 8 || v.length > 16) {
                                   return 'Vui lòng nhập mật khẩu có 8-16 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt, không chứa khoảng trắng';
+                                }
+                                if (!v.contains(RegExp(r'[A-Z]'))) {
+                                  return 'Mật khẩu phải chứa ít nhất một chữ cái in hoa';
+                                }
+                                if (!v.contains(RegExp(r'[a-z]'))) {
+                                  return 'Mật khẩu phải chứa ít nhất một chữ cái in thường';
+                                }
+                                if (!v.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+                                  return 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt';
                                 }
                                 return null;
                               },

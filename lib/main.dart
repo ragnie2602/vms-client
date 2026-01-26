@@ -63,8 +63,7 @@ void main(List<String> args) async {
     await EnvService.init();
 
     /// Dọn dẹp các file .partX và file đích đang tải dở bị sót lại từ các phiên download trước đó
-    if (Platform.isAndroid || Platform.isIOS)
-      ChunkedDownloader.cleanupResidualFiles();
+    if (Platform.isAndroid || Platform.isIOS) ChunkedDownloader.cleanupResidualFiles();
 
     final windowID = await initialMultiWindowConfig(args);
 
@@ -124,9 +123,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
     return MultiProvider(
       providers: DependencyInjection.providers,
       child: BlocProvider(
-        create: (context) =>
-            (appBloc = context.read<AppBloc>())
-              ..add(AppStarted(widget.bWindowID)),
+        create: (context) => (appBloc = context.read<AppBloc>())..add(AppStarted(widget.bWindowID)),
         child: BlocSelector<AppBloc, AppState, ThemeMode>(
           selector: (state) => state.themeMode,
           builder: (context, theme) => MaterialApp.router(

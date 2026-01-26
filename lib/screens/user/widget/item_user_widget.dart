@@ -118,8 +118,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    widget.itemUser.type == UserType.admin ||
-                            widget.itemUser.type == UserType.admin_client
+                    widget.itemUser.roleName?.toLowerCase() == UserType.admin.name
                         ? 'Tài khoản admin'
                         : 'Tài khoản thường',
                     style: AppTypography.style(

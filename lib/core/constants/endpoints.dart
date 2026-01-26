@@ -1,14 +1,12 @@
 class EndPoints {
   // Auth
-  static const String authenticate = '/api/auth/login';
-  static const String logout = '/api/auth/logout';
-
-  // Profile
-  static const String updateProfile = '/api/profile';
+  static const String baseAuth = '/api/auth';
+  static const String authenticate = '/login';
+  static const String changePassword = '/password';
+  static const String logout = '/logout';
+  static const String updateProfile = '/profile';
 
   // User management
-  static const String addUser = '/api/users';
-  static const String deleteUser = '/api/users';
-  static const String editUser = '/api/users';
-  static const String getListUser = '/api/users';
+  static const String baseUser = '/api/users';
+  static const String resetPassword = '/password';
 }

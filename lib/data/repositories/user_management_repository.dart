@@ -59,7 +59,7 @@ class UserManagementRepository extends BaseRepository implements IUserManagement
 
   @override
   Future<Either<Failure, bool>> resetPassword({
-    required List<int> userId,
+    required int userId,
     required String newPassword,
   }) async {
     return await catchError<bool>(() async {
