@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -54,9 +56,9 @@ class _EventScreenState extends State<EventScreen> {
               children: [
                 Expanded(
                   child: EventDateRangePicker(
+                    hintText: 'Từ ngày - đến ngày',
                     isDense: true,
                     label: 'Thời gian',
-                    hintText: 'Từ ngày - đến ngày',
                     onChanged: (_) {},
                     padding: EdgeInsets.only(bottom: 12, left: 16, right: 12, top: 12),
                   ),
@@ -236,9 +238,16 @@ class _EventScreenState extends State<EventScreen> {
                         EventCustomButton(
                           borderColor: AppColors.greyE5E7EB,
                           borderRadius: 3,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 2,
+                              color: AppColors.black.withAlpha(13),
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                           label: 'Làm mới',
                           onPressed: () {},
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                           prefix: SvgPicture.asset(AppAssets.icRefresh, height: 20),
                           prefixGap: 8,
                           textStyle: AppTypography.style(
@@ -251,9 +260,16 @@ class _EventScreenState extends State<EventScreen> {
                         EventCustomButton(
                           borderColor: AppColors.greyE5E7EB,
                           borderRadius: 3,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 2,
+                              color: AppColors.black.withAlpha(13),
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                           label: 'Tải về danh sách',
                           onPressed: () {},
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                           prefix: SvgPicture.asset(AppAssets.icDownload2, height: 20),
                           prefixGap: 8,
                           textStyle: AppTypography.style(
@@ -267,12 +283,19 @@ class _EventScreenState extends State<EventScreen> {
                           backgroundColor: AppColors.greyF2F4F6,
                           borderColor: AppColors.greyE5E7EB,
                           borderRadius: 3,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 2,
+                              color: AppColors.black.withAlpha(13),
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                           label: 'Cấu hình',
                           onPressed: () => showDialog(
                             context: context,
                             builder: (context) => SetupInfoFieldDialog(),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                           prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
                           prefixGap: 8,
                           textStyle: AppTypography.style(
@@ -288,15 +311,30 @@ class _EventScreenState extends State<EventScreen> {
                   const Divider(color: AppColors.greyE2E8F0),
                   const SizedBox(height: 20),
                   Expanded(
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        childAspectRatio: 324.5 / 306,
-                        crossAxisCount: 4,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
-                      itemBuilder: (context, index) => EventItem(),
-                      itemCount: 50,
+                    child: ListView.separated(
+                      separatorBuilder: (context, index) => const SizedBox(height: 10),
+                      itemCount: (20 / 4).ceil(),
+                      itemBuilder: (context, rowIndex) {
+                        final int startIndex = rowIndex * 4;
+                        final int endIndex = min(startIndex + 4, 50);
+                        final int emptySlots = 4 - (endIndex - startIndex);
+
+                        return IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (int i = startIndex; i < endIndex; i++) ...[
+                                Expanded(child: EventItem()),
+                                if (i < endIndex - 1) const SizedBox(width: 10),
+                              ],
+                              for (int i = 0; i < emptySlots; i++) ...[
+                                if (i > 0 || (endIndex - startIndex) > 0) const SizedBox(width: 10),
+                                const Expanded(child: SizedBox()),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 30),

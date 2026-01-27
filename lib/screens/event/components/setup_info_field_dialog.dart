@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 
 class SetupInfoFieldDialog extends StatefulWidget {
@@ -49,15 +50,19 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
                   Expanded(
                     flex: 224,
                     child: Container(
-                      color: AppColors.greyF2F4FA,
+                      color: AppColors.greyF9FAFB,
+                      padding: EdgeInsets.all(8),
                       child: Column(
                         children: [
-                          _buildVerticalTab('Phát hiện chuyển động', 0),
-                          _buildVerticalTab('Phát hiện xâm nhập', 1),
-                          _buildVerticalTab('Phân biệt đối tượng', 2),
-                          _buildVerticalTab('Phát hiện vượt hàng rào ảo', 3),
-                          _buildVerticalTab('Phát hiện vật bị bỏ quên', 4),
-                          _buildVerticalTab('Phát hiện vật nguy hiểm', 5),
+                          _buildVerticalTab('Phát hiện xâm nhập', 0),
+                          const SizedBox(height: 4),
+                          _buildVerticalTab('Cảnh báo hút thuốc', 1),
+                          const SizedBox(height: 4),
+                          _buildVerticalTab('Sử dụng điện thoại', 2),
+                          const SizedBox(height: 4),
+                          _buildVerticalTab('Tụ tập đám đông', 3),
+                          const SizedBox(height: 4),
+                          _buildVerticalTab('Vượt hàng rào ảo', 4),
                         ],
                       ),
                     ),
@@ -73,10 +78,35 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
                         _buildTabContent(2),
                         _buildTabContent(3),
                         _buildTabContent(4),
-                        _buildTabContent(5),
                       ],
                     ),
                   ),
+                ],
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.greyF2F4FA, width: 1)),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  EventCustomButton(
+                    backgroundColor: AppColors.white,
+                    borderColor: AppColors.greyD1D5DB,
+                    borderRadius: 5,
+                    label: 'Huỷ',
+                    onPressed: () => Navigator.pop(context),
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                    textStyle: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 17),
+                  AppButton.filled(label: 'Lưu', onPressed: () => Navigator.pop(context)),
                 ],
               ),
             ),
@@ -125,6 +155,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        borderRadius: BorderRadius.circular(6),
         onTap: () {
           selectedTabIndex.value = index;
           pageController.jumpToPage(index);
@@ -134,22 +165,18 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
           builder: (context, value, child) {
             return Container(
               decoration: BoxDecoration(
-                border: Border(
-                  left: value == index
-                      ? BorderSide(color: AppColors.secondary, width: 2)
-                      : BorderSide.none,
-                ),
-                color: value == index ? AppColors.white : null,
+                borderRadius: BorderRadius.circular(6),
+                color: value == index ? AppColors.blueEFF6FF : null,
               ),
-              padding: EdgeInsets.symmetric(horizontal: 17, vertical: 14),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               width: double.infinity,
               child: Text(
                 text,
                 maxLines: 3,
                 style: AppTypography.style(
                   14,
-                  color: AppColors.grey64748B,
-                  fontWeight: FontWeight.w600,
+                  color: value == index ? AppColors.blue005EB8 : AppColors.grey64748B,
+                  fontWeight: value == index ? FontWeight.w600 : FontWeight.w400,
                 ),
               ),
             );
