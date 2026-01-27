@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/event/components/setup_info_field_dialog.dart';
 import 'package:vms_flutter_client/screens/monitor/components/monitor_alerts.dart';
 
 import 'panel.dart';
@@ -48,9 +49,9 @@ class ActionItem extends StatelessWidget {
   }
 
   static Widget alert({
-    bool isSelected = false,
-    required int id,
     required PanelController controller,
+    required int id,
+    bool isSelected = false,
     required Function(int?) onPanelIndexChanged,
     String? count,
   }) => ActionItem(
@@ -62,78 +63,78 @@ class ActionItem extends StatelessWidget {
       id: id,
       onPanelIndexChanged: onPanelIndexChanged,
     ),
-    suffix: count != null
-        ? Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFFFF0004),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-                child: Text(
-                  count,
-                  style: AppTypography.style(
-                    9,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.blackOrWhiteReverse,
-                  ),
-                ),
+    suffix: Row(
+      children: [
+        if (count != null)
+          Container(
+            decoration: BoxDecoration(
+              color: Color(0xFFFF0004),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+            child: Text(
+              count,
+              style: AppTypography.style(
+                9,
+                fontWeight: FontWeight.w600,
+                color: AppColors.blackOrWhiteReverse,
               ),
-              const SizedBox(width: 8),
-              Builder(
-                builder: (context) {
-                  return IconButton(
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(Icons.more_vert, size: 22),
-                    style: IconButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                    ),
-                    onPressed: () {
-                      final overlay = Overlay.of(context);
-                      final RenderBox button = context.findRenderObject() as RenderBox;
-                      final RenderBox overlayBox = overlay.context.findRenderObject() as RenderBox;
+            ),
+          ),
+        if (count != null) const SizedBox(width: 8),
+        Builder(
+          builder: (context) {
+            return IconButton(
+              constraints: const BoxConstraints(),
+              icon: SvgPicture.asset(AppAssets.icDots, width: 22, height: 22),
+              style: IconButton.styleFrom(
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              ),
+              onPressed: () {
+                final overlay = Overlay.of(context);
+                final RenderBox button = context.findRenderObject() as RenderBox;
+                final RenderBox overlayBox = overlay.context.findRenderObject() as RenderBox;
 
-                      final Offset btnGlobalPos = button.localToGlobal(
-                        Offset.zero,
-                        ancestor: overlayBox,
-                      );
-                      final Size buttonSize = button.size;
+                final Offset btnGlobalPos = button.localToGlobal(Offset.zero, ancestor: overlayBox);
+                final Size buttonSize = button.size;
 
-                      late OverlayEntry entry;
-                      entry = OverlayEntry(
-                        builder: (context) => Stack(
-                          children: [
-                            Positioned.fill(
-                              child: GestureDetector(
-                                behavior: HitTestBehavior.translucent,
-                                onTap: () => entry.remove(),
-                                child: const SizedBox.shrink(),
-                              ),
-                            ),
-                            Positioned(
-                              right: 4,
-                              top: btnGlobalPos.dy + buttonSize.height + 8,
-                              child: _AlertMenuBubble(
-                                label: 'Xem tất cả',
-                                onTap: () {
-                                  entry.remove();
-                                },
-                              ),
-                            ),
-                          ],
+                late OverlayEntry entry;
+                entry = OverlayEntry(
+                  builder: (context) => Stack(
+                    children: [
+                      Positioned.fill(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () => entry.remove(),
+                          child: const SizedBox.shrink(),
                         ),
-                      );
+                      ),
+                      Positioned(
+                        right: 4,
+                        top: btnGlobalPos.dy + buttonSize.height + 8,
+                        child: _AlertMenuBubble(
+                          label: 'Cấu hình',
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => SetupInfoFieldDialog(),
+                            );
+                            entry.remove();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
 
-                      overlay.insert(entry);
-                    },
-                  );
-                },
-              ),
-            ],
-          )
-        : null,
+                overlay.insert(entry);
+              },
+            );
+          },
+        ),
+      ],
+    ),
   );
 }
 

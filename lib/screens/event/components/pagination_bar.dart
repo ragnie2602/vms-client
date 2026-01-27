@@ -32,19 +32,10 @@ class _PaginationBarState extends State<PaginationBar> {
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              spacing: 8,
               children: [
                 _buildArrowButton(Icons.chevron_left, -1),
-                const SizedBox(width: 12),
-                _buildPageButton('1', 1),
-                const SizedBox(width: 8),
-                _buildPageButton('2', 2),
-                const SizedBox(width: 8),
-                _buildPageButton('3', 3),
-                const SizedBox(width: 8),
-                _buildPageButton('...', 0),
-                const SizedBox(width: 8),
-                _buildPageButton('${widget.totalEvents ~/ 20 + 1}', widget.totalEvents ~/ 20 + 1),
-                const SizedBox(width: 12),
+                ..._getPageButtons().map((e) => _buildPageButton(e)).toList(),
                 _buildArrowButton(Icons.chevron_right, 1),
               ],
             ),
@@ -54,7 +45,7 @@ class _PaginationBarState extends State<PaginationBar> {
     );
   }
 
-  Widget _buildPageButton(String label, int page) {
+  Widget _buildPageButton(int page) {
     return InkWell(
       onTap: () => setState(() => currentPage = page),
       child: Container(
@@ -67,7 +58,7 @@ class _PaginationBarState extends State<PaginationBar> {
           border: Border.all(color: AppColors.greyD1D5DB),
         ),
         child: Text(
-          label,
+          page == 0 ? '...' : page.toString(),
           style: AppTypography.style(
             14,
             fontWeight: FontWeight.w500,
@@ -102,4 +93,14 @@ class _PaginationBarState extends State<PaginationBar> {
       return widget.totalEvents - (currentPage - 1) * 20;
     }
   }
+
+  List<int> _getPageButtons() {
+    List<int> _res = List.generate(totalPage + 1, (i) => i);
+    if (totalPage - currentPage > 2) _res.replaceRange(currentPage + 2, totalPage, [0]);
+    if (currentPage > 3) _res.replaceRange(2, currentPage - 1, [0]);
+
+    return _res..removeAt(0);
+  }
+
+  int get totalPage => (widget.totalEvents / 20).ceil();
 }

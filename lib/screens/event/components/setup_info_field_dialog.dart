@@ -3,8 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/alert/alert_field.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
-import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 
 class SetupInfoFieldDialog extends StatefulWidget {
   const SetupInfoFieldDialog({super.key});
@@ -22,7 +22,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
     return Dialog(
       child: Container(
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.white),
-        height: MediaQuery.heightOf(context) * 552 / 900,
+        height: MediaQuery.heightOf(context) * 479 / 900,
         width: MediaQuery.widthOf(context) * 613 / 1600,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,27 +48,24 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
               child: Row(
                 children: [
                   Expanded(
-                    flex: 224,
+                    flex: 200,
                     child: Container(
                       color: AppColors.greyF9FAFB,
                       padding: EdgeInsets.all(8),
                       child: Column(
+                        spacing: 4,
                         children: [
-                          _buildVerticalTab('Phát hiện xâm nhập', 0),
-                          const SizedBox(height: 4),
+                          _buildVerticalTab('Cảnh báo xâm nhập', 0),
                           _buildVerticalTab('Cảnh báo hút thuốc', 1),
-                          const SizedBox(height: 4),
                           _buildVerticalTab('Sử dụng điện thoại', 2),
-                          const SizedBox(height: 4),
-                          _buildVerticalTab('Tụ tập đám đông', 3),
-                          const SizedBox(height: 4),
-                          _buildVerticalTab('Vượt hàng rào ảo', 4),
+                          _buildVerticalTab('Cảnh báo tụ tập', 3),
+                          _buildVerticalTab('Cảnh báo cháy', 4),
                         ],
                       ),
                     ),
                   ),
                   Expanded(
-                    flex: 756,
+                    flex: 413,
                     child: PageView(
                       controller: pageController,
                       scrollDirection: Axis.vertical,
@@ -101,12 +98,40 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                     textStyle: AppTypography.style(
                       14,
+                      color: Color(0xFF374151),
+                      lineHeight: 20 / 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.black,
                     ),
                   ),
                   const SizedBox(width: 17),
-                  AppButton.filled(label: 'Lưu', onPressed: () => Navigator.pop(context)),
+                  EventCustomButton(
+                    backgroundColor: AppColors.secondary,
+                    borderColor: AppColors.secondary,
+                    borderRadius: 5,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 4,
+                        color: AppColors.blue3B82F6.withAlpha(51),
+                        offset: Offset(0, 2),
+                        spreadRadius: -2,
+                      ),
+                      BoxShadow(
+                        blurRadius: 6,
+                        color: AppColors.blue3B82F6.withAlpha(51),
+                        offset: Offset(0, 4),
+                        spreadRadius: -1,
+                      ),
+                    ],
+                    label: 'Lưu',
+                    onPressed: () => Navigator.pop(context),
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                    textStyle: AppTypography.style(
+                      14,
+                      color: AppColors.white,
+                      lineHeight: 20 / 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -126,28 +151,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
   Widget _buildTabContent(int index) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Column(
-        children: [
-          CustomReorderableListView(type: index),
-          const SizedBox(height: 16),
-
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                flex: 125,
-                child: AppButton.outline(label: 'Hủy', onPressed: () => Navigator.pop(context)),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 125,
-                child: AppButton.filled(label: 'Lưu', onPressed: () => Navigator.pop(context)),
-              ),
-              const Spacer(flex: 99),
-            ],
-          ),
-        ],
-      ),
+      child: Column(children: [CustomReorderableListView(type: index)]),
     );
   }
 
@@ -199,50 +203,18 @@ class CustomReorderableListView extends StatefulWidget {
 class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   final GlobalKey _listKey = GlobalKey();
 
-  final List<String> _items = ["Loại sự kiện", "Thời gian"];
-  late final List<String> _allOptions;
+  final List<AlertField> _items = [
+    AlertField(id: 1, name: "Loại sự kiện", icon: SvgPicture.asset(AppAssets.icEventType)),
+    AlertField(id: 2, name: "Thời gian", icon: SvgPicture.asset(AppAssets.icTimeCircle)),
+    AlertField(id: 3, name: "Tên camera", icon: SvgPicture.asset(AppAssets.icVideoOn)),
+  ];
+  final List<AlertField> _allOptions = [
+    AlertField(id: 1, name: "Loại sự kiện", icon: SvgPicture.asset(AppAssets.icEventType)),
+    AlertField(id: 2, name: "Thời gian", icon: SvgPicture.asset(AppAssets.icTimeCircle)),
+    AlertField(id: 3, name: "Tên camera", icon: SvgPicture.asset(AppAssets.icVideoOn)),
+  ];
 
   OverlayEntry? _popupEntry;
-  final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    switch (widget.type) {
-      case 0:
-        _allOptions = ["Loại sự kiện", "Thời gian", "ID camera", "Tên camera", "Vị trí camera"];
-        break;
-      case 1:
-      case 2:
-      case 4:
-      case 5:
-        _allOptions = [
-          "Loại sự kiện",
-          "Thời gian",
-          "ID camera",
-          "Tên camera",
-          "Vị trí camera",
-          "Đối tượng xâm nhập",
-          "Tên đối tượng",
-        ];
-        break;
-      case 3:
-        _allOptions = [
-          "Loại sự kiện",
-          "Thời gian",
-          "ID camera",
-          "Tên camera",
-          "Vị trí camera",
-          "Đối tượng xâm nhập",
-          "ID hàng rào ảo",
-          "Hướng xâm nhập",
-        ];
-        break;
-      default:
-        _allOptions = [];
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -256,7 +228,7 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
           buildDefaultDragHandles: false,
           onReorder: (int oldIndex, int newIndex) => setState(() {
             if (oldIndex < newIndex) newIndex -= 1;
-            final String item = _items.removeAt(oldIndex);
+            final AlertField item = _items.removeAt(oldIndex);
             _items.insert(newIndex, item);
           }),
           shrinkWrap: true,
@@ -272,24 +244,25 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
               margin: EdgeInsets.only(bottom: 5),
               child: Row(
                 children: [
-                  Container(
-                    color: AppColors.greyE2E8F0,
-                    height: 40,
-                    child: ReorderableDragStartListener(
-                      index: index,
-                      child: Icon(Icons.drag_indicator, color: AppColors.grey64748B),
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: Container(
+                      color: AppColors.greyE2E8F0,
+                      height: 40,
+                      width: 23,
+                      child: Center(child: SvgPicture.asset(AppAssets.icDrawable)),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      _items[index],
+                      _items[index].name,
                       style: AppTypography.style(14, fontWeight: FontWeight.w400),
                     ),
                   ),
                   const SizedBox(width: 10),
                   IconButton(
-                    icon: SvgPicture.asset(AppAssets.icCloseFilled),
+                    icon: SvgPicture.asset(AppAssets.icClose, height: 20, width: 20),
                     onPressed: () => setState(() => _items.removeAt(index)),
                   ),
                 ],
@@ -299,16 +272,19 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
         ),
         const SizedBox(height: 10),
         InkWell(
-          onTap: showAddDataPopup,
+          onTap: _isSelectedAll ? null : showAddDataPopup,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Icon(Icons.add, color: AppColors.secondary, size: 18),
+              Icon(
+                Icons.add,
+                color: _isSelectedAll ? AppColors.grey64748B : AppColors.secondary,
+                size: 18,
+              ),
               Text(
-                'Thêm',
+                'Thêm trường thông tin',
                 style: AppTypography.style(
                   14,
-                  color: AppColors.secondary,
+                  color: _isSelectedAll ? AppColors.grey64748B : AppColors.secondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -322,9 +298,10 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   @override
   void dispose() {
     _removePopup();
-    _searchController.dispose();
     super.dispose();
   }
+
+  bool get _isSelectedAll => _allOptions.length == _items.length;
 
   void showAddDataPopup() {
     if (_popupEntry != null) {
@@ -344,8 +321,6 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
       ancestor: overlayBox,
     );
 
-    _searchController.clear();
-
     _popupEntry = OverlayEntry(
       builder: (context) => Stack(
         children: [
@@ -364,46 +339,41 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
-                  boxShadow: [BoxShadow(blurRadius: 60, color: AppColors.grey93989A.withAlpha(52))],
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 60,
+                      color: AppColors.grey93989A.withAlpha(51),
+                      offset: Offset(0, 4),
+                    ),
+                  ],
                   color: AppColors.white,
                 ),
                 padding: const EdgeInsets.all(8.0),
                 child: StatefulBuilder(
                   builder: (context, setStatePopup) {
-                    final keyword = _searchController.text.trim().toLowerCase();
-                    final availableOptions = _allOptions
-                        .where((o) => !_items.contains(o))
-                        .where((o) => keyword.isEmpty || o.toLowerCase().contains(keyword))
-                        .toList();
+                    final availableOptions = _allOptions.where((o) => !_items.contains(o)).toList();
 
                     return ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 220),
-                      child: availableOptions.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'Không có kết quả phù hợp',
-                                style: AppTypography.style(12, color: AppColors.grey64748B),
-                              ),
-                            )
-                          : ListView.separated(
-                              itemBuilder: (context, index) => TextButton(
-                                onPressed: () {
-                                  setState(() => _items.add(availableOptions[index]));
-                                  _removePopup();
-                                },
-                                style: TextButton.styleFrom(alignment: Alignment.centerLeft),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4),
-                                  child: Text(
-                                    availableOptions[index],
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                                  ),
-                                ),
-                              ),
-                              itemCount: availableOptions.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 4),
+                      child: ListView.separated(
+                        itemBuilder: (context, index) => TextButton(
+                          onPressed: () {
+                            setState(() => _items.add(availableOptions[index]));
+                            _removePopup();
+                          },
+                          style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Text(
+                              availableOptions[index].name,
+                              style: AppTypography.style(14, fontWeight: FontWeight.w400),
                             ),
+                          ),
+                        ),
+                        itemCount: availableOptions.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 4),
+                        shrinkWrap: true,
+                      ),
                     );
                   },
                 ),

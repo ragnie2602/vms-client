@@ -183,6 +183,9 @@ class AppAssets {
 
   // Event
   static const icConfigure = '$_svgPath/configure.svg';
+  static const icDots = '$_svgPath/dots.svg';
+  static const icDrawable = '$_svgPath/drawable.svg';
   static const icDownload2 = '$_svgPath/download2.svg';
+  static const icEventType = '$_svgPath/event_type.svg';
   static const icRefresh = '$_svgPath/refresh.svg';
 }

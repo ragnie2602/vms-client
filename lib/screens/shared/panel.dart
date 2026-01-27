@@ -23,14 +23,9 @@ class PanelController {
 class Panel extends StatefulWidget {
   final double expandedWidth;
   final PanelController? controller;
-  final bool icCloseOnContent;
+  final bool? icCloseOnContent;
 
-  const Panel({
-    super.key,
-    required this.expandedWidth,
-    this.controller,
-    this.icCloseOnContent = false,
-  });
+  const Panel({super.key, required this.expandedWidth, this.controller, this.icCloseOnContent});
 
   @override
   State<Panel> createState() => _PanelState();
@@ -115,45 +110,57 @@ class _PanelState extends State<Panel> {
         width: width,
         height: double.infinity,
         color: AppColors.contentBg,
-        child: !widget.icCloseOnContent
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(0, 4, 4, 12),
-                    child: InkWell(
-                      onTap: () {
-                        _width.value = 0;
-                        onPanelIndexChanged?.call(null);
-                        toggleSidebar(2);
-                      },
-                      child: SvgPicture.asset(AppAssets.icClose),
-                    ),
-                  ),
-                  if (content != null && isOpening) Expanded(child: content!),
-                ],
-              )
-            : Stack(
-                children: <Widget>[
-                  if (content != null && isOpening) Positioned.fill(child: content!),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(0, 4, 4, 12),
-                      child: InkWell(
-                        onTap: () {
-                          _width.value = 0;
-                          onPanelIndexChanged?.call(null);
-                          toggleSidebar(2);
-                        },
-                        child: SvgPicture.asset(AppAssets.icClose),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+        child: _buildContent(),
       ),
     );
+  }
+
+  Widget _buildContent() {
+    if (widget.icCloseOnContent == null) {
+      if (content != null && isOpening) {
+        return Expanded(child: content!);
+      } else {
+        return Container();
+      }
+    } else if (!widget.icCloseOnContent!) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.fromLTRB(0, 4, 4, 12),
+            child: InkWell(
+              onTap: () {
+                _width.value = 0;
+                onPanelIndexChanged?.call(null);
+                toggleSidebar(2);
+              },
+              child: SvgPicture.asset(AppAssets.icClose),
+            ),
+          ),
+          if (content != null && isOpening) Expanded(child: content!),
+        ],
+      );
+    } else {
+      return Stack(
+        children: <Widget>[
+          if (content != null && isOpening) Positioned.fill(child: content!),
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0, 4, 4, 12),
+              child: InkWell(
+                onTap: () {
+                  _width.value = 0;
+                  onPanelIndexChanged?.call(null);
+                  toggleSidebar(2);
+                },
+                child: SvgPicture.asset(AppAssets.icClose),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
   }
 }

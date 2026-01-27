@@ -338,7 +338,7 @@ class _EventScreenState extends State<EventScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  PaginationBar(totalEvents: 50),
+                  PaginationBar(totalEvents: 100),
                   const SizedBox(height: 7),
                 ],
               ),
