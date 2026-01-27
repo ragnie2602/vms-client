@@ -129,11 +129,10 @@ class _MonitorActionsState extends State<MonitorActions> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ActionItem.alert(
-                    isSelected: value == 0,
-                    id: 0,
                     controller: widget.rightController,
+                    id: 0,
+                    isSelected: false,
                     onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
-                    count: '09',
                   ),
                 ],
               ),

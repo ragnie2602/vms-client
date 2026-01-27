@@ -23,7 +23,6 @@ import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dar
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
-import 'package:vms_flutter_client/domain/usecases/my_profile/remove_account_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
@@ -119,11 +118,6 @@ class DependencyInjection {
     Provider<SearchUserUseCase>(create: (context) => SearchUserUseCase()),
     Provider<UpdateMyProfileUseCase>(
       create: (context) => UpdateMyProfileUseCase(
-        userManagementRepository: context.read<IUserManagementRepository>(),
-      ),
-    ),
-    Provider<RemoveAccountUseCase>(
-      create: (context) => RemoveAccountUseCase(
         userManagementRepository: context.read<IUserManagementRepository>(),
       ),
     ),

@@ -24,8 +24,7 @@ class CameraDetailDesktopLayout extends StatefulWidget {
   final bool openCamerasPanelImmediately;
 
   @override
-  State<CameraDetailDesktopLayout> createState() =>
-      _CameraDetailDesktopLayoutState();
+  State<CameraDetailDesktopLayout> createState() => _CameraDetailDesktopLayoutState();
 }
 
 class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
@@ -52,11 +51,7 @@ class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
           mode: widget.mode,
           openCamerasPanelImmediately: widget.openCamerasPanelImmediately,
         ),
-        Container(
-          width: double.infinity,
-          height: 1,
-          color: AppColors.scaffoldBg,
-        ),
+        Container(width: double.infinity, height: 1, color: AppColors.scaffoldBg),
         Expanded(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,6 +59,7 @@ class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
               Panel(
                 expandedWidth: widget.leftPanelWidth,
                 controller: _leftController,
+                icCloseOnContent: false,
               ),
               Expanded(
                 child: widget.content == null
@@ -85,9 +81,7 @@ class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
                     : Container(
                         margin: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.vertical(
-                            bottom: Radius.circular(32),
-                          ),
+                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
                           color: Colors.black,
                         ),
                         child: Column(
@@ -108,18 +102,8 @@ class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w700,
                                   ),
-                                  playbackColor: Color.fromRGBO(
-                                    21,
-                                    171,
-                                    255,
-                                    0.4,
-                                  ),
-                                  centralLineColor: Color.fromRGBO(
-                                    33,
-                                    204,
-                                    195,
-                                    1,
-                                  ),
+                                  playbackColor: Color.fromRGBO(21, 171, 255, 0.4),
+                                  centralLineColor: Color.fromRGBO(33, 204, 195, 1),
                                 ),
                               ),
                             PlayerControls(mode: widget.mode),
@@ -130,6 +114,7 @@ class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
               Panel(
                 expandedWidth: widget.rightPanelWidth,
                 controller: _rightController,
+                icCloseOnContent: false,
               ),
             ],
           ),
