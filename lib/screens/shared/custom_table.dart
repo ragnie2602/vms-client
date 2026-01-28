@@ -9,7 +9,7 @@ class CustomTable extends StatelessWidget {
   final CustomTableData data;
   final CrossAxisAlignment? defaultVerticalAlignment;
   final Widget Function(String value)? headerBuilder;
-  final List<CrossAxisAlignment>? horizontalAlignments;
+  final List<CrossAxisAlignment?>? horizontalAlignments;
   final double rowSpacing;
   final List<CrossAxisAlignment>? verticalAlignments;
   final Widget? verticalBorder;
@@ -58,6 +58,21 @@ class CustomTable extends StatelessWidget {
   }
 
   Widget _buildBody() {
+    _getHorizontalAlignment(int c) {
+      if (horizontalAlignments != null && horizontalAlignments!.length > c) {
+        if (horizontalAlignments![c] == CrossAxisAlignment.end) {
+          return Alignment.centerRight;
+        }
+        if (horizontalAlignments![c] == CrossAxisAlignment.center) {
+          return Alignment.center;
+        }
+        if (horizontalAlignments![c] == null) {
+          return null;
+        }
+      }
+      return Alignment.centerLeft;
+    }
+
     _getVerticalAlignment(int r) {
       if (verticalAlignments != null && verticalAlignments!.length > r) {
         return verticalAlignments![r];
@@ -73,7 +88,12 @@ class CustomTable extends StatelessWidget {
               crossAxisAlignment: _getVerticalAlignment(r),
               children: [
                 for (int c = 0; c < data.data[r].length; c++) ...[
-                  Expanded(flex: data.columnFlexes[c], child: data.data[r][c]),
+                  Expanded(
+                    flex: data.columnFlexes[c],
+                    child: _getHorizontalAlignment(c) == null
+                        ? data.data[r][c]
+                        : Align(alignment: _getHorizontalAlignment(c)!, child: data.data[r][c]),
+                  ),
                   if (c < data.data[r].length - 1) SizedBox(width: columnSpacing),
                 ],
               ],
