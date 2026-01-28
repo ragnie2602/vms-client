@@ -25,11 +25,12 @@ class EventDateRangePicker extends StatefulWidget {
   });
 
   @override
-  State<EventDateRangePicker> createState() => _EventDateRangePickerState();
+  State<EventDateRangePicker> createState() => EventDateRangePickerState();
 }
 
-class _EventDateRangePickerState extends State<EventDateRangePicker> {
+class EventDateRangePickerState extends State<EventDateRangePicker> {
   late final TextEditingController _controller;
+
   DateTimeRange? _selectedDateRange;
 
   @override
@@ -37,8 +38,16 @@ class _EventDateRangePickerState extends State<EventDateRangePicker> {
     super.initState();
 
     _controller = TextEditingController();
-    _selectedDateRange = widget.initialDateRange;
-    _updateControllerText();
+
+    if (widget.initialDateRange != null) {
+      _selectedDateRange = widget.initialDateRange;
+
+      _updateControllerText();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onChanged?.call(_selectedDateRange);
+      });
+    }
   }
 
   @override
@@ -109,6 +118,15 @@ class _EventDateRangePickerState extends State<EventDateRangePicker> {
     super.dispose();
   }
 
+  changeDateRange(DateTimeRange dateRange) {
+    setState(() {
+      _selectedDateRange = dateRange;
+
+      _updateControllerText();
+    });
+    widget.onChanged?.call(dateRange);
+  }
+
   Future<void> _showDateRangePicker() async {
     final result = await showDialog<DateTimeRange?>(
       context: context,
@@ -116,16 +134,10 @@ class _EventDateRangePickerState extends State<EventDateRangePicker> {
       builder: (context) => _EventRangePickerDialog(initialRange: _selectedDateRange),
     );
 
-    if (result != null) {
-      setState(() {
-        _selectedDateRange = result;
-        _updateControllerText();
-      });
-      widget.onChanged?.call(result);
-    }
+    if (result != null) changeDateRange(result);
   }
 
-  void _updateControllerText() {
+  _updateControllerText() {
     if (_selectedDateRange != null) {
       final startDate = _selectedDateRange!.start.format('dd/MM/yyyy');
       final endDate = _selectedDateRange!.end.format('dd/MM/yyyy');

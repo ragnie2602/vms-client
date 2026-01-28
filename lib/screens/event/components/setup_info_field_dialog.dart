@@ -255,9 +255,15 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(
-                      _items[index].name,
-                      style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                    child: Row(
+                      spacing: 8,
+                      children: [
+                        _items[index].icon,
+                        Text(
+                          _items[index].name,
+                          style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 10),

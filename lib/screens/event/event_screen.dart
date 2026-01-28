@@ -31,7 +31,8 @@ class _EventScreenState extends State<EventScreen> {
   late final ControlCameraBloc controlCameraBloc;
   late final MonitorBloc monitorBloc;
 
-  int presetHour = 0;
+  GlobalKey<EventDateRangePickerState> dateRangeKey = GlobalKey<EventDateRangePickerState>();
+  int? presetHour = 720;
 
   @override
   void initState() {
@@ -56,10 +57,21 @@ class _EventScreenState extends State<EventScreen> {
               children: [
                 Expanded(
                   child: EventDateRangePicker(
+                    key: dateRangeKey,
                     hintText: 'Từ ngày - đến ngày',
+                    initialDateRange: presetHour == null
+                        ? null
+                        : DateTimeRange(
+                            start: DateTime.now().subtract(Duration(hours: presetHour!)),
+                            end: DateTime.now(),
+                          ),
                     isDense: true,
                     label: 'Thời gian',
-                    onChanged: (_) {},
+                    onChanged: (dateRange) {
+                      setState(
+                        () => presetHour = dateRange?.end.difference(dateRange.start).inHours ?? 0,
+                      );
+                    },
                     padding: EdgeInsets.only(bottom: 12, left: 16, right: 12, top: 12),
                   ),
                 ),
@@ -110,7 +122,11 @@ class _EventScreenState extends State<EventScreen> {
                           : [],
                       label: 'Nhóm camera',
                       onChanged: (value) {
-                        monitorBloc.add(GetAllCameraInGroup(value?.groupId ?? []));
+                        if (value == null) {
+                          monitorBloc.add(GetAllCamera());
+                        } else {
+                          monitorBloc.add(GetAllCameraInGroup(value?.groupId ?? []));
+                        }
                       },
                       padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
                     ),
@@ -146,7 +162,7 @@ class _EventScreenState extends State<EventScreen> {
                   borderRadius: 3,
                   label: 'Tìm kiếm',
                   onPressed: () {},
-                  padding: EdgeInsets.symmetric(horizontal: 33, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 23, vertical: 12),
                   prefix: SvgPicture.asset(
                     AppAssets.icSearch,
                     color: AppColors.white,
@@ -171,141 +187,99 @@ class _EventScreenState extends State<EventScreen> {
               child: Column(
                 children: [
                   StatefulBuilder(
-                    builder: (context, setState) => Row(
-                      children: [
-                        EventCustomButton(
-                          backgroundColor: presetHour == 1 ? AppColors.blue005AA9 : AppColors.white,
-                          borderColor: AppColors.blue005AA9,
-                          borderRadius: 3,
-                          label: '1 giờ trước',
-                          onPressed: () => setState(() => presetHour = 1),
-                          padding: const EdgeInsets.all(8),
-                          textStyle: AppTypography.style(
-                            14,
-                            color: presetHour == 1 ? AppColors.white : AppColors.blue005AA9,
-                            fontWeight: FontWeight.w500,
+                    builder: (context, setState) {
+                      void changePresetHour(int hour) {
+                        setState(() => presetHour = hour);
+                        dateRangeKey.currentState?.changeDateRange(
+                          DateTimeRange(
+                            start: DateTime.now().subtract(Duration(hours: hour)),
+                            end: DateTime.now(),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        EventCustomButton(
-                          backgroundColor: presetHour == 24
-                              ? AppColors.blue005AA9
-                              : AppColors.white,
-                          borderColor: AppColors.blue005AA9,
-                          borderRadius: 3,
-                          label: 'Hôm nay',
-                          onPressed: () => setState(() => presetHour = 24),
-                          padding: const EdgeInsets.all(8),
-                          textStyle: AppTypography.style(
-                            14,
-                            color: presetHour == 24 ? AppColors.white : AppColors.blue005AA9,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        EventCustomButton(
-                          backgroundColor: presetHour == 168
-                              ? AppColors.blue005AA9
-                              : AppColors.white,
-                          borderColor: AppColors.blue005AA9,
-                          borderRadius: 3,
-                          label: '7 ngày trước',
-                          onPressed: () => setState(() => presetHour = 168),
-                          padding: const EdgeInsets.all(8),
-                          textStyle: AppTypography.style(
-                            14,
-                            color: presetHour == 168 ? AppColors.white : AppColors.blue005AA9,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        EventCustomButton(
-                          backgroundColor: presetHour == 720
-                              ? AppColors.blue005AA9
-                              : AppColors.white,
-                          borderColor: AppColors.blue005AA9,
-                          borderRadius: 3,
-                          label: '30 ngày trước',
-                          onPressed: () => setState(() => presetHour = 720),
-                          padding: const EdgeInsets.all(8),
-                          textStyle: AppTypography.style(
-                            14,
-                            color: presetHour == 720 ? AppColors.white : AppColors.blue005AA9,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        EventCustomButton(
-                          borderColor: AppColors.greyE5E7EB,
-                          borderRadius: 3,
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 2,
-                              color: AppColors.black.withAlpha(13),
-                              offset: const Offset(0, 1),
+                        );
+                      }
+
+                      return Row(
+                        children: [
+                          presetTimeBtn(changePresetHour, 1, '1 giờ trước'),
+                          const SizedBox(width: 10),
+                          presetTimeBtn(changePresetHour, 24, 'Hôm nay'),
+                          const SizedBox(width: 10),
+                          presetTimeBtn(changePresetHour, 168, '7 ngày trước'),
+                          const SizedBox(width: 10),
+                          presetTimeBtn(changePresetHour, 720, '30 ngày trước'),
+                          const Spacer(),
+                          EventCustomButton(
+                            borderColor: AppColors.greyE5E7EB,
+                            borderRadius: 3,
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2,
+                                color: AppColors.black.withAlpha(13),
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                            label: 'Làm mới',
+                            onPressed: () {},
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            prefix: SvgPicture.asset(AppAssets.icRefresh, height: 20),
+                            prefixGap: 8,
+                            textStyle: AppTypography.style(
+                              14,
+                              color: AppColors.blue374151,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                          label: 'Làm mới',
-                          onPressed: () {},
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                          prefix: SvgPicture.asset(AppAssets.icRefresh, height: 20),
-                          prefixGap: 8,
-                          textStyle: AppTypography.style(
-                            14,
-                            color: AppColors.blue374151,
-                            fontWeight: FontWeight.w500,
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        EventCustomButton(
-                          borderColor: AppColors.greyE5E7EB,
-                          borderRadius: 3,
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 2,
-                              color: AppColors.black.withAlpha(13),
-                              offset: const Offset(0, 1),
+                          const SizedBox(width: 10),
+                          EventCustomButton(
+                            borderColor: AppColors.greyE5E7EB,
+                            borderRadius: 3,
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2,
+                                color: AppColors.black.withAlpha(13),
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                            label: 'Tải về danh sách',
+                            onPressed: () {},
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            prefix: SvgPicture.asset(AppAssets.icDownload2, height: 20),
+                            prefixGap: 8,
+                            textStyle: AppTypography.style(
+                              14,
+                              color: AppColors.blue374151,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                          label: 'Tải về danh sách',
-                          onPressed: () {},
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                          prefix: SvgPicture.asset(AppAssets.icDownload2, height: 20),
-                          prefixGap: 8,
-                          textStyle: AppTypography.style(
-                            14,
-                            color: AppColors.blue374151,
-                            fontWeight: FontWeight.w500,
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        EventCustomButton(
-                          backgroundColor: AppColors.greyF2F4F6,
-                          borderColor: AppColors.greyE5E7EB,
-                          borderRadius: 3,
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 2,
-                              color: AppColors.black.withAlpha(13),
-                              offset: const Offset(0, 1),
+                          const SizedBox(width: 10),
+                          EventCustomButton(
+                            backgroundColor: AppColors.greyF2F4F6,
+                            borderColor: AppColors.greyE5E7EB,
+                            borderRadius: 3,
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2,
+                                color: AppColors.black.withAlpha(13),
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                            label: 'Cấu hình',
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (context) => SetupInfoFieldDialog(),
                             ),
-                          ],
-                          label: 'Cấu hình',
-                          onPressed: () => showDialog(
-                            context: context,
-                            builder: (context) => SetupInfoFieldDialog(),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
+                            prefixGap: 8,
+                            textStyle: AppTypography.style(
+                              14,
+                              color: AppColors.blue374151,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                          prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
-                          prefixGap: 8,
-                          textStyle: AppTypography.style(
-                            14,
-                            color: AppColors.blue374151,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 14),
                   const Divider(color: AppColors.greyE2E8F0),
@@ -345,6 +319,22 @@ class _EventScreenState extends State<EventScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget presetTimeBtn(Function(int) onPressed, int hour, String label) {
+    return EventCustomButton(
+      backgroundColor: presetHour == hour ? AppColors.blue005AA9 : AppColors.white,
+      borderColor: AppColors.blue005AA9,
+      borderRadius: 3,
+      label: label,
+      onPressed: () => onPressed(hour),
+      padding: const EdgeInsets.all(8),
+      textStyle: AppTypography.style(
+        14,
+        color: presetHour == hour ? AppColors.white : AppColors.blue005AA9,
+        fontWeight: FontWeight.w500,
       ),
     );
   }

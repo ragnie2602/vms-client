@@ -118,4 +118,20 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
       ],
     );
   }
+
+  @override
+  void didUpdateWidget(covariant EventFilterDropdown<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (_selectedValue != null && !widget.items.contains(_selectedValue)) {
+      setState(() => _selectedValue = null);
+    }
+
+    final nextInitial = widget.initialValue;
+    if (nextInitial != null &&
+        widget.items.contains(nextInitial) &&
+        nextInitial != _selectedValue) {
+      setState(() => _selectedValue = nextInitial);
+    }
+  }
 }

@@ -39,11 +39,9 @@ class EventCustomButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           elevation: 0,
-          minimumSize: Size.zero,
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? 0)),
           side: borderColor != null ? BorderSide(color: borderColor!, width: 1) : null,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         child: Padding(
           padding: padding ?? EdgeInsets.zero,
