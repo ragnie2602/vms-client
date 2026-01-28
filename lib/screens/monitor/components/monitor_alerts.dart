@@ -45,7 +45,7 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: AppColors.greyF3F4F6,
+              color: AppColors.greyAthens,
             ),
             margin: EdgeInsets.all(5),
             padding: EdgeInsets.all(4),

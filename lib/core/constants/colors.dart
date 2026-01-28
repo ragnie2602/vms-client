@@ -65,7 +65,7 @@ class AppColors {
   static const greyF2F4FA = Color(0xFFF2F4FA);
   static const greyF2F2F2 = Color(0xFFF2F2F2);
   static const greyF2F4F6 = Color(0xFFF2F4F6);
-  static const greyF3F4F6 = Color(0xFFF3F4F6);
+  static const greyAthens = Color(0xFFF3F4F6);
   static const grey64748B = Color(0xFF64748B);
   static const grey94A3B8 = Color(0xFF94A3B8);
   static const grey93989A = Color(0xFF93989A);
