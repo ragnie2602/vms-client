@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
@@ -81,9 +82,10 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
   }
 
   FutureOr<void> _onChangeVolume(ChangeVolume event, Emitter<CameraDetailState> emit) async {
-    state.playerController.changeVolume?.call(event.volume);
+    final volume = event.volume.clamp(0, AppConfig.PLAYER_MAX_VOLUME_PERCENT).toDouble();
+    state.playerController.changeVolume?.call(volume);
 
-    emit(state.copyWith(volume: event.volume));
+    emit(state.copyWith(volume: volume));
   }
 
   FutureOr<void> _onChangeSpeed(ChangeSpeed event, Emitter<CameraDetailState> emit) async {

@@ -357,7 +357,8 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
 
   void changeVolume(double volume) {
     _dualQueue.add(() async {
-      _player.volume = volume / 100;
+      final clamped = volume.clamp(0, AppConfig.PLAYER_MAX_VOLUME_PERCENT).toDouble();
+      _player.volume = clamped / 100;
       await Future.delayed(Duration(milliseconds: 100));
     });
   }

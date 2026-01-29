@@ -24,6 +24,7 @@ import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.d
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/osd/osd_bloc.dart';
 
 class DependencyInjection {
   static List<SingleChildWidget> providers = [
@@ -61,9 +62,7 @@ class DependencyInjection {
     ),
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
     Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
-    Provider<IScheduleRepository>(
-      create: (context) => ScheduleRepository( context.read()),
-    ),
+    Provider<IScheduleRepository>(create: (context) => ScheduleRepository(context.read())),
     Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
     Provider<IUserManagementRepository>(
       create: (context) => UserManagementRepository(context.read()),
@@ -118,5 +117,6 @@ class DependencyInjection {
 
     // Bloc
     Provider<AppBloc>(create: (context) => AppBloc(context.read(), context.read(), context.read())),
+    Provider<OsdBloc>(create: (context) => OsdBloc(context.read(), context.read())),
   ];
 }
