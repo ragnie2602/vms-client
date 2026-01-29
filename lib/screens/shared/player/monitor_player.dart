@@ -204,9 +204,8 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     _player.setProperty('avformat.allowed_segment_extensions', 'ALL');
     _player.videoDecoders = AppConfig.MDK_DECODERS;
 
-    _player.setProperty("avcodec.skip_frame", "1");
-    _player.setProperty("avcodec.threads", "1");
-    _player.setProperty("avcodec.skip_loop_filter", "all"); // Tắt lọc nhiễu
+    // Nhảy khung hình tới mới nhất --> Gây giật/lag
+    // _player.setProperty("avcodec.skip_frame", "1");
     // Cho phép decoder bỏ qua một số quy chuẩn khắt khe để giải mã nhanh hơn, tốn ít CPU hơn.
     _player.setProperty("avcodec.flags2", "+fast");
     // Xóa frame khi dừng
@@ -215,14 +214,25 @@ class MonitorPlayerState extends State<MonitorPlayer> with TickerProviderStateMi
     // Reduce latency:
     _player.setProperty('avformat.fflags', '+nobuffer');
     _player.setProperty('avformat.fpsprobesize', '0');
-    _player.setProperty("avformat.probesize", "32");
-    _player.setProperty("avformat.formatprobesize", "0");
-    // Không cần phân tích thời lượng vì là live stream
-    _player.setProperty('avformat.analyzeduration', '0');
+    _player.setProperty("avformat.probesize", "32768");
+    _player.setProperty("avformat.formatprobesize", "32768");
+    // Không cần phân tích thời lượng/nhỏ vì là live stream
+    _player.setProperty('avformat.analyzeduration', '1000');
 
-    // No cache
-    _player.setBufferRange(min: 0, max: 1, drop: true);
-    _player.setFps(20);
+    if (widget.mode == MonitorMode.monitoring) {
+      // _player.setFps(20);
+      _player.setProperty("avcodec.threads", "1");
+      // Tắt lọc nhiễu (nhiều/nhỏ nên khó phân biệt)
+      _player.setProperty("avcodec.skip_loop_filter", "all");
+      // Buffer: Cần độ ổn định cao nhất, chấp nhận delay chút
+      _player.setBufferRange(min: 100, max: 3000, drop: true);
+    } else {
+      // _player.setFps(20);
+      _player.setProperty("avcodec.threads", "auto");
+      // Hình ảnh: Bật khử nhiễu để hình mịn đẹp
+      _player.setProperty("avcodec.skip_loop_filter", "default");
+      _player.setBufferRange(min: 0, max: 2000, drop: true);
+    }
 
     if (widget.mode == MonitorMode.monitoring || audioSourceMode.isOff) {
       _player.activeAudioTracks = [];
