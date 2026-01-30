@@ -27,7 +27,7 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     groups.fold(
       (onFailure) {
         listAiBox = [];
-        // emit(GetListAiBoxStateFail(groups.left.toString()));
+        emit(AiBoxErrorState(errorMessage: onFailure.toString()));
       },
       (onSuccess) {
         listAiBox = onSuccess;

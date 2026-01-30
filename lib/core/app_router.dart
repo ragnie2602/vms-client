@@ -218,6 +218,11 @@ class AppRouter {
               ),
             ),
             BlocProvider(
+              create: (context) => AiBoxBloc(
+                aiBoxRepository: context.read(),
+              ),
+            ),
+            BlocProvider(
               create: (context) => ScheduleBloc(
                 cameraRepository: context.read(),
                 scheduleRepository: context.read(),

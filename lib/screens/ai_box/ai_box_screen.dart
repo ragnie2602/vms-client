@@ -224,6 +224,40 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
                     const SizedBox(height: 16),
                     state is AiBoxLoadingState
                         ? const Center(child: CircularProgressIndicator())
+                        : state is AiBoxErrorState
+                        ? Flexible(
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    color: Colors.red,
+                                    size: 48,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    state.errorMessage,
+                                    style: AppTypography.style(
+                                      14,
+                                      color: AppColors.grey64748B,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: _onGetListAiBox,
+                                    icon: const Icon(Icons.refresh),
+                                    label: const Text('Thử lại'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.secondary,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
                         : state is AIBoxLoadedState
                         ? Flexible(
                             child: Builder(

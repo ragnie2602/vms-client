@@ -1,5 +1,6 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
+
 class AiBoxState extends BaseState {
   const AiBoxState();
 }
@@ -17,4 +18,14 @@ class AIBoxLoadedState extends AiBoxState {
   StateType get type => StateType.success;
   @override
   List<Object?> get props => [aiBoxes];
+}
+
+class AiBoxErrorState extends AiBoxState {
+  final String errorMessage;
+  const AiBoxErrorState({required this.errorMessage});
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  List<Object?> get props => [errorMessage];
 }
