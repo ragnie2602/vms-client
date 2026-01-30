@@ -13,7 +13,7 @@ class EventFilterDropdown<T> extends StatefulWidget {
   final List<T> items;
   final T? initialValue;
   final String? label;
-  final void Function(dynamic) onChanged;
+  final void Function(T?) onChanged;
   final EdgeInsetsGeometry? padding;
   final TextStyle? style;
 
