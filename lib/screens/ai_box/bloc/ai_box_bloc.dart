@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
@@ -10,12 +11,18 @@ import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_state.dart';
 class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
   List<AiBoxEntity> listAiBox = [];
   final IAiBoxRepository aiBoxRepository;
+
+  // Lưu trạng thái filter hiện tại
+  String _currentKeyword = '';
+  AiBoxStatus _currentStatusFilter =
+      AiBoxStatus.all; // -1: all, 0: offline, 1: online
+
   AiBoxBloc({required this.aiBoxRepository}) : super(const AiBoxState()) {
     on<GetListAiBoxEvent>(_onGetListAiBox);
     on<AddAiBoxEvent>(_onAddAiBox);
     on<DeleteAiBoxEvent>(_onDeleteAiBox);
     on<EditAiBoxEvent>(_onEditAiBox);
-    on<SearchAiBoxEvent>(_onSearch);
+    on<FilterAiBoxEvent>(_onFilterAiBox);
   }
 
   FutureOr<void> _onGetListAiBox(
@@ -83,20 +90,43 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     emit(AIBoxLoadedState(aiBoxes: listAiBox));
   }
 
-  void _onSearch(SearchAiBoxEvent event, Emitter<AiBoxState> emit) {
-    final keyword = event.keyword.toLowerCase();
-
-    if (keyword.isEmpty) {
-      emit(AIBoxLoadedState(aiBoxes: listAiBox));
-      return;
+  void _onFilterAiBox(FilterAiBoxEvent event, Emitter<AiBoxState> emit) {
+    // Cập nhật filter state: nếu có truyền giá trị mới thì dùng, không thì giữ nguyên giá trị cũ
+    if (event.keyword != null) {
+      _currentKeyword = event.keyword!;
+    }
+    if (event.statusFilter != null) {
+      _currentStatusFilter = event.statusFilter!;
     }
 
-    final filteredList = listAiBox.where((item) {
-      return item.name!.toLowerCase().contains(keyword) ||
-          (item.ip?.toLowerCase().contains(keyword) ?? false) ||
-          (item.name?.toLowerCase().contains(keyword) ?? false);
-    }).toList();
+    final keyword = removeDiacritics(_currentKeyword.toLowerCase().trim());
+    final statusFilter = _currentStatusFilter;
 
+    // Bắt đầu với danh sách gốc
+    List<AiBoxEntity> filteredList = List.from(listAiBox);
+
+    // Filter theo status (nếu không phải "all" = -1)
+    if (statusFilter != AiBoxStatus.all) {
+      filteredList = filteredList.where((item) {
+        return item.status == statusFilter.value;
+      }).toList();
+    }
+
+    // Filter theo keyword (nếu có)
+    if (keyword.isNotEmpty) {
+      filteredList = filteredList.where((item) {
+        final nameMatch = removeDiacritics(
+          item.name?.toLowerCase() ?? '',
+        ).contains(keyword);
+        final modelMatch = removeDiacritics(
+          item.model?.toLowerCase() ?? '',
+        ).contains(keyword);
+        final ipMatch = (item.ip?.toLowerCase().contains(keyword) ?? false);
+        final portMatch = (item.port?.toString().contains(keyword) ?? false);
+
+        return nameMatch || modelMatch || ipMatch || portMatch;
+      }).toList();
+    }
     emit(AIBoxLoadedState(aiBoxes: filteredList));
   }
 }

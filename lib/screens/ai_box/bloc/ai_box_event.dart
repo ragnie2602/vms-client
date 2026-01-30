@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
 
 class AiBoxEvent extends BaseEvent {
   const AiBoxEvent();
@@ -37,11 +38,12 @@ class EditAiBoxEvent extends AiBoxEvent {
   });
 }
 
-class SearchAiBoxEvent extends AiBoxEvent {
-  final String keyword;
+class FilterAiBoxEvent extends AiBoxEvent {
+  final String? keyword;
+  final AiBoxStatus? statusFilter; // -1: all, 0: offline, 1: online
 
-  const SearchAiBoxEvent({required this.keyword});
+  const FilterAiBoxEvent({this.keyword, this.statusFilter});
 
   @override
-  List<Object?> get props => [keyword];
+  List<Object?> get props => [keyword, statusFilter];
 }

@@ -36,9 +36,9 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
     super.dispose();
   }
 
-  void _onSearchAiBox({required String keyword}) {
+  void _onSearchAiBox({String? keyword, AiBoxStatus? statusFilter}) {
     context.read<AiBoxBloc>().add(
-      SearchAiBoxEvent(keyword: keyword.trim().toString()),
+      FilterAiBoxEvent(keyword: keyword, statusFilter: statusFilter),
     );
   }
 
@@ -159,7 +159,12 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
                           value: AiBoxStatus.all,
                           height: 40,
                           itemAsString: (p0) => p0.displayName,
-                          onChanged: (value) {},
+                          onChanged: (value) {
+                            _onSearchAiBox(
+                              keyword: searchController.text,
+                              statusFilter: value,
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(width: 15),
