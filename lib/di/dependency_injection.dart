@@ -1,12 +1,15 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/data/datasources/ai_box_service.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
+import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
@@ -52,6 +55,7 @@ class DependencyInjection {
       create: (context) => EmapService(context.read(), context.read(), context.read()),
     ),
     Provider<UserService>(create: (context) => UserService(context.read(), context.read())),
+    Provider<AiBoxService>(create: (context) => AiBoxService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
 
@@ -66,6 +70,7 @@ class DependencyInjection {
     ),
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
     Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
+    Provider<IAiBoxRepository>(create: (context) => AiBoxRepository(service: context.read())),
     Provider<IScheduleRepository>(create: (context) => ScheduleRepository(context.read())),
     Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
     Provider<IUserManagementRepository>(

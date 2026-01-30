@@ -21,6 +21,7 @@ class AppAssets {
   static const tabMap = '$_svgPath/ic_map.svg';
   static const tabEvents = '$_svgPath/tab_events.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
+  static const tabAIBox = '$_svgPath/tab_ai_box.svg';
   static const tabSystemConfig = '$_svgPath/tab_setting.svg';
 
   static const icCamera = '$_svgPath/camera.svg';
