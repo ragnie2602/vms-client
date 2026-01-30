@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_us
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
@@ -220,6 +221,7 @@ class AppRouter {
             BlocProvider(
               create: (context) => AiBoxBloc(
                 aiBoxRepository: context.read(),
+                filterAiBoxUseCase: context.read<FilterAiBoxUseCase>(),
               ),
             ),
             BlocProvider(

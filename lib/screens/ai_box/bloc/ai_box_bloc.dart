@@ -1,23 +1,25 @@
 import 'dart:async';
 
-import 'package:diacritic/diacritic.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_input.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_event.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_state.dart';
 
 class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
   List<AiBoxEntity> listAiBox = [];
   final IAiBoxRepository aiBoxRepository;
+  final FilterAiBoxUseCase filterAiBoxUseCase;
 
   // Lưu trạng thái filter hiện tại
   String _currentKeyword = '';
-  AiBoxStatus _currentStatusFilter =
-      AiBoxStatus.all; // -1: all, 0: offline, 1: online
+  AiBoxStatus _currentStatusFilter = AiBoxStatus.all;
 
-  AiBoxBloc({required this.aiBoxRepository}) : super(const AiBoxState()) {
+  AiBoxBloc({required this.aiBoxRepository, required this.filterAiBoxUseCase})
+    : super(const AiBoxState()) {
     on<GetListAiBoxEvent>(_onGetListAiBox);
     on<AddAiBoxEvent>(_onAddAiBox);
     on<DeleteAiBoxEvent>(_onDeleteAiBox);
@@ -98,35 +100,13 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     if (event.statusFilter != null) {
       _currentStatusFilter = event.statusFilter!;
     }
+    final input = FilterAiBoxInput(
+      keyword: _currentKeyword,
+      statusFilter: _currentStatusFilter,
+      listAiBoxOrigin: listAiBox,
+    );
+    final output = filterAiBoxUseCase.execute(input);
 
-    final keyword = removeDiacritics(_currentKeyword.toLowerCase().trim());
-    final statusFilter = _currentStatusFilter;
-
-    // Bắt đầu với danh sách gốc
-    List<AiBoxEntity> filteredList = List.from(listAiBox);
-
-    // Filter theo status (nếu không phải "all" = -1)
-    if (statusFilter != AiBoxStatus.all) {
-      filteredList = filteredList.where((item) {
-        return item.status == statusFilter.value;
-      }).toList();
-    }
-
-    // Filter theo keyword (nếu có)
-    if (keyword.isNotEmpty) {
-      filteredList = filteredList.where((item) {
-        final nameMatch = removeDiacritics(
-          item.name?.toLowerCase() ?? '',
-        ).contains(keyword);
-        final modelMatch = removeDiacritics(
-          item.model?.toLowerCase() ?? '',
-        ).contains(keyword);
-        final ipMatch = (item.ip?.toLowerCase().contains(keyword) ?? false);
-        final portMatch = (item.port?.toString().contains(keyword) ?? false);
-
-        return nameMatch || modelMatch || ipMatch || portMatch;
-      }).toList();
-    }
-    emit(AIBoxLoadedState(aiBoxes: filteredList));
+    emit(AIBoxLoadedState(aiBoxes: output.listAiBox ?? []));
   }
 }

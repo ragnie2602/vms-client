@@ -22,6 +22,7 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custo
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
@@ -127,6 +128,7 @@ class DependencyInjection {
       ),
     ),
     Provider<SearchEmapUseCase>(create: (context) => SearchEmapUseCase()),
+    Provider<FilterAiBoxUseCase>(create: (context) => FilterAiBoxUseCase()),
 
     Provider<GetCameraUseCase>(create: (context) => GetCameraUseCase(context.read())),
 
