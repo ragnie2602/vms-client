@@ -14,6 +14,5 @@ class EndPoints {
   static const String baseMap = '/api/map';
 
   // AI Box
-  static const String getListAiBox = '/api/aiboxes';
-  static const String postCreateAiBox = '/api/aiboxes';
+  static const String baseUrlAiBox = '/api/aiboxes';
 }

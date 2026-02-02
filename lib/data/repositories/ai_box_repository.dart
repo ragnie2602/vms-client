@@ -14,4 +14,14 @@ class AiBoxRepository extends BaseRepository implements IAiBoxRepository {
       return Right(data);
     });
   }
+
+  @override
+  Future<Either<Failure, AiBoxEntity>> createAiBox({
+    required AiBoxEntity request,
+  }) async {
+    return await catchError<AiBoxEntity>(() async {
+      final data = await service.postCreateAiBox(request: request);
+      return Right(data);
+    });
+  }
 }

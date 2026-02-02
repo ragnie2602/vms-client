@@ -42,7 +42,12 @@ class AiBoxEntity {
   int? numberCameraUsed;
   int? status;
   String? ip;
-  int? port;
+  String? port;
+  String? userame;
+  String? password;
+  String? note;
+  String? publicAddress;
+  String? localAddress;
 
   AiBoxEntity({
     this.id,
@@ -54,6 +59,11 @@ class AiBoxEntity {
     this.status,
     this.ip,
     this.port,
+    this.userame,
+    this.password,
+    this.note,
+    this.publicAddress,
+    this.localAddress,
   });
 
   AiBoxEntity copyWith({
@@ -65,7 +75,12 @@ class AiBoxEntity {
     int? numberCameraUsed,
     int? status,
     String? ip,
-    int? port,
+    String? port,
+    String? userName,
+    String? password,
+    String? note,
+    String? publicAddress,
+    String? localAddress,
   }) => AiBoxEntity(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -76,6 +91,11 @@ class AiBoxEntity {
     status: status ?? this.status,
     ip: ip ?? this.ip,
     port: port ?? this.port,
+    userame: userName ?? this.userame,
+    password: password ?? this.password,
+    note: note ?? this.note,
+    publicAddress: publicAddress ?? this.publicAddress,
+    localAddress: localAddress ?? this.localAddress,
   );
 
   factory AiBoxEntity.fromJson(Map<String, dynamic> json) => AiBoxEntity(
@@ -88,6 +108,11 @@ class AiBoxEntity {
     status: json["status"],
     ip: json["ip"],
     port: json["port"],
+    userame: json["username"],
+    password: json["password"],
+    note: json["note"],
+    publicAddress: json["publicAddress"],
+    localAddress: json["localAddress"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -100,5 +125,10 @@ class AiBoxEntity {
     "status": status,
     "ip": ip,
     "port": port,
+    "username": userame,
+    "password": password,
+    "note": note,
+    "publicAddress": publicAddress,
+    "localAddress": localAddress,
   };
 }

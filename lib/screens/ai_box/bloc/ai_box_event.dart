@@ -8,11 +8,12 @@ class AiBoxEvent extends BaseEvent {
 class GetListAiBoxEvent extends AiBoxEvent {}
 
 class AddAiBoxEvent extends AiBoxEvent {
-  final String name;
-  final String? ipAddress;
-  final String? description;
+  final AiBoxEntity aiBox;
 
-  const AddAiBoxEvent({required this.name, this.ipAddress, this.description});
+  const AddAiBoxEvent({required this.aiBox});
+
+  @override
+  List<Object?> get props => [aiBox];
 }
 
 class DeleteAiBoxEvent extends AiBoxEvent {

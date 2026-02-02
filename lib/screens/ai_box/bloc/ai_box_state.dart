@@ -20,9 +20,28 @@ class AIBoxLoadedState extends AiBoxState {
   List<Object?> get props => [aiBoxes];
 }
 
+class AiBoxAddSuccessState extends AiBoxState {
+  const AiBoxAddSuccessState();
+
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [];
+}
+
 class AiBoxErrorState extends AiBoxState {
   final String errorMessage;
   const AiBoxErrorState({required this.errorMessage});
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  List<Object?> get props => [errorMessage];
+}
+
+class AiBoxAddFailState extends AiBoxState {
+  final String errorMessage;
+  const AiBoxAddFailState({required this.errorMessage});
 
   @override
   StateType get type => StateType.failure;

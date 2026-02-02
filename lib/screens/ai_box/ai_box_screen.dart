@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/remove_camera_widget.dart';
@@ -11,6 +12,7 @@ import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_event.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_state.dart';
 import 'package:vms_flutter_client/screens/ai_box/widgets/ai_box_title_widget.dart';
+import 'package:vms_flutter_client/screens/ai_box/widgets/ai_box_dialog.dart';
 import 'package:vms_flutter_client/screens/ai_box/widgets/item_ai_box_widget.dart';
 
 class AiBoxScreen extends StatefulWidget {
@@ -50,14 +52,8 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
     context.read<AiBoxBloc>().add(DeleteAiBoxEvent(aiBoxId: aiBoxId));
   }
 
-  void _addAiBox({
-    required String name,
-    String? ipAddress,
-    String? description,
-  }) {
-    context.read<AiBoxBloc>().add(
-      AddAiBoxEvent(name: name, ipAddress: ipAddress, description: description),
-    );
+  void _addAiBox({required AiBoxEntity aiBox}) {
+    context.read<AiBoxBloc>().add(AddAiBoxEvent(aiBox: aiBox));
   }
 
   void _editAiBox({
@@ -78,7 +74,21 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AiBoxBloc, AiBoxState>(
+    return BlocConsumer<AiBoxBloc, AiBoxState>(
+      listener: (context, state) {
+        if (state is AiBoxAddSuccessState) {
+          ToastUtil.toastSuccess(
+            context: context,
+            title: Text('Thêm AI Box thành công!'),
+          );
+        }
+        if (state is AiBoxAddFailState) {
+          ToastUtil.toastFail(
+            context: context,
+            title: Text(state.errorMessage),
+          );
+        }
+      },
       builder: (context, state) {
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -169,7 +179,14 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
                       ),
                       const SizedBox(width: 15),
                       InkWell(
-                        onTap: () async {},
+                        onTap: () async {
+                          await showAddAiBoxDialog(
+                            context,
+                            onConfirm: (payload) async {
+                              _addAiBox(aiBox: payload);
+                            },
+                          );
+                        },
                         splashColor: Colors.transparent,
                         child: Container(
                           padding: const EdgeInsets.symmetric(

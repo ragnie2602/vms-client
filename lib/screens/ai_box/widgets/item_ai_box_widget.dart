@@ -92,7 +92,7 @@ class _ItemAiBoxWidgetState extends State<ItemAiBoxWidget> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      widget.itemAiBox.manufacturer == null
+                      (widget.itemAiBox.manufacturer ?? '').isEmpty
                           ? SizedBox.shrink()
                           : Container(
                               padding: EdgeInsets.symmetric(

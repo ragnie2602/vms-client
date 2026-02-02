@@ -50,16 +50,18 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     Emitter<AiBoxState> emit,
   ) async {
     emit(AiBoxLoadingState());
-    await Future.delayed(const Duration(milliseconds: 500));
 
-    final newAiBox = AiBoxEntity(
-      id: listAiBox.length + 1,
-      name: event.name,
-      ip: event.ipAddress,
+    final result = await aiBoxRepository.createAiBox(request: event.aiBox);
+    result.fold(
+      (failure) {
+        emit(AiBoxAddFailState(errorMessage: failure.toString()));
+      },
+      (newAiBox) {
+        listAiBox.add(newAiBox);
+        emit(AiBoxAddSuccessState());
+        emit(AIBoxLoadedState(aiBoxes: listAiBox));
+      },
     );
-
-    listAiBox.add(newAiBox);
-    emit(AIBoxLoadedState(aiBoxes: listAiBox));
   }
 
   FutureOr<void> _onDeleteAiBox(
