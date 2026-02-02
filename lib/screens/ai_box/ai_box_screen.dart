@@ -48,8 +48,8 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
     context.read<AiBoxBloc>().add(GetListAiBoxEvent());
   }
 
-  void _onDeleteAiBox({required int aiBoxId}) {
-    context.read<AiBoxBloc>().add(DeleteAiBoxEvent(aiBoxId: aiBoxId));
+  void _onDeleteAiBox({required AiBoxEntity aiBox}) {
+    context.read<AiBoxBloc>().add(DeleteAiBoxEvent(aiBox: aiBox));
   }
 
   void _addAiBox({required AiBoxEntity aiBox}) {
@@ -72,6 +72,28 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
     );
   }
 
+  void checkEnableRemove({required AiBoxEntity? aiBox}) {
+    // đang quản lý camera thì không cho xóa
+    if ((aiBox?.numberCameraUsed ?? 0) > 0) {
+      ToastUtil.toastFail(
+        context: context,
+        title: Text(
+          'Không thể xóa ${aiBox?.name ?? ''} do đang quản lý ${aiBox?.numberCameraUsed ?? 0} camera',
+        ),
+      );
+      return;
+    }
+    showConfirmRemoveAiBoxDialog(
+      context,
+      onConfirm: () {
+        if (aiBox == null || aiBox.id == null) return;
+        _onDeleteAiBox(aiBox: aiBox);
+      },
+      name: aiBox?.name,
+    );
+    return;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AiBoxBloc, AiBoxState>(
@@ -83,6 +105,18 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
           );
         }
         if (state is AiBoxAddFailState) {
+          ToastUtil.toastFail(
+            context: context,
+            title: Text(state.errorMessage),
+          );
+        }
+        if (state is AiBoxDeleteSuccessState) {
+          ToastUtil.toastSuccess(
+            context: context,
+            title: Text('Xóa thiết bị ${state.aiBoxName} thành công!'),
+          );
+        }
+        if (state is AiBoxDeleteFailState) {
           ToastUtil.toastFail(
             context: context,
             title: Text(state.errorMessage),
@@ -309,15 +343,8 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
                                       itemAiBox: state.aiBoxes![index],
                                       index: index + 1,
                                       onDelete: () {
-                                        showDialogRemoveCameraFromGroup(
-                                          context,
-                                          onConfirm: () {
-                                            // _onDeleteAiBox(
-                                            //   aiBoxId: state.aiBoxes![index].id,
-                                            // );
-                                          },
-                                          title:
-                                              "Bạn có chắc chắn muốn xóa AI Box này?",
+                                        checkEnableRemove(
+                                          aiBox: state.aiBoxes?[index],
                                         );
                                       },
                                       onEdit: () async {

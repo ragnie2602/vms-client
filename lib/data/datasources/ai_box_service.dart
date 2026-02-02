@@ -36,4 +36,18 @@ class AiBoxService {
       throw ApiException(parseError(e));
     }
   }
+  Future<void> deleteAiBox ({required int aiBoxId}) async {
+    try {
+      final raw = await httpClient.delete(
+        url: EndPoints.aiBoxDetail(aiBoxId),
+      );
+      final response = BaseResponse.fromJson(raw);
+      if (response.code != 200) {
+        throw ApiException(response.message);
+      }
+      return response.data;
+    } on DioException catch (e) {
+      throw ApiException(parseError(e));
+    }
+  }
 }

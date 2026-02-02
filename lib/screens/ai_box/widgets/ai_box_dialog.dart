@@ -18,6 +18,18 @@ Future<T?> showAddAiBoxDialog<T>(
   );
 }
 
+Future<T?> showConfirmRemoveAiBoxDialog<T>(
+  BuildContext context, {
+  required Function() onConfirm,
+  String? name,
+}) {
+  return showDialog<T>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => RemoveAiBoxDialog(onConfirm: onConfirm, aiBoxName: name),
+  );
+}
+
 class _AddAiBoxDialog extends StatefulWidget {
   const _AddAiBoxDialog({this.onConfirm});
 
@@ -307,5 +319,145 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
     if (isSuccess && mounted) {
       Navigator.pop(context);
     }
+  }
+}
+
+// dialog confirm xoa ai box
+class RemoveAiBoxDialog extends StatelessWidget {
+  const RemoveAiBoxDialog({super.key, this.onConfirm, this.aiBoxName});
+  final Function()? onConfirm;
+  final String? aiBoxName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Padding(
+            padding: EdgeInsets.all(36),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  AppAssets.icRemoveAiBox,
+                  height: 88,
+                  width: 88,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Xóa thiết bị AI Box',
+                  style: AppTypography.style(
+                    18,
+                    color: AppColors.grey34404b,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Bạn có chắc chắn muốn xóa thiết bị \n',
+                        style: AppTypography.style(
+                          16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      TextSpan(
+                        text: aiBoxName ?? 'AI Box',
+                        style: AppTypography.style(
+                          16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' ?',
+                        style: AppTypography.style(
+                          16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.white,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          side: BorderSide(
+                            color: AppColors.greyE2E8F0,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          'Hủy',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhite,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          //
+                          Navigator.pop(context);
+                          onConfirm?.call();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondary,
+                          elevation: 0,
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        child: Text(
+                          'Đồng ý',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.blackOrWhiteReverse,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.close, size: 20),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

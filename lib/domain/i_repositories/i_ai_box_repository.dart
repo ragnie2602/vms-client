@@ -6,4 +6,5 @@ abstract class IAiBoxRepository {
   Future<Either<Failure, AiBoxEntity>> createAiBox({
     required AiBoxEntity request,
   });
+  Future<Either<Failure, int>> removeAiBox(int id);
 }

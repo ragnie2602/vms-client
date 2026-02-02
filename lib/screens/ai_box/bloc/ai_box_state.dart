@@ -14,6 +14,10 @@ class AIBoxLoadedState extends AiBoxState {
   final List<AiBoxEntity>? aiBoxes;
   const AIBoxLoadedState({required this.aiBoxes});
 
+  AIBoxLoadedState copyWith({List<AiBoxEntity>? aiBoxes}) {
+    return AIBoxLoadedState(aiBoxes: aiBoxes ?? this.aiBoxes);
+  }
+
   @override
   StateType get type => StateType.success;
   @override
@@ -42,6 +46,27 @@ class AiBoxErrorState extends AiBoxState {
 class AiBoxAddFailState extends AiBoxState {
   final String errorMessage;
   const AiBoxAddFailState({required this.errorMessage});
+
+  @override
+  StateType get type => StateType.failure;
+  @override
+  List<Object?> get props => [errorMessage];
+}
+
+class AiBoxDeleteSuccessState extends AiBoxState {
+  final int aiBoxId;
+  final String aiBoxName;
+  const AiBoxDeleteSuccessState({required this.aiBoxId, required this.aiBoxName});
+
+  @override
+  StateType get type => StateType.success;
+  @override
+  List<Object?> get props => [aiBoxId];
+}
+
+class AiBoxDeleteFailState extends AiBoxState {
+  final String errorMessage;
+  const AiBoxDeleteFailState({required this.errorMessage});
 
   @override
   StateType get type => StateType.failure;

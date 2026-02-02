@@ -54,7 +54,11 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     final result = await aiBoxRepository.createAiBox(request: event.aiBox);
     result.fold(
       (failure) {
+        final currentState = state;
         emit(AiBoxAddFailState(errorMessage: failure.toString()));
+        if (currentState is AIBoxLoadedState) {
+          emit(AIBoxLoadedState(aiBoxes: currentState.aiBoxes ?? []));
+        }
       },
       (newAiBox) {
         listAiBox.add(newAiBox);
@@ -68,11 +72,31 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     DeleteAiBoxEvent event,
     Emitter<AiBoxState> emit,
   ) async {
+    if (event.aiBox.id == null) return;
     emit(AiBoxLoadingState());
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    listAiBox.removeWhere((item) => item.id == event.aiBoxId);
-    emit(AIBoxLoadedState(aiBoxes: listAiBox));
+    final result = await aiBoxRepository.removeAiBox(event.aiBox.id!);
+    result.fold(
+      (failure) {
+        final currentState = state;
+        emit(AiBoxDeleteFailState(errorMessage: failure.toString()));
+        if (currentState is AIBoxLoadedState) {
+          emit(AIBoxLoadedState(aiBoxes: currentState.aiBoxes ?? []));
+        }
+      },
+      (deletedId) {
+        final deletedAiBox = listAiBox.firstWhere(
+          (item) => item.id == deletedId,
+        );
+        listAiBox.removeWhere((item) => item.id == deletedId);
+        emit(
+          AiBoxDeleteSuccessState(
+            aiBoxId: deletedId,
+            aiBoxName: deletedAiBox.name ?? '',
+          ),
+        );
+        emit(AIBoxLoadedState(aiBoxes: listAiBox));
+      },
+    );
   }
 
   FutureOr<void> _onEditAiBox(

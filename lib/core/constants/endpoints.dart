@@ -15,4 +15,5 @@ class EndPoints {
 
   // AI Box
   static const String baseUrlAiBox = '/api/aiboxes';
+  static String aiBoxDetail(int id) => '$baseUrlAiBox/$id';
 }

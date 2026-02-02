@@ -17,12 +17,11 @@ class AddAiBoxEvent extends AiBoxEvent {
 }
 
 class DeleteAiBoxEvent extends AiBoxEvent {
-  final int aiBoxId;
-
-  const DeleteAiBoxEvent({required this.aiBoxId});
+  final AiBoxEntity aiBox;
+  const DeleteAiBoxEvent({required this.aiBox});
 
   @override
-  List<Object> get props => [aiBoxId];
+  List<Object> get props => [aiBox];
 }
 
 class EditAiBoxEvent extends AiBoxEvent {
