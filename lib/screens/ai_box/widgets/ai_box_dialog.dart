@@ -72,6 +72,7 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
 
   bool _isSubmitting = false;
   bool _isLoadingDetail = false;
+  bool _obscurePassword = true;
   AiBoxEntity? _aiBoxDetail;
 
   @override
@@ -157,6 +158,12 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
     _password.dispose();
     _note.dispose();
     super.dispose();
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
   }
 
   @override
@@ -336,12 +343,22 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
                               label: 'Mật khẩu',
                               keyboardType: TextInputType.number,
                               requiredField: true,
+                              obscureText: _obscurePassword,
                               validator: (v) {
                                 if (v == null || v.trim().isEmpty) {
                                   return 'Mật khẩu không được để trống';
                                 }
                                 return null;
                               },
+                              suffix: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: AppColors.black,
+                                ),
+                                onPressed: _togglePasswordVisibility,
+                              ),
                             ),
                           ),
                         ],
