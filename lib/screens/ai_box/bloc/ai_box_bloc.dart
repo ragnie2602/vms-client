@@ -40,7 +40,7 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
       },
       (onSuccess) {
         listAiBox = onSuccess;
-        emit(AIBoxLoadedState(aiBoxes: groups.right));
+        emit(AIBoxLoadedState(aiBoxes: groups.right, aiBoxSelctedDetail: null));
       },
     );
   }
@@ -104,18 +104,29 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     Emitter<AiBoxState> emit,
   ) async {
     emit(AiBoxLoadingState());
-    await Future.delayed(const Duration(milliseconds: 500));
 
-    final index = listAiBox.indexWhere((item) => item.id == event.aiBoxId);
-    if (index != -1) {
-      final updatedAiBox = AiBoxEntity(
-        id: event.aiBoxId,
-        name: event.name,
-        status: listAiBox[index].status,
-      );
-      listAiBox[index] = updatedAiBox;
-    }
-    emit(AIBoxLoadedState(aiBoxes: listAiBox));
+    final result = await aiBoxRepository.editAiBox(
+      aiBoxId: event.aiBoxId,
+      request: event.aiBox,
+    );
+
+    result.fold(
+      (failure) {
+        final currentState = state;
+        emit(AiBoxEditFailState(errorMessage: failure.toString()));
+        if (currentState is AIBoxLoadedState) {
+          emit(AIBoxLoadedState(aiBoxes: currentState.aiBoxes ?? []));
+        }
+      },
+      (updatedAiBox) {
+        final index = listAiBox.indexWhere((item) => item.id == event.aiBoxId);
+        if (index != -1) {
+          listAiBox[index] = updatedAiBox;
+        }
+        emit(AiBoxEditSuccessState(aiBoxName: updatedAiBox.name ?? ''));
+        emit(AIBoxLoadedState(aiBoxes: listAiBox));
+      },
+    );
   }
 
   void _onFilterAiBox(FilterAiBoxEvent event, Emitter<AiBoxState> emit) {

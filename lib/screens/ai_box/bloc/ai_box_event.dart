@@ -24,18 +24,23 @@ class DeleteAiBoxEvent extends AiBoxEvent {
   List<Object> get props => [aiBox];
 }
 
+class GetDetailAiBoxEvent extends AiBoxEvent {
+  final int aiBoxId;
+
+  const GetDetailAiBoxEvent({required this.aiBoxId});
+
+  @override
+  List<Object> get props => [aiBoxId];
+}
+
 class EditAiBoxEvent extends AiBoxEvent {
   final int aiBoxId;
-  final String name;
-  final String? ipAddress;
-  final String? description;
+  final AiBoxEntity aiBox;
 
-  const EditAiBoxEvent({
-    required this.aiBoxId,
-    required this.name,
-    this.ipAddress,
-    this.description,
-  });
+  const EditAiBoxEvent({required this.aiBoxId, required this.aiBox});
+
+  @override
+  List<Object?> get props => [aiBoxId, aiBox];
 }
 
 class FilterAiBoxEvent extends AiBoxEvent {

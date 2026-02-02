@@ -24,12 +24,33 @@ class AiBoxRepository extends BaseRepository implements IAiBoxRepository {
       return Right(data);
     });
   }
-  
+
   @override
-  Future<Either<Failure, int>> removeAiBox(int id) async{
-     return await catchError<int>(() async {
+  Future<Either<Failure, int>> removeAiBox(int id) async {
+    return await catchError<int>(() async {
       await service.deleteAiBox(aiBoxId: id);
       return Right(id);
+    });
+  }
+
+  @override
+  Future<Either<Failure, AiBoxEntity>> getAiBoxDetail({
+    required int aiBoxId,
+  }) async {
+    return await catchError<AiBoxEntity>(() async {
+      final data = await service.getAiBoxDetail(aiBoxId: aiBoxId);
+      return Right(data);
+    });
+  }
+
+  @override
+  Future<Either<Failure, AiBoxEntity>> editAiBox({
+    required int aiBoxId,
+    required AiBoxEntity request,
+  }) async {
+    return await catchError<AiBoxEntity>(() async {
+      final data = await service.putUpdateAiBox(aiBoxId: aiBoxId, request: request);
+      return Right(data);
     });
   }
 }

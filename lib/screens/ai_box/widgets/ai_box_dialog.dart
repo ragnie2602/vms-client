@@ -1,20 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
+import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
+
+enum AiBoxDialogType { add, edit }
 
 /// Entry point to show the add AI Box dialog
 Future<T?> showAddAiBoxDialog<T>(
   BuildContext context, {
   Future<void> Function(AiBoxEntity value)? onConfirm,
+  AiBoxEntity? aiBox,
+  int? aiBoxId,
+  AiBoxDialogType type = AiBoxDialogType.add,
 }) {
   return showDialog<T>(
     context: context,
     barrierDismissible: false,
-    builder: (_) => _AddAiBoxDialog(onConfirm: onConfirm),
+    builder: (dialogContext) => BlocProvider.value(
+      value: context.read<AiBoxBloc>(),
+      child: _AddAiBoxDialog(
+        onConfirm: onConfirm,
+        aiBox: aiBox,
+        aiBoxId: aiBoxId,
+        type: type,
+      ),
+    ),
   );
 }
 
@@ -31,9 +47,12 @@ Future<T?> showConfirmRemoveAiBoxDialog<T>(
 }
 
 class _AddAiBoxDialog extends StatefulWidget {
-  const _AddAiBoxDialog({this.onConfirm});
+  const _AddAiBoxDialog({this.onConfirm, this.aiBox, this.aiBoxId, this.type});
 
   final Future<void> Function(AiBoxEntity value)? onConfirm;
+  final AiBoxEntity? aiBox;
+  final int? aiBoxId;
+  final AiBoxDialogType? type;
 
   @override
   State<_AddAiBoxDialog> createState() => _AddAiBoxDialogState();
@@ -52,6 +71,79 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
   final _note = TextEditingController();
 
   bool _isSubmitting = false;
+  bool _isLoadingDetail = false;
+  AiBoxEntity? _aiBoxDetail;
+
+  @override
+  void initState() {
+    super.initState();
+    // Case edit: fetch detail from API
+    if (widget.type == AiBoxDialogType.edit) {
+      if (widget.aiBoxId != null) {
+        //chờ init xong mới load detail -> tránh case chưa có context
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _loadAiBoxDetail();
+        });
+      } else if (widget.aiBox != null) {
+        _fillFormData(widget.aiBox!);
+      }
+    }
+  }
+
+  Future<void> _loadAiBoxDetail() async {
+    if (!mounted) return;
+    setState(() => _isLoadingDetail = true);
+
+    try {
+      final bloc = context.read<AiBoxBloc>();
+      final result = await bloc.aiBoxRepository.getAiBoxDetail(
+        aiBoxId: widget.aiBoxId!,
+      );
+      if (!mounted) return;
+      result.fold(
+        (failure) {
+          if (mounted) {
+            setState(() => _isLoadingDetail = false);
+            ToastUtil.toastFail(
+              context: context,
+              title: Text('Không thể lấy thông tin: ${failure.toString()}'),
+            );
+            if (mounted) Navigator.pop(context);
+          }
+        },
+        (aiBoxDetail) {
+          if (mounted) {
+            setState(() {
+              _aiBoxDetail = aiBoxDetail;
+              _isLoadingDetail = false;
+            });
+            _fillFormData(aiBoxDetail);
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingDetail = false);
+        ToastUtil.toastFail(
+          context: context,
+          title: Text('Lỗi: ${e.toString()}'),
+        );
+        if (mounted) Navigator.pop(context);
+      }
+    }
+  }
+
+  void _fillFormData(AiBoxEntity aiBox) {
+    _name.text = aiBox.name ?? '';
+    _ipAddress.text = aiBox.ip ?? '';
+    _port.text = aiBox.port ?? '';
+    _manufacturer.text = aiBox.manufacturer ?? '';
+    _model.text = aiBox.model ?? '';
+    _maxCameras.text = aiBox.maxCamera?.toString() ?? '';
+    _username.text = aiBox.userame ?? '';
+    _password.text = aiBox.password ?? '';
+    _note.text = aiBox.note ?? '';
+  }
 
   @override
   void dispose() {
@@ -60,6 +152,9 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
     _port.dispose();
     _manufacturer.dispose();
     _model.dispose();
+    _maxCameras.dispose();
+    _username.dispose();
+    _password.dispose();
     _note.dispose();
     super.dispose();
   }
@@ -76,7 +171,9 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
         children: [
           Expanded(
             child: Text(
-              'Thêm AI Box',
+              widget.type == AiBoxDialogType.edit
+                  ? 'Chỉnh sửa AI Box'
+                  : 'Thêm AI Box',
               style: AppTypography.style(
                 20,
                 fontWeight: FontWeight.w600,
@@ -99,153 +196,170 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         width: MediaQuery.of(context).size.width * 0.35,
-        child: SingleChildScrollView(
-          child: Form(
-            key: _form,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 16),
-                // Tên thiết bị
-                AppField(
-                  controller: _name,
-                  hintText: 'Nhập tên AI box',
-                  label: 'Tên AI box',
-                  requiredField: true,
-                  validator: (v) => v!.trim().isEmpty
-                      ? 'Tên AI box không được để trống'
-                      : null,
-                ),
-                const SizedBox(height: 20),
-                // hãng
-                AppField(
-                  controller: _manufacturer,
-                  hintText: 'Nhập hãng sản xuất',
-                  label: 'Hãng AI box',
-                ),
-                const SizedBox(height: 20),
-                // model
-                AppField(
-                  controller: _model,
-                  hintText: 'Nhập model thiết bị',
-                  label: 'Model',
-                ),
-                const SizedBox(height: 20),
-                // IP Address và Port
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+        child: _isLoadingDetail
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      flex: 1,
-                      child: AppField(
-                        controller: _ipAddress,
-                        hintText: 'Nhập địa chỉ IP',
-                        label: 'Địa chỉ IP',
-                        requiredField: true,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Địa chỉ IP không được để trống';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      flex: 1,
-                      child: AppField(
-                        controller: _port,
-                        hintText: 'Nhập cổng',
-                        label: 'Port',
-                        keyboardType: TextInputType.number,
-                        requiredField: true,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Port không được để trống';
-                          }
-                          final value = int.tryParse(v);
-                          if (value == null || value <= 0) {
-                            return 'Port phải là số nguyên dương';
-                          }
-                          return null;
-                        },
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 15),
+                    Text(
+                      'Đang tải thông tin...',
+                      style: AppTypography.style(
+                        14,
+                        color: AppColors.grey64748B,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                // số cam
-                AppField(
-                  controller: _maxCameras,
-                  hintText: 'Nhập số lượng',
-                  label: 'Số camera tối đa',
-                  keyboardType: TextInputType.number,
-                  validator: (v) {
-                    if (v != null && v.isNotEmpty) {
-                      final value = int.tryParse(v);
-                      if (value == null || value <= 0) {
-                        return 'Chỉ nhập số nguyên dương';
-                      }
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: AppField(
-                        controller: _username,
-                        hintText: 'Nhập tài khoản',
-                        label: 'Tài khoản',
+              )
+            : SingleChildScrollView(
+                child: Form(
+                  key: _form,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 16),
+                      // Tên thiết bị
+                      AppField(
+                        controller: _name,
+                        hintText: 'Nhập tên AI box',
+                        label: 'Tên AI box',
                         requiredField: true,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Tài khoản không được để trống';
-                          }
-                          // Kiểm tra khoảng trắng
-                          if (v.contains(' ')) {
-                            return 'Tài khoản không được chứa khoảng trắng';
-                          }
-                          return null;
-                        },
+                        validator: (v) => v!.trim().isEmpty
+                            ? 'Tên AI box không được để trống'
+                            : null,
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      flex: 1,
-                      child: AppField(
-                        controller: _password,
-                        hintText: 'Nhập mật khẩu',
-                        label: 'Mật khẩu',
+                      const SizedBox(height: 20),
+                      // hãng
+                      AppField(
+                        controller: _manufacturer,
+                        hintText: 'Nhập hãng sản xuất',
+                        label: 'Hãng AI box',
+                      ),
+                      const SizedBox(height: 20),
+                      // model
+                      AppField(
+                        controller: _model,
+                        hintText: 'Nhập model thiết bị',
+                        label: 'Model',
+                      ),
+                      const SizedBox(height: 20),
+                      // IP Address và Port
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: AppField(
+                              controller: _ipAddress,
+                              hintText: 'Nhập địa chỉ IP',
+                              label: 'Địa chỉ IP',
+                              requiredField: true,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return 'Địa chỉ IP không được để trống';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            flex: 1,
+                            child: AppField(
+                              controller: _port,
+                              hintText: 'Nhập cổng',
+                              label: 'Port',
+                              keyboardType: TextInputType.number,
+                              requiredField: true,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return 'Port không được để trống';
+                                }
+                                final value = int.tryParse(v);
+                                if (value == null || value <= 0) {
+                                  return 'Port phải là số nguyên dương';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // số cam
+                      AppField(
+                        controller: _maxCameras,
+                        hintText: 'Nhập số lượng',
+                        label: 'Số camera tối đa',
                         keyboardType: TextInputType.number,
-                        requiredField: true,
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Mật khẩu không được để trống';
+                          if (v != null && v.isNotEmpty) {
+                            final value = int.tryParse(v);
+                            if (value == null || value <= 0) {
+                              return 'Chỉ nhập số nguyên dương';
+                            }
                           }
                           return null;
                         },
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: AppField(
+                              controller: _username,
+                              hintText: 'Nhập tài khoản',
+                              label: 'Tài khoản',
+                              requiredField: true,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return 'Tài khoản không được để trống';
+                                }
+                                // Kiểm tra khoảng trắng
+                                if (v.contains(' ')) {
+                                  return 'Tài khoản không được chứa khoảng trắng';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            flex: 1,
+                            child: AppField(
+                              controller: _password,
+                              hintText: 'Nhập mật khẩu',
+                              label: 'Mật khẩu',
+                              keyboardType: TextInputType.number,
+                              requiredField: true,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return 'Mật khẩu không được để trống';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      // Mô tả
+                      AppField(
+                        controller: _note,
+                        hintText: 'Nhập ghi chú hoặc mô tả thêm...',
+                        label: 'Ghi chú',
+                        maxLines: 5,
+                        maxLength: 200,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 20),
-                // Mô tả
-                AppField(
-                  controller: _note,
-                  hintText: 'Nhập ghi chú hoặc mô tả thêm...',
-                  label: 'Ghi chú',
-                  maxLines: 5,
-                  maxLength: 200,
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
       actions: [
         Center(
@@ -290,6 +404,9 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
     setState(() => _isSubmitting = true);
 
     final payload = AiBoxEntity(
+      id: widget.type == AiBoxDialogType.edit
+          ? (_aiBoxDetail?.id ?? widget.aiBox?.id)
+          : null,
       name: _name.text.trim(),
       ip: _ipAddress.text.trim(),
       port: _port.text.trim(),

@@ -7,4 +7,9 @@ abstract class IAiBoxRepository {
     required AiBoxEntity request,
   });
   Future<Either<Failure, int>> removeAiBox(int id);
+  Future<Either<Failure, AiBoxEntity>> getAiBoxDetail({required int aiBoxId});
+  Future<Either<Failure, AiBoxEntity>> editAiBox({
+    required int aiBoxId,
+    required AiBoxEntity request,
+  });
 }

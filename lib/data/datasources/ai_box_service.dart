@@ -36,16 +36,47 @@ class AiBoxService {
       throw ApiException(parseError(e));
     }
   }
-  Future<void> deleteAiBox ({required int aiBoxId}) async {
+
+  Future<void> deleteAiBox({required int aiBoxId}) async {
     try {
-      final raw = await httpClient.delete(
-        url: EndPoints.aiBoxDetail(aiBoxId),
-      );
+      final raw = await httpClient.delete(url: EndPoints.aiBoxDetail(aiBoxId));
       final response = BaseResponse.fromJson(raw);
       if (response.code != 200) {
         throw ApiException(response.message);
       }
       return response.data;
+    } on DioException catch (e) {
+      throw ApiException(parseError(e));
+    }
+  }
+
+  Future<AiBoxEntity> getAiBoxDetail({required int aiBoxId}) async {
+    try {
+      final raw = await httpClient.get(EndPoints.aiBoxDetail(aiBoxId));
+      final response = BaseResponse.fromJson(raw);
+      if (response.code != 200) {
+        throw ApiException(response.message);
+      }
+      return AiBoxEntity.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException(parseError(e));
+    }
+  }
+
+  Future<AiBoxEntity> putUpdateAiBox({
+    required int aiBoxId,
+    required AiBoxEntity request,
+  }) async {
+    try {
+      final raw = await httpClient.put(
+        url: EndPoints.aiBoxDetail(aiBoxId),
+        data: request.toJson(),
+      );
+      final response = BaseResponse.fromJson(raw);
+      if (response.code != 200) {
+        throw ApiException(response.message);
+      }
+      return AiBoxEntity.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException(parseError(e));
     }

@@ -7,7 +7,6 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
-import 'package:vms_flutter_client/screens/control_camera/widget/remove_camera_widget.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_event.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_state.dart';
@@ -56,19 +55,9 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
     context.read<AiBoxBloc>().add(AddAiBoxEvent(aiBox: aiBox));
   }
 
-  void _editAiBox({
-    required int aiBoxId,
-    required String name,
-    String? ipAddress,
-    String? description,
-  }) {
+  void _editAiBox({required int aiBoxId, required AiBoxEntity aiBox}) {
     context.read<AiBoxBloc>().add(
-      EditAiBoxEvent(
-        aiBoxId: aiBoxId,
-        name: name,
-        ipAddress: ipAddress,
-        description: description,
-      ),
+      EditAiBoxEvent(aiBoxId: aiBoxId, aiBox: aiBox),
     );
   }
 
@@ -120,6 +109,12 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
           ToastUtil.toastFail(
             context: context,
             title: Text(state.errorMessage),
+          );
+        }
+        if (state is AiBoxEditSuccessState) {
+          ToastUtil.toastSuccess(
+            context: context,
+            title: Text('Cập nhật AI Box thành công'),
           );
         }
       },
@@ -339,26 +334,33 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
                                     ),
                                     shrinkWrap: true,
                                     itemCount: state.aiBoxes!.length,
-                                    itemBuilder: (context, index) => ItemAiBoxWidget(
-                                      itemAiBox: state.aiBoxes![index],
-                                      index: index + 1,
-                                      onDelete: () {
-                                        checkEnableRemove(
-                                          aiBox: state.aiBoxes?[index],
-                                        );
-                                      },
-                                      onEdit: () async {
-                                        // _editAiBox(
-                                        //   aiBoxId: state.aiBoxes![index].id,
-                                        //   name:
-                                        //       '${state.aiBoxes![index].name} (Edited)',
-                                        //   ipAddress:
-                                        //       state.aiBoxes![index].ipAddress,
-                                        //   description:
-                                        //       'Edited at ${DateTime.now()}',
-                                        // );
-                                      },
-                                    ),
+                                    itemBuilder: (context, index) =>
+                                        ItemAiBoxWidget(
+                                          itemAiBox: state.aiBoxes![index],
+                                          index: index + 1,
+                                          onDelete: () {
+                                            checkEnableRemove(
+                                              aiBox: state.aiBoxes?[index],
+                                            );
+                                          },
+                                          onEdit: () {
+                                            final aiBoxId =
+                                                state.aiBoxes![index].id;
+                                            if (aiBoxId != null) {
+                                              showAddAiBoxDialog(
+                                                context,
+                                                type: AiBoxDialogType.edit,
+                                                aiBoxId: aiBoxId,
+                                                onConfirm: (payload) async {
+                                                  _editAiBox(
+                                                    aiBoxId: aiBoxId,
+                                                    aiBox: payload,
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          },
+                                        ),
                                   ),
                                 );
                               },
