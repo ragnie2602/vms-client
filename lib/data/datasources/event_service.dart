@@ -19,8 +19,8 @@ class EventService {
   searchEvent({
     int? startTime,
     int? endTime,
-    int? eventType,
-    List<int>? cameraIds,
+    List<String>? eventType,
+    List<String>? cameraIds,
     int? page,
   }) async {
     final raw = await httpClient.post(
@@ -28,7 +28,7 @@ class EventService {
       data: {
         if (startTime != null) 'startTime': startTime,
         if (endTime != null) 'endTime': endTime,
-        if (eventType != null) 'eventType': eventType,
+        if (eventType != null) 'eventTypes': eventType,
         if (cameraIds != null) 'cameraIds': cameraIds,
         'page': page,
       },

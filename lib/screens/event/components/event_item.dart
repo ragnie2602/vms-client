@@ -100,9 +100,9 @@ class EventItem extends StatelessWidget {
                           SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
                           Text(
                             event != null
-                                ? DateFormat(
-                                    'HH:mm dd/MM/yyyy',
-                                  ).format(DateTime.fromMillisecondsSinceEpoch(event!.timeEvent))
+                                ? DateFormat('HH:mm dd/MM/yyyy').format(
+                                    DateTime.fromMillisecondsSinceEpoch(event!.timeEvent * 1000),
+                                  )
                                 : '20:30 20/12/2025',
                             style: AppTypography.style(14, fontWeight: FontWeight.w500),
                           ),

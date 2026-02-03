@@ -22,9 +22,9 @@ class EventRepository extends BaseRepository implements IEventRepository {
   @override
   Future<Either<Failure, Pageable<EventEntity>>> searchEvent({
     int? page,
-    List<int>? cameraIds,
+    List<String>? cameraIds,
     int? endTime,
-    int? eventType,
+    List<String>? eventType,
     int? startTime,
   }) async {
     return await catchError<Pageable<EventEntity>>(() async {

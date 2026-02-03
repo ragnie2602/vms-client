@@ -110,7 +110,9 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
                   ),
                 )
                 .toList(),
-            style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+            style:
+                widget.style ??
+                AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
             underline: const SizedBox.shrink(),
             value: _selectedValue,
           ),

@@ -1,8 +1,11 @@
 import 'package:vms_flutter_client/core/utils/pageable.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/base_output.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_input.dart';
-import 'package:vms_flutter_client/domain/usecases/event/search_event_output.dart';
 import 'package:vms_flutter_client/domain/usecases/future_use_case.dart';
+
+part 'search_event_output.dart';
 
 class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutput> {
   final IEventRepository eventRepository;
@@ -15,8 +18,8 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
       page: input.page,
       startTime: input.startTime != null ? input.startTime!.millisecondsSinceEpoch ~/ 1000 : null,
       endTime: input.endTime != null ? input.endTime!.millisecondsSinceEpoch ~/ 1000 : null,
-      eventType: input.eventTypes?.first,
-      cameraIds: input.cameraIds?.map((e) => int.parse(e)).toList(),
+      eventType: input.eventTypes,
+      cameraIds: input.cameraIds,
     );
 
     return res.fold(

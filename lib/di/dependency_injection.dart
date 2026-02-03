@@ -23,6 +23,7 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
@@ -134,6 +135,7 @@ class DependencyInjection {
     Provider<SearchEventUseCase>(
       create: (context) => SearchEventUseCase(context.read<IEventRepository>()),
     ),
+    Provider<ExportEventUseCase>(create: (context) => ExportEventUseCase()),
 
     // Bloc
     Provider<AppBloc>(

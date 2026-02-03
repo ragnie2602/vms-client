@@ -52,3 +52,25 @@ class SearchEventFailure extends EventState {
 class SearchingEvent extends EventState {
   const SearchingEvent();
 }
+
+class ExportEventLoading extends EventState {
+  const ExportEventLoading();
+}
+
+class ExportEventSuccess extends EventState {
+  final String filePath;
+
+  const ExportEventSuccess(this.filePath);
+
+  @override
+  List<Object?> get props => [filePath];
+}
+
+class ExportEventFailure extends EventState {
+  final String message;
+
+  const ExportEventFailure(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

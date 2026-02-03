@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_grou
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
@@ -211,7 +212,11 @@ class AppRouter {
               ),
             ),
             BlocProvider(
-              create: (context) => EventBloc(context.read(), context.read<SearchEventUseCase>()),
+              create: (context) => EventBloc(
+                context.read(),
+                context.read<SearchEventUseCase>(),
+                context.read<ExportEventUseCase>(),
+              ),
             ),
             BlocProvider(
               create: (context) => ScheduleBloc(

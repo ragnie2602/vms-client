@@ -14,7 +14,7 @@ class SearchEvent extends EventEvent {
   final int pageSize;
   final DateTime? startTime;
   final DateTime? endTime;
-  final int? eventType;
+  final List<String>? eventType;
   final List<String>? cameraIds;
 
   const SearchEvent({
@@ -28,4 +28,19 @@ class SearchEvent extends EventEvent {
 
   @override
   List<Object?> get props => [page, pageSize, startTime, endTime, eventType, cameraIds];
+}
+
+class ExportEventList extends EventEvent {
+  final String cameraGroupName;
+  final List<CameraEntity> cameras;
+  final List<EventEntity> events;
+
+  const ExportEventList({
+    required this.cameraGroupName,
+    required this.cameras,
+    required this.events,
+  });
+
+  @override
+  List<Object?> get props => [cameraGroupName, cameras, events];
 }

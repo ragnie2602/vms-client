@@ -9,8 +9,8 @@ abstract class IEventRepository {
   Future<Either<Failure, Pageable<EventEntity>>> searchEvent({
     int? startTime,
     int? endTime,
-    int? eventType,
-    List<int>? cameraIds,
+    List<String>? eventType,
+    List<String>? cameraIds,
     int? page,
   });
 }

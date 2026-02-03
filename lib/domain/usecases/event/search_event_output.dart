@@ -1,6 +1,4 @@
-import 'package:vms_flutter_client/core/utils/pageable.dart';
-import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
-import 'package:vms_flutter_client/domain/usecases/base_output.dart';
+part of 'search_event_use_case.dart';
 
 class SearchEventOutput extends BaseOutput {
   final Pageable<EventEntity> events;

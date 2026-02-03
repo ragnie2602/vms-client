@@ -6,7 +6,7 @@ class SearchEventInput extends BaseInput {
   final DateTime? startTime;
   final DateTime? endTime;
   final List<String>? cameraIds;
-  final List<int>? eventTypes;
+  final List<String>? eventTypes;
 
   const SearchEventInput({
     this.page = 1,
