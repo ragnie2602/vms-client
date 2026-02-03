@@ -271,6 +271,7 @@ class AddUserPayload {
   final String phoneNumber;
   final String fullName;
   final String description;
+  final int dataType; // 0=Tất cả dữ liệu, 1=Chỉ dữ liệu của tài khoản, 2=Dữ liệu được chia sẻ
 
   const AddUserPayload({
     required this.username,
@@ -282,6 +283,7 @@ class AddUserPayload {
     required this.phoneNumber,
     required this.fullName,
     required this.description,
+    required this.dataType,
   });
 }
 
@@ -297,6 +299,7 @@ class _AddUserDialog extends StatefulWidget {
 
 class _AddUserDialogState extends State<_AddUserDialog> {
   String _accountType = 'admin';
+  int _dataType = 0; // 0=Tất cả dữ liệu, 1=Chỉ dữ liệu của tài khoản, 2=Dữ liệu được chia sẻ
   final _form = GlobalKey<FormState>();
   final _username = TextEditingController();
   final _password = TextEditingController();
@@ -497,24 +500,48 @@ class _AddUserDialogState extends State<_AddUserDialog> {
                     ),
 
                     const SizedBox(height: 16),
-                    // Loại tài khoản
-                    _buildDropdownField(
-                      label: 'Loại tài khoản',
-                      value: _accountType,
-                      items: const [
-                        {'value': 'admin', 'label': 'Tài khoản Admin'},
-                        {'value': 'normal', 'label': 'Tài khoản thường'},
+                    // Loại tài khoản và Vai trò
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildDropdownField(
+                            label: 'Loại tài khoản',
+                            value: _accountType,
+                            items: const [
+                              {'value': 'admin', 'label': 'Tài khoản Admin'},
+                              {'value': 'normal', 'label': 'Tài khoản thường'},
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _accountType = value!;
+                                // Reset permissions khi chuyển sang admin
+                                if (_accountType == 'admin') {
+                                  _canChangePassword = false;
+                                  _canAddCamera = false;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildDropdownFieldInt(
+                            label: 'Vai trò',
+                            value: _dataType,
+                            items: const [
+                              {'value': 0, 'label': 'Tất cả dữ liệu'},
+                              {'value': 1, 'label': 'Chỉ dữ liệu của tài khoản'},
+                              {'value': 2, 'label': 'Dữ liệu được chia sẻ'},
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _dataType = value ?? 0;
+                              });
+                            },
+                          ),
+                        ),
                       ],
-                      onChanged: (value) {
-                        setState(() {
-                          _accountType = value!;
-                          // Reset permissions khi chuyển sang admin
-                          if (_accountType == 'admin') {
-                            _canChangePassword = false;
-                            _canAddCamera = false;
-                          }
-                        });
-                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -650,6 +677,7 @@ class _AddUserDialogState extends State<_AddUserDialog> {
         phoneNumber: _phoneNumber.text.trim(),
         fullName: _fullName.text.trim(),
         description: _description.text.trim(),
+        dataType: _dataType,
       );
 
       try {
@@ -934,9 +962,9 @@ class _EditUserDialogState extends State<_EditUserDialog> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Loại tài khoản
+                  // Vai trò
                   _buildDropdownField(
-                    label: 'Loại tài khoản',
+                    label: 'Vai trò',
                     value: _accountType,
                     items: const [
                       {'value': 'admin', 'label': 'Tài khoản Admin'},
@@ -1270,6 +1298,55 @@ Widget _buildDropdownField({
             value: item['value'],
             child: Text(
               item['label']!,
+              style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+            ),
+          );
+        }).toList(),
+        onChanged: onChanged,
+        style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+      ),
+    ],
+  );
+}
+
+Widget _buildDropdownFieldInt({
+  required String label,
+  required int value,
+  required List<Map<String, dynamic>> items,
+  required ValueChanged<int?> onChanged,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.black),
+      ),
+      const SizedBox(height: 6),
+      DropdownButtonFormField2<int>(
+        value: value,
+        buttonStyleData: const ButtonStyleData(padding: EdgeInsets.only(right: 8), height: 48),
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+          ),
+        ),
+        dropdownStyleData: DropdownStyleData(offset: const Offset(0, -5), maxHeight: 300),
+        items: items.map((item) {
+          return DropdownMenuItem<int>(
+            value: item['value'] as int,
+            child: Text(
+              item['label'] as String,
               style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
             ),
           );

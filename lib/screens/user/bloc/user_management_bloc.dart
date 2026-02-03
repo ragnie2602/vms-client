@@ -52,6 +52,7 @@ class UserManagementBloc extends BaseBloc<UserManagementEvent, UserManagementSta
       isAmin: event.isAdmin,
       changePassDenied: event.changePassDenied,
       fullName: event.fullName,
+      dataType: event.dataType,
     );
     groups.fold((onFailure) => emit(AddUserFail(groups.left.toString())), (onSuccess) {
       emit(AddUserSuccess(user: groups.right));

@@ -31,6 +31,7 @@ class UserService {
     bool? isAdmin,
     bool? changePassDenied,
     bool? addCamDenied,
+    int? dataType,
   }) async {
     final requestData = {
       "username": account,
@@ -39,6 +40,7 @@ class UserService {
       "phone": tel,
       "fullname": fullName,
       "tenantId": 1,
+      "dataType": dataType ?? 0,
     };
     if (isAdmin == true) {
       requestData['roleId'] = 1;
