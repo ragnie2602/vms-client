@@ -264,10 +264,12 @@ class _EventScreenState extends State<EventScreen> {
                               ),
                             ],
                             label: 'Cấu hình',
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (context) => SetupInfoFieldDialog(),
-                            ),
+                            onPressed: (){
+                              // showDialog(
+                              //   context: context,
+                              //   builder: (context) => SetupInfoFieldDialog(),
+                              // );
+                            },
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                             prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
                             prefixGap: 8,

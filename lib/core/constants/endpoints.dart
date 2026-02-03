@@ -16,4 +16,10 @@ class EndPoints {
   // AI Box
   static const String baseUrlAiBox = '/api/aiboxes';
   static String aiBoxDetail(int id) => '$baseUrlAiBox/$id';
+
+  // Detect
+  static const String baseDetect = '/api/event-display-config';
+  static const String getListTypeEventDetect = '/$baseDetect/event-types';
+  static const String getAvailableFields = '/$baseDetect/available-fields';
+  static String eventDisplayConfigById(int id) => '$baseDetect/$id';
 }

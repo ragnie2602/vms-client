@@ -27,6 +27,7 @@ import 'package:vms_flutter_client/screens/login/mobile_login_screen.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/emap_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
@@ -218,6 +219,9 @@ class AppRouter {
                 searchEmapUseCase: context.read<SearchEmapUseCase>(),
               ),
             ),
+            BlocProvider(
+              create: (context) => DetectBloc(context.read()),
+              ),
             BlocProvider(
               create: (context) => AiBoxBloc(
                 aiBoxRepository: context.read(),

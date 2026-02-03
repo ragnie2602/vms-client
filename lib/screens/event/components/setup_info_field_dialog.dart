@@ -4,16 +4,19 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/alert/alert_field.dart';
+import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 
 class SetupInfoFieldDialog extends StatefulWidget {
-  const SetupInfoFieldDialog({super.key});
+  const SetupInfoFieldDialog({super.key, this.typeEvents});
+  final List<TypeEventDetectEntity>? typeEvents;
 
   @override
   State<SetupInfoFieldDialog> createState() => _SetupInfoFieldDialogState();
 }
 
-class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with TickerProviderStateMixin {
+class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog>
+    with TickerProviderStateMixin {
   final ValueNotifier<int> selectedTabIndex = ValueNotifier(0);
   final PageController pageController = PageController();
 
@@ -21,7 +24,10 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.white),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: AppColors.white,
+        ),
         height: MediaQuery.heightOf(context) * 479 / 900,
         width: MediaQuery.widthOf(context) * 613 / 1600,
         child: Column(
@@ -30,7 +36,9 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
           children: [
             Container(
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.greyF2F4FA, width: 1)),
+                border: Border(
+                  bottom: BorderSide(color: AppColors.greyF2F4FA, width: 1),
+                ),
               ),
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Row(
@@ -40,7 +48,10 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
                     'Cài đặt nội dung cảnh báo',
                     style: AppTypography.style(20, fontWeight: FontWeight.w600),
                   ),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: Icon(Icons.close)),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(Icons.close),
+                  ),
                 ],
               ),
             ),
@@ -52,38 +63,63 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
                     child: Container(
                       color: AppColors.greyF9FAFB,
                       padding: EdgeInsets.all(8),
-                      child: Column(
-                        spacing: 4,
-                        children: [
-                          _buildVerticalTab('Cảnh báo xâm nhập', 0),
-                          _buildVerticalTab('Cảnh báo hút thuốc', 1),
-                          _buildVerticalTab('Sử dụng điện thoại', 2),
-                          _buildVerticalTab('Cảnh báo tụ tập', 3),
-                          _buildVerticalTab('Cảnh báo cháy', 4),
-                        ],
-                      ),
+                      child:
+                          widget.typeEvents == null ||
+                              widget.typeEvents!.isEmpty
+                          ? Center(
+                              child: Text(
+                                'Không có dữ liệu',
+                                style: AppTypography.style(
+                                  14,
+                                  color: AppColors.grey64748B,
+                                ),
+                              ),
+                            )
+                          : Column(
+                              spacing: 4,
+                              children: List.generate(
+                                widget.typeEvents!.length,
+                                (index) {
+                                  final typeEvent = widget.typeEvents![index];
+                                  return _buildVerticalTab(
+                                    typeEvent.name ?? '',
+                                    index,
+                                  );
+                                },
+                              ),
+                            ),
                     ),
                   ),
                   Expanded(
                     flex: 413,
-                    child: PageView(
-                      controller: pageController,
-                      scrollDirection: Axis.vertical,
-                      children: [
-                        _buildTabContent(0),
-                        _buildTabContent(1),
-                        _buildTabContent(2),
-                        _buildTabContent(3),
-                        _buildTabContent(4),
-                      ],
-                    ),
+                    child:
+                        widget.typeEvents == null || widget.typeEvents!.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Không có dữ liệu',
+                              style: AppTypography.style(
+                                14,
+                                color: AppColors.grey64748B,
+                              ),
+                            ),
+                          )
+                        : PageView(
+                            controller: pageController,
+                            scrollDirection: Axis.vertical,
+                            children: List.generate(
+                              widget.typeEvents!.length,
+                              (index) => _buildTabContent(index),
+                            ),
+                          ),
                   ),
                 ],
               ),
             ),
             Container(
               decoration: BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.greyF2F4FA, width: 1)),
+                border: Border(
+                  top: BorderSide(color: AppColors.greyF2F4FA, width: 1),
+                ),
               ),
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Row(
@@ -95,7 +131,10 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
                     borderRadius: 5,
                     label: 'Huỷ',
                     onPressed: () => Navigator.pop(context),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 10,
+                    ),
                     textStyle: AppTypography.style(
                       14,
                       color: Color(0xFF374151),
@@ -124,7 +163,10 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
                     ],
                     label: 'Lưu',
                     onPressed: () => Navigator.pop(context),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 10,
+                    ),
                     textStyle: AppTypography.style(
                       14,
                       color: AppColors.white,
@@ -179,8 +221,12 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with Ticker
                 maxLines: 3,
                 style: AppTypography.style(
                   14,
-                  color: value == index ? AppColors.blue005EB8 : AppColors.grey64748B,
-                  fontWeight: value == index ? FontWeight.w600 : FontWeight.w400,
+                  color: value == index
+                      ? AppColors.blue005EB8
+                      : AppColors.grey64748B,
+                  fontWeight: value == index
+                      ? FontWeight.w600
+                      : FontWeight.w400,
                 ),
               ),
             );
@@ -197,21 +243,46 @@ class CustomReorderableListView extends StatefulWidget {
   const CustomReorderableListView({super.key, required this.type});
 
   @override
-  State<CustomReorderableListView> createState() => _CustomReorderableListViewState();
+  State<CustomReorderableListView> createState() =>
+      _CustomReorderableListViewState();
 }
 
 class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   final GlobalKey _listKey = GlobalKey();
 
   final List<AlertField> _items = [
-    AlertField(id: 1, name: "Loại sự kiện", icon: SvgPicture.asset(AppAssets.icEventType)),
-    AlertField(id: 2, name: "Thời gian", icon: SvgPicture.asset(AppAssets.icTimeCircle)),
-    AlertField(id: 3, name: "Tên camera", icon: SvgPicture.asset(AppAssets.icVideoOn)),
+    AlertField(
+      id: 1,
+      name: "Loại sự kiện",
+      icon: SvgPicture.asset(AppAssets.icEventType),
+    ),
+    AlertField(
+      id: 2,
+      name: "Thời gian",
+      icon: SvgPicture.asset(AppAssets.icTimeCircle),
+    ),
+    AlertField(
+      id: 3,
+      name: "Tên camera",
+      icon: SvgPicture.asset(AppAssets.icVideoOn),
+    ),
   ];
   final List<AlertField> _allOptions = [
-    AlertField(id: 1, name: "Loại sự kiện", icon: SvgPicture.asset(AppAssets.icEventType)),
-    AlertField(id: 2, name: "Thời gian", icon: SvgPicture.asset(AppAssets.icTimeCircle)),
-    AlertField(id: 3, name: "Tên camera", icon: SvgPicture.asset(AppAssets.icVideoOn)),
+    AlertField(
+      id: 1,
+      name: "Loại sự kiện",
+      icon: SvgPicture.asset(AppAssets.icEventType),
+    ),
+    AlertField(
+      id: 2,
+      name: "Thời gian",
+      icon: SvgPicture.asset(AppAssets.icTimeCircle),
+    ),
+    AlertField(
+      id: 3,
+      name: "Tên camera",
+      icon: SvgPicture.asset(AppAssets.icVideoOn),
+    ),
   ];
 
   OverlayEntry? _popupEntry;
@@ -221,7 +292,10 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
+        Text(
+          'Trường dữ liệu',
+          style: AppTypography.style(14, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 10),
         ReorderableListView(
           key: _listKey,
@@ -250,7 +324,9 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                       color: AppColors.greyE2E8F0,
                       height: 40,
                       width: 23,
-                      child: Center(child: SvgPicture.asset(AppAssets.icDrawable)),
+                      child: Center(
+                        child: SvgPicture.asset(AppAssets.icDrawable),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -261,14 +337,21 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                         _items[index].icon,
                         Text(
                           _items[index].name,
-                          style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 10),
                   IconButton(
-                    icon: SvgPicture.asset(AppAssets.icClose, height: 20, width: 20),
+                    icon: SvgPicture.asset(
+                      AppAssets.icClose,
+                      height: 20,
+                      width: 20,
+                    ),
                     onPressed: () => setState(() => _items.removeAt(index)),
                   ),
                 ],
@@ -283,14 +366,18 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
             children: [
               Icon(
                 Icons.add,
-                color: _isSelectedAll ? AppColors.grey64748B : AppColors.secondary,
+                color: _isSelectedAll
+                    ? AppColors.grey64748B
+                    : AppColors.secondary,
                 size: 18,
               ),
               Text(
                 'Thêm trường thông tin',
                 style: AppTypography.style(
                   14,
-                  color: _isSelectedAll ? AppColors.grey64748B : AppColors.secondary,
+                  color: _isSelectedAll
+                      ? AppColors.grey64748B
+                      : AppColors.secondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -320,7 +407,8 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
 
     final overlayState = Overlay.of(context);
     final RenderBox listBox = listContext.findRenderObject() as RenderBox;
-    final RenderBox overlayBox = overlayState.context.findRenderObject() as RenderBox;
+    final RenderBox overlayBox =
+        overlayState.context.findRenderObject() as RenderBox;
 
     final Offset listBottom = listBox.localToGlobal(
       Offset(0, listBox.size.height),
@@ -357,7 +445,9 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                 padding: const EdgeInsets.all(8.0),
                 child: StatefulBuilder(
                   builder: (context, setStatePopup) {
-                    final availableOptions = _allOptions.where((o) => !_items.contains(o)).toList();
+                    final availableOptions = _allOptions
+                        .where((o) => !_items.contains(o))
+                        .toList();
 
                     return ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 220),
@@ -367,12 +457,17 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                             setState(() => _items.add(availableOptions[index]));
                             _removePopup();
                           },
-                          style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+                          style: TextButton.styleFrom(
+                            alignment: Alignment.centerLeft,
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Text(
                               availableOptions[index].name,
-                              style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                              style: AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w400,
+                              ),
                             ),
                           ),
                         ),
