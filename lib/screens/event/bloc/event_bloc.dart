@@ -22,10 +22,11 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
   EventBloc(this.eventRepository, this.searchEventUseCase, this.exportEventUseCase)
     : super(const EventState()) {
-    on<GetAllEventType>(_onGetAllEventType);
-
-    on<SearchEvent>(_onSearch);
     on<ExportEventList>(_onExportEventList);
+    on<GetAllEventType>(_onGetAllEventType);
+    on<GetEventDetail>(_onGetEventDetail);
+    on<SearchEvent>(_onSearch);
+    on<UpdateEvent>(_onUpdateEvent);
   }
 
   FutureOr<void> _onExportEventList(ExportEventList event, Emitter<EventState> emit) async {
@@ -60,6 +61,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         endTime: event.endTime,
         cameraIds: event.cameraIds,
         eventTypes: event.eventType,
+        cameras: event.cameras,
       ),
     );
 
@@ -82,12 +84,28 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
     final res = await eventRepository.getAllEventType();
     res.fold(
-      (onFailure) {
-        emit(GetAllEventTypeFailure(onFailure.parseMessage()));
-      },
-      (onSuccess) {
-        emit(GetAllEventTypeSuccess(onSuccess));
-      },
+      (onFailure) => emit(GetAllEventTypeFailure(onFailure.parseMessage())),
+      (onSuccess) => emit(GetAllEventTypeSuccess(onSuccess)),
+    );
+  }
+
+  FutureOr<void> _onGetEventDetail(GetEventDetail event, Emitter<EventState> emit) async {
+    emit(const GettingEventDetail());
+
+    final res = await eventRepository.getEventDetail(event.eventId);
+    res.fold(
+      (onFailure) => emit(EventDetailFailure(onFailure.parseMessage())),
+      (onSuccess) => emit(EventDetailSuccess(onSuccess)),
+    );
+  }
+
+  FutureOr<void> _onUpdateEvent(UpdateEvent event, Emitter<EventState> emit) async {
+    emit(const UpdatingEvent());
+
+    final res = await eventRepository.updateEvent(event.eventId, event.description);
+    res.fold(
+      (onFailure) => emit(UpdateEventFailure(onFailure.parseMessage())),
+      (onSuccess) => emit(UpdateEventSuccess(onSuccess)),
     );
   }
 }

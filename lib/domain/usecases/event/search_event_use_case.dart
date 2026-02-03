@@ -1,3 +1,4 @@
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/utils/pageable.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
@@ -24,7 +25,17 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
 
     return res.fold(
       (onFailure) => SearchEventOutput(Pageable.empty(), 0, errorMsg: onFailure.parseMessage()),
-      (onSuccess) => SearchEventOutput(onSuccess, 0),
+      (onSuccess) {
+        final events = onSuccess.content;
+        for (int i = 0; i < events.length; i++) {
+          final event = events[i];
+          final camera = input.cameras.firstWhereOrNull((c) => c.camId == event.cameraId);
+
+          events[i].cameraName = camera?.name;
+        }
+
+        return SearchEventOutput(onSuccess, onSuccess.totalElements);
+      },
     );
   }
 }

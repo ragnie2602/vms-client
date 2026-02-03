@@ -38,6 +38,15 @@ class EventService {
     return response.data;
   }
 
+  getEventDetail(int eventId) async {
+    final raw = await httpClient.get('${EndPoints.baseEvent}/$eventId');
+
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) throw Exception(response.message);
+
+    return response.data;
+  }
+
   searchEvent({
     int? startTime,
     int? endTime,
@@ -54,6 +63,18 @@ class EventService {
         if (cameraIds != null) 'cameraIds': cameraIds,
         'page': page,
       },
+    );
+
+    final response = BaseResponse.fromJson(raw);
+
+    if (response.code != 200) throw Exception(response.message);
+    return response.data;
+  }
+
+  updateEvent(int eventId, String description) async {
+    final raw = await httpClient.put(
+      url: '${EndPoints.baseEvent}/$eventId',
+      data: {'description': description},
     );
 
     final response = BaseResponse.fromJson(raw);

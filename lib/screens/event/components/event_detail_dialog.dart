@@ -1,23 +1,32 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 part '../widget/custom_tab_bar.dart';
 
 class EventDetailDialog extends StatefulWidget {
-  const EventDetailDialog({super.key});
+  final EventEntity event;
+
+  const EventDetailDialog({super.key, required this.event});
 
   @override
   State<EventDetailDialog> createState() => _EventDetailDialogState();
 }
 
 class _EventDetailDialogState extends State<EventDetailDialog> with TickerProviderStateMixin {
+  late final EventBloc eventBloc;
+
+  final TextEditingController descriptionController = TextEditingController();
   late TabController tabController;
 
   bool imageMode = true;
@@ -26,6 +35,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
   void initState() {
     super.initState();
 
+    eventBloc = context.read<EventBloc>()..add(GetEventDetail(eventId: widget.event.id));
     tabController = TabController(length: 2, vsync: this);
   }
 
@@ -59,187 +69,200 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
               ),
             ),
             // Content
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Left pane
-                  Expanded(
-                    flex: 606,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _CustomTabBar(controller: tabController),
-                          const SizedBox(height: 20),
-                          Expanded(
-                            child: AspectRatio(
-                              aspectRatio: 16 / 9,
-                              child: TabBarView(
-                                controller: tabController,
-                                children: [
-                                  Align(alignment: Alignment.topCenter, child: _imageTab()),
-                                  Align(alignment: Alignment.topCenter, child: _VideoPlayer()),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          Row(
-                            spacing: 15,
+            BlocBuilder<EventBloc, EventState>(
+              buildWhen: (previous, current) =>
+                  current is EventDetailSuccess ||
+                  current is EventDetailFailure ||
+                  current is GettingEventDetail,
+              builder: (context, state) {
+                if (state is GettingEventDetail) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is EventDetailFailure) return Center(child: Text(state.message));
+
+                if (state is! EventDetailSuccess) return SizedBox.shrink();
+
+                final event = state.event;
+                descriptionController.text = event.description ?? '';
+
+                return Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left pane
+                      Expanded(
+                        flex: 606,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _functionBtn(
-                                icon: SvgPicture.asset(AppAssets.icDownloadImage, height: 12),
-                                label: 'Tải ảnh',
-                                onTap: () {},
+                              _CustomTabBar(controller: tabController),
+                              const SizedBox(height: 20),
+                              Expanded(
+                                child: AspectRatio(
+                                  aspectRatio: 16 / 9,
+                                  child: TabBarView(
+                                    controller: tabController,
+                                    children: [
+                                      _imageTab(event),
+                                      Align(alignment: Alignment.topCenter, child: _VideoPlayer()),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              _functionBtn(
-                                icon: SvgPicture.asset(AppAssets.icVideoOn, height: 20),
-                                label: 'Xem trực tiếp',
-                                onTap: () {},
-                              ),
-                              _functionBtn(
-                                icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
-                                label: 'Xem playback',
-                                onTap: () {},
+                              const SizedBox(height: 30),
+                              Row(
+                                spacing: 15,
+                                children: [
+                                  _functionBtn(
+                                    icon: SvgPicture.asset(AppAssets.icDownloadImage, height: 12),
+                                    label: 'Tải ảnh',
+                                    onTap: () {},
+                                  ),
+                                  _functionBtn(
+                                    icon: SvgPicture.asset(AppAssets.icVideoOn, height: 20),
+                                    label: 'Xem trực tiếp',
+                                    onTap: () {},
+                                  ),
+                                  _functionBtn(
+                                    icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
+                                    label: 'Xem playback',
+                                    onTap: () {},
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  // Right pane
-                  Expanded(
-                    flex: 374,
-                    child: Container(
-                      decoration: BoxDecoration(color: AppColors.greyAthens),
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Phát hiện xâm nhập',
-                            style: AppTypography.style(16, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 18),
-                          CustomTable(
-                            columnSpacing: 10,
-                            data: CustomTableData(
-                              columnFlexes: [0, 1, 1],
-                              data: [
-                                [
-                                  SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
-                                  Text(
-                                    'Thời gian',
-                                    style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                  ),
-                                  Text(
-                                    '20:30 20/12/2025',
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                                [
-                                  SvgPicture.asset(AppAssets.icVideoOn, height: 20),
-                                  Text(
-                                    'Tên camera',
-                                    style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                  ),
-                                  Text(
-                                    'Camera cổng 1',
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                                [
-                                  SvgPicture.asset(AppAssets.icLocation2, height: 20),
-                                  Text(
-                                    'Vị trí camera',
-                                    style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                  ),
-                                  Text(
-                                    'Cổng 1',
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                                [
-                                  SvgPicture.asset(AppAssets.icObjectName, height: 20),
-                                  Text(
-                                    'Tên đối tượng',
-                                    style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                  ),
-                                  Text(
-                                    '-',
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                                [
-                                  SvgPicture.asset(AppAssets.icObjectType, height: 20),
-                                  Text(
-                                    'Loại đối tượng',
-                                    style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                  ),
-                                  Text(
-                                    '-',
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ],
-                            ),
-                            defaultVerticalAlignment: CrossAxisAlignment.center,
-                            horizontalAlignments: [
-                              CrossAxisAlignment.start,
-                              CrossAxisAlignment.start,
-                              CrossAxisAlignment.end,
-                            ],
-                            rowSpacing: 18,
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Ghi chú:',
-                            style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 12),
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(3),
-                                  borderSide: BorderSide(color: AppColors.greyE2E8F0),
-                                ),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(3),
-                                  borderSide: BorderSide(color: AppColors.greyE2E8F0),
-                                ),
-                                fillColor: AppColors.white,
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(3),
-                                  borderSide: BorderSide(color: AppColors.secondary),
-                                ),
-                                focusColor: AppColors.white,
-                                hintStyle: AppTypography.style(
-                                  14,
-                                  color: AppColors.grey92929D,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                hintText: 'Nhập nội dung ghi chú',
-                                hoverColor: AppColors.white,
+                      // Right pane
+                      Expanded(
+                        flex: 374,
+                        child: Container(
+                          decoration: BoxDecoration(color: AppColors.greyAthens),
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                widget.event.eventName ?? '',
+                                style: AppTypography.style(16, fontWeight: FontWeight.w600),
                               ),
-                              minLines: 3,
-                              maxLines: 100,
-                              textAlignVertical: TextAlignVertical.top,
-                              style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                            ),
+                              const SizedBox(height: 18),
+                              CustomTable(
+                                columnSpacing: 10,
+                                data: CustomTableData(
+                                  columnFlexes: [0, 1, 1],
+                                  data: [
+                                    [
+                                      SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
+                                      Text(
+                                        'Thời gian',
+                                        style: AppTypography.style(13, fontWeight: FontWeight.w500),
+                                      ),
+                                      Text(
+                                        DateFormat('HH:mm dd/MM/yyyy').format(
+                                          DateTime.fromMillisecondsSinceEpoch(event.timeEvent),
+                                        ),
+                                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                    [
+                                      SvgPicture.asset(AppAssets.icVideoOn, height: 20),
+                                      Text(
+                                        'Tên camera',
+                                        style: AppTypography.style(13, fontWeight: FontWeight.w500),
+                                      ),
+                                      Text(
+                                        widget.event.cameraName ?? '',
+                                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                    ...event.payload?.entries
+                                            .map(
+                                              (e) => [
+                                                SizedBox(width: 20),
+                                                Text(
+                                                  e.key,
+                                                  style: AppTypography.style(
+                                                    13,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  e.value.toString(),
+                                                  style: AppTypography.style(
+                                                    14,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                            .toList() ??
+                                        [],
+                                  ],
+                                ),
+                                defaultVerticalAlignment: CrossAxisAlignment.center,
+                                horizontalAlignments: [
+                                  CrossAxisAlignment.start,
+                                  CrossAxisAlignment.start,
+                                  CrossAxisAlignment.end,
+                                ],
+                                rowSpacing: 18,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Ghi chú:',
+                                style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 12),
+                              Expanded(
+                                child: TextField(
+                                  controller: descriptionController,
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(3),
+                                      borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                    ),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 18,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(3),
+                                      borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                    ),
+                                    fillColor: AppColors.white,
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(3),
+                                      borderSide: BorderSide(color: AppColors.secondary),
+                                    ),
+                                    focusColor: AppColors.white,
+                                    hintStyle: AppTypography.style(
+                                      14,
+                                      color: AppColors.grey92929D,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    hintText: 'Nhập nội dung ghi chú',
+                                    hoverColor: AppColors.white,
+                                  ),
+                                  minLines: 3,
+                                  maxLines: 100,
+                                  textAlignVertical: TextAlignVertical.top,
+                                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             // Footer
             Container(
@@ -265,33 +288,46 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  EventCustomButton(
-                    backgroundColor: AppColors.secondary,
-                    borderColor: AppColors.secondary,
-                    borderRadius: 5,
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 4,
-                        color: AppColors.blue3B82F6.withAlpha(51),
-                        offset: Offset(0, 2),
-                        spreadRadius: -2,
-                      ),
-                      BoxShadow(
-                        blurRadius: 6,
-                        color: AppColors.blue3B82F6.withAlpha(51),
-                        offset: Offset(0, 4),
-                        spreadRadius: -1,
-                      ),
-                    ],
-                    label: 'Lưu',
-                    onPressed: () => Navigator.pop(context),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                    textStyle: AppTypography.style(
-                      14,
-                      color: AppColors.white,
-                      lineHeight: 20 / 14,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  BlocConsumer<EventBloc, EventState>(
+                    builder: (context, state) => state is UpdatingEvent
+                        ? const CircularProgressIndicator()
+                        : EventCustomButton(
+                            backgroundColor: AppColors.secondary,
+                            borderColor: AppColors.secondary,
+                            borderRadius: 5,
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 4,
+                                color: AppColors.blue3B82F6.withAlpha(51),
+                                offset: Offset(0, 2),
+                                spreadRadius: -2,
+                              ),
+                              BoxShadow(
+                                blurRadius: 6,
+                                color: AppColors.blue3B82F6.withAlpha(51),
+                                offset: Offset(0, 4),
+                                spreadRadius: -1,
+                              ),
+                            ],
+                            label: 'Lưu',
+                            onPressed: () => _save(),
+                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                            textStyle: AppTypography.style(
+                              14,
+                              color: AppColors.white,
+                              lineHeight: 20 / 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                    listener: (context, state) {
+                      if (state is UpdateEventSuccess) {
+                        Navigator.pop(context);
+                      } else if (state is UpdateEventFailure) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text(state.message)));
+                      }
+                    },
                   ),
                 ],
               ),
@@ -328,13 +364,20 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
     );
   }
 
-  Widget _imageTab() {
+  Widget _imageTab(EventEntity event) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(6),
       child: Image.network(
-        'https://assets.nintendo.com/image/upload/q_auto/f_auto/store/software/switch2/70010000105851/8787627be7f26ae7984456ffd9af17bea845032cebbf59fe6eeb596dea6bb20e',
+        event.imageUrl ?? '',
+        errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
         fit: BoxFit.contain,
       ),
+    );
+  }
+
+  _save() {
+    context.read<EventBloc>().add(
+      UpdateEvent(eventId: widget.event.id, description: descriptionController.text),
     );
   }
 }

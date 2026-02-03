@@ -1,3 +1,4 @@
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/usecases/base_input.dart';
 
 class SearchEventInput extends BaseInput {
@@ -7,6 +8,7 @@ class SearchEventInput extends BaseInput {
   final DateTime? endTime;
   final List<String>? cameraIds;
   final List<String>? eventTypes;
+  final List<CameraEntity> cameras;
 
   const SearchEventInput({
     this.page = 1,
@@ -15,5 +17,6 @@ class SearchEventInput extends BaseInput {
     this.endTime,
     this.cameraIds,
     this.eventTypes,
+    required this.cameras,
   });
 }

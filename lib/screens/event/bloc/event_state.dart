@@ -7,6 +7,28 @@ class EventState extends Equatable {
   List<Object?> get props => [];
 }
 
+class ExportEventLoading extends EventState {
+  const ExportEventLoading();
+}
+
+class ExportEventSuccess extends EventState {
+  final String filePath;
+
+  const ExportEventSuccess(this.filePath);
+
+  @override
+  List<Object?> get props => [filePath];
+}
+
+class ExportEventFailure extends EventState {
+  final String message;
+
+  const ExportEventFailure(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 class GetAllEventTypeSuccess extends EventState {
   final List<EventType> eventTypes;
 
@@ -21,6 +43,25 @@ class GetAllEventTypeFailure extends EventState {
 
 class GettingAllEventType extends EventState {
   const GettingAllEventType();
+}
+
+class GettingEventDetail extends EventState {
+  const GettingEventDetail();
+}
+
+class EventDetailSuccess extends EventState {
+  final EventEntity event;
+
+  const EventDetailSuccess(this.event);
+}
+
+class EventDetailFailure extends EventState {
+  final String message;
+
+  const EventDetailFailure(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }
 
 class SearchEventSuccess extends EventState {
@@ -53,24 +94,20 @@ class SearchingEvent extends EventState {
   const SearchingEvent();
 }
 
-class ExportEventLoading extends EventState {
-  const ExportEventLoading();
+class UpdatingEvent extends EventState {
+  const UpdatingEvent();
 }
 
-class ExportEventSuccess extends EventState {
-  final String filePath;
+class UpdateEventSuccess extends EventState {
+  final EventEntity event;
 
-  const ExportEventSuccess(this.filePath);
+  const UpdateEventSuccess(this.event);
 
   @override
-  List<Object?> get props => [filePath];
+  List<Object?> get props => [event];
 }
 
-class ExportEventFailure extends EventState {
+class UpdateEventFailure extends EventState {
   final String message;
-
-  const ExportEventFailure(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  const UpdateEventFailure(this.message);
 }

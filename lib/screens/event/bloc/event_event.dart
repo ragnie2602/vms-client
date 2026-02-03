@@ -9,6 +9,15 @@ class EventEvent extends Equatable {
 
 class GetAllEventType extends EventEvent {}
 
+class GetEventDetail extends EventEvent {
+  final int eventId;
+
+  const GetEventDetail({required this.eventId});
+
+  @override
+  List<Object?> get props => [eventId];
+}
+
 class SearchEvent extends EventEvent {
   final int page;
   final int pageSize;
@@ -16,6 +25,7 @@ class SearchEvent extends EventEvent {
   final DateTime? endTime;
   final List<String>? eventType;
   final List<String>? cameraIds;
+  final List<CameraEntity> cameras;
 
   const SearchEvent({
     this.page = 1,
@@ -24,6 +34,7 @@ class SearchEvent extends EventEvent {
     this.endTime,
     this.eventType,
     this.cameraIds,
+    required this.cameras,
   });
 
   @override
@@ -49,4 +60,14 @@ class ExportEventList extends EventEvent {
 
   @override
   List<Object?> get props => [cameraGroupName, cameras, startTime, endTime, eventType, cameraIds];
+}
+
+class UpdateEvent extends EventEvent {
+  final int eventId;
+  final String description;
+
+  const UpdateEvent({required this.eventId, required this.description});
+
+  @override
+  List<Object?> get props => [eventId, description];
 }

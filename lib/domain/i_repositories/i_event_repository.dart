@@ -13,6 +13,8 @@ abstract class IEventRepository {
 
   Future<Either<Failure, List<EventType>>> getAllEventType();
 
+  Future<Either<Failure, EventEntity>> getEventDetail(int eventId);
+
   Future<Either<Failure, Pageable<EventEntity>>> searchEvent({
     int? startTime,
     int? endTime,
@@ -20,4 +22,6 @@ abstract class IEventRepository {
     List<String>? cameraIds,
     int? page,
   });
+
+  Future<Either<Failure, EventEntity>> updateEvent(int eventId, String description);
 }

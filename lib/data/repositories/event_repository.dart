@@ -39,6 +39,14 @@ class EventRepository extends BaseRepository implements IEventRepository {
   }
 
   @override
+  Future<Either<Failure, EventEntity>> getEventDetail(int eventId) async {
+    return await catchError<EventEntity>(() async {
+      final data = await eventService.getEventDetail(eventId);
+      return Right(EventEntity.fromJson(data));
+    });
+  }
+
+  @override
   Future<Either<Failure, Pageable<EventEntity>>> searchEvent({
     int? page,
     List<String>? cameraIds,
@@ -56,6 +64,14 @@ class EventRepository extends BaseRepository implements IEventRepository {
       );
 
       return Right(Pageable.fromJson(data, EventEntity.fromJson));
+    });
+  }
+
+  @override
+  Future<Either<Failure, EventEntity>> updateEvent(int eventId, String description) async {
+    return await catchError<EventEntity>(() async {
+      final data = await eventService.updateEvent(eventId, description);
+      return Right(EventEntity.fromJson(data));
     });
   }
 }

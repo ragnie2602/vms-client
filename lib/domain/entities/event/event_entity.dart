@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class EventEntity {
   int id;
   String? eventName;
@@ -6,6 +8,7 @@ class EventEntity {
   String? imageUrl;
   String? description;
   Map<String, dynamic>? payload;
+  String? cameraName;
 
   EventEntity({
     required this.id,
@@ -25,7 +28,9 @@ class EventEntity {
       timeEvent: json['timeEvent'],
       imageUrl: json['imageUrl'],
       description: json['description'],
-      payload: json['payload'],
+      payload: (json['payload'] != null && json['payload'].toString().isNotEmpty)
+          ? jsonDecode(json['payload'])
+          : null,
     );
   }
 }

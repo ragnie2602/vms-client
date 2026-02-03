@@ -45,6 +45,8 @@ class _EventScreenState extends State<EventScreen> {
   String cameraGroupName = 'Tất cả';
   List<CameraEntity> cameras = [];
 
+  bool _isInitializing = true;
+
   @override
   void initState() {
     super.initState();
@@ -53,8 +55,6 @@ class _EventScreenState extends State<EventScreen> {
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
     context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
-
-    _onFilter();
   }
 
   @override
@@ -149,7 +149,7 @@ class _EventScreenState extends State<EventScreen> {
                 ),
                 SizedBox(width: 16),
                 Expanded(
-                  child: BlocBuilder<MonitorBloc, MonitorState>(
+                  child: BlocConsumer<MonitorBloc, MonitorState>(
                     bloc: monitorBloc,
                     builder: (context, state) {
                       if (state is MonitorSuccess) cameras = state.cameras;
@@ -170,6 +170,13 @@ class _EventScreenState extends State<EventScreen> {
                         onChanged: (cams) => cameraIds = cams?.map((e) => e.camId).toList(),
                         padding: EdgeInsets.all(12),
                       );
+                    },
+                    listener: (context, state) {
+                      if (state is MonitorSuccess && _isInitializing) {
+                        _isInitializing = false;
+                        cameras = state.cameras;
+                        _onFilter();
+                      }
                     },
                   ),
                 ),
@@ -416,6 +423,7 @@ class _EventScreenState extends State<EventScreen> {
         endTime: endTime,
         eventType: eventType,
         cameraIds: cameraIds,
+        cameras: cameras,
       ),
     );
   }
