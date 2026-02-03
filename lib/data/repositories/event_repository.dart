@@ -12,6 +12,25 @@ class EventRepository extends BaseRepository implements IEventRepository {
   EventRepository(this.eventService);
 
   @override
+  Future<Either<Failure, List<EventEntity>>> exportEvent(
+    int? startTime,
+    int? endTime,
+    List<String>? eventType,
+    List<String>? cameraIds,
+  ) async {
+    return await catchError<List<EventEntity>>(() async {
+      final data = await eventService.exportEvent(
+        startTime: startTime,
+        endTime: endTime,
+        eventType: eventType,
+        cameraIds: cameraIds,
+      );
+
+      return Right(data.map<EventEntity>((e) => EventEntity.fromJson(e)).toList());
+    });
+  }
+
+  @override
   Future<Either<Failure, List<EventType>>> getAllEventType() async {
     return await catchError<List<EventType>>(() async {
       final data = await eventService.getAllEventType();

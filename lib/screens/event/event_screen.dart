@@ -8,7 +8,6 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
@@ -43,10 +42,8 @@ class _EventScreenState extends State<EventScreen> {
   DateTime startTime = DateTime.now().subtract(Duration(days: 30));
   DateTime endTime = DateTime.now();
 
-  List<EventEntity> events = [];
   String cameraGroupName = 'Tất cả';
   List<CameraEntity> cameras = [];
-  List<EventType> eventTypes = [];
 
   @override
   void initState() {
@@ -94,25 +91,22 @@ class _EventScreenState extends State<EventScreen> {
                 Expanded(
                   child: BlocBuilder<EventBloc, EventState>(
                     buildWhen: (previous, current) => current is GetAllEventTypeSuccess,
-                    builder: (context, state) {
-                      eventTypes = state is GetAllEventTypeSuccess ? state.eventTypes : [];
-                      return EventMultiFilterDropdown<EventType>(
-                        allMode: true,
-                        isDense: true,
-                        itemBuilder: (item) => Text(
-                          item.name,
-                          style: AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.black,
-                          ),
+                    builder: (context, state) => EventMultiFilterDropdown<EventType>(
+                      allMode: true,
+                      isDense: true,
+                      itemBuilder: (item) => Text(
+                        item.name,
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.black,
                         ),
-                        items: state is GetAllEventTypeSuccess ? state.eventTypes : [],
-                        label: 'Sự kiện',
-                        onChanged: (et) => eventType = et?.map((e) => e.eventKey).toList(),
-                        padding: EdgeInsets.all(12),
-                      );
-                    },
+                      ),
+                      items: state is GetAllEventTypeSuccess ? state.eventTypes : [],
+                      label: 'Sự kiện',
+                      onChanged: (et) => eventType = et?.map((e) => e.eventKey).toList(),
+                      padding: EdgeInsets.all(12),
+                    ),
                   ),
                 ),
                 SizedBox(width: 16),
@@ -266,25 +260,16 @@ class _EventScreenState extends State<EventScreen> {
                               ),
                             ],
                             label: 'Tải về danh sách',
-                            onPressed: () {
-                              if (events.isEmpty) {
-                                Toastification().show(
-                                  context: context,
-                                  title: const Text('Không có dữ liệu để xuất'),
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                  type: ToastificationType.warning,
-                                );
-                                return;
-                              }
-
-                              eventBloc.add(
-                                ExportEventList(
-                                  cameraGroupName: cameraGroupName,
-                                  cameras: cameras,
-                                  events: events,
-                                ),
-                              );
-                            },
+                            onPressed: () => eventBloc.add(
+                              ExportEventList(
+                                cameraIds: cameraIds,
+                                cameraGroupName: cameraGroupName,
+                                cameras: cameras,
+                                endTime: endTime,
+                                eventType: eventType,
+                                startTime: startTime,
+                              ),
+                            ),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                             prefix: SvgPicture.asset(AppAssets.icDownload2, height: 20),
                             prefixGap: 8,
@@ -364,16 +349,16 @@ class _EventScreenState extends State<EventScreen> {
                           } else if (state is SearchEventFailure) {
                             return Center(child: Text(state.message));
                           } else if (state is SearchEventSuccess) {
-                            events = state.events;
-
-                            if (events.isEmpty) return Center(child: Text('Không có dữ liệu'));
+                            if (state.events.isEmpty) {
+                              return Center(child: Text('Không có dữ liệu'));
+                            }
                             return Column(
                               children: [
                                 Expanded(
                                   child: ListView.separated(
                                     separatorBuilder: (context, index) =>
                                         const SizedBox(height: 10),
-                                    itemCount: (events.length / 4).ceil(),
+                                    itemCount: (state.events.length / 4).ceil(),
                                     itemBuilder: (context, rowIndex) {
                                       final int startIndex = rowIndex * 4;
                                       final int endIndex = min(startIndex + 4, state.events.length);
@@ -384,7 +369,7 @@ class _EventScreenState extends State<EventScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.stretch,
                                           children: [
                                             for (int i = startIndex; i < endIndex; i++) ...[
-                                              Expanded(child: EventItem(event: events[i])),
+                                              Expanded(child: EventItem(event: state.events[i])),
                                               if (i < endIndex - 1) const SizedBox(width: 10),
                                             ],
                                             for (int i = 0; i < emptySlots; i++) ...[

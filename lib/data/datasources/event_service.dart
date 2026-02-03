@@ -7,6 +7,28 @@ class EventService {
 
   const EventService(this.httpClient);
 
+  exportEvent({
+    int? startTime,
+    int? endTime,
+    List<String>? eventType,
+    List<String>? cameraIds,
+  }) async {
+    final raw = await httpClient.post(
+      url: EndPoints.exportEvent,
+      data: {
+        if (startTime != null) 'startTime': startTime,
+        if (endTime != null) 'endTime': endTime,
+        if (eventType != null) 'eventTypes': eventType,
+        if (cameraIds != null) 'cameraIds': cameraIds,
+      },
+    );
+
+    final response = BaseResponse.fromJson(raw);
+
+    if (response.code != 200) throw Exception(response.message);
+    return response.data;
+  }
+
   getAllEventType() async {
     final raw = await httpClient.get(EndPoints.eventType);
 

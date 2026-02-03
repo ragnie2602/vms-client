@@ -9,6 +9,7 @@ class EndPoints {
   // Event
   static const String baseEvent = '/api/ai-events';
   static const String eventType = '$baseEvent/types';
+  static const String exportEvent = '$baseEvent/export';
   static const String searchEvent = '$baseEvent/search';
 
   // Map

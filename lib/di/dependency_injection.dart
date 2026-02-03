@@ -135,7 +135,9 @@ class DependencyInjection {
     Provider<SearchEventUseCase>(
       create: (context) => SearchEventUseCase(context.read<IEventRepository>()),
     ),
-    Provider<ExportEventUseCase>(create: (context) => ExportEventUseCase()),
+    Provider<ExportEventUseCase>(
+      create: (context) => ExportEventUseCase(context.read<IEventRepository>()),
+    ),
 
     // Bloc
     Provider<AppBloc>(

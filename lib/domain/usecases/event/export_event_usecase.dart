@@ -4,6 +4,7 @@ import 'package:excel/excel.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/base_output.dart';
 import 'package:vms_flutter_client/domain/usecases/future_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/base_input.dart';
@@ -14,10 +15,23 @@ part 'export_event_input.dart';
 part 'export_event_output.dart';
 
 class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutput> {
-  const ExportEventUseCase();
+  final IEventRepository eventRepository;
+
+  const ExportEventUseCase(this.eventRepository);
 
   @override
   Future<ExportEventOutput> buildUseCase(ExportEventInput input) async {
+    final List<EventEntity> events = [];
+    (await eventRepository.exportEvent(
+      input.startTime != null ? input.startTime!.millisecondsSinceEpoch ~/ 1000 : null,
+      input.endTime != null ? input.endTime!.millisecondsSinceEpoch ~/ 1000 : null,
+      input.eventType,
+      input.cameraIds,
+    )).fold(
+      (onFailure) => ExportEventOutput('', errorMsg: onFailure.parseMessage()),
+      (onSuccess) => events.addAll(onSuccess),
+    );
+
     try {
       var excel = Excel.createExcel();
       excel.rename('Sheet1', 'DanhSachSuKien');
@@ -50,7 +64,6 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
       }
 
       int dataStartRow = 1;
-      final events = input.events;
 
       for (var i = 0; i < events.length; i++) {
         final event = events[i];

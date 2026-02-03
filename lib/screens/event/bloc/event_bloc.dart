@@ -33,9 +33,12 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
     final res = await exportEventUseCase.execute(
       ExportEventInput(
-        events: event.events,
+        cameraIds: event.cameraIds,
         cameraGroupName: event.cameraGroupName,
         cameras: event.cameras,
+        endTime: event.endTime,
+        eventType: event.eventType,
+        startTime: event.startTime,
       ),
     );
 
