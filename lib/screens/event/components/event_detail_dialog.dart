@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -118,7 +121,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                   _functionBtn(
                                     icon: SvgPicture.asset(AppAssets.icDownloadImage, height: 12),
                                     label: 'Tải ảnh',
-                                    onTap: () {},
+                                    onTap: () => _downloadSnapshot(event),
                                   ),
                                   _functionBtn(
                                     icon: SvgPicture.asset(AppAssets.icVideoOn, height: 20),
@@ -373,6 +376,87 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
         fit: BoxFit.contain,
       ),
     );
+  }
+
+  Future<void> _downloadSnapshot(EventEntity event) async {
+    final imageUrl = event.imageUrl;
+    if (imageUrl == null || imageUrl.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Không tìm thấy ảnh để tải xuống')));
+      }
+      return;
+    }
+
+    try {
+      final dio = Dio();
+      final response = await dio.get<List<int>>(
+        imageUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      final data = response.data;
+      if (data == null || data.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Không tải được dữ liệu ảnh')));
+        }
+        return;
+      }
+
+      final bytes = Uint8List.fromList(data);
+
+      String ext = '.jpg';
+      final lowerUrl = imageUrl.toLowerCase();
+      if (lowerUrl.endsWith('.png')) {
+        ext = '.png';
+      } else if (lowerUrl.endsWith('.jpeg')) {
+        ext = '.jpg';
+      }
+
+      final now = DateTime.now();
+      final safeEventName = (event.eventName ?? 'Snapshot')
+          .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
+          .trim();
+      final fileName =
+          '${safeEventName.isEmpty ? 'Snapshot' : safeEventName}_${DateFormat('yyyyMMdd_HHmmss').format(now)}$ext';
+
+      final FileSaveLocation? result = await getSaveLocation(
+        suggestedName: fileName,
+        acceptedTypeGroups: [
+          const XTypeGroup(label: 'Image', extensions: ['jpg', 'jpeg', 'png']),
+        ],
+      );
+
+      if (result == null) return;
+
+      final xFile = XFile.fromData(
+        bytes,
+        name: fileName,
+        mimeType: ext == '.png' ? 'image/png' : 'image/jpeg',
+      );
+      await xFile.saveTo(result.path);
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Đã tải ảnh: $fileName')));
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi tải ảnh: ${e.message}')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Đã xảy ra lỗi khi tải ảnh')));
+      }
+    }
   }
 
   _save() {

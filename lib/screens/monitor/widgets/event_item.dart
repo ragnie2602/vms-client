@@ -3,7 +3,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 class EventItem extends StatefulWidget {
