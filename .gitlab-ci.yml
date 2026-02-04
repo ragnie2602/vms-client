@@ -1,0 +1,41 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger" && $TRI_TYPE == "merge_request"
+stages:
+  - review
+
+review-source:
+  stage: review
+  image: ipcam.vivas.vn:5086/pdc.flutter.claude.cli/v0.9.0
+  tags:
+    - pdc.flutter.3.38.3 # Tags for runner
+  script:
+    - echo "=== MR MỚI ĐƯỢC TẠO ==="
+    - |
+      echo "Writing Claude CLI settings..."
+      mkdir -p ./.claude
+      cat <<EOF > "./.claude/settings.json"
+      $CLAUDE_SETTINGS
+      EOF
+    - |
+      echo "Claude MD..."
+      cat <<EOF > "./CLAUDE.md"
+      $CLAUDE_MD
+      EOF
+    - echo "Indexing branch with Serena..."
+    - uvx --from git+https://github.com/oraios/serena serena project index lib
+    - claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context ide-assistant --project "$(pwd)/lib"
+    - claude mcp list  
+    - |
+      echo "=== Reviewing Source Code with Claude ==="
+      export IS_SANDBOX=1
+      claude --dangerously-skip-permissions --allow-dangerously-skip-permissions -d -p <<EOF
+      ${REVIEW_PROMPT}
+      Steps:
+      1. Sử dụng mcp serena actived project 
+      2. Đưa ra các nhận xét và đề xuất cải thiện bằng tiếng việt, chỉ ra các vấn đề tiềm ẩn hoặc những điểm chưa đáp ứng vào file comment.json ở thư mục project với cú pháp như sau {"body":"nhận xét của bạn viết bằng markdown"} .
+      EOF
+    - |
+      curl --request POST --header "PRIVATE-TOKEN: ${CI_PAT_TOKEN}" --header "Content-Type: application/json" --data @comment.json "https://gitlab.vivas.vn/api/v4/projects/${N8N_PROJECT_ID}/merge_requests/${N8N_MR_ID}/notes" -v
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "trigger" && $TRI_TYPE == "merge_request"
