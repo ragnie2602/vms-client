@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/osd.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/osd_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/osd/osd_bloc.dart';
 
 class OsdView extends StatefulWidget {
   const OsdView({super.key});
@@ -15,6 +17,8 @@ class OsdView extends StatefulWidget {
 }
 
 class _OsdViewState extends State<OsdView> {
+  late final OsdBloc _osdBloc = context.read();
+
   late OSDPosition _position;
 
   bool hasChange = false;
@@ -161,7 +165,7 @@ class _OsdViewState extends State<OsdView> {
                     child: ElevatedButton(
                       onPressed: () => setState(() {
                         hasChange = false;
-                        OsdUtil.saveOSDPositions(_position);
+                        _osdBloc.add(NotifyOSDPosition(_position));
                         ToastUtil.toastSuccess(title: Text('Cài đặt OSD thành công!'));
                       }),
                       style: ElevatedButton.styleFrom(
