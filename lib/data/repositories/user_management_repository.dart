@@ -30,6 +30,7 @@ class UserManagementRepository extends BaseRepository implements IUserManagement
     bool? isAmin,
     bool? changePassDenied,
     bool? addCamDenied,
+    int? dataType,
   }) async {
     return await catchError<UserEntity>(() async {
       final user = await service.addUser(
@@ -43,6 +44,7 @@ class UserManagementRepository extends BaseRepository implements IUserManagement
         isAdmin: isAmin,
         changePassDenied: changePassDenied,
         addCamDenied: addCamDenied,
+        dataType: dataType,
       );
 
       return Right(user);
