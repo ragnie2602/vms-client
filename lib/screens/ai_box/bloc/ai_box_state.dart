@@ -6,6 +6,7 @@ class AiBoxState extends BaseState {
 }
 
 class AiBoxLoadingState extends AiBoxState {
+  const AiBoxLoadingState();
   @override
   StateType get type => StateType.loading;
 }

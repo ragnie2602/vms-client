@@ -5,7 +5,9 @@ class AiBoxEvent extends BaseEvent {
   const AiBoxEvent();
 }
 
-class GetListAiBoxEvent extends AiBoxEvent {}
+class GetListAiBoxEvent extends AiBoxEvent {
+  const GetListAiBoxEvent();
+}
 
 class AddAiBoxEvent extends AiBoxEvent {
   final AiBoxEntity aiBox;
