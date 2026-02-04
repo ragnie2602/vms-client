@@ -25,6 +25,7 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custo
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
@@ -137,6 +138,7 @@ class DependencyInjection {
       create: (context) => ExportEventUseCase(context.read<IEventRepository>()),
     ),
     Provider<SaveImageUseCase>(create: (context) => SaveImageUseCase()),
+    Provider<SaveVideoUseCase>(create: (context) => SaveVideoUseCase()),
     Provider<SearchEventUseCase>(
       create: (context) => SearchEventUseCase(context.read<IEventRepository>()),
     ),

@@ -1,8 +1,7 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:file_selector/file_selector.dart';
-import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/usecases/base_input.dart';
 import 'package:vms_flutter_client/domain/usecases/base_output.dart';
@@ -32,43 +31,14 @@ class SaveImageUseCase extends FutureUseCase<SaveImageInput, SaveImageOutput> {
       }
 
       final bytes = Uint8List.fromList(data);
-
-      String ext = '.jpg';
-      final lowerUrl = imageUrl.toLowerCase();
-      if (lowerUrl.endsWith('.png')) {
-        ext = '.png';
-      } else if (lowerUrl.endsWith('.jpeg')) {
-        ext = '.jpg';
-      }
-
-      final now = DateTime.now();
-      final safeEventName = (input.event.eventName ?? 'Snapshot')
-          .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
-          .trim();
-      final fileName =
-          '${safeEventName.isEmpty ? 'Snapshot' : safeEventName}_${DateFormat('yyyyMMdd_HHmmss').format(now)}$ext';
-
-      final FileSaveLocation? result = await getSaveLocation(
-        suggestedName: fileName,
-        acceptedTypeGroups: [
-          const XTypeGroup(label: 'Image', extensions: ['jpg', 'jpeg', 'png']),
-        ],
-      );
-
-      if (result == null) return SaveImageOutput(errorMsg: 'Không tìm thấy đường dẫn lưu ảnh');
-
-      final xFile = XFile.fromData(
-        bytes,
-        name: fileName,
-        mimeType: ext == '.png' ? 'image/png' : 'image/jpeg',
-      );
-      await xFile.saveTo(result.path);
+      final file = File(input.savePath);
+      await file.writeAsBytes(bytes);
 
       return SaveImageOutput();
     } on DioException catch (e) {
       return SaveImageOutput(errorMsg: 'Lỗi khi tải ảnh: ${e.message}');
     } catch (e) {
-      return SaveImageOutput(errorMsg: 'Đã xảy ra lỗi khi tải ảnh');
+      return SaveImageOutput(errorMsg: 'Đã xảy ra lỗi khi tải ảnh: $e');
     }
   }
 }

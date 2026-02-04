@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_input.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
 import '../../../domain/entities/event/event_type.dart';
@@ -21,17 +22,20 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   final SearchEventUseCase searchEventUseCase;
   final ExportEventUseCase exportEventUseCase;
   final SaveImageUseCase saveImageUseCase;
+  final SaveVideoUseCase saveVideoUseCase;
 
   EventBloc(
     this.eventRepository,
     this.searchEventUseCase,
     this.exportEventUseCase,
     this.saveImageUseCase,
+    this.saveVideoUseCase,
   ) : super(const EventState()) {
     on<ExportEventList>(_onExportEventList);
     on<GetAllEventType>(_onGetAllEventType);
     on<GetEventDetail>(_onGetEventDetail);
     on<SaveImage>(_onSaveImage);
+    on<SaveVideo>(_onSaveVideo);
     on<SearchEvent>(_onSearch);
     on<UpdateEvent>(_onUpdateEvent);
   }
@@ -109,12 +113,24 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   FutureOr<void> _onSaveImage(SaveImage event, Emitter<EventState> emit) async {
     emit(const SavingImage());
 
-    final res = await saveImageUseCase.execute(SaveImageInput(event.event));
+    final res = await saveImageUseCase.execute(SaveImageInput(event.event, event.savePath));
 
     if (res.errorMsg == null) {
-      emit(SavingImageSuccess());
+      emit(const SavingImageSuccess());
     } else {
       emit(SavingImageFailure(res.errorMsg!));
+    }
+  }
+
+  FutureOr<void> _onSaveVideo(SaveVideo event, Emitter<EventState> emit) async {
+    emit(const SavingVideo());
+
+    final res = await saveVideoUseCase.execute(SaveVideoInput(event.url, event.savePath));
+
+    if (res.errorMsg == null) {
+      emit(const SavingVideoSuccess());
+    } else {
+      emit(SavingVideoFailure(res.errorMsg!));
     }
   }
 

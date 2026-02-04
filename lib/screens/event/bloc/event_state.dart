@@ -77,6 +77,19 @@ class SavingImageFailure extends EventState {
   const SavingImageFailure(this.message);
 }
 
+class SavingVideo extends EventState {
+  const SavingVideo();
+}
+
+class SavingVideoSuccess extends EventState {
+  const SavingVideoSuccess();
+}
+
+class SavingVideoFailure extends EventState {
+  final String message;
+  const SavingVideoFailure(this.message);
+}
+
 class SearchEventSuccess extends EventState {
   final List<EventEntity> events;
   final int totalCount;

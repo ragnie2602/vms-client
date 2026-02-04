@@ -1,20 +1,23 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
-import 'package:toastification/toastification.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
+import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
+import 'package:vms_flutter_client/screens/shared/player/sources.dart';
+import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 part '../widget/custom_tab_bar.dart';
 
@@ -27,20 +30,46 @@ class EventDetailDialog extends StatefulWidget {
   State<EventDetailDialog> createState() => _EventDetailDialogState();
 }
 
-class _EventDetailDialogState extends State<EventDetailDialog> with TickerProviderStateMixin {
+class _EventDetailDialogState extends State<EventDetailDialog>
+    with TickerProviderStateMixin, StateBuilderMixin {
   late final EventBloc eventBloc;
+  late final PlaybackBloc playbackBloc;
+  late final PlayerController playerController;
 
   final TextEditingController descriptionController = TextEditingController();
   late TabController tabController;
+  final ValueNotifier<int> _tabIdx = ValueNotifier(0);
 
   bool imageMode = true;
+  DateTime? rewindTime;
+  DateTime? endTime;
+
+  final ValueNotifier<PlayerStatus> _playerStatus = ValueNotifier(PlayerStatus.playing);
+  final ValueNotifier<double> _volume = ValueNotifier(1.0);
+  final ValueNotifier<double> _speed = ValueNotifier(1.0);
+  final ValueNotifier<double?> _downloadProgress = ValueNotifier(null);
+  late DateTime currentTime;
 
   @override
   void initState() {
     super.initState();
 
-    eventBloc = context.read<EventBloc>()..add(GetEventDetail(eventId: widget.event.id));
+    eventBloc = context.read()..add(GetEventDetail(eventId: widget.event.id));
+
+    final eventTime = DateTime.fromMillisecondsSinceEpoch(widget.event.timeEvent * 1000);
+    currentTime = rewindTime = eventTime.subtract(Duration(seconds: 10));
+    endTime = eventTime.add(Duration(seconds: 10));
+
+    playbackBloc = context.read();
+    if (widget.event.camera?.id != null) {
+      playbackBloc.add(GetVideoPlaybacks(widget.event.camera!.id, rewindTime!));
+    }
+
+    playerController = PlayerController()..ref = GlobalKey();
+    playerController.onTimeChanged.add(_handleTimeChanged);
+
     tabController = TabController(length: 2, vsync: this);
+    tabController.addListener(() => _tabIdx.value = tabController.index);
   }
 
   @override
@@ -108,10 +137,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                   aspectRatio: 16 / 9,
                                   child: TabBarView(
                                     controller: tabController,
-                                    children: [
-                                      _imageTab(event),
-                                      Align(alignment: Alignment.topCenter, child: _VideoPlayer()),
-                                    ],
+                                    children: [_imageTab(event), _videoTab(event)],
                                   ),
                                 ),
                               ),
@@ -122,32 +148,66 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                   BlocConsumer<EventBloc, EventState>(
                                     listener: (context, state) {
                                       if (state is SavingImageSuccess) {
-                                        Toastification().show(
-                                          context: context,
-                                          title: Text('Tải ảnh thành công'),
-                                          autoCloseDuration: const Duration(seconds: 3),
-                                          type: ToastificationType.success,
+                                        ToastUtil.toastSuccess(
+                                          title: Text(
+                                            'Tải ảnh thành công',
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                              color: AppColors.white,
+                                            ),
+                                          ),
                                         );
                                       } else if (state is SavingImageFailure) {
-                                        Toastification().show(
+                                        ToastUtil.toastFail(
                                           context: context,
                                           title: Text(state.message),
-                                          autoCloseDuration: const Duration(seconds: 3),
-                                          type: ToastificationType.error,
+                                        );
+                                      } else if (state is SavingVideoSuccess) {
+                                        ToastUtil.toastSuccess(
+                                          title: Text(
+                                            'Tải video thành công',
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                              color: AppColors.white,
+                                            ),
+                                          ),
+                                        );
+                                      } else if (state is SavingVideoFailure) {
+                                        ToastUtil.toastFail(
+                                          context: context,
+                                          title: Text(state.message),
                                         );
                                       }
                                     },
                                     builder: (context, state) {
-                                      if (state is SavingImage) return CircularProgressIndicator();
+                                      if (state is SavingImage || state is SavingVideo) {
+                                        return SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        );
+                                      }
 
-                                      return _functionBtn(
-                                        icon: SvgPicture.asset(
-                                          AppAssets.icDownloadImage,
-                                          height: 12,
-                                        ),
-                                        label: 'Tải ảnh',
-                                        onTap: () =>
-                                            context.read<EventBloc>().add(SaveImage(event)),
+                                      return ValueListenableBuilder(
+                                        valueListenable: _tabIdx,
+                                        builder: (context, value, child) {
+                                          return _functionBtn(
+                                            icon: SvgPicture.asset(
+                                              AppAssets.icDownloadImage,
+                                              height: 12,
+                                            ),
+                                            label: 'Tải ${value == 0 ? 'ảnh' : 'video'}',
+                                            onTap: () {
+                                              if (value == 0) {
+                                                _downloadImage(event);
+                                              } else {
+                                                _downloadVideo(event);
+                                              }
+                                            },
+                                          );
+                                        },
                                       );
                                     },
                                   ),
@@ -195,7 +255,9 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                       ),
                                       Text(
                                         DateFormat('HH:mm dd/MM/yyyy').format(
-                                          DateTime.fromMillisecondsSinceEpoch(event.timeEvent),
+                                          DateTime.fromMillisecondsSinceEpoch(
+                                            widget.event.timeEvent * 1000,
+                                          ),
                                         ),
                                         style: AppTypography.style(14, fontWeight: FontWeight.w500),
                                       ),
@@ -295,6 +357,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                 );
               },
             ),
+
             // Footer
             Container(
               decoration: BoxDecoration(
@@ -369,7 +432,161 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
     );
   }
 
-  // Widget
+  @override
+  void dispose() {
+    playbackBloc.close();
+    playerController.onTimeChanged.remove(_handleTimeChanged);
+    playerController.detach();
+    _playerStatus.dispose();
+    _volume.dispose();
+    _speed.dispose();
+    _downloadProgress.dispose();
+    super.dispose();
+  }
+
+  // Widgets
+  Widget _buildControls(bool isFullscreen, PlayerState playerState) {
+    if (playerState != PlayerState.initialized) return SizedBox.shrink();
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: AppColors.contentBg,
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(6)),
+          boxShadow: [
+            BoxShadow(
+              color: Color.fromRGBO(0, 0, 0, 0.05),
+              spreadRadius: 2,
+              blurRadius: 30,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ValueListenableBuilder<PlayerStatus>(
+          valueListenable: _playerStatus,
+          builder: (_, status, __) => Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildVolumeControl(),
+              _buildControlButton(
+                icon: AppAssets.icFastBackward,
+                onTap: () => playerController.seek?.call(Duration(seconds: -3)),
+              ),
+              _buildControlButton(
+                icon: status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
+                onTap: () {
+                  if (reachEnd) playerController.seek?.call(Duration(seconds: -20));
+                  playerController.togglePlay?.call();
+                },
+              ),
+              _buildControlButton(
+                icon: AppAssets.icFastForward,
+                onTap: () {
+                  if (reachEnd) return;
+                  playerController.seek?.call(Duration(seconds: 3));
+                },
+              ),
+              _buildSpeedControl(),
+              _buildControlButton(
+                icon: AppAssets.icZoomIn,
+                onTap: () => playerController.zoom?.call(1),
+              ),
+              _buildControlButton(
+                icon: AppAssets.icZoomOut,
+                onTap: () => playerController.zoom?.call(-1),
+              ),
+              _buildControlButton(
+                icon: AppAssets.icFullscreen,
+                onTap: () => playerController.toggleFullscreen?.call(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildControlButton({required String icon, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SvgPicture.asset(icon, width: 28, height: 28),
+      ),
+    );
+  }
+
+  Widget _buildVolumeControl() {
+    return ValueListenableBuilder<double>(
+      valueListenable: _volume,
+      builder: (context, volume, _) {
+        return MouseRegion(
+          child: Container(
+            height: 60,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () {
+                    final newVolume = volume > 0 ? 0.0 : 1.0;
+                    _volume.value = newVolume;
+                    playerController.changeVolume?.call(newVolume);
+                  },
+                  child: SvgPicture.asset(
+                    volume == 1
+                        ? AppAssets.icVolumeFull
+                        : volume == 0
+                        ? AppAssets.icVolumeMuted
+                        : AppAssets.icVolumeHalf,
+                    width: 28,
+                    height: 28,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSpeedControl() {
+    return ValueListenableBuilder<double>(
+      valueListenable: _speed,
+      builder: (context, speed, _) {
+        final speedMap = {0.5: "0.5x", 1.0: "1x", 2.0: "2x", 4.0: "4x", 8.0: "8x", 16.0: "16x"};
+
+        return InkWell(
+          onTap: () {
+            // Cycle through speeds: 1x -> 2x -> 4x -> 8x -> 1x
+            final speeds = [1.0, 2.0, 4.0, 8.0];
+            final currentIndex = speeds.indexOf(speed);
+            final nextSpeed = speeds[(currentIndex + 1) % speeds.length];
+            _speed.value = nextSpeed;
+            playerController.changeSpeed?.call(nextSpeed);
+          },
+          borderRadius: BorderRadius.circular(3),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.greyE2E8F0),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            margin: EdgeInsets.symmetric(horizontal: 8),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Text(
+              speedMap[speed] ?? "1x",
+              style: AppTypography.style(14, fontWeight: FontWeight.w500),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _functionBtn({Widget? icon, String? label, Function()? onTap}) {
     return ElevatedButton(
       onPressed: onTap,
@@ -407,6 +624,124 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
     );
   }
 
+  Widget _videoTab(EventEntity event) {
+    return BlocConsumer<PlaybackBloc, PlaybackState>(
+      buildWhen: (pre, cur) {
+        if (pre is PlaybackSuccess && cur is PlaybackSuccess) {
+          return pre.playbacks != cur.playbacks || pre.initialIndex != cur.initialIndex;
+        }
+        return true;
+      },
+      builder: (context, state) => stateBuilder<PlaybackSuccess>(
+        state,
+        onReload: () {
+          if (event.camera?.id != null && rewindTime != null) {
+            context.read<PlaybackBloc>().add(GetVideoPlaybacks(event.camera!.id, rewindTime!));
+          }
+        },
+        child: (state) => Container(
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Colors.black),
+          clipBehavior: Clip.antiAlias,
+          child: PlaybackPlayer(
+            enableZoom: true,
+            playlist: state.playbacks.toList(),
+            name: event.camera?.name ?? '',
+            initialIndex: state.initialIndex,
+            controller: playerController,
+            onStatusChanged: (status) {
+              _playerStatus.value = status;
+            },
+            onInitializedValues: ({required double volume, required double speed}) {
+              _volume.value = volume;
+              _speed.value = speed;
+            },
+            controlsBuilder: (fullscreen, playerState) =>
+                fullscreen ? Container() : _buildControls(fullscreen, playerState),
+          ),
+        ),
+      ),
+      listener: (context, state) {
+        if (rewindTime != null && state is PlaybackSuccess) {
+          final rewindTimeCopy = rewindTime!;
+          final idx = state.playbacks.indexWhere(
+            (e) => e.startTime.isBefore(rewindTimeCopy) && e.endTime.isAfter(rewindTimeCopy),
+          );
+          if (idx != -1) {
+            context.read<PlaybackBloc>().add(ChangePlayback(idx));
+
+            playerController.waitForAttached.future.then((_) {
+              playerController.jumpToDate?.call(rewindTimeCopy, dateIndex: idx);
+            });
+          }
+          rewindTime = null;
+        }
+      },
+    );
+  }
+
+  // _Functions
+  bool get reachEnd => currentTime.isAfter(endTime!);
+
+  void _downloadImage(EventEntity event) async {
+    final imageUrl = event.imageUrl;
+    if (imageUrl == null || imageUrl.isEmpty) {
+      ToastUtil.toastFail(context: context, title: Text('Không tìm thấy ảnh để tải xuống'));
+      return;
+    }
+
+    String ext = '.jpg';
+    final lowerUrl = imageUrl.toLowerCase();
+    if (lowerUrl.endsWith('.png')) {
+      ext = '.png';
+    } else if (lowerUrl.endsWith('.jpeg')) {
+      ext = '.jpg';
+    }
+
+    final eventTime = DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000);
+    final eventName = event.eventName?.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_') ?? 'event';
+    final timeStr = eventTime.format("yyyyMMdd_HHmmss");
+    final fileName = 'Image_${eventName}_$timeStr$ext';
+
+    final path = await context.read<StorageFolderBloc>().state.ensureSnapshotFolder(
+      event.camera?.name ?? 'camera',
+      fileName,
+    );
+
+    if (mounted) context.read<EventBloc>().add(SaveImage(event, path));
+  }
+
+  void _downloadVideo(EventEntity event) async {
+    final playbackState = playbackBloc.state;
+    if (playbackState is! PlaybackSuccess || playbackState.playbacks.isEmpty) {
+      ToastUtil.toastFail(context: context, title: Text('Không tìm thấy video playback'));
+      return;
+    }
+
+    final eventTime = DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000);
+    final targetPlayback = playbackState.playbacks.firstWhere(
+      (p) => p.startTime.isBefore(eventTime) && p.endTime.isAfter(eventTime),
+      orElse: () => playbackState.playbacks[playbackState.currentIndex],
+    );
+
+    final eventName = event.eventName?.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_') ?? 'event';
+    final timeStr = eventTime.format("yyyyMMdd_HHmmss");
+    final fileName = 'Video_${eventName}_$timeStr.mp4';
+
+    final path = await context.read<StorageFolderBloc>().state.ensureVideoFolder(
+      event.camera?.name ?? 'camera',
+      fileName,
+    );
+
+    if (mounted) context.read<EventBloc>().add(SaveVideo(targetPlayback.urlPlayback, path));
+  }
+
+  void _handleTimeChanged(DateTime currentTime, [bool isUserSeeking = false]) {
+    this.currentTime = currentTime;
+    if (endTime != null && currentTime.isAfter(endTime!)) {
+      playerController.pause?.call();
+    }
+  }
+
   _live() {
     Navigator.pop(context);
 
@@ -441,79 +776,5 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
     context.read<EventBloc>().add(
       UpdateEvent(eventId: widget.event.id, description: descriptionController.text),
     );
-  }
-}
-
-class _VideoPlayer extends StatefulWidget {
-  const _VideoPlayer();
-
-  @override
-  State<_VideoPlayer> createState() => _VideoPlayerState();
-}
-
-class _VideoPlayerState extends State<_VideoPlayer> {
-  bool playing = false;
-  Timer? timer;
-  ValueNotifier<double> progress = ValueNotifier(0);
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
-      child: Stack(
-        children: [
-          Image.network(
-            'https://cdn.wikimg.net/en/hkwiki/images/5/57/SoSpromo1.jpg',
-            fit: BoxFit.contain,
-          ),
-          Positioned.fill(
-            child: IconButton(
-              onPressed: () {
-                setState(() => playing = !playing);
-                if (playing) {
-                  timer?.cancel();
-                  timer = Timer.periodic(Duration(milliseconds: 100), (t) {
-                    if (progress.value >= 4.0) {
-                      timer?.cancel();
-                      progress.value = 0;
-                      setState(() => playing = false);
-                      return;
-                    }
-                    progress.value += 0.1;
-                  });
-                } else {
-                  timer?.cancel();
-                }
-              },
-              icon: Icon(playing ? Icons.pause : Icons.play_circle, size: 48, color: Colors.white),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: ValueListenableBuilder(
-              valueListenable: progress,
-              builder: (context, value, child) => LinearProgressIndicator(
-                backgroundColor: AppColors.greyCACACA,
-                color: AppColors.secondary,
-                value: value.clamp(0.0, 4.0) / 4.0,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
   }
 }

@@ -11,6 +11,7 @@ import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_u
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
@@ -218,6 +219,7 @@ class AppRouter {
                 context.read<SearchEventUseCase>(),
                 context.read<ExportEventUseCase>(),
                 context.read<SaveImageUseCase>(),
+                context.read<SaveVideoUseCase>(),
               ),
             ),
             BlocProvider(

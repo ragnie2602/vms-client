@@ -64,11 +64,22 @@ class ExportEventList extends EventEvent {
 
 class SaveImage extends EventEvent {
   final EventEntity event;
+  final String savePath;
 
-  const SaveImage(this.event);
+  const SaveImage(this.event, this.savePath);
 
   @override
-  List<Object?> get props => [event];
+  List<Object?> get props => [event, savePath];
+}
+
+class SaveVideo extends EventEvent {
+  final String url;
+  final String savePath;
+
+  const SaveVideo(this.url, this.savePath);
+
+  @override
+  List<Object?> get props => [url, savePath];
 }
 
 class UpdateEvent extends EventEvent {

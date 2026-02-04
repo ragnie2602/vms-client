@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 class EventItem extends StatelessWidget {
   final EventEntity event;
@@ -26,6 +28,8 @@ class EventItem extends StatelessWidget {
           providers: [
             BlocProvider.value(value: context.read<EventBloc>()),
             BlocProvider.value(value: context.read<HomeBloc>()),
+            BlocProvider(create: (context) => PlaybackBloc(context.read(), context.read())),
+            BlocProvider.value(value: context.read<StorageFolderBloc>()),
           ],
           child: EventDetailDialog(event: event),
         ),
