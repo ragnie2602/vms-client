@@ -12,4 +12,9 @@ abstract class IDetectRepository {
   });
   // danh sách các field có thể chọn để cấu hình hiển thị cho sự kiện
   Future<Either<Failure, List<FieldConfigEntity>>> getListFieldAvailable();
+  // update cấu hình hiển thị của từng loại sự kiện detect
+  Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
+    required List<String> listField,
+    required int eventTypeId,
+  });
 }

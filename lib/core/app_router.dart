@@ -19,6 +19,7 @@ import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.da
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/event_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
@@ -220,8 +221,11 @@ class AppRouter {
               ),
             ),
             BlocProvider(
-              create: (context) => DetectBloc(context.read()),
-              ),
+              create: (context) => DetectBloc(context.read())),
+              
+            BlocProvider(
+              create: (context) => SetupInfoFieldBloc(detectRepository:context.read())),
+
             BlocProvider(
               create: (context) => AiBoxBloc(
                 aiBoxRepository: context.read(),

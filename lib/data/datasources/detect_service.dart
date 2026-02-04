@@ -44,4 +44,19 @@ class DetectService {
     }
     return EventDisplayConfigEntity.fromJson(response.data);
   }
+
+  Future<EventDisplayConfigEntity> updateEventDisplayConfig({
+    required List<String> listField,
+    required int eventTypeId,
+  }) async {
+    final raw = await httpClient.put(
+      url: EndPoints.eventDisplayConfigById(eventTypeId),
+      data: {'fields': listField},
+    );
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+    return EventDisplayConfigEntity.fromJson(response.data);
+  }
 }

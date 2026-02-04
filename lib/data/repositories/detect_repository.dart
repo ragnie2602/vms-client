@@ -37,4 +37,15 @@ class DetectRepository extends BaseRepository implements IDetectRepository {
       return Right(data);
     });
   }
+  
+  @override
+  Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({required List<String> listField, required int eventTypeId}) async{
+    return await catchError<EventDisplayConfigEntity>(() async {
+      final data = await service.updateEventDisplayConfig(
+        listField: listField,
+        eventTypeId: eventTypeId,
+      );
+      return Right(data);
+    });
+  }
 }
