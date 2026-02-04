@@ -43,7 +43,7 @@ class AiBoxEntity {
   int? status;
   String? ip;
   String? port;
-  String? userame;
+  String? username;
   String? password;
   String? note;
   String? publicAddress;
@@ -59,7 +59,7 @@ class AiBoxEntity {
     this.status,
     this.ip,
     this.port,
-    this.userame,
+    this.username,
     this.password,
     this.note,
     this.publicAddress,
@@ -91,7 +91,7 @@ class AiBoxEntity {
     status: status ?? this.status,
     ip: ip ?? this.ip,
     port: port ?? this.port,
-    userame: userName ?? this.userame,
+    username: userName ?? this.username,
     password: password ?? this.password,
     note: note ?? this.note,
     publicAddress: publicAddress ?? this.publicAddress,
@@ -108,7 +108,7 @@ class AiBoxEntity {
     status: json["status"],
     ip: json["ip"],
     port: json["port"],
-    userame: json["username"],
+    username: json["username"],
     password: json["password"],
     note: json["note"],
     publicAddress: json["publicAddress"],
@@ -125,7 +125,7 @@ class AiBoxEntity {
     "status": status,
     "ip": ip,
     "port": port,
-    "username": userame,
+    "username": username,
     "password": password,
     "note": note,
     "publicAddress": publicAddress,

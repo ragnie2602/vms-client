@@ -33,6 +33,7 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
 
   @override
   void dispose() {
+    searchController.dispose();
     _listAiBoxController.dispose();
     super.dispose();
   }
@@ -335,7 +336,7 @@ class _AiBoxScreenState extends State<AiBoxScreen> {
                                     shrinkWrap: true,
                                     itemCount: state.aiBoxes!.length,
                                     itemBuilder: (context, index) =>
-                                        ItemAiBoxWidget(
+                                        AiBoxItemWidget(
                                           itemAiBox: state.aiBoxes![index],
                                           index: index + 1,
                                           onDelete: () {

@@ -24,15 +24,6 @@ class DeleteAiBoxEvent extends AiBoxEvent {
   List<Object> get props => [aiBox];
 }
 
-class GetDetailAiBoxEvent extends AiBoxEvent {
-  final int aiBoxId;
-
-  const GetDetailAiBoxEvent({required this.aiBoxId});
-
-  @override
-  List<Object> get props => [aiBoxId];
-}
-
 class EditAiBoxEvent extends AiBoxEvent {
   final int aiBoxId;
   final AiBoxEntity aiBox;
