@@ -62,6 +62,15 @@ class ExportEventList extends EventEvent {
   List<Object?> get props => [cameraGroupName, cameras, startTime, endTime, eventType, cameraIds];
 }
 
+class SaveImage extends EventEvent {
+  final EventEntity event;
+
+  const SaveImage(this.event);
+
+  @override
+  List<Object?> get props => [event];
+}
+
 class UpdateEvent extends EventEvent {
   final int eventId;
   final String description;

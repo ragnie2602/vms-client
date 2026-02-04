@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+
 class EventEntity {
   int id;
   String? eventName;
@@ -8,7 +10,7 @@ class EventEntity {
   String? imageUrl;
   String? description;
   Map<String, dynamic>? payload;
-  String? cameraName;
+  CameraEntity? camera;
 
   EventEntity({
     required this.id,

@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
+import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 import 'package:intl/intl.dart';
@@ -21,8 +22,11 @@ class EventItem extends StatelessWidget {
     return InkWell(
       onTap: () => showDialog(
         context: context,
-        builder: (c) => BlocProvider.value(
-          value: context.read<EventBloc>(),
+        builder: (c) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: context.read<EventBloc>()),
+            BlocProvider.value(value: context.read<HomeBloc>()),
+          ],
           child: EventDetailDialog(event: event),
         ),
       ),
@@ -61,7 +65,7 @@ class EventItem extends StatelessWidget {
                         SvgPicture.asset(AppAssets.icVideoOn),
                         const SizedBox(width: 4),
                         Text(
-                          event.cameraName ?? '',
+                          event.camera?.name ?? '',
                           style: AppTypography.style(9, fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -116,7 +120,7 @@ class EventItem extends StatelessWidget {
                         [
                           SvgPicture.asset(AppAssets.icVideoOn, height: 20),
                           Text(
-                            event.cameraName ?? '',
+                            event.camera?.name ?? '',
                             style: AppTypography.style(14, fontWeight: FontWeight.w500),
                           ),
                         ],

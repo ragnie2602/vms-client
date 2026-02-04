@@ -1,18 +1,19 @@
 import 'dart:async';
-import 'dart:typed_data';
 
-import 'package:dio/dio.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:toastification/toastification.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
+import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
+import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 part '../widget/custom_tab_bar.dart';
@@ -118,20 +119,47 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                               Row(
                                 spacing: 15,
                                 children: [
-                                  _functionBtn(
-                                    icon: SvgPicture.asset(AppAssets.icDownloadImage, height: 12),
-                                    label: 'Tải ảnh',
-                                    onTap: () => _downloadSnapshot(event),
+                                  BlocConsumer<EventBloc, EventState>(
+                                    listener: (context, state) {
+                                      if (state is SavingImageSuccess) {
+                                        Toastification().show(
+                                          context: context,
+                                          title: Text('Tải ảnh thành công'),
+                                          autoCloseDuration: const Duration(seconds: 3),
+                                          type: ToastificationType.success,
+                                        );
+                                      } else if (state is SavingImageFailure) {
+                                        Toastification().show(
+                                          context: context,
+                                          title: Text(state.message),
+                                          autoCloseDuration: const Duration(seconds: 3),
+                                          type: ToastificationType.error,
+                                        );
+                                      }
+                                    },
+                                    builder: (context, state) {
+                                      if (state is SavingImage) return CircularProgressIndicator();
+
+                                      return _functionBtn(
+                                        icon: SvgPicture.asset(
+                                          AppAssets.icDownloadImage,
+                                          height: 12,
+                                        ),
+                                        label: 'Tải ảnh',
+                                        onTap: () =>
+                                            context.read<EventBloc>().add(SaveImage(event)),
+                                      );
+                                    },
                                   ),
                                   _functionBtn(
                                     icon: SvgPicture.asset(AppAssets.icVideoOn, height: 20),
                                     label: 'Xem trực tiếp',
-                                    onTap: () {},
+                                    onTap: _live,
                                   ),
                                   _functionBtn(
                                     icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
                                     label: 'Xem playback',
-                                    onTap: () {},
+                                    onTap: _playback,
                                   ),
                                 ],
                               ),
@@ -179,7 +207,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
                                         style: AppTypography.style(13, fontWeight: FontWeight.w500),
                                       ),
                                       Text(
-                                        widget.event.cameraName ?? '',
+                                        widget.event.camera?.name ?? '',
                                         style: AppTypography.style(14, fontWeight: FontWeight.w500),
                                       ),
                                     ],
@@ -341,6 +369,7 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
     );
   }
 
+  // Widget
   Widget _functionBtn({Widget? icon, String? label, Function()? onTap}) {
     return ElevatedButton(
       onPressed: onTap,
@@ -378,85 +407,34 @@ class _EventDetailDialogState extends State<EventDetailDialog> with TickerProvid
     );
   }
 
-  Future<void> _downloadSnapshot(EventEntity event) async {
-    final imageUrl = event.imageUrl;
-    if (imageUrl == null || imageUrl.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Không tìm thấy ảnh để tải xuống')));
-      }
-      return;
-    }
+  _live() {
+    Navigator.pop(context);
 
-    try {
-      final dio = Dio();
-      final response = await dio.get<List<int>>(
-        imageUrl,
-        options: Options(responseType: ResponseType.bytes),
-      );
+    context.read<HomeBloc>().add(
+      ChangeTab(
+        HomeTab.tabs[1],
+        route: Routes.cameraDetail,
+        extra: CameraDetailScreenArgs(data: widget.event.camera),
+      ),
+    );
+  }
 
-      final data = response.data;
-      if (data == null || data.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Không tải được dữ liệu ảnh')));
-        }
-        return;
-      }
+  _playback() {
+    Navigator.pop(context);
 
-      final bytes = Uint8List.fromList(data);
-
-      String ext = '.jpg';
-      final lowerUrl = imageUrl.toLowerCase();
-      if (lowerUrl.endsWith('.png')) {
-        ext = '.png';
-      } else if (lowerUrl.endsWith('.jpeg')) {
-        ext = '.jpg';
-      }
-
-      final now = DateTime.now();
-      final safeEventName = (event.eventName ?? 'Snapshot')
-          .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
-          .trim();
-      final fileName =
-          '${safeEventName.isEmpty ? 'Snapshot' : safeEventName}_${DateFormat('yyyyMMdd_HHmmss').format(now)}$ext';
-
-      final FileSaveLocation? result = await getSaveLocation(
-        suggestedName: fileName,
-        acceptedTypeGroups: [
-          const XTypeGroup(label: 'Image', extensions: ['jpg', 'jpeg', 'png']),
-        ],
-      );
-
-      if (result == null) return;
-
-      final xFile = XFile.fromData(
-        bytes,
-        name: fileName,
-        mimeType: ext == '.png' ? 'image/png' : 'image/jpeg',
-      );
-      await xFile.saveTo(result.path);
-
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Đã tải ảnh: $fileName')));
-      }
-    } on DioException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi khi tải ảnh: ${e.message}')));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Đã xảy ra lỗi khi tải ảnh')));
-      }
-    }
+    context.read<HomeBloc>().add(
+      ChangeTab(
+        HomeTab.tabs[1],
+        route: Routes.cameraDetail,
+        extra: CameraDetailScreenArgs(
+          data: widget.event.camera,
+          isPlayback: true,
+          rewind: DateTime.fromMillisecondsSinceEpoch(widget.event.timeEvent * 1000),
+          title: 'Xem lại',
+          key: UniqueKey(),
+        ),
+      ),
+    );
   }
 
   _save() {

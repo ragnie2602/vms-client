@@ -1,4 +1,4 @@
-part of 'search_event_use_case.dart';
+part of 'search_event_usecase.dart';
 
 class SearchEventOutput extends BaseOutput {
   final Pageable<EventEntity> events;

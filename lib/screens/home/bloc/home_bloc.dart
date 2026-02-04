@@ -93,6 +93,7 @@ class ChangeTab extends HomeEvent {
   final Routes? route;
   final Object? extra;
   final bool force;
+
   const ChangeTab(this.tab, {this.route, this.extra, this.force = false});
 }
 

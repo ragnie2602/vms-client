@@ -7,8 +7,9 @@ import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart
 
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_input.dart';
-import 'package:vms_flutter_client/domain/usecases/event/search_event_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
 import '../../../domain/entities/event/event_type.dart';
 
 part 'event_event.dart';
@@ -19,12 +20,18 @@ class EventBloc extends Bloc<EventEvent, EventState> {
 
   final SearchEventUseCase searchEventUseCase;
   final ExportEventUseCase exportEventUseCase;
+  final SaveImageUseCase saveImageUseCase;
 
-  EventBloc(this.eventRepository, this.searchEventUseCase, this.exportEventUseCase)
-    : super(const EventState()) {
+  EventBloc(
+    this.eventRepository,
+    this.searchEventUseCase,
+    this.exportEventUseCase,
+    this.saveImageUseCase,
+  ) : super(const EventState()) {
     on<ExportEventList>(_onExportEventList);
     on<GetAllEventType>(_onGetAllEventType);
     on<GetEventDetail>(_onGetEventDetail);
+    on<SaveImage>(_onSaveImage);
     on<SearchEvent>(_onSearch);
     on<UpdateEvent>(_onUpdateEvent);
   }
@@ -97,6 +104,18 @@ class EventBloc extends Bloc<EventEvent, EventState> {
       (onFailure) => emit(EventDetailFailure(onFailure.parseMessage())),
       (onSuccess) => emit(EventDetailSuccess(onSuccess)),
     );
+  }
+
+  FutureOr<void> _onSaveImage(SaveImage event, Emitter<EventState> emit) async {
+    emit(const SavingImage());
+
+    final res = await saveImageUseCase.execute(SaveImageInput(event.event));
+
+    if (res.errorMsg == null) {
+      emit(SavingImageSuccess());
+    } else {
+      emit(SavingImageFailure(res.errorMsg!));
+    }
   }
 
   FutureOr<void> _onUpdateEvent(UpdateEvent event, Emitter<EventState> emit) async {

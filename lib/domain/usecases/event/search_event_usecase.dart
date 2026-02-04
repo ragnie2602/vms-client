@@ -31,7 +31,7 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
           final event = events[i];
           final camera = input.cameras.firstWhereOrNull((c) => c.camId == event.cameraId);
 
-          events[i].cameraName = camera?.name;
+          events[i].camera = camera;
         }
 
         return SearchEventOutput(onSuccess, onSuccess.totalElements);

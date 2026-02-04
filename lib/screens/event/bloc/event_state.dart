@@ -64,6 +64,19 @@ class EventDetailFailure extends EventState {
   List<Object?> get props => [message];
 }
 
+class SavingImage extends EventState {
+  const SavingImage();
+}
+
+class SavingImageSuccess extends EventState {
+  const SavingImageSuccess();
+}
+
+class SavingImageFailure extends EventState {
+  final String message;
+  const SavingImageFailure(this.message);
+}
+
 class SearchEventSuccess extends EventState {
   final List<EventEntity> events;
   final int totalCount;
