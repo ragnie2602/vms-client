@@ -4,6 +4,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 class EventEntity {
   int id;
+  String? eventType;
   String? eventName;
   String? cameraId;
   int timeEvent;
@@ -14,6 +15,7 @@ class EventEntity {
 
   EventEntity({
     required this.id,
+    this.eventType,
     this.eventName,
     this.cameraId,
     required this.timeEvent,
@@ -25,6 +27,7 @@ class EventEntity {
   factory EventEntity.fromJson(Map<String, dynamic> json) {
     return EventEntity(
       id: json['id'],
+      eventType: json['eventType'],
       eventName: json['eventName'],
       cameraId: json['cameraId'],
       timeEvent: json['timeEvent'],

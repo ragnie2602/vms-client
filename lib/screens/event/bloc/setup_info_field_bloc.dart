@@ -127,10 +127,18 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
         .cast<String>()
         .toList();
 
-    final result = await _detectRepository.updateEventDisplayConfig(
-      listField: listField,
-      eventTypeId: state.selectedType!.type!,
-    );
+    Either<Failure, EventDisplayConfigEntity> result;
+    if (event.typeConfig == EventTypeConfig.LIVEVIEW) {
+      result = await _detectRepository.updateEventDisplayConfig(
+        listField: listField,
+        eventTypeId: state.selectedType!.type!,
+      );
+    } else {
+      result = await _eventRepository.updateEventDisplayConfig(
+        listField: listField,
+        eventTypeId: state.selectedType!.type!,
+      );
+    }
 
     result.fold(
       (failure) => emit(

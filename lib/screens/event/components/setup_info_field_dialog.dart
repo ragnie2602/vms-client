@@ -228,7 +228,9 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                 onPressed: isLoading
                     ? () {}
                     : () {
-                        context.read<SetupInfoFieldBloc>().add(SetupInfoFieldSave());
+                        context.read<SetupInfoFieldBloc>().add(
+                          SetupInfoFieldSave(widget.typeConfig),
+                        );
                       },
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                 textStyle: AppTypography.style(
