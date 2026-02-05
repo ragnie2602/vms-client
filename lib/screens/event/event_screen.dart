@@ -6,11 +6,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:toastification/toastification.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/event_constants.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/event/components/event_filter_dropdown.dart';
 import 'package:vms_flutter_client/screens/event/components/event_date_range_picker.dart';
@@ -21,6 +24,9 @@ import 'package:vms_flutter_client/screens/event/components/setup_info_field_dia
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 class EventScreen extends StatefulWidget {
@@ -31,6 +37,7 @@ class EventScreen extends StatefulWidget {
 }
 
 class _EventScreenState extends State<EventScreen> {
+  late final DetectBloc detectBloc;
   late final EventBloc eventBloc;
   late final MonitorBloc monitorBloc;
 
@@ -51,6 +58,7 @@ class _EventScreenState extends State<EventScreen> {
   void initState() {
     super.initState();
 
+    detectBloc = context.read<DetectBloc>();
     eventBloc = context.read<EventBloc>()..add(GetAllEventType());
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
@@ -287,29 +295,31 @@ class _EventScreenState extends State<EventScreen> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          EventCustomButton(
-                            backgroundColor: AppColors.greyF2F4F6,
-                            borderColor: AppColors.greyE5E7EB,
-                            borderRadius: 3,
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 2,
-                                color: AppColors.black.withAlpha(13),
-                                offset: const Offset(0, 1),
+                          BlocListener<DetectBloc, DetectState>(
+                            listener: (context, state) {
+                              if (state is DetectSuccess) _config(state.typeEvents);
+                            },
+                            child: EventCustomButton(
+                              backgroundColor: AppColors.greyF2F4F6,
+                              borderColor: AppColors.greyE5E7EB,
+                              borderRadius: 3,
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 2,
+                                  color: AppColors.black.withAlpha(13),
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                              label: 'Cấu hình',
+                              onPressed: () => detectBloc.add(DetectInitial()),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                              prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
+                              prefixGap: 8,
+                              textStyle: AppTypography.style(
+                                14,
+                                color: AppColors.blue374151,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ],
-                            label: 'Cấu hình',
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (context) => SetupInfoFieldDialog(),
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                            prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
-                            prefixGap: 8,
-                            textStyle: AppTypography.style(
-                              14,
-                              color: AppColors.blue374151,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -411,6 +421,17 @@ class _EventScreenState extends State<EventScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  _config(List<TypeEventDetectEntity> typeEvents) {
+    showDialog(
+      context: context,
+      builder: (_) => BlocProvider.value(
+        value: context.read<SetupInfoFieldBloc>()
+          ..add(SetupInfoFieldInit(EventTypeConfig.EVENT_MANAGEMENT, typeEvents)),
+        child: SetupInfoFieldDialog(typeConfig: EventTypeConfig.EVENT_MANAGEMENT),
       ),
     );
   }

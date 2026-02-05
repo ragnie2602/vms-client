@@ -38,7 +38,7 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
                   style: AppTypography.style(14, fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
-                const AlertFilterBtn(),
+                // const AlertFilterBtn(),
               ],
             ),
           ),
