@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/alert_filter_btn.dart';
@@ -70,20 +71,24 @@ class _MonitorAlertsState extends State<MonitorAlerts>
             child: const Divider(color: AppColors.greyDFDFDF),
           ),
           Expanded(
-            child: BlocBuilder<DetectBloc, DetectState>(
-              builder: (context, state) {
-                if (state is DetectSuccess) {
-                  return ListView.builder(
-                    itemBuilder: (context, index) {
-                      final event = state.receiveEvents[index];
-                      return EventItem(event: event);
-                    },
-                    itemCount: state.receiveEvents.length,
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
+            child:
+                BlocSelector<DetectBloc, DetectState, List<ReceiveEventEntity>>(
+                  selector: (state) => state.receiveEvents,
+                  builder: (context, receiveEvents) {
+                    if (receiveEvents.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final event = receiveEvents[index];
+                        return EventItem(event: event);
+                      },
+                      itemCount: receiveEvents.length,
+                    );
+                  },
+                ),
           ),
         ],
       ),

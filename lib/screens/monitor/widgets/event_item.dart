@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
-import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 class EventItem extends StatefulWidget {
   const EventItem({super.key, required this.event});
@@ -20,6 +18,9 @@ class _EventItemState extends State<EventItem> {
 
   @override
   Widget build(BuildContext context) {
+    final eventData = widget.event.eventDataEntity;
+    final configData = eventData.configData ?? [];
+
     return Container(
       color: hasRead ? AppColors.white : Color(0xFFF2F3F5),
       child: Material(
@@ -31,84 +32,98 @@ class _EventItemState extends State<EventItem> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 63,
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: Image.network(
-                        widget.event.eventDataEntity.imageUrl ??
-                            'https://static.wikia.nocookie.net/p__/images/7/71/Sherma.png/revision/latest?cb=20250924113412&path-prefix=protagonist',
-                        fit: BoxFit.cover,
-                      ),
+                // Ảnh bên trái
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.greyDFDFDF,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      eventData.imageUrl ?? '',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: AppColors.greyDFDFDF,
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: AppColors.grey4B5563,
+                            size: 40,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                : null,
+                            strokeWidth: 2,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
-                const SizedBox(width: 11),
+                const SizedBox(width: 12),
+                // Thông tin bên phải
                 Expanded(
-                  flex: 198,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.event.eventType ?? 'Unknown Event',
-                        style: AppTypography.style(
-                          12,
-                          fontWeight: FontWeight.w600,
+                      // Phần tử đầu tiên của configData - chỉ hiển thị data (tiêu đề)
+                      if (configData.isNotEmpty)
+                        Text(
+                          configData[0].data ?? '',
+                          style: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      CustomTable(
-                        columnSpacing: 10,
-                        data: CustomTableData(
-                          columnFlexes: [0, 1],
-                          data: [
-                            [
-                              Tooltip(
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(3),
+                      const SizedBox(height: 8),
+                      // Các phần tử tiếp theo - hiển thị icon + data
+                      ...configData.skip(1).map((config) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            children: [
+                              if (config.icon != null &&
+                                  config.icon!.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: SvgPicture.asset(
+                                    config.icon!,
+                                    width: 18,
+                                    height: 18,
+                                    colorFilter: ColorFilter.mode(
+                                      AppColors.grey4B5563,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
                                 ),
-                                message: 'Thời gian',
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 5,
-                                ),
-                                preferBelow: false,
-                                textStyle: AppTypography.style(
-                                  11,
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                verticalOffset: 8,
-                                child: SvgPicture.asset(
-                                  AppAssets.icTimeCircle,
-                                  height: 18,
+                              Expanded(
+                                child: Text(
+                                  config.data ?? '',
+                                  style: AppTypography.style(
+                                    13,
+                                    color: AppColors.grey4B5563,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
-                            [
-                              SvgPicture.asset(AppAssets.icVideoOn, height: 18),
-                              Text(
-                                widget.event.cameraId ?? 'Unknown Camera',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.style(
-                                  12,
-                                  color: AppColors.grey4B5563,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        rowSpacing: 2,
-                        verticalAlignments: [
-                          CrossAxisAlignment.center,
-                          CrossAxisAlignment.center,
-                        ],
-                      ),
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),

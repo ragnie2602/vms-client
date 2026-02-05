@@ -139,13 +139,13 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
                     context.findRenderObject() as RenderBox;
                 final RenderBox overlayBox =
                     overlay.context.findRenderObject() as RenderBox;
-  
+
                 final Offset btnGlobalPos = button.localToGlobal(
                   Offset.zero,
                   ancestor: overlayBox,
                 );
                 final Size buttonSize = button.size;
-  
+
                 late OverlayEntry entry;
                 entry = OverlayEntry(
                   builder: (context) => Stack(
@@ -166,15 +166,14 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
                             // check list type event detect
                             final detectBloc = context.read<DetectBloc>();
                             final detectState = detectBloc.state;
-                            if (detectState is! DetectSuccess) {
+                            if (detectState.status != DetectStatus.success) {
                               return;
                             }
                             showDialog(
                               context: context,
-                              builder: (dialogContext) =>
-                                  SetupInfoFieldDialog(
-                                    typeEvents: detectState.typeEvents,
-                                  ),
+                              builder: (dialogContext) => SetupInfoFieldDialog(
+                                typeEvents: detectState.typeEvents,
+                              ),
                             );
                             entry.remove();
                           },
@@ -183,7 +182,7 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
                     ],
                   ),
                 );
-  
+
                 overlay.insert(entry);
               },
             );

@@ -27,7 +27,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
   Widget build(BuildContext context) {
     return BlocBuilder<DetectBloc, DetectState>(
       builder: (context, state) {
-        if (state is DetectLoading) {
+        if (state.status == DetectStatus.loading) {
           return Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(33),
@@ -59,7 +59,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
           );
         }
 
-        if (state is DetectFailure) {
+        if (state.status == DetectStatus.failure) {
           return Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(33),
@@ -77,7 +77,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
           );
         }
 
-        if (state is! DetectSuccess) {
+        if (state.status != DetectStatus.success) {
           return SizedBox.shrink();
         }
 
