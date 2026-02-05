@@ -16,6 +16,14 @@ class SendMultiWindowEventUseCase
     }
 
     switch (input.methodName) {
+      case 'change_osd_position':
+        final List<int> targetIds = [];
+        targetIds.addAll(await DesktopMultiWindow.getAllSubWindowIds());
+
+        for (var targetId in targetIds) {
+          DesktopMultiWindow.invokeMethod(targetId, input.methodName, input.data);
+        }
+        break;
       case 'change_setting_window':
         final data = {
           'bWindowID': input.data?['bWindowID'],

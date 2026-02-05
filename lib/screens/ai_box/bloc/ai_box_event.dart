@@ -5,7 +5,9 @@ class AiBoxEvent extends BaseEvent {
   const AiBoxEvent();
 }
 
-class GetListAiBoxEvent extends AiBoxEvent {}
+class GetListAiBoxEvent extends AiBoxEvent {
+  const GetListAiBoxEvent();
+}
 
 class AddAiBoxEvent extends AiBoxEvent {
   final AiBoxEntity aiBox;
@@ -22,15 +24,6 @@ class DeleteAiBoxEvent extends AiBoxEvent {
 
   @override
   List<Object> get props => [aiBox];
-}
-
-class GetDetailAiBoxEvent extends AiBoxEvent {
-  final int aiBoxId;
-
-  const GetDetailAiBoxEvent({required this.aiBoxId});
-
-  @override
-  List<Object> get props => [aiBoxId];
 }
 
 class EditAiBoxEvent extends AiBoxEvent {

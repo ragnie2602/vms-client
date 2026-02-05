@@ -6,6 +6,7 @@ class AiBoxState extends BaseState {
 }
 
 class AiBoxLoadingState extends AiBoxState {
+  const AiBoxLoadingState();
   @override
   StateType get type => StateType.loading;
 }
@@ -74,7 +75,7 @@ class AiBoxDeleteSuccessState extends AiBoxState {
   @override
   StateType get type => StateType.success;
   @override
-  List<Object?> get props => [aiBoxId];
+  List<Object?> get props => [aiBoxId, aiBoxName];
 }
 
 class AiBoxDeleteFailState extends AiBoxState {
@@ -107,12 +108,3 @@ class AiBoxEditFailState extends AiBoxState {
   List<Object?> get props => [errorMessage];
 }
 
-class AiBoxDetailLoadedState extends AiBoxState {
-  final AiBoxEntity aiBoxDetail;
-  const AiBoxDetailLoadedState({required this.aiBoxDetail});
-
-  @override
-  StateType get type => StateType.success;
-  @override
-  List<Object?> get props => [aiBoxDetail];
-}

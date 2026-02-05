@@ -17,6 +17,7 @@ class AddUserEvent extends UserManagementEvent {
   final String password;
   final bool changePassDenied;
   final bool addCamDenied;
+  final int dataType; // 0=Tất cả dữ liệu, 1=Chỉ dữ liệu của tài khoản, 2=Dữ liệu được chia sẻ
   const AddUserEvent({
     required this.account,
     this.email,
@@ -28,6 +29,7 @@ class AddUserEvent extends UserManagementEvent {
     required this.changePassDenied,
     required this.addCamDenied,
     this.fullName,
+    required this.dataType,
   });
 }
 

@@ -8,13 +8,17 @@ abstract class SetupInfoFieldEvent extends Equatable {
 }
 
 class SetupInfoFieldInit extends SetupInfoFieldEvent {
+  final int typeConfig;
   final List<TypeEventDetectEntity>? typeEvents;
-  const SetupInfoFieldInit(this.typeEvents);
+
+  const SetupInfoFieldInit(this.typeConfig, this.typeEvents);
 }
 
 class SetupInfoFieldSelectType extends SetupInfoFieldEvent {
+  final int typeConfig;
   final TypeEventDetectEntity type;
-  const SetupInfoFieldSelectType(this.type);
+
+  const SetupInfoFieldSelectType(this.typeConfig, this.type);
 }
 
 class SetupInfoFieldAddField extends SetupInfoFieldEvent {

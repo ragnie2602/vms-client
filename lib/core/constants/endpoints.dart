@@ -6,12 +6,19 @@ class EndPoints {
   static const String logout = '/logout';
   static const String updateProfile = '/profile';
 
-  // User management
-  static const String baseUser = '/api/users';
-  static const String resetPassword = '/password';
+  // Event
+  static const String baseEvent = '/api/ai-events';
+  static const String configEventDisplay = '$baseEvent/config';
+  static const String eventType = '$baseEvent/types';
+  static const String exportEvent = '$baseEvent/export';
+  static const String searchEvent = '$baseEvent/search';
 
   // Map
   static const String baseMap = '/api/map';
+
+  // User management
+  static const String baseUser = '/api/users';
+  static const String resetPassword = '/password';
 
   // AI Box
   static const String baseUrlAiBox = '/api/aiboxes';

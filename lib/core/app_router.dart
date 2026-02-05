@@ -10,6 +10,10 @@ import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_cam
 import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
@@ -19,6 +23,7 @@ import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.da
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/event_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
@@ -91,15 +96,9 @@ enum Routes {
     name: 'emap',
     path: '/emap',
     title: 'Bản đồ camera',
-    description:
-        'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
+    description: 'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
   ),
-  aiBox(
-    name: 'aiBox',
-    path: '/aiBox',
-    title: 'Quản lý AI Box',
-    description: '',
-  ),
+  aiBox(name: 'aiBox', path: '/aiBox', title: 'Quản lý AI Box', description: ''),
   users(name: 'users', path: '/users', title: 'Quản lý tài khoản', description: ''),
   events(
     name: 'events',
@@ -221,11 +220,16 @@ class AppRouter {
               ),
             ),
             BlocProvider(
-              create: (context) => DetectBloc(context.read())),
-              
-            BlocProvider(
-              create: (context) => SetupInfoFieldBloc(detectRepository:context.read())),
-
+              create: (context) => EventBloc(
+                context.read(),
+                context.read<SearchEventUseCase>(),
+                context.read<ExportEventUseCase>(),
+                context.read<SaveImageUseCase>(),
+                context.read<SaveVideoUseCase>(),
+              ),
+            ),
+            BlocProvider(create: (context) => DetectBloc(context.read())),
+            BlocProvider(create: (context) => SetupInfoFieldBloc(context.read(), context.read())),
             BlocProvider(
               create: (context) => AiBoxBloc(
                 aiBoxRepository: context.read(),
@@ -378,22 +382,14 @@ class AppRouter {
             path: Routes.multi_playback.path,
             name: Routes.multi_playback.name,
             pageBuilder: (context, state) {
-              return fadeTransition(
-                context: context,
-                state: state,
-                child: MultiPlaybackScreen(),
-              );
+              return fadeTransition(context: context, state: state, child: MultiPlaybackScreen());
             },
           ),
           GoRoute(
             path: Routes.aiBox.path,
             name: Routes.aiBox.name,
             pageBuilder: (context, state) {
-              return fadeTransition(
-                context: context,
-                state: state,
-                child: AiBoxScreen(),
-              );
+              return fadeTransition(context: context, state: state, child: AiBoxScreen());
             },
           ),
 

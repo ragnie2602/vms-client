@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/event_constants.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/setup_info_field_dialog.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
@@ -43,10 +45,7 @@ class ActionItem extends StatelessWidget {
           children: [
             SvgPicture.asset(icon, width: 20, height: 20),
             SizedBox(width: 8),
-            Text(
-              title,
-              style: AppTypography.style(13, fontWeight: FontWeight.w400),
-            ),
+            Text(title, style: AppTypography.style(13, fontWeight: FontWeight.w400)),
 
             if (suffix != null) ...[SizedBox(width: 8), suffix!],
           ],
@@ -129,21 +128,14 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
               icon: SvgPicture.asset(AppAssets.icDots, width: 22, height: 22),
               style: IconButton.styleFrom(
                 padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
               ),
               onPressed: () {
                 final overlay = Overlay.of(context);
-                final RenderBox button =
-                    context.findRenderObject() as RenderBox;
-                final RenderBox overlayBox =
-                    overlay.context.findRenderObject() as RenderBox;
+                final RenderBox button = context.findRenderObject() as RenderBox;
+                final RenderBox overlayBox = overlay.context.findRenderObject() as RenderBox;
 
-                final Offset btnGlobalPos = button.localToGlobal(
-                  Offset.zero,
-                  ancestor: overlayBox,
-                );
+                final Offset btnGlobalPos = button.localToGlobal(Offset.zero, ancestor: overlayBox);
                 final Size buttonSize = button.size;
 
                 late OverlayEntry entry;
@@ -171,8 +163,12 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
                             }
                             showDialog(
                               context: context,
-                              builder: (dialogContext) => SetupInfoFieldDialog(
-                                typeEvents: detectState.typeEvents,
+                              builder: (dialogContext) => BlocProvider.value(
+                                value: context.read<SetupInfoFieldBloc>(),
+                                child: SetupInfoFieldDialog(
+                                  typeConfig: EventTypeConfig.LIVEVIEW,
+                                  typeEvents: detectState.typeEvents,
+                                ),
                               ),
                             );
                             entry.remove();
@@ -235,10 +231,7 @@ class _AlertMenuBubble extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(8),
-            child: Text(
-              label,
-              style: AppTypography.style(13, fontWeight: FontWeight.w500),
-            ),
+            child: Text(label, style: AppTypography.style(13, fontWeight: FontWeight.w500)),
           ),
         ),
       ],
@@ -267,6 +260,5 @@ class _UpTrianglePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_UpTrianglePainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(_UpTrianglePainter oldDelegate) => oldDelegate.color != color;
 }

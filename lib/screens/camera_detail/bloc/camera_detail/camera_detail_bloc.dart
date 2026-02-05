@@ -5,6 +5,7 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gal/gal.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
@@ -103,6 +104,10 @@ class CameraDetailBloc extends Bloc<CameraDetailEvent, CameraDetailState> {
 
     state.playerController.changeVolume?.call(event.volume);
     emit(state.copyWith(volume: event.volume));
+    final volume = event.volume.clamp(0, AppConfig.PLAYER_MAX_VOLUME_PERCENT).toDouble();
+    state.playerController.changeVolume?.call(volume);
+
+    emit(state.copyWith(volume: volume));
   }
 
   FutureOr<void> _onToggleMute(ToggleMute event, Emitter<CameraDetailState> emit) async {

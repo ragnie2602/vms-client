@@ -137,6 +137,5 @@ class _EventItemState extends State<EventItem> {
 
   void showDetailDialog(BuildContext context) {
     setState(() => hasRead = true);
-    showDialog(context: context, builder: (context) => EventDetailDialog());
   }
 }
