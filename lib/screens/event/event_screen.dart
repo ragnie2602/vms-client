@@ -3,20 +3,23 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:toastification/toastification.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
-import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
-import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/event/components/event_filter_dropdown.dart';
 import 'package:vms_flutter_client/screens/event/components/event_date_range_picker.dart';
 import 'package:vms_flutter_client/screens/event/components/event_item.dart';
+import 'package:vms_flutter_client/screens/event/components/event_multi_filter_dropdown.dart';
 import 'package:vms_flutter_client/screens/event/components/pagination_bar.dart';
 import 'package:vms_flutter_client/screens/event/components/setup_info_field_dialog.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
@@ -28,19 +31,30 @@ class EventScreen extends StatefulWidget {
 }
 
 class _EventScreenState extends State<EventScreen> {
-  late final ControlCameraBloc controlCameraBloc;
+  late final EventBloc eventBloc;
   late final MonitorBloc monitorBloc;
 
   GlobalKey<EventDateRangePickerState> dateRangeKey = GlobalKey<EventDateRangePickerState>();
   int? presetHour = 720;
 
+  List<String>? cameraIds;
+  List<String>? eventType;
+  DateTime startTime = DateTime.now().subtract(Duration(days: 30));
+  DateTime endTime = DateTime.now();
+
+  String cameraGroupName = 'Tất cả';
+  List<CameraEntity> cameras = [];
+
+  bool _isInitializing = true;
+
   @override
   void initState() {
     super.initState();
 
-    controlCameraBloc = context.read<ControlCameraBloc>()..add(GetAllTagsEvent());
+    eventBloc = context.read<EventBloc>()..add(GetAllEventType());
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
+    context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
   }
 
   @override
@@ -59,46 +73,40 @@ class _EventScreenState extends State<EventScreen> {
                   child: EventDateRangePicker(
                     key: dateRangeKey,
                     hintText: 'Từ ngày - đến ngày',
-                    initialDateRange: presetHour == null
-                        ? null
-                        : DateTimeRange(
-                            start: DateTime.now().subtract(Duration(hours: presetHour!)),
-                            end: DateTime.now(),
-                          ),
+                    initialDateRange: DateTimeRange(start: startTime, end: endTime),
                     isDense: true,
                     label: 'Thời gian',
-                    onChanged: (dateRange) {
-                      setState(
-                        () => presetHour = dateRange?.end.difference(dateRange.start).inHours ?? 0,
-                      );
-                    },
+                    onChanged: (dateRange) => setState(() {
+                      if (dateRange != null) {
+                        startTime = dateRange.start;
+                        endTime = dateRange.end;
+
+                        presetHour = null;
+                      }
+                    }),
                     padding: EdgeInsets.only(bottom: 12, left: 16, right: 12, top: 12),
                   ),
                 ),
                 SizedBox(width: 16),
                 Expanded(
-                  child: EventFilterDropdown<String?>(
-                    isDense: true,
-                    itemBuilder: (item) => Text(
-                      item ?? 'Tất cả',
-                      style: AppTypography.style(
-                        14,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.black,
+                  child: BlocBuilder<EventBloc, EventState>(
+                    buildWhen: (previous, current) => current is GetAllEventTypeSuccess,
+                    builder: (context, state) => EventMultiFilterDropdown<EventType>(
+                      allMode: true,
+                      isDense: true,
+                      itemBuilder: (item) => Text(
+                        item.name,
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.black,
+                        ),
                       ),
+                      items: state is GetAllEventTypeSuccess ? state.eventTypes : [],
+                      label: 'Sự kiện',
+                      onChanged: (et) => eventType = et?.map((e) => e.eventKey).toList(),
+                      padding: EdgeInsets.all(12),
                     ),
-                    items: [
-                      null,
-                      'Phát hiện chuyển động',
-                      'Phát hiện xâm nhập',
-                      'Phân biệt đối tượng',
-                      'Vượt hàng rào ảo',
-                      'Phát hiện vật bị bỏ quên',
-                      'Phát hiện vật nguy hiểm',
-                    ],
-                    label: 'Sự kiện',
-                    onChanged: (_) {},
-                    padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
                   ),
                 ),
                 SizedBox(width: 16),
@@ -118,40 +126,57 @@ class _EventScreenState extends State<EventScreen> {
                         ),
                       ),
                       items: state is GetAllGroupCameraSuccessState
-                          ? [null, ...recursionDeviceGroup(state.groups ?? [])]
+                          ? [null, ..._recursionDeviceGroup(state.groups ?? [])]
                           : [],
                       label: 'Nhóm camera',
                       onChanged: (value) {
                         if (value == null) {
+                          cameraGroupName = 'Tất cả';
                           monitorBloc.add(GetAllCamera());
                         } else {
-                          monitorBloc.add(GetAllCameraInGroup(value?.groupId ?? []));
+                          cameraGroupName = value.name;
+                          monitorBloc.add(GetAllCameraInGroup(value.groupId));
                         }
                       },
                       padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.grey64748B,
+                      ),
                     ),
                   ),
                 ),
                 SizedBox(width: 16),
                 Expanded(
-                  child: BlocBuilder<MonitorBloc, MonitorState>(
+                  child: BlocConsumer<MonitorBloc, MonitorState>(
                     bloc: monitorBloc,
                     builder: (context, state) {
-                      return EventFilterDropdown<CameraEntity?>(
+                      if (state is MonitorSuccess) cameras = state.cameras;
+
+                      return EventMultiFilterDropdown<CameraEntity>(
+                        allMode: true,
                         isDense: true,
                         itemBuilder: (item) => Text(
-                          item?.name ?? 'Tất cả',
+                          item.name,
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w400,
                             color: AppColors.black,
                           ),
                         ),
-                        items: state is MonitorSuccess ? [null, ...state.cameras] : [],
+                        items: state is MonitorSuccess ? state.cameras : [],
                         label: 'Tên camera',
-                        onChanged: (_) {},
-                        padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
+                        onChanged: (cams) => cameraIds = cams?.map((e) => e.camId).toList(),
+                        padding: EdgeInsets.all(12),
                       );
+                    },
+                    listener: (context, state) {
+                      if (state is MonitorSuccess && _isInitializing) {
+                        _isInitializing = false;
+                        cameras = state.cameras;
+                        _onFilter();
+                      }
                     },
                   ),
                 ),
@@ -161,7 +186,7 @@ class _EventScreenState extends State<EventScreen> {
                   borderColor: AppColors.blue005AA9,
                   borderRadius: 3,
                   label: 'Tìm kiếm',
-                  onPressed: () {},
+                  onPressed: () => _onFilter(page: 1),
                   padding: EdgeInsets.symmetric(horizontal: 23, vertical: 12),
                   prefix: SvgPicture.asset(
                     AppAssets.icSearch,
@@ -189,13 +214,14 @@ class _EventScreenState extends State<EventScreen> {
                   StatefulBuilder(
                     builder: (context, setState) {
                       void changePresetHour(int hour) {
-                        setState(() => presetHour = hour);
                         dateRangeKey.currentState?.changeDateRange(
                           DateTimeRange(
                             start: DateTime.now().subtract(Duration(hours: hour)),
                             end: DateTime.now(),
                           ),
                         );
+                        setState(() => presetHour = hour);
+                        _onFilter(page: 1);
                       }
 
                       return Row(
@@ -219,7 +245,7 @@ class _EventScreenState extends State<EventScreen> {
                               ),
                             ],
                             label: 'Làm mới',
-                            onPressed: () {},
+                            onPressed: () => _onFilter(page: 1),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                             prefix: SvgPicture.asset(AppAssets.icRefresh, height: 20),
                             prefixGap: 8,
@@ -241,7 +267,16 @@ class _EventScreenState extends State<EventScreen> {
                               ),
                             ],
                             label: 'Tải về danh sách',
-                            onPressed: () {},
+                            onPressed: () => eventBloc.add(
+                              ExportEventList(
+                                cameraIds: cameraIds,
+                                cameraGroupName: cameraGroupName,
+                                cameras: cameras,
+                                endTime: endTime,
+                                eventType: eventType,
+                                startTime: startTime,
+                              ),
+                            ),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                             prefix: SvgPicture.asset(AppAssets.icDownload2, height: 20),
                             prefixGap: 8,
@@ -285,40 +320,110 @@ class _EventScreenState extends State<EventScreen> {
                   const Divider(color: AppColors.greyE2E8F0),
                   const SizedBox(height: 20),
                   Expanded(
-                    child: ListView.separated(
-                      separatorBuilder: (context, index) => const SizedBox(height: 10),
-                      itemCount: (20 / 4).ceil(),
-                      itemBuilder: (context, rowIndex) {
-                        final int startIndex = rowIndex * 4;
-                        final int endIndex = min(startIndex + 4, 50);
-                        final int emptySlots = 4 - (endIndex - startIndex);
-
-                        return IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              for (int i = startIndex; i < endIndex; i++) ...[
-                                Expanded(child: EventItem()),
-                                if (i < endIndex - 1) const SizedBox(width: 10),
-                              ],
-                              for (int i = 0; i < emptySlots; i++) ...[
-                                if (i > 0 || (endIndex - startIndex) > 0) const SizedBox(width: 10),
-                                const Expanded(child: SizedBox()),
-                              ],
-                            ],
-                          ),
-                        );
+                    child: BlocListener<EventBloc, EventState>(
+                      listener: (context, state) {
+                        if (state is ExportEventLoading) {
+                          Toastification().show(
+                            context: context,
+                            title: Text('Đang xuất file...'),
+                            autoCloseDuration: const Duration(seconds: 3),
+                            type: ToastificationType.info,
+                          );
+                        } else if (state is ExportEventSuccess) {
+                          Toastification().show(
+                            context: context,
+                            title: Text('Xuất file thành công: ${state.filePath}'),
+                            autoCloseDuration: const Duration(seconds: 3),
+                            type: ToastificationType.success,
+                          );
+                        } else if (state is ExportEventFailure) {
+                          Toastification().show(
+                            context: context,
+                            title: Text(state.message),
+                            autoCloseDuration: const Duration(seconds: 3),
+                            type: ToastificationType.error,
+                          );
+                        }
                       },
+                      child: BlocBuilder<EventBloc, EventState>(
+                        buildWhen: (previous, current) =>
+                            current is SearchEventSuccess ||
+                            current is SearchEventFailure ||
+                            current is SearchingEvent,
+                        builder: (context, state) {
+                          if (state is SearchingEvent) {
+                            return Center(child: CircularProgressIndicator());
+                          } else if (state is SearchEventFailure) {
+                            return Center(child: Text(state.message));
+                          } else if (state is SearchEventSuccess) {
+                            if (state.events.isEmpty) {
+                              return Center(child: Text('Không có dữ liệu'));
+                            }
+                            return Column(
+                              children: [
+                                Expanded(
+                                  child: ListView.separated(
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(height: 10),
+                                    itemCount: (state.events.length / 4).ceil(),
+                                    itemBuilder: (context, rowIndex) {
+                                      final int startIndex = rowIndex * 4;
+                                      final int endIndex = min(startIndex + 4, state.events.length);
+                                      final int emptySlots = 4 - (endIndex - startIndex);
+
+                                      return IntrinsicHeight(
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                                          children: [
+                                            for (int i = startIndex; i < endIndex; i++) ...[
+                                              Expanded(child: EventItem(event: state.events[i])),
+                                              if (i < endIndex - 1) const SizedBox(width: 10),
+                                            ],
+                                            for (int i = 0; i < emptySlots; i++) ...[
+                                              if (i > 0 || (endIndex - startIndex) > 0)
+                                                const SizedBox(width: 10),
+                                              const Expanded(child: SizedBox()),
+                                            ],
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(height: 30),
+                                PaginationBar(
+                                  totalEvents: state.totalCount,
+                                  currentPage: state.page,
+                                  pageSize: state.pageSize,
+                                  onPageChanged: (page) => _onFilter(page: page),
+                                ),
+                                const SizedBox(height: 7),
+                              ],
+                            );
+                          }
+                          return SizedBox.shrink();
+                        },
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  PaginationBar(totalEvents: 100),
-                  const SizedBox(height: 7),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _onFilter({int page = 1}) {
+    eventBloc.add(
+      SearchEvent(
+        page: page,
+        startTime: startTime,
+        endTime: endTime,
+        eventType: eventType,
+        cameraIds: cameraIds,
+        cameras: cameras,
       ),
     );
   }
@@ -339,11 +444,11 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
-  recursionDeviceGroup(List<DeviceGroup> groups) {
+  _recursionDeviceGroup(List<DeviceGroup> groups) {
     List<DeviceGroup> result = [];
     for (var group in groups) {
       result.add(group);
-      result.addAll(recursionDeviceGroup(group.groups));
+      result.addAll(_recursionDeviceGroup(group.groups));
     }
     return result;
   }

@@ -1,18 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
+import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
+import 'package:intl/intl.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
+
 class EventItem extends StatelessWidget {
-  const EventItem({super.key});
+  final EventEntity event;
+
+  const EventItem({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => showDialog(context: context, builder: (context) => EventDetailDialog()),
+      onTap: () => showDialog(
+        context: context,
+        builder: (c) => MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: context.read<EventBloc>()),
+            BlocProvider.value(value: context.read<HomeBloc>()),
+            BlocProvider(create: (context) => PlaybackBloc(context.read(), context.read())),
+            BlocProvider.value(value: context.read<StorageFolderBloc>()),
+          ],
+          child: EventDetailDialog(event: event),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -26,10 +47,11 @@ class EventItem extends StatelessWidget {
                     topRight: Radius.circular(8),
                   ),
                   child: Image.network(
-                    'https://assets.nintendo.com/image/upload/q_auto/f_auto/store/software/switch2/70010000105851/8787627be7f26ae7984456ffd9af17bea845032cebbf59fe6eeb596dea6bb20e',
+                    event.imageUrl ?? '',
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
                   ),
                 ),
                 Positioned(
@@ -47,7 +69,7 @@ class EventItem extends StatelessWidget {
                         SvgPicture.asset(AppAssets.icVideoOn),
                         const SizedBox(width: 4),
                         Text(
-                          'Camera 1',
+                          event.camera?.name ?? '',
                           style: AppTypography.style(9, fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -79,8 +101,10 @@ class EventItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Phát hiện xâm nhập',
+                    event.eventName ?? 'Phát hiện xâm nhập',
                     style: AppTypography.style(14, fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 10),
                   CustomTable(
@@ -91,14 +115,16 @@ class EventItem extends StatelessWidget {
                         [
                           SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
                           Text(
-                            '20:30 20/12/2025',
+                            DateFormat(
+                              'HH:mm dd/MM/yyyy',
+                            ).format(DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000)),
                             style: AppTypography.style(14, fontWeight: FontWeight.w500),
                           ),
                         ],
                         [
                           SvgPicture.asset(AppAssets.icVideoOn, height: 20),
                           Text(
-                            'Camera cổng 1',
+                            event.camera?.name ?? '',
                             style: AppTypography.style(14, fontWeight: FontWeight.w500),
                           ),
                         ],
