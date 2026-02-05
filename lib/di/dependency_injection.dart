@@ -1,12 +1,15 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/data/datasources/ai_box_service.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
+import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
@@ -19,6 +22,7 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custo
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
@@ -27,6 +31,7 @@ import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/osd/osd_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 
 class DependencyInjection {
@@ -52,6 +57,7 @@ class DependencyInjection {
       create: (context) => EmapService(context.read(), context.read(), context.read()),
     ),
     Provider<UserService>(create: (context) => UserService(context.read(), context.read())),
+    Provider<AiBoxService>(create: (context) => AiBoxService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
 
@@ -66,6 +72,7 @@ class DependencyInjection {
     ),
     Provider<IGroupRepository>(create: (context) => GroupRepository(context.read())),
     Provider<IEmapRepository>(create: (context) => EmapRepository(context.read())),
+    Provider<IAiBoxRepository>(create: (context) => AiBoxRepository(service: context.read())),
     Provider<IScheduleRepository>(create: (context) => ScheduleRepository(context.read())),
     Provider<IPlaybackRepository>(create: (context) => PlaybackRepository(context.read())),
     Provider<IUserManagementRepository>(
@@ -122,10 +129,12 @@ class DependencyInjection {
       ),
     ),
     Provider<SearchEmapUseCase>(create: (context) => SearchEmapUseCase()),
+    Provider<FilterAiBoxUseCase>(create: (context) => FilterAiBoxUseCase()),
 
     Provider<GetCameraUseCase>(create: (context) => GetCameraUseCase(context.read())),
 
     // Bloc
+    Provider<OsdBloc>(create: (context) => OsdBloc(context.read(), context.read())),
     Provider<AppBloc>(
       create: (context) => AppBloc(context.read(), context.read(), context.read(), context.read()),
     ),

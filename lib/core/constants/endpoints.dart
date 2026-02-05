@@ -15,4 +15,8 @@ class EndPoints {
 
   // Camera
   static const String cameraAiConfig = '/api/cameras/ai-configs';
+  
+  // AI Box
+  static const String baseUrlAiBox = '/api/aiboxes';
+  static String aiBoxDetail(int id) => '$baseUrlAiBox/$id';
 }
