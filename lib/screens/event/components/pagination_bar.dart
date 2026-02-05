@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
-class PaginationBar extends StatefulWidget {
+class PaginationBar extends StatelessWidget {
   final int totalEvents;
+  final int currentPage;
+  final int pageSize;
+  final Function(int) onPageChanged;
 
-  const PaginationBar({super.key, required this.totalEvents});
-
-  @override
-  State<PaginationBar> createState() => _PaginationBarState();
-}
-
-class _PaginationBarState extends State<PaginationBar> {
-  int currentPage = 1;
+  const PaginationBar({
+    super.key,
+    required this.totalEvents,
+    required this.currentPage,
+    this.pageSize = 20,
+    required this.onPageChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class _PaginationBarState extends State<PaginationBar> {
       child: Row(
         children: [
           Text(
-            'Hiển thị ${_currentItemCount()} trong số ${widget.totalEvents} sự kiện',
+            'Hiển thị ${_currentItemCount()} trong số $totalEvents sự kiện',
             style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
           ),
           const Spacer(),
@@ -47,7 +49,7 @@ class _PaginationBarState extends State<PaginationBar> {
 
   Widget _buildPageButton(int page) {
     return InkWell(
-      onTap: () => setState(() => currentPage = page),
+      onTap: () => onPageChanged(page),
       child: Container(
         width: 32,
         height: 32,
@@ -70,8 +72,11 @@ class _PaginationBarState extends State<PaginationBar> {
   }
 
   Widget _buildArrowButton(IconData icon, int change) {
+    final newPage = currentPage + change;
+    final bool isDisabled = newPage < 1 || newPage > totalPage;
+
     return InkWell(
-      onTap: () => setState(() => currentPage += change),
+      onTap: isDisabled ? null : () => onPageChanged(newPage),
       child: Container(
         width: 32,
         height: 32,
@@ -81,20 +86,25 @@ class _PaginationBarState extends State<PaginationBar> {
           border: Border.all(color: AppColors.greyE2E8F0),
           borderRadius: BorderRadius.circular(5),
         ),
-        child: Icon(icon, size: 24, color: AppColors.grey94A3B8),
+        child: Icon(
+          icon,
+          size: 24,
+          color: isDisabled ? AppColors.greyE2E8F0 : AppColors.grey94A3B8,
+        ),
       ),
     );
   }
 
   int _currentItemCount() {
-    if (currentPage * 20 < widget.totalEvents) {
-      return 20;
+    if (currentPage * pageSize < totalEvents) {
+      return pageSize;
     } else {
-      return widget.totalEvents - (currentPage - 1) * 20;
+      return totalEvents - (currentPage - 1) * pageSize;
     }
   }
 
   List<int> _getPageButtons() {
+    if (totalPage <= 0) return [];
     List<int> _res = List.generate(totalPage + 1, (i) => i);
     if (totalPage - currentPage > 2) _res.replaceRange(currentPage + 2, totalPage, [0]);
     if (currentPage > 3) _res.replaceRange(2, currentPage - 1, [0]);
@@ -102,5 +112,5 @@ class _PaginationBarState extends State<PaginationBar> {
     return _res..removeAt(0);
   }
 
-  int get totalPage => (widget.totalEvents / 20).ceil();
+  int get totalPage => (totalEvents / pageSize).ceil();
 }

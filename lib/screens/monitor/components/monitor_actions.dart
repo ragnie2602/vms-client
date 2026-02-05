@@ -128,11 +128,12 @@ class _MonitorActionsState extends State<MonitorActions> {
               builder: (context, value, child) => Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ActionItem.alert(
+                  AlertDetectLiveView(
                     controller: widget.rightController,
                     id: 0,
                     isSelected: false,
-                    onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
+                    onPanelIndexChanged: (index) =>
+                        _rightPanelIndex.value = index,
                   ),
                 ],
               ),
