@@ -141,7 +141,7 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
     _manufacturer.text = aiBox.manufacturer ?? '';
     _model.text = aiBox.model ?? '';
     _maxCameras.text = aiBox.maxCamera?.toString() ?? '';
-    _username.text = aiBox.userame ?? '';
+    _username.text = aiBox.username ?? '';
     _password.text = aiBox.password ?? '';
     _note.text = aiBox.note ?? '';
   }
@@ -430,7 +430,7 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
       manufacturer: _manufacturer.text.trim(),
       model: _model.text.trim(),
       note: _note.text.trim(),
-      userame: _username.text.trim(),
+      username: _username.text.trim(),
       password: _password.text.trim(),
       maxCamera: _maxCameras.text.isNotEmpty
           ? int.tryParse(_maxCameras.text.trim())

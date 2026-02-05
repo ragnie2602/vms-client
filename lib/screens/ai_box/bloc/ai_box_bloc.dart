@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_input.dart';
@@ -84,16 +85,19 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         }
       },
       (deletedId) {
-        final deletedAiBox = listAiBox.firstWhere(
+        final deletedAiBox = listAiBox.firstWhereOrNull(
           (item) => item.id == deletedId,
         );
-        listAiBox.removeWhere((item) => item.id == deletedId);
-        emit(
-          AiBoxDeleteSuccessState(
-            aiBoxId: deletedId,
-            aiBoxName: deletedAiBox.name ?? '',
-          ),
-        );
+
+        if (deletedAiBox != null) {
+          listAiBox.removeWhere((item) => item.id == deletedId);
+          emit(
+            AiBoxDeleteSuccessState(
+              aiBoxId: deletedId,
+              aiBoxName: deletedAiBox.name ?? '',
+            ),
+          );
+        }
         emit(AIBoxLoadedState(aiBoxes: listAiBox));
       },
     );

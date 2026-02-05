@@ -30,10 +30,16 @@ class _StorageFolderViewState extends State<StorageFolderView> {
   }
 
   Future<void> _onSelectFolder(TextEditingController controller, {String? title}) async {
-    final path = await FileUtil.selectFolderLocation(
-      title: title,
-      initialPath: controller.text.isEmpty ? null : controller.text,
-    );
+    String? path;
+    try {
+      path = await FileUtil.selectFolderLocation(
+        title: title,
+        initialPath: controller.text.isEmpty ? null : controller.text,
+      );
+    } catch (e) {
+      path = await FileUtil.selectFolderLocation(title: title, initialPath: null);
+    }
+
     if (path != null) controller.text = path;
   }
 

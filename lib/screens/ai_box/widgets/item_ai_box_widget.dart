@@ -6,8 +6,8 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_widget.dart';
 
-class ItemAiBoxWidget extends StatefulWidget {
-  const ItemAiBoxWidget({
+class AiBoxItemWidget extends StatefulWidget {
+  const AiBoxItemWidget({
     super.key,
     required this.itemAiBox,
     required this.index,
@@ -21,10 +21,10 @@ class ItemAiBoxWidget extends StatefulWidget {
   final VoidCallback? onDelete;
 
   @override
-  State<ItemAiBoxWidget> createState() => _ItemAiBoxWidgetState();
+  State<AiBoxItemWidget> createState() => _AiBoxItemWidgetState();
 }
 
-class _ItemAiBoxWidgetState extends State<ItemAiBoxWidget> {
+class _AiBoxItemWidgetState extends State<AiBoxItemWidget> {
   bool _isHovered = false;
 
   String _getIpPortText() {
