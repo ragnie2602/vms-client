@@ -44,7 +44,7 @@ class DependencyInjection {
         socketApiClient: context.read<SocketApiClient>(),
       ),
     ),
-    Provider<CameraService>(create: (context) => CameraService(context.read())),
+    Provider<CameraService>(create: (context) => CameraService(context.read(), context.read())),
     Provider<ControlCameraService>(create: (context) => ControlCameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
     Provider<ScheduleRecordService>(create: (context) => ScheduleRecordService(context.read())),

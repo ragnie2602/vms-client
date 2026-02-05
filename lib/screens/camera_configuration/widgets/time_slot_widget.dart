@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/widgets/config_schedule_record_widget.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/widgets/config_schedule_record_widget.dart';
 
 class TimeSlotWidget extends StatelessWidget {
   const TimeSlotWidget({super.key});

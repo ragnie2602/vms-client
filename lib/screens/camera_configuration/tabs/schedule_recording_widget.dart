@@ -5,9 +5,9 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
 
-import 'package:vms_flutter_client/screens/schedule_recording/widgets/button_config_widget.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/widgets/config_schedule_record_widget.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/widgets/general_config_camera_widget.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/widgets/button_config_widget.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/widgets/config_schedule_record_widget.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/tabs/general_config_camera_widget.dart';
 
 class ScheduleRecordingWidget extends StatefulWidget {
   const ScheduleRecordingWidget({

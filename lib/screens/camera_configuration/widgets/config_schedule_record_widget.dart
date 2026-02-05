@@ -5,10 +5,10 @@ import 'package:vms_flutter_client/domain/entities/schedule/recording_entity.dar
 import 'package:vms_flutter_client/domain/entities/schedule/recording_type_schedule.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_day.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/schedule_time_entity.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/widgets/button_config_widget.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/widgets/check_box_all_day_widget.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/widgets/schedule_time_day_widget.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/widgets/time_slot_widget.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/widgets/button_config_widget.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/widgets/check_box_all_day_widget.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/widgets/schedule_time_day_widget.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/widgets/time_slot_widget.dart';
 
 const int durationTime = 24;
 

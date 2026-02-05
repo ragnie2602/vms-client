@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_event.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_state.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/schedule/schedule_event.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/schedule/schedule_state.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/config_dialog.dart';
 
 class ScheduleBloc extends BaseBloc<ScheduleEvent, ScheduleState> {
   final ICameraRepository cameraRepository;

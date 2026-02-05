@@ -1,7 +1,7 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/config_dialog.dart';
 
 class ScheduleState extends BaseState {
   const ScheduleState();

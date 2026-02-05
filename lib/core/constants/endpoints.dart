@@ -12,4 +12,7 @@ class EndPoints {
 
   // Map
   static const String baseMap = '/api/map';
+
+  // Camera
+  static const String cameraAiConfig = '/api/cameras/ai-configs';
 }

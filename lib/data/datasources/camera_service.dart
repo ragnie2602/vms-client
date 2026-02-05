@@ -1,21 +1,26 @@
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
+import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/core/utils/unique_id.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/data/models/packet.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.command1.pb.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.2.pbserver.dart';
 import 'package:vms_flutter_client/domain/entities/camera/add_camera.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_alarm_config.dart';
 import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
 import 'package:vms_flutter_client/domain/entities/camera/import_camera_entity.dart';
 
+import '../models/response/base_response.dart';
 import '../proto/models/comm.command2.pb.dart';
 import '../proto/models/comm.model.pb.dart';
+import 'http_client.dart';
 import 'socket_api_client.dart';
 
 class CameraService {
   final SocketApiClient socketClient;
+  final HttpClient httpClient;
 
-  const CameraService(this.socketClient);
+  const CameraService(this.socketClient, this.httpClient);
 
   Future<AddCameraEntity> addCameraRTSP({
     required String name,
@@ -480,5 +485,14 @@ class CameraService {
       ),
       (buffer) => GetCameraInfo_Reply.fromBuffer(buffer),
     );
+  }
+
+  Future<List<CameraAlarmConfig>> getAiAlarmConfigs(String cameraId) async {
+    final raw = await httpClient.get('${EndPoints.cameraAiConfig}/$cameraId');
+    final response = BaseResponse.fromJson(raw);
+
+    return (response.data as List)
+        .map<CameraAlarmConfig>((e) => CameraAlarmConfig.fromJson(e))
+        .toList();
   }
 }

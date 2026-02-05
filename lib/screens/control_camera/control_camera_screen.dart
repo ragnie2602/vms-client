@@ -30,7 +30,7 @@ import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.da
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/group/widget/share_group_camera_widget.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/config_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
   const ControlCameraScreen({super.key});
