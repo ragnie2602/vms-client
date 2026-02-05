@@ -30,6 +30,7 @@ import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dar
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
+import 'package:vms_flutter_client/screens/object_type/object_type_screen.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
@@ -94,6 +95,12 @@ enum Routes {
     path: '/events',
     title: 'Quản lý sự kiện',
     description: 'Cho phép quản trị viên tạo và quản lý sự kiện',
+  ),
+  objectTypes(
+    name: 'objectTypes',
+    path: '/objectTypes',
+    title: 'Quản lý loại đối tượng',
+    description: 'Quản lý và cấu hình trường dữ liệu cho các đối tượng người dùng trên hệ thống',
   ),
   configuration(
     name: 'system_configuration',
@@ -320,6 +327,14 @@ class AppRouter {
             name: Routes.events.name,
             pageBuilder: (context, state) {
               return fadeTransition(context: context, state: state, child: EventScreen());
+            },
+          ),
+
+          GoRoute(
+            path: Routes.objectTypes.path,
+            name: Routes.objectTypes.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: ObjectTypeScreen());
             },
           ),
 
