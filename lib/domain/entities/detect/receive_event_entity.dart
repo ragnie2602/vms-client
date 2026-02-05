@@ -3,7 +3,7 @@ import 'dart:convert';
 class ReceiveEventEntity {
   final String? eventType;
   final String? eventData;
-  final String? cameraId;
+  final List<int>? cameraId;
 
   ReceiveEventEntity({this.eventType, this.eventData, this.cameraId});
 
