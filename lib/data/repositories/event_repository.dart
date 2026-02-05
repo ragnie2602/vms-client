@@ -2,6 +2,7 @@ import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/utils/pageable.dart';
 import 'package:vms_flutter_client/data/datasources/event_service.dart';
 import 'package:vms_flutter_client/data/repositories/base_repository.dart';
+import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
@@ -43,6 +44,16 @@ class EventRepository extends BaseRepository implements IEventRepository {
     return await catchError<EventEntity>(() async {
       final data = await eventService.getEventDetail(eventId);
       return Right(EventEntity.fromJson(data));
+    });
+  }
+
+  @override
+  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig({
+    required int eventTypeId,
+  }) async {
+    return await catchError<EventDisplayConfigEntity>(() async {
+      final data = await eventService.getEventDisplayConfig(eventTypeId);
+      return Right(data);
     });
   }
 

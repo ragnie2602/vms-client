@@ -47,6 +47,15 @@ class EventService {
     return response.data;
   }
 
+  getEventDisplayConfig(int eventTypeId) async {
+    final raw = await httpClient.get('${EndPoints.configEventDisplay}/$eventTypeId');
+
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) throw Exception(response.message);
+
+    return response.data;
+  }
+
   searchEvent({
     int? startTime,
     int? endTime,
