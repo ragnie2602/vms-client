@@ -25,7 +25,12 @@ class Panel extends StatefulWidget {
   final PanelController? controller;
   final bool? icCloseOnContent;
 
-  const Panel({super.key, required this.expandedWidth, this.controller, this.icCloseOnContent});
+  const Panel({
+    super.key,
+    required this.expandedWidth,
+    this.controller,
+    this.icCloseOnContent,
+  });
 
   @override
   State<Panel> createState() => _PanelState();
@@ -118,7 +123,7 @@ class _PanelState extends State<Panel> {
   Widget _buildContent() {
     if (widget.icCloseOnContent == null) {
       if (content != null && isOpening) {
-        return Expanded(child: content!);
+        return content!;
       } else {
         return Container();
       }

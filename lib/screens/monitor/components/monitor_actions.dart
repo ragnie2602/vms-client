@@ -30,6 +30,7 @@ class _MonitorActionsState extends State<MonitorActions> {
   @override
   void dispose() {
     _leftPanelIndex.dispose();
+    _rightPanelIndex.dispose();
     super.dispose();
   }
 

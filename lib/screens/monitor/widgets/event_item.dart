@@ -3,11 +3,13 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 class EventItem extends StatefulWidget {
-  const EventItem({super.key});
+  const EventItem({super.key, required this.event});
+  final ReceiveEventEntity event;
 
   @override
   State<EventItem> createState() => _EventItemState();
@@ -36,7 +38,8 @@ class _EventItemState extends State<EventItem> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(3),
                       child: Image.network(
-                        'https://static.wikia.nocookie.net/p__/images/7/71/Sherma.png/revision/latest?cb=20250924113412&path-prefix=protagonist',
+                        widget.event.eventDataEntity.imageUrl ??
+                            'https://static.wikia.nocookie.net/p__/images/7/71/Sherma.png/revision/latest?cb=20250924113412&path-prefix=protagonist',
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -49,8 +52,11 @@ class _EventItemState extends State<EventItem> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Phát hiện xâm nhập',
-                        style: AppTypography.style(12, fontWeight: FontWeight.w600),
+                        widget.event.eventType ?? 'Unknown Event',
+                        style: AppTypography.style(
+                          12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 5),
                       CustomTable(
@@ -65,7 +71,10 @@ class _EventItemState extends State<EventItem> {
                                   borderRadius: BorderRadius.circular(3),
                                 ),
                                 message: 'Thời gian',
-                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 5,
+                                ),
                                 preferBelow: false,
                                 textStyle: AppTypography.style(
                                   11,
@@ -73,21 +82,16 @@ class _EventItemState extends State<EventItem> {
                                   fontWeight: FontWeight.w500,
                                 ),
                                 verticalOffset: 8,
-                                child: SvgPicture.asset(AppAssets.icTimeCircle, height: 18),
-                              ),
-                              Text(
-                                '20:30 20/12/2025',
-                                style: AppTypography.style(
-                                  12,
-                                  color: AppColors.grey4B5563,
-                                  fontWeight: FontWeight.w500,
+                                child: SvgPicture.asset(
+                                  AppAssets.icTimeCircle,
+                                  height: 18,
                                 ),
                               ),
                             ],
                             [
                               SvgPicture.asset(AppAssets.icVideoOn, height: 18),
                               Text(
-                                'Camera cổng 1',
+                                widget.event.cameraId ?? 'Unknown Camera',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTypography.style(
@@ -100,7 +104,10 @@ class _EventItemState extends State<EventItem> {
                           ],
                         ),
                         rowSpacing: 2,
-                        verticalAlignments: [CrossAxisAlignment.center, CrossAxisAlignment.center],
+                        verticalAlignments: [
+                          CrossAxisAlignment.center,
+                          CrossAxisAlignment.center,
+                        ],
                       ),
                     ],
                   ),
@@ -113,7 +120,7 @@ class _EventItemState extends State<EventItem> {
     );
   }
 
-  showDetailDialog(BuildContext context) {
+  void showDetailDialog(BuildContext context) {
     setState(() => hasRead = true);
     showDialog(context: context, builder: (context) => EventDetailDialog());
   }

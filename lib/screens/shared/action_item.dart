@@ -64,6 +64,7 @@ class AlertDetectLiveView extends StatefulWidget {
     required this.isSelected,
     required this.onPanelIndexChanged,
     this.count,
+    this.maxWidth,
   });
 
   final PanelController controller;
@@ -71,6 +72,7 @@ class AlertDetectLiveView extends StatefulWidget {
   final bool isSelected;
   final Function(int? p1) onPanelIndexChanged;
   final String? count;
+  final double? maxWidth;
 
   @override
   State<AlertDetectLiveView> createState() => _AlertDetectLiveViewState();
@@ -95,7 +97,7 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
     icon: AppAssets.icAlertTriangle,
     onTap: () => widget.controller.togglePanel(
       MonitorAlerts(
-        maxWidth: widget.controller.expandedWidth,
+        maxWidth: widget.maxWidth ?? widget.controller.expandedWidth,
         key: ValueKey('monitor_alerts'),
       ),
       id: widget.id,

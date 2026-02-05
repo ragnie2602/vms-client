@@ -1,4 +1,6 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
+
+import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 
 class DetectState extends BaseState {
@@ -11,14 +13,24 @@ class DetectLoading extends DetectState {
 
 class DetectSuccess extends DetectState {
   final List<TypeEventDetectEntity> typeEvents;
-  const DetectSuccess({required this.typeEvents});
+  final List<ReceiveEventEntity> receiveEvents;
+  const DetectSuccess({
+    required this.typeEvents,
+    this.receiveEvents = const [],
+  });
   @override
   StateType get type => StateType.success;
   @override
-  List<Object?> get props => [typeEvents];
+  List<Object?> get props => [typeEvents, receiveEvents];
 
-  DetectSuccess copyWith({List<TypeEventDetectEntity>? typeEvents}) {
-    return DetectSuccess(typeEvents: typeEvents ?? this.typeEvents);
+  DetectSuccess copyWith({
+    List<TypeEventDetectEntity>? typeEvents,
+    List<ReceiveEventEntity>? receiveEvents,
+  }) {
+    return DetectSuccess(
+      typeEvents: typeEvents ?? this.typeEvents,
+      receiveEvents: receiveEvents ?? this.receiveEvents,
+    );
   }
 }
 

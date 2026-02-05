@@ -68,7 +68,7 @@ class DependencyInjection {
       create: (context) => UserService(context.read(), context.read()),
     ),
     Provider<AiBoxService>(create: (context) => AiBoxService(context.read())),
-    Provider<DetectService>(create: (context) => DetectService(context.read())),
+    Provider<DetectService>(create: (context) => DetectService(context.read(), context.read())),
     Provider<CustomLiveViewService>(
       create: (context) => CustomLiveViewService(context.read()),
     ),
