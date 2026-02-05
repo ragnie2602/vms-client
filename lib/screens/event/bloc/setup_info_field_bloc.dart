@@ -15,6 +15,8 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
   final IDetectRepository _detectRepository;
   final IEventRepository _eventRepository;
 
+  final Map<String, List<FieldConfigEntity>> configTable = {};
+
   SetupInfoFieldBloc(this._detectRepository, this._eventRepository)
     : super(const SetupInfoFieldState()) {
     on<SetupInfoFieldInit>(_onInit);
@@ -44,7 +46,9 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
         );
         // mở dialog -> auto mở cấu hình của kiểu sự kiện đầu tiên
         if (event.typeEvents != null && event.typeEvents!.isNotEmpty) {
-          add(SetupInfoFieldSelectType(event.typeConfig, event.typeEvents!.first));
+          for (var i = event.typeEvents!.length - 1; i >= 0; i--) {
+            add(SetupInfoFieldSelectType(event.typeConfig, event.typeEvents![i]));
+          }
         }
       },
     );
@@ -65,7 +69,7 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
     if (event.typeConfig == EventTypeConfig.LIVEVIEW) {
       result = await _detectRepository.getEventDisplayConfig(eventTypeId: event.type.type!);
     } else {
-      result = await _eventRepository.getEventDisplayConfig(eventTypeId: event.type.type!);
+      result = await _eventRepository.getEventDisplayConfig(event.type.typeName!);
     }
 
     result.fold(
@@ -82,12 +86,14 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
         final orderedFields = <FieldConfigEntity>[];
         for (var code in currentFieldCodes) {
           final field = state.availableFields.cast<FieldConfigEntity?>().firstWhere(
-            (f) => f?.code == code,
+            (f) => f?.code == code.code,
             orElse: () => null,
           );
           // nếu chưa có trong available thì không thêm vào
           if (field != null) orderedFields.add(field);
         }
+
+        configTable[config.eventTypeName ?? ''] = orderedFields;
 
         emit(
           state.copyWith(
@@ -136,7 +142,7 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
     } else {
       result = await _eventRepository.updateEventDisplayConfig(
         listField: listField,
-        eventTypeId: state.selectedType!.type!,
+        eventType: state.selectedType!.typeName!,
       );
     }
 
@@ -148,6 +154,7 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
         ),
       ),
       (success) {
+        configTable[state.selectedType!.typeName ?? ''] = state.currentFields;
         emit(state.copyWith(saveStatus: SetupInfoFieldStatus.success));
       },
     );

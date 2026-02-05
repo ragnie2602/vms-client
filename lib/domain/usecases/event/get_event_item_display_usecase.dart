@@ -29,5 +29,7 @@ class GetEventItemDisplayUsecase
         (success) => config = _eventDisplayConfigs[input.event.eventType!] = success,
       );
     }
+
+    return GetEventItemDisplayOutput({});
   }
 }

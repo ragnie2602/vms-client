@@ -3,7 +3,7 @@ part of 'export_event_usecase.dart';
 class ExportEventInput extends BaseInput {
   final DateTime? startTime;
   final DateTime? endTime;
-  final List<String>? eventType;
+  final List<String>? eventTypes;
   final List<String>? cameraIds;
   final String cameraGroupName;
   final List<CameraEntity> cameras;
@@ -13,7 +13,7 @@ class ExportEventInput extends BaseInput {
     required this.cameras,
     this.cameraIds,
     this.endTime,
-    this.eventType,
+    this.eventTypes,
     this.startTime,
   });
 }

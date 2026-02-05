@@ -87,12 +87,12 @@ class EventRepository extends BaseRepository implements IEventRepository {
   @override
   Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
     required List<String> listField,
-    required int eventTypeId,
+    required String eventType,
   }) async {
     return await catchError<EventDisplayConfigEntity>(() async {
       final data = await eventService.updateEventDisplayConfig(
         listField: listField,
-        eventTypeId: eventTypeId,
+        eventType: eventType,
       );
       return Right(EventDisplayConfigEntity.fromJson(data));
     });

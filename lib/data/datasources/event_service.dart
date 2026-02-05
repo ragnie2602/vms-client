@@ -92,9 +92,9 @@ class EventService {
     return response.data;
   }
 
-  updateEventDisplayConfig({required List<String> listField, required int eventTypeId}) async {
+  updateEventDisplayConfig({required List<String> listField, required String eventType}) async {
     final raw = await httpClient.put(
-      url: '${EndPoints.configEventDisplay}/$eventTypeId',
+      url: '${EndPoints.configEventDisplay}/$eventType',
       data: {'data': listField},
     );
     final response = BaseResponse.fromJson(raw);

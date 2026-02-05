@@ -49,7 +49,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         cameraGroupName: event.cameraGroupName,
         cameras: event.cameras,
         endTime: event.endTime,
-        eventType: event.eventType,
+        eventTypes: event.eventTypes,
         startTime: event.startTime,
       ),
     );
@@ -71,7 +71,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         startTime: event.startTime,
         endTime: event.endTime,
         cameraIds: event.cameraIds,
-        eventTypes: event.eventType,
+        eventTypes: event.eventTypes,
         cameras: event.cameras,
       ),
     );
