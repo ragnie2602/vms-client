@@ -53,6 +53,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     String? desc,
     required bool addCamDenied,
     required bool changePassDenied,
+    required int dataType,
   }) {
     context.read<UserManagementBloc>().add(
       AddUserEvent(
@@ -66,6 +67,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         changePassDenied: changePassDenied,
         addCamDenied: addCamDenied,
         fullName: fullName,
+        dataType: dataType,
       ),
     );
   }
@@ -176,6 +178,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 isAdmin: payload.isAdmin,
                                 addCamDenied: !payload.canAddCamera,
                                 changePassDenied: !payload.canChangePassword,
+                                dataType: payload.dataType,
                               );
                             },
                           );
