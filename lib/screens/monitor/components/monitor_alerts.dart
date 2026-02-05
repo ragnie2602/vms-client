@@ -17,8 +17,7 @@ class MonitorAlerts extends StatefulWidget {
   State<MonitorAlerts> createState() => _MonitorAlertsState();
 }
 
-class _MonitorAlertsState extends State<MonitorAlerts>
-    with TickerProviderStateMixin {
+class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateMixin {
   late final TabController tabController;
 
   @override
@@ -29,69 +28,72 @@ class _MonitorAlertsState extends State<MonitorAlerts>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: widget.maxWidth - 20,
-      color: AppColors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Flexible(
-            child: Padding(
-              padding: EdgeInsets.all(10),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ClipRect(
+          child: OverflowBox(
+            alignment: Alignment.topLeft,
+            minWidth: widget.maxWidth - 20,
+            maxWidth: widget.maxWidth - 20,
+            minHeight: constraints.maxHeight,
+            maxHeight: constraints.maxHeight,
+            child: Container(
+              width: widget.maxWidth - 20,
+              height: constraints.maxHeight,
+              color: AppColors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      'Danh sách Cảnh báo',
-                      style: AppTypography.style(
-                        14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                  Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Danh sách Cảnh báo',
+                            style: AppTypography.style(14, fontWeight: FontWeight.w700),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const AlertFilterBtn(),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const AlertFilterBtn(),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.greyAthens,
+                    ),
+                    margin: EdgeInsets.all(5),
+                    padding: EdgeInsets.all(4),
+                    child: CustomTabBar(controller: tabController),
+                  ),
+                  SizedBox(height: 1, child: const Divider(color: AppColors.greyDFDFDF)),
+                  Expanded(
+                    child: BlocSelector<DetectBloc, DetectState, List<ReceiveEventEntity>>(
+                      selector: (state) => state.receiveEvents,
+                      builder: (context, receiveEvents) {
+                        if (receiveEvents.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemBuilder: (context, index) {
+                            final event = receiveEvents[index];
+                            return EventItem(event: event);
+                          },
+                          itemCount: receiveEvents.length,
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: AppColors.greyAthens,
-            ),
-            margin: EdgeInsets.all(5),
-            padding: EdgeInsets.all(4),
-            child: CustomTabBar(controller: tabController),
-          ),
-          SizedBox(
-            height: 1,
-            child: const Divider(color: AppColors.greyDFDFDF),
-          ),
-          Expanded(
-            child:
-                BlocSelector<DetectBloc, DetectState, List<ReceiveEventEntity>>(
-                  selector: (state) => state.receiveEvents,
-                  builder: (context, receiveEvents) {
-                    if (receiveEvents.isEmpty) {
-                      return const SizedBox.shrink();
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final event = receiveEvents[index];
-                        return EventItem(event: event);
-                      },
-                      itemCount: receiveEvents.length,
-                    );
-                  },
-                ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
