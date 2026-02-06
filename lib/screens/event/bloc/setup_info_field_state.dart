@@ -4,10 +4,13 @@ enum SetupInfoFieldStatus { initial, loading, success, failure }
 
 enum SetupInfoFieldConfigStatus { initial, loading, success, failure }
 
+enum ConfigTableStatus { initial, loading, success, failure }
+
 class SetupInfoFieldState extends Equatable {
   final SetupInfoFieldStatus status;
   final SetupInfoFieldConfigStatus configStatus;
   final SetupInfoFieldStatus saveStatus;
+  final ConfigTableStatus configTableStatus;
   final String errorMessage;
   final String saveErrorMessage;
   final List<FieldConfigEntity> availableFields;
@@ -25,6 +28,7 @@ class SetupInfoFieldState extends Equatable {
     this.status = SetupInfoFieldStatus.initial,
     this.configStatus = SetupInfoFieldConfigStatus.initial,
     this.saveStatus = SetupInfoFieldStatus.initial,
+    this.configTableStatus = ConfigTableStatus.initial,
     this.errorMessage = '',
     this.saveErrorMessage = '',
     this.availableFields = const [],
@@ -39,6 +43,7 @@ class SetupInfoFieldState extends Equatable {
     SetupInfoFieldStatus? status,
     SetupInfoFieldConfigStatus? configStatus,
     SetupInfoFieldStatus? saveStatus,
+    ConfigTableStatus? configTableStatus,
     String? errorMessage,
     String? saveErrorMessage,
     List<FieldConfigEntity>? availableFields,
@@ -52,6 +57,7 @@ class SetupInfoFieldState extends Equatable {
       status: status ?? this.status,
       configStatus: configStatus ?? this.configStatus,
       saveStatus: saveStatus ?? this.saveStatus,
+      configTableStatus: configTableStatus ?? this.configTableStatus,
       errorMessage: errorMessage ?? this.errorMessage,
       saveErrorMessage: saveErrorMessage ?? this.saveErrorMessage,
       availableFields: availableFields ?? this.availableFields,
@@ -68,6 +74,7 @@ class SetupInfoFieldState extends Equatable {
     status,
     configStatus,
     saveStatus,
+    configTableStatus,
     errorMessage,
     saveErrorMessage,
     availableFields,

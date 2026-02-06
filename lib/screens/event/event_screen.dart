@@ -59,12 +59,13 @@ class _EventScreenState extends State<EventScreen> {
   void initState() {
     super.initState();
 
-    detectBloc = context.read<DetectBloc>();
+    detectBloc = DetectBloc(context.read());
     eventBloc = context.read<EventBloc>()..add(GetAllEventType());
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
     context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
-    setupInfoFieldBloc = context.read<SetupInfoFieldBloc>();
+    setupInfoFieldBloc = context.read<SetupInfoFieldBloc>()
+      ..add(SetupInfoFieldInit(EventTypeConfig.EVENT_MANAGEMENT, null));
   }
 
   @override
@@ -316,6 +317,7 @@ class _EventScreenState extends State<EventScreen> {
                           ),
                           const SizedBox(width: 10),
                           BlocListener<DetectBloc, DetectState>(
+                            bloc: detectBloc,
                             listener: (context, state) {
                               if (state.status == DetectStatus.success) _config(state.typeEvents);
                             },

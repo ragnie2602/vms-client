@@ -33,7 +33,7 @@ class EventItem extends StatelessWidget {
             BlocProvider(create: (context) => PlaybackBloc(context.read(), context.read())),
             BlocProvider.value(value: context.read<StorageFolderBloc>()),
           ],
-          child: EventDetailDialog(event: event),
+          child: EventDetailDialog(id: event.id),
         ),
       ),
       child: Column(
@@ -100,10 +100,34 @@ class EventItem extends StatelessWidget {
               ),
               padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
               child: BlocBuilder<SetupInfoFieldBloc, SetupInfoFieldState>(
-                builder: (context, state) => _buildContent(
-                  event,
-                  context.read<SetupInfoFieldBloc>().configTable[event.eventName ?? ''] ?? [],
-                ),
+                builder: (context, state) {
+                  if (state.configTableStatus == ConfigTableStatus.success) {
+                    return _buildContent(
+                      event,
+                      context.read<SetupInfoFieldBloc>().configTable[event.eventType ?? ''] ?? [],
+                    );
+                  } else if (state.configTableStatus == ConfigTableStatus.loading) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  } else if (state.configTableStatus == ConfigTableStatus.failure) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text('Không thể tải cấu hình', style: TextStyle(color: Colors.red)),
+                      ),
+                    );
+                  }
+
+                  return const SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: Center(child: Text('Đang khởi tạo...')),
+                  );
+                },
               ),
             ),
           ),
