@@ -22,9 +22,9 @@ import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_fol
 part '../widget/custom_tab_bar.dart';
 
 class EventDetailDialog extends StatefulWidget {
-  final EventEntity event;
+  final int id;
 
-  const EventDetailDialog({super.key, required this.event});
+  const EventDetailDialog({super.key, required this.id});
 
   @override
   State<EventDetailDialog> createState() => _EventDetailDialogState();
@@ -35,6 +35,8 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   late final EventBloc eventBloc;
   late final PlaybackBloc playbackBloc;
   late final PlayerController playerController;
+
+  EventEntity? event;
 
   final TextEditingController descriptionController = TextEditingController();
   late TabController tabController;
@@ -48,22 +50,15 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   final ValueNotifier<double> _volume = ValueNotifier(1.0);
   final ValueNotifier<double> _speed = ValueNotifier(1.0);
   final ValueNotifier<double?> _downloadProgress = ValueNotifier(null);
-  late DateTime currentTime;
+  DateTime? currentTime;
 
   @override
   void initState() {
     super.initState();
 
-    eventBloc = context.read()..add(GetEventDetail(eventId: widget.event.id));
-
-    final eventTime = DateTime.fromMillisecondsSinceEpoch(widget.event.timeEvent * 1000);
-    currentTime = rewindTime = eventTime.subtract(Duration(seconds: 10));
-    endTime = eventTime.add(Duration(seconds: 10));
+    eventBloc = context.read()..add(GetEventDetail(eventId: widget.id));
 
     playbackBloc = context.read();
-    if (widget.event.camera?.id != null) {
-      playbackBloc.add(GetVideoPlaybacks(widget.event.camera!.id, rewindTime!));
-    }
 
     playerController = PlayerController()..ref = GlobalKey();
     playerController.onTimeChanged.add(_handleTimeChanged);
@@ -102,7 +97,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
               ),
             ),
             // Content
-            BlocBuilder<EventBloc, EventState>(
+            BlocConsumer<EventBloc, EventState>(
               buildWhen: (previous, current) =>
                   current is EventDetailSuccess ||
                   current is EventDetailFailure ||
@@ -116,7 +111,6 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                 if (state is! EventDetailSuccess) return SizedBox.shrink();
 
                 final event = state.event;
-                descriptionController.text = event.description ?? '';
 
                 return Expanded(
                   child: Row(
@@ -238,7 +232,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                widget.event.eventName ?? '',
+                                event.eventName ?? '',
                                 style: AppTypography.style(16, fontWeight: FontWeight.w600),
                               ),
                               const SizedBox(height: 18),
@@ -256,7 +250,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                       Text(
                                         DateFormat('HH:mm dd/MM/yyyy').format(
                                           DateTime.fromMillisecondsSinceEpoch(
-                                            widget.event.timeEvent * 1000,
+                                            event.timeEvent * 1000,
                                           ),
                                         ),
                                         style: AppTypography.style(14, fontWeight: FontWeight.w500),
@@ -269,7 +263,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                         style: AppTypography.style(13, fontWeight: FontWeight.w500),
                                       ),
                                       Text(
-                                        widget.event.camera?.name ?? '',
+                                        event.camera?.name ?? '',
                                         style: AppTypography.style(14, fontWeight: FontWeight.w500),
                                       ),
                                     ],
@@ -355,6 +349,21 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                     ],
                   ),
                 );
+              },
+              listener: (context, state) {
+                if (state is EventDetailSuccess) {
+                  event = state.event;
+
+                  final eventTime = DateTime.fromMillisecondsSinceEpoch(event!.timeEvent * 1000);
+                  currentTime = rewindTime = eventTime.subtract(Duration(seconds: 10));
+                  endTime = eventTime.add(Duration(seconds: 10));
+
+                  if (event!.cameraId != null) {
+                    playbackBloc.add(GetVideoPlaybacks(event!.cameraId!.codeUnits, rewindTime!));
+                  }
+
+                  descriptionController.text = event!.description ?? '';
+                }
               },
             ),
 
@@ -680,7 +689,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   }
 
   // _Functions
-  bool get reachEnd => currentTime.isAfter(endTime!);
+  bool get reachEnd => currentTime?.isAfter(endTime!) ?? false;
 
   void _downloadImage(EventEntity event) async {
     final imageUrl = event.imageUrl;
@@ -743,18 +752,22 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   }
 
   _live() {
+    if (event == null) return;
+
     Navigator.pop(context);
 
     context.read<HomeBloc>().add(
       ChangeTab(
         HomeTab.tabs[1],
         route: Routes.cameraDetail,
-        extra: CameraDetailScreenArgs(data: widget.event.camera),
+        extra: CameraDetailScreenArgs(data: event!.camera),
       ),
     );
   }
 
   _playback() {
+    if (event == null) return;
+
     Navigator.pop(context);
 
     context.read<HomeBloc>().add(
@@ -762,9 +775,9 @@ class _EventDetailDialogState extends State<EventDetailDialog>
         HomeTab.tabs[1],
         route: Routes.cameraDetail,
         extra: CameraDetailScreenArgs(
-          data: widget.event.camera,
+          data: event!.camera,
           isPlayback: true,
-          rewind: DateTime.fromMillisecondsSinceEpoch(widget.event.timeEvent * 1000),
+          rewind: DateTime.fromMillisecondsSinceEpoch(event!.timeEvent * 1000),
           title: 'Xem lại',
           key: UniqueKey(),
         ),
@@ -774,7 +787,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
   _save() {
     context.read<EventBloc>().add(
-      UpdateEvent(eventId: widget.event.id, description: descriptionController.text),
+      UpdateEvent(eventId: widget.id, description: descriptionController.text),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
+import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
@@ -17,6 +18,7 @@ part 'event_event.dart';
 part 'event_state.dart';
 
 class EventBloc extends Bloc<EventEvent, EventState> {
+  final ICameraRepository cameraRepository;
   final IEventRepository eventRepository;
 
   final SearchEventUseCase searchEventUseCase;
@@ -25,6 +27,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   final SaveVideoUseCase saveVideoUseCase;
 
   EventBloc(
+    this.cameraRepository,
     this.eventRepository,
     this.searchEventUseCase,
     this.exportEventUseCase,
@@ -103,11 +106,22 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   FutureOr<void> _onGetEventDetail(GetEventDetail event, Emitter<EventState> emit) async {
     emit(const GettingEventDetail());
 
-    final res = await eventRepository.getEventDetail(event.eventId);
-    res.fold(
+    EventEntity? et;
+    final eventRes = await eventRepository.getEventDetail(event.eventId);
+    eventRes.fold(
       (onFailure) => emit(EventDetailFailure(onFailure.parseMessage())),
-      (onSuccess) => emit(EventDetailSuccess(onSuccess)),
+      (onSuccess) => et = onSuccess,
     );
+
+    if (et == null) return;
+
+    final cameraRes = await cameraRepository.getAllCamera(cameraId: et!.cameraId!.codeUnits);
+    cameraRes.fold(
+      (onFailure) => emit(EventDetailFailure(onFailure.parseMessage())),
+      (onSuccess) => et!.camera = onSuccess.firstWhere((e) => e.camId == et!.cameraId),
+    );
+
+    emit(EventDetailSuccess(et!));
   }
 
   FutureOr<void> _onSaveImage(SaveImage event, Emitter<EventState> emit) async {
