@@ -66,13 +66,53 @@ class SetupInfoFieldBloc
     SetupInfoFieldSelectType event,
     Emitter<SetupInfoFieldState> emit,
   ) async {
-    emit(
-      state.copyWith(
-        selectedType: event.type,
-        configStatus: SetupInfoFieldConfigStatus.loading,
-      ),
-    );
-    if (event.type.type == null) {
+    //lưu lại config hiện tại vào modifiedConfigs trước khi chuyển sang eventType mới
+    if (state.selectedType != null && state.selectedType!.typeName != null) {
+      final updatedModifiedConfigs = Map<String, List<FieldConfigEntity>>.from(
+        state.modifiedConfigs,
+      );
+      updatedModifiedConfigs[state.selectedType!.typeName!] =
+          state.currentFields;
+
+      emit(
+        state.copyWith(
+          selectedType: event.type,
+          configStatus: SetupInfoFieldConfigStatus.loading,
+          modifiedConfigs: updatedModifiedConfigs,
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          selectedType: event.type,
+          configStatus: SetupInfoFieldConfigStatus.loading,
+        ),
+      );
+    }
+
+    if (event.type.typeName == null) {
+      return;
+    }
+
+    // check trong list cấu hình(sau khi update) đang lưu đã có kiểu này chưa
+    if (state.modifiedConfigs.containsKey(event.type.typeName)) {
+      emit(
+        state.copyWith(
+          configStatus: SetupInfoFieldConfigStatus.success,
+          currentFields: state.modifiedConfigs[event.type.typeName]!,
+        ),
+      );
+      return;
+    }
+
+    // check trong list cấu hình(nguyên bản lúc mới init) đang lưu đã có kiểu này chưa
+    if (state.originalConfigs.containsKey(event.type.typeName)) {
+      emit(
+        state.copyWith(
+          configStatus: SetupInfoFieldConfigStatus.success,
+          currentFields: state.originalConfigs[event.type.typeName]!,
+        ),
+      );
       return;
     }
     Either<Failure, EventDisplayConfigEntity> result;
@@ -112,11 +152,16 @@ class SetupInfoFieldBloc
 
         configTable[config.eventTypeName ?? ''] = orderedFields;
 
+        // lưu lại vào originalConfigs
+        final updatedOriginalConfigs =
+            Map<String, List<FieldConfigEntity>>.from(state.originalConfigs);
+        updatedOriginalConfigs[event.type.typeName!] = orderedFields;
+
         emit(
           state.copyWith(
             configStatus: SetupInfoFieldConfigStatus.success,
-            currentConfig: config,
             currentFields: orderedFields,
+            originalConfigs: updatedOriginalConfigs,
           ),
         );
       },
@@ -155,39 +200,120 @@ class SetupInfoFieldBloc
     SetupInfoFieldSave event,
     Emitter<SetupInfoFieldState> emit,
   ) async {
-    // lấy kiểu sự kiện đang chọn
-    if (state.selectedType?.type == null) return;
     emit(state.copyWith(saveStatus: SetupInfoFieldStatus.loading));
-    final listField = state.currentFields
-        .map((e) => e.code)
-        .where((e) => e != null)
-        .cast<String>()
-        .toList();
 
-    Either<Failure, EventDisplayConfigEntity> result;
-    if (event.typeConfig == EventTypeConfig.LIVEVIEW) {
-      result = await _detectRepository.updateEventDisplayConfig(
-        listField: listField,
-        eventTypeName: state.selectedType!.typeName!,
+    // lưu thay đổi hiện tại vào modifiedConfigs
+    final updatedModifiedConfigs = Map<String, List<FieldConfigEntity>>.from(
+      state.modifiedConfigs,
+    );
+    if (state.selectedType?.typeName != null) {
+      updatedModifiedConfigs[state.selectedType!.typeName!] =
+          state.currentFields;
+    }
+
+    // tìm các eventtype bị thay đổi (so sánh với original)
+    final typesToUpdate = <String>[];
+    for (final entry in updatedModifiedConfigs.entries) {
+      final typeName = entry.key;
+      final modifiedFields = entry.value;
+      final originalFields = state.originalConfigs[typeName] ?? [];
+
+      //check các trường có bị thay đổi không
+      if (!_areFieldListsEqual(originalFields, modifiedFields)) {
+        typesToUpdate.add(typeName);
+      }
+    }
+
+    // ko thahy đổi gì -> không phải gọi API update
+    if (typesToUpdate.isEmpty) {
+      emit(
+        state.copyWith(
+          saveStatus: SetupInfoFieldStatus.success,
+          modifiedConfigs: updatedModifiedConfigs,
+        ),
       );
-    } else {
-      result = await _eventRepository.updateEventDisplayConfig(
-        listField: listField,
-        eventType: state.selectedType!.typeName!,
+      return;
+    }
+
+    // gọi các API để lưu các thay đổi
+    final futures = <Future<Either<Failure, EventDisplayConfigEntity>>>[];
+    for (final typeName in typesToUpdate) {
+      final listField = updatedModifiedConfigs[typeName]!
+          .map((e) => e.code)
+          .where((e) => e != null)
+          .cast<String>()
+          .toList();
+
+      if (event.typeConfig == EventTypeConfig.LIVEVIEW) {
+        futures.add(
+          _detectRepository.updateEventDisplayConfig(
+            listField: listField,
+            eventTypeName: typeName,
+          ),
+        );
+      } else {
+        futures.add(
+          _eventRepository.updateEventDisplayConfig(
+            listField: listField,
+            eventType: typeName,
+          ),
+        );
+      }
+    }
+
+    // chờ tất cả hoàn thành
+    final results = await Future.wait(futures);
+
+    //dùng để get lỗi nếu có
+    String? errorMessage;
+    for (final result in results) {
+      result.fold(
+        (failure) {
+          errorMessage ??= failure.toString();
+        },
+        (_) {}, // thành công thì bỏ qua
       );
     }
 
-    result.fold(
-      (failure) => emit(
+    if (errorMessage != null) {
+      emit(
         state.copyWith(
           saveStatus: SetupInfoFieldStatus.failure,
-          saveErrorMessage: failure.toString(),
+          saveErrorMessage: errorMessage,
+          modifiedConfigs: updatedModifiedConfigs,
         ),
-      ),
-      (success) {
-        configTable[state.selectedType!.typeName ?? ''] = state.currentFields;
-        emit(state.copyWith(saveStatus: SetupInfoFieldStatus.success));
-      },
+      );
+      return;
+    }
+
+    //update dữ liệu local sau khi lưu thành công
+    final updatedOriginalConfigs = Map<String, List<FieldConfigEntity>>.from(
+      state.originalConfigs,
     );
+    for (final typeName in typesToUpdate) {
+      final fields = updatedModifiedConfigs[typeName]!;
+      updatedOriginalConfigs[typeName] = fields;
+      configTable[typeName] = fields;
+    }
+
+    emit(
+      state.copyWith(
+        saveStatus: SetupInfoFieldStatus.success,
+        originalConfigs: updatedOriginalConfigs,
+        modifiedConfigs: {}, // clear data sau khi lưu thành công
+      ),
+    );
+  }
+
+  // so sánh sự thay đổi của 2 danh sách field
+  bool _areFieldListsEqual(
+    List<FieldConfigEntity> list1,
+    List<FieldConfigEntity> list2,
+  ) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i].code != list2[i].code) return false;
+    }
+    return true;
   }
 }

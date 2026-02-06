@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
@@ -92,19 +93,7 @@ class EventItem extends StatelessWidget {
                             if (config.icon != null && config.icon!.isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.only(right: 8),
-                                child: Image.network(
-                                  config.icon!,
-                                  width: 18,
-                                  height: 18,
-                                  color: AppColors.grey4B5563,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.broken_image,
-                                      color: AppColors.grey4B5563,
-                                      size: 18,
-                                    );
-                                  },
-                                ),
+                                child: _buildIcon(config.icon!),
                               ),
                             Expanded(
                               child: Text(
@@ -129,6 +118,40 @@ class EventItem extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildIcon(String iconUrl) {
+    final isSvg = iconUrl.toLowerCase().endsWith('.svg');
+
+    if (isSvg) {
+      return SvgPicture.network(
+        iconUrl,
+        width: 18,
+        height: 18,
+        colorFilter: ColorFilter.mode(AppColors.grey4B5563, BlendMode.srcIn),
+        placeholderBuilder: (context) => SizedBox(
+          width: 18,
+          height: 18,
+          child: Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 1,
+              color: AppColors.grey4B5563,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // nếu là ảnh thường
+    return Image.network(
+      iconUrl,
+      width: 18,
+      height: 18,
+      color: AppColors.grey4B5563,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(Icons.broken_image, color: AppColors.grey4B5563, size: 18);
+      },
     );
   }
 }

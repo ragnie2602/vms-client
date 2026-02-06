@@ -26,14 +26,16 @@ class ReceiveEventEntity {
 class EventDataEntity {
   final String? captureTime;
   final String? imageUrl;
+  final int? eventId;
   final List<ConfigEventDataEntity>? configData;
 
-  EventDataEntity({this.captureTime, this.imageUrl, this.configData});
+  EventDataEntity({this.captureTime, this.imageUrl, this.eventId, this.configData});
 
   factory EventDataEntity.fromJson(Map<String, dynamic> json) {
     return EventDataEntity(
       captureTime: json['captureTime'],
       imageUrl: json['imageUrl'],
+      eventId: json['eventId'],
       configData: json['configData'] != null
           ? (json['configData'] as List)
                 .map((e) => ConfigEventDataEntity.fromJson(e))
