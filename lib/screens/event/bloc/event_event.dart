@@ -23,7 +23,7 @@ class SearchEvent extends EventEvent {
   final int pageSize;
   final DateTime? startTime;
   final DateTime? endTime;
-  final List<String>? eventType;
+  final List<String>? eventTypes;
   final List<String>? cameraIds;
   final List<CameraEntity> cameras;
 
@@ -32,13 +32,13 @@ class SearchEvent extends EventEvent {
     this.pageSize = 20,
     this.startTime,
     this.endTime,
-    this.eventType,
+    this.eventTypes,
     this.cameraIds,
     required this.cameras,
   });
 
   @override
-  List<Object?> get props => [page, pageSize, startTime, endTime, eventType, cameraIds];
+  List<Object?> get props => [page, pageSize, startTime, endTime, eventTypes, cameraIds];
 }
 
 class ExportEventList extends EventEvent {
@@ -46,7 +46,7 @@ class ExportEventList extends EventEvent {
   final List<String>? cameraIds;
   final List<CameraEntity> cameras;
   final DateTime? endTime;
-  final List<String>? eventType;
+  final List<String>? eventTypes;
   final DateTime? startTime;
 
   const ExportEventList({
@@ -54,12 +54,12 @@ class ExportEventList extends EventEvent {
     required this.cameras,
     this.startTime,
     this.endTime,
-    this.eventType,
+    this.eventTypes,
     this.cameraIds,
   });
 
   @override
-  List<Object?> get props => [cameraGroupName, cameras, startTime, endTime, eventType, cameraIds];
+  List<Object?> get props => [cameraGroupName, cameras, startTime, endTime, eventTypes, cameraIds];
 }
 
 class SaveImage extends EventEvent {

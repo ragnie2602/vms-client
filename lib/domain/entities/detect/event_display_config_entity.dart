@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final eventDisplayConfigEntity = eventDisplayConfigEntityFromJson(jsonString);
-
 import 'dart:convert';
 
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
@@ -43,6 +39,18 @@ class EventDisplayConfigEntity {
   Map<String, dynamic> toJson() => {
     "eventTypeId": eventTypeId,
     "eventTypeName": eventTypeName,
-    "fields": fields == null ? [] : List<FieldConfigEntity>.from(fields!.map((x) => x.toJson())),
+    "fields": fields == null
+        ? []
+        : List<FieldConfigEntity>.from(fields!.map((x) => x.toJson())),
   };
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is EventDisplayConfigEntity &&
+        other.eventTypeId == eventTypeId;
+  }
+
+  @override
+  int get hashCode => eventTypeId.hashCode;
 }

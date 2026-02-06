@@ -4,7 +4,8 @@
 
 import 'dart:convert';
 
-FieldConfigEntity fieldConfigEntityFromJson(String str) => FieldConfigEntity.fromJson(json.decode(str));
+FieldConfigEntity fieldConfigEntityFromJson(String str) =>
+    FieldConfigEntity.fromJson(json.decode(str));
 
 String fieldConfigEntityToJson(FieldConfigEntity data) => json.encode(data.toJson());
 

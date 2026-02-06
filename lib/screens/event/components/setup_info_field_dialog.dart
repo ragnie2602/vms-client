@@ -256,7 +256,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                     ? () {}
                     : () {
                         context.read<SetupInfoFieldBloc>().add(
-                          SetupInfoFieldSave(),
+                          SetupInfoFieldSave(widget.typeConfig),
                         );
                       },
                 padding: const EdgeInsets.symmetric(

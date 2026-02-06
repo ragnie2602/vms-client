@@ -40,6 +40,7 @@ class _EventScreenState extends State<EventScreen> {
   late final DetectBloc detectBloc;
   late final EventBloc eventBloc;
   late final MonitorBloc monitorBloc;
+  late final SetupInfoFieldBloc setupInfoFieldBloc;
 
   GlobalKey<EventDateRangePickerState> dateRangeKey = GlobalKey<EventDateRangePickerState>();
   int? presetHour = 720;
@@ -63,6 +64,7 @@ class _EventScreenState extends State<EventScreen> {
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
     context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
+    setupInfoFieldBloc = context.read<SetupInfoFieldBloc>();
   }
 
   @override
@@ -97,7 +99,7 @@ class _EventScreenState extends State<EventScreen> {
                 ),
                 SizedBox(width: 16),
                 Expanded(
-                  child: BlocBuilder<EventBloc, EventState>(
+                  child: BlocConsumer<EventBloc, EventState>(
                     buildWhen: (previous, current) => current is GetAllEventTypeSuccess,
                     builder: (context, state) => EventMultiFilterDropdown<EventType>(
                       allMode: true,
@@ -115,6 +117,24 @@ class _EventScreenState extends State<EventScreen> {
                       onChanged: (et) => eventType = et?.map((e) => e.eventKey).toList(),
                       padding: EdgeInsets.all(12),
                     ),
+                    listener: (context, state) {
+                      if (state is GetAllEventTypeSuccess) {
+                        setupInfoFieldBloc.add(
+                          SetupInfoFieldInit(
+                            EventTypeConfig.EVENT_MANAGEMENT,
+                            state.eventTypes
+                                .map(
+                                  (e) => TypeEventDetectEntity(
+                                    name: e.name,
+                                    type: e.type,
+                                    typeName: e.eventKey,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        );
+                      }
+                    },
                   ),
                 ),
                 SizedBox(width: 16),
@@ -281,7 +301,7 @@ class _EventScreenState extends State<EventScreen> {
                                 cameraGroupName: cameraGroupName,
                                 cameras: cameras,
                                 endTime: endTime,
-                                eventType: eventType,
+                                eventTypes: eventType,
                                 startTime: startTime,
                               ),
                             ),
@@ -429,8 +449,7 @@ class _EventScreenState extends State<EventScreen> {
     showDialog(
       context: context,
       builder: (_) => BlocProvider.value(
-        value: context.read<SetupInfoFieldBloc>()
-          ..add(SetupInfoFieldInit(EventTypeConfig.EVENT_MANAGEMENT, typeEvents)),
+        value: context.read<SetupInfoFieldBloc>(),
         child: SetupInfoFieldDialog(typeConfig: EventTypeConfig.EVENT_MANAGEMENT),
       ),
     );
@@ -442,7 +461,7 @@ class _EventScreenState extends State<EventScreen> {
         page: page,
         startTime: startTime,
         endTime: endTime,
-        eventType: eventType,
+        eventTypes: eventType,
         cameraIds: cameraIds,
         cameras: cameras,
       ),

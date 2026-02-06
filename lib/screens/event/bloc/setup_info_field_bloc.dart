@@ -16,6 +16,8 @@ class SetupInfoFieldBloc
   final IDetectRepository _detectRepository;
   final IEventRepository _eventRepository;
 
+  final Map<String, List<FieldConfigEntity>> configTable = {};
+
   SetupInfoFieldBloc(this._detectRepository, this._eventRepository)
     : super(const SetupInfoFieldState()) {
     on<SetupInfoFieldInit>(_onInit);
@@ -80,7 +82,7 @@ class SetupInfoFieldBloc
       );
     } else {
       result = await _eventRepository.getEventDisplayConfig(
-        eventTypeId: event.type.type!,
+        event.type.typeName!,
       );
     }
 
@@ -107,6 +109,8 @@ class SetupInfoFieldBloc
           // nếu chưa có trong available thì không thêm vào
           if (field != null) orderedFields.add(field);
         }
+
+        configTable[config.eventTypeName ?? ''] = orderedFields;
 
         emit(
           state.copyWith(
@@ -160,10 +164,18 @@ class SetupInfoFieldBloc
         .cast<String>()
         .toList();
 
-    final result = await _detectRepository.updateEventDisplayConfig(
-      listField: listField,
-      eventTypeName: state.selectedType!.typeName!,
-    );
+    Either<Failure, EventDisplayConfigEntity> result;
+    if (event.typeConfig == EventTypeConfig.LIVEVIEW) {
+      result = await _detectRepository.updateEventDisplayConfig(
+        listField: listField,
+        eventTypeName: state.selectedType!.typeName!,
+      );
+    } else {
+      result = await _eventRepository.updateEventDisplayConfig(
+        listField: listField,
+        eventType: state.selectedType!.typeName!,
+      );
+    }
 
     result.fold(
       (failure) => emit(
@@ -173,6 +185,7 @@ class SetupInfoFieldBloc
         ),
       ),
       (success) {
+        configTable[state.selectedType!.typeName ?? ''] = state.currentFields;
         emit(state.copyWith(saveStatus: SetupInfoFieldStatus.success));
       },
     );

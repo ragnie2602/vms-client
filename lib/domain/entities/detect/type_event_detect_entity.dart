@@ -3,8 +3,7 @@ import 'dart:convert';
 TypeEventDetectEntity typeEventDetectEnityFromJson(String str) =>
     TypeEventDetectEntity.fromJson(json.decode(str));
 
-String typeEventDetectEnityToJson(TypeEventDetectEntity data) =>
-    json.encode(data.toJson());
+String typeEventDetectEnityToJson(TypeEventDetectEntity data) => json.encode(data.toJson());
 
 class TypeEventDetectEntity {
   int? type;

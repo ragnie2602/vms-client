@@ -25,7 +25,7 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
     (await eventRepository.exportEvent(
       input.startTime != null ? input.startTime!.millisecondsSinceEpoch ~/ 1000 : null,
       input.endTime != null ? input.endTime!.millisecondsSinceEpoch ~/ 1000 : null,
-      input.eventType,
+      input.eventTypes,
       input.cameraIds,
     )).fold(
       (onFailure) => ExportEventOutput('', errorMsg: onFailure.parseMessage()),
