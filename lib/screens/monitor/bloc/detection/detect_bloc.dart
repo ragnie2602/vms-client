@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
@@ -13,6 +14,9 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
   DetectBloc(this.detectRepository) : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
     on<DetectOnReceiveEvent>(_onDetectOnReceiveEvent);
+    on<FilterEventsByViewingCameras>(_onFilterEventsByViewingCameras);
+    on<UpdateFilterTypes>(_onUpdateFilterTypes);
+    on<UpdateTabIndex>(_onUpdateTabIndex);
   }
 
   @override
@@ -21,27 +25,17 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     return super.close();
   }
 
-  FutureOr<void> _onDetectInitial(
-    DetectInitial event,
-    Emitter<DetectState> emit,
-  ) async {
+  FutureOr<void> _onDetectInitial(DetectInitial event, Emitter<DetectState> emit) async {
     emit(state.copyWith(status: DetectStatus.loading));
 
     // step1: Load danh sách loại sự kiện
     final result = await detectRepository.getListTypeEventDetect();
     result.fold(
       (failure) {
-        emit(
-          state.copyWith(
-            status: DetectStatus.failure,
-            errorMessage: failure.toString(),
-          ),
-        );
+        emit(state.copyWith(status: DetectStatus.failure, errorMessage: failure.toString()));
       },
       (typeEvents) {
-        emit(
-          state.copyWith(status: DetectStatus.success, typeEvents: typeEvents),
-        );
+        emit(state.copyWith(status: DetectStatus.success, typeEvents: typeEvents));
       },
     );
     // step 2: Lắng nghe sự kiện từ stream
@@ -49,20 +43,75 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     _subscription = detectRepository.receiveEventStream.listen((event) {
       add(DetectOnReceiveEvent(event));
     });
-    // fake data
-    // add(DetectOnReceiveEvent(ReceiveEventEntity()));
   }
 
-  FutureOr<void> _onDetectOnReceiveEvent(
-    DetectOnReceiveEvent event,
+  FutureOr<void> _onDetectOnReceiveEvent(DetectOnReceiveEvent event, Emitter<DetectState> emit) {
+    if (state.status == DetectStatus.success) {
+      final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)..insert(0, event.event);
+      // quá 100 cắt ở đây
+      if (newEvents.length > 100) {
+        newEvents.removeRange(100, newEvents.length);
+      }
+      emit(state.copyWith(receiveEvents: newEvents));
+
+      // Recalculate selectedEvents if filter is active
+      if (state.shouldShowSelectedEvents) {
+        _emitFilteredEvents(emit, newEvents);
+      }
+    }
+  }
+
+  FutureOr<void> _onFilterEventsByViewingCameras(
+    FilterEventsByViewingCameras event,
     Emitter<DetectState> emit,
   ) {
     if (state.status == DetectStatus.success) {
-      final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)
-        ..insert(0, event.event);
-      // quá 100 cắt ở đây
-
-      emit(state.copyWith(receiveEvents: newEvents));
+      emit(state.copyWith(viewingCameraIds: event.viewingCameraIds));
+      _emitFilteredEvents(emit, state.receiveEvents);
     }
+  }
+
+  FutureOr<void> _onUpdateFilterTypes(UpdateFilterTypes event, Emitter<DetectState> emit) {
+    if (state.status == DetectStatus.success) {
+      emit(state.copyWith(selectedFilterTypes: event.selectedTypes));
+      _emitFilteredEvents(emit, state.receiveEvents);
+    }
+  }
+
+  FutureOr<void> _onUpdateTabIndex(UpdateTabIndex event, Emitter<DetectState> emit) {
+    if (state.status == DetectStatus.success) {
+      final newViewingCameraIds = event.viewingCameraIds ?? state.viewingCameraIds;
+      emit(state.copyWith(currentTabIndex: event.tabIndex, viewingCameraIds: newViewingCameraIds));
+      _emitFilteredEvents(emit, state.receiveEvents);
+    }
+  }
+
+  void _emitFilteredEvents(Emitter<DetectState> emit, List<ReceiveEventEntity> sourceEvents) {
+    final filteredEvents = sourceEvents.where((receiveEvent) {
+      // Check camera filter (only if on "Cam đang xem" tab)
+      if (state.isViewingCamTab && state.viewingCameraIds.isNotEmpty) {
+        final eventCameraId = receiveEvent.cameraId;
+        if (eventCameraId == null || eventCameraId.isEmpty) return false;
+        final matchesCamera = state.viewingCameraIds.any(
+          (viewingId) => listEquals(eventCameraId, viewingId),
+        );
+        if (!matchesCamera) return false;
+      }
+
+      // Check type filter (if any filter types selected)
+      if (state.hasActiveFilter) {
+        final eventType = receiveEvent.eventType;
+        if (eventType == null) return false;
+        final matchesType = state.typeEvents.any(
+          (typeEvent) =>
+              state.selectedFilterTypes.contains(typeEvent.type) && typeEvent.typeName == eventType,
+        );
+        if (!matchesType) return false;
+      }
+
+      return true;
+    }).toList();
+
+    emit(state.copyWith(selectedEvents: filteredEvents));
   }
 }

@@ -9,29 +9,57 @@ class DetectState extends Equatable {
   final String errorMessage;
   final List<TypeEventDetectEntity> typeEvents;
   final List<ReceiveEventEntity> receiveEvents;
-  // final List<ReceiveEventEntity> selectorEvents;
+  final List<ReceiveEventEntity> selectedEvents;
+  final List<int> selectedFilterTypes;
+  final int currentTabIndex;
+  final List<List<int>> viewingCameraIds;
 
   const DetectState({
     this.status = DetectStatus.initial,
     this.errorMessage = '',
     this.typeEvents = const [],
     this.receiveEvents = const [],
+    this.selectedEvents = const [],
+    this.selectedFilterTypes = const [],
+    this.currentTabIndex = 0,
+    this.viewingCameraIds = const [],
   });
+
+  bool get hasActiveFilter => selectedFilterTypes.isNotEmpty;
+  bool get isViewingCamTab => currentTabIndex == 1;
+  bool get shouldShowSelectedEvents => hasActiveFilter || isViewingCamTab;
 
   DetectState copyWith({
     DetectStatus? status,
     String? errorMessage,
     List<TypeEventDetectEntity>? typeEvents,
     List<ReceiveEventEntity>? receiveEvents,
+    List<ReceiveEventEntity>? selectedEvents,
+    List<int>? selectedFilterTypes,
+    int? currentTabIndex,
+    List<List<int>>? viewingCameraIds,
   }) {
     return DetectState(
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
       typeEvents: typeEvents ?? this.typeEvents,
       receiveEvents: receiveEvents ?? this.receiveEvents,
+      selectedEvents: selectedEvents ?? this.selectedEvents,
+      selectedFilterTypes: selectedFilterTypes ?? this.selectedFilterTypes,
+      currentTabIndex: currentTabIndex ?? this.currentTabIndex,
+      viewingCameraIds: viewingCameraIds ?? this.viewingCameraIds,
     );
   }
 
   @override
-  List<Object?> get props => [status, errorMessage, typeEvents, receiveEvents];
+  List<Object?> get props => [
+    status,
+    errorMessage,
+    typeEvents,
+    receiveEvents,
+    selectedEvents,
+    selectedFilterTypes,
+    currentTabIndex,
+    viewingCameraIds,
+  ];
 }

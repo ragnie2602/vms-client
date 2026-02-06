@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
 import 'package:vms_flutter_client/screens/shared/popup_menu.dart';
 import 'package:vms_flutter_client/screens/shared/primary_checkbox.dart';
@@ -18,8 +19,7 @@ class AlertFilterBtn extends StatefulWidget {
 }
 
 class _AlertFilterBtnState extends State<AlertFilterBtn> {
-  late final CustomPopupMenuController _controller =
-      CustomPopupMenuController();
+  late final CustomPopupMenuController _controller = CustomPopupMenuController();
 
   final List<int> _selectedTypes = [];
 
@@ -40,10 +40,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
                 SizedBox(
                   width: 12,
                   height: 12,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.black,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.black),
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -68,11 +65,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
             child: Text(
               'Lỗi tải bộ lọc',
-              style: AppTypography.style(
-                13,
-                color: AppColors.black,
-                fontWeight: FontWeight.w400,
-              ),
+              style: AppTypography.style(13, color: AppColors.black, fontWeight: FontWeight.w400),
             ),
           );
         }
@@ -96,9 +89,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(33),
-              color: _selectedTypes.isNotEmpty
-                  ? AppColors.blueE7F3FF
-                  : Colors.transparent,
+              color: _selectedTypes.isNotEmpty ? AppColors.blueE7F3FF : Colors.transparent,
             ),
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
             child: Row(
@@ -108,27 +99,20 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
                   _getLabel(typeEvents),
                   style: AppTypography.style(
                     13,
-                    color: _selectedTypes.isNotEmpty
-                        ? AppColors.blue005AA9
-                        : AppColors.black,
+                    color: _selectedTypes.isNotEmpty ? AppColors.blue005AA9 : AppColors.black,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
                 const SizedBox(width: 6),
                 _selectedTypes.isNotEmpty
                     ? InkWell(
-                        onTap: () => setState(() => _selectedTypes.clear()),
-                        child: SvgPicture.asset(
-                          AppAssets.icCloseRounded,
-                          height: 12,
-                          width: 12,
-                        ),
+                        onTap: () {
+                          setState(() => _selectedTypes.clear());
+                          context.read<DetectBloc>().add(const UpdateFilterTypes([]));
+                        },
+                        child: SvgPicture.asset(AppAssets.icCloseRounded, height: 12, width: 12),
                       )
-                    : SvgPicture.asset(
-                        AppAssets.icArrowdown,
-                        height: 4,
-                        width: 8,
-                      ),
+                    : SvgPicture.asset(AppAssets.icArrowdown, height: 4, width: 8),
               ],
             ),
           ),
@@ -155,13 +139,11 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
             }
           });
           menuSetState(() {});
+          context.read<DetectBloc>().add(UpdateFilterTypes(List.from(_selectedTypes)));
         }
 
         return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: AppColors.white,
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.white),
           padding: const EdgeInsets.all(15),
           child: Material(
             color: Colors.transparent,
@@ -172,8 +154,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
               children: typeEvents.map((typeEvent) {
                 final type = typeEvent.type;
                 final name = typeEvent.name ?? '';
-                final isSelected =
-                    type != null && _selectedTypes.contains(type);
+                final isSelected = type != null && _selectedTypes.contains(type);
 
                 return InkWell(
                   onTap: () => type != null ? _select(type) : null,
