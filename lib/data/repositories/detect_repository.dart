@@ -21,11 +21,11 @@ class DetectRepository extends BaseRepository implements IDetectRepository {
 
   @override
   Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig({
-    required int eventTypeId,
+    required String eventTypeName,
   }) async {
     return await catchError<EventDisplayConfigEntity>(() async {
       final data = await service.getEventDisplayConfig(
-        eventTypeId: eventTypeId,
+        eventTypeName: eventTypeName,
       );
       return Right(data);
     });
@@ -43,12 +43,12 @@ class DetectRepository extends BaseRepository implements IDetectRepository {
   @override
   Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
     required List<String> listField,
-    required int eventTypeId,
+    required String eventTypeName,
   }) async {
     return await catchError<EventDisplayConfigEntity>(() async {
       final data = await service.updateEventDisplayConfig(
         listField: listField,
-        eventTypeId: eventTypeId,
+        eventTypeName: eventTypeName,
       );
       return Right(data);
     });

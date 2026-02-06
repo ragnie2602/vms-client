@@ -17,7 +17,8 @@ class MonitorAlerts extends StatefulWidget {
   State<MonitorAlerts> createState() => _MonitorAlertsState();
 }
 
-class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateMixin {
+class _MonitorAlertsState extends State<MonitorAlerts>
+    with TickerProviderStateMixin {
   late final TabController tabController;
 
   @override
@@ -51,7 +52,10 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
                         Expanded(
                           child: Text(
                             'Danh sách Cảnh báo',
-                            style: AppTypography.style(14, fontWeight: FontWeight.w700),
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w700,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -69,24 +73,37 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
                     padding: EdgeInsets.all(4),
                     child: CustomTabBar(controller: tabController),
                   ),
-                  SizedBox(height: 1, child: const Divider(color: AppColors.greyDFDFDF)),
+                  SizedBox(
+                    height: 1,
+                    child: const Divider(color: AppColors.greyDFDFDF),
+                  ),
                   Expanded(
-                    child: BlocSelector<DetectBloc, DetectState, List<ReceiveEventEntity>>(
-                      selector: (state) => state.receiveEvents,
-                      builder: (context, receiveEvents) {
-                        if (receiveEvents.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return ListView.builder(
-                          padding: EdgeInsets.zero,
-                          itemBuilder: (context, index) {
-                            final event = receiveEvents[index];
-                            return EventItem(event: event);
+                    child:
+                        BlocSelector<
+                          DetectBloc,
+                          DetectState,
+                          List<ReceiveEventEntity>
+                        >(
+                          selector: (state) => state.receiveEvents,
+                          builder: (context, receiveEvents) {
+                            if (receiveEvents.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return ListView.separated(
+                              padding: EdgeInsets.zero,
+                              itemBuilder: (context, index) {
+                                final event = receiveEvents[index];
+                                return EventItem(event: event);
+                              },
+                              itemCount: receiveEvents.length,
+                              separatorBuilder: (context, index) =>
+                                  const Divider(
+                                    height: 1,
+                                    color: AppColors.greyF2F2F2,
+                                  ),
+                            );
                           },
-                          itemCount: receiveEvents.length,
-                        );
-                      },
-                    ),
+                        ),
                   ),
                 ],
               ),

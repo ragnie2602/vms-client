@@ -9,6 +9,7 @@ class DetectState extends Equatable {
   final String errorMessage;
   final List<TypeEventDetectEntity> typeEvents;
   final List<ReceiveEventEntity> receiveEvents;
+  // final List<ReceiveEventEntity> selectorEvents;
 
   const DetectState({
     this.status = DetectStatus.initial,

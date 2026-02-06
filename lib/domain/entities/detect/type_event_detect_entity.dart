@@ -8,17 +8,19 @@ String typeEventDetectEnityToJson(TypeEventDetectEntity data) =>
 
 class TypeEventDetectEntity {
   int? type;
+  String? typeName; // dùng filter
   String? name;
   String? shortName;
 
-  TypeEventDetectEntity({this.type, this.name, this.shortName});
-
+  TypeEventDetectEntity({this.type, this.typeName, this.name, this.shortName});
   TypeEventDetectEntity copyWith({
     int? type,
+    String? typeName,
     String? name,
     String? shortName,
   }) => TypeEventDetectEntity(
     type: type ?? this.type,
+    typeName: typeName ?? this.typeName,
     name: name ?? this.name,
     shortName: shortName ?? this.shortName,
   );
@@ -26,12 +28,14 @@ class TypeEventDetectEntity {
   factory TypeEventDetectEntity.fromJson(Map<String, dynamic> json) =>
       TypeEventDetectEntity(
         type: json["type"],
+        typeName: json["typeName"],
         name: json["name"],
         shortName: json["shortName"],
       );
 
   Map<String, dynamic> toJson() => {
     "type": type,
+    "typeName": typeName,
     "name": name,
     "shortName": shortName,
   };

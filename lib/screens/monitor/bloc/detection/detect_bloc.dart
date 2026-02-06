@@ -60,6 +60,8 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     if (state.status == DetectStatus.success) {
       final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)
         ..insert(0, event.event);
+      // quá 100 cắt ở đây
+
       emit(state.copyWith(receiveEvents: newEvents));
     }
   }

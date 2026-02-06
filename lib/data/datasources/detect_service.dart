@@ -40,10 +40,10 @@ class DetectService {
   }
 
   Future<EventDisplayConfigEntity> getEventDisplayConfig({
-    required int eventTypeId,
+    required String eventTypeName,
   }) async {
     final raw = await httpClient.get(
-      EndPoints.eventDisplayConfigById(eventTypeId),
+      EndPoints.eventDisplayConfigByName(eventTypeName),
     );
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) {
@@ -54,10 +54,10 @@ class DetectService {
 
   Future<EventDisplayConfigEntity> updateEventDisplayConfig({
     required List<String> listField,
-    required int eventTypeId,
+    required String eventTypeName,
   }) async {
     final raw = await httpClient.put(
-      url: EndPoints.eventDisplayConfigById(eventTypeId),
+      url: EndPoints.eventDisplayConfigByName(eventTypeName),
       data: {'fields': listField},
     );
     final response = BaseResponse.fromJson(raw);
