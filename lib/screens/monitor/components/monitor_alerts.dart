@@ -155,7 +155,16 @@ class _MonitorAlertsState extends State<MonitorAlerts>
       builder: (context, data) {
         final events = data.$1;
         if (events.isEmpty) {
-          return const SizedBox.shrink();
+          return Center(
+            child: Text(
+              'Chưa có dữ liệu phù hợp',
+              style: AppTypography.style(
+                14,
+                color: AppColors.black,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          );
         }
         return Column(
           children: [
@@ -164,7 +173,7 @@ class _MonitorAlertsState extends State<MonitorAlerts>
                 padding: EdgeInsets.zero,
                 itemBuilder: (context, index) {
                   final event = events[index];
-                  return EventItem(event: event);
+                  return EventLiveViewItem(event: event);
                 },
                 itemCount: events.length,
               ),
