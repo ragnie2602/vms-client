@@ -144,16 +144,19 @@ class _MonitorAlertsState extends State<MonitorAlerts>
     return BlocSelector<
       DetectBloc,
       DetectState,
-      (List<ReceiveEventEntity>, bool)
+      (List<ReceiveEventEntity>, bool, bool)
     >(
       selector: (state) => (
         state.shouldShowSelectedEvents
             ? state.selectedEvents
             : state.receiveEvents,
         state.shouldShowSelectedEvents,
+        state.hasReachedMaxEvents,
       ),
       builder: (context, data) {
         final events = data.$1;
+        final hasReachedMax = data.$3;
+
         if (events.isEmpty) {
           return Center(
             child: Text(
@@ -178,35 +181,37 @@ class _MonitorAlertsState extends State<MonitorAlerts>
                 itemCount: events.length,
               ),
             ),
-            const Divider(height: 1, color: AppColors.greyF2F2F2),
-            InkWell(
-              onTap: () {
-                final eventsTab = HomeTab.tabs.firstWhereOrNull(
-                  (tab) => tab.route == Routes.events,
-                );
-                if (eventsTab == null) {
-                  return;
-                }
-                // chuyển tab
-                context.read<HomeBloc>().add(ChangeTab(eventsTab));
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 12,
-                ),
-                child: Center(
-                  child: Text(
-                    'Xem tất cả',
-                    style: AppTypography.style(
-                      14,
-                      color: AppColors.secondary,
-                      fontWeight: FontWeight.w600,
+            if (hasReachedMax) ...[
+              const Divider(height: 1, color: AppColors.greyF2F2F2),
+              InkWell(
+                onTap: () {
+                  final eventsTab = HomeTab.tabs.firstWhereOrNull(
+                    (tab) => tab.route == Routes.events,
+                  );
+                  if (eventsTab == null) {
+                    return;
+                  }
+                  // chuyển tab
+                  context.read<HomeBloc>().add(ChangeTab(eventsTab));
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 12,
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Xem tất cả',
+                      style: AppTypography.style(
+                        14,
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+            ],
           ],
         );
       },

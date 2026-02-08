@@ -47,12 +47,22 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
 
   FutureOr<void> _onDetectOnReceiveEvent(DetectOnReceiveEvent event, Emitter<DetectState> emit) {
     if (state.status == DetectStatus.success) {
-      final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)..insert(0, event.event);
+      final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)
+        ..insert(0, event.event);
+      bool? _reachedMax;
+
       // quá 100 cắt ở đây
       if (newEvents.length > 100) {
         newEvents.removeRange(100, newEvents.length);
+        _reachedMax = true;
       }
-      emit(state.copyWith(receiveEvents: newEvents));
+
+      emit(
+        state.copyWith(
+          receiveEvents: newEvents,
+          hasReachedMaxEvents: _reachedMax,
+        ),
+      );
 
       // Recalculate selectedEvents if filter is active
       if (state.shouldShowSelectedEvents) {
