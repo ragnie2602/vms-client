@@ -49,6 +49,9 @@ class AiBoxEntity {
   String? publicAddress;
   String? localAddress;
 
+  String get dropDownLabel => '$name ($numberCameraUsed/${maxCamera ?? '∞'})';
+  bool get isFullSlot => (maxCamera ?? 9999999999999) <= (numberCameraUsed ?? 0);
+
   AiBoxEntity({
     this.id,
     this.name,

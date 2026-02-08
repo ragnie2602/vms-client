@@ -1,21 +1,7 @@
-enum CameraAlarmConfigType {
-  zoneIntrusion('zone_intrusion'), // Cảnh báo xâm nhập
-  smoking('smoking'), // Cảnh báo hút thuốc
-  usingPhone('using_phone'), // Sử dụng điện thoại
-  fireAlarm('fire_alarm'), // Cảnh báo cháy
-  crowdGathering('crowd_gathering'), // Cảnh báo tụ tập
-  unknown('unknown');
-
-  final String key;
-  const CameraAlarmConfigType(this.key);
-  static CameraAlarmConfigType fromKey(String key) => CameraAlarmConfigType.values.firstWhere(
-    (element) => element.key == key,
-    orElse: () => CameraAlarmConfigType.unknown,
-  );
-}
+import 'al_alarm_type.dart';
 
 class CameraAlarmConfig {
-  final CameraAlarmConfigType type;
+  final AIAlarmType type;
   final String name;
   final String description;
   final String icon;
@@ -33,7 +19,7 @@ class CameraAlarmConfig {
 
   factory CameraAlarmConfig.fromJson(Map<String, dynamic> json) {
     return CameraAlarmConfig(
-      type: CameraAlarmConfigType.fromKey(json['eventCode'] ?? ''),
+      type: AIAlarmType.fromKey(json['eventType'] ?? ''),
       name: json['eventName'],
       status: json['status'],
       description: json['eventSubName'] ?? '',

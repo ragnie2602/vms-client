@@ -5,7 +5,6 @@ import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
 import 'package:vms_flutter_client/domain/entities/camera/import_camera_entity.dart';
 
-import '../entities/camera/camera_alarm_config.dart';
 import '../entities/camera/camera_entity.dart';
 
 abstract class ICameraRepository {
@@ -39,7 +38,4 @@ abstract class ICameraRepository {
   // camera info
   Future<Either<Failure, CameraInfoEntity>> getCameraInfo({required List<int> cameraId});
   Future<Either<Failure, ImportCameraEntity>> importCamera({required List<ImportCameraCell> cameras});
-
-  /* AI Config */
-  Future<Either<Failure, List<CameraAlarmConfig>>> getAiAlarmConfigs(String cameraId);
 }

@@ -2,21 +2,79 @@ part of 'alarm_config_popup.dart';
 
 class PropertiesConfig extends StatefulWidget {
   final CameraAlarmConfig alarm;
-  const PropertiesConfig({super.key, required this.alarm});
+  final AIAlarmConfig alarmConfig;
+  const PropertiesConfig({super.key, required this.alarm, required this.alarmConfig});
 
   @override
   State<PropertiesConfig> createState() => _PropertiesConfigState();
 }
 
-class _PropertiesConfigState extends State<PropertiesConfig> {
+class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMixin {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  late final aiBoxBloc = AiBoxBloc(
+    aiBoxRepository: context.read(),
+    filterAiBoxUseCase: context.read(),
+  );
+  late final alarmSoundBloc = AlarmSoundBloc(context.read());
 
-  bool isEnabled = true;
-  String aiBox = '';
-  String sound = '';
+  AiBoxEntity? _selectedAiBox;
+  AiBoxEntity? get selectedAiBox => _selectedAiBox;
+  set selectedAiBox(AiBoxEntity? value) {
+    _selectedAiBox = value;
+    widget.alarmConfig.aiBoxId = value?.id;
+  }
+
+  AlarmSound? _selectedSound;
+  AlarmSound? get selectedSound => _selectedSound;
+  set selectedSound(AlarmSound? value) {
+    _selectedSound = value;
+    widget.alarmConfig.soundId = value?.id;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    aiBoxBloc.add(
+      GetListAiBoxEvent(
+        onSuccess: () {
+          if (selectedAiBox != null || aiBoxBloc.listAiBox.isEmpty) return;
+
+          // Init suggested AI Box
+          selectedAiBox = aiBoxBloc.listAiBox.firstWhere(
+            (e) => e.id == widget.alarmConfig.suggestedAiBoxId,
+            orElse: () => aiBoxBloc.listAiBox.first,
+          );
+
+          // Init full slot AI Box
+          if (selectedAiBox?.isFullSlot == true) {
+            selectedAiBox = aiBoxBloc.listAiBox.firstWhereOrNull((e) => !e.isFullSlot);
+          }
+
+          // Có giá trị thì update UI
+          if (selectedAiBox != null) setState(() {});
+        },
+      ),
+    );
+
+    alarmSoundBloc.add(
+      GetAlarmSounds(
+        onSuccess: () {
+          if (widget.alarmConfig.soundId == null) return;
+
+          selectedSound = (alarmSoundBloc.state as AlarmSoundLoaded).alarmSounds.firstWhereOrNull(
+            (e) => e.id == widget.alarmConfig.soundId,
+          );
+          if (selectedSound != null) setState(() {});
+        },
+      ),
+    );
+  }
 
   @override
   void dispose() {
+    aiBoxBloc.close();
+    alarmSoundBloc.close();
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -51,10 +109,10 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
                   thumbColor: WidgetStateProperty.all(Colors.white),
                   trackOutlineWidth: WidgetStateProperty.all(0),
                   trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                  value: isEnabled,
+                  value: widget.alarmConfig.status == 1,
                   splashRadius: 0,
                   onChanged: (value) {
-                    setState(() => isEnabled = value);
+                    setState(() => widget.alarmConfig.status = value ? 1 : 0);
                   },
                 ),
               ),
@@ -69,48 +127,172 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
         SizedBox(height: 16),
         Text("Chọn thiết bị phân tích AI", style: titleStyle),
         SizedBox(height: 8),
-        _buildDropdown<String>(
-          hint: 'Vui lòng chọn thiết bị phân tích AI',
-          initialValue: aiBox,
-          items: ['AI Box 1', 'AI Box 2', 'AI Box 3'],
-          onChanged: (value) {
-            setState(() => aiBox = value);
-          },
-        ),
+        _buildAiBoxSelection(),
 
         /* Select Sound */
         SizedBox(height: 16),
         Text("Âm thanh cảnh báo", style: titleStyle),
         SizedBox(height: 8),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Expanded(
-              child: _buildDropdown<String>(
-                hint: 'Vui lòng chọn âm thanh cảnh báo',
-                prefixIcon: SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: Center(child: SvgPicture.asset(AppAssets.icVolume, width: 16, height: 16)),
-                ),
-                initialValue: sound,
-                items: [
-                  'https://zeta.123tokyo.xyz/get.php/3/fc/qY6TXEb5UlM.mp3?n=Vietsub%20%E2%99%AA%20%E2%9F%A8%E2%9F%A8%20Nippori%EF%BD%9C%E6%97%A5%E6%9A%AE%E9%87%8C%20%E2%9F%A9%E2%9F%A9%20M%C3%A8o%20C%E1%BB%A7a%20Ch%E1%BB%A7%20Nh%C3%A0%EF%BD%9C%E6%88%BF%E4%B8%9C%E7%9A%84%E7%8C%AB%20__%20BGM%20OST%20Y%E1%BA%BFt%20H%C3%AD%EF%BD%9CLove%20Between%20Lines%20%E8%BD%A7%E6%88%8F&h=l2eA6RHiGg-59q09ePH6nw&s=1770267308&cid2=MTEzLjE5MC4yNDAuMjM4fFZOfFJJMUE%3D&uT=X',
-                  'https://serv2.y2dl.space/dl/xQvmF4CsQ1E?token=bkgVnh8QjOiXQeho-hwgDv0g0E23VdCuDmSOqIUQLDO1wkvUyZt95RTBYQrJK9Q7Lsr3WUllT3r4TI7gFCWinEX9I-ACoKEDvgwavZU25N1eORS231VN7XcfPYVaNkqsP-HVJ2X0a82WDSAmXndc2t__MhIZ_lDNmOKvF19z8qPlHiC3CEIhtNWquYvEf-vZGLNjll8ZgP3NbM-fHprKSWCHdB3ZXPjrzg.7AXvJR1i4clyCjQCuSGwcDGB8ytyTe5SpEypS7CTF-8&name=50+N%C4%83m+V%E1%BB%81+Sau+%28%C4%90%E1%BA%B7ng+Thanh+Tuy%E1%BB%81n%29+-+Nam+Ca+S%C4%A9+Gi%E1%BA%A5u+M%E1%BA%B7t+Cover+x+CaoTri+%7C+Nguy%E1%BB%87n+C%E1%BA%A7u+%C4%90%E1%BA%BFn+50+N%C4%83m+V%E1%BB%81+Sau',
-                  'https://serv2.y2dl.space/dl/hsXR0TLPIBE?token=s9UfIAerOKz4XR_oyytHivVGGFvh9v9x2qTLpXTZXOmxx51yGz0gODoV0a713HvM6RXD0rSDyGT8oLLojMCIa-iV4WSQJ4Q36VmS5tf1_vv6tNuiyIevp0DpCy2b1noza0qI3PyZw34o2XalfK-CPaMEHHEZyPKpS35Yt39RkU2IkE-9HLiI9Dr7fPL-IFR8vtS5wZ8jqoGF_TmuHobngBbjYgmiTkVbfQ.lReeX40OCcbv8QGC7kZpL6P0S_40h0TZJN9mc_JAurw&name=Ng%C3%A0y+Th%C3%A1ng+Sau+N%C3%A0y+-+Lillie+x+ViAM+%7C+Ng%C3%A0y+th%C3%A1ng+sau+n%C3%A0y+ph%E1%BA%A3i+nh%E1%BB%9B+%E1%BB%9F+b%C3%AAn+m%E1%BB%99t+ng%C6%B0%E1%BB%9Di+th%E1%BA%ADt+l%C3%B2ng',
-                  'https://serv2.y2dl.space/dl/0TicL3SiZKo?token=f4wKbUTu8GRTAYzk8P6S8SCQV-EJEccMPtrnU54f0EEA7KbKj70PX0zlo1o49HpOXsIMo4UCqEskD22gAuG97KVVXoE_krnU3nH-Tsm_hFfqzUWStzmckjiXQjAR_KcHajgt3NcNKIp_q0BlFVRoEAthc9CTzxntVgMnOYlyPPu9Rtp48ReLEPM1MZuDcMG4inG-pwxjB1frdGoYyJs-Wl7QICw78LYyeQ.fRoDz2dnfARLSrQOlPCsQ0i6fq9I8AcDZavql31UiZU&name=M%C6%B0a+C%E1%BB%A7a+Tr%E1%BB%9Di+M%C3%A2y+-+Ca+S%C4%A9+Gi%E1%BA%A5u+M%E1%BA%B7t+Cover+%7C+L%E1%BB%9Di+N%C3%B3i+D%E1%BB%91i+Ch%C3%A2n+Th%E1%BA%ADt+Nh%E1%BA%A5t+L%C3%A0+Em+Ch%C6%B0a+Bao+Gi%E1%BB%9D+H%E1%BA%BFt+Y%C3%AAu',
-                  'https://serv2.y2dl.space/dl/hGSIto3FlQQ?token=LOutGXR_wkNawKT0uHcMDQvVPxS2eKVa-2yy68_wPTa_u-m6_Bmd6zomb5z8eIkLpU4V2BRTwlHN0SvG0KbtZZgXn_yS1J-pkUR3OSZACJXdgfYHt7Yrsd2LSBV4gF2yeUh-yR1KL484AlSrglLPPh0BQoPAmvZ45AmoS-ypDLztrRYSKvw-blm9L-eUy6PkjDET6B0yBi3naysKYUw7gPJtV6fsxDoq5w.ChxzieFLpf2nS7g2DpfcA2gOZWJ9n9-plJd7zq3IWqo&name=C%C3%A1nh+Hoa+H%C3%A9o+T%C3%A0n+%28+Lofi+Ver+%29+-+Mochiii+%7C+Gi%E1%BB%91ng+nh%C6%B0+m%E1%BB%99t+v%E1%BB%9F+k%E1%BB%8Bch+bu%E1%BB%93n+anh+di%E1%BB%85n+tr%E1%BB%8Dn+c%E1%BA%A3+hai+vai',
-                ],
-                onChanged: (value) {
-                  setState(() => sound = value);
-                  _audioPlayer.stop();
-                },
-              ),
-            ),
-            SizedBox(width: 16),
-            _buildAudioPlayerButton(sound),
+            Expanded(child: _buildAlarmSoundSelection()),
+            SizedBox(width: 12),
+            _buildAudioPlayerButton(selectedSound?.url),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildAiBoxSelection() {
+    String? errorMsg;
+    if (selectedAiBox != null && selectedAiBox!.isFullSlot) {
+      errorMsg = "Thiết bị này đã hết kênh phân tích, vui lòng chọn thiết bị khác";
+    }
+
+    return _buildDropdown<AiBoxEntity?>(
+      hint: 'Vui lòng chọn thiết bị phân tích AI',
+      initialValue: selectedAiBox,
+      buildLabel: (data) => data!.dropDownLabel,
+      onChanged: (value) => setState(() => selectedAiBox = value),
+      errorText: errorMsg,
+      itemBuilder: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(minHeight: 36),
+        child: BlocProvider.value(
+          value: aiBoxBloc,
+          child: BlocBuilder<AiBoxBloc, AiBoxState>(
+            builder: (context, state) => stateBuilder<AIBoxLoadedState>(
+              state,
+              errorBuilder: (message) => _buildStateError(
+                "Có lỗi xảy ra trong quá trình tải danh sách thiết bị phân tích AI, hãy thử lại sau!",
+                () => aiBoxBloc.add(GetListAiBoxEvent()),
+              ),
+              loadingBuilder: () => Center(
+                child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
+              ),
+              emptyBuilder: () => Center(
+                child: Text(
+                  'Không còn kênh phân tích trống nào.',
+                  maxLines: 3,
+                  textAlign: TextAlign.center,
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.redFF2F2F,
+                  ),
+                ),
+              ),
+              child: (state) => ListView.separated(
+                shrinkWrap: true,
+                itemCount: state.aiBoxes?.length ?? 0,
+                separatorBuilder: (context, index) => Container(
+                  margin: EdgeInsets.symmetric(horizontal: 16),
+                  color: AppColors.greyF2F4FA,
+                  height: 1,
+                ),
+                itemBuilder: (context, index) {
+                  final item = state.aiBoxes![index];
+
+                  return InkWell(
+                    onTap: () => Navigator.pop(context, item),
+                    child: Container(
+                      color: item.id == selectedAiBox?.id
+                          ? Theme.of(context).highlightColor
+                          : Colors.transparent,
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text(
+                        item.dropDownLabel,
+                        maxLines: 3,
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          lineHeight: 20 / 14,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlarmSoundSelection() {
+    return _buildDropdown<AlarmSound?>(
+      hint: 'Vui lòng chọn âm thanh cảnh báo',
+      initialValue: selectedSound,
+      buildLabel: (data) => data!.name,
+      onChanged: (value) => setState(() => selectedSound = value),
+      errorText: _selectedSound == null ? 'Vui lòng chọn âm thanh cảnh báo' : null,
+      itemBuilder: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(minHeight: 36),
+        child: BlocProvider.value(
+          value: alarmSoundBloc,
+          child: BlocBuilder<AlarmSoundBloc, AlarmSoundState>(
+            builder: (context, state) => stateBuilder<AlarmSoundLoaded>(
+              state,
+              errorBuilder: (message) => _buildStateError(
+                "Có lỗi xảy ra trong quá trình tải danh sách âm thanh cảnh báo, hãy thử lại sau!",
+                () => alarmSoundBloc.add(GetAlarmSounds()),
+              ),
+              loadingBuilder: () => Center(
+                child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
+              ),
+              emptyBuilder: () => Center(
+                child: Text(
+                  'Không có âm thanh cảnh báo nào.',
+                  maxLines: 3,
+                  textAlign: TextAlign.center,
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.redFF2F2F,
+                  ),
+                ),
+              ),
+              child: (state) => ListView.separated(
+                shrinkWrap: true,
+                itemCount: state.alarmSounds.length,
+                separatorBuilder: (context, index) => Container(
+                  margin: EdgeInsets.symmetric(horizontal: 16),
+                  color: AppColors.greyF2F4FA,
+                  height: 1,
+                ),
+                itemBuilder: (context, index) {
+                  final item = state.alarmSounds[index];
+
+                  return InkWell(
+                    onTap: () => Navigator.pop(context, item),
+                    child: Container(
+                      color: item.id == selectedSound?.id
+                          ? Theme.of(context).highlightColor
+                          : Colors.transparent,
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text(
+                        item.name,
+                        maxLines: 3,
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          lineHeight: 20 / 14,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -120,12 +302,15 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
     String title = '';
 
     switch (widget.alarm.type) {
-      case CameraAlarmConfigType.zoneIntrusion:
-      case CameraAlarmConfigType.usingPhone:
+      case AIAlarmType.zoneIntrusion:
+      case AIAlarmType.usingPhone:
         tooltip = 'Giới hạn cho phép từ 1 - 3600 giây.';
         title = 'Thời gian xuất hiện trong khu vực quá:';
+        if (widget.alarmConfig.alarmConditions.keepTimeThreshold == null) {
+          widget.alarmConfig.alarmConditions.keepTimeThreshold = 10;
+        }
         content = TextFormField(
-          initialValue: '10',
+          initialValue: widget.alarmConfig.alarmConditions.keepTimeThreshold?.toString(),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (value) {
             int? intValue = int.tryParse(value ?? '');
@@ -136,7 +321,9 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
             return null;
           },
           onChanged: (value) {
-            //
+            setState(
+              () => widget.alarmConfig.alarmConditions.keepTimeThreshold = int.tryParse(value),
+            );
           },
           cursorWidth: 1.5,
           style: AppTypography.style(
@@ -196,7 +383,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
           ),
         );
         break;
-      case CameraAlarmConfigType.fireAlarm:
+      case AIAlarmType.fireAlarm:
         title = 'Cảnh báo cháy trong điều kiện:';
         content = _buildDropdown<String>(
           fillColor: Colors.white,
@@ -249,14 +436,17 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
 
   Widget _buildDropdown<T>({
     required T initialValue,
-    required List<T> items,
+    String Function(T)? buildLabel,
+    List<T>? items,
+    Widget? itemBuilder,
     required Function(T) onChanged,
     Widget? prefixIcon,
     String? hint,
     String? errorText,
     Color? fillColor,
+    double? popupMaxHeight,
   }) {
-    return LayoutBuilder(
+    final child = LayoutBuilder(
       builder: (context, constraints) {
         bool showHint = initialValue == null || initialValue == '';
 
@@ -267,6 +457,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
           constraints: BoxConstraints(
             minWidth: constraints.maxWidth,
             maxWidth: constraints.maxWidth,
+            maxHeight: popupMaxHeight ?? MediaQuery.of(context).size.height * 0.35,
           ),
           onSelected: onChanged,
           shape: RoundedRectangleBorder(
@@ -278,29 +469,36 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
           color: Colors.white,
           initialValue: initialValue,
           itemBuilder: (context) => [
-            for (var e in items) ...[
-              PopupMenuItem<T>(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                height: 36,
-                value: e,
-                child: Text(
-                  e.toString(),
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w400,
-                    lineHeight: 20 / 14,
-                    color: Color(0xFF0F172A),
+            // Fix cứng
+            if (items != null) ...[
+              for (var e in items) ...[
+                PopupMenuItem<T>(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  height: 36,
+                  value: e,
+                  child: Text(
+                    e.toString(),
+                    maxLines: 3,
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      lineHeight: 20 / 14,
+                      color: Color(0xFF0F172A),
+                    ),
                   ),
                 ),
-              ),
-              PopupMenuDivider(
-                color: AppColors.greyF2F4FA,
-                height: 1.5,
-                thickness: 1.5,
-                indent: 16,
-                endIndent: 16,
-              ),
-            ],
+                PopupMenuDivider(
+                  color: AppColors.greyF2F4FA,
+                  height: 1.5,
+                  thickness: 1.5,
+                  indent: 16,
+                  endIndent: 16,
+                ),
+              ],
+            ]
+            // Dynamic
+            else if (itemBuilder != null)
+              PopupMenuItem(padding: EdgeInsets.zero, enabled: false, child: itemBuilder),
           ],
           child: SizedBox(
             height: 40,
@@ -333,7 +531,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
                 ),
               ),
               child: Text(
-                showHint ? hint ?? '' : initialValue.toString(),
+                showHint ? hint ?? '' : buildLabel?.call(initialValue) ?? initialValue.toString(),
                 style: showHint
                     ? AppTypography.style(
                         12.5,
@@ -353,21 +551,46 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
         );
       },
     );
+
+    if (errorText != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          child,
+          Padding(
+            padding: const EdgeInsets.only(left: 10, top: 4),
+            child: Text(
+              maxLines: 3,
+              errorText,
+              style: AppTypography.style(
+                11,
+                fontWeight: FontWeight.w400,
+                color: AppColors.redFF2F2F,
+                lineHeight: 14 / 11,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return child;
   }
 
-  Widget _buildAudioPlayerButton(String source) {
+  Widget _buildAudioPlayerButton(String? source) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: source.isNotEmpty
+        onTap: source != null
             ? () => switch (_audioPlayer.state.value) {
                 AudioPlayerState.playing => _audioPlayer.pause(),
                 AudioPlayerState.paused => _audioPlayer.resume(),
                 AudioPlayerState.initializing => null,
-                _ => _audioPlayer.play(sound),
+                _ => _audioPlayer.play(source),
               }
             : null,
-        mouseCursor: source.isNotEmpty ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
+        mouseCursor: source != null ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
         borderRadius: BorderRadius.circular(6),
         child: ValueListenableBuilder<int>(
           valueListenable: _audioPlayer.positionController,
@@ -425,6 +648,37 @@ class _PropertiesConfigState extends State<PropertiesConfig> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStateError(String message, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Column(
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              style: AppTypography.style(
+                13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.redFF2F2F,
+                lineHeight: 16 / 13,
+              ),
+            ),
+            SizedBox(height: 2),
+            SvgPicture.asset(
+              AppAssets.icRefresh,
+              width: 32,
+              height: 32,
+              colorFilter: ColorFilter.mode(AppColors.redFF2F2F, BlendMode.srcIn),
+            ),
+          ],
         ),
       ),
     );

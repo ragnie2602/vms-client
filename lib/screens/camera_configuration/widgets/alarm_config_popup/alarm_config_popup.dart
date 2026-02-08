@@ -4,77 +4,129 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_alarm_config.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/domain/entities/ai_alarm/ai_alarm_config.dart';
+import 'package:vms_flutter_client/domain/entities/ai_alarm/alarm_sound.dart';
+import 'package:vms_flutter_client/domain/entities/ai_alarm/camera_alarm_config.dart';
+import 'package:vms_flutter_client/domain/entities/ai_box/ai_box_entity.dart';
+import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
+import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_event.dart';
+import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_state.dart';
+import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 
 import '../../../shared/player/audio_player.dart';
+import '../../bloc/alarm_config_detail/alarm_config_detail_bloc.dart';
+import '../../bloc/alarm_sound/alarm_sound_bloc.dart';
 
-part 'title_with_tooltip.dart';
 part 'properties_config.dart';
 part 'roi_area_config.dart';
 part 'time_ranges_config.dart';
+part 'title_with_tooltip.dart';
 
-class AlarmConfigPopup extends StatelessWidget {
+class AlarmConfigPopup extends StatelessWidget with StateBuilderMixin {
   final CameraAlarmConfig alarm;
-  const AlarmConfigPopup({super.key, required this.alarm});
+  final String cameraId;
+  const AlarmConfigPopup({super.key, required this.alarm, required this.cameraId});
+
+  void _handleSave(BuildContext context) {
+    final alarmConfig =
+        (context.read<AlarmConfigDetailBloc>().state as AlarmConfigDetailLoaded).alarmConfig;
+
+    print(alarmConfig);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      backgroundColor: Color(0xFFFCFDFD),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      titlePadding: EdgeInsets.fromLTRB(24, 14, 24 - 12, 14),
-      contentPadding: EdgeInsets.zero,
-      title: _buildTitle(context),
-      content: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(width: 1, color: AppColors.greyF2F4FA),
-            bottom: BorderSide(width: 1, color: AppColors.greyF2F4FA),
-          ),
-          color: AppColors.white,
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        width: MediaQuery.of(context).size.width * 0.5,
-        height: 640,
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(flex: 2, child: PropertiesConfig(alarm: alarm)),
-                SizedBox(width: 12),
-                Expanded(flex: 3, child: ROIAreaConfig()),
-              ],
-            ),
+    final dialogWidth = MediaQuery.of(context).size.width * 0.5;
 
-            /* Time range */
-            SizedBox(height: 18),
-            Expanded(child: TimeRangesConfig()),
-          ],
+    return BlocProvider(
+      create: (context) => AlarmConfigDetailBloc(context.read())
+        ..add(GetAlarmConfigDetail(cameraId: cameraId, type: alarm.type.key, status: alarm.status)),
+      child: AlertDialog(
+        backgroundColor: Color(0xFFFCFDFD),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        titlePadding: EdgeInsets.fromLTRB(24, 14, 24 - 12, 14),
+        contentPadding: EdgeInsets.zero,
+        title: _buildTitle(context),
+        content: Container(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(width: 1, color: AppColors.greyF2F4FA)),
+            color: AppColors.white,
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(15),
+              bottomRight: Radius.circular(15),
+            ),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          width: dialogWidth,
+          height: MediaQuery.of(context).size.height * 0.65,
+          child: BlocBuilder<AlarmConfigDetailBloc, AlarmConfigDetailState>(
+            builder: (context, state) => stateBuilder<AlarmConfigDetailLoaded>(
+              state,
+              errorBuilder: (message) => _buildErrorWidget(message, context),
+              child: (state) => Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Expanded(
+                        flex: 2,
+                        child: PropertiesConfig(alarm: alarm, alarmConfig: state.alarmConfig),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(flex: 3, child: ROIAreaConfig(alarmConfig: state.alarmConfig)),
+                    ],
+                  ),
+
+                  /* Time range */
+                  SizedBox(height: 18),
+                  Expanded(child: TimeRangesConfig(alarmConfig: state.alarmConfig)),
+
+                  /* Actions */
+                  Container(
+                    height: 1,
+                    margin: EdgeInsets.only(top: 24),
+                    child: OverflowBox(
+                      maxWidth: dialogWidth,
+                      alignment: Alignment.center,
+                      child: Container(height: 1, color: AppColors.greyF2F4FA),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(4, 16, 4, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        _buildActionBtn(
+                          text: 'Hủy',
+                          bgColor: AppColors.white,
+                          fgColor: Color(0xFF374151),
+                          borderColor: AppColors.greyD1D5DB,
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        SizedBox(width: 18),
+                        _buildActionBtn(
+                          text: 'Lưu',
+                          bgColor: Color(0xFF005EB8),
+                          fgColor: Colors.white,
+                          onPressed: () => _handleSave(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
-      actionsPadding: EdgeInsets.fromLTRB(24, 16, 24, 16),
-      actions: [
-        _buildActionBtn(
-          text: 'Hủy',
-          bgColor: AppColors.white,
-          fgColor: Color(0xFF374151),
-          borderColor: AppColors.greyD1D5DB,
-          onPressed: () => Navigator.pop(context),
-        ),
-        SizedBox(width: 1),
-        _buildActionBtn(
-          text: 'Lưu',
-          bgColor: Color(0xFF005EB8),
-          fgColor: Colors.white,
-          onPressed: () => Navigator.pop(context),
-        ),
-      ],
     );
   }
 
@@ -151,6 +203,36 @@ class AlarmConfigPopup extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: fgColor,
           lineHeight: 20 / 14,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String message, BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => context.read<AlarmConfigDetailBloc>().add(
+        GetAlarmConfigDetail(cameraId: cameraId, type: alarm.type.key, status: alarm.status),
+      ),
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        alignment: Alignment.center,
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.redFF2F2F,
+              ),
+            ),
+            SizedBox(height: 6),
+            Icon(Icons.refresh, size: 28, color: AppColors.redFF2F2F),
+          ],
         ),
       ),
     );

@@ -18,6 +18,7 @@ class EndPoints {
 
   // Camera
   static const String cameraAiConfig = '/api/cameras/ai-configs';
+  static const String alarmSound = '/api/cameras/ai-configs/sounds';
 
   // User management
   static const String baseUser = '/api/users';

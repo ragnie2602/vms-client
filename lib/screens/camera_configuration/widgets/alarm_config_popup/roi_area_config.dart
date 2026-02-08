@@ -1,18 +1,31 @@
 part of 'alarm_config_popup.dart';
 
 class ROIAreaConfig extends StatefulWidget {
-  const ROIAreaConfig({super.key, this.borderRadius = const Radius.circular(8)});
+  const ROIAreaConfig({
+    super.key,
+    this.borderRadius = const Radius.circular(8),
+    required this.alarmConfig,
+  });
   final Radius borderRadius;
+  final AIAlarmConfig alarmConfig;
 
   @override
   State<ROIAreaConfig> createState() => _ROIAreaConfigState();
 }
 
 class _ROIAreaConfigState extends State<ROIAreaConfig> {
-  List<PolygonRegion> regions = [];
-  bool isDrawing = false;
+  int drawingRegionIndex = -1;
+  bool _isDrawing = false;
+  bool get isDrawing => _isDrawing;
+  set isDrawing(bool value) {
+    _isDrawing = value;
+    if (isDrawing) {
+      widget.alarmConfig.rois.add(ROIConfig(points: []));
+    } else if (widget.alarmConfig.rois.last.points.length < 3) {
+      widget.alarmConfig.rois.removeLast();
+    }
+  }
 
-  // Biến lưu trữ điểm đang được kéo thả
   int? draggingRegionIndex;
   int? draggingPointIndex;
 
@@ -32,16 +45,7 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
             ),
             Spacer(),
             InkWell(
-              onTap: () {
-                setState(() {
-                  isDrawing = !isDrawing;
-                  if (isDrawing) {
-                    regions.add(PolygonRegion(points: []));
-                  } else if (regions.last.points.length < 3) {
-                    regions.removeLast();
-                  }
-                });
-              },
+              onTap: () => setState(() => isDrawing = !isDrawing),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
@@ -100,11 +104,12 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
                       }
 
                       // 2. Kiểm tra xem có nhấn vào điểm nào hiện có để KÉO THẢ không
-                      for (int r = 0; r < regions.length; r++) {
-                        for (int p = 0; p < regions[r].points.length; p++) {
-                          final point = regions[r].points[p];
+                      for (int r = 0; r < widget.alarmConfig.rois.length; r++) {
+                        for (int p = 0; p < widget.alarmConfig.rois[r].points.length; p++) {
+                          final point = widget.alarmConfig.rois[r].points[p];
+                          final offset = Offset(point.x * maxWidth, point.y * maxHeight);
                           // Kiểm tra khoảng cách chuột đến điểm (bán kính tương tác là 15)
-                          if ((event.localPosition - point).distance < 15) {
+                          if ((event.localPosition - offset).distance < 15) {
                             setState(() {
                               draggingRegionIndex = r;
                               draggingPointIndex = p;
@@ -116,8 +121,15 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
 
                       // 3. Nếu đang ở mode vẽ và không nhấn vào điểm cũ -> Thêm điểm mới
                       if (isDrawing && event.buttons == kPrimaryMouseButton) {
-                        print(event.localPosition);
-                        setState(() => regions.last.points.add(event.localPosition));
+                        setState(
+                          () => widget.alarmConfig.rois.last.points.add(
+                            ROIData(
+                              x: event.localPosition.dx / maxWidth,
+                              y: event.localPosition.dy / maxHeight,
+                              seq: widget.alarmConfig.rois.last.points.length + 1,
+                            ),
+                          ),
+                        );
                       }
                     },
                     onPointerMove: (event) {
@@ -156,7 +168,18 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
                             pos = Offset(x, y);
                           }
 
-                          regions[draggingRegionIndex!].points[draggingPointIndex!] = pos;
+                          widget
+                              .alarmConfig
+                              .rois[draggingRegionIndex!]
+                              .points[draggingPointIndex!] = ROIData(
+                            x: pos.dx / maxWidth,
+                            y: pos.dy / maxHeight,
+                            seq: widget
+                                .alarmConfig
+                                .rois[draggingRegionIndex!]
+                                .points[draggingPointIndex!]
+                                .seq,
+                          );
                         });
                       }
                     },
@@ -172,23 +195,27 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
                     child: CustomPaint(
                       size: Size(maxWidth, maxHeight),
                       painter: DashPolygonPainter(
-                        regions: regions,
+                        rois: widget.alarmConfig.rois,
                         dashBorderRadius: widget.borderRadius,
                       ),
                     ),
                   ),
 
                   if (!isDrawing)
-                    ...regions.mapIndexed((idx, region) {
+                    ...widget.alarmConfig.rois.mapIndexed((idx, region) {
                       // Tính toán vị trí: lấy điểm đầu tiên và đẩy vào trong 20px
-                      final buttonPos = _getInwardPosition(region.points, 20);
+                      final buttonPos = _getInwardPosition(
+                        region.points,
+                        20,
+                        Size(maxWidth, maxHeight),
+                      );
 
                       return Positioned(
                         left: buttonPos.dx - 8, // child / 2
                         top: buttonPos.dy - 8,
                         child: GestureDetector(
                           onTap: () {
-                            setState(() => regions.removeAt(idx));
+                            setState(() => widget.alarmConfig.rois.removeAt(idx));
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -210,13 +237,15 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
     );
   }
 
-  Offset _getInwardPosition(List<Offset> points, double offsetDistance) {
-    if (points.length < 3) return points.first;
+  Offset _getInwardPosition(List<ROIData> points, double offsetDistance, Size areaSize) {
+    if (points.length < 3) {
+      return Offset(points.first.x * areaSize.width, points.first.y * areaSize.height);
+    }
 
     // Lấy 3 điểm: điểm cuối, điểm đầu, và điểm thứ hai để tính góc tại điểm đầu
-    final pPrev = points.last;
-    final pCurrent = points.first;
-    final pNext = points[1];
+    final pPrev = Offset(points.last.x * areaSize.width, points.last.y * areaSize.height);
+    final pCurrent = Offset(points.first.x * areaSize.width, points.first.y * areaSize.height);
+    final pNext = Offset(points[1].x * areaSize.width, points[1].y * areaSize.height);
 
     // Tính vector của 2 cạnh kề
     Offset v1 = (pPrev - pCurrent);
@@ -249,18 +278,27 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
   }
 }
 
-class PolygonRegion {
-  List<Offset> points;
+class DashPolygonPainter extends CustomPainter {
+  final List<ROIConfig> rois;
 
-  /* Config */
+  /* Border */
+  final Color dashBorderColor;
+  final Radius dashBorderRadius;
+  final List<double> dashBorderArray;
+
+  /* Region */
   final List<double> dashArray;
   final Color mainColor;
   final double circleRadius;
   final double circleBorderWidth;
   final double dashWidth;
 
-  PolygonRegion({
-    required this.points,
+  DashPolygonPainter({
+    required this.rois,
+    this.dashBorderColor = const Color(0xFFD1D5D8),
+    this.dashBorderRadius = const Radius.circular(8),
+    this.dashBorderArray = const [6, 4],
+
     this.dashArray = const [6, 5],
     this.mainColor = const Color(0xFFEF4444),
     this.circleRadius = 5,
@@ -269,38 +307,22 @@ class PolygonRegion {
   });
 
   @override
-  String toString() {
-    return 'PolygonRegion(points: $points)';
-  }
-}
-
-class DashPolygonPainter extends CustomPainter {
-  final List<PolygonRegion> regions;
-  final Color dashBorderColor;
-  final Radius dashBorderRadius;
-  final List<double> dashArray;
-
-  DashPolygonPainter({
-    required this.regions,
-    this.dashBorderColor = const Color(0xFFD1D5D8),
-    this.dashBorderRadius = const Radius.circular(8),
-    this.dashArray = const [6, 4],
-  });
-
-  @override
   void paint(Canvas canvas, Size size) {
     _drawOuterDashBorder(canvas, size);
 
-    if (regions.isEmpty) return;
+    if (rois.isEmpty) return;
 
-    for (var region in regions) {
-      final points = region.points;
+    for (var roi in rois) {
+      List<ROIData> points = roi.points;
+
+      // Sắp xếp theo thứ tự seq
+      points.sort((a, b) => a.seq.compareTo(b.seq));
 
       // --- 1. LẤY CẤU HÌNH TỪ REGION ---
-      final double outerRadius = region.circleRadius;
-      final double innerRadius = region.circleRadius - region.circleBorderWidth;
-      final double lineWidth = region.dashWidth;
-      final Color color = region.mainColor;
+      final double outerRadius = circleRadius;
+      final double innerRadius = circleRadius - circleBorderWidth;
+      final double lineWidth = dashWidth;
+      final Color color = mainColor;
 
       // --- 2. SETUP PAINT ---
       final shadowPaint = Paint()
@@ -328,9 +350,9 @@ class DashPolygonPainter extends CustomPainter {
 
         // --- 3. VẼ VÙNG (FILL & BORDER) ---
         // A. Tô màu nền
-        final fillPath = Path()..moveTo(points[0].dx, points[0].dy);
+        final fillPath = Path()..moveTo(points[0].x * size.width, points[0].y * size.height);
         for (int i = 1; i < points.length; i++) {
-          fillPath.lineTo(points[i].dx, points[i].dy);
+          fillPath.lineTo(points[i].x * size.width, points[i].y * size.height);
         }
         fillPath.close();
         canvas.drawPath(fillPath, fillPaint);
@@ -342,22 +364,24 @@ class DashPolygonPainter extends CustomPainter {
           final p2 = points[(i + 1) % points.length];
 
           final segment = Path()
-            ..moveTo(p1.dx, p1.dy)
-            ..lineTo(p2.dx, p2.dy);
+            ..moveTo(p1.x * size.width, p1.y * size.height)
+            ..lineTo(p2.x * size.width, p2.y * size.height);
 
-          _addProportionalDash(dynamicDashedPath, segment, region.dashArray, outerRadius);
+          _addProportionalDash(dynamicDashedPath, segment, dashArray, outerRadius);
         }
         canvas.drawPath(dynamicDashedPath, linePaint);
       }
 
       // --- 4. VẼ CÁC ĐIỂM CHỐT ---
       for (var point in points) {
+        final offset = Offset(point.x * size.width, point.y * size.height);
+
         // Vẽ đổ bóng nhẹ cho điểm
-        canvas.drawCircle(point.translate(0, 2), outerRadius, shadowPaint);
+        canvas.drawCircle(offset.translate(0, 2), outerRadius, shadowPaint);
         // Vẽ viền ngoài (màu chính)
-        canvas.drawCircle(point, outerRadius, pointOuterPaint);
+        canvas.drawCircle(offset, outerRadius, pointOuterPaint);
         // Vẽ nhân trắng bên trong
-        canvas.drawCircle(point, innerRadius, pointInnerPaint);
+        canvas.drawCircle(offset, innerRadius, pointInnerPaint);
       }
     }
   }

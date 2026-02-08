@@ -1,49 +1,60 @@
 part of 'alarm_config_popup.dart';
 
-class AlertTimeRange {
-  TimeOfDay startTime;
-  TimeOfDay endTime;
-  String weekday;
-
-  AlertTimeRange({
-    this.startTime = const TimeOfDay(hour: 0, minute: 0),
-    this.endTime = const TimeOfDay(hour: 23, minute: 59),
-    this.weekday = 'T2',
-  });
-}
-
 class TimeRangesConfig extends StatefulWidget {
-  const TimeRangesConfig({super.key});
+  const TimeRangesConfig({super.key, required this.alarmConfig});
+  final AIAlarmConfig alarmConfig;
 
   @override
   State<TimeRangesConfig> createState() => _TimeRangesConfigState();
 }
 
 class _TimeRangesConfigState extends State<TimeRangesConfig> {
-  List<AlertTimeRange> times = [
-    AlertTimeRange(weekday: 'T2'),
-    AlertTimeRange(weekday: 'T3'),
-    AlertTimeRange(weekday: 'T4'),
-    AlertTimeRange(weekday: 'T5'),
-    AlertTimeRange(weekday: 'T6'),
-    AlertTimeRange(weekday: 'T7'),
-    AlertTimeRange(weekday: 'CN'),
-  ];
   late final ScrollController scrollController = ScrollController();
+
+  late final Map<int, String> _weekdays = {
+    DateTime.monday: 'T2',
+    DateTime.tuesday: 'T3',
+    DateTime.wednesday: 'T4',
+    DateTime.thursday: 'T5',
+    DateTime.friday: 'T6',
+    DateTime.saturday: 'T7',
+    DateTime.sunday: 'CN',
+  };
 
   @override
   void initState() {
-    super.initState();
+    if (widget.alarmConfig.times.isEmpty) {
+      widget.alarmConfig.times.add(
+        TimesConfig(days: _weekdays.keys.toList(), startTime: '00:00', endTime: '23:59'),
+      );
+    }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollController.jumpTo(scrollController.position.maxScrollExtent);
-    });
+    super.initState();
   }
 
   @override
   void dispose() {
     scrollController.dispose();
     super.dispose();
+  }
+
+  bool canSelectDay(int day) {
+    final count = widget.alarmConfig.times.where((time) => time.days.contains(day)).length;
+    if (count >= 6) {
+      ToastUtil.toastWarning(
+        title: Text(
+          'Không được tạo quá 6 khoảng thời gian trong 1 ngày',
+          style: AppTypography.style(
+            14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.white,
+            lineHeight: 18 / 14,
+          ),
+        ),
+      );
+    }
+
+    return count < 6;
   }
 
   @override
@@ -65,75 +76,62 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
               border: Border.all(color: AppColors.greyE2E8F0),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: times.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    shrinkWrap: true,
-                    controller: scrollController,
-                    padding: EdgeInsets.all(10),
-                    itemCount: times.length,
-                    itemBuilder: (context, index) {
-                      final time = times[index];
+            child: Scrollbar(
+              thumbVisibility: true,
+              controller: scrollController,
+              child: ListView.builder(
+                shrinkWrap: true,
+                controller: scrollController,
+                padding: EdgeInsets.all(10),
+                itemCount: widget.alarmConfig.times.length,
+                itemBuilder: (context, index) {
+                  final time = widget.alarmConfig.times[index];
+                  bool needValidate =
+                      time.startTime != null || time.endTime != null || time.days.isNotEmpty;
 
-                      return Container(
-                        padding: EdgeInsets.only(top: index == 0 ? 0 : 16, bottom: 16),
-                        decoration: index > 0
-                            ? BoxDecoration(
-                                border: Border(top: BorderSide(color: AppColors.greyE2E8F0)),
-                              )
-                            : null,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 15,
-                          children: <Widget>[
-                            _columnTime(
-                              'Thời gian bắt đầu',
-                              time.startTime,
-                              (selectedTime) => setState(() {
-                                times[index].startTime = selectedTime;
-                              }),
-                              maximumTime: time.endTime,
-                              minimumTime: time.startTime,
-                            ),
-                            _columnTime(
-                              'Thời gian kết thúc',
-                              time.endTime,
-                              (selectedTime) => setState(() {
-                                times[index].endTime = selectedTime;
-                              }),
-                              maximumTime: time.endTime,
-                              minimumTime: time.startTime,
-                            ),
-                            _columnWeekday(times[index].weekday, (day) {
-                              setState(() {
-                                times[index].weekday = day;
-                              });
-                            }),
-                            _handleButtons(
-                              onDelete: () {
-                                setState(() {
-                                  times.removeAt(index);
-                                });
-                              },
-                              onAdd: () {
-                                setState(() {
-                                  times.add(AlertTimeRange());
-                                });
-
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  scrollController.animateTo(
-                                    scrollController.position.maxScrollExtent,
-                                    duration: Duration(milliseconds: 300),
-                                    curve: Curves.easeInOut,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
+                  return Container(
+                    padding: EdgeInsets.only(top: index == 0 ? 0 : 16),
+                    decoration: index > 0
+                        ? BoxDecoration(
+                            border: Border(top: BorderSide(color: AppColors.greyE2E8F0)),
+                          )
+                        : null,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 15,
+                      children: <Widget>[
+                        _columnTime(
+                          'Thời gian bắt đầu',
+                          time.startTime,
+                          (selectedTime) => setState(() {
+                            widget.alarmConfig.times[index].startTime = selectedTime;
+                          }),
+                          maximumTime: time.endTime,
+                          minimumTime: time.startTime,
+                          needValidate: needValidate,
                         ),
-                      );
-                    },
-                  ),
+                        _columnTime(
+                          'Thời gian kết thúc',
+                          time.endTime,
+                          (selectedTime) => setState(() {
+                            widget.alarmConfig.times[index].endTime = selectedTime;
+                          }),
+                          maximumTime: time.endTime,
+                          minimumTime: time.startTime,
+                          needValidate: needValidate,
+                        ),
+                        _columnWeekday(widget.alarmConfig.times[index].days, (days) {
+                          setState(() {
+                            widget.alarmConfig.times[index].days = days;
+                          });
+                        }, needValidate),
+                        _handleButtons(index),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ),
       ],
@@ -142,13 +140,15 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
 
   Widget _columnTime(
     String title,
-    TimeOfDay initialTime,
-    Function(TimeOfDay) onChanged, {
-    TimeOfDay? minimumTime,
-    TimeOfDay? maximumTime,
+    String? initialTime,
+    Function(String) onChanged, {
+    String? minimumTime,
+    String? maximumTime,
+    bool? needValidate,
   }) {
-    final formattedTime =
-        "${initialTime.hour.toString().padLeft(2, '0')}:${initialTime.minute.toString().padLeft(2, '0')}";
+    String? errorMessage;
+    if (needValidate == true && initialTime == null) errorMessage = 'Vui lòng chọn thời gian';
+    final columnWidth = 140.0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -165,15 +165,15 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
         ),
         SizedBox(height: 6),
         SizedBox(
-          width: 140,
+          width: columnWidth,
           height: 40,
           child: InkWell(
             onTap: () async {
-              final selectedTime = await showDialog<TimeOfDay>(
+              final selectedTime = await showDialog<String>(
                 context: context,
                 barrierDismissible: true,
                 builder: (context) {
-                  TimeOfDay result = initialTime;
+                  String result = initialTime ?? '00:00';
 
                   return Dialog(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -220,17 +220,14 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                                   use24hFormat: true,
                                   showTimeSeparator: true,
                                   minimumDate: minimumTime != null
-                                      ? DateTime(2000, 1, 1, minimumTime.hour, minimumTime.minute)
+                                      ? DateFormat("HH:mm").parse(minimumTime)
                                       : null,
                                   maximumDate: maximumTime != null
-                                      ? DateTime(2000, 1, 1, maximumTime.hour, maximumTime.minute)
+                                      ? DateFormat("HH:mm").parse(maximumTime)
                                       : null,
-                                  initialDateTime: DateTime(2000, 1, 1, result.hour, result.minute),
+                                  initialDateTime: DateFormat("HH:mm").parse(result),
                                   onDateTimeChanged: (dateTime) {
-                                    result = TimeOfDay(
-                                      hour: dateTime.hour,
-                                      minute: dateTime.minute,
-                                    );
+                                    result = DateFormat("HH:mm").format(dateTime);
                                   },
                                 ),
                               ),
@@ -295,7 +292,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
               if (selectedTime != null) onChanged(selectedTime);
             },
             child: InputDecorator(
-              key: ValueKey(formattedTime),
+              key: ValueKey(initialTime),
               decoration: InputDecoration(
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.greyE2E8F0),
@@ -315,7 +312,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                 ),
               ),
               child: Text(
-                formattedTime,
+                initialTime ?? '',
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w500,
@@ -326,23 +323,28 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
             ),
           ),
         ),
-        // Container(
-        //   padding: EdgeInsets.only(top: 2, bottom: errorMessage != null ? 6 : 0),
-        //   child: Text(
-        //     errorMessage ?? '',
-        //     style: AppTypography.style(
-        //       11,
-        //       fontWeight: FontWeight.w400,
-        //       color: AppColors.redFF0004,
-        //       lineHeight: 14 / 11,
-        //     ),
-        //   ),
-        // ),
+        Container(
+          padding: EdgeInsets.only(top: 2, bottom: errorMessage != null ? 6 : 0),
+          width: columnWidth,
+          child: Text(
+            errorMessage ?? '',
+            maxLines: 3,
+            style: AppTypography.style(
+              11,
+              fontWeight: FontWeight.w400,
+              color: AppColors.redFF0004,
+              lineHeight: 14 / 11,
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _columnWeekday(String currentDay, Function(String) onChanged) {
+  Widget _columnWeekday(List<int> selectedDays, Function(List<int>) onChanged, bool needValidate) {
+    String? errorMessage;
+    if (needValidate && selectedDays.isEmpty) errorMessage = 'Vui lòng chọn ngày áp dụng';
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,47 +362,73 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
         Wrap(
           spacing: 6,
           runSpacing: 5,
-          children: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
-              .map(
-                (day) => InkWell(
-                  onTap: () => onChanged(day),
-                  child: AnimatedContainer(
-                    width: 40,
-                    height: 40,
-                    duration: Durations.medium1,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      color: day == currentDay ? Color(0xFF0EA5E9) : Colors.white,
-                      border: Border.all(
-                        color: day == currentDay ? Color(0xFF0EA5E9) : AppColors.greyE2E8F0,
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      day,
-                      style: AppTypography.style(
-                        12,
-                        fontWeight: FontWeight.w700,
-                        color: day == currentDay ? Colors.white : Color(0xFF64748B),
-                      ),
-                    ),
+          children: _weekdays.entries.map((day) {
+            final isSelected = selectedDays.contains(day.key);
+            return InkWell(
+              onTap: () {
+                if (!canSelectDay(day.key)) return;
+
+                final newList = List<int>.from(selectedDays);
+                isSelected ? newList.remove(day.key) : newList.add(day.key);
+
+                onChanged(newList);
+              },
+              child: AnimatedContainer(
+                width: 40,
+                height: 40,
+                duration: Durations.medium1,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  color: isSelected ? Color(0xFF0EA5E9) : Colors.white,
+                  border: Border.all(color: isSelected ? Color(0xFF0EA5E9) : AppColors.greyE2E8F0),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  day.value,
+                  style: AppTypography.style(
+                    12,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? Colors.white : Color(0xFF64748B),
                   ),
                 ),
-              )
-              .toList(),
+              ),
+            );
+          }).toList(),
+        ),
+        Container(
+          padding: EdgeInsets.only(top: 2, bottom: errorMessage != null ? 6 : 0),
+          child: Text(
+            errorMessage ?? '',
+            maxLines: 3,
+            style: AppTypography.style(
+              11,
+              fontWeight: FontWeight.w400,
+              color: AppColors.redFF0004,
+              lineHeight: 14 / 11,
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _handleButtons({required Function() onDelete, Function()? onAdd}) {
+  Widget _handleButtons(int index) {
     return Padding(
       padding: EdgeInsets.only(top: 16 + 6 + 10),
       child: Row(
         spacing: 8,
         children: <Widget>[
+          /* Xóa */
           InkWell(
-            onTap: onDelete,
+            onTap: () {
+              setState(() {
+                if (widget.alarmConfig.times.length == 1) {
+                  widget.alarmConfig.times[0] = TimesConfig.empty();
+                } else {
+                  widget.alarmConfig.times.removeAt(index);
+                }
+              });
+            },
             child: Container(
               width: 24,
               height: 24,
@@ -416,39 +444,28 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
             ),
           ),
 
-          if (onAdd != null)
-            InkWell(
-              onTap: onAdd,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(color: Color(0xFF54BC00), shape: BoxShape.circle),
-                child: Center(
-                  child: SvgPicture.asset(
-                    AppAssets.iconAdd,
-                    width: 16,
-                    height: 16,
-                    colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  ),
+          /* Thêm */
+          InkWell(
+            onTap: () {
+              setState(() {
+                widget.alarmConfig.times.insert(index + 1, TimesConfig.empty());
+              });
+            },
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(color: Color(0xFF54BC00), shape: BoxShape.circle),
+              child: Center(
+                child: SvgPicture.asset(
+                  AppAssets.iconAdd,
+                  width: 16,
+                  height: 16,
+                  colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 ),
               ),
             ),
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return InkWell(
-      onTap: () => setState(() {
-        times.add(AlertTimeRange());
-      }),
-      child: Container(
-        width: double.infinity,
-        height: 32,
-        margin: EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(color: Color(0xFF54BC00), shape: BoxShape.circle),
-        child: Center(child: Icon(Icons.add, color: Colors.white, size: 18)),
       ),
     );
   }

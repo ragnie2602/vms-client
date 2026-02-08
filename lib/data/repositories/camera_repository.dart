@@ -1,7 +1,6 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/camera_service.dart';
 import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_alarm_config.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_info_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
@@ -128,14 +127,6 @@ class CameraRepository extends BaseRepository implements ICameraRepository {
           cameraError: importCamera.cameraError,
         ),
       );
-    });
-  }
-
-  @override
-  Future<Either<Failure, List<CameraAlarmConfig>>> getAiAlarmConfigs(String cameraId) async {
-    return await catchError<List<CameraAlarmConfig>>(() async {
-      final cameraAlarmConfigs = await service.getAiAlarmConfigs(cameraId);
-      return Right(cameraAlarmConfigs);
     });
   }
 }

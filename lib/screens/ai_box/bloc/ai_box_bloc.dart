@@ -42,6 +42,7 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
       (onSuccess) {
         listAiBox = onSuccess;
         emit(AIBoxLoadedState(aiBoxes: groups.right, aiBoxSelctedDetail: null));
+        event.onSuccess?.call();
       },
     );
   }

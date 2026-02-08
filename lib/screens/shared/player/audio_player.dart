@@ -133,7 +133,7 @@ class AudioPlayer {
 
     _waitForFirstFrame = Completer<bool>();
     _player.media = source;
-    await _player.prepare();
+    _player.state = PlaybackState.playing;
 
     final ret = await _waitForFirstFrame?.future.timeout(
       Duration(seconds: 10),
@@ -141,10 +141,10 @@ class AudioPlayer {
     );
     _waitForFirstFrame = null;
 
-    if (ret == true) {
-      autoPlay ? resume() : state.value = AudioPlayerState.initialized;
-    } else {
+    if (ret != true) {
       state.value = AudioPlayerState.error;
+    } else {
+      autoPlay ? resume() : pause();
     }
   }
 

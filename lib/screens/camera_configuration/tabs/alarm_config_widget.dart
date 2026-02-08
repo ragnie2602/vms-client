@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_alarm_config.dart';
+import 'package:vms_flutter_client/domain/entities/ai_alarm/camera_alarm_config.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 import '../bloc/alarm_config/alarm_config_bloc.dart';
@@ -19,7 +19,7 @@ class AlarmConfigWidget extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlarmConfigPopup(alarm: alarm);
+        return AlarmConfigPopup(alarm: alarm, cameraId: camera.camId);
       },
     );
 
