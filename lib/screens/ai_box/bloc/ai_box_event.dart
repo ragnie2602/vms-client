@@ -45,3 +45,12 @@ class FilterAiBoxEvent extends AiBoxEvent {
   @override
   List<Object?> get props => [keyword, statusFilter];
 }
+
+class GetAiBoxAtPage extends AiBoxEvent {
+  final int page;
+
+  const GetAiBoxAtPage(this.page);
+
+  @override
+  List<Object?> get props => [page];
+}

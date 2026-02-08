@@ -14,6 +14,7 @@ import 'package:vms_flutter_client/screens/ai_box/widgets/ai_box_dialog.dart';
 import 'package:vms_flutter_client/screens/ai_box/widgets/ai_box_title_widget.dart';
 import 'package:vms_flutter_client/screens/ai_box/widgets/item_ai_box_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
+import 'package:vms_flutter_client/screens/ai_box/components/ai_box_pagination_bar.dart';
 
 class AiBoxView extends BaseView<AiBoxBloc> {
   final AiBoxBloc _bloc;
@@ -303,7 +304,10 @@ class AiBoxView extends BaseView<AiBoxBloc> {
                         ? Flexible(
                             child: Builder(
                               builder: (BuildContext context) {
-                                if (state.aiBoxes!.isEmpty) {
+                                final displayList =
+                                    state.paginatedAiBoxes ?? [];
+
+                                if (displayList.isEmpty) {
                                   return Center(
                                     child: Text(
                                       'Không có kết quả phù hợp!',
@@ -311,48 +315,74 @@ class AiBoxView extends BaseView<AiBoxBloc> {
                                     ),
                                   );
                                 }
-                                return Scrollbar(
-                                  controller: listController,
-                                  thumbVisibility: true,
-                                  child: ListView.separated(
-                                    controller: listController,
-                                    primary: false,
-                                    physics: ClampingScrollPhysics(),
-                                    separatorBuilder: (_, __) => const Divider(
-                                      height: 1,
-                                      color: AppColors.greyF1F5F9,
-                                    ),
-                                    shrinkWrap: true,
-                                    itemCount: state.aiBoxes!.length,
-                                    itemBuilder: (context, index) =>
-                                        AiBoxItemWidget(
-                                          itemAiBox: state.aiBoxes![index],
-                                          index: index + 1,
-                                          onDelete: () {
-                                            checkEnableRemove(
-                                              context,
-                                              aiBox: state.aiBoxes?[index],
+
+                                return Column(
+                                  children: [
+                                    Expanded(
+                                      child: Scrollbar(
+                                        controller: listController,
+                                        thumbVisibility: true,
+                                        child: ListView.separated(
+                                          controller: listController,
+                                          primary: false,
+                                          physics: ClampingScrollPhysics(),
+                                          separatorBuilder: (_, __) =>
+                                              const Divider(
+                                                height: 1,
+                                                color: AppColors.greyF1F5F9,
+                                              ),
+                                          shrinkWrap: true,
+                                          itemCount: displayList.length,
+                                          itemBuilder: (context, index) {
+                                            final globalIndex =
+                                                (state.page - 1) *
+                                                    state.pageSize +
+                                                index;
+                                            return AiBoxItemWidget(
+                                              itemAiBox: displayList[index],
+                                              index: globalIndex + 1,
+                                              onDelete: () {
+                                                checkEnableRemove(
+                                                  context,
+                                                  aiBox: displayList[index],
+                                                );
+                                              },
+                                              onEdit: () {
+                                                final aiBoxId =
+                                                    displayList[index].id;
+                                                if (aiBoxId != null) {
+                                                  showAddAiBoxDialog(
+                                                    context,
+                                                    type: AiBoxDialogType.edit,
+                                                    aiBoxId: aiBoxId,
+                                                    onConfirm: (payload) async {
+                                                      _editAiBox(
+                                                        aiBoxId: aiBoxId,
+                                                        aiBox: payload,
+                                                      );
+                                                    },
+                                                  );
+                                                }
+                                              },
                                             );
                                           },
-                                          onEdit: () {
-                                            final aiBoxId =
-                                                state.aiBoxes![index].id;
-                                            if (aiBoxId != null) {
-                                              showAddAiBoxDialog(
-                                                context,
-                                                type: AiBoxDialogType.edit,
-                                                aiBoxId: aiBoxId,
-                                                onConfirm: (payload) async {
-                                                  _editAiBox(
-                                                    aiBoxId: aiBoxId,
-                                                    aiBox: payload,
-                                                  );
-                                                },
-                                              );
-                                            }
-                                          },
                                         ),
-                                  ),
+                                      ),
+                                    ),
+                                    if (state.totalCount > state.pageSize &&
+                                        state.aiBoxes != null &&
+                                        state.aiBoxes!.isNotEmpty) ...[
+                                      const SizedBox(height: 16),
+                                      AiBoxPaginationBar(
+                                        totalItems: state.totalCount,
+                                        currentPage: state.page,
+                                        pageSize: state.pageSize,
+                                        onPageChanged: (page) {
+                                          _bloc.add(GetAiBoxAtPage(page));
+                                        },
+                                      ),
+                                    ],
+                                  ],
                                 );
                               },
                             ),
