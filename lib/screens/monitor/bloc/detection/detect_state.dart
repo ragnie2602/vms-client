@@ -1,33 +1,65 @@
-import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 
-class DetectState extends BaseState {
-  const DetectState();
-}
+enum DetectStatus { initial, loading, success, failure }
 
-class DetectLoading extends DetectState {
-  const DetectLoading();
-}
-
-class DetectSuccess extends DetectState {
-  final List<TypeEventDetectEntity> typeEvents;
-  const DetectSuccess({required this.typeEvents});
-  @override
-  StateType get type => StateType.success;
-  @override
-  List<Object?> get props => [typeEvents];
-
-  DetectSuccess copyWith({List<TypeEventDetectEntity>? typeEvents}) {
-    return DetectSuccess(typeEvents: typeEvents ?? this.typeEvents);
-  }
-}
-
-class DetectFailure extends DetectState {
+class DetectState extends Equatable {
+  final DetectStatus status;
   final String errorMessage;
-  const DetectFailure({required this.errorMessage});
+  final List<TypeEventDetectEntity> typeEvents;
+  final List<ReceiveEventEntity> receiveEvents;
+  final List<ReceiveEventEntity> selectedEvents;
+  final List<int> selectedFilterTypes;
+  final int currentTabIndex;
+  final List<List<int>> viewingCameraIds;
+
+  const DetectState({
+    this.status = DetectStatus.initial,
+    this.errorMessage = '',
+    this.typeEvents = const [],
+    this.receiveEvents = const [],
+    this.selectedEvents = const [],
+    this.selectedFilterTypes = const [],
+    this.currentTabIndex = 0,
+    this.viewingCameraIds = const [],
+  });
+
+  bool get hasActiveFilter => selectedFilterTypes.isNotEmpty;
+  bool get isViewingCamTab => currentTabIndex == 1;
+  bool get shouldShowSelectedEvents => hasActiveFilter || isViewingCamTab;
+
+  DetectState copyWith({
+    DetectStatus? status,
+    String? errorMessage,
+    List<TypeEventDetectEntity>? typeEvents,
+    List<ReceiveEventEntity>? receiveEvents,
+    List<ReceiveEventEntity>? selectedEvents,
+    List<int>? selectedFilterTypes,
+    int? currentTabIndex,
+    List<List<int>>? viewingCameraIds,
+  }) {
+    return DetectState(
+      status: status ?? this.status,
+      errorMessage: errorMessage ?? this.errorMessage,
+      typeEvents: typeEvents ?? this.typeEvents,
+      receiveEvents: receiveEvents ?? this.receiveEvents,
+      selectedEvents: selectedEvents ?? this.selectedEvents,
+      selectedFilterTypes: selectedFilterTypes ?? this.selectedFilterTypes,
+      currentTabIndex: currentTabIndex ?? this.currentTabIndex,
+      viewingCameraIds: viewingCameraIds ?? this.viewingCameraIds,
+    );
+  }
 
   @override
-  StateType get type => StateType.failure;
-  @override
-  List<Object?> get props => [errorMessage];
+  List<Object?> get props => [
+    status,
+    errorMessage,
+    typeEvents,
+    receiveEvents,
+    selectedEvents,
+    selectedFilterTypes,
+    currentTabIndex,
+    viewingCameraIds,
+  ];
 }

@@ -48,12 +48,10 @@ class EventRepository extends BaseRepository implements IEventRepository {
   }
 
   @override
-  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig({
-    required int eventTypeId,
-  }) async {
+  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig(String eventType) async {
     return await catchError<EventDisplayConfigEntity>(() async {
-      final data = await eventService.getEventDisplayConfig(eventTypeId);
-      return Right(data);
+      final data = await eventService.getEventDisplayConfig(eventType);
+      return Right(EventDisplayConfigEntity.fromJson(data));
     });
   }
 
@@ -83,6 +81,20 @@ class EventRepository extends BaseRepository implements IEventRepository {
     return await catchError<EventEntity>(() async {
       final data = await eventService.updateEvent(eventId, description);
       return Right(EventEntity.fromJson(data));
+    });
+  }
+
+  @override
+  Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
+    required List<String> listField,
+    required String eventType,
+  }) async {
+    return await catchError<EventDisplayConfigEntity>(() async {
+      final data = await eventService.updateEventDisplayConfig(
+        listField: listField,
+        eventType: eventType,
+      );
+      return Right(EventDisplayConfigEntity.fromJson(data));
     });
   }
 }

@@ -1,118 +1,157 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/shared/custom_table.dart';
+import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 
-class EventItem extends StatefulWidget {
-  const EventItem({super.key});
-
-  @override
-  State<EventItem> createState() => _EventItemState();
-}
-
-class _EventItemState extends State<EventItem> {
-  bool hasRead = false;
+class EventItem extends StatelessWidget {
+  const EventItem({super.key, required this.event});
+  final ReceiveEventEntity event;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: hasRead ? AppColors.white : Color(0xFFF2F3F5),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => showDetailDialog(context),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 63,
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: Image.network(
-                        'https://static.wikia.nocookie.net/p__/images/7/71/Sherma.png/revision/latest?cb=20250924113412&path-prefix=protagonist',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+    final eventData = event.eventDataEntity;
+    final configData = eventData.configData ?? [];
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          // showDetailDialog(context)
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Ảnh bên trái
+              Container(
+                width: 71,
+                height: 71,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.greyDFDFDF,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    eventData.imageUrl ?? '',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: AppColors.greyDFDFDF,
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: AppColors.grey4B5563,
+                          size: 40,
+                        ),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                              : null,
+                          strokeWidth: 2,
+                        ),
+                      );
+                    },
                   ),
                 ),
-                const SizedBox(width: 11),
-                Expanded(
-                  flex: 198,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Phát hiện xâm nhập',
-                        style: AppTypography.style(12, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(width: 12),
+              // Thông tin bên phải
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Phần tử đầu tiên của configData - chỉ hiển thị data (tiêu đề)
+                    if (configData.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(top: 3),
+                        child: Text(
+                          configData[0].data ?? '_',
+                          style: AppTypography.style(
+                            12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.black,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      const SizedBox(height: 5),
-                      CustomTable(
-                        columnSpacing: 10,
-                        data: CustomTableData(
-                          columnFlexes: [0, 1],
-                          data: [
-                            [
-                              Tooltip(
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                message: 'Thời gian',
-                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                preferBelow: false,
-                                textStyle: AppTypography.style(
-                                  11,
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                verticalOffset: 8,
-                                child: SvgPicture.asset(AppAssets.icTimeCircle, height: 18),
+                    const SizedBox(height: 5),
+                    // Các phần tử tiếp theo - hiển thị icon + data
+                    ...configData.skip(1).map((config) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            if (config.icon != null && config.icon!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: _buildIcon(config.icon!),
                               ),
-                              Text(
-                                '20:30 20/12/2025',
+                            Expanded(
+                              child: Text(
+                                config.data ?? '_',
                                 style: AppTypography.style(
                                   12,
                                   color: AppColors.grey4B5563,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w400,
                                 ),
-                              ),
-                            ],
-                            [
-                              SvgPicture.asset(AppAssets.icVideoOn, height: 18),
-                              Text(
-                                'Camera cổng 1',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppTypography.style(
-                                  12,
-                                  color: AppColors.grey4B5563,
-                                  fontWeight: FontWeight.w500,
-                                ),
                               ),
-                            ],
+                            ),
                           ],
                         ),
-                        rowSpacing: 2,
-                        verticalAlignments: [CrossAxisAlignment.center, CrossAxisAlignment.center],
-                      ),
-                    ],
-                  ),
+                      );
+                    }),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  showDetailDialog(BuildContext context) {
-    setState(() => hasRead = true);
+  Widget _buildIcon(String iconUrl) {
+    final isSvg = iconUrl.toLowerCase().endsWith('.svg');
+
+    if (isSvg) {
+      return SvgPicture.network(
+        iconUrl,
+        width: 18,
+        height: 18,
+        colorFilter: ColorFilter.mode(AppColors.grey4B5563, BlendMode.srcIn),
+        placeholderBuilder: (context) => SizedBox(
+          width: 18,
+          height: 18,
+          child: Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 1,
+              color: AppColors.grey4B5563,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // nếu là ảnh thường
+    return Image.network(
+      iconUrl,
+      width: 18,
+      height: 18,
+      color: AppColors.grey4B5563,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(Icons.broken_image, color: AppColors.grey4B5563, size: 18);
+      },
+    );
   }
 }

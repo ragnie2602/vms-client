@@ -63,6 +63,7 @@ class AlertDetectLiveView extends StatefulWidget {
     required this.isSelected,
     required this.onPanelIndexChanged,
     this.count,
+    this.maxWidth,
   });
 
   final PanelController controller;
@@ -70,6 +71,7 @@ class AlertDetectLiveView extends StatefulWidget {
   final bool isSelected;
   final Function(int? p1) onPanelIndexChanged;
   final String? count;
+  final double? maxWidth;
 
   @override
   State<AlertDetectLiveView> createState() => _AlertDetectLiveViewState();
@@ -93,7 +95,10 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
     title: 'Cảnh báo',
     icon: AppAssets.icAlertTriangle,
     onTap: () => widget.controller.togglePanel(
-      MonitorAlerts(maxWidth: widget.controller.expandedWidth, key: ValueKey('monitor_alerts')),
+      MonitorAlerts(
+        maxWidth: widget.maxWidth ?? widget.controller.expandedWidth,
+        key: ValueKey('monitor_alerts'),
+      ),
       id: widget.id,
       onPanelIndexChanged: widget.onPanelIndexChanged,
     ),
@@ -153,7 +158,7 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
                             // check list type event detect
                             final detectBloc = context.read<DetectBloc>();
                             final detectState = detectBloc.state;
-                            if (detectState is! DetectSuccess) {
+                            if (detectState.status != DetectStatus.success) {
                               return;
                             }
                             showDialog(

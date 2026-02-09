@@ -47,8 +47,8 @@ class EventService {
     return response.data;
   }
 
-  getEventDisplayConfig(int eventTypeId) async {
-    final raw = await httpClient.get('${EndPoints.configEventDisplay}/$eventTypeId');
+  getEventDisplayConfig(String eventType) async {
+    final raw = await httpClient.get('${EndPoints.configEventDisplay}/$eventType');
 
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) throw Exception(response.message);
@@ -89,6 +89,17 @@ class EventService {
     final response = BaseResponse.fromJson(raw);
 
     if (response.code != 200) throw Exception(response.message);
+    return response.data;
+  }
+
+  updateEventDisplayConfig({required List<String> listField, required String eventType}) async {
+    final raw = await httpClient.put(
+      url: '${EndPoints.configEventDisplay}/$eventType',
+      data: {'data': listField},
+    );
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) throw Exception(response.message);
+
     return response.data;
   }
 }

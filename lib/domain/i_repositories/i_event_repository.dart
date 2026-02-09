@@ -16,9 +16,7 @@ abstract class IEventRepository {
 
   Future<Either<Failure, EventEntity>> getEventDetail(int eventId);
 
-  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig({
-    required int eventTypeId,
-  });
+  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig(String eventType);
 
   Future<Either<Failure, Pageable<EventEntity>>> searchEvent({
     int? startTime,
@@ -29,4 +27,9 @@ abstract class IEventRepository {
   });
 
   Future<Either<Failure, EventEntity>> updateEvent(int eventId, String description);
+
+  Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
+    required List<String> listField,
+    required String eventType,
+  });
 }

@@ -19,9 +19,11 @@ class AuthenticateService {
   final HttpClient _httpClient;
   final SocketApiClient _socketApiClient;
 
-  AuthenticateService({required HttpClient httpClient, required SocketApiClient socketApiClient})
-    : _httpClient = httpClient,
-      _socketApiClient = socketApiClient;
+  AuthenticateService({
+    required HttpClient httpClient,
+    required SocketApiClient socketApiClient,
+  }) : _httpClient = httpClient,
+       _socketApiClient = socketApiClient;
 
   Future<AuthenticateResponse> authenticate({
     required String username,
@@ -50,7 +52,10 @@ class AuthenticateService {
 
     if (response.code != 200) throw Exception(response.message);
 
-    await AppData.instance.save<String>(AppKeys.SP_ACCESS_TOKEN, response.data['accessToken']);
+    await AppData.instance.save<String>(
+      AppKeys.SP_ACCESS_TOKEN,
+      response.data['accessToken'],
+    );
 
     return AuthenticateResponse.fromJson(response.data);
   }
@@ -74,9 +79,12 @@ class AuthenticateService {
   }
 
   Future<bool> login(Authentication data) async {
-    if (data.uid.isEmpty || data.sessionId.isEmpty || data.host.isEmpty) return false;
+    if (data.uid.isEmpty || data.sessionId.isEmpty || data.host.isEmpty)
+      return false;
 
-    final status = await _socketApiClient.connect(SocketConnectionParams(data.host, data.port));
+    final status = await _socketApiClient.connect(
+      SocketConnectionParams(data.host, data.port),
+    );
     if (status) {
       loginStatus.text += "Kết nối socket thành công\n";
       loginStatus.text += "Thực hiện đăng nhập...\n";
@@ -84,7 +92,10 @@ class AuthenticateService {
         SocketRequestPayload(
           Packet(
             id: DateTime.now().microsecondsSinceEpoch,
-            data: Login_Request(uid: data.uid, sessionId: data.sessionId).writeToBuffer(),
+            data: Login_Request(
+              uid: data.uid,
+              sessionId: data.sessionId,
+            ).writeToBuffer(),
             type: PacketType.login,
           ),
         ),
@@ -117,7 +128,10 @@ class AuthenticateService {
 
   Future<void> logout() async {
     final BaseResponse response = BaseResponse.fromJson(
-      await _httpClient.post(url: '${EndPoints.baseAuth}${EndPoints.logout}', data: null),
+      await _httpClient.post(
+        url: '${EndPoints.baseAuth}${EndPoints.logout}',
+        data: null,
+      ),
     );
 
     if (response.code != 200) throw Exception(response.message);

@@ -37,4 +37,11 @@ class SetupInfoFieldReorder extends SetupInfoFieldEvent {
   const SetupInfoFieldReorder(this.oldIndex, this.newIndex);
 }
 
-class SetupInfoFieldSave extends SetupInfoFieldEvent {}
+class SetupInfoFieldSave extends SetupInfoFieldEvent {
+  final int typeConfig;
+
+  const SetupInfoFieldSave(this.typeConfig);
+
+  @override
+  List<Object?> get props => [typeConfig];
+}

@@ -34,6 +34,7 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custo
 import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/fetch_config_table_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
@@ -72,11 +73,13 @@ class DependencyInjection {
     ),
     Provider<UserService>(create: (context) => UserService(context.read(), context.read())),
     Provider<AiBoxService>(create: (context) => AiBoxService(context.read())),
-    Provider<DetectService>(create: (context) => DetectService(context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
     Provider<EventService>(create: (context) => EventService(context.read())),
     Provider<UserService>(create: (context) => UserService(context.read(), context.read())),
+    Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
+    Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
+    Provider<DetectService>(create: (context) => DetectService(context.read(), context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
 
@@ -167,6 +170,7 @@ class DependencyInjection {
     Provider<SearchEventUseCase>(
       create: (context) => SearchEventUseCase(context.read<IEventRepository>()),
     ),
+    Provider<FetchConfigTableUsecase>(create: (context) => FetchConfigTableUsecase(context.read())),
 
     // Bloc
     Provider<OsdBloc>(create: (context) => OsdBloc(context.read(), context.read())),
