@@ -46,6 +46,7 @@ class AppAssets {
   static const icArrowCircleUp = '$_svgPath/arrow_circle_up.svg';
   static const icArrowLeft = '$_svgPath/arrow_left.svg';
   static const icBell = '$_svgPath/bell.svg';
+  static const icBell2 = '$_svgPath/bell_2.svg';
   static const icSearch = '$_svgPath/search.svg';
   static const icSearchMobile = '$_svgPath/ic_search_mobile.svg';
   static const icDarkMode = '$_svgPath/dark_mode.svg';
@@ -59,7 +60,9 @@ class AppAssets {
   static const icDotHorizontal = '$_svgPath/dot_horizontal.svg';
   static const icAction = '$_svgPath/ic_action.svg';
   static const icEdit = '$_svgPath/ic_edit.svg';
+  static const icEdit2 = '$_svgPath/ic_edit_2.svg';
   static const icConfig = '$_svgPath/ic_config.svg';
+  static const icClock = '$_svgPath/ic_clock.svg';
   static const icReset = '$_svgPath/ic_reset.svg';
   static const icDelete = '$_svgPath/ic_delete.svg';
   static const icDeleteLight = '$_svgPath/ic_delete_light.svg';
@@ -83,6 +86,7 @@ class AppAssets {
   static const icFastBackward = '$_svgPath/fast_backward.svg';
   static const icFastForward = '$_svgPath/fast_forward.svg';
   static const icPlay = '$_svgPath/play.svg';
+  static const icPlayCircle = '$_svgPath/play_circle.svg';
   static const icPause = '$_svgPath/pause.svg';
   static const icArrowChevronDown = '$_svgPath/arrow_chevron_down.svg';
   static const icArrowChevronUp = '$_svgPath/arrow_chevron_up.svg';

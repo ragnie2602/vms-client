@@ -16,6 +16,10 @@ class EndPoints {
   // Map
   static const String baseMap = '/api/map';
 
+  // Camera
+  static const String cameraAiConfig = '/api/cameras/ai-configs';
+  static const String alarmSound = '/api/cameras/ai-configs/sounds';
+
   // User management
   static const String baseUser = '/api/users';
   static const String resetPassword = '/password';

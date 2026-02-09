@@ -2,15 +2,18 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/data/datasources/ai_box_service.dart';
+import 'package:vms_flutter_client/data/datasources/ai_config_service.dart';
 import 'package:vms_flutter_client/data/datasources/detect_service.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/event_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
+import 'package:vms_flutter_client/data/repositories/ai_config_repository.dart';
 import 'package:vms_flutter_client/data/repositories/event_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
 import 'package:vms_flutter_client/data/repositories/detect_repository.dart';
@@ -60,6 +63,7 @@ class DependencyInjection {
       ),
     ),
     Provider<CameraService>(create: (context) => CameraService(context.read())),
+    Provider<AiConfigService>(create: (context) => AiConfigService(context.read())),
     Provider<ControlCameraService>(create: (context) => ControlCameraService(context.read())),
     Provider<GroupService>(create: (context) => GroupService(context.read())),
     Provider<ScheduleRecordService>(create: (context) => ScheduleRecordService(context.read())),
@@ -81,6 +85,7 @@ class DependencyInjection {
       create: (context) => AuthRepository(authenticateService: context.read<AuthenticateService>()),
     ),
     Provider<ICameraRepository>(create: (context) => CameraRepository(context.read())),
+    Provider<IAiConfigRepository>(create: (context) => AiConfigRepository(context.read())),
     Provider<SearchGroupUseCase>(create: (context) => SearchGroupUseCase()),
     Provider<IControlCameraRepository>(
       create: (context) => ControlCameraRepository(context.read(), context.read()),
