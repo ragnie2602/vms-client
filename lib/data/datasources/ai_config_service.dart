@@ -38,6 +38,27 @@ class AiConfigService {
     return res;
   }
 
+  Future<AIAlarmConfig> updateAiAlarmConfigDetail({
+    required String cameraId,
+    required String alarmType,
+    required AIAlarmConfig config,
+  }) async {
+    final raw = await httpClient.put(
+      url: '${EndPoints.cameraAiConfig}/$cameraId/$alarmType',
+      data: config.toJson(),
+    );
+    final response = BaseResponse.fromJson(raw);
+
+    late AIAlarmConfig res;
+    if (response.data is Map) {
+      res = AIAlarmConfig.fromJson(response.data);
+    } else {
+      throw Exception(response.data.runtimeType);
+    }
+
+    return res;
+  }
+
   Future<List<AlarmSound>> getAlarmSounds() async {
     final raw = await httpClient.get(EndPoints.alarmSound);
     final response = BaseResponse.fromJson(raw);

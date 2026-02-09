@@ -22,6 +22,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   set selectedAiBox(AiBoxEntity? value) {
     _selectedAiBox = value;
     widget.alarmConfig.aiBoxId = value?.id;
+    _triggerValidate();
   }
 
   AlarmSound? _selectedSound;
@@ -29,6 +30,22 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   set selectedSound(AlarmSound? value) {
     _selectedSound = value;
     widget.alarmConfig.soundId = value?.id;
+    _triggerValidate();
+  }
+
+  late FireAlarmType? _selectedFireAlarmType = widget.alarmConfig.alarmConditions.busiType;
+  FireAlarmType? get selectedFireAlarmType => _selectedFireAlarmType;
+  set selectedFireAlarmType(FireAlarmType? value) {
+    _selectedFireAlarmType = value;
+    widget.alarmConfig.alarmConditions.busiType = value;
+    _triggerValidate();
+  }
+
+  void _triggerValidate({bool? force}) {
+    Future.delayed(Duration.zero, () {
+      if (!mounted) return;
+      context.read<AlarmConfigDetailBloc>().add(ValidateAlarmConfig(force: force));
+    });
   }
 
   @override
@@ -149,6 +166,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     String? errorMsg;
     if (selectedAiBox != null && selectedAiBox!.isFullSlot) {
       errorMsg = "Thiết bị này đã hết kênh phân tích, vui lòng chọn thiết bị khác";
+      _triggerValidate(force: false);
     }
 
     return _buildDropdown<AiBoxEntity?>(
@@ -306,9 +324,6 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       case AIAlarmType.usingPhone:
         tooltip = 'Giới hạn cho phép từ 1 - 3600 giây.';
         title = 'Thời gian xuất hiện trong khu vực quá:';
-        if (widget.alarmConfig.alarmConditions.keepTimeThreshold == null) {
-          widget.alarmConfig.alarmConditions.keepTimeThreshold = 10;
-        }
         content = TextFormField(
           initialValue: widget.alarmConfig.alarmConditions.keepTimeThreshold?.toString(),
           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -321,9 +336,8 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
             return null;
           },
           onChanged: (value) {
-            setState(
-              () => widget.alarmConfig.alarmConditions.keepTimeThreshold = int.tryParse(value),
-            );
+            widget.alarmConfig.alarmConditions.keepTimeThreshold = int.tryParse(value);
+            _triggerValidate();
           },
           cursorWidth: 1.5,
           style: AppTypography.style(
@@ -385,11 +399,12 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
         break;
       case AIAlarmType.fireAlarm:
         title = 'Cảnh báo cháy trong điều kiện:';
-        content = _buildDropdown<String>(
+        content = _buildDropdown<FireAlarmType?>(
           fillColor: Colors.white,
-          initialValue: "Phát hiện khói",
-          items: ['Phát hiện khói', 'Phát hiện lửa', 'Phát hiện pháo hoa'],
-          onChanged: (value) {},
+          initialValue: selectedFireAlarmType,
+          items: FireAlarmType.values,
+          buildLabel: (data) => data!.label,
+          onChanged: (value) => setState(() => selectedFireAlarmType = value),
         );
         break;
       default:
@@ -477,7 +492,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                   height: 36,
                   value: e,
                   child: Text(
-                    e.toString(),
+                    buildLabel?.call(e) ?? e.toString(),
                     maxLines: 3,
                     style: AppTypography.style(
                       14,

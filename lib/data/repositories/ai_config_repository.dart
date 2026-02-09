@@ -36,6 +36,22 @@ class AiConfigRepository extends BaseRepository implements IAiConfigRepository {
   }
 
   @override
+  Future<Either<Failure, AIAlarmConfig>> updateAiAlarmConfigDetail({
+    required String cameraId,
+    required String alarmType,
+    required AIAlarmConfig config,
+  }) async {
+    return await catchError<AIAlarmConfig>(() async {
+      final aiAlarmConfig = await service.updateAiAlarmConfigDetail(
+        cameraId: cameraId,
+        alarmType: alarmType,
+        config: config,
+      );
+      return Right(aiAlarmConfig);
+    });
+  }
+
+  @override
   Future<Either<Failure, List<AlarmSound>>> getAlarmSounds() async {
     return await catchError<List<AlarmSound>>(() async {
       final alarmSounds = await service.getAlarmSounds();

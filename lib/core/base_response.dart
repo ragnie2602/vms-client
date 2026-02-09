@@ -53,6 +53,8 @@ sealed class Failure {
     switch (this) {
       case MessageFailure(:final message):
         return message;
+      case DioFailure(:final message):
+        return message;
       case CodeFailure(:final code):
         try {
           // Khi reconnected + relogin lỗi --> code = 1000 (Invalid request)
@@ -78,6 +80,15 @@ class MessageFailure extends Failure {
 class CodeFailure extends Failure {
   final int code;
   const CodeFailure(this.code) : super._();
+}
+
+class DioFailure extends Failure {
+  final String message;
+  final int? code;
+  final int statusCode;
+  final dynamic data;
+  const DioFailure({required this.message, this.code, required this.statusCode, this.data})
+    : super._();
 }
 
 class ApiException implements Exception {

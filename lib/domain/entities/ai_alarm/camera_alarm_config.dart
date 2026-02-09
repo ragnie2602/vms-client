@@ -1,4 +1,4 @@
-import 'al_alarm_type.dart';
+import 'al_alarm_enums.dart';
 
 class CameraAlarmConfig {
   final AIAlarmType type;

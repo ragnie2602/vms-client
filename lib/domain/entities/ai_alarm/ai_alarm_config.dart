@@ -1,19 +1,45 @@
-import 'al_alarm_type.dart';
-export 'al_alarm_type.dart';
+import 'al_alarm_enums.dart';
+export 'al_alarm_enums.dart';
 
 class AlarmConditions {
   int? keepTimeThreshold; // xâm nhập, điện thoại
   int? minTime;
-  int? busiType; // báo cháy (0: lửa, 1: khói, 2: pháo hoa)
+  FireAlarmType? busiType; // báo cháy (0: lửa, 1: khói, 2: pháo hoa)
   AlarmConditions({this.keepTimeThreshold, this.minTime, this.busiType});
-  factory AlarmConditions.fromJson(Map<String, dynamic> json) {
+  factory AlarmConditions.fromJson(Map<String, dynamic> json, AIAlarmType type) {
     return AlarmConditions(
-      keepTimeThreshold: json['keepTimeThreshold'],
+      keepTimeThreshold: type == AIAlarmType.zoneIntrusion || type == AIAlarmType.usingPhone
+          ? json['keepTimeThreshold'] ?? 10
+          : null,
       minTime: json['minTime'],
-      busiType: json['busiType'] is List && (json['busiType'] as List).isNotEmpty
-          ? (json['busiType'] as List).first
-          : json['busiType'],
+      busiType: type == AIAlarmType.fireAlarm
+          ? FireAlarmType.fromValue(
+              json['busiType'] is List && (json['busiType'] as List).isNotEmpty
+                  ? (json['busiType'] as List).first
+                  : json['busiType'],
+            )
+          : null,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (keepTimeThreshold != null) 'keepTimeThreshold': keepTimeThreshold,
+      if (minTime != null) 'minTime': minTime,
+      if (busiType != null) 'busiType': busiType?.value,
+    };
+  }
+
+  bool isValid(AIAlarmType type) {
+    switch (type) {
+      case AIAlarmType.zoneIntrusion:
+      case AIAlarmType.usingPhone:
+        return keepTimeThreshold != null && keepTimeThreshold! >= 1 && keepTimeThreshold! <= 3600;
+      case AIAlarmType.fireAlarm:
+        return busiType != null;
+      default:
+        return true;
+    }
   }
 }
 
@@ -54,6 +80,9 @@ class TimesConfig {
   factory TimesConfig.empty() {
     return TimesConfig(days: [], startTime: null, endTime: null);
   }
+
+  bool isEmpty() => days.isEmpty && startTime == null && endTime == null;
+  bool isValid() => isEmpty() || (days.isNotEmpty && startTime != null && endTime != null);
 }
 
 class AIAlarmConfig {
@@ -89,9 +118,7 @@ class AIAlarmConfig {
       aiBoxId: json['aiBoxId'],
       suggestedAiBoxId: json['suggestedAiBoxId'],
       soundId: json['soundId'],
-      alarmConditions: json['alarmConditions'] != null
-          ? AlarmConditions.fromJson(json['alarmConditions'])
-          : null,
+      alarmConditions: AlarmConditions.fromJson(json['alarmConditions'] ?? {}, type),
       rois: json['rois'] != null
           ? (json['rois'] as List).map<ROIConfig>((e) => ROIConfig.fromJson(e)).toList()
           : <ROIConfig>[],
@@ -99,5 +126,38 @@ class AIAlarmConfig {
           ? (json['times'] as List).map<TimesConfig>((e) => TimesConfig.fromJson(e)).toList()
           : <TimesConfig>[],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'aiBoxId': aiBoxId,
+      'status': status,
+      'soundId': soundId,
+      'rois': rois
+          .map(
+            (e) => {
+              'points': e.points.map((e) => {'x': e.x, 'y': e.y, 'seq': e.seq}).toList(),
+            },
+          )
+          .toList(),
+      'times': times
+          .where((e) => !e.isEmpty())
+          .map((e) => {'days': e.days, 'startTime': e.startTime, 'endTime': e.endTime})
+          .toList(),
+      'alarmConditions': alarmConditions.toJson(),
+    };
+  }
+
+  bool validate() {
+    if (aiBoxId == null) return false; // AI box
+    if (soundId == null) return false; // Sound
+
+    // Times
+    if (times.isNotEmpty && times.any((data) => !data.isValid())) return false;
+
+    // conditions
+    if (!alarmConditions.isValid(type)) return false;
+
+    return true;
   }
 }

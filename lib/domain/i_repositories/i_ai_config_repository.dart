@@ -11,5 +11,10 @@ abstract class IAiConfigRepository {
     required String alarmType,
     required int status,
   });
+  Future<Either<Failure, AIAlarmConfig>> updateAiAlarmConfigDetail({
+    required String cameraId,
+    required String alarmType,
+    required AIAlarmConfig config,
+  });
   Future<Either<Failure, List<AlarmSound>>> getAlarmSounds();
 }

@@ -30,16 +30,40 @@ part 'roi_area_config.dart';
 part 'time_ranges_config.dart';
 part 'title_with_tooltip.dart';
 
-class AlarmConfigPopup extends StatelessWidget with StateBuilderMixin {
+class AlarmConfigPopup extends StatefulWidget {
   final CameraAlarmConfig alarm;
   final String cameraId;
   const AlarmConfigPopup({super.key, required this.alarm, required this.cameraId});
 
-  void _handleSave(BuildContext context) {
-    final alarmConfig =
-        (context.read<AlarmConfigDetailBloc>().state as AlarmConfigDetailLoaded).alarmConfig;
+  @override
+  State<AlarmConfigPopup> createState() => _AlarmConfigPopupState();
+}
 
-    print(alarmConfig);
+class _AlarmConfigPopupState extends State<AlarmConfigPopup> with StateBuilderMixin {
+  bool isSaving = false;
+
+  void _handleSave(BuildContext context) {
+    setState(() => isSaving = true);
+
+    context.read<AlarmConfigDetailBloc>().add(
+      SaveAlarmConfig(
+        onFailure: (message) {
+          setState(() => isSaving = false);
+          ToastUtil.toastFail(
+            context: context,
+            title: Text(
+              message,
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.white,
+              ),
+            ),
+          );
+        },
+        onSuccess: (status) => Navigator.pop(context, status),
+      ),
+    );
   }
 
   @override
@@ -47,81 +71,110 @@ class AlarmConfigPopup extends StatelessWidget with StateBuilderMixin {
     final dialogWidth = MediaQuery.of(context).size.width * 0.5;
 
     return BlocProvider(
-      create: (context) => AlarmConfigDetailBloc(context.read())
-        ..add(GetAlarmConfigDetail(cameraId: cameraId, type: alarm.type.key, status: alarm.status)),
-      child: AlertDialog(
-        backgroundColor: Color(0xFFFCFDFD),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        titlePadding: EdgeInsets.fromLTRB(24, 14, 24 - 12, 14),
-        contentPadding: EdgeInsets.zero,
-        title: _buildTitle(context),
-        content: Container(
-          decoration: BoxDecoration(
-            border: Border(top: BorderSide(width: 1, color: AppColors.greyF2F4FA)),
-            color: AppColors.white,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(15),
-              bottomRight: Radius.circular(15),
+      create: (context) => AlarmConfigDetailBloc(
+        context.read(),
+        cameraId: widget.cameraId,
+        type: widget.alarm.type.key,
+        baseStatus: widget.alarm.status,
+      )..add(GetAlarmConfigDetail()),
+      child: IgnorePointer(
+        ignoring: isSaving,
+        child: AlertDialog(
+          backgroundColor: Color(0xFFFCFDFD),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          titlePadding: EdgeInsets.fromLTRB(24, 14, 24 - 12, 14),
+          contentPadding: EdgeInsets.zero,
+          title: _buildTitle(context),
+          content: Container(
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(width: 1, color: AppColors.greyF2F4FA)),
+              color: AppColors.white,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(15),
+              ),
             ),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          width: dialogWidth,
-          height: MediaQuery.of(context).size.height * 0.65,
-          child: BlocBuilder<AlarmConfigDetailBloc, AlarmConfigDetailState>(
-            builder: (context, state) => stateBuilder<AlarmConfigDetailLoaded>(
-              state,
-              errorBuilder: (message) => _buildErrorWidget(message, context),
-              child: (state) => Column(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(
-                        flex: 2,
-                        child: PropertiesConfig(alarm: alarm, alarmConfig: state.alarmConfig),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(flex: 3, child: ROIAreaConfig(alarmConfig: state.alarmConfig)),
-                    ],
-                  ),
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            width: dialogWidth,
+            height: MediaQuery.of(context).size.height * 0.65,
+            child: BlocBuilder<AlarmConfigDetailBloc, AlarmConfigDetailState>(
+              buildWhen: (pre, cur) {
+                if (pre is AlarmConfigDetailLoaded && cur is AlarmConfigDetailLoaded) {
+                  return pre.alarmConfig != cur.alarmConfig;
+                }
 
-                  /* Time range */
-                  SizedBox(height: 18),
-                  Expanded(child: TimeRangesConfig(alarmConfig: state.alarmConfig)),
-
-                  /* Actions */
-                  Container(
-                    height: 1,
-                    margin: EdgeInsets.only(top: 24),
-                    child: OverflowBox(
-                      maxWidth: dialogWidth,
-                      alignment: Alignment.center,
-                      child: Container(height: 1, color: AppColors.greyF2F4FA),
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(4, 16, 4, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                return true;
+              },
+              builder: (context, state) => stateBuilder<AlarmConfigDetailLoaded>(
+                state,
+                errorBuilder: (message) => _buildErrorWidget(message, context),
+                child: (state) => Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        _buildActionBtn(
-                          text: 'Hủy',
-                          bgColor: AppColors.white,
-                          fgColor: Color(0xFF374151),
-                          borderColor: AppColors.greyD1D5DB,
-                          onPressed: () => Navigator.pop(context),
+                        Expanded(
+                          flex: 2,
+                          child: PropertiesConfig(
+                            alarm: widget.alarm,
+                            alarmConfig: state.alarmConfig,
+                          ),
                         ),
-                        SizedBox(width: 18),
-                        _buildActionBtn(
-                          text: 'Lưu',
-                          bgColor: Color(0xFF005EB8),
-                          fgColor: Colors.white,
-                          onPressed: () => _handleSave(context),
-                        ),
+                        SizedBox(width: 12),
+                        Expanded(flex: 3, child: ROIAreaConfig(alarmConfig: state.alarmConfig)),
                       ],
                     ),
-                  ),
-                ],
+
+                    /* Time range */
+                    SizedBox(height: 18),
+                    Expanded(child: TimeRangesConfig(alarmConfig: state.alarmConfig)),
+
+                    /* Actions */
+                    Container(
+                      height: 1,
+                      margin: EdgeInsets.only(top: 24),
+                      child: OverflowBox(
+                        maxWidth: dialogWidth,
+                        alignment: Alignment.center,
+                        child: Container(height: 1, color: AppColors.greyF2F4FA),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.fromLTRB(4, 16, 4, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          _buildActionBtn(
+                            text: 'Hủy',
+                            bgColor: AppColors.white,
+                            fgColor: Color(0xFF374151),
+                            borderColor: AppColors.greyD1D5DB,
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          SizedBox(width: 18),
+                          BlocBuilder<AlarmConfigDetailBloc, AlarmConfigDetailState>(
+                            buildWhen: (pre, cur) =>
+                                pre is AlarmConfigDetailLoaded &&
+                                cur is AlarmConfigDetailLoaded &&
+                                pre.canSave != cur.canSave,
+                            builder: (context, state) {
+                              final canSave = (state as AlarmConfigDetailLoaded?)?.canSave ?? false;
+
+                              return _buildActionBtn(
+                                text: 'Lưu',
+                                bgColor: Color(0xFF005EB8),
+                                fgColor: Colors.white,
+                                onPressed: () => _handleSave(context),
+                                enabled: canSave,
+                                isLoading: isSaving,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -137,7 +190,7 @@ class AlarmConfigPopup extends StatelessWidget with StateBuilderMixin {
         /* Icon */
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: SvgPicture.string(alarm.icon, width: 42, height: 42),
+          child: SvgPicture.string(widget.alarm.icon, width: 42, height: 42),
         ),
 
         /* Text */
@@ -147,7 +200,7 @@ class AlarmConfigPopup extends StatelessWidget with StateBuilderMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                alarm.name,
+                widget.alarm.name,
                 style: AppTypography.style(
                   16,
                   fontWeight: FontWeight.w700,
@@ -156,7 +209,7 @@ class AlarmConfigPopup extends StatelessWidget with StateBuilderMixin {
                 ),
               ),
               Text(
-                alarm.description,
+                widget.alarm.description,
                 style: AppTypography.style(
                   12,
                   fontWeight: FontWeight.w400,
@@ -184,6 +237,8 @@ class AlarmConfigPopup extends StatelessWidget with StateBuilderMixin {
     required Color bgColor,
     required Color fgColor,
     Color? borderColor,
+    bool enabled = true,
+    bool? isLoading,
   }) {
     return TextButton(
       style: TextButton.styleFrom(
@@ -194,26 +249,28 @@ class AlarmConfigPopup extends StatelessWidget with StateBuilderMixin {
           borderRadius: BorderRadius.circular(5),
           side: borderColor != null ? BorderSide(width: 1, color: borderColor) : BorderSide.none,
         ),
+        disabledMouseCursor: SystemMouseCursors.forbidden,
+        disabledBackgroundColor: AppColors.greyD1D5DB,
       ),
-      onPressed: onPressed,
-      child: Text(
-        text,
-        style: AppTypography.style(
-          14,
-          fontWeight: FontWeight.w600,
-          color: fgColor,
-          lineHeight: 20 / 14,
-        ),
-      ),
+      onPressed: enabled ? onPressed : null,
+      child: isLoading == true
+          ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator())
+          : Text(
+              text,
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w600,
+                color: enabled ? fgColor : Color(0xFF9CA3AF),
+                lineHeight: 20 / 14,
+              ),
+            ),
     );
   }
 
   Widget _buildErrorWidget(String message, BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTap: () => context.read<AlarmConfigDetailBloc>().add(
-        GetAlarmConfigDetail(cameraId: cameraId, type: alarm.type.key, status: alarm.status),
-      ),
+      onTap: () => context.read<AlarmConfigDetailBloc>().add(GetAlarmConfigDetail()),
       child: Container(
         width: double.infinity,
         height: double.infinity,

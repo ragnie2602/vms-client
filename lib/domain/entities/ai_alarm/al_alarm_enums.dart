@@ -13,3 +13,18 @@ enum AIAlarmType {
     orElse: () => AIAlarmType.unknown,
   );
 }
+
+enum FireAlarmType {
+  flameDetection(2, 'Phát hiện lửa'),
+  smokeDetection(1, 'Phát hiện khói'),
+  fireworkDetection(0, 'Phát hiện pháo hoa');
+
+  final int value;
+  final String label;
+  const FireAlarmType(this.value, this.label);
+
+  factory FireAlarmType.fromValue(int? value) => FireAlarmType.values.firstWhere(
+    (element) => element.value == value,
+    orElse: () => FireAlarmType.smokeDetection,
+  );
+}

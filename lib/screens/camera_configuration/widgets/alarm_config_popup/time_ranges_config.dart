@@ -38,6 +38,13 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
     super.dispose();
   }
 
+  void _triggerValidate() {
+    Future.delayed(Duration.zero, () {
+      if (!mounted) return;
+      context.read<AlarmConfigDetailBloc>().add(ValidateAlarmConfig());
+    });
+  }
+
   bool canSelectDay(int day) {
     final count = widget.alarmConfig.times.where((time) => time.days.contains(day)).length;
     if (count >= 6) {
@@ -105,6 +112,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                           time.startTime,
                           (selectedTime) => setState(() {
                             widget.alarmConfig.times[index].startTime = selectedTime;
+                            _triggerValidate();
                           }),
                           maximumTime: time.endTime,
                           minimumTime: time.startTime,
@@ -115,6 +123,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                           time.endTime,
                           (selectedTime) => setState(() {
                             widget.alarmConfig.times[index].endTime = selectedTime;
+                            _triggerValidate();
                           }),
                           maximumTime: time.endTime,
                           minimumTime: time.startTime,
@@ -123,6 +132,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                         _columnWeekday(widget.alarmConfig.times[index].days, (days) {
                           setState(() {
                             widget.alarmConfig.times[index].days = days;
+                            _triggerValidate();
                           });
                         }, needValidate),
                         _handleButtons(index),
@@ -173,7 +183,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                 context: context,
                 barrierDismissible: true,
                 builder: (context) {
-                  String result = initialTime ?? '00:00';
+                  String result = initialTime ?? minimumTime ?? maximumTime ?? '00:00';
 
                   return Dialog(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
