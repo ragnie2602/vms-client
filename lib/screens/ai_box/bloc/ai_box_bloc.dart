@@ -56,6 +56,7 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         emit(AiBoxErrorState(errorMessage: onFailure.toString()));
       },
       (onSuccess) {
+        event.onSuccess?.call();
         _originalList = onSuccess;
         final paginatedList = _paginateList(_originalList, 1, _kPageSize);
         emit(

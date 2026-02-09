@@ -6,7 +6,8 @@ class AiBoxEvent extends BaseEvent {
 }
 
 class GetListAiBoxEvent extends AiBoxEvent {
-  const GetListAiBoxEvent();
+  final Function()? onSuccess;
+  const GetListAiBoxEvent({this.onSuccess});
 }
 
 class AddAiBoxEvent extends AiBoxEvent {

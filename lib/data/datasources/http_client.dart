@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/env_service.dart';
-import 'package:vms_flutter_client/core/utils/pretty_dio_logger.dart';
+import 'package:vms_flutter_client/core/utils/api_logger.dart';
 
 class HttpClient {
   late final Dio _dio;
@@ -21,17 +21,7 @@ class HttpClient {
 
     // Add interceptors for logging
     if (kDebugMode) {
-      _dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseBody: true,
-          responseHeader: false,
-          error: true,
-          compact: true,
-          maxWidth: 90,
-        ),
-      );
+      _dio.interceptors.add(ApiLogInterceptor(maxWidth: 90));
     }
   }
 
