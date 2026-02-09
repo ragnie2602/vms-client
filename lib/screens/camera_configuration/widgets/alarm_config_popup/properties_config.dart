@@ -63,9 +63,11 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
             orElse: () => aiBoxBloc.listAiBox.first,
           );
 
-          // Init full slot AI Box
-          if (selectedAiBox?.isFullSlot == true) {
-            selectedAiBox = aiBoxBloc.listAiBox.firstWhereOrNull((e) => !e.isFullSlot);
+          // Init full slot AI Box or offline AI Box
+          if (selectedAiBox?.isFullSlot == true || selectedAiBox!.status != 1) {
+            selectedAiBox = aiBoxBloc.listAiBox.firstWhereOrNull(
+              (e) => !e.isFullSlot && e.status == 1,
+            );
           }
 
           // Có giá trị thì update UI
@@ -212,9 +214,11 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                 ),
                 itemBuilder: (context, index) {
                   final item = state.aiBoxes![index];
+                  final bool isOffline = item.status != 1;
 
                   return InkWell(
-                    onTap: () => Navigator.pop(context, item),
+                    onTap: isOffline ? null : () => Navigator.pop(context, item),
+                    mouseCursor: isOffline ? SystemMouseCursors.forbidden : null,
                     child: Container(
                       color: item.id == selectedAiBox?.id
                           ? Theme.of(context).highlightColor
@@ -227,7 +231,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                           14,
                           fontWeight: FontWeight.w400,
                           lineHeight: 20 / 14,
-                          color: Color(0xFF0F172A),
+                          color: isOffline ? AppColors.grey6F767E : Color(0xFF0F172A),
                         ),
                       ),
                     ),
