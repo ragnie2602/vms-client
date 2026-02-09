@@ -142,11 +142,14 @@ class EventItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          EventTypeConfig.translator(currentFields.first.code ?? '', event),
-          style: AppTypography.style(14, fontWeight: FontWeight.w600),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        SizedBox(
+          width: double.infinity,
+          child: Text(
+            EventTypeConfig.translator(currentFields.first.code ?? '', event),
+            style: AppTypography.style(14, fontWeight: FontWeight.w600),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         const SizedBox(height: 10),
         CustomTable(
