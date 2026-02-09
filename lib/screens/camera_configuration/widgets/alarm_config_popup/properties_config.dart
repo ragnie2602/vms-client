@@ -63,7 +63,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
 
           // Init suggested AI Box
           selectedAiBox = listAiBox.firstWhere(
-            (e) => e.id == widget.alarmConfig.suggestedAiBoxId,
+            (e) => e.id == (widget.alarmConfig.aiBoxId ?? widget.alarmConfig.suggestedAiBoxId),
             orElse: () => listAiBox.first,
           );
 

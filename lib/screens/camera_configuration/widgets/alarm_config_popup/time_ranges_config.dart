@@ -135,7 +135,12 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                             _triggerValidate();
                           });
                         }, needValidate),
-                        _handleButtons(index),
+                        _handleButtons(
+                          index,
+                          showDelete:
+                              widget.alarmConfig.times.length > 1 ||
+                              widget.alarmConfig.times.firstOrNull?.isEmpty() == false,
+                        ),
                       ],
                     ),
                   );
@@ -422,37 +427,38 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
     );
   }
 
-  Widget _handleButtons(int index) {
+  Widget _handleButtons(int index, {bool showDelete = true}) {
     return Padding(
       padding: EdgeInsets.only(top: 16 + 6 + 10),
       child: Row(
         spacing: 8,
         children: <Widget>[
           /* Xóa */
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (widget.alarmConfig.times.length == 1) {
-                  widget.alarmConfig.times[0] = TimesConfig.empty();
-                } else {
-                  widget.alarmConfig.times.removeAt(index);
-                }
-              });
-            },
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(color: Color(0xFFF10000), shape: BoxShape.circle),
-              child: Center(
-                child: SvgPicture.asset(
-                  AppAssets.icDelete,
-                  width: 18,
-                  height: 18,
-                  colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          if (showDelete)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (widget.alarmConfig.times.length == 1) {
+                    widget.alarmConfig.times[0] = TimesConfig.empty();
+                  } else {
+                    widget.alarmConfig.times.removeAt(index);
+                  }
+                });
+              },
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(color: Color(0xFFF10000), shape: BoxShape.circle),
+                child: Center(
+                  child: SvgPicture.asset(
+                    AppAssets.icDelete,
+                    width: 18,
+                    height: 18,
+                    colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  ),
                 ),
               ),
             ),
-          ),
 
           /* Thêm */
           InkWell(
