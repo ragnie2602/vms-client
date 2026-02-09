@@ -709,7 +709,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     final eventTime = DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000);
     final eventName = event.eventName?.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_') ?? 'event';
     final timeStr = eventTime.format("yyyyMMdd_HHmmss");
-    final fileName = 'Image_${eventName}_$timeStr$ext';
+    final fileName = '${eventName}_$timeStr$ext';
 
     final path = await context.read<StorageFolderBloc>().state.ensureSnapshotFolder(
       event.camera?.name ?? 'camera',
