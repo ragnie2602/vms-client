@@ -13,6 +13,7 @@ class DetectState extends Equatable {
   final List<int> selectedFilterTypes;
   final int currentTabIndex;
   final List<List<int>> viewingCameraIds;
+  final bool hasReachedMaxEvents;
 
   const DetectState({
     this.status = DetectStatus.initial,
@@ -23,6 +24,7 @@ class DetectState extends Equatable {
     this.selectedFilterTypes = const [],
     this.currentTabIndex = 0,
     this.viewingCameraIds = const [],
+    this.hasReachedMaxEvents = false,
   });
 
   bool get hasActiveFilter => selectedFilterTypes.isNotEmpty;
@@ -38,6 +40,7 @@ class DetectState extends Equatable {
     List<int>? selectedFilterTypes,
     int? currentTabIndex,
     List<List<int>>? viewingCameraIds,
+    bool? hasReachedMaxEvents,
   }) {
     return DetectState(
       status: status ?? this.status,
@@ -48,6 +51,7 @@ class DetectState extends Equatable {
       selectedFilterTypes: selectedFilterTypes ?? this.selectedFilterTypes,
       currentTabIndex: currentTabIndex ?? this.currentTabIndex,
       viewingCameraIds: viewingCameraIds ?? this.viewingCameraIds,
+      hasReachedMaxEvents: hasReachedMaxEvents ?? this.hasReachedMaxEvents,
     );
   }
 
@@ -61,5 +65,6 @@ class DetectState extends Equatable {
     selectedFilterTypes,
     currentTabIndex,
     viewingCameraIds,
+    hasReachedMaxEvents,
   ];
 }

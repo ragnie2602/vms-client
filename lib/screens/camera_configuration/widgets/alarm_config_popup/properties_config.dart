@@ -55,17 +55,21 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     aiBoxBloc.add(
       GetListAiBoxEvent(
         onSuccess: () {
-          if (selectedAiBox != null || aiBoxBloc.listAiBox.isEmpty) return;
+          //
+          if(aiBoxBloc.state is! AIBoxLoadedState) return;
+
+          final listAiBox = (aiBoxBloc.state as AIBoxLoadedState).aiBoxes ?? [];
+          if (selectedAiBox != null || listAiBox.isEmpty) return;
 
           // Init suggested AI Box
-          selectedAiBox = aiBoxBloc.listAiBox.firstWhere(
+          selectedAiBox = listAiBox.firstWhere(
             (e) => e.id == widget.alarmConfig.suggestedAiBoxId,
-            orElse: () => aiBoxBloc.listAiBox.first,
+            orElse: () => listAiBox.first,
           );
 
           // Init full slot AI Box or offline AI Box
           if (selectedAiBox?.isFullSlot == true || selectedAiBox!.status != 1) {
-            selectedAiBox = aiBoxBloc.listAiBox.firstWhereOrNull(
+            selectedAiBox = listAiBox.firstWhereOrNull(
               (e) => !e.isFullSlot && e.status == 1,
             );
           }

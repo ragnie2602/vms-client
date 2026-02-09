@@ -11,13 +11,16 @@ import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_event.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_state.dart';
 
 class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
-  List<AiBoxEntity> listAiBox = [];
+  static const int _kPageSize = 20;
+
   final IAiBoxRepository aiBoxRepository;
   final FilterAiBoxUseCase filterAiBoxUseCase;
 
   // Lưu trạng thái filter hiện tại
   String _currentKeyword = '';
   AiBoxStatus _currentStatusFilter = AiBoxStatus.all;
+  // Lưu danh sách gốc để filter
+  List<AiBoxEntity> _originalList = [];
 
   AiBoxBloc({required this.aiBoxRepository, required this.filterAiBoxUseCase})
     : super(const AiBoxState()) {
@@ -26,6 +29,19 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     on<DeleteAiBoxEvent>(_onDeleteAiBox);
     on<EditAiBoxEvent>(_onEditAiBox);
     on<FilterAiBoxEvent>(_onFilterAiBox);
+    on<GetAiBoxAtPage>(_onGetAiBoxAtPage);
+  }
+
+  List<AiBoxEntity> _paginateList(
+    List<AiBoxEntity> fullList,
+    int page,
+    int pageSize,
+  ) {
+    if (fullList.isEmpty) return [];
+    final startIndex = (page - 1) * pageSize;
+    final endIndex = (startIndex + pageSize).clamp(0, fullList.length);
+    if (startIndex >= fullList.length) return [];
+    return fullList.sublist(startIndex, endIndex);
   }
 
   FutureOr<void> _onGetListAiBox(
@@ -36,12 +52,21 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     final groups = await aiBoxRepository.listAiBox();
     groups.fold(
       (onFailure) {
-        listAiBox = [];
+        _originalList = [];
         emit(AiBoxErrorState(errorMessage: onFailure.toString()));
       },
       (onSuccess) {
-        listAiBox = onSuccess;
-        emit(AIBoxLoadedState(aiBoxes: groups.right, aiBoxSelctedDetail: null));
+        _originalList = onSuccess;
+        final paginatedList = _paginateList(_originalList, 1, _kPageSize);
+        emit(
+          AIBoxLoadedState(
+            aiBoxes: _originalList,
+            paginatedAiBoxes: paginatedList,
+            page: 1,
+            pageSize: _kPageSize,
+            totalCount: _originalList.length,
+          ),
+        );
         event.onSuccess?.call();
       },
     );
@@ -59,13 +84,39 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         final currentState = state;
         emit(AiBoxAddFailState(errorMessage: failure.toString()));
         if (currentState is AIBoxLoadedState) {
-          emit(AIBoxLoadedState(aiBoxes: currentState.aiBoxes ?? []));
+          emit(currentState);
         }
       },
       (newAiBox) {
-        listAiBox.add(newAiBox);
+        // Get current list from state
+        final currentState = state;
+        final currentList = currentState is AIBoxLoadedState
+            ? List<AiBoxEntity>.from(currentState.aiBoxes ?? [])
+            : <AiBoxEntity>[];
+
+        // Add new item
+        currentList.add(newAiBox);
+        _originalList = currentList;
+
+        final currentPage = currentState is AIBoxLoadedState
+            ? currentState.page
+            : 1;
+        final paginatedList = _paginateList(
+          currentList,
+          currentPage,
+          _kPageSize,
+        );
+
         emit(AiBoxAddSuccessState());
-        emit(AIBoxLoadedState(aiBoxes: listAiBox));
+        emit(
+          AIBoxLoadedState(
+            aiBoxes: currentList,
+            paginatedAiBoxes: paginatedList,
+            page: currentPage,
+            pageSize: _kPageSize,
+            totalCount: currentList.length,
+          ),
+        );
       },
     );
   }
@@ -82,24 +133,54 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         final currentState = state;
         emit(AiBoxDeleteFailState(errorMessage: failure.toString()));
         if (currentState is AIBoxLoadedState) {
-          emit(AIBoxLoadedState(aiBoxes: currentState.aiBoxes ?? []));
+          emit(currentState);
         }
       },
       (deletedId) {
-        final deletedAiBox = listAiBox.firstWhereOrNull(
+        // Get current list from state
+        final currentState = state;
+        final currentList = currentState is AIBoxLoadedState
+            ? List<AiBoxEntity>.from(currentState.aiBoxes ?? [])
+            : <AiBoxEntity>[];
+
+        final deletedAiBox = currentList.firstWhereOrNull(
           (item) => item.id == deletedId,
         );
 
         if (deletedAiBox != null) {
-          listAiBox.removeWhere((item) => item.id == deletedId);
+          currentList.removeWhere((item) => item.id == deletedId);
+          _originalList = currentList;
+
+          var currentPage = currentState is AIBoxLoadedState
+              ? currentState.page
+              : 1;
+          final totalPages = (currentList.length / _kPageSize).ceil();
+          if (currentPage > totalPages && currentPage > 1) {
+            currentPage = totalPages;
+          }
+
+          final paginatedList = _paginateList(
+            currentList,
+            currentPage,
+            _kPageSize,
+          );
+
           emit(
             AiBoxDeleteSuccessState(
               aiBoxId: deletedId,
               aiBoxName: deletedAiBox.name ?? '',
             ),
           );
+          emit(
+            AIBoxLoadedState(
+              aiBoxes: currentList,
+              paginatedAiBoxes: paginatedList,
+              page: currentPage,
+              pageSize: _kPageSize,
+              totalCount: currentList.length,
+            ),
+          );
         }
-        emit(AIBoxLoadedState(aiBoxes: listAiBox));
       },
     );
   }
@@ -120,16 +201,43 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         final currentState = state;
         emit(AiBoxEditFailState(errorMessage: failure.toString()));
         if (currentState is AIBoxLoadedState) {
-          emit(AIBoxLoadedState(aiBoxes: currentState.aiBoxes ?? []));
+          emit(currentState);
         }
       },
       (updatedAiBox) {
-        final index = listAiBox.indexWhere((item) => item.id == event.aiBoxId);
+        // Get current list from state
+        final currentState = state;
+        final currentList = currentState is AIBoxLoadedState
+            ? List<AiBoxEntity>.from(currentState.aiBoxes ?? [])
+            : <AiBoxEntity>[];
+
+        final index = currentList.indexWhere(
+          (item) => item.id == event.aiBoxId,
+        );
         if (index != -1) {
-          listAiBox[index] = updatedAiBox;
+          currentList[index] = updatedAiBox;
+          _originalList = currentList;
         }
+
+        final currentPage = currentState is AIBoxLoadedState
+            ? currentState.page
+            : 1;
+        final paginatedList = _paginateList(
+          currentList,
+          currentPage,
+          _kPageSize,
+        );
+
         emit(AiBoxEditSuccessState(aiBoxName: updatedAiBox.name ?? ''));
-        emit(AIBoxLoadedState(aiBoxes: listAiBox));
+        emit(
+          AIBoxLoadedState(
+            aiBoxes: currentList,
+            paginatedAiBoxes: paginatedList,
+            page: currentPage,
+            pageSize: _kPageSize,
+            totalCount: currentList.length,
+          ),
+        );
       },
     );
   }
@@ -145,10 +253,40 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     final input = FilterAiBoxInput(
       keyword: _currentKeyword,
       statusFilter: _currentStatusFilter,
-      listAiBoxOrigin: listAiBox,
+      listAiBoxOrigin: _originalList,
     );
     final output = filterAiBoxUseCase.execute(input);
+    final filteredList = output.listAiBox ?? [];
 
-    emit(AIBoxLoadedState(aiBoxes: output.listAiBox ?? []));
+    // Reset to page 1 and paginate
+    final paginatedList = _paginateList(filteredList, 1, _kPageSize);
+
+    emit(
+      AIBoxLoadedState(
+        aiBoxes: filteredList,
+        paginatedAiBoxes: paginatedList,
+        page: 1,
+        pageSize: _kPageSize,
+        totalCount: filteredList.length,
+      ),
+    );
+  }
+
+  void _onGetAiBoxAtPage(GetAiBoxAtPage event, Emitter<AiBoxState> emit) {
+    if (state is AIBoxLoadedState) {
+      final currentState = state as AIBoxLoadedState;
+      final paginatedList = _paginateList(
+        currentState.aiBoxes ?? [],
+        event.page,
+        currentState.pageSize,
+      );
+
+      emit(
+        currentState.copyWith(
+          page: event.page,
+          paginatedAiBoxes: paginatedList,
+        ),
+      );
+    }
   }
 }

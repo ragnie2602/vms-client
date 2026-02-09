@@ -13,26 +13,53 @@ class AiBoxLoadingState extends AiBoxState {
 
 class AIBoxLoadedState extends AiBoxState {
   final List<AiBoxEntity>? aiBoxes;
+  final List<AiBoxEntity>? paginatedAiBoxes;
   final AiBoxEntity? aiBoxSelctedDetail;
-  const AIBoxLoadedState({required this.aiBoxes, this.aiBoxSelctedDetail});
+  final int page;
+  final int pageSize;
+  final int totalCount;
+
+  const AIBoxLoadedState({
+    required this.aiBoxes,
+    this.paginatedAiBoxes,
+    this.aiBoxSelctedDetail,
+    this.page = 1,
+    this.pageSize = 20,
+    this.totalCount = 0,
+  });
 
   AIBoxLoadedState copyWith({
     List<AiBoxEntity>? aiBoxes,
+    List<AiBoxEntity>? paginatedAiBoxes,
     AiBoxEntity? aiBoxSelctedDetail,
     bool? clearDetail,
+    int? page,
+    int? pageSize,
+    int? totalCount,
   }) {
     return AIBoxLoadedState(
       aiBoxes: aiBoxes ?? this.aiBoxes,
+      paginatedAiBoxes: paginatedAiBoxes ?? this.paginatedAiBoxes,
       aiBoxSelctedDetail: clearDetail == true
           ? null
           : aiBoxSelctedDetail ?? this.aiBoxSelctedDetail,
+      page: page ?? this.page,
+      pageSize: pageSize ?? this.pageSize,
+      totalCount: totalCount ?? this.totalCount,
     );
   }
 
   @override
   StateType get type => StateType.success;
   @override
-  List<Object?> get props => [aiBoxes, aiBoxSelctedDetail];
+  List<Object?> get props => [
+    aiBoxes,
+    paginatedAiBoxes,
+    aiBoxSelctedDetail,
+    page,
+    pageSize,
+    totalCount,
+  ];
 }
 
 class AiBoxAddSuccessState extends AiBoxState {
@@ -107,4 +134,3 @@ class AiBoxEditFailState extends AiBoxState {
   @override
   List<Object?> get props => [errorMessage];
 }
-
