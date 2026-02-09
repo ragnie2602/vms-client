@@ -88,21 +88,18 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         }
       },
       (newAiBox) {
-        // Get current list from state
+        // Add vào list hiện tại
+        _originalList.add(newAiBox);
+
+        // Nếu đnag search/filter thì search lại
+        final filteredList = _applyCurrentFilter();
+
         final currentState = state;
-        final currentList = currentState is AIBoxLoadedState
-            ? List<AiBoxEntity>.from(currentState.aiBoxes ?? [])
-            : <AiBoxEntity>[];
-
-        // Add new item
-        currentList.add(newAiBox);
-        _originalList = currentList;
-
         final currentPage = currentState is AIBoxLoadedState
             ? currentState.page
             : 1;
         final paginatedList = _paginateList(
-          currentList,
+          filteredList,
           currentPage,
           _kPageSize,
         );
@@ -110,11 +107,11 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         emit(AiBoxAddSuccessState());
         emit(
           AIBoxLoadedState(
-            aiBoxes: currentList,
+            aiBoxes: filteredList,
             paginatedAiBoxes: paginatedList,
             page: currentPage,
             pageSize: _kPageSize,
-            totalCount: currentList.length,
+            totalCount: filteredList.length,
           ),
         );
       },
@@ -126,41 +123,38 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     Emitter<AiBoxState> emit,
   ) async {
     if (event.aiBox.id == null) return;
+    final currentState = state;
     emit(AiBoxLoadingState());
     final result = await aiBoxRepository.removeAiBox(event.aiBox.id!);
     result.fold(
       (failure) {
-        final currentState = state;
         emit(AiBoxDeleteFailState(errorMessage: failure.toString()));
         if (currentState is AIBoxLoadedState) {
           emit(currentState);
         }
       },
       (deletedId) {
-        // Get current list from state
-        final currentState = state;
-        final currentList = currentState is AIBoxLoadedState
-            ? List<AiBoxEntity>.from(currentState.aiBoxes ?? [])
-            : <AiBoxEntity>[];
-
-        final deletedAiBox = currentList.firstWhereOrNull(
+        // tim và xóa khỏi danh sách gốc
+        final deletedAiBox = _originalList.firstWhereOrNull(
           (item) => item.id == deletedId,
         );
 
         if (deletedAiBox != null) {
-          currentList.removeWhere((item) => item.id == deletedId);
-          _originalList = currentList;
+          _originalList.removeWhere((item) => item.id == deletedId);
+
+          // Nếu đang search/filter thì search lại
+          final filteredList = _applyCurrentFilter();
 
           var currentPage = currentState is AIBoxLoadedState
               ? currentState.page
               : 1;
-          final totalPages = (currentList.length / _kPageSize).ceil();
+          final totalPages = (filteredList.length / _kPageSize).ceil();
           if (currentPage > totalPages && currentPage > 1) {
             currentPage = totalPages;
           }
 
           final paginatedList = _paginateList(
-            currentList,
+            filteredList,
             currentPage,
             _kPageSize,
           );
@@ -173,11 +167,11 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
           );
           emit(
             AIBoxLoadedState(
-              aiBoxes: currentList,
+              aiBoxes: filteredList,
               paginatedAiBoxes: paginatedList,
               page: currentPage,
               pageSize: _kPageSize,
-              totalCount: currentList.length,
+              totalCount: filteredList.length,
             ),
           );
         }
@@ -189,6 +183,7 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     EditAiBoxEvent event,
     Emitter<AiBoxState> emit,
   ) async {
+    final currentState = state;
     emit(AiBoxLoadingState());
 
     final result = await aiBoxRepository.editAiBox(
@@ -198,32 +193,28 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
 
     result.fold(
       (failure) {
-        final currentState = state;
         emit(AiBoxEditFailState(errorMessage: failure.toString()));
         if (currentState is AIBoxLoadedState) {
           emit(currentState);
         }
       },
       (updatedAiBox) {
-        // Get current list from state
-        final currentState = state;
-        final currentList = currentState is AIBoxLoadedState
-            ? List<AiBoxEntity>.from(currentState.aiBoxes ?? [])
-            : <AiBoxEntity>[];
-
-        final index = currentList.indexWhere(
+        //update trong danh sách gốc
+        final index = _originalList.indexWhere(
           (item) => item.id == event.aiBoxId,
         );
         if (index != -1) {
-          currentList[index] = updatedAiBox;
-          _originalList = currentList;
+          _originalList[index] = updatedAiBox;
         }
+
+        // Nếu đang search/filter thì search lại
+        final filteredList = _applyCurrentFilter();
 
         final currentPage = currentState is AIBoxLoadedState
             ? currentState.page
             : 1;
         final paginatedList = _paginateList(
-          currentList,
+          filteredList,
           currentPage,
           _kPageSize,
         );
@@ -231,15 +222,29 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         emit(AiBoxEditSuccessState(aiBoxName: updatedAiBox.name ?? ''));
         emit(
           AIBoxLoadedState(
-            aiBoxes: currentList,
+            aiBoxes: filteredList,
             paginatedAiBoxes: paginatedList,
             page: currentPage,
             pageSize: _kPageSize,
-            totalCount: currentList.length,
+            totalCount: filteredList.length,
           ),
         );
       },
     );
+  }
+
+  // Áp dụng filter hiện tại và trả về danh sách đã lọc
+  List<AiBoxEntity> _applyCurrentFilter() {
+    if (_currentKeyword.isEmpty && _currentStatusFilter == AiBoxStatus.all) {
+      return _originalList;
+    }
+    final input = FilterAiBoxInput(
+      keyword: _currentKeyword,
+      statusFilter: _currentStatusFilter,
+      listAiBoxOrigin: _originalList,
+    );
+    final output = filterAiBoxUseCase.execute(input);
+    return output.listAiBox ?? [];
   }
 
   void _onFilterAiBox(FilterAiBoxEvent event, Emitter<AiBoxState> emit) {
@@ -250,15 +255,10 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     if (event.statusFilter != null) {
       _currentStatusFilter = event.statusFilter!;
     }
-    final input = FilterAiBoxInput(
-      keyword: _currentKeyword,
-      statusFilter: _currentStatusFilter,
-      listAiBoxOrigin: _originalList,
-    );
-    final output = filterAiBoxUseCase.execute(input);
-    final filteredList = output.listAiBox ?? [];
 
-    // Reset to page 1 and paginate
+    final filteredList = _applyCurrentFilter();
+
+    // reset về trang 1
     final paginatedList = _paginateList(filteredList, 1, _kPageSize);
 
     emit(

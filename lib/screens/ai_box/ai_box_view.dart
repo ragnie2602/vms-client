@@ -81,7 +81,7 @@ class AiBoxView extends BaseView<AiBoxBloc> {
         if (state is AiBoxAddSuccessState) {
           ToastUtil.toastSuccess(
             context: context,
-            title: Text('Thêm AI Box thành công!'),
+            title: Text('Thêm mới thiết bị thành công'),
           );
         }
         if (state is AiBoxAddFailState) {
@@ -106,6 +106,12 @@ class AiBoxView extends BaseView<AiBoxBloc> {
           ToastUtil.toastSuccess(
             context: context,
             title: Text('Cập nhật AI Box thành công'),
+          );
+        }
+        if (state is AiBoxEditFailState) {
+          ToastUtil.toastFail(
+            context: context,
+            title: Text(state.errorMessage),
           );
         }
       },
