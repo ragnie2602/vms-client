@@ -65,7 +65,17 @@ class _AlarmConfigPopupState extends State<AlarmConfigPopup> with StateBuilderMi
             ),
           );
         },
-        onSuccess: (status) => Navigator.pop(context, status),
+        onSuccess: (status) {
+          ToastUtil.toastSuccess(
+            title: Text(
+              "Cập nhập cấu hình thành công!",
+              maxLines: 5,
+              style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
+            ),
+          );
+
+          Navigator.pop(context, status);
+        },
       ),
     );
   }
