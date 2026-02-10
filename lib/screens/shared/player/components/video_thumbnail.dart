@@ -26,6 +26,9 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
   String? _lastSavePath;
   late final MethodChannel _channel = MethodChannel('fvp');
 
+  // Lưu giữ future để không bị trigger lại khi build
+  Future<ImageProvider?>? _fetchFuture;
+
   @override
   void dispose() {
     _cleanupTempFile();
@@ -40,6 +43,7 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
       _cleanupTempFile();
       _lastSavePath = null;
       _cachedProvider = null;
+      _fetchFuture = null;
 
       setState(() {});
     }
@@ -90,9 +94,8 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        print('constraints: ${constraints.maxWidth} ${constraints.maxHeight}');
         return FutureBuilder<ImageProvider?>(
-          future: _fetchFirstFrame(
+          future: _fetchFuture ??= _fetchFirstFrame(
             width: constraints.maxWidth.toInt(),
             height: constraints.maxHeight.toInt(),
           ),
@@ -106,6 +109,10 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
                 behavior: HitTestBehavior.translucent,
                 onTap: () => setState(() {
                   _cachedProvider = null;
+                  _fetchFuture = _fetchFirstFrame(
+                    width: constraints.maxWidth.toInt(),
+                    height: constraints.maxHeight.toInt(),
+                  );
                 }),
                 child: _wrapBorderRadius(Image.asset(AppAssets.imgPlaceholder, fit: BoxFit.cover)),
               );
