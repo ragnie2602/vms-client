@@ -88,8 +88,8 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
         }
       },
       (newAiBox) {
-        // Add vào list hiện tại
-        _originalList.add(newAiBox);
+        // Add vào đầu list
+        _originalList.insert(0, newAiBox);
 
         // Nếu đnag search/filter thì search lại
         final filteredList = _applyCurrentFilter();
