@@ -22,6 +22,7 @@ import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_state.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 
 import '../../../shared/player/audio_player.dart';
+import '../../../shared/player/components/video_thumbnail.dart';
 import '../../bloc/alarm_config_detail/alarm_config_detail_bloc.dart';
 import '../../bloc/alarm_sound/alarm_sound_bloc.dart';
 
@@ -33,7 +34,13 @@ part 'title_with_tooltip.dart';
 class AlarmConfigPopup extends StatefulWidget {
   final CameraAlarmConfig alarm;
   final String cameraId;
-  const AlarmConfigPopup({super.key, required this.alarm, required this.cameraId});
+  final String cameraSource;
+  const AlarmConfigPopup({
+    super.key,
+    required this.alarm,
+    required this.cameraId,
+    required this.cameraSource,
+  });
 
   @override
   State<AlarmConfigPopup> createState() => _AlarmConfigPopupState();
@@ -53,11 +60,8 @@ class _AlarmConfigPopupState extends State<AlarmConfigPopup> with StateBuilderMi
             context: context,
             title: Text(
               message,
-              style: AppTypography.style(
-                14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.white,
-              ),
+              maxLines: 5,
+              style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.white),
             ),
           );
         },
@@ -94,7 +98,8 @@ class _AlarmConfigPopupState extends State<AlarmConfigPopup> with StateBuilderMi
                 bottomRight: Radius.circular(15),
               ),
             ),
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            // right 8 + 12 padding scrollview (cho scrollbar ra ngoài)
+            padding: EdgeInsets.fromLTRB(20, 0, 8, 16),
             width: dialogWidth,
             height: MediaQuery.of(context).size.height * 0.65,
             child: BlocBuilder<AlarmConfigDetailBloc, AlarmConfigDetailState>(
@@ -110,37 +115,56 @@ class _AlarmConfigPopupState extends State<AlarmConfigPopup> with StateBuilderMi
                 errorBuilder: (message) => _buildErrorWidget(message, context),
                 child: (state) => Column(
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          flex: 2,
-                          child: PropertiesConfig(
-                            alarm: widget.alarm,
-                            alarmConfig: state.alarmConfig,
+                    /* Content */
+                    Expanded(
+                      child: Scrollbar(
+                        thickness: 8,
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.only(right: 12, top: 16),
+                          primary: true,
+                          child: Column(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 2,
+                                    child: PropertiesConfig(
+                                      alarm: widget.alarm,
+                                      alarmConfig: state.alarmConfig,
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    flex: 3,
+                                    child: ROIAreaConfig(
+                                      alarmConfig: state.alarmConfig,
+                                      cameraSource: widget.cameraSource,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              /* Time range */
+                              SizedBox(height: 18),
+                              TimeRangesConfig(alarmConfig: state.alarmConfig),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 12),
-                        Expanded(flex: 3, child: ROIAreaConfig(alarmConfig: state.alarmConfig)),
-                      ],
+                      ),
                     ),
 
-                    /* Time range */
-                    SizedBox(height: 18),
-                    Expanded(child: TimeRangesConfig(alarmConfig: state.alarmConfig)),
-
                     /* Actions */
-                    Container(
+                    SizedBox(
                       height: 1,
-                      margin: EdgeInsets.only(top: 24),
                       child: OverflowBox(
-                        maxWidth: dialogWidth,
+                        maxWidth: dialogWidth - 12, // -12 padding scrollview
                         alignment: Alignment.center,
                         child: Container(height: 1, color: AppColors.greyF2F4FA),
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.fromLTRB(4, 16, 4, 0),
+                      padding: EdgeInsets.fromLTRB(4, 12, 4 + 12, 0), // +12 padding scrollview
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: <Widget>[

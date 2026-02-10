@@ -117,7 +117,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       children: [
         /* Global switch */
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          spacing: 16,
           children: <Widget>[
             Text(widget.alarm.name, style: titleStyle),
             /*  */

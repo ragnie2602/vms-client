@@ -5,9 +5,11 @@ class ROIAreaConfig extends StatefulWidget {
     super.key,
     this.borderRadius = const Radius.circular(8),
     required this.alarmConfig,
+    required this.cameraSource,
   });
   final Radius borderRadius;
   final AIAlarmConfig alarmConfig;
+  final String cameraSource;
 
   @override
   State<ROIAreaConfig> createState() => _ROIAreaConfigState();
@@ -91,7 +93,15 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
               height: maxHeight,
               child: Stack(
                 fit: StackFit.expand,
+                alignment: Alignment.center,
                 children: [
+                  Container(
+                    margin: EdgeInsets.all(0.5),
+                    width: maxWidth,
+                    height: maxHeight,
+                    child: VideoThumbnail(source: widget.cameraSource, borderRadius: 8),
+                  ),
+
                   Listener(
                     behavior: HitTestBehavior.opaque,
                     onPointerDown: (event) {
@@ -197,6 +207,7 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
                       painter: DashPolygonPainter(
                         rois: widget.alarmConfig.rois,
                         dashBorderRadius: widget.borderRadius,
+                        dashBorderColor: Color(0xFF0F172A),
                       ),
                     ),
                   ),
@@ -213,7 +224,7 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
                       return Positioned(
                         left: buttonPos.dx - 8, // child / 2
                         top: buttonPos.dy - 8,
-                        child: GestureDetector(
+                        child: InkWell(
                           onTap: () {
                             setState(() => widget.alarmConfig.rois.removeAt(idx));
                           },
