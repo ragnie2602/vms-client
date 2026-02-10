@@ -5,6 +5,8 @@
 // found in the LICENSE file.
 #include "fvp_plugin.h"
 #include <flutter/standard_method_codec.h>
+#include "mdk/VideoFrame.h"
+#include <condition_variable>
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -185,7 +187,119 @@ void FvpPlugin::HandleMethodCall(
     result->Success();
   } else if (method_call.method_name() == "MixWithOthers") {
     result->Success();
-  } else {
+} else if (method_call.method_name() == "GetThumbnail") {
+    auto args = std::get<flutter::EncodableMap>(*method_call.arguments());
+    const string url = std::get<string>(args[flutter::EncodableValue("url")]);
+    const string savePath = std::get<string>(args[flutter::EncodableValue("path")]);
+    const int64_t from = args[flutter::EncodableValue("from")].LongValue();
+
+    int reqWidth = -1;
+    int reqHeight = -1;
+    auto it_w = args.find(flutter::EncodableValue("width"));
+    if (it_w != args.end() && !it_w->second.IsNull()) reqWidth = (int)it_w->second.LongValue();
+    auto it_h = args.find(flutter::EncodableValue("height"));
+    if (it_h != args.end() && !it_h->second.IsNull()) reqHeight = (int)it_h->second.LongValue();
+
+    int timeoutMs = 5000;
+    auto it_t = args.find(flutter::EncodableValue("timeout"));
+    if (it_t != args.end() && !it_t->second.IsNull()) timeoutMs = (int)it_t->second.LongValue();
+
+    clog << "[GetThumbnail] Start: " << url << " | Seek to: " << from << "ms" << endl;
+
+    auto player = std::make_shared<Player>();
+    player->setProperty("avformat.probesize", "65536");
+    player->setProperty("avformat.analyzeduration", "100000");
+    player->setDecoders(MediaType::Video, {"auto"});
+    player->setProperty("videodecoder.threads", "1");
+
+    struct Context {
+        std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result;
+        bool finished = false;
+        std::mutex mtx;
+        std::condition_variable cv;
+    };
+
+    auto ctx = std::make_shared<Context>();
+    ctx->result = std::move(result);
+
+    std::weak_ptr<Player> weakPlayer = player;
+    std::weak_ptr<Context> weakCtx = ctx;
+
+    player->setMedia(url.c_str());
+    player->setActiveTracks(MediaType::Audio, {});
+    player->onSync([] { return DBL_MAX; });
+
+    // 2. Status Callback
+    player->onMediaStatus([weakCtx, weakPlayer](MediaStatus pre, MediaStatus cur) {
+        auto ctx = weakCtx.lock();
+        auto player = weakPlayer.lock();
+        if (!ctx || !player) return false;
+
+        if (cur & MediaStatus::Invalid) {
+            std::lock_guard<std::mutex> lock(ctx->mtx);
+            if (!ctx->finished) {
+                clog << "[GetThumbnail] Error: Media Status Invalid" << endl;
+                ctx->finished = true;
+                ctx->result->Error("MEDIA_ERROR", "Invalid media source");
+                player->set(State::Stopped);
+                ctx->cv.notify_one();
+            }
+        }
+        return true;
+    });
+
+    // 3. Frame Callback
+    player->onFrame<VideoFrame>([weakCtx, weakPlayer, reqWidth, reqHeight, savePath](VideoFrame& v, int) {
+        auto ctx = weakCtx.lock();
+        auto player = weakPlayer.lock();
+        if (!ctx || !player) return 0;
+
+        // Tránh xử lý nếu đã xong hoặc frame rỗng
+        if (ctx->finished || !v || v.timestamp() == TimestampEOS) return 0;
+
+        std::unique_lock<std::mutex> lock(ctx->mtx);
+        if (ctx->finished) return 0;
+
+        clog << "[GetThumbnail] Frame received at TS: " << v.timestamp() << endl;
+
+        auto frame = v.to(PixelFormat::RGBA, reqWidth, reqHeight);
+        if (frame) {
+            ctx->finished = true;
+            if (frame.save(savePath.c_str())) {
+                clog << "[GetThumbnail] Success: Saved to " << savePath << endl;
+                ctx->result->Success(flutter::EncodableValue(savePath));
+            } else {
+                clog << "[GetThumbnail] Failed: Save error" << endl;
+                ctx->result->Error("SAVE_ERROR", "Could not save frame");
+            }
+            player->set(State::Stopped);
+            ctx->cv.notify_one();
+        }
+        return 0;
+    });
+
+    // 4. Timeout & Lifecycle Thread
+    std::thread([ctx, player, timeoutMs]() {
+        {
+            std::unique_lock<std::mutex> lock(ctx->mtx);
+            if (!ctx->cv.wait_for(lock, std::chrono::milliseconds(timeoutMs), [&] { return ctx->finished; })) {
+                if (!ctx->finished) {
+                    clog << "[GetThumbnail] Error: Timeout reached (" << timeoutMs << "ms)" << endl;
+                    ctx->finished = true;
+                    ctx->result->Error("TIMEOUT", "Get thumbnail timeout");
+                }
+            }
+        }
+
+        clog << "[GetThumbnail] Cleaning up player..." << endl;
+        player->set(State::Stopped);
+        // player shared_ptr tự hủy khi thread kết thúc
+    }).detach();
+
+    // Bắt đầu luồng
+    player->prepare(from);
+    player->set(State::Playing);
+} else {
     result->NotImplemented();
   }
 }

@@ -19,7 +19,11 @@ class AlarmConfigWidget extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlarmConfigPopup(alarm: alarm, cameraId: camera.camId);
+        return AlarmConfigPopup(
+          alarm: alarm,
+          cameraId: camera.camId,
+          cameraSource: camera.mainStreamUri.toString(),
+        );
       },
     );
 
