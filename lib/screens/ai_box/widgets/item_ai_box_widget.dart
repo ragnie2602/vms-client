@@ -83,7 +83,7 @@ class _AiBoxItemWidgetState extends State<AiBoxItemWidget> {
                           ? '_'
                           : widget.itemAiBox.name!,
                       style: AppTypography.style(
-                        16,
+                        14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.grey0F172A,
                         textOverflow: TextOverflow.visible,
