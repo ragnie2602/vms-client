@@ -278,7 +278,6 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
               shrinkWrap: true,
               children: List.generate(state.currentFields.length, (index) {
                 final item = state.currentFields[index];
-                print('index icon = ${item.icon}');
                 return Container(
                   key: ValueKey(item.code),
                   decoration: BoxDecoration(
@@ -357,13 +356,11 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   }
 
   Widget _getIconForField(FieldConfigEntity item) {
-    // lấy icon từ url, nếu không có thì dùng icon mặc định
     final iconPath = item.icon;
     if (iconPath == null || iconPath.isEmpty) {
       return SvgPicture.asset(AppAssets.icEventType, height: 24, width: 24);
     }
 
-    // Kiểm tra xem có phải file SVG không
     final isSvg = iconPath.toLowerCase().endsWith('.svg');
 
     if (isSvg) {
@@ -376,12 +373,10 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
           height: 20,
           child: Center(child: CircularProgressIndicator(strokeWidth: 1)),
         ),
-        // Nếu lỗi thì dùng icon mặc định
         fit: BoxFit.contain,
       );
     }
 
-    // Với các định dạng ảnh khác (PNG, JPG, etc.)
     return Image.network(
       iconPath,
       width: 24,

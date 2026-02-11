@@ -55,26 +55,26 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
       },
     );
 
-    if (event.typeEvents != null && event.typeEvents!.isNotEmpty) {
-      emit(state.copyWith(configTableStatus: ConfigTableStatus.loading));
+    if (event.typeConfig == EventTypeConfig.EVENT_MANAGEMENT) {
+      if (event.typeEvents != null && event.typeEvents!.isNotEmpty) {
+        emit(state.copyWith(configTableStatus: ConfigTableStatus.loading));
 
-      try {
-        final input = FetchConfigTableInput(
-          event.typeEvents?.map((e) => e.typeName ?? '').toList() ?? [],
-        );
-        final output = await _fetchConfigTableUsecase.execute(input);
-        configTable.addAll(output.configTable);
+        try {
+          final input = FetchConfigTableInput(
+            event.typeEvents?.map((e) => e.typeName ?? '').toList() ?? [],
+          );
+          final output = await _fetchConfigTableUsecase.execute(input);
+          configTable.addAll(output.configTable);
 
-        // Emit state khi load configTable thành công
-        emit(state.copyWith(configTableStatus: ConfigTableStatus.success));
-      } catch (error) {
-        // Emit state khi load configTable thất bại
-        emit(
-          state.copyWith(
-            configTableStatus: ConfigTableStatus.failure,
-            errorMessage: error.toString(),
-          ),
-        );
+          emit(state.copyWith(configTableStatus: ConfigTableStatus.success));
+        } catch (error) {
+          emit(
+            state.copyWith(
+              configTableStatus: ConfigTableStatus.failure,
+              errorMessage: error.toString(),
+            ),
+          );
+        }
       }
     }
   }
@@ -104,31 +104,29 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
       );
     }
 
-    if (event.type.typeName == null) {
-      return;
-    }
+    if (event.type.typeName == null) return;
 
     // check trong list cấu hình(sau khi update) đang lưu đã có kiểu này chưa
-    if (state.modifiedConfigs.containsKey(event.type.typeName)) {
-      emit(
-        state.copyWith(
-          configStatus: SetupInfoFieldConfigStatus.success,
-          currentFields: state.modifiedConfigs[event.type.typeName]!,
-        ),
-      );
-      return;
-    }
+    // if (state.modifiedConfigs.containsKey(event.type.typeName)) {
+    //   emit(
+    //     state.copyWith(
+    //       configStatus: SetupInfoFieldConfigStatus.success,
+    //       currentFields: state.modifiedConfigs[event.type.typeName]!,
+    //     ),
+    //   );
+    //   return;
+    // }
 
-    // check trong list cấu hình(nguyên bản lúc mới init) đang lưu đã có kiểu này chưa
-    if (state.originalConfigs.containsKey(event.type.typeName)) {
-      emit(
-        state.copyWith(
-          configStatus: SetupInfoFieldConfigStatus.success,
-          currentFields: state.originalConfigs[event.type.typeName]!,
-        ),
-      );
-      return;
-    }
+    // // check trong list cấu hình(nguyên bản lúc mới init) đang lưu đã có kiểu này chưa
+    // if (state.originalConfigs.containsKey(event.type.typeName)) {
+    //   emit(
+    //     state.copyWith(
+    //       configStatus: SetupInfoFieldConfigStatus.success,
+    //       currentFields: state.originalConfigs[event.type.typeName]!,
+    //     ),
+    //   );
+    //   return;
+    // }
     Either<Failure, EventDisplayConfigEntity> result;
     if (event.typeConfig == EventTypeConfig.LIVEVIEW) {
       result = await _detectRepository.getEventDisplayConfig(eventTypeName: event.type.typeName!);
