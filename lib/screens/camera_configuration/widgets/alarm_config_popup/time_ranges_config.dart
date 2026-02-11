@@ -118,12 +118,14 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                       minimumTime: time.startTime,
                       needValidate: needValidate,
                     ),
-                    _columnWeekday(widget.alarmConfig.times[index].days, (days) {
-                      setState(() {
-                        widget.alarmConfig.times[index].days = days;
-                        _triggerValidate();
-                      });
-                    }, needValidate),
+                    Flexible(
+                      child: _columnWeekday(widget.alarmConfig.times[index].days, (days) {
+                        setState(() {
+                          widget.alarmConfig.times[index].days = days;
+                          _triggerValidate();
+                        });
+                      }, needValidate),
+                    ),
                     _handleButtons(
                       index,
                       showDelete:
