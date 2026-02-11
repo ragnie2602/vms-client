@@ -254,7 +254,7 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
                       const SizedBox(height: 20),
                       // IP Address và Port
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             flex: 1,
@@ -313,7 +313,7 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
                       ),
                       const SizedBox(height: 20),
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             flex: 1,
