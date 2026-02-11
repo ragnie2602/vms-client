@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
-import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/utils/api_logger.dart';
 
 class HttpClient {
@@ -12,7 +12,7 @@ class HttpClient {
   HttpClient() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: EnvService.apiBaseUrl,
+        baseUrl: EndPoints.baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {'Content-Type': 'application/json'},
@@ -23,6 +23,11 @@ class HttpClient {
     if (kDebugMode) {
       _dio.interceptors.add(ApiLogInterceptor(maxWidth: 90));
     }
+  }
+
+  void updateBaseUrl(String newBaseUrl) {
+    _dio.options.baseUrl = newBaseUrl;
+    EndPoints.baseUrl = newBaseUrl;
   }
 
   delete({required String url, dynamic data}) async {

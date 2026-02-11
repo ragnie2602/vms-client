@@ -1,4 +1,4 @@
-import 'package:vms_flutter_client/core/env_service.dart';
+import 'package:vms_flutter_client/core/constants/endpoints.dart';
 
 class EmapEntity {
   final int id;
@@ -17,7 +17,7 @@ class EmapEntity {
     return EmapEntity(
       id: json['id'],
       name: json['name'],
-      imageUrl: '${EnvService.apiBaseUrl}${json['imageUrl']}',
+      imageUrl: '${EndPoints.baseUrl}${json['imageUrl']}',
       cameraMaps: json['cameraMaps']
           .map<CameraEmapInfoEntity>((e) => CameraEmapInfoEntity.fromJson(e))
           .toList(),

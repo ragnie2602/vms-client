@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:vms_flutter_client/core/env_service.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -23,8 +24,8 @@ class AboutScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
             // Version
-            const Text(
-              'Phiên bản: 1.1.1 | Build 10',
+            Text(
+              'Phiên bản: ${EnvService.appVersion} | Build ${EnvService.buildNumber}',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w300,

@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/screens/register/bloc/register_bloc.dart';
 import 'package:vms_flutter_client/screens/register/bloc/register_event.dart';
 import 'package:vms_flutter_client/screens/register/bloc/register_state.dart';
@@ -42,7 +42,7 @@ class _MobileRegisterScreenState extends State<MobileRegisterScreen> {
     serverController = TextEditingController(
       text:
           AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ??
-          EnvService.apiBaseUrl,
+          EndPoints.baseUrl,
     );
   }
 
