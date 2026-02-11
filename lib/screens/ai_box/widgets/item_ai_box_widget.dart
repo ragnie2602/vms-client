@@ -75,12 +75,18 @@ class _AiBoxItemWidgetState extends State<AiBoxItemWidget> {
                 flex: 300,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    widget.itemAiBox.name ?? '',
-                    style: AppTypography.style(
-                      16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.grey0F172A,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      widget.itemAiBox.name ?? '',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.grey0F172A,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),

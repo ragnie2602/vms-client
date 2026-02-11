@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -60,31 +61,20 @@ class EventLiveViewItem extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    eventData.imageUrl ?? '',
+                  child: CachedNetworkImage(
+                    imageUrl: eventData.imageUrl ?? '',
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: AppColors.greyDFDFDF,
-                        child: Icon(
-                          Icons.image_not_supported,
-                          color: AppColors.grey4B5563,
-                          size: 40,
-                        ),
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                              : null,
-                          strokeWidth: 2,
-                        ),
-                      );
-                    },
+                    placeholder: (context, url) => Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: AppColors.greyDFDFDF,
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.grey4B5563,
+                        size: 40,
+                      ),
+                    ),
                   ),
                 ),
               ),
