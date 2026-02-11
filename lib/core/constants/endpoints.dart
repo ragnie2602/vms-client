@@ -1,4 +1,14 @@
+import '../env_service.dart';
+
 class EndPoints {
+  // --- Domains ---
+  static const String devDomain = 'https://vs.vivas.vn';
+  static const String stagDomain = 'http://10.3.3.162:8080';
+  static const String prodDomain = 'http://123.25.70.15:8787';
+
+  // --- Base URL ---
+  static String baseUrl = EnvService.suggestedServerUrl ?? stagDomain;
+
   // Auth
   static const String baseAuth = '/api/auth';
   static const String authenticate = '/login';

@@ -27,8 +27,8 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
           account: input.username,
           sessionId: authentication.sessionId,
           uid: authentication.uid,
-          host: "ipcam.vivas.vn",
-          port: 50012,
+          host: authentication.websocketHost,
+          port: authentication.websocketPort,
         ),
       );
 
@@ -47,8 +47,8 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
           email: authentication.email,
           tel: authentication.phone,
           permissions: authentication.permissions,
-          host: "ipcam.vivas.vn",
-          port: 50012,
+          host: authentication.websocketHost,
+          port: authentication.websocketPort,
           userType: UserType.admin,
         );
 
