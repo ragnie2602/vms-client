@@ -395,8 +395,6 @@ class _EventScreenState extends State<EventScreen> {
                               children: [
                                 Expanded(
                                   child: ListView.separated(
-                                    separatorBuilder: (context, index) =>
-                                        const SizedBox(height: 10),
                                     itemCount: (state.events.length / 4).ceil(),
                                     itemBuilder: (context, rowIndex) {
                                       final int startIndex = rowIndex * 4;
@@ -409,17 +407,19 @@ class _EventScreenState extends State<EventScreen> {
                                           children: [
                                             for (int i = startIndex; i < endIndex; i++) ...[
                                               Expanded(child: EventItem(event: state.events[i])),
-                                              if (i < endIndex - 1) const SizedBox(width: 10),
+                                              if (i < endIndex - 1) const SizedBox(width: 16),
                                             ],
                                             for (int i = 0; i < emptySlots; i++) ...[
                                               if (i > 0 || (endIndex - startIndex) > 0)
-                                                const SizedBox(width: 10),
+                                                const SizedBox(width: 16),
                                               const Expanded(child: SizedBox()),
                                             ],
                                           ],
                                         ),
                                       );
                                     },
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(height: 15),
                                   ),
                                 ),
                                 const SizedBox(height: 30),
