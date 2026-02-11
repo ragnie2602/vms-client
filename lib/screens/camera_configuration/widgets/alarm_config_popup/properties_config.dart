@@ -254,7 +254,10 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       hint: 'Vui lòng chọn âm thanh cảnh báo',
       initialValue: selectedSound,
       buildLabel: (data) => data!.name,
-      onChanged: (value) => setState(() => selectedSound = value),
+      onChanged: (value) => setState(() {
+        selectedSound = value;
+        _audioPlayer.stop();
+      }),
       errorText: _selectedSound == null ? 'Vui lòng chọn âm thanh cảnh báo' : null,
       itemBuilder: Container(
         width: double.infinity,
