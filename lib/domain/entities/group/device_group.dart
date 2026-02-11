@@ -16,8 +16,10 @@ class DeviceGroup {
   final List<int> groupId;
   final DeviceGroupType groupType;
   final DeviceGroupRole groupRole;
+  final String idStr;
+  final String parentIdStr;
 
-  const DeviceGroup({
+  DeviceGroup({
     required this.name,
     required this.parentGroupId,
     required this.status,
@@ -29,7 +31,8 @@ class DeviceGroup {
     required this.groupId,
     required this.groupType,
     required this.groupRole,
-  });
+  }) : idStr = String.fromCharCodes(groupId),
+       parentIdStr = String.fromCharCodes(parentGroupId);
 
   TreeNode<DeviceGroup> toTreeNode() {
     final node = TreeNode<DeviceGroup>(data: this);

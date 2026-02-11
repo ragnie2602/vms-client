@@ -9,8 +9,6 @@ class TimeRangesConfig extends StatefulWidget {
 }
 
 class _TimeRangesConfigState extends State<TimeRangesConfig> {
-  late final ScrollController scrollController = ScrollController();
-
   late final Map<int, String> _weekdays = {
     DateTime.monday: 'T2',
     DateTime.tuesday: 'T3',
@@ -30,12 +28,6 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
     }
 
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
   }
 
   void _triggerValidate() {
@@ -68,6 +60,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         TitleWithTooltip(
           title: 'Thời gian gửi cảnh báo',
@@ -76,72 +69,71 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
 
         /*  */
         SizedBox(height: 8),
-        Flexible(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Color(0xFFF8FAFC),
-              border: Border.all(color: AppColors.greyE2E8F0),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Scrollbar(
-              thumbVisibility: true,
-              controller: scrollController,
-              child: ListView.builder(
-                shrinkWrap: true,
-                controller: scrollController,
-                padding: EdgeInsets.all(10),
-                itemCount: widget.alarmConfig.times.length,
-                itemBuilder: (context, index) {
-                  final time = widget.alarmConfig.times[index];
-                  bool needValidate =
-                      time.startTime != null || time.endTime != null || time.days.isNotEmpty;
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: Color(0xFFF8FAFC),
+            border: Border.all(color: AppColors.greyE2E8F0),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.all(10),
+            itemCount: widget.alarmConfig.times.length,
+            itemBuilder: (context, index) {
+              final time = widget.alarmConfig.times[index];
+              bool needValidate =
+                  time.startTime != null || time.endTime != null || time.days.isNotEmpty;
 
-                  return Container(
-                    padding: EdgeInsets.only(top: index == 0 ? 0 : 16),
-                    decoration: index > 0
-                        ? BoxDecoration(
-                            border: Border(top: BorderSide(color: AppColors.greyE2E8F0)),
-                          )
-                        : null,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 15,
-                      children: <Widget>[
-                        _columnTime(
-                          'Thời gian bắt đầu',
-                          time.startTime,
-                          (selectedTime) => setState(() {
-                            widget.alarmConfig.times[index].startTime = selectedTime;
-                            _triggerValidate();
-                          }),
-                          maximumTime: time.endTime,
-                          minimumTime: time.startTime,
-                          needValidate: needValidate,
-                        ),
-                        _columnTime(
-                          'Thời gian kết thúc',
-                          time.endTime,
-                          (selectedTime) => setState(() {
-                            widget.alarmConfig.times[index].endTime = selectedTime;
-                            _triggerValidate();
-                          }),
-                          maximumTime: time.endTime,
-                          minimumTime: time.startTime,
-                          needValidate: needValidate,
-                        ),
-                        _columnWeekday(widget.alarmConfig.times[index].days, (days) {
-                          setState(() {
-                            widget.alarmConfig.times[index].days = days;
-                            _triggerValidate();
-                          });
-                        }, needValidate),
-                        _handleButtons(index),
-                      ],
+              return Container(
+                padding: EdgeInsets.only(top: index == 0 ? 0 : 16),
+                decoration: index > 0
+                    ? BoxDecoration(
+                        border: Border(top: BorderSide(color: AppColors.greyE2E8F0)),
+                      )
+                    : null,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 15,
+                  children: <Widget>[
+                    _columnTime(
+                      'Thời gian bắt đầu',
+                      time.startTime,
+                      (selectedTime) => setState(() {
+                        widget.alarmConfig.times[index].startTime = selectedTime;
+                        _triggerValidate();
+                      }),
+                      maximumTime: time.endTime,
+                      minimumTime: time.startTime,
+                      needValidate: needValidate,
                     ),
-                  );
-                },
-              ),
-            ),
+                    _columnTime(
+                      'Thời gian kết thúc',
+                      time.endTime,
+                      (selectedTime) => setState(() {
+                        widget.alarmConfig.times[index].endTime = selectedTime;
+                        _triggerValidate();
+                      }),
+                      maximumTime: time.endTime,
+                      minimumTime: time.startTime,
+                      needValidate: needValidate,
+                    ),
+                    _columnWeekday(widget.alarmConfig.times[index].days, (days) {
+                      setState(() {
+                        widget.alarmConfig.times[index].days = days;
+                        _triggerValidate();
+                      });
+                    }, needValidate),
+                    _handleButtons(
+                      index,
+                      showDelete:
+                          widget.alarmConfig.times.length > 1 ||
+                          widget.alarmConfig.times.firstOrNull?.isEmpty() == false,
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -422,37 +414,38 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
     );
   }
 
-  Widget _handleButtons(int index) {
+  Widget _handleButtons(int index, {bool showDelete = true}) {
     return Padding(
       padding: EdgeInsets.only(top: 16 + 6 + 10),
       child: Row(
         spacing: 8,
         children: <Widget>[
           /* Xóa */
-          InkWell(
-            onTap: () {
-              setState(() {
-                if (widget.alarmConfig.times.length == 1) {
-                  widget.alarmConfig.times[0] = TimesConfig.empty();
-                } else {
-                  widget.alarmConfig.times.removeAt(index);
-                }
-              });
-            },
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(color: Color(0xFFF10000), shape: BoxShape.circle),
-              child: Center(
-                child: SvgPicture.asset(
-                  AppAssets.icDelete,
-                  width: 18,
-                  height: 18,
-                  colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          if (showDelete)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  if (widget.alarmConfig.times.length == 1) {
+                    widget.alarmConfig.times[0] = TimesConfig.empty();
+                  } else {
+                    widget.alarmConfig.times.removeAt(index);
+                  }
+                });
+              },
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(color: Color(0xFFF10000), shape: BoxShape.circle),
+                child: Center(
+                  child: SvgPicture.asset(
+                    AppAssets.icDelete,
+                    width: 18,
+                    height: 18,
+                    colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  ),
                 ),
               ),
             ),
-          ),
 
           /* Thêm */
           InkWell(

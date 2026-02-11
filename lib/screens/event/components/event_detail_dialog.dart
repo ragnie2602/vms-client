@@ -125,97 +125,102 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _CustomTabBar(controller: tabController),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 10),
                               Expanded(
-                                child: AspectRatio(
-                                  aspectRatio: 16 / 9,
-                                  child: TabBarView(
-                                    controller: tabController,
-                                    children: [_imageTab(event), _videoTab(event)],
+                                child: Center(
+                                  child: AspectRatio(
+                                    aspectRatio: 16 / 9,
+                                    child: TabBarView(
+                                      controller: tabController,
+                                      children: [_imageTab(event), _videoTab(event)],
+                                    ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 30),
-                              Row(
-                                spacing: 15,
-                                children: [
-                                  BlocConsumer<EventBloc, EventState>(
-                                    listener: (context, state) {
-                                      if (state is SavingImageSuccess) {
-                                        ToastUtil.toastSuccess(
-                                          title: Text(
-                                            'Tải ảnh thành công',
-                                            style: AppTypography.style(
-                                              14,
-                                              fontWeight: FontWeight.w500,
-                                              color: AppColors.white,
+                              const SizedBox(height: 15),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  spacing: 15,
+                                  children: [
+                                    BlocConsumer<EventBloc, EventState>(
+                                      listener: (context, state) {
+                                        if (state is SavingImageSuccess) {
+                                          ToastUtil.toastSuccess(
+                                            title: Text(
+                                              'Tải ảnh thành công',
+                                              style: AppTypography.style(
+                                                14,
+                                                fontWeight: FontWeight.w500,
+                                                color: AppColors.white,
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      } else if (state is SavingImageFailure) {
-                                        ToastUtil.toastFail(
-                                          context: context,
-                                          title: Text(state.message),
-                                        );
-                                      } else if (state is SavingVideoSuccess) {
-                                        ToastUtil.toastSuccess(
-                                          title: Text(
-                                            'Tải video thành công',
-                                            style: AppTypography.style(
-                                              14,
-                                              fontWeight: FontWeight.w500,
-                                              color: AppColors.white,
-                                            ),
-                                          ),
-                                        );
-                                      } else if (state is SavingVideoFailure) {
-                                        ToastUtil.toastFail(
-                                          context: context,
-                                          title: Text(state.message),
-                                        );
-                                      }
-                                    },
-                                    builder: (context, state) {
-                                      if (state is SavingImage || state is SavingVideo) {
-                                        return SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
-                                        );
-                                      }
-
-                                      return ValueListenableBuilder(
-                                        valueListenable: _tabIdx,
-                                        builder: (context, value, child) {
-                                          return _functionBtn(
-                                            icon: SvgPicture.asset(
-                                              AppAssets.icDownloadImage,
-                                              height: 12,
-                                            ),
-                                            label: 'Tải ${value == 0 ? 'ảnh' : 'video'}',
-                                            onTap: () {
-                                              if (value == 0) {
-                                                _downloadImage(event);
-                                              } else {
-                                                _downloadVideo(event);
-                                              }
-                                            },
                                           );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                  _functionBtn(
-                                    icon: SvgPicture.asset(AppAssets.icVideoOn, height: 20),
-                                    label: 'Xem trực tiếp',
-                                    onTap: _live,
-                                  ),
-                                  _functionBtn(
-                                    icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
-                                    label: 'Xem playback',
-                                    onTap: _playback,
-                                  ),
-                                ],
+                                        } else if (state is SavingImageFailure) {
+                                          ToastUtil.toastFail(
+                                            context: context,
+                                            title: Text(state.message),
+                                          );
+                                        } else if (state is SavingVideoSuccess) {
+                                          ToastUtil.toastSuccess(
+                                            title: Text(
+                                              'Tải video thành công',
+                                              style: AppTypography.style(
+                                                14,
+                                                fontWeight: FontWeight.w500,
+                                                color: AppColors.white,
+                                              ),
+                                            ),
+                                          );
+                                        } else if (state is SavingVideoFailure) {
+                                          ToastUtil.toastFail(
+                                            context: context,
+                                            title: Text(state.message),
+                                          );
+                                        }
+                                      },
+                                      builder: (context, state) {
+                                        if (state is SavingImage || state is SavingVideo) {
+                                          return SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          );
+                                        }
+
+                                        return ValueListenableBuilder(
+                                          valueListenable: _tabIdx,
+                                          builder: (context, value, child) {
+                                            return _functionBtn(
+                                              icon: SvgPicture.asset(
+                                                AppAssets.icDownloadImage,
+                                                height: 12,
+                                              ),
+                                              label: 'Tải ${value == 0 ? 'ảnh' : 'video'}',
+                                              onTap: () {
+                                                if (value == 0) {
+                                                  _downloadImage(event);
+                                                } else {
+                                                  _downloadVideo(event);
+                                                }
+                                              },
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                    _functionBtn(
+                                      icon: SvgPicture.asset(AppAssets.icVideoOn, height: 20),
+                                      label: 'Xem trực tiếp',
+                                      onTap: _live,
+                                    ),
+                                    _functionBtn(
+                                      icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
+                                      label: 'Xem playback',
+                                      onTap: _playback,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -267,28 +272,6 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                         style: AppTypography.style(14, fontWeight: FontWeight.w500),
                                       ),
                                     ],
-                                    ...event.payload?.entries
-                                            .map(
-                                              (e) => [
-                                                SizedBox(width: 20),
-                                                Text(
-                                                  e.key,
-                                                  style: AppTypography.style(
-                                                    13,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  e.value.toString(),
-                                                  style: AppTypography.style(
-                                                    14,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                            .toList() ??
-                                        [],
                                   ],
                                 ),
                                 defaultVerticalAlignment: CrossAxisAlignment.center,

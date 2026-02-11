@@ -16,10 +16,18 @@ class GetAllGroupCameraSuccessState extends GroupCameraState {
   final List<DeviceGroup>? groups;
   final TreeNode<DeviceGroup> tree;
 
-  GetAllGroupCameraSuccessState({required this.groups})
-    : tree = TreeNode.root() {
-    for (var group in groups ?? <DeviceGroup>[]) {
-      tree.add(group.toTreeNode());
+  GetAllGroupCameraSuccessState({required this.groups}) : tree = TreeNode.root() {
+    makeTree(tree, groups ?? <DeviceGroup>[]);
+  }
+
+  makeTree(TreeNode<DeviceGroup> root, List<DeviceGroup> groups) {
+    String currentId = root.data?.idStr ?? '';
+    for (var group in groups) {
+      if (group.parentIdStr == currentId) {
+        TreeNode<DeviceGroup> node = TreeNode(data: group);
+        root.add(node);
+        makeTree(node, groups);
+      }
     }
   }
 
@@ -115,10 +123,7 @@ class UpdateGroupCameraFailState extends GroupCameraState {
 class ListShareInviteGroupSuccessState extends GroupCameraState {
   final List<int> groupId;
   final List<InviteMessageEntity> inviteMessages;
-  const ListShareInviteGroupSuccessState({
-    required this.groupId,
-    required this.inviteMessages,
-  });
+  const ListShareInviteGroupSuccessState({required this.groupId, required this.inviteMessages});
   @override
   StateType get type => StateType.success;
   @override
