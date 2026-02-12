@@ -34,6 +34,7 @@ import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dar
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
+import 'package:vms_flutter_client/screens/object_type/bloc/object_type_bloc.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_screen.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
@@ -233,6 +234,7 @@ class AppRouter {
               ),
             ),
             BlocProvider(create: (context) => DetectBloc(context.read())),
+            BlocProvider(create: (context) => ObjectTypeBloc(context.read())),
             BlocProvider(
               create: (context) =>
                   SetupInfoFieldBloc(context.read(), context.read(), context.read()),

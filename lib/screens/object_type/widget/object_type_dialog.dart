@@ -1,10 +1,15 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
+import 'package:vms_flutter_client/screens/object_type/widget/confirm_delete_dialog.dart';
 
 /// Dialog for adding/editing Object Type with drag-drop field configuration
 class ObjectTypeDialog extends StatefulWidget {
@@ -27,6 +32,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   AIFeature _selectedAIFeature = AIFeature.face;
   ObjectTypeStatus _selectedStatus = ObjectTypeStatus.active;
   List<ObjectTypeField> _fields = [];
+  bool _isLoadingFields = false;
 
   int _nextFieldId = 1;
 
@@ -39,10 +45,33 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       _descriptionController.text = obj.description;
       _selectedAIFeature = obj.aiFeature;
       _selectedStatus = obj.status;
+      // Start with fields from list data (may be empty)
       _fields = List.from(obj.fields);
+      // Fetch detail to get full dataFields
+      _fetchDetail(obj.id);
     } else {
       // Default fields for new object type
       _fields = List.from(ObjectTypeMockData.defaultFields);
+    }
+  }
+
+  Future<void> _fetchDetail(int id) async {
+    setState(() => _isLoadingFields = true);
+    try {
+      final service = context.read<ObjectTypeService>();
+      final detail = await service.getObjectTypeDetail(id);
+      if (!mounted) return;
+      setState(() {
+        _nameController.text = detail.name;
+        _descriptionController.text = detail.description;
+        _selectedAIFeature = detail.aiFeature;
+        _selectedStatus = detail.status;
+        _fields = List.from(detail.fields);
+        _isLoadingFields = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoadingFields = false);
     }
   }
 
@@ -68,11 +97,20 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   }
 
   void _removeField(int index) {
-    if (!_fields[index].isDefault) {
-      setState(() {
-        _fields.removeAt(index);
-      });
-    }
+    final field = _fields[index];
+    showDialog(
+      context: context,
+      builder: (context) => ConfirmDeleteDialog(
+        title: 'Xóa trường dữ liệu',
+        content:
+            'Trường ${field.displayName} đang chứa dữ liệu của các đối tượng trong hệ thống.\nBạn có chắc chắn muốn tiếp tục?',
+        onConfirm: () {
+          setState(() {
+            _fields.removeAt(index);
+          });
+        },
+      ),
+    );
   }
 
   void _updateField(int index, ObjectTypeField field) {
@@ -100,6 +138,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         aiFeature: _selectedAIFeature,
         status: _selectedStatus,
         fields: _fields,
+        objectCount: widget.objectType?.objectCount ?? 0,
       );
       widget.onSubmit(objectType);
     }
@@ -150,6 +189,8 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                           hintText: 'Nhập tên loại đối tượng',
                           label: 'Tên loại đối tượng',
                           requiredField: true,
+                          borderRadius: 3,
+                          paddingBottomLabel: 3,
                           validator: (v) =>
                               v!.trim().isEmpty ? 'Tên loại đối tượng không được để trống' : null,
                         ),
@@ -163,15 +204,17 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(child: _buildAIFeatureDropdown()),
-                      const SizedBox(width: 16),
                       Expanded(
+                        flex: 2,
                         child: AppField(
                           controller: _descriptionController,
                           hintText: 'Nhập mô tả',
                           label: 'Mô tả',
+                          borderRadius: 3,
                         ),
                       ),
+                      SizedBox(width: 16),
+                      Expanded(flex: 2, child: SizedBox()),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -220,7 +263,15 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             isExpanded: true,
             value: _selectedStatus,
             items: ObjectTypeStatus.values
-                .map((status) => DropdownMenuItem(value: status, child: Text(status.displayName)))
+                .map(
+                  (status) => DropdownMenuItem(
+                    value: status,
+                    child: Text(
+                      status.displayName,
+                      style: AppTypography.style(14, color: AppColors.black),
+                    ),
+                  ),
+                )
                 .toList(),
             onChanged: (value) {
               if (value != null) {
@@ -228,7 +279,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
               }
             },
             buttonStyleData: ButtonStyleData(
-              height: 44,
+              height: 40,
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.greyE2E8F0),
                 borderRadius: BorderRadius.circular(4),
@@ -247,56 +298,62 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     );
   }
 
-  Widget _buildAIFeatureDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        RichText(
-          text: TextSpan(
-            text: 'Tính năng AI',
-            style: AppTypography.style(14, color: AppColors.black, fontWeight: FontWeight.w500),
-            children: const [
-              TextSpan(
-                text: ' *',
-                style: TextStyle(color: Colors.red),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonHideUnderline(
-          child: DropdownButton2<AIFeature>(
-            isExpanded: true,
-            value: _selectedAIFeature,
-            items: AIFeature.values
-                .map(
-                  (feature) => DropdownMenuItem(value: feature, child: Text(feature.displayName)),
-                )
-                .toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => _selectedAIFeature = value);
-              }
-            },
-            buttonStyleData: ButtonStyleData(
-              height: 44,
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.greyE2E8F0),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-            ),
-            dropdownStyleData: DropdownStyleData(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildAIFeatureDropdown() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       RichText(
+  //         text: TextSpan(
+  //           text: 'Tính năng AI',
+  //           style: AppTypography.style(14, color: AppColors.black, fontWeight: FontWeight.w500),
+  //           children: const [
+  //             TextSpan(
+  //               text: ' *',
+  //               style: TextStyle(color: Colors.red),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //       const SizedBox(height: 8),
+  //       DropdownButtonHideUnderline(
+  //         child: DropdownButton2<AIFeature>(
+  //           isExpanded: true,
+  //           value: _selectedAIFeature,
+  //           items: AIFeature.values
+  //               .map(
+  //                 (feature) => DropdownMenuItem(
+  //                   value: feature,
+  //                   child: Text(
+  //                     feature.displayName,
+  //                     style: AppTypography.style(14, color: AppColors.black),
+  //                   ),
+  //                 ),
+  //               )
+  //               .toList(),
+  //           onChanged: (value) {
+  //             if (value != null) {
+  //               setState(() => _selectedAIFeature = value);
+  //             }
+  //           },
+  //           buttonStyleData: ButtonStyleData(
+  //             height: 44,
+  //             decoration: BoxDecoration(
+  //               border: Border.all(color: AppColors.greyE2E8F0),
+  //               borderRadius: BorderRadius.circular(4),
+  //             ),
+  //             padding: const EdgeInsets.symmetric(horizontal: 12),
+  //           ),
+  //           dropdownStyleData: DropdownStyleData(
+  //             decoration: BoxDecoration(
+  //               borderRadius: BorderRadius.circular(8),
+  //               color: Colors.white,
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   Widget _buildFieldsSection() {
     return Column(
@@ -316,8 +373,8 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
               label: 'Thêm trường dữ liệu',
               onPressed: _addField,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              prefix: const Icon(Icons.add, color: Colors.white, size: 16),
-              prefixGap: 8,
+              suffixIcon: const Icon(Icons.arrow_drop_down_outlined, color: Colors.white, size: 16),
+              suffixIconGap: 8,
               textStyle: AppTypography.style(14, color: Colors.white, fontWeight: FontWeight.w500),
             ),
           ],
@@ -327,17 +384,23 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         _buildFieldsHeader(),
         const Divider(height: 1, color: AppColors.greyE2E8F0),
         // Fields list with drag-drop
-        ReorderableListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _fields.length,
-          onReorder: _onReorder,
-          buildDefaultDragHandles: false,
-          itemBuilder: (context, index) {
-            final field = _fields[index];
-            return _buildFieldRow(key: ValueKey(field.id), field: field, index: index);
-          },
-        ),
+        if (_isLoadingFields)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _fields.length,
+            onReorder: _onReorder,
+            buildDefaultDragHandles: false,
+            itemBuilder: (context, index) {
+              final field = _fields[index];
+              return _buildFieldRow(key: ValueKey(field.id), field: field, index: index);
+            },
+          ),
       ],
     );
   }
@@ -418,8 +481,6 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   }
 
   Widget _buildFieldRow({required Key key, required ObjectTypeField field, required int index}) {
-    final isDefault = field.isDefault;
-
     return Container(
       key: key,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -429,35 +490,31 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Drag handle (only for non-default fields)
+          // Drag handle
           SizedBox(
             width: 32,
-            child: isDefault
-                ? const SizedBox()
-                : ReorderableDragStartListener(
-                    index: index,
-                    child: const Icon(Icons.drag_indicator, color: AppColors.grey6F767E, size: 20),
-                  ),
+            child: ReorderableDragStartListener(
+              index: index,
+              child: SvgPicture.asset(AppAssets.icDrag),
+            ),
           ),
           // Field name
           Expanded(
             flex: 2,
-            child: isDefault
-                ? Text(field.fieldName, style: AppTypography.style(14, color: AppColors.black))
-                : _buildSmallTextField(
-                    initialValue: field.fieldName,
-                    hintText: 'Tên dữ liệu',
-                    maxLength: 50,
-                    onChanged: (value) {
-                      _updateField(index, field.copyWith(fieldName: value));
-                    },
-                  ),
+            child: _buildSmallTextField(
+              initialValue: field.fieldName,
+              hintText: 'Tên dữ liệu',
+              maxLength: 50,
+              onChanged: (value) {
+                _updateField(index, field.copyWith(fieldName: value));
+              },
+            ),
           ),
           const SizedBox(width: 8),
           // Icon
           Expanded(flex: 1, child: Center(child: _buildIconPicker(index, field))),
           const SizedBox(width: 8),
-          // Display name (Always editable)
+          // Display name
           Expanded(
             flex: 2,
             child: _buildSmallTextField(
@@ -471,56 +528,17 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           ),
           const SizedBox(width: 8),
           // Data type
-          Expanded(
-            flex: 1,
-            child: isDefault
-                ? Text(
-                    field.dataType.displayName,
-                    style: AppTypography.style(14, color: AppColors.black),
-                  )
-                : _buildDataTypeDropdown(index, field),
-          ),
+          Expanded(flex: 1, child: _buildDataTypeDropdown(index, field)),
           const SizedBox(width: 8),
           // Actions
           SizedBox(
             width: 60,
-            child: PopupMenuButton<String>(
-              icon: const Icon(Icons.more_horiz, color: AppColors.grey6F767E),
-              onSelected: (value) {
-                if (value == 'delete') {
-                  _removeField(index);
-                }
-              },
-              itemBuilder: (context) => [
-                if (isDefault) ...[
-                  PopupMenuItem(
-                    value: 'edit_name',
-                    enabled: false,
-                    child: Text('Mặc định', style: AppTypography.style(14, color: Colors.grey)),
-                  ),
-                ] else ...[
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.edit, size: 16),
-                        const SizedBox(width: 8),
-                        Text('Sửa', style: AppTypography.style(14)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        const Icon(Icons.delete, size: 16, color: Colors.red),
-                        const SizedBox(width: 8),
-                        Text('Xóa', style: AppTypography.style(14, color: Colors.red)),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
+            child: Center(
+              child: IconButton(
+                icon: const Icon(Icons.more_horiz, color: Colors.red, size: 18),
+                splashRadius: 16,
+                onPressed: () => _removeField(index),
+              ),
             ),
           ),
         ],
@@ -529,23 +547,29 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   }
 
   Widget _buildIconPicker(int index, ObjectTypeField field) {
-    if (field.iconName != null) {
+    if (field.iconUrl != null) {
       // Show selected icon with remove button
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              // REMOVED border as requested
-              borderRadius: BorderRadius.circular(4),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
+            child: SvgPicture.network(
+              field.iconUrl!,
+              width: 16,
+              height: 16,
+              placeholderBuilder: (_) => const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 1),
+              ),
             ),
-            child: Icon(_getIconData(field.iconName!), size: 16, color: AppColors.black),
           ),
           const SizedBox(width: 4),
           InkWell(
             onTap: () {
-              _updateField(index, field.copyWith(iconName: null));
+              _updateField(index, field.copyWith(iconName: null, iconUrl: null));
             },
             child: const Icon(Icons.cancel, size: 16, color: Colors.red),
           ),
@@ -553,24 +577,22 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       );
     }
 
-    // Show add icon button
+    // Show add icon button with dashed border
     return InkWell(
       onTap: () => _showIconPicker(index, field),
       borderRadius: BorderRadius.circular(4),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          // REMOVED border as requested
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.add, size: 14, color: AppColors.secondary),
-            const SizedBox(width: 4),
-            Text('Thêm icon', style: AppTypography.style(12, color: AppColors.secondary)),
-          ],
+      child: CustomPaint(
+        painter: DashedBorderPainter(color: AppColors.grey6F767E, strokeWidth: 1.0, gap: 4.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.add, size: 14, color: AppColors.secondary),
+              const SizedBox(width: 4),
+              Text('Thêm icon', style: AppTypography.style(12, color: AppColors.secondary)),
+            ],
+          ),
         ),
       ),
     );
@@ -589,8 +611,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: AppTypography.style(12, color: AppColors.grey64748B),
-        counterText: null, // Hide counter to cleaner look if space is tight
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        counterText: '', // Hide default counter below
+        suffixText: maxLength != null ? '${initialValue?.length ?? 0}/$maxLength' : null,
+        suffixStyle: AppTypography.style(11, color: AppColors.grey64748B),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         isDense: true,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
@@ -610,127 +634,131 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   }
 
   Widget _buildDataTypeDropdown(int index, ObjectTypeField field) {
-    return DropdownButton2<FieldDataType>(
-      isExpanded: true,
-      value: field.dataType,
-      items: FieldDataType.values
-          .map(
-            (type) => DropdownMenuItem(
-              value: type,
-              // Removed underline by ensuring cleaner style?
-              // User said "bỏ gạch chân", which likely means border or underline.
-              // Removing border below via ButtonStyleData decoration.
-              child: Text(type.displayName, style: AppTypography.style(12)),
-            ),
-          )
-          .toList(),
-      onChanged: (value) {
-        if (value != null) {
-          _updateField(index, field.copyWith(dataType: value));
-        }
-      },
-      buttonStyleData: ButtonStyleData(
-        height: 40, // Expanded height to match button
-        decoration: BoxDecoration(
-          // REMOVED border as requested "bỏ gạch chân dưới văn bản..."
-          // Interpreting as removing the box border to make it look like just text or cleaner.
-          // Or if they literally mean underline, hiding underline is done by wrapper.
-          // Assuming they want no border box.
-          color: Colors.transparent,
+    return DropdownButtonHideUnderline(
+      child: DropdownButton2<FieldDataType>(
+        isExpanded: true,
+        value: field.dataType,
+        items: FieldDataType.values
+            .map(
+              (type) => DropdownMenuItem(
+                value: type,
+                child: Text(type.displayName, style: AppTypography.style(12)),
+              ),
+            )
+            .toList(),
+        onChanged: (value) {
+          if (value != null) {
+            _updateField(index, field.copyWith(dataType: value));
+          }
+        },
+        buttonStyleData: ButtonStyleData(
+          height: 36,
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.greyE2E8F0),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-      ),
-      dropdownStyleData: DropdownStyleData(
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.white),
+        dropdownStyleData: DropdownStyleData(
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.white),
+        ),
       ),
     );
   }
 
   void _showIconPicker(int index, ObjectTypeField field) {
-    // Simple icon picker with common material icons
-    final icons = [
-      'location_on',
-      'phone',
-      'email',
-      'home',
-      'work',
-      'calendar_today',
-      'access_time',
-      'attach_file',
-      'description',
-      'note',
-      'person',
-      'badge',
-    ];
+    final objectTypeService = context.read<ObjectTypeService>();
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Chọn icon'),
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          'Chọn icon',
+          style: AppTypography.style(16, fontWeight: FontWeight.w600, color: AppColors.black),
+        ),
         content: SizedBox(
-          width: 300,
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: icons.map((iconName) {
-              return InkWell(
-                onTap: () {
-                  _updateField(index, field.copyWith(iconName: iconName));
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: field.iconName == iconName
-                          ? AppColors.secondary
-                          : AppColors.greyE2E8F0,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
+          width: 400,
+          height: 300,
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: objectTypeService.getIcons(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text(
+                    'Lỗi tải icon: ${snapshot.error}',
+                    style: AppTypography.style(14, color: Colors.red),
                   ),
-                  child: Icon(
-                    _getIconData(iconName),
-                    color: field.iconName == iconName ? AppColors.secondary : AppColors.black,
+                );
+              }
+              final icons = snapshot.data ?? [];
+              if (icons.isEmpty) {
+                return Center(
+                  child: Text(
+                    'Không có icon',
+                    style: AppTypography.style(14, color: AppColors.grey6F767E),
                   ),
+                );
+              }
+              return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 6,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
                 ),
+                itemCount: icons.length,
+                itemBuilder: (context, i) {
+                  final iconData = icons[i];
+                  final name = iconData['name'] as String;
+                  final url = iconData['url'] as String;
+                  final isSelected = field.iconUrl == url;
+                  return InkWell(
+                    onTap: () {
+                      _updateField(index, field.copyWith(iconName: name, iconUrl: url));
+                      Navigator.pop(dialogContext);
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isSelected ? AppColors.secondary : AppColors.greyE2E8F0,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SvgPicture.network(
+                        url,
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                          isSelected ? AppColors.secondary : AppColors.black,
+                          BlendMode.srcIn,
+                        ),
+                        placeholderBuilder: (_) => const Center(
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 1),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               );
-            }).toList(),
+            },
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Đóng'))],
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Đóng')),
+        ],
       ),
     );
-  }
-
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'location_on':
-        return Icons.location_on;
-      case 'phone':
-        return Icons.phone;
-      case 'email':
-        return Icons.email;
-      case 'home':
-        return Icons.home;
-      case 'work':
-        return Icons.work;
-      case 'calendar_today':
-        return Icons.calendar_today;
-      case 'access_time':
-        return Icons.access_time;
-      case 'attach_file':
-        return Icons.attach_file;
-      case 'description':
-        return Icons.description;
-      case 'note':
-        return Icons.note;
-      case 'person':
-        return Icons.person;
-      case 'badge':
-        return Icons.badge;
-      default:
-        return Icons.help_outline;
-    }
   }
 }
 
@@ -756,42 +784,19 @@ class DashedBorderPainter extends CustomPainter {
       ),
     );
 
-    final Path dashedPath = _dashPath(path, dashArray: CircularIntervalList<double>([gap, gap]));
-    canvas.drawPath(dashedPath, paint);
-  }
-
-  Path _dashPath(Path source, {required CircularIntervalList<double> dashArray}) {
-    // Basic implementation of path dashing
-    // For a production app, consider using the 'path_drawing' package
-    // or a more robust custom implementation.
-    // This is a simplified version for RRects.
-
-    // Fallback to simple dashed border using a plugin or simplified logic is preferred.
-    // Since we can't easily add packages, let's just draw simple line segments.
-    // Actually, `addRRect` with gaps is complex manually.
-    // Let's toggle to a simpler solution: Dotted/Dashed Container decoration via simple paint
-    // or just fallback to solid light grey as placeholder if complex.
-    // However, user asked for styles. Let's just return the source path for now
-    // but formatted as if it were dashed if we had the util.
-    // To safe implementation time without external deps, let's use a solid styling
-    // that LOOKS like the placeholder (light grey, maybe very thin).
-    return source;
+    // Draw dashed path using PathMetrics
+    final double dashWidth = gap;
+    final double dashSpace = gap;
+    for (final metric in path.computeMetrics()) {
+      double distance = 0.0;
+      while (distance < metric.length) {
+        final double end = distance + dashWidth;
+        canvas.drawPath(metric.extractPath(distance, end.clamp(0, metric.length)), paint);
+        distance = end + dashSpace;
+      }
+    }
   }
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
-}
-
-class CircularIntervalList<T> {
-  final List<T> _vals;
-  int _idx = 0;
-
-  CircularIntervalList(this._vals);
-
-  T get next {
-    if (_idx >= _vals.length) {
-      _idx = 0;
-    }
-    return _vals[_idx++];
-  }
 }

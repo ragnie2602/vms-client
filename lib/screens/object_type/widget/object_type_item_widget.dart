@@ -85,11 +85,7 @@ class _ObjectTypeItemWidgetState extends State<ObjectTypeItemWidget> {
                   ),
                 ),
               ),
-              // Tính năng AI
-              Expanded(
-                flex: 120,
-                child: Center(child: _buildAIFeatureBadge(widget.item.aiFeature)),
-              ),
+
               // Trạng thái
               Expanded(flex: 120, child: Center(child: _buildStatusBadge(widget.item.status))),
               // Thao tác
@@ -97,20 +93,6 @@ class _ObjectTypeItemWidgetState extends State<ObjectTypeItemWidget> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAIFeatureBadge(AIFeature feature) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.orangeFFF2E2,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        feature.displayName,
-        style: AppTypography.style(12, fontWeight: FontWeight.w500, color: AppColors.orangeFF8C00),
       ),
     );
   }
@@ -139,7 +121,7 @@ class _ObjectTypeItemWidgetState extends State<ObjectTypeItemWidget> {
       tooltip: '',
       icon: SvgPicture.asset(AppAssets.icAction),
       padding: EdgeInsets.zero,
-      splashRadius: 20,
+      splashRadius: 1,
       position: PopupMenuPosition.under,
       offset: const Offset(0, 8),
       elevation: 3,
@@ -174,7 +156,6 @@ class _ObjectTypeItemWidgetState extends State<ObjectTypeItemWidget> {
             ],
           ),
         ),
-        const PopupMenuDivider(height: 0.5),
         PopupMenuItem<String>(
           value: 'delete',
           height: 32,

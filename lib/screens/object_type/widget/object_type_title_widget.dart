@@ -18,7 +18,6 @@ class ObjectTypeTitleWidget extends StatelessWidget {
           _buildHeaderCell('STT', flex: 60, center: true),
           _buildHeaderCell('Tên loại đối tượng', flex: 200),
           _buildHeaderCell('Mô tả', flex: 300),
-          _buildHeaderCell('Tính năng AI', flex: 120, center: true),
           _buildHeaderCell('Trạng thái', flex: 120, center: true),
           _buildHeaderCell('Thao tác', flex: 100, center: true),
         ],

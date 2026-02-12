@@ -198,4 +198,6 @@ class AppAssets {
   static const icObjectName = '$_svgPath/object_name.svg';
   static const icObjectType = '$_svgPath/object_type.svg';
   static const icRefresh = '$_svgPath/refresh.svg';
+
+  static const icDrag = '$_svgPath/drag_icon.svg';
 }

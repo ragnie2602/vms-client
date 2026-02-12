@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
-import 'package:vms_flutter_client/screens/event/components/event_filter_dropdown.dart';
+import 'package:vms_flutter_client/screens/object_type/bloc/object_type_bloc.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
+import 'package:vms_flutter_client/screens/object_type/widget/confirm_delete_dialog.dart';
 import 'package:vms_flutter_client/screens/object_type/widget/object_type_dialog.dart';
 import 'package:vms_flutter_client/screens/object_type/widget/object_type_item_widget.dart';
 import 'package:vms_flutter_client/screens/object_type/widget/object_type_title_widget.dart';
@@ -21,8 +24,8 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
   final TextEditingController _searchController = TextEditingController();
   ObjectTypeStatus? _selectedStatus;
 
-  // TODO: Replace with API data from bloc/repository
-  List<ObjectType> _objectTypes = [];
+  int _currentPage = 1;
+  final int _pageSize = 20;
 
   @override
   void initState() {
@@ -30,18 +33,20 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
     _loadData();
   }
 
-  /// Load mock data - TODO: Replace with API call
   void _loadData() {
-    setState(() {
-      _objectTypes = ObjectTypeMockData.getAll();
-    });
+    context.read<ObjectTypeBloc>().add(
+      LoadObjectTypes(
+        page: _currentPage,
+        size: _pageSize,
+        keyword: _searchController.text.isNotEmpty ? _searchController.text : null,
+        status: _selectedStatus?.name.toUpperCase(),
+      ),
+    );
   }
 
-  /// Search data - TODO: Replace with API call
   void _onSearch() {
-    setState(() {
-      _objectTypes = ObjectTypeMockData.search(_searchController.text, _selectedStatus);
-    });
+    _currentPage = 1;
+    _loadData();
   }
 
   @override
@@ -53,96 +58,165 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // Search & Filter Bar
-          Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            margin: const EdgeInsets.all(10),
-            child: Row(
-              children: [
-                // Search field
-                Expanded(flex: 3, child: _buildSearchField()),
-                const SizedBox(width: 16),
-                // Status filter
-                Expanded(flex: 2, child: _buildStatusDropdown()),
-                const SizedBox(width: 16),
-                // Search button
-                EventCustomButton(
-                  backgroundColor: AppColors.blue005AA9,
-                  borderColor: AppColors.blue005AA9,
-                  borderRadius: 3,
-                  label: 'Tìm kiếm',
-                  onPressed: _onSearch,
-                  padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
-                  prefix: SvgPicture.asset(
-                    AppAssets.icSearch,
-                    colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
-                    height: 16,
-                    width: 16,
-                  ),
-                  prefixGap: 8,
-                  textStyle: AppTypography.style(
-                    14,
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Add button
-                EventCustomButton(
-                  borderColor: AppColors.secondary,
-                  borderRadius: 3,
-                  label: 'Thêm loại đối tượng',
-                  onPressed: () => _showAddDialog(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  prefix: SvgPicture.asset(AppAssets.icAdd, height: 16, width: 16),
-                  prefixGap: 8,
-                  textStyle: AppTypography.style(
-                    14,
-                    color: AppColors.secondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Data Table
-          Expanded(
-            child: Container(
+      body: BlocListener<ObjectTypeBloc, ObjectTypeState>(
+        listener: (context, state) {
+          if (state is ObjectTypeCreated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Thêm loại đối tượng thành công'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            _loadData();
+          } else if (state is ObjectTypeCreateError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red),
+            );
+          } else if (state is ObjectTypeUpdated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Cập nhật loại đối tượng thành công'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            _loadData();
+          } else if (state is ObjectTypeUpdateError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red),
+            );
+          } else if (state is ObjectTypeDeleted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Xóa loại đối tượng thành công'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            _loadData();
+          } else if (state is ObjectTypeDeleteError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red),
+            );
+          }
+        },
+        child: Column(
+          children: [
+            // Search & Filter Bar
+            Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
                 color: Colors.white,
               ),
-              margin: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child: Column(
+              margin: const EdgeInsets.all(10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const ObjectTypeTitleWidget(),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: _objectTypes.isEmpty
-                        ? Center(child: Text('Không có dữ liệu', style: AppTypography.style(14)))
-                        : ListView.separated(
-                            separatorBuilder: (_, __) =>
-                                const Divider(height: 1, color: AppColors.greyF1F5F9),
-                            itemCount: _objectTypes.length,
-                            itemBuilder: (context, index) => ObjectTypeItemWidget(
-                              item: _objectTypes[index],
-                              index: index + 1,
-                              onEdit: () => _showEditDialog(_objectTypes[index]),
-                              onDelete: () => _onDelete(_objectTypes[index]),
-                            ),
-                          ),
+                  Expanded(flex: 3, child: _buildSearchField()),
+                  const SizedBox(width: 16),
+                  Expanded(flex: 2, child: _buildStatusDropdown()),
+                  const SizedBox(width: 16),
+                  EventCustomButton(
+                    backgroundColor: AppColors.blue005AA9,
+                    borderColor: AppColors.blue005AA9,
+                    borderRadius: 3,
+                    label: 'Tìm kiếm',
+                    onPressed: _onSearch,
+                    padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
+                    prefix: SvgPicture.asset(
+                      AppAssets.icSearch,
+                      colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                      height: 16,
+                      width: 16,
+                    ),
+                    prefixGap: 8,
+                    textStyle: AppTypography.style(
+                      14,
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  EventCustomButton(
+                    borderColor: AppColors.secondary,
+                    borderRadius: 3,
+                    label: 'Thêm loại đối tượng',
+                    onPressed: () => _showAddDialog(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    prefix: SvgPicture.asset(AppAssets.icAdd, height: 16, width: 16),
+                    prefixGap: 8,
+                    textStyle: AppTypography.style(
+                      14,
+                      color: AppColors.secondary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // Data Table
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Colors.white,
+                ),
+                margin: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                child: Column(
+                  children: [
+                    const ObjectTypeTitleWidget(),
+                    const SizedBox(height: 16),
+                    Expanded(child: _buildContent()),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildContent() {
+    return BlocBuilder<ObjectTypeBloc, ObjectTypeState>(
+      buildWhen: (previous, current) =>
+          current is ObjectTypeLoading || current is ObjectTypeLoaded || current is ObjectTypeError,
+      builder: (context, state) {
+        if (state is ObjectTypeLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is ObjectTypeError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Có lỗi xảy ra', style: AppTypography.style(14, color: Colors.red)),
+                const SizedBox(height: 8),
+                Text(state.message, style: AppTypography.style(12, color: AppColors.grey64748B)),
+                const SizedBox(height: 16),
+                ElevatedButton(onPressed: _loadData, child: const Text('Thử lại')),
+              ],
+            ),
+          );
+        }
+        if (state is ObjectTypeLoaded) {
+          if (state.objectTypes.isEmpty) {
+            return Center(child: Text('Không có dữ liệu', style: AppTypography.style(14)));
+          }
+          return ListView.separated(
+            separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.greyF1F5F9),
+            itemCount: state.objectTypes.length,
+            itemBuilder: (context, index) => ObjectTypeItemWidget(
+              item: state.objectTypes[index],
+              index: index + 1 + (_currentPage - 1) * _pageSize,
+              onEdit: () => _showEditDialog(state.objectTypes[index]),
+              onDelete: () => _onDelete(state.objectTypes[index]),
+            ),
+          );
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 
@@ -159,6 +233,7 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
           height: 40,
           child: TextField(
             controller: _searchController,
+            onSubmitted: (_) => _onSearch(),
             decoration: InputDecoration(
               prefixIcon: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -199,20 +274,20 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
           style: AppTypography.style(14, color: AppColors.grey334155, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
-        EventFilterDropdown<ObjectTypeStatus?>(
-          isDense: true,
-          itemBuilder: (item) => Text(
-            item?.displayName ?? 'Tất cả',
+        CustomCommonDropdown<ObjectTypeStatus?>(
+          items: [null, ...ObjectTypeStatus.values],
+          value: _selectedStatus,
+          itemAsString: (item) => item?.displayName ?? 'Tất cả',
+          hint: Text(
+            'Tất cả',
             style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
           ),
-          items: [null, ...ObjectTypeStatus.values],
-          label: '',
           onChanged: (value) {
             setState(() {
               _selectedStatus = value;
             });
           },
-          padding: const EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
+          padding: const EdgeInsets.only(bottom: 0, left: 0, right: 0, top: 0),
         ),
       ],
     );
@@ -222,13 +297,10 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => ObjectTypeDialog(
+      builder: (dialogContext) => ObjectTypeDialog(
         onSubmit: (objectType) {
-          // TODO: Call API to add object type
-          setState(() {
-            _objectTypes = [..._objectTypes, objectType];
-          });
-          Navigator.pop(context);
+          Navigator.pop(dialogContext);
+          context.read<ObjectTypeBloc>().add(CreateObjectType(objectType: objectType));
         },
       ),
     );
@@ -238,18 +310,13 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => ObjectTypeDialog(
+      builder: (dialogContext) => ObjectTypeDialog(
         objectType: objectType,
         onSubmit: (updated) {
-          // TODO: Call API to update object type
-          setState(() {
-            final index = _objectTypes.indexWhere((e) => e.id == updated.id);
-            if (index != -1) {
-              _objectTypes[index] = updated;
-              _objectTypes = [..._objectTypes];
-            }
-          });
-          Navigator.pop(context);
+          Navigator.pop(dialogContext);
+          context.read<ObjectTypeBloc>().add(
+            UpdateObjectType(id: objectType.id, objectType: updated),
+          );
         },
       ),
     );
@@ -258,22 +325,13 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
   void _onDelete(ObjectType objectType) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
-        content: Text('Bạn có chắc chắn muốn xóa loại đối tượng "${objectType.name}"?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Hủy')),
-          TextButton(
-            onPressed: () {
-              // TODO: Call API to delete
-              setState(() {
-                _objectTypes = _objectTypes.where((e) => e.id != objectType.id).toList();
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Xóa', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+      builder: (_) => ConfirmDeleteDialog(
+        title: 'Xóa loại đối tượng',
+        content:
+            'Loại đối tượng ${objectType.name} đang chứa ${objectType.objectCount} trường dữ liệu của các đối tượng trong hệ thống.\nBạn có chắc chắn muốn xóa?',
+        onConfirm: () {
+          context.read<ObjectTypeBloc>().add(DeleteObjectType(id: objectType.id));
+        },
       ),
     );
   }
