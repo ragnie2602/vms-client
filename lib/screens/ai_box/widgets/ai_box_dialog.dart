@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -288,6 +289,9 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
                                 if (value == null || value <= 0) {
                                   return 'Port phải là số nguyên dương';
                                 }
+                                if (value > 65535) {
+                                  return 'Port phải từ 1 đến 65535';
+                                }
                                 return null;
                               },
                             ),
@@ -306,6 +310,9 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
                             final value = int.tryParse(v);
                             if (value == null || value <= 0) {
                               return 'Chỉ nhập số nguyên dương';
+                            }
+                            if (value > 100) {
+                              return 'Số lượng camera không được vượt quá 100';
                             }
                           }
                           return null;
@@ -326,9 +333,9 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
                                 if (v == null || v.trim().isEmpty) {
                                   return 'Tài khoản không được để trống';
                                 }
-                                // Kiểm tra khoảng trắng
-                                if (v.contains(' ')) {
-                                  return 'Tài khoản không được chứa khoảng trắng';
+                                // Kiểm tra chỉ chứa chữ và số
+                                if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(v)) {
+                                  return 'Tài khoản chỉ được chứa chữ cái và số';
                                 }
                                 return null;
                               },
@@ -365,12 +372,36 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
                       ),
                       const SizedBox(height: 20),
                       // Mô tả
-                      AppField(
-                        controller: _note,
-                        hintText: 'Nhập ghi chú hoặc mô tả thêm...',
-                        label: 'Ghi chú',
-                        maxLines: 5,
-                        maxLength: 200,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppField(
+                            controller: _note,
+                            hintText: 'Nhập ghi chú hoặc mô tả thêm...',
+                            label: 'Ghi chú',
+                            maxLines: 5,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(200),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          ValueListenableBuilder<TextEditingValue>(
+                            valueListenable: _note,
+                            builder: (context, value, _) {
+                              return Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  '${value.text.length}/200',
+                                  style: AppTypography.style(
+                                    12,
+                                    fontWeight: FontWeight.w400,
+                                    color: AppColors.grey92929D,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                     ],
