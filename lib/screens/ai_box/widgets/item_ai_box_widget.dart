@@ -33,7 +33,7 @@ class _AiBoxItemWidgetState extends State<AiBoxItemWidget> {
 
     if ((ip == null || ip.isEmpty) &&
         (port == null || port.toString().isEmpty)) {
-      return '';
+      return '_';
     }
     if (ip == null || ip.isEmpty) {
       return ':$port';
@@ -75,12 +75,19 @@ class _AiBoxItemWidgetState extends State<AiBoxItemWidget> {
                 flex: 300,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    widget.itemAiBox.name ?? '',
-                    style: AppTypography.style(
-                      16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.grey0F172A,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      (widget.itemAiBox.name == null ||
+                              widget.itemAiBox.name!.isEmpty)
+                          ? '_'
+                          : widget.itemAiBox.name!,
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.grey0F172A,
+                        textOverflow: TextOverflow.visible,
+                      ),
                     ),
                   ),
                 ),
@@ -93,29 +100,43 @@ class _AiBoxItemWidgetState extends State<AiBoxItemWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       (widget.itemAiBox.manufacturer ?? '').isEmpty
-                          ? SizedBox.shrink()
-                          : Container(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 4,
-                                horizontal: 12,
+                          ? Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 4.0,
+                                horizontal: 12.0,
                               ),
-                              decoration: BoxDecoration(
-                                color: AppColors.greyF1F5F9,
-                                borderRadius: BorderRadius.circular(5),
+                              child: Text(
+                                '_',
+                                style: AppTypography.style(
+                                  12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.grey1E293B,
+                                ),
                               ),
-                              child: Center(
+                            )
+                          : Flexible(
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 4,
+                                  horizontal: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.greyF1F5F9,
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
                                 child: Text(
-                                  widget.itemAiBox.manufacturer ?? '',
+                                  widget.itemAiBox.manufacturer ?? '_',
                                   style: AppTypography.style(
                                     12,
                                     fontWeight: FontWeight.w500,
                                     color: AppColors.grey1E293B,
                                     letterSpacing: 0.3,
+                                    textOverflow: TextOverflow.visible,
                                   ),
+                                  softWrap: true,
                                 ),
                               ),
                             ),
-                      Spacer(),
                     ],
                   ),
                 ),
@@ -124,12 +145,20 @@ class _AiBoxItemWidgetState extends State<AiBoxItemWidget> {
                 flex: 230,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    widget.itemAiBox.model ?? '',
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.grey1E293B,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      (widget.itemAiBox.model == null ||
+                              widget.itemAiBox.model!.isEmpty)
+                          ? '_'
+                          : widget.itemAiBox.model!,
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.grey1E293B,
+                        textOverflow: TextOverflow.visible,
+                      ),
+                      softWrap: true,
                     ),
                   ),
                 ),
