@@ -130,7 +130,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Cài đặt nội dung cảnh báo',
+            'Cài đặt hiển thị cảnh báo',
             style: AppTypography.style(20, fontWeight: FontWeight.w600),
           ),
           IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
