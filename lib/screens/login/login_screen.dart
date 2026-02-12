@@ -78,9 +78,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (formKey.currentState?.validate() ?? false) {
       context.read<LoginBloc>().add(
         LoginSubmitted(
-          username: usernameController.text,
-          password: passwordController.text,
-          server: serverController.text,
+          username: usernameController.text.trim(),
+          password: passwordController.text.trim(),
+          server: serverController.text.trim(),
         ),
       );
     }
