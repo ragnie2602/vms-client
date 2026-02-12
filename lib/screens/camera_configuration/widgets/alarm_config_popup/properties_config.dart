@@ -17,7 +17,9 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   );
   late final alarmSoundBloc = AlarmSoundBloc(context.read());
 
-  String? _aiBoxErrorMsg;
+  int? _savedAiBoxId;
+  int? _savedStatus;
+
   AiBoxEntity? _selectedAiBox;
   AiBoxEntity? get selectedAiBox => _selectedAiBox;
   set selectedAiBox(AiBoxEntity? value) {
@@ -49,8 +51,73 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     });
   }
 
+  String? _validateAiBox() {
+    String? _validateAndReturn(String? errorMsg) {
+      _triggerValidate(force: errorMsg != null ? false : null);
+      return errorMsg;
+    }
+
+    String? errorMsg = selectedAiBox == null ? "Vui lòng chọn thiết bị phân tích AI" : null;
+
+    // Lựa chọn chính là lựa chọn đã được lưu + đã bật cảnh báo --> skip validate
+    if (_savedAiBoxId != null &&
+        selectedAiBox != null &&
+        selectedAiBox!.id == _savedAiBoxId &&
+        _savedStatus == 1) {
+      return _validateAndReturn(errorMsg);
+    }
+
+    // Hết tải toàn bộ
+    if (aiBoxBloc.state is AIBoxLoadedState &&
+        (aiBoxBloc.state as AIBoxLoadedState).aiBoxes?.every(
+              (e) => e.isFullSlot || e.status != 1,
+            ) ==
+            true) {
+      errorMsg = "Không còn kênh phân tích trống nào";
+      _selectedAiBox = null;
+    }
+    // Lựa chọn hết tải
+    else if (selectedAiBox == null) {
+      errorMsg = "Vui lòng chọn thiết bị phân tích AI";
+    }
+    // Hết tải
+    else if (selectedAiBox?.isFullSlot == true) {
+      errorMsg = "Thiết bị này đã hết kênh phân tích, vui lòng chọn thiết bị khác";
+    }
+    // Offline
+    else if (selectedAiBox?.status != 1) {
+      errorMsg = "Thiết bị được chọn đang mất kết nối";
+    }
+
+    return _validateAndReturn(errorMsg);
+  }
+
+  void _autofillAiBox() {
+    if (aiBoxBloc.state is! AIBoxLoadedState) return;
+
+    final listAiBox = (aiBoxBloc.state as AIBoxLoadedState).aiBoxes ?? [];
+    if (selectedAiBox != null || listAiBox.isEmpty) return;
+
+    // 1. Ưu tiên suggested AI Box hoặc thằng đầu tiên
+    selectedAiBox = widget.alarmConfig.suggestedAiBoxId != null
+        ? listAiBox.firstWhere(
+            (e) => e.id == widget.alarmConfig.suggestedAiBoxId,
+            orElse: () => listAiBox.first,
+          )
+        : listAiBox.first;
+
+    // 1. Thằng sugggest/đầu tiên --> full slot/offline --> tìm thằng khác thỏa mãn
+    if (selectedAiBox?.isFullSlot == true || selectedAiBox!.status != 1) {
+      selectedAiBox = listAiBox.firstWhereOrNull((e) => !e.isFullSlot && e.status == 1);
+    }
+
+    setState(() {});
+  }
+
   @override
   void initState() {
+    _savedAiBoxId = widget.alarmConfig.aiBoxId;
+    _savedStatus = widget.alarmConfig.status;
     super.initState();
 
     aiBoxBloc.add(
@@ -61,21 +128,15 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
           final listAiBox = (aiBoxBloc.state as AIBoxLoadedState).aiBoxes ?? [];
           if (selectedAiBox != null || listAiBox.isEmpty) return;
 
-          // Init suggested AI Box
-          selectedAiBox = listAiBox.firstWhere(
-            (e) => e.id == (widget.alarmConfig.aiBoxId ?? widget.alarmConfig.suggestedAiBoxId),
-            orElse: () => listAiBox.first,
-          );
-
-          // Init full slot AI Box or offline AI Box
-          if (selectedAiBox?.isFullSlot == true || selectedAiBox!.status != 1) {
-            selectedAiBox = listAiBox.firstWhereOrNull((e) => !e.isFullSlot && e.status == 1);
+          // Autofill data
+          // 1. Đã lưu lựa chọn aibox trước đó
+          if (widget.alarmConfig.aiBoxId != null) {
+            selectedAiBox = listAiBox.firstWhereOrNull((e) => e.id == widget.alarmConfig.aiBoxId);
+            setState(() {});
+            return;
           }
 
-          // selectedAiBox/suggestedAiBoxId --> null --> tìm 1 box thỏa mãn gần nhất trong list
-          // --> rỗng tiếp <=> full tải
-          if (selectedAiBox == null) _aiBoxErrorMsg = "Không còn kênh phân tích trống nào";
-          setState(() {});
+          _autofillAiBox();
         },
       ),
     );
@@ -136,6 +197,13 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                   splashRadius: 0,
                   onChanged: (value) {
                     setState(() => widget.alarmConfig.status = value ? 1 : 0);
+
+                    // Bật thì validate or auto fill ai box
+                    if (value && selectedAiBox == null) {
+                      _autofillAiBox();
+                    } else if (value && selectedAiBox != null) {
+                      _validateAiBox();
+                    }
                   },
                 ),
               ),
@@ -169,17 +237,15 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   }
 
   Widget _buildAiBoxSelection() {
-    if (selectedAiBox != null && selectedAiBox!.isFullSlot) {
-      _aiBoxErrorMsg = "Thiết bị này đã hết kênh phân tích, vui lòng chọn thiết bị khác";
-      _triggerValidate(force: false);
-    }
+    // Case hết tải toàn bộ --> set selectedAiBox = null --> gọi trước return
+    final errorText = _validateAiBox();
 
     return _buildDropdown<AiBoxEntity?>(
       hint: 'Vui lòng chọn thiết bị phân tích AI',
       initialValue: selectedAiBox,
       buildLabel: (data) => data!.dropDownLabel,
       onChanged: (value) => setState(() => selectedAiBox = value),
-      errorText: _aiBoxErrorMsg,
+      errorText: errorText,
       itemBuilder: Container(
         width: double.infinity,
         constraints: BoxConstraints(minHeight: 36),
@@ -218,6 +284,9 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                 itemBuilder: (context, index) {
                   final item = state.aiBoxes![index];
                   bool isUnselected = item.status != 1 || item.isFullSlot;
+                  if (isUnselected && item.id == _savedAiBoxId && _savedStatus == 1) {
+                    isUnselected = false;
+                  }
 
                   return InkWell(
                     onTap: isUnselected ? null : () => Navigator.pop(context, item),
