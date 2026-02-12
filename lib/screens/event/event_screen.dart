@@ -37,7 +37,6 @@ class EventScreen extends StatefulWidget {
 }
 
 class _EventScreenState extends State<EventScreen> {
-  late final DetectBloc detectBloc;
   late final EventBloc eventBloc;
   late final MonitorBloc monitorBloc;
   late final SetupInfoFieldBloc setupInfoFieldBloc;
@@ -59,7 +58,6 @@ class _EventScreenState extends State<EventScreen> {
   void initState() {
     super.initState();
 
-    detectBloc = DetectBloc(context.read());
     eventBloc = context.read<EventBloc>()..add(GetAllEventType());
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
@@ -316,32 +314,26 @@ class _EventScreenState extends State<EventScreen> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          BlocListener<DetectBloc, DetectState>(
-                            bloc: detectBloc,
-                            listener: (context, state) {
-                              if (state.status == DetectStatus.success) _config(state.typeEvents);
-                            },
-                            child: EventCustomButton(
-                              backgroundColor: AppColors.greyF2F4F6,
-                              borderColor: AppColors.greyE5E7EB,
-                              borderRadius: 3,
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 2,
-                                  color: AppColors.black.withAlpha(13),
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                              label: 'Cấu hình',
-                              onPressed: () => detectBloc.add(DetectInitial()),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                              prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
-                              prefixGap: 8,
-                              textStyle: AppTypography.style(
-                                14,
-                                color: AppColors.blue374151,
-                                fontWeight: FontWeight.w500,
+                          EventCustomButton(
+                            backgroundColor: AppColors.greyF2F4F6,
+                            borderColor: AppColors.greyE5E7EB,
+                            borderRadius: 3,
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2,
+                                color: AppColors.black.withAlpha(13),
+                                offset: const Offset(0, 1),
                               ),
+                            ],
+                            label: 'Cấu hình',
+                            onPressed: _config,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
+                            prefixGap: 8,
+                            textStyle: AppTypography.style(
+                              14,
+                              color: AppColors.blue374151,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -395,8 +387,6 @@ class _EventScreenState extends State<EventScreen> {
                               children: [
                                 Expanded(
                                   child: ListView.separated(
-                                    separatorBuilder: (context, index) =>
-                                        const SizedBox(height: 10),
                                     itemCount: (state.events.length / 4).ceil(),
                                     itemBuilder: (context, rowIndex) {
                                       final int startIndex = rowIndex * 4;
@@ -409,17 +399,19 @@ class _EventScreenState extends State<EventScreen> {
                                           children: [
                                             for (int i = startIndex; i < endIndex; i++) ...[
                                               Expanded(child: EventItem(event: state.events[i])),
-                                              if (i < endIndex - 1) const SizedBox(width: 10),
+                                              if (i < endIndex - 1) const SizedBox(width: 16),
                                             ],
                                             for (int i = 0; i < emptySlots; i++) ...[
                                               if (i > 0 || (endIndex - startIndex) > 0)
-                                                const SizedBox(width: 10),
+                                                const SizedBox(width: 16),
                                               const Expanded(child: SizedBox()),
                                             ],
                                           ],
                                         ),
                                       );
                                     },
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(height: 15),
                                   ),
                                 ),
                                 const SizedBox(height: 30),
@@ -447,7 +439,7 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
-  _config(List<TypeEventDetectEntity> typeEvents) {
+  _config() {
     showDialog(
       context: context,
       builder: (_) => BlocProvider.value(
