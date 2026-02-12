@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_us
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
@@ -18,6 +19,8 @@ import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.da
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/event_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
@@ -26,6 +29,7 @@ import 'package:vms_flutter_client/screens/login/mobile_login_screen.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/emap_screen.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/custom_view/custom_view_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
@@ -33,13 +37,15 @@ import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_screen.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/bloc/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/schedule/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/system_configuration_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
+import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
+import 'package:vms_flutter_client/screens/ai_box/ai_box_screen.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
 import '../domain/usecases/register/register_usecase.dart';
@@ -89,6 +95,7 @@ enum Routes {
     title: 'Bản đồ camera',
     description: 'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
   ),
+  aiBox(name: 'aiBox', path: '/aiBox', title: 'Quản lý AI Box', description: ''),
   users(name: 'users', path: '/users', title: 'Quản lý tài khoản', description: ''),
   events(
     name: 'events',
@@ -213,6 +220,27 @@ class AppRouter {
               create: (context) => EmapBloc(
                 emapRepository: context.read(),
                 searchEmapUseCase: context.read<SearchEmapUseCase>(),
+              ),
+            ),
+            BlocProvider(
+              create: (context) => EventBloc(
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+              ),
+            ),
+            BlocProvider(create: (context) => DetectBloc(context.read())),
+            BlocProvider(
+              create: (context) =>
+                  SetupInfoFieldBloc(context.read(), context.read(), context.read()),
+            ),
+            BlocProvider(
+              create: (context) => AiBoxBloc(
+                aiBoxRepository: context.read(),
+                filterAiBoxUseCase: context.read<FilterAiBoxUseCase>(),
               ),
             ),
             BlocProvider(
@@ -370,6 +398,13 @@ class AppRouter {
             name: Routes.multi_playback.name,
             pageBuilder: (context, state) {
               return fadeTransition(context: context, state: state, child: MultiPlaybackScreen());
+            },
+          ),
+          GoRoute(
+            path: Routes.aiBox.path,
+            name: Routes.aiBox.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: AiBoxScreen());
             },
           ),
 

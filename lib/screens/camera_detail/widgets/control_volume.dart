@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 
@@ -50,7 +51,7 @@ class _ControlVolumeState extends State<ControlVolume> {
                           );
                         }),
                   child: SvgPicture.asset(
-                    volume == 1
+                    volume == AppConfig.PLAYER_MAX_VOLUME_PERCENT
                         ? AppAssets.icVolumeFull
                         : volume == 0
                         ? AppAssets.icVolumeMuted
@@ -79,7 +80,7 @@ class _ControlVolumeState extends State<ControlVolume> {
                             child: Slider(
                               padding: EdgeInsets.zero,
                               min: 0,
-                              max: 1,
+                              max: AppConfig.PLAYER_MAX_VOLUME_PERCENT,
                               activeColor: Colors.black,
                               inactiveColor: Colors.grey,
                               value: volume,

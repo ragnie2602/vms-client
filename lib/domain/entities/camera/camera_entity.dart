@@ -1,12 +1,13 @@
 import 'package:fixnum/fixnum.dart';
+
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity_onvif.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_role.dart';
-import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_stream.dart';
-import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_type.dart';
 import 'package:vms_flutter_client/domain/entities/schedule/camera_config_entity.dart';
+import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
 
 class CameraEntity {
   final String name;
@@ -77,5 +78,10 @@ class CameraEntity {
     return Uri.parse(newUrl).replace(
       userInfo: "${Uri.encodeComponent(userParts[0])}:${Uri.encodeComponent(userParts[1])}}",
     );
+  }
+
+  @override
+  String toString() {
+    return name;
   }
 }

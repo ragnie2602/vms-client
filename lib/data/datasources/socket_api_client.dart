@@ -22,7 +22,8 @@ class SocketApiClient extends BaseApiClient {
   // Streams
   late StreamController<Map<String, dynamic>> _messageController;
   late StreamController<SocketConnectionState> _stateController;
-  Stream<SocketConnectionState> get stateStream => _stateController.stream.distinct();
+  Stream<SocketConnectionState> get stateStream =>
+      _stateController.stream.distinct();
 
   // State
   SocketConnectionState _state = SocketConnectionState.connecting;
@@ -164,6 +165,15 @@ class SocketApiClient extends BaseApiClient {
       // Message gửi từ server xuống
       final receive = Receive.fromBuffer(packet.data);
       Logger.log("Event: ${receive.receive.typeUrl}", tag: 'SOCKET');
+
+      if (!_messageController.isClosed) {
+        _messageController.add({
+          'packetType': packet.type.value,
+          'data': receive.receive.value,
+          'typeUrl': receive.receive.typeUrl,
+          'timestamp': receive.time.toInt(),
+        });
+      }
     }
   }
 

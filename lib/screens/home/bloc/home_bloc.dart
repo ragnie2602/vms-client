@@ -29,8 +29,9 @@ class HomeTab {
     HomeTab(Routes.playback, title: 'Xem lại', svg: AppAssets.tabPlayback),
     HomeTab(Routes.addGroupCamera, title: 'Quản lý camera', svg: AppAssets.tabCameraGroups),
     HomeTab(Routes.emap, title: 'Bản đồ camera', svg: AppAssets.tabMap),
-    HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
     HomeTab(Routes.events, title: 'Quản lý sự kiện', svg: AppAssets.tabEvents),
+    HomeTab(Routes.aiBox, title: 'Quản lý AI Box', svg: AppAssets.tabAIBox),
+    HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
     HomeTab(
       Routes.objectTypes,
       title: 'Quản lý đối tượng',
@@ -109,6 +110,7 @@ class ChangeTab extends HomeEvent {
   final Routes? route;
   final Object? extra;
   final bool force;
+
   const ChangeTab(this.tab, {this.route, this.extra, this.force = false});
 }
 

@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/event_constants.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/setup_info_field_dialog.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
 import 'package:vms_flutter_client/screens/monitor/components/monitor_alerts.dart';
 
 import 'panel.dart';
@@ -47,25 +53,58 @@ class ActionItem extends StatelessWidget {
       ),
     );
   }
+}
 
-  static Widget alert({
-    required PanelController controller,
-    required int id,
-    bool isSelected = false,
-    required Function(int?) onPanelIndexChanged,
-    String? count,
-  }) => ActionItem(
-    isSelected: isSelected,
+class AlertDetectLiveView extends StatefulWidget {
+  const AlertDetectLiveView({
+    super.key,
+    required this.controller,
+    required this.id,
+    required this.isSelected,
+    required this.onPanelIndexChanged,
+    this.count,
+    this.maxWidth,
+  });
+
+  final PanelController controller;
+  final int id;
+  final bool isSelected;
+  final Function(int? p1) onPanelIndexChanged;
+  final String? count;
+  final double? maxWidth;
+
+  @override
+  State<AlertDetectLiveView> createState() => _AlertDetectLiveViewState();
+}
+
+class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
+  @override
+  void initState() {
+    context.read<DetectBloc>().add(DetectInitial());
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ActionItem(
+    isSelected: widget.isSelected,
     title: 'Cảnh báo',
     icon: AppAssets.icAlertTriangle,
-    onTap: () => controller.togglePanel(
-      MonitorAlerts(maxWidth: controller.expandedWidth, key: ValueKey('monitor_alerts')),
-      id: id,
-      onPanelIndexChanged: onPanelIndexChanged,
+    onTap: () => widget.controller.togglePanel(
+      MonitorAlerts(
+        maxWidth: widget.maxWidth ?? widget.controller.expandedWidth,
+        key: ValueKey('monitor_alerts'),
+      ),
+      id: widget.id,
+      onPanelIndexChanged: widget.onPanelIndexChanged,
     ),
     suffix: Row(
       children: [
-        if (count != null)
+        if (widget.count != null)
           Container(
             decoration: BoxDecoration(
               color: Color(0xFFFF0004),
@@ -73,7 +112,7 @@ class ActionItem extends StatelessWidget {
             ),
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 3),
             child: Text(
-              count,
+              widget.count ?? '',
               style: AppTypography.style(
                 9,
                 fontWeight: FontWeight.w600,
@@ -81,7 +120,7 @@ class ActionItem extends StatelessWidget {
               ),
             ),
           ),
-        if (count != null) const SizedBox(width: 8),
+        if (widget.count != null) const SizedBox(width: 8),
         Builder(
           builder: (context) {
             return IconButton(
@@ -116,9 +155,21 @@ class ActionItem extends StatelessWidget {
                         child: _AlertMenuBubble(
                           label: 'Cấu hình',
                           onTap: () {
+                            // check list type event detect
+                            final detectBloc = context.read<DetectBloc>();
+                            final detectState = detectBloc.state;
+                            if (detectState.status != DetectStatus.success) {
+                              return;
+                            }
                             showDialog(
                               context: context,
-                              builder: (context) => SetupInfoFieldDialog(),
+                              builder: (dialogContext) => BlocProvider.value(
+                                value: context.read<SetupInfoFieldBloc>(),
+                                child: SetupInfoFieldDialog(
+                                  typeConfig: EventTypeConfig.LIVEVIEW,
+                                  typeEvents: detectState.typeEvents,
+                                ),
+                              ),
                             );
                             entry.remove();
                           },

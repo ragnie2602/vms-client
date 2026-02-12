@@ -22,7 +22,6 @@ import 'core/utils/chunked_downloader.dart';
 import 'di/dependency_injection.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
-import 'package:vms_flutter_client/core/utils/ios_network_helper.dart';
 
 Future<int> initialMultiWindowConfig(List<String> args) async {
   if (Platform.isAndroid || Platform.isIOS) return 0;

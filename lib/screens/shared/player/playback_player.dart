@@ -128,6 +128,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     super.didChangeAppLifecycleState(state);
   }
 
+  /// Nếu lần vẽ cuối cùng đó xảy ra sau khi _player.dispose() bắt đầu chạy nhưng trước khi nó hoàn tất
+  /// Widget Texture(textureId: id) sẽ cố gắng vẽ một Texture ID đã bị hủy (invalid) --> Crash App.
+  bool _isDisposing = false;
+
   @override
   void initState() {
     _initZoom();
@@ -187,6 +191,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
     _wakelock.disable();
+    _isDisposing = true;
+
     _accumulatingSeekQueue.dispose();
     _volumeQueue.dispose();
     _playlistIndex.dispose();
@@ -891,7 +897,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
                       child: ValueListenableBuilder(
                         valueListenable: _player.textureId,
                         builder: (context, id, _) {
-                          final player = id == null
+                          final player = (id == null || _isDisposing)
                               ? const SizedBox.shrink()
                               : Texture(textureId: id);
 

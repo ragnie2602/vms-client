@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:protobuf/protobuf.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
@@ -40,12 +41,19 @@ sealed class Failure {
   factory Failure.code(int code) => CodeFailure(code);
   factory Failure.message(String message) => MessageFailure(message);
 
-  MessageFailure toMessageFailure<T extends ProtobufEnum>([T? Function(int)? valueOf, int? packetType]) =>
-      MessageFailure(parseMessage(valueOf, packetType));
+  MessageFailure toMessageFailure<T extends ProtobufEnum>([
+    T? Function(int)? valueOf,
+    int? packetType,
+  ]) => MessageFailure(parseMessage(valueOf, packetType));
 
-  String parseMessage<T extends ProtobufEnum>([T? Function(int)? valueOf, int? packetType]) {
+  String parseMessage<T extends ProtobufEnum>([
+    T? Function(int)? valueOf,
+    int? packetType,
+  ]) {
     switch (this) {
       case MessageFailure(:final message):
+        return message;
+      case DioFailure(:final message):
         return message;
       case CodeFailure(:final code):
         try {
@@ -72,4 +80,38 @@ class MessageFailure extends Failure {
 class CodeFailure extends Failure {
   final int code;
   const CodeFailure(this.code) : super._();
+}
+
+class DioFailure extends Failure {
+  final String message;
+  final int? code;
+  final int statusCode;
+  final dynamic data;
+  const DioFailure({required this.message, this.code, required this.statusCode, this.data})
+    : super._();
+}
+
+class ApiException implements Exception {
+  final String message;
+  final int? code;
+
+  const ApiException(this.message, {this.code});
+
+  @override
+  String toString() => message;
+}
+
+/// Sử dụng trong các service khi cần xử lý lỗi từ API
+String parseError(dynamic exception) {
+  if (exception is DioException) {
+    if (exception.type == DioExceptionType.badResponse &&
+        exception.response?.data != null) {
+      final responseData = exception.response!.data;
+      if (responseData is Map<String, dynamic>) {
+        return responseData['message'] ?? 'Lỗi không xác định';
+      }
+    }
+    return exception.message ?? 'Lỗi kết nối';
+  }
+  return exception.toString();
 }

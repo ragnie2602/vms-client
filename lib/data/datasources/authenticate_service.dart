@@ -8,7 +8,6 @@ import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/data/models/response/authenticate_response.dart';
 import 'package:vms_flutter_client/data/models/response/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
-import 'package:vms_flutter_client/screens/login/login_screen.dart';
 
 import '../models/packet.dart';
 import '../proto/models/comm.profile.pb.dart';
@@ -19,9 +18,11 @@ class AuthenticateService {
   final HttpClient _httpClient;
   final SocketApiClient _socketApiClient;
 
-  AuthenticateService({required HttpClient httpClient, required SocketApiClient socketApiClient})
-    : _httpClient = httpClient,
-      _socketApiClient = socketApiClient;
+  AuthenticateService({
+    required HttpClient httpClient,
+    required SocketApiClient socketApiClient,
+  }) : _httpClient = httpClient,
+       _socketApiClient = socketApiClient;
 
   Future<AuthenticateResponse> authenticate({
     required String username,
@@ -38,7 +39,7 @@ class AuthenticateService {
     Map<String, dynamic>? raw;
     try {
       raw = await _httpClient.post(
-        url: '${EndPoints.baseAuth}${EndPoints.authenticate}',
+        url: '$server${EndPoints.baseAuth}${EndPoints.authenticate}',
         data: request,
       );
     } catch (e) {
@@ -50,7 +51,11 @@ class AuthenticateService {
 
     if (response.code != 200) throw Exception(response.message);
 
-    await AppData.instance.save<String>(AppKeys.SP_ACCESS_TOKEN, response.data['accessToken']);
+    _httpClient.updateBaseUrl(server);
+    await AppData.instance.save<String>(
+      AppKeys.SP_ACCESS_TOKEN,
+      response.data['accessToken'],
+    );
 
     return AuthenticateResponse.fromJson(response.data);
   }
@@ -74,17 +79,22 @@ class AuthenticateService {
   }
 
   Future<bool> login(Authentication data) async {
-    if (data.uid.isEmpty || data.sessionId.isEmpty || data.host.isEmpty) return false;
+    if (data.uid.isEmpty || data.sessionId.isEmpty || data.host.isEmpty) {
+      return false;
+    }
 
-    final status = await _socketApiClient.connect(SocketConnectionParams(data.host, data.port));
+    final status = await _socketApiClient.connect(
+      SocketConnectionParams(data.host, data.port),
+    );
     if (status) {
-      loginStatus.text += "Kết nối socket thành công\n";
-      loginStatus.text += "Thực hiện đăng nhập...\n";
       final response = await _socketApiClient.send<List<int>>(
         SocketRequestPayload(
           Packet(
             id: DateTime.now().microsecondsSinceEpoch,
-            data: Login_Request(uid: data.uid, sessionId: data.sessionId).writeToBuffer(),
+            data: Login_Request(
+              uid: data.uid,
+              sessionId: data.sessionId,
+            ).writeToBuffer(),
             type: PacketType.login,
           ),
         ),
@@ -93,20 +103,18 @@ class AuthenticateService {
       return response.fold(
         (failure) {
           final msg = failure.parseMessage(Login_Error.valueOf);
-          loginStatus.text += "Đăng nhập thất bại ($msg)\n";
+          Logger.error(msg);
           return false;
         },
         (buffer) {
           final loginReply = Login_Reply.fromBuffer(buffer);
           Logger.log("Logged in as: ${loginReply.profile.account}");
-          loginStatus.text += "Đăng nhập thành công\n";
 
           return true;
         },
       );
     }
 
-    loginStatus.text += "Kết nối socket thất bại\n";
     return false;
   }
 
@@ -117,7 +125,10 @@ class AuthenticateService {
 
   Future<void> logout() async {
     final BaseResponse response = BaseResponse.fromJson(
-      await _httpClient.post(url: '${EndPoints.baseAuth}${EndPoints.logout}', data: null),
+      await _httpClient.post(
+        url: '${EndPoints.baseAuth}${EndPoints.logout}',
+        data: null,
+      ),
     );
 
     if (response.code != 200) throw Exception(response.message);

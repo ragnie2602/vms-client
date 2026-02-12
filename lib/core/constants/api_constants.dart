@@ -147,6 +147,7 @@ enum PacketType {
   editCameraToPackage(312),
 
   // Receive
+  receiveEvent(2007),
   receiveAddCustomLiveView(86),
   receiveUpdateCustomLiveView(87),
   receiveDeleteCustomLiveView(88),
