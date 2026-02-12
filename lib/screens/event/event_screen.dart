@@ -37,7 +37,6 @@ class EventScreen extends StatefulWidget {
 }
 
 class _EventScreenState extends State<EventScreen> {
-  late final DetectBloc detectBloc;
   late final EventBloc eventBloc;
   late final MonitorBloc monitorBloc;
   late final SetupInfoFieldBloc setupInfoFieldBloc;
@@ -59,7 +58,6 @@ class _EventScreenState extends State<EventScreen> {
   void initState() {
     super.initState();
 
-    detectBloc = DetectBloc(context.read());
     eventBloc = context.read<EventBloc>()..add(GetAllEventType());
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
@@ -316,32 +314,26 @@ class _EventScreenState extends State<EventScreen> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          BlocListener<DetectBloc, DetectState>(
-                            bloc: detectBloc,
-                            listener: (context, state) {
-                              if (state.status == DetectStatus.success) _config(state.typeEvents);
-                            },
-                            child: EventCustomButton(
-                              backgroundColor: AppColors.greyF2F4F6,
-                              borderColor: AppColors.greyE5E7EB,
-                              borderRadius: 3,
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 2,
-                                  color: AppColors.black.withAlpha(13),
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                              label: 'Cấu hình',
-                              onPressed: () => detectBloc.add(DetectInitial()),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                              prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
-                              prefixGap: 8,
-                              textStyle: AppTypography.style(
-                                14,
-                                color: AppColors.blue374151,
-                                fontWeight: FontWeight.w500,
+                          EventCustomButton(
+                            backgroundColor: AppColors.greyF2F4F6,
+                            borderColor: AppColors.greyE5E7EB,
+                            borderRadius: 3,
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 2,
+                                color: AppColors.black.withAlpha(13),
+                                offset: const Offset(0, 1),
                               ),
+                            ],
+                            label: 'Cấu hình',
+                            onPressed: _config,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            prefix: SvgPicture.asset(AppAssets.icConfigure, height: 20),
+                            prefixGap: 8,
+                            textStyle: AppTypography.style(
+                              14,
+                              color: AppColors.blue374151,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -447,7 +439,7 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
-  _config(List<TypeEventDetectEntity> typeEvents) {
+  _config() {
     showDialog(
       context: context,
       builder: (_) => BlocProvider.value(

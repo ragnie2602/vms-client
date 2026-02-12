@@ -49,8 +49,10 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
             borderRadius: BorderRadius.circular(10),
             color: AppColors.white,
           ),
-          height: MediaQuery.heightOf(context) * 479 / 900,
-          width: MediaQuery.widthOf(context) * 613 / 1600,
+          height: 479,
+          width: 613,
+          // height: MediaQuery.heightOf(context) * 479 / 900,
+          // width: MediaQuery.widthOf(context) * 613 / 1600,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -75,14 +77,24 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                       children: [
                         Expanded(
                           flex: 200,
-                          child: Container(
-                            color: AppColors.greyF9FAFB,
-                            padding: const EdgeInsets.all(8),
-                            child: Column(
-                              spacing: 4,
-                              children: state.typeEvents.map((typeEvent) {
-                                return _buildVerticalTab(context, typeEvent, state.selectedType);
-                              }).toList(),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) => Container(
+                              color: AppColors.greyF9FAFB,
+                              height: constraints.maxHeight,
+                              padding: const EdgeInsets.all(8),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  spacing: 4,
+                                  children: state.typeEvents.map((typeEvent) {
+                                    return _buildVerticalTab(
+                                      context,
+                                      typeEvent,
+                                      state.selectedType,
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -164,9 +176,12 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
   }
 
   Widget _buildTabContent(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Column(children: const [CustomReorderableListView()]),
+    return LayoutBuilder(
+      builder: (context, constraints) => Container(
+        height: constraints.maxHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: SingleChildScrollView(child: Column(children: const [CustomReorderableListView()])),
+      ),
     );
   }
 

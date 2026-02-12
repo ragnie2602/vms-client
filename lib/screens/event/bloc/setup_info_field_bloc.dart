@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/event_constants.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
@@ -202,6 +204,20 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
     final updatedModifiedConfigs = Map<String, List<FieldConfigEntity>>.from(state.modifiedConfigs);
     if (state.selectedType?.typeName != null) {
       updatedModifiedConfigs[state.selectedType!.typeName!] = state.currentFields;
+    }
+
+    for (var e in updatedModifiedConfigs.entries) {
+      final fields = e.value;
+
+      if (fields.isEmpty) {
+        emit(
+          state.copyWith(
+            saveStatus: SetupInfoFieldStatus.failure,
+            saveErrorMessage: 'Cần chọn tối thiểu 1 trường thông tin',
+          ),
+        );
+        return;
+      }
     }
 
     // tìm các eventtype bị thay đổi (so sánh với original)
