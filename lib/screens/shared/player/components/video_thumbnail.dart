@@ -94,11 +94,13 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        double? width = constraints.maxWidth;
+        if (!width.isFinite || width < 0) width = null;
+        double? height = constraints.maxHeight;
+        if (!height.isFinite || height < 0) height = null;
+
         return FutureBuilder<ImageProvider?>(
-          future: _fetchFuture ??= _fetchFirstFrame(
-            width: constraints.maxWidth.toInt(),
-            height: constraints.maxHeight.toInt(),
-          ),
+          future: _fetchFuture ??= _fetchFirstFrame(width: width?.toInt(), height: height?.toInt()),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CupertinoActivityIndicator(color: AppColors.black));
@@ -109,10 +111,7 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
                 behavior: HitTestBehavior.translucent,
                 onTap: () => setState(() {
                   _cachedProvider = null;
-                  _fetchFuture = _fetchFirstFrame(
-                    width: constraints.maxWidth.toInt(),
-                    height: constraints.maxHeight.toInt(),
-                  );
+                  _fetchFuture = _fetchFirstFrame(width: width?.toInt(), height: height?.toInt());
                 }),
                 child: _wrapBorderRadius(Image.asset(AppAssets.imgPlaceholder, fit: BoxFit.cover)),
               );
