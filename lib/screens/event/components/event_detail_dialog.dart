@@ -13,7 +13,6 @@ import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
-import 'package:vms_flutter_client/screens/camera_detail/widgets/control_volume.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/event/components/volume_slider.dart';
@@ -423,7 +422,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                     borderColor: AppColors.greyD1D5DB,
                     borderRadius: 5,
                     label: 'Huỷ',
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => _cancel(),
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                     textStyle: AppTypography.style(
                       14,
@@ -465,11 +464,10 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                           ),
                     listener: (context, state) {
                       if (state is UpdateEventSuccess) {
+                        ToastUtil.toastSuccess(title: Text('Cập nhật ghi chú thành công'));
                         Navigator.pop(context);
                       } else if (state is UpdateEventFailure) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(state.message)));
+                        ToastUtil.toastFail(title: Text(state.message));
                       }
                     },
                   ),
@@ -794,6 +792,115 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
   // _Functions
 
+  /// Common functions
+  void _cancel() {
+    if (descriptionController.text == (event?.description ?? '')) {
+      return Navigator.pop(context);
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(36),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Xác nhận huỷ',
+                    style: AppTypography.style(
+                      30,
+                      color: AppColors.blackOrWhite,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Bạn có chắc chắn muốn hủy bỏ hành động đang thực hiện mà không lưu?',
+                    style: AppTypography.style(
+                      14,
+                      color: AppColors.blackOrWhite,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blackOrWhiteReverse,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                          ),
+                          child: Text(
+                            'Hủy',
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.blackOrWhite,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blackOrWhite,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                          ),
+                          child: Text(
+                            'Xác nhận',
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.blackOrWhiteReverse,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _save() {
+    context.read<EventBloc>().add(
+      UpdateEvent(eventId: widget.id, description: descriptionController.text),
+    );
+  }
+
   /// Image functions
   void _clampCurrentImageTransform() {
     _imageTransformController.value = _clampImageMatrix(_imageTransformController.value.clone());
@@ -929,12 +1036,6 @@ class _EventDetailDialogState extends State<EventDetailDialog>
           key: UniqueKey(),
         ),
       ),
-    );
-  }
-
-  _save() {
-    context.read<EventBloc>().add(
-      UpdateEvent(eventId: widget.id, description: descriptionController.text),
     );
   }
 }
