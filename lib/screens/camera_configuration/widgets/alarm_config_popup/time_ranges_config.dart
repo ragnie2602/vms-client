@@ -104,7 +104,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                         _triggerValidate();
                       }),
                       maximumTime: time.endTime,
-                      minimumTime: time.startTime,
+                      // minimumTime: time.startTime,
                       needValidate: needValidate,
                     ),
                     _columnTime(
@@ -114,7 +114,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                         widget.alarmConfig.times[index].endTime = selectedTime;
                         _triggerValidate();
                       }),
-                      maximumTime: time.endTime,
+                      // maximumTime: time.endTime,
                       minimumTime: time.startTime,
                       needValidate: needValidate,
                     ),
@@ -370,10 +370,15 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
             final isSelected = selectedDays.contains(day.key);
             return InkWell(
               onTap: () {
-                if (!canSelectDay(day.key)) return;
-
                 final newList = List<int>.from(selectedDays);
-                isSelected ? newList.remove(day.key) : newList.add(day.key);
+
+                // Xóa thì k cần validate
+                if (isSelected) {
+                  newList.remove(day.key);
+                } else {
+                  if (!canSelectDay(day.key)) return;
+                  newList.add(day.key);
+                }
 
                 onChanged(newList);
               },
