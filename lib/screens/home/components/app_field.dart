@@ -79,7 +79,7 @@ class _AppFieldState extends State<AppField> {
                         TextSpan(
                           text: ' *',
                           style: AppTypography.style(
-                            20,
+                            14,
                             fontWeight: FontWeight.w500,
                             color: AppColors.redFF0004,
                           ),

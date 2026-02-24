@@ -221,196 +221,202 @@ class _AddAiBoxDialogState extends State<_AddAiBoxDialog> {
                   ],
                 ),
               )
-            : SingleChildScrollView(
-                child: Form(
-                  key: _form,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 16),
-                      // Tên thiết bị
-                      AppField(
-                        controller: _name,
-                        hintText: 'Nhập tên AI box',
-                        label: 'Tên AI box',
-                        requiredField: true,
-                        validator: (v) => v!.trim().isEmpty
-                            ? 'Tên AI box không được để trống'
-                            : null,
-                      ),
-                      const SizedBox(height: 20),
-                      // hãng
-                      AppField(
-                        controller: _manufacturer,
-                        hintText: 'Nhập hãng sản xuất',
-                        label: 'Hãng AI box',
-                      ),
-                      const SizedBox(height: 20),
-                      // model
-                      AppField(
-                        controller: _model,
-                        hintText: 'Nhập model thiết bị',
-                        label: 'Model',
-                      ),
-                      const SizedBox(height: 20),
-                      // IP Address và Port
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: AppField(
-                              controller: _ipAddress,
-                              hintText: 'Nhập địa chỉ IP',
-                              label: 'Địa chỉ IP',
-                              requiredField: true,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Địa chỉ IP không được để trống';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 20),
-                          Expanded(
-                            flex: 1,
-                            child: AppField(
-                              controller: _port,
-                              hintText: 'Nhập cổng',
-                              label: 'Port',
-                              keyboardType: TextInputType.number,
-                              requiredField: true,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Port không được để trống';
-                                }
-                                final value = int.tryParse(v);
-                                if (value == null || value <= 0) {
-                                  return 'Port phải là số nguyên dương';
-                                }
-                                if (value > 65535) {
-                                  return 'Port phải từ 1 đến 65535';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      // số cam
-                      AppField(
-                        controller: _maxCameras,
-                        hintText: 'Nhập số lượng',
-                        label: 'Số camera tối đa',
-                        keyboardType: TextInputType.number,
-                        validator: (v) {
-                          if (v != null && v.isNotEmpty) {
-                            final value = int.tryParse(v);
-                            if (value == null || value <= 0) {
-                              return 'Chỉ nhập số nguyên dương';
-                            }
-                            if (value > 100) {
-                              return 'Số lượng camera không được vượt quá 100';
-                            }
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: AppField(
-                              controller: _username,
-                              hintText: 'Nhập tài khoản',
-                              label: 'Tài khoản',
-                              requiredField: true,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Tài khoản không được để trống';
-                                }
-                                // Kiểm tra chỉ chứa chữ và số
-                                if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(v)) {
-                                  return 'Tài khoản chỉ được chứa chữ cái và số';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 20),
-                          Expanded(
-                            flex: 1,
-                            child: AppField(
-                              controller: _password,
-                              hintText: 'Nhập mật khẩu',
-                              label: 'Mật khẩu',
-                              keyboardType: TextInputType.number,
-                              requiredField: true,
-                              obscureText: _obscurePassword,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Mật khẩu không được để trống';
-                                }
-                                return null;
-                              },
-                              suffix: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: AppColors.black,
-                                ),
-                                onPressed: _togglePasswordVisibility,
+            : ScrollConfiguration(
+                behavior: ScrollConfiguration.of(
+                  context,
+                ).copyWith(scrollbars: false),
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _form,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 16),
+                        // Tên thiết bị
+                        AppField(
+                          controller: _name,
+                          hintText: 'Nhập tên AI box',
+                          label: 'Tên AI box',
+                          requiredField: true,
+                          validator: (v) => v!.trim().isEmpty
+                              ? 'Tên AI box không được để trống'
+                              : null,
+                        ),
+                        const SizedBox(height: 20),
+                        // hãng
+                        AppField(
+                          controller: _manufacturer,
+                          hintText: 'Nhập hãng sản xuất',
+                          label: 'Hãng AI box',
+                        ),
+                        const SizedBox(height: 20),
+                        // model
+                        AppField(
+                          controller: _model,
+                          hintText: 'Nhập model thiết bị',
+                          label: 'Model',
+                        ),
+                        const SizedBox(height: 20),
+                        // IP Address và Port
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: AppField(
+                                controller: _ipAddress,
+                                hintText: 'Nhập địa chỉ IP',
+                                label: 'Địa chỉ IP',
+                                requiredField: true,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Địa chỉ IP không được để trống';
+                                  }
+                                  return null;
+                                },
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      // Mô tả
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppField(
-                            controller: _note,
-                            hintText: 'Nhập ghi chú hoặc mô tả thêm...',
-                            label: 'Ghi chú',
-                            maxLines: 5,
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(200),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          ValueListenableBuilder<TextEditingValue>(
-                            valueListenable: _note,
-                            builder: (context, value, _) {
-                              return Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  '${value.text.length}/200',
-                                  style: AppTypography.style(
-                                    12,
-                                    fontWeight: FontWeight.w400,
-                                    color: AppColors.grey92929D,
+                            const SizedBox(width: 20),
+                            Expanded(
+                              flex: 1,
+                              child: AppField(
+                                controller: _port,
+                                hintText: 'Nhập cổng',
+                                label: 'Port',
+                                keyboardType: TextInputType.number,
+                                requiredField: true,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Port không được để trống';
+                                  }
+                                  final value = int.tryParse(v);
+                                  if (value == null || value <= 0) {
+                                    return 'Port phải là số nguyên dương';
+                                  }
+                                  if (value > 65535) {
+                                    return 'Port phải từ 1 đến 65535';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        // số cam
+                        AppField(
+                          controller: _maxCameras,
+                          hintText: 'Nhập số lượng',
+                          label: 'Số camera tối đa',
+                          keyboardType: TextInputType.number,
+                          validator: (v) {
+                            if (v != null && v.isNotEmpty) {
+                              final value = int.tryParse(v);
+                              if (value == null || value <= 0) {
+                                return 'Chỉ nhập số nguyên dương';
+                              }
+                              if (value > 100) {
+                                return 'Số lượng camera không được vượt quá 100';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: AppField(
+                                controller: _username,
+                                hintText: 'Nhập tài khoản',
+                                label: 'Tài khoản',
+                                requiredField: true,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Tài khoản không được để trống';
+                                  }
+                                  // Kiểm tra chỉ chứa chữ và số
+                                  if (!RegExp(r'^[a-zA-Z0-9]+$').hasMatch(v)) {
+                                    return 'Tài khoản chỉ được chứa chữ cái và số';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              flex: 1,
+                              child: AppField(
+                                controller: _password,
+                                hintText: 'Nhập mật khẩu',
+                                label: 'Mật khẩu',
+                                keyboardType: TextInputType.number,
+                                requiredField: true,
+                                obscureText: _obscurePassword,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Mật khẩu không được để trống';
+                                  }
+                                  return null;
+                                },
+                                suffix: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: AppColors.black,
                                   ),
+                                  onPressed: _togglePasswordVisibility,
                                 ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        // Mô tả
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppField(
+                              controller: _note,
+                              hintText: 'Nhập ghi chú hoặc mô tả thêm...',
+                              label: 'Ghi chú',
+                              maxLines: 5,
+                              inputFormatters: [
+                                LengthLimitingTextInputFormatter(200),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: _note,
+                              builder: (context, value, _) {
+                                return Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '${value.text.length}/200',
+                                    style: AppTypography.style(
+                                      12,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.grey92929D,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
               ),
       ),
       actions: [
-        Center(
+        Align(
+          alignment: Alignment.centerRight,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
