@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -50,7 +52,10 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   final ValueNotifier<double> _volume = ValueNotifier(1.0);
   final ValueNotifier<double> _speed = ValueNotifier(1.0);
   final ValueNotifier<double?> _downloadProgress = ValueNotifier(null);
+  final ScrollController _controlsScrollController = ScrollController();
   DateTime? currentTime;
+  Timer? _autoHideControlsTimer;
+  bool _showControls = true;
 
   @override
   void initState() {
@@ -231,107 +236,123 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                         flex: 374,
                         child: Container(
                           decoration: BoxDecoration(color: AppColors.greyAthens),
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                event.eventName ?? '',
-                                style: AppTypography.style(16, fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: 18),
-                              CustomTable(
-                                columnSpacing: 10,
-                                data: CustomTableData(
-                                  columnFlexes: [0, 1, 1],
-                                  data: [
-                                    [
-                                      SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
-                                      Text(
-                                        'Thời gian',
-                                        style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                      ),
-                                      Text(
-                                        DateFormat('HH:mm dd/MM/yyyy').format(
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                            event.timeEvent * 1000,
-                                          ),
-                                        ),
-                                        overflow: TextOverflow.visible,
-                                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                        textAlign: TextAlign.end,
-                                      ),
-                                    ],
-                                    [
-                                      SvgPicture.asset(AppAssets.icVideoOn, height: 20),
-                                      Text(
-                                        'Tên camera',
-                                        style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                      ),
-                                      Text(
-                                        event.camera?.name ?? '',
-                                        overflow: TextOverflow.visible,
-                                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                        textAlign: TextAlign.end,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                defaultVerticalAlignment: CrossAxisAlignment.start,
-                                horizontalAlignments: [
-                                  CrossAxisAlignment.start,
-                                  CrossAxisAlignment.start,
-                                  CrossAxisAlignment.end,
-                                ],
-                                rowSpacing: 18,
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Ghi chú:',
-                                style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(height: 12),
-                              Expanded(
-                                child: TextField(
-                                  controller: descriptionController,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
-                                      borderSide: BorderSide(color: AppColors.greyE2E8F0),
-                                    ),
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 18,
-                                    ),
-                                    counter: const SizedBox(),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
-                                      borderSide: BorderSide(color: AppColors.greyE2E8F0),
-                                    ),
-                                    fillColor: AppColors.white,
-                                    filled: true,
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
-                                      borderSide: BorderSide(color: AppColors.secondary),
-                                    ),
-                                    focusColor: AppColors.white,
-                                    hintStyle: AppTypography.style(
-                                      14,
-                                      color: AppColors.grey92929D,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    hintText: 'Nhập nội dung ghi chú',
-                                    hoverColor: AppColors.white,
+                          height: double.infinity,
+                          padding: const EdgeInsets.only(left: 24, right: 12, top: 24, bottom: 16),
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    event.eventName ?? '',
+                                    style: AppTypography.style(16, fontWeight: FontWeight.w600),
                                   ),
-                                  maxLength: 500,
-                                  maxLines: 10,
-                                  minLines: 3,
-                                  textAlignVertical: TextAlignVertical.top,
-                                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                                ),
+                                  const SizedBox(height: 18),
+                                  CustomTable(
+                                    columnSpacing: 10,
+                                    data: CustomTableData(
+                                      columnFlexes: [0, 1, 1],
+                                      data: [
+                                        [
+                                          SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
+                                          Text(
+                                            'Thời gian',
+                                            style: AppTypography.style(
+                                              13,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            DateFormat('HH:mm dd/MM/yyyy').format(
+                                              DateTime.fromMillisecondsSinceEpoch(
+                                                event.timeEvent * 1000,
+                                              ),
+                                            ),
+                                            overflow: TextOverflow.visible,
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ],
+                                        [
+                                          SvgPicture.asset(AppAssets.icVideoOn, height: 20),
+                                          Text(
+                                            'Tên camera',
+                                            style: AppTypography.style(
+                                              13,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            event.camera?.name ?? '',
+                                            overflow: TextOverflow.visible,
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    defaultVerticalAlignment: CrossAxisAlignment.start,
+                                    horizontalAlignments: [
+                                      CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
+                                      CrossAxisAlignment.end,
+                                    ],
+                                    rowSpacing: 18,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    'Ghi chú:',
+                                    style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: descriptionController,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 18,
+                                      ),
+                                      counter: const SizedBox(),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                      ),
+                                      fillColor: AppColors.white,
+                                      filled: true,
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.secondary),
+                                      ),
+                                      focusColor: AppColors.white,
+                                      hintStyle: AppTypography.style(
+                                        14,
+                                        color: AppColors.grey92929D,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      hintText: 'Nhập nội dung ghi chú',
+                                      hoverColor: AppColors.white,
+                                    ),
+                                    maxLength: 500,
+                                    maxLines: 10,
+                                    minLines: 3,
+                                    textAlignVertical: TextAlignVertical.top,
+                                    style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -432,6 +453,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
   @override
   void dispose() {
+    _autoHideControlsTimer?.cancel();
     playbackBloc.close();
     playerController.onTimeChanged.remove(_handleTimeChanged);
     playerController.detach();
@@ -439,6 +461,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     _volume.dispose();
     _speed.dispose();
     _downloadProgress.dispose();
+    _controlsScrollController.dispose();
     super.dispose();
   }
 
@@ -450,58 +473,70 @@ class _EventDetailDialogState extends State<EventDetailDialog>
       left: 0,
       right: 0,
       bottom: 0,
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: AppColors.contentBg,
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(6)),
-          boxShadow: [
-            BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.05),
-              spreadRadius: 2,
-              blurRadius: 30,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ValueListenableBuilder<PlayerStatus>(
-          valueListenable: _playerStatus,
-          builder: (_, status, __) => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildVolumeControl(),
-              _buildControlButton(
-                icon: AppAssets.icFastBackward,
-                onTap: () => playerController.seek?.call(Duration(seconds: -3)),
-              ),
-              _buildControlButton(
-                icon: status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
-                onTap: () {
-                  if (reachEnd) playerController.seek?.call(Duration(seconds: -20));
-                  playerController.togglePlay?.call();
-                },
-              ),
-              _buildControlButton(
-                icon: AppAssets.icFastForward,
-                onTap: () {
-                  if (reachEnd) return;
-                  playerController.seek?.call(Duration(seconds: 3));
-                },
-              ),
-              _buildSpeedControl(),
-              _buildControlButton(
-                icon: AppAssets.icZoomIn,
-                onTap: () => playerController.zoom?.call(1),
-              ),
-              _buildControlButton(
-                icon: AppAssets.icZoomOut,
-                onTap: () => playerController.zoom?.call(-1),
-              ),
-              _buildControlButton(
-                icon: AppAssets.icFullscreen,
-                onTap: () => playerController.toggleFullscreen?.call(),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 220),
+        opacity: _showControls ? 1 : 0,
+        child: Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: AppColors.contentBg,
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(6)),
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, 0.05),
+                spreadRadius: 2,
+                blurRadius: 30,
+                offset: Offset(0, 4),
               ),
             ],
+          ),
+          child: ValueListenableBuilder<PlayerStatus>(
+            valueListenable: _playerStatus,
+            builder: (_, status, __) => Scrollbar(
+              controller: _controlsScrollController,
+              thickness: 3.2,
+              child: SingleChildScrollView(
+                controller: _controlsScrollController,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildVolumeControl(),
+                    _buildControlButton(
+                      icon: AppAssets.icFastBackward,
+                      onTap: () => playerController.seek?.call(Duration(seconds: -3)),
+                    ),
+                    _buildControlButton(
+                      icon: status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
+                      onTap: () {
+                        if (reachEnd) playerController.seek?.call(Duration(seconds: -20));
+                        playerController.togglePlay?.call();
+                      },
+                    ),
+                    _buildControlButton(
+                      icon: AppAssets.icFastForward,
+                      onTap: () {
+                        if (reachEnd) return;
+                        playerController.seek?.call(Duration(seconds: 3));
+                      },
+                    ),
+                    _buildSpeedControl(),
+                    _buildControlButton(
+                      icon: AppAssets.icZoomIn,
+                      onTap: () => playerController.zoom?.call(1),
+                    ),
+                    _buildControlButton(
+                      icon: AppAssets.icZoomOut,
+                      onTap: () => playerController.zoom?.call(-1),
+                    ),
+                    _buildControlButton(
+                      icon: AppAssets.icFullscreen,
+                      onTap: () => playerController.toggleFullscreen?.call(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -637,24 +672,41 @@ class _EventDetailDialogState extends State<EventDetailDialog>
             context.read<PlaybackBloc>().add(GetVideoPlaybacks(event.camera!.id, rewindTime!));
           }
         },
-        child: (state) => Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Colors.black),
-          clipBehavior: Clip.antiAlias,
-          child: PlaybackPlayer(
-            enableZoom: true,
-            playlist: state.playbacks.toList(),
-            name: event.camera?.name ?? '',
-            initialIndex: state.initialIndex,
-            controller: playerController,
-            onStatusChanged: (status) {
-              _playerStatus.value = status;
-            },
-            onInitializedValues: ({required double volume, required double speed}) {
-              _volume.value = volume;
-              _speed.value = speed;
-            },
-            controlsBuilder: (fullscreen, playerState) =>
-                fullscreen ? Container() : _buildControls(fullscreen, playerState),
+        child: (state) => MouseRegion(
+          onEnter: (_) {
+            _autoHideControlsTimer?.cancel();
+            if (!_showControls && mounted) setState(() => _showControls = true);
+          },
+          onExit: (_) {
+            _autoHideControlsTimer?.cancel();
+            _autoHideControlsTimer = Timer(const Duration(seconds: 2), () {
+              if (!mounted || !_showControls) return;
+              setState(() => _showControls = false);
+            });
+          },
+          onHover: (_) {
+            _autoHideControlsTimer?.cancel();
+            if (!_showControls && mounted) setState(() => _showControls = true);
+          },
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Colors.black),
+            clipBehavior: Clip.antiAlias,
+            child: PlaybackPlayer(
+              enableZoom: true,
+              playlist: state.playbacks.toList(),
+              name: event.camera?.name ?? '',
+              initialIndex: state.initialIndex,
+              controller: playerController,
+              onStatusChanged: (status) {
+                _playerStatus.value = status;
+              },
+              onInitializedValues: ({required double volume, required double speed}) {
+                _volume.value = volume;
+                _speed.value = speed;
+              },
+              controlsBuilder: (fullscreen, playerState) =>
+                  fullscreen ? Container() : _buildControls(fullscreen, playerState),
+            ),
           ),
         ),
       ),
