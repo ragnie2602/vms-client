@@ -23,17 +23,14 @@ review-source:
       $CLAUDE_MD
       EOF
     - echo "Indexing branch with Serena..."
-    - uvx --from git+https://github.com/oraios/serena serena project index lib
-    - claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context ide-assistant --project "$(pwd)/lib"
-    - claude mcp list  
     - |
       echo "=== Reviewing Source Code with Claude ==="
       export IS_SANDBOX=1
       claude --dangerously-skip-permissions --allow-dangerously-skip-permissions -d -p <<EOF
       ${REVIEW_PROMPT}
       Steps:
-      1. Sử dụng mcp serena actived project 
-      2. Đưa ra các nhận xét và đề xuất cải thiện bằng tiếng việt, chỉ ra các vấn đề tiềm ẩn hoặc những điểm chưa đáp ứng vào file comment.json ở thư mục project với cú pháp như sau {"body":"nhận xét của bạn viết bằng markdown"} .
+      1. ${DESC_TASK}.
+      2. Đưa ra các nhận xét và đề xuất cải thiện bằng tiếng việt, chỉ ra các vấn đề tiềm ẩn hoặc những điểm chưa đáp ứng của Step 1 vào file comment.json ở thư mục project với cú pháp như sau {"body":"nhận xét của bạn viết bằng markdown"}.
       EOF
     - |
       curl --request POST --header "PRIVATE-TOKEN: ${CI_PAT_TOKEN}" --header "Content-Type: application/json" --data @comment.json "https://gitlab.vivas.vn/api/v4/projects/${N8N_PROJECT_ID}/merge_requests/${N8N_MR_ID}/notes" -v
