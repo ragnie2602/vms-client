@@ -258,7 +258,9 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                             event.timeEvent * 1000,
                                           ),
                                         ),
+                                        overflow: TextOverflow.visible,
                                         style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                                        textAlign: TextAlign.end,
                                       ),
                                     ],
                                     [
@@ -269,12 +271,14 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                       ),
                                       Text(
                                         event.camera?.name ?? '',
+                                        overflow: TextOverflow.visible,
                                         style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                                        textAlign: TextAlign.end,
                                       ),
                                     ],
                                   ],
                                 ),
-                                defaultVerticalAlignment: CrossAxisAlignment.center,
+                                defaultVerticalAlignment: CrossAxisAlignment.start,
                                 horizontalAlignments: [
                                   CrossAxisAlignment.start,
                                   CrossAxisAlignment.start,
@@ -292,7 +296,6 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                 child: TextField(
                                   controller: descriptionController,
                                   decoration: InputDecoration(
-                                    filled: true,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(3),
                                       borderSide: BorderSide(color: AppColors.greyE2E8F0),
@@ -301,11 +304,13 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                       horizontal: 12,
                                       vertical: 18,
                                     ),
+                                    counter: const SizedBox(),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(3),
                                       borderSide: BorderSide(color: AppColors.greyE2E8F0),
                                     ),
                                     fillColor: AppColors.white,
+                                    filled: true,
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(3),
                                       borderSide: BorderSide(color: AppColors.secondary),
@@ -319,8 +324,9 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                     hintText: 'Nhập nội dung ghi chú',
                                     hoverColor: AppColors.white,
                                   ),
+                                  maxLength: 500,
+                                  maxLines: 10,
                                   minLines: 3,
-                                  maxLines: 100,
                                   textAlignVertical: TextAlignVertical.top,
                                   style: AppTypography.style(14, fontWeight: FontWeight.w400),
                                 ),
