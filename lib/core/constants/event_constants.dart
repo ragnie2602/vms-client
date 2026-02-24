@@ -12,7 +12,7 @@ class EventTypeConfig {
       case 'EVENT_TIME':
         return DateFormat(
           'HH:mm dd/MM/yyyy',
-        ).format(DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000, isUtc: true));
+        ).format(DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000));
       case 'EVENT_TYPE':
         return event.eventName ?? '';
     }
