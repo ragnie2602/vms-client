@@ -549,7 +549,8 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
         bool showHint = initialValue == null || initialValue == '';
 
         return PopupMenuButton<T>(
-          offset: Offset(0, 41.5),
+          offset: Offset(0, 2),
+          position: PopupMenuPosition.under,
           tooltip: '',
           menuPadding: EdgeInsets.zero,
           constraints: BoxConstraints(
@@ -566,6 +567,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
           shadowColor: Color.fromRGBO(147, 152, 154, 0.2),
           color: Colors.white,
           initialValue: initialValue,
+          clipBehavior: Clip.antiAlias,
           itemBuilder: (context) => [
             // Fix cứng
             if (items != null) ...[
@@ -598,8 +600,8 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
             else if (itemBuilder != null)
               PopupMenuItem(padding: EdgeInsets.zero, enabled: false, child: itemBuilder),
           ],
-          child: SizedBox(
-            height: 40,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: 40),
             child: InputDecorator(
               decoration: InputDecoration(
                 isDense: true,
@@ -630,17 +632,18 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
               ),
               child: Text(
                 showHint ? hint ?? '' : buildLabel?.call(initialValue) ?? initialValue.toString(),
+                maxLines: 3,
                 style: showHint
                     ? AppTypography.style(
-                        12.5,
+                        13,
                         fontWeight: FontWeight.w400,
-                        lineHeight: 20 / 12.5,
+                        lineHeight: 20 / 13,
                         color: AppColors.grey92929D,
                       )
                     : AppTypography.style(
-                        14,
+                        13.5,
                         fontWeight: FontWeight.w400,
-                        lineHeight: 20 / 14,
+                        lineHeight: 20 / 13.5,
                         color: Color(0xFF0F172A),
                       ),
               ),
