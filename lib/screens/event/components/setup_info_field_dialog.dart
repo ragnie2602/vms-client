@@ -40,7 +40,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
           ToastUtil.toastSuccess(context: context, title: const Text('Lưu cấu hình thành công'));
           Navigator.pop(context);
         } else if (state.saveStatus == SetupInfoFieldStatus.failure) {
-          ToastUtil.toastFail(context: context, title: Text('Có lỗi xảy ra, vui lòng thử lại'));
+          ToastUtil.toastFail(context: context, title: Text(state.saveErrorMessage));
         }
       },
       child: Dialog(
@@ -283,59 +283,62 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
           children: [
             Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 10),
-            ReorderableListView(
-              key: _listKey,
-              buildDefaultDragHandles: false,
-              onReorder: (int oldIndex, int newIndex) {
-                if (oldIndex < newIndex) newIndex -= 1;
-                context.read<SetupInfoFieldBloc>().add(SetupInfoFieldReorder(oldIndex, newIndex));
-              },
-              shrinkWrap: true,
-              children: List.generate(state.currentFields.length, (index) {
-                final item = state.currentFields[index];
-                return Container(
-                  key: ValueKey(item.code),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.greyE2E8F0),
-                    borderRadius: BorderRadius.circular(3),
-                    color: AppColors.white,
-                  ),
-                  margin: const EdgeInsets.only(bottom: 5),
-                  child: Row(
-                    children: [
-                      ReorderableDragStartListener(
-                        index: index,
-                        child: Container(
-                          color: AppColors.greyE2E8F0,
-                          height: 40,
-                          width: 23,
-                          child: Center(child: SvgPicture.asset(AppAssets.icDrawable)),
+            DragBoundary(
+              child: ReorderableListView(
+                key: _listKey,
+                buildDefaultDragHandles: false,
+                dragBoundaryProvider: (context) => DragBoundary.forRectOf(context),
+                onReorder: (int oldIndex, int newIndex) {
+                  if (oldIndex < newIndex) newIndex -= 1;
+                  context.read<SetupInfoFieldBloc>().add(SetupInfoFieldReorder(oldIndex, newIndex));
+                },
+                shrinkWrap: true,
+                children: List.generate(state.currentFields.length, (index) {
+                  final item = state.currentFields[index];
+                  return Container(
+                    key: ValueKey(item.code),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.greyE2E8F0),
+                      borderRadius: BorderRadius.circular(3),
+                      color: AppColors.white,
+                    ),
+                    margin: const EdgeInsets.only(bottom: 2.5, top: 2.5),
+                    child: Row(
+                      children: [
+                        ReorderableDragStartListener(
+                          index: index,
+                          child: Container(
+                            color: AppColors.greyE2E8F0,
+                            height: 40,
+                            width: 23,
+                            child: Center(child: SvgPicture.asset(AppAssets.icDrawable)),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Row(
-                          spacing: 8,
-                          children: [
-                            SizedBox(width: 24, height: 24, child: _getIconForField(item)),
-                            Text(
-                              item.label ?? item.code ?? '',
-                              style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                            ),
-                          ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Row(
+                            spacing: 8,
+                            children: [
+                              SizedBox(width: 24, height: 24, child: _getIconForField(item)),
+                              Text(
+                                item.label ?? item.code ?? '',
+                                style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      IconButton(
-                        icon: SvgPicture.asset(AppAssets.icClose, height: 20, width: 20),
-                        onPressed: () {
-                          context.read<SetupInfoFieldBloc>().add(SetupInfoFieldRemoveField(item));
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              }),
+                        const SizedBox(width: 10),
+                        IconButton(
+                          icon: SvgPicture.asset(AppAssets.icClose, height: 20, width: 20),
+                          onPressed: () {
+                            context.read<SetupInfoFieldBloc>().add(SetupInfoFieldRemoveField(item));
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
             ),
             const SizedBox(height: 10),
             InkWell(
