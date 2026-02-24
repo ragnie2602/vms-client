@@ -82,7 +82,7 @@ class _AlarmConfigPopupState extends State<AlarmConfigPopup> with StateBuilderMi
 
   @override
   Widget build(BuildContext context) {
-    final dialogWidth = MediaQuery.of(context).size.width * 0.5;
+    final dialogWidth = max(MediaQuery.of(context).size.width * 0.5, 780.0);
 
     return BlocProvider(
       create: (context) => AlarmConfigDetailBloc(

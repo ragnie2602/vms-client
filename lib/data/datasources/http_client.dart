@@ -13,8 +13,8 @@ class HttpClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: EndPoints.baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        connectTimeout: const Duration(seconds: 30), 
+        receiveTimeout: const Duration(seconds: 40),
         headers: {'Content-Type': 'application/json'},
       ),
     );

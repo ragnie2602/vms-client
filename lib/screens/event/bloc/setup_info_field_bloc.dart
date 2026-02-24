@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/event_constants.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
@@ -55,26 +57,26 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
       },
     );
 
-    if (event.typeEvents != null && event.typeEvents!.isNotEmpty) {
-      emit(state.copyWith(configTableStatus: ConfigTableStatus.loading));
+    if (event.typeConfig == EventTypeConfig.EVENT_MANAGEMENT) {
+      if (event.typeEvents != null && event.typeEvents!.isNotEmpty) {
+        emit(state.copyWith(configTableStatus: ConfigTableStatus.loading));
 
-      try {
-        final input = FetchConfigTableInput(
-          event.typeEvents?.map((e) => e.typeName ?? '').toList() ?? [],
-        );
-        final output = await _fetchConfigTableUsecase.execute(input);
-        configTable.addAll(output.configTable);
+        try {
+          final input = FetchConfigTableInput(
+            event.typeEvents?.map((e) => e.typeName ?? '').toList() ?? [],
+          );
+          final output = await _fetchConfigTableUsecase.execute(input);
+          configTable.addAll(output.configTable);
 
-        // Emit state khi load configTable thành công
-        emit(state.copyWith(configTableStatus: ConfigTableStatus.success));
-      } catch (error) {
-        // Emit state khi load configTable thất bại
-        emit(
-          state.copyWith(
-            configTableStatus: ConfigTableStatus.failure,
-            errorMessage: error.toString(),
-          ),
-        );
+          emit(state.copyWith(configTableStatus: ConfigTableStatus.success));
+        } catch (error) {
+          emit(
+            state.copyWith(
+              configTableStatus: ConfigTableStatus.failure,
+              errorMessage: error.toString(),
+            ),
+          );
+        }
       }
     }
   }
@@ -104,31 +106,29 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
       );
     }
 
-    if (event.type.typeName == null) {
-      return;
-    }
+    if (event.type.typeName == null) return;
 
     // check trong list cấu hình(sau khi update) đang lưu đã có kiểu này chưa
-    if (state.modifiedConfigs.containsKey(event.type.typeName)) {
-      emit(
-        state.copyWith(
-          configStatus: SetupInfoFieldConfigStatus.success,
-          currentFields: state.modifiedConfigs[event.type.typeName]!,
-        ),
-      );
-      return;
-    }
+    // if (state.modifiedConfigs.containsKey(event.type.typeName)) {
+    //   emit(
+    //     state.copyWith(
+    //       configStatus: SetupInfoFieldConfigStatus.success,
+    //       currentFields: state.modifiedConfigs[event.type.typeName]!,
+    //     ),
+    //   );
+    //   return;
+    // }
 
-    // check trong list cấu hình(nguyên bản lúc mới init) đang lưu đã có kiểu này chưa
-    if (state.originalConfigs.containsKey(event.type.typeName)) {
-      emit(
-        state.copyWith(
-          configStatus: SetupInfoFieldConfigStatus.success,
-          currentFields: state.originalConfigs[event.type.typeName]!,
-        ),
-      );
-      return;
-    }
+    // // check trong list cấu hình(nguyên bản lúc mới init) đang lưu đã có kiểu này chưa
+    // if (state.originalConfigs.containsKey(event.type.typeName)) {
+    //   emit(
+    //     state.copyWith(
+    //       configStatus: SetupInfoFieldConfigStatus.success,
+    //       currentFields: state.originalConfigs[event.type.typeName]!,
+    //     ),
+    //   );
+    //   return;
+    // }
     Either<Failure, EventDisplayConfigEntity> result;
     if (event.typeConfig == EventTypeConfig.LIVEVIEW) {
       result = await _detectRepository.getEventDisplayConfig(eventTypeName: event.type.typeName!);
@@ -204,6 +204,20 @@ class SetupInfoFieldBloc extends Bloc<SetupInfoFieldEvent, SetupInfoFieldState> 
     final updatedModifiedConfigs = Map<String, List<FieldConfigEntity>>.from(state.modifiedConfigs);
     if (state.selectedType?.typeName != null) {
       updatedModifiedConfigs[state.selectedType!.typeName!] = state.currentFields;
+    }
+
+    for (var e in updatedModifiedConfigs.entries) {
+      final fields = e.value;
+
+      if (fields.isEmpty) {
+        emit(
+          state.copyWith(
+            saveStatus: SetupInfoFieldStatus.failure,
+            saveErrorMessage: 'Cần chọn tối thiểu 1 trường thông tin',
+          ),
+        );
+        return;
+      }
     }
 
     // tìm các eventtype bị thay đổi (so sánh với original)

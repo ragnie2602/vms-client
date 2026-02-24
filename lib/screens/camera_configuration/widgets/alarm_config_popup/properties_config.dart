@@ -17,6 +17,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   );
   late final alarmSoundBloc = AlarmSoundBloc(context.read());
 
+  String? _aiBoxErrorMsg;
   AiBoxEntity? _selectedAiBox;
   AiBoxEntity? get selectedAiBox => _selectedAiBox;
   set selectedAiBox(AiBoxEntity? value) {
@@ -55,8 +56,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     aiBoxBloc.add(
       GetListAiBoxEvent(
         onSuccess: () {
-          //
-          if(aiBoxBloc.state is! AIBoxLoadedState) return;
+          if (aiBoxBloc.state is! AIBoxLoadedState) return;
 
           final listAiBox = (aiBoxBloc.state as AIBoxLoadedState).aiBoxes ?? [];
           if (selectedAiBox != null || listAiBox.isEmpty) return;
@@ -69,13 +69,13 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
 
           // Init full slot AI Box or offline AI Box
           if (selectedAiBox?.isFullSlot == true || selectedAiBox!.status != 1) {
-            selectedAiBox = listAiBox.firstWhereOrNull(
-              (e) => !e.isFullSlot && e.status == 1,
-            );
+            selectedAiBox = listAiBox.firstWhereOrNull((e) => !e.isFullSlot && e.status == 1);
           }
 
-          // Có giá trị thì update UI
-          if (selectedAiBox != null) setState(() {});
+          // selectedAiBox/suggestedAiBoxId --> null --> tìm 1 box thỏa mãn gần nhất trong list
+          // --> rỗng tiếp <=> full tải
+          if (selectedAiBox == null) _aiBoxErrorMsg = "Không còn kênh phân tích trống nào";
+          setState(() {});
         },
       ),
     );
@@ -169,9 +169,8 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   }
 
   Widget _buildAiBoxSelection() {
-    String? errorMsg;
     if (selectedAiBox != null && selectedAiBox!.isFullSlot) {
-      errorMsg = "Thiết bị này đã hết kênh phân tích, vui lòng chọn thiết bị khác";
+      _aiBoxErrorMsg = "Thiết bị này đã hết kênh phân tích, vui lòng chọn thiết bị khác";
       _triggerValidate(force: false);
     }
 
@@ -180,7 +179,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       initialValue: selectedAiBox,
       buildLabel: (data) => data!.dropDownLabel,
       onChanged: (value) => setState(() => selectedAiBox = value),
-      errorText: errorMsg,
+      errorText: _aiBoxErrorMsg,
       itemBuilder: Container(
         width: double.infinity,
         constraints: BoxConstraints(minHeight: 36),
@@ -218,11 +217,11 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                 ),
                 itemBuilder: (context, index) {
                   final item = state.aiBoxes![index];
-                  final bool isOffline = item.status != 1;
+                  bool isUnselected = item.status != 1 || item.isFullSlot;
 
                   return InkWell(
-                    onTap: isOffline ? null : () => Navigator.pop(context, item),
-                    mouseCursor: isOffline ? SystemMouseCursors.forbidden : null,
+                    onTap: isUnselected ? null : () => Navigator.pop(context, item),
+                    mouseCursor: isUnselected ? SystemMouseCursors.forbidden : null,
                     child: Container(
                       color: item.id == selectedAiBox?.id
                           ? Theme.of(context).highlightColor
@@ -235,7 +234,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                           14,
                           fontWeight: FontWeight.w400,
                           lineHeight: 20 / 14,
-                          color: isOffline ? AppColors.grey6F767E : Color(0xFF0F172A),
+                          color: isUnselected ? AppColors.grey6F767E : Color(0xFF0F172A),
                         ),
                       ),
                     ),
@@ -254,7 +253,10 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       hint: 'Vui lòng chọn âm thanh cảnh báo',
       initialValue: selectedSound,
       buildLabel: (data) => data!.name,
-      onChanged: (value) => setState(() => selectedSound = value),
+      onChanged: (value) => setState(() {
+        selectedSound = value;
+        _audioPlayer.stop();
+      }),
       errorText: _selectedSound == null ? 'Vui lòng chọn âm thanh cảnh báo' : null,
       itemBuilder: Container(
         width: double.infinity,
@@ -336,6 +338,8 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
           initialValue: widget.alarmConfig.alarmConditions.keepTimeThreshold?.toString(),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (value) {
+            if (value == '') return null; // Để trống <=> 10s nên không cần validate
+
             int? intValue = int.tryParse(value ?? '');
 
             if (intValue == null) return 'Thời gian không hợp lệ';
@@ -344,7 +348,9 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
             return null;
           },
           onChanged: (value) {
-            widget.alarmConfig.alarmConditions.keepTimeThreshold = int.tryParse(value);
+            widget.alarmConfig.alarmConditions.keepTimeThreshold = value.isEmpty
+                ? 10
+                : int.tryParse(value);
             _triggerValidate();
           },
           cursorWidth: 1.5,
