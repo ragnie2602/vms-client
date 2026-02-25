@@ -28,8 +28,7 @@ extension AiBoxStatusExtension on AiBoxStatus {
   }
 }
 
-AiBoxEntity aiBoxEntityFromJson(String str) =>
-    AiBoxEntity.fromJson(json.decode(str));
+AiBoxEntity aiBoxEntityFromJson(String str) => AiBoxEntity.fromJson(json.decode(str));
 
 String aiBoxEntityToJson(AiBoxEntity data) => json.encode(data.toJson());
 
@@ -48,9 +47,12 @@ class AiBoxEntity {
   String? note;
   String? publicAddress;
   String? localAddress;
+  int? roads;
+  int? roadUsed;
 
-  String get dropDownLabel => '$name ($numberCameraUsed/${maxCamera ?? '_'})';
-  bool get isFullSlot => (maxCamera ?? 9999999999999) <= (numberCameraUsed ?? 0);
+  /* Getters */
+  String get dropDownLabel => '$name (${roadUsed ?? '_'}/${roads ?? '_'})';
+  bool get isFullSlot => (roads ?? 9999999999999) <= (roadUsed ?? 0);
 
   AiBoxEntity({
     this.id,
@@ -67,6 +69,8 @@ class AiBoxEntity {
     this.note,
     this.publicAddress,
     this.localAddress,
+    this.roads,
+    this.roadUsed,
   });
 
   AiBoxEntity copyWith({
@@ -84,6 +88,8 @@ class AiBoxEntity {
     String? note,
     String? publicAddress,
     String? localAddress,
+    int? roads,
+    int? roadUsed,
   }) => AiBoxEntity(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -99,6 +105,8 @@ class AiBoxEntity {
     note: note ?? this.note,
     publicAddress: publicAddress ?? this.publicAddress,
     localAddress: localAddress ?? this.localAddress,
+    roads: roads ?? this.roads,
+    roadUsed: roadUsed ?? this.roadUsed,
   );
 
   factory AiBoxEntity.fromJson(Map<String, dynamic> json) => AiBoxEntity(
@@ -116,6 +124,8 @@ class AiBoxEntity {
     note: json["note"],
     publicAddress: json["publicAddress"],
     localAddress: json["localAddress"],
+    roads: json["roads"],
+    roadUsed: json["roadUsed"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -133,5 +143,7 @@ class AiBoxEntity {
     "note": note,
     "publicAddress": publicAddress,
     "localAddress": localAddress,
+    "roads": roads,
+    "roadUsed": roadUsed,
   };
 }

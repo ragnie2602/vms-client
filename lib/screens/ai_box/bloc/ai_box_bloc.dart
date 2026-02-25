@@ -76,12 +76,12 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     AddAiBoxEvent event,
     Emitter<AiBoxState> emit,
   ) async {
+    final currentState = state;
     emit(AiBoxLoadingState());
 
     final result = await aiBoxRepository.createAiBox(request: event.aiBox);
     result.fold(
       (failure) {
-        final currentState = state;
         emit(AiBoxAddFailState(errorMessage: failure.toString()));
         if (currentState is AIBoxLoadedState) {
           emit(currentState);

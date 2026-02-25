@@ -17,6 +17,9 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   );
   late final alarmSoundBloc = AlarmSoundBloc(context.read());
 
+  int? _savedAiBoxId;
+  int? _savedStatus;
+
   AiBoxEntity? _selectedAiBox;
   AiBoxEntity? get selectedAiBox => _selectedAiBox;
   set selectedAiBox(AiBoxEntity? value) {
@@ -48,34 +51,92 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     });
   }
 
+  String? _validateAiBox() {
+    String? _validateAndReturn(String? errorMsg) {
+      _triggerValidate(force: errorMsg != null ? false : null);
+      return errorMsg;
+    }
+
+    String? errorMsg = selectedAiBox == null ? "Vui lòng chọn thiết bị phân tích AI" : null;
+
+    // Lựa chọn chính là lựa chọn đã được lưu + đã bật cảnh báo --> skip validate
+    if (_savedAiBoxId != null &&
+        selectedAiBox != null &&
+        selectedAiBox!.id == _savedAiBoxId &&
+        _savedStatus == 1) {
+      return _validateAndReturn(errorMsg);
+    }
+
+    // Hết tải toàn bộ
+    if (aiBoxBloc.state is AIBoxLoadedState &&
+        (aiBoxBloc.state as AIBoxLoadedState).aiBoxes?.every(
+              (e) => e.isFullSlot || e.status != 1,
+            ) ==
+            true) {
+      errorMsg = "Không còn kênh phân tích trống nào";
+      _selectedAiBox = null;
+    }
+    // Lựa chọn hết tải
+    else if (selectedAiBox == null) {
+      errorMsg = "Vui lòng chọn thiết bị phân tích AI";
+    }
+    // Hết tải
+    else if (selectedAiBox?.isFullSlot == true) {
+      errorMsg = "Thiết bị này đã hết kênh phân tích, vui lòng chọn thiết bị khác";
+    }
+    // Offline
+    else if (selectedAiBox?.status != 1) {
+      errorMsg = "Thiết bị được chọn đang mất kết nối";
+    }
+
+    return _validateAndReturn(errorMsg);
+  }
+
+  void _autofillAiBox() {
+    if (aiBoxBloc.state is! AIBoxLoadedState) return;
+
+    final listAiBox = (aiBoxBloc.state as AIBoxLoadedState).aiBoxes ?? [];
+    if (selectedAiBox != null || listAiBox.isEmpty) return;
+
+    // 1. Ưu tiên suggested AI Box hoặc thằng đầu tiên
+    selectedAiBox = widget.alarmConfig.suggestedAiBoxId != null
+        ? listAiBox.firstWhere(
+            (e) => e.id == widget.alarmConfig.suggestedAiBoxId,
+            orElse: () => listAiBox.first,
+          )
+        : listAiBox.first;
+
+    // 1. Thằng sugggest/đầu tiên --> full slot/offline --> tìm thằng khác thỏa mãn
+    if (selectedAiBox?.isFullSlot == true || selectedAiBox!.status != 1) {
+      selectedAiBox = listAiBox.firstWhereOrNull((e) => !e.isFullSlot && e.status == 1);
+    }
+
+    setState(() {});
+  }
+
   @override
   void initState() {
+    _savedAiBoxId = widget.alarmConfig.aiBoxId;
+    _savedStatus = widget.alarmConfig.status;
     super.initState();
 
     aiBoxBloc.add(
       GetListAiBoxEvent(
         onSuccess: () {
-          //
-          if(aiBoxBloc.state is! AIBoxLoadedState) return;
+          if (aiBoxBloc.state is! AIBoxLoadedState) return;
 
           final listAiBox = (aiBoxBloc.state as AIBoxLoadedState).aiBoxes ?? [];
           if (selectedAiBox != null || listAiBox.isEmpty) return;
 
-          // Init suggested AI Box
-          selectedAiBox = listAiBox.firstWhere(
-            (e) => e.id == (widget.alarmConfig.aiBoxId ?? widget.alarmConfig.suggestedAiBoxId),
-            orElse: () => listAiBox.first,
-          );
-
-          // Init full slot AI Box or offline AI Box
-          if (selectedAiBox?.isFullSlot == true || selectedAiBox!.status != 1) {
-            selectedAiBox = listAiBox.firstWhereOrNull(
-              (e) => !e.isFullSlot && e.status == 1,
-            );
+          // Autofill data
+          // 1. Đã lưu lựa chọn aibox trước đó
+          if (widget.alarmConfig.aiBoxId != null) {
+            selectedAiBox = listAiBox.firstWhereOrNull((e) => e.id == widget.alarmConfig.aiBoxId);
+            setState(() {});
+            return;
           }
 
-          // Có giá trị thì update UI
-          if (selectedAiBox != null) setState(() {});
+          _autofillAiBox();
         },
       ),
     );
@@ -136,6 +197,13 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                   splashRadius: 0,
                   onChanged: (value) {
                     setState(() => widget.alarmConfig.status = value ? 1 : 0);
+
+                    // Bật thì validate or auto fill ai box
+                    if (value && selectedAiBox == null) {
+                      _autofillAiBox();
+                    } else if (value && selectedAiBox != null) {
+                      _validateAiBox();
+                    }
                   },
                 ),
               ),
@@ -169,18 +237,15 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   }
 
   Widget _buildAiBoxSelection() {
-    String? errorMsg;
-    if (selectedAiBox != null && selectedAiBox!.isFullSlot) {
-      errorMsg = "Thiết bị này đã hết kênh phân tích, vui lòng chọn thiết bị khác";
-      _triggerValidate(force: false);
-    }
+    // Case hết tải toàn bộ --> set selectedAiBox = null --> gọi trước return
+    final errorText = _validateAiBox();
 
     return _buildDropdown<AiBoxEntity?>(
       hint: 'Vui lòng chọn thiết bị phân tích AI',
       initialValue: selectedAiBox,
       buildLabel: (data) => data!.dropDownLabel,
       onChanged: (value) => setState(() => selectedAiBox = value),
-      errorText: errorMsg,
+      errorText: errorText,
       itemBuilder: Container(
         width: double.infinity,
         constraints: BoxConstraints(minHeight: 36),
@@ -218,11 +283,14 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                 ),
                 itemBuilder: (context, index) {
                   final item = state.aiBoxes![index];
-                  final bool isOffline = item.status != 1;
+                  bool isUnselected = item.status != 1 || item.isFullSlot;
+                  if (isUnselected && item.id == _savedAiBoxId && _savedStatus == 1) {
+                    isUnselected = false;
+                  }
 
                   return InkWell(
-                    onTap: isOffline ? null : () => Navigator.pop(context, item),
-                    mouseCursor: isOffline ? SystemMouseCursors.forbidden : null,
+                    onTap: isUnselected ? null : () => Navigator.pop(context, item),
+                    mouseCursor: isUnselected ? SystemMouseCursors.forbidden : null,
                     child: Container(
                       color: item.id == selectedAiBox?.id
                           ? Theme.of(context).highlightColor
@@ -235,7 +303,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
                           14,
                           fontWeight: FontWeight.w400,
                           lineHeight: 20 / 14,
-                          color: isOffline ? AppColors.grey6F767E : Color(0xFF0F172A),
+                          color: isUnselected ? AppColors.grey6F767E : Color(0xFF0F172A),
                         ),
                       ),
                     ),
@@ -254,7 +322,10 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       hint: 'Vui lòng chọn âm thanh cảnh báo',
       initialValue: selectedSound,
       buildLabel: (data) => data!.name,
-      onChanged: (value) => setState(() => selectedSound = value),
+      onChanged: (value) => setState(() {
+        selectedSound = value;
+        _audioPlayer.stop();
+      }),
       errorText: _selectedSound == null ? 'Vui lòng chọn âm thanh cảnh báo' : null,
       itemBuilder: Container(
         width: double.infinity,
@@ -336,6 +407,8 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
           initialValue: widget.alarmConfig.alarmConditions.keepTimeThreshold?.toString(),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (value) {
+            if (value == '') return null; // Để trống <=> 10s nên không cần validate
+
             int? intValue = int.tryParse(value ?? '');
 
             if (intValue == null) return 'Thời gian không hợp lệ';
@@ -344,7 +417,9 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
             return null;
           },
           onChanged: (value) {
-            widget.alarmConfig.alarmConditions.keepTimeThreshold = int.tryParse(value);
+            widget.alarmConfig.alarmConditions.keepTimeThreshold = value.isEmpty
+                ? 10
+                : int.tryParse(value);
             _triggerValidate();
           },
           cursorWidth: 1.5,
@@ -474,7 +549,8 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
         bool showHint = initialValue == null || initialValue == '';
 
         return PopupMenuButton<T>(
-          offset: Offset(0, 41.5),
+          offset: Offset(0, 2),
+          position: PopupMenuPosition.under,
           tooltip: '',
           menuPadding: EdgeInsets.zero,
           constraints: BoxConstraints(
@@ -491,6 +567,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
           shadowColor: Color.fromRGBO(147, 152, 154, 0.2),
           color: Colors.white,
           initialValue: initialValue,
+          clipBehavior: Clip.antiAlias,
           itemBuilder: (context) => [
             // Fix cứng
             if (items != null) ...[
@@ -523,8 +600,8 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
             else if (itemBuilder != null)
               PopupMenuItem(padding: EdgeInsets.zero, enabled: false, child: itemBuilder),
           ],
-          child: SizedBox(
-            height: 40,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: 40),
             child: InputDecorator(
               decoration: InputDecoration(
                 isDense: true,
@@ -555,17 +632,18 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
               ),
               child: Text(
                 showHint ? hint ?? '' : buildLabel?.call(initialValue) ?? initialValue.toString(),
+                maxLines: 3,
                 style: showHint
                     ? AppTypography.style(
-                        12.5,
+                        13,
                         fontWeight: FontWeight.w400,
-                        lineHeight: 20 / 12.5,
+                        lineHeight: 20 / 13,
                         color: AppColors.grey92929D,
                       )
                     : AppTypography.style(
-                        14,
+                        13.5,
                         fontWeight: FontWeight.w400,
-                        lineHeight: 20 / 14,
+                        lineHeight: 20 / 13.5,
                         color: Color(0xFF0F172A),
                       ),
               ),

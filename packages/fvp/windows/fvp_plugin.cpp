@@ -204,100 +204,122 @@ void FvpPlugin::HandleMethodCall(
     auto it_t = args.find(flutter::EncodableValue("timeout"));
     if (it_t != args.end() && !it_t->second.IsNull()) timeoutMs = (int)it_t->second.LongValue();
 
-    clog << "[GetThumbnail] Start: " << url << " | Seek to: " << from << "ms" << endl;
+    clog << "[GetThumbnail] Start: " << url << " | Seek: " << from << "ms" << endl;
 
+    // 1. Sử dụng một cấu trúc bọc (Wrapper) để quản lý Result và Flag an toàn luồng
+    struct SafeContext {
+        std::mutex mtx;
+        std::condition_variable cv;
+        std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result;
+        bool isFinished = false;
+
+        SafeContext(std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> res)
+            : result(std::move(res)) {}
+
+        // Hàm này đảm bảo chỉ gửi kết quả DUY NHẤT một lần
+        void sendOnce(std::function<void(flutter::MethodResult<flutter::EncodableValue>*)> callback) {
+            std::lock_guard<std::mutex> lock(mtx);
+            if (!isFinished && result) {
+                callback(result.get());
+                result = nullptr; // Giải phóng ngay lập tức để tránh gọi lại
+                isFinished = true;
+                cv.notify_all();
+            }
+        }
+    };
+
+    auto ctx = std::make_shared<SafeContext>(std::move(result));
     auto player = std::make_shared<Player>();
+
+    // Cấu hình player
+    player->setProperty("rtsp_transport", "tcp");
     player->setProperty("avformat.probesize", "65536");
     player->setProperty("avformat.analyzeduration", "100000");
     player->setDecoders(MediaType::Video, {"auto"});
     player->setProperty("videodecoder.threads", "1");
-
-    struct Context {
-        std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result;
-        bool finished = false;
-        std::mutex mtx;
-        std::condition_variable cv;
-    };
-
-    auto ctx = std::make_shared<Context>();
-    ctx->result = std::move(result);
-
-    std::weak_ptr<Player> weakPlayer = player;
-    std::weak_ptr<Context> weakCtx = ctx;
-
+    player->onSync([] { return DBL_MAX; });
     player->setMedia(url.c_str());
     player->setActiveTracks(MediaType::Audio, {});
-    player->onSync([] { return DBL_MAX; });
+    player->setActiveTracks(MediaType::Subtitle, {});
 
-    // 2. Status Callback
+    std::weak_ptr<Player> weakPlayer = player;
+    std::weak_ptr<SafeContext> weakCtx = ctx;
+
+    // 2. Status Callback: Xử lý lỗi media
     player->onMediaStatus([weakCtx, weakPlayer](MediaStatus pre, MediaStatus cur) {
-        auto ctx = weakCtx.lock();
-        auto player = weakPlayer.lock();
-        if (!ctx || !player) return false;
+        auto c = weakCtx.lock();
+        if (!c || c->isFinished) return true;
 
         if (cur & MediaStatus::Invalid) {
-            std::lock_guard<std::mutex> lock(ctx->mtx);
-            if (!ctx->finished) {
-                clog << "[GetThumbnail] Error: Media Status Invalid" << endl;
-                ctx->finished = true;
-                ctx->result->Error("MEDIA_ERROR", "Invalid media source");
-                player->set(State::Stopped);
-                ctx->cv.notify_one();
-            }
+            c->sendOnce([](auto* res) {
+                res->Error("MEDIA_ERROR", "Invalid media source or stream");
+            });
+            if (auto p = weakPlayer.lock()) p->set(State::Stopped);
         }
         return true;
     });
 
-    // 3. Frame Callback
+    // 3. Frame Callback: Lấy frame và lưu
     player->onFrame<VideoFrame>([weakCtx, weakPlayer, reqWidth, reqHeight, savePath](VideoFrame& v, int) {
-        auto ctx = weakCtx.lock();
-        auto player = weakPlayer.lock();
-        if (!ctx || !player) return 0;
+        auto c = weakCtx.lock();
+        if (!c || c->isFinished || !v || v.timestamp() == TimestampEOS) return 0;
 
-        // Tránh xử lý nếu đã xong hoặc frame rỗng
-        if (ctx->finished || !v || v.timestamp() == TimestampEOS) return 0;
-
-        std::unique_lock<std::mutex> lock(ctx->mtx);
-        if (ctx->finished) return 0;
-
-        clog << "[GetThumbnail] Frame received at TS: " << v.timestamp() << endl;
-
+        // Chuyển đổi format và lưu
         auto frame = v.to(PixelFormat::RGBA, reqWidth, reqHeight);
         if (frame) {
-            ctx->finished = true;
-            if (frame.save(savePath.c_str())) {
-                clog << "[GetThumbnail] Success: Saved to " << savePath << endl;
-                ctx->result->Success(flutter::EncodableValue(savePath));
-            } else {
-                clog << "[GetThumbnail] Failed: Save error" << endl;
-                ctx->result->Error("SAVE_ERROR", "Could not save frame");
-            }
-            player->set(State::Stopped);
-            ctx->cv.notify_one();
+            bool success = frame.save(savePath.c_str());
+            c->sendOnce([&](auto* res) {
+                if (success) {
+                    clog << "[GetThumbnail] Success saved: " << savePath << endl;
+                    res->Success(flutter::EncodableValue(savePath));
+                } else {
+                    res->Error("SAVE_ERROR", "Failed to write image file");
+                }
+            });
+
+            // Sau khi lấy được frame, dừng player
+            if (auto p = weakPlayer.lock()) p->set(State::Stopped);
         }
         return 0;
     });
 
-    // 4. Timeout & Lifecycle Thread
+    // 4. Luồng quản lý Timeout và dọn dẹp (Lifecycle Thread)
     std::thread([ctx, player, timeoutMs]() {
         {
             std::unique_lock<std::mutex> lock(ctx->mtx);
-            if (!ctx->cv.wait_for(lock, std::chrono::milliseconds(timeoutMs), [&] { return ctx->finished; })) {
-                if (!ctx->finished) {
-                    clog << "[GetThumbnail] Error: Timeout reached (" << timeoutMs << "ms)" << endl;
-                    ctx->finished = true;
-                    ctx->result->Error("TIMEOUT", "Get thumbnail timeout");
-                }
+            // Đợi cho đến khi finished hoặc hết thời gian
+            ctx->cv.wait_for(lock, std::chrono::milliseconds(timeoutMs), [&] { return ctx->isFinished; });
+
+            if (!ctx->isFinished) {
+                clog << "[GetThumbnail] Timeout!" << endl;
+                ctx->sendOnce([](auto* res) {
+                    res->Error("TIMEOUT", "Get thumbnail timed out");
+                });
             }
         }
 
-        clog << "[GetThumbnail] Cleaning up player..." << endl;
+        // Đảm bảo player dừng hẳn trước khi luồng này kết thúc
+        // Việc giữ 'player' (shared_ptr) ở đây giúp object không bị hủy quá sớm khi đang dọn dẹp
         player->set(State::Stopped);
-        // player shared_ptr tự hủy khi thread kết thúc
+        player->waitFor(State::Stopped);
+        clog << "[GetThumbnail] Player cleaned up safely.\n" << endl;
     }).detach();
 
-    // Bắt đầu luồng
-    player->prepare(from);
+    // Kích hoạt tiến trình
+    player->prepare(from, [weakCtx, weakPlayer](int64_t pos, bool*) {
+        auto c = weakCtx.lock();
+        auto p = weakPlayer.lock();
+        if (!c || !p) return false;
+
+        // Kiểm tra nếu không có luồng video
+        if (pos < 0 || p->mediaInfo().video.empty()) {
+            c->sendOnce([](auto* res) {
+                res->Error("MEDIA_ERROR", "No video track found or invalid source");
+            });
+            p->set(State::Stopped);
+        }
+        return true;
+    });
     player->set(State::Playing);
 } else {
     result->NotImplemented();
