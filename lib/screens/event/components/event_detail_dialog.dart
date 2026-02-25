@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -52,6 +53,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
   final ScrollController _controlsScrollController = ScrollController();
   final ValueNotifier<double?> _downloadProgress = ValueNotifier(null);
+  int _errorCause = 0;
   final ValueNotifier<PlayerStatus> _playerStatus = ValueNotifier(PlayerStatus.playing);
   final ValueNotifier<double> _speed = ValueNotifier(1.0);
   final ValueNotifier<double> _volume = ValueNotifier(1.0);
@@ -62,6 +64,8 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   final TransformationController _imageTransformController = TransformationController();
   Size _imageViewportSize = Size.zero;
   bool _showControls = true;
+
+  StreamSubscription<InternetConnectionStatus>? internetSubscription;
 
   @override
   void initState() {
@@ -76,6 +80,14 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
     tabController = TabController(length: 2, vsync: this);
     tabController.addListener(() => _tabIdx.value = tabController.index);
+
+    internetSubscription = InternetConnectionChecker.instance.onStatusChange.listen((status) {
+      if (status == InternetConnectionStatus.connected) {
+        setState(() => _errorCause = _errorCause & ~1);
+      } else {
+        setState(() => _errorCause = _errorCause | 1);
+      }
+    });
   }
 
   @override
@@ -736,43 +748,17 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   }
 
   Widget _videoTab(EventEntity event) {
-    return BlocConsumer<PlaybackBloc, PlaybackState>(
+    return BlocBuilder<PlaybackBloc, PlaybackState>(
       buildWhen: (pre, cur) {
         if (pre is PlaybackSuccess && cur is PlaybackSuccess) {
           return pre.playbacks != cur.playbacks || pre.initialIndex != cur.initialIndex;
         }
         return true;
       },
-      builder: (context, state) => stateBuilder<PlaybackSuccess>(
-        state,
-        onReload: () {
-          if (event.camera?.id != null && rewindTime != null) {
-            context.read<PlaybackBloc>().add(GetVideoPlaybacks(event.camera!.id, rewindTime!));
-          }
-        },
-        child: (state) => Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Colors.black),
-          clipBehavior: Clip.antiAlias,
-          child: PlaybackPlayer(
-            enableZoom: true,
-            playlist: state.playbacks.toList(),
-            name: event.camera?.name ?? '',
-            initialIndex: state.initialIndex,
-            controller: playerController,
-            onStatusChanged: (status) {
-              _playerStatus.value = status;
-            },
-            onInitializedValues: ({required double volume, required double speed}) {
-              _volume.value = volume;
-              _speed.value = speed;
-            },
-            controlsBuilder: (fullscreen, playerState) =>
-                fullscreen ? Container() : _buildVideoControls(fullscreen, playerState),
-          ),
-        ),
-      ),
-      listener: (context, state) {
-        if (rewindTime != null && state is PlaybackSuccess) {
+      builder: (context, state) {
+        if (state is! PlaybackSuccess) return SizedBox.shrink();
+
+        if (rewindTime != null) {
           final rewindTimeCopy = rewindTime!;
           final idx = state.playbacks.indexWhere(
             (e) => e.startTime.isBefore(rewindTimeCopy) && e.endTime.isAfter(rewindTimeCopy),
@@ -783,9 +769,48 @@ class _EventDetailDialogState extends State<EventDetailDialog>
             playerController.waitForAttached.future.then((_) {
               playerController.jumpToDate?.call(rewindTimeCopy, dateIndex: idx);
             });
+          } else {
+            _errorCause = _errorCause | 2;
           }
           rewindTime = null;
+        } else {
+          _errorCause = _errorCause | 2;
         }
+
+        return Container(
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Colors.black),
+          clipBehavior: Clip.antiAlias,
+          child: _errorCause != 0
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(AppAssets.icPlaybackError, width: 40, height: 40),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Dữ liệu video không khả dụng do ${_errorTranslator()}',
+                        style: AppTypography.style(14, color: Colors.white.withAlpha(182)),
+                      ),
+                    ],
+                  ),
+                )
+              : PlaybackPlayer(
+                  enableZoom: true,
+                  playlist: state.playbacks.toList(),
+                  name: event.camera?.name ?? '',
+                  initialIndex: state.initialIndex,
+                  controller: playerController,
+                  onStatusChanged: (status) {
+                    _playerStatus.value = status;
+                  },
+                  onInitializedValues: ({required double volume, required double speed}) {
+                    _volume.value = volume;
+                    _speed.value = speed;
+                  },
+                  controlsBuilder: (fullscreen, playerState) =>
+                      fullscreen ? Container() : _buildVideoControls(fullscreen, playerState),
+                ),
+        );
       },
     );
   }
@@ -996,6 +1021,16 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     );
 
     if (mounted) context.read<EventBloc>().add(SaveVideo(targetPlayback.urlPlayback, path));
+  }
+
+  String _errorTranslator() {
+    if (_errorCause & 1 == 1) {
+      return 'mất kết nối đến máy chủ lưu trữ';
+    }
+    if (_errorCause & 2 == 2) {
+      return 'không tìm thấy video playback';
+    }
+    return 'lỗi không xác định';
   }
 
   void _handleTimeChanged(DateTime currentTime, [bool isUserSeeking = false]) {
