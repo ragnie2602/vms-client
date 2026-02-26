@@ -105,7 +105,11 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                       }),
                       maximumTime: time.endTime,
                       // minimumTime: time.startTime,
-                      needValidate: needValidate,
+                      validator: () {
+                        if (!needValidate) return null;
+                        if (time.startTime == null) return 'Vui lòng chọn thời gian bắt đầu';
+                        return null;
+                      },
                     ),
                     _columnTime(
                       'Thời gian kết thúc',
@@ -116,7 +120,21 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                       }),
                       // maximumTime: time.endTime,
                       minimumTime: time.startTime,
-                      needValidate: needValidate,
+                      validator: () {
+                        if (!needValidate) return null;
+
+                        if (time.endTime == null) return 'Vui lòng chọn thời gian kết thúc';
+                        if (time.endTime != null &&
+                            time.startTime != null &&
+                            DateFormat("HH:mm")
+                                    .parse(time.endTime!)
+                                    .compareTo(DateFormat("HH:mm").parse(time.startTime!)) <=
+                                0) {
+                          return 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu';
+                        }
+
+                        return null;
+                      },
                     ),
                     Flexible(
                       child: _columnWeekday(widget.alarmConfig.times[index].days, (days) {
@@ -148,10 +166,9 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
     Function(String) onChanged, {
     String? minimumTime,
     String? maximumTime,
-    bool? needValidate,
+    String? Function()? validator,
   }) {
-    String? errorMessage;
-    if (needValidate == true && initialTime == null) errorMessage = 'Vui lòng chọn thời gian';
+    String? errorMessage = validator?.call();
     final columnWidth = 140.0;
 
     return Column(
@@ -328,7 +345,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
           ),
         ),
         Container(
-          padding: EdgeInsets.only(top: 2, bottom: errorMessage != null ? 6 : 0),
+          padding: EdgeInsets.only(top: 2, bottom: errorMessage != null ? 6 : 0, left: 1),
           width: columnWidth,
           child: Text(
             errorMessage ?? '',
@@ -347,7 +364,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
 
   Widget _columnWeekday(List<int> selectedDays, Function(List<int>) onChanged, bool needValidate) {
     String? errorMessage;
-    if (needValidate && selectedDays.isEmpty) errorMessage = 'Vui lòng chọn ngày áp dụng';
+    if (needValidate && selectedDays.isEmpty) errorMessage = 'Vui lòng chọn ít nhất 1 ngày áp dụng';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -437,6 +454,8 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
                   } else {
                     widget.alarmConfig.times.removeAt(index);
                   }
+
+                  _triggerValidate();
                 });
               },
               child: Container(

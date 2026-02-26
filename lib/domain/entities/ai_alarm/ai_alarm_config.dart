@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import 'al_alarm_enums.dart';
 export 'al_alarm_enums.dart';
 
@@ -82,7 +84,12 @@ class TimesConfig {
   }
 
   bool isEmpty() => days.isEmpty && startTime == null && endTime == null;
-  bool isValid() => isEmpty() || (days.isNotEmpty && startTime != null && endTime != null);
+  bool isValid() =>
+      isEmpty() ||
+      (days.isNotEmpty &&
+          startTime != null &&
+          endTime != null &&
+          DateFormat("HH:mm").parse(endTime!).compareTo(DateFormat("HH:mm").parse(startTime!)) > 0);
 }
 
 class AIAlarmConfig {
