@@ -163,7 +163,6 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
   late DateTime _focusedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
-  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOn;
 
   @override
   void initState() {
@@ -270,11 +269,13 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
   }
 
   String _buildRangeLabel() {
-    if (_rangeStart == null && _rangeEnd == null) return 'Ngày bắt đầu – Ngày kết thúc';
-    if (_rangeStart != null && _rangeEnd == null) {
-      return '${_rangeStart!.format('d MMM yyyy', locale: 'vi')} – ...';
+    if (_rangeStart == null && _rangeEnd == null) {
+      return 'Ngày bắt đầu - Ngày kết thúc';
     }
-    return '${_rangeStart!.format('d MMM yyyy', locale: 'vi')} – ${_rangeEnd!.format('d MMM yyyy', locale: 'vi')}';
+    if (_rangeStart != null && _rangeEnd == null) {
+      return '${_rangeStart!.format('d MMM yyyy', locale: 'vi')} - ...';
+    }
+    return '${_rangeStart!.format('d MMM yyyy', locale: 'vi')} - ${_rangeEnd!.format('d MMM yyyy', locale: 'vi')}';
   }
 
   Widget _buildCalendar() {
@@ -287,14 +288,22 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
       locale: 'vi',
       rangeStartDay: _rangeStart,
       rangeEndDay: _rangeEnd,
-      rangeSelectionMode: _rangeSelectionMode,
-      onRangeSelected: (start, end, focusedDay) {
-        setState(() {
-          _focusedDay = focusedDay;
-          _rangeStart = start;
-          _rangeEnd = end;
-          _rangeSelectionMode = RangeSelectionMode.toggledOn;
-        });
+      onDaySelected: (selectedDay, focusedDay) {
+        if (_rangeEnd != null) {
+          setState(() {
+            _rangeStart = selectedDay;
+            _rangeEnd = null;
+          });
+        } else {
+          setState(() {
+            if (selectedDay.isBefore(_rangeStart ?? selectedDay)) {
+              _rangeEnd = _rangeStart;
+              _rangeStart = selectedDay;
+            } else {
+              _rangeEnd = selectedDay;
+            }
+          });
+        }
       },
       onPageChanged: (focusedDay) {
         _focusedDay = focusedDay;

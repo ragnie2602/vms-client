@@ -24,9 +24,6 @@ import 'package:vms_flutter_client/screens/event/components/setup_info_field_dia
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 class EventScreen extends StatefulWidget {
