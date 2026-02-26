@@ -13,7 +13,9 @@ class _CustomTabBarState extends State<_CustomTabBar> {
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(() => setState(() {}));
+    widget.controller.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override

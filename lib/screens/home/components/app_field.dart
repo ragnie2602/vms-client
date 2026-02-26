@@ -79,7 +79,7 @@ class _AppFieldState extends State<AppField> {
                         TextSpan(
                           text: ' *',
                           style: AppTypography.style(
-                            20,
+                            14,
                             fontWeight: FontWeight.w500,
                             color: AppColors.redFF0004,
                           ),
@@ -125,7 +125,7 @@ class _AppFieldState extends State<AppField> {
                 Expanded(
                   child: SizedBox(
                     // Chỉ set height cố định khi maxLines = 1, còn lại để tự động
-                    height: widget.maxLines == 1 ? 41 : null,
+                    // height: widget.maxLines == 1 ? 41 : null,
                     child: TextFormField(
                       controller: widget.controller,
                       obscureText: widget.obscureText,
@@ -159,7 +159,7 @@ class _AppFieldState extends State<AppField> {
                         errorMaxLines: 1,
                         errorStyle: AppTypography.style(0, lineHeight: 0),
                         errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(1),
+                          borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
                             color: _errorText == null
                                 ? AppColors.greyE2E8F0
@@ -169,7 +169,7 @@ class _AppFieldState extends State<AppField> {
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(
-                            widget.borderRadius ?? 1,
+                            widget.borderRadius ?? 8,
                           ),
                           borderSide: BorderSide(
                             color: _errorText == null
@@ -184,7 +184,7 @@ class _AppFieldState extends State<AppField> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(
-                            widget.borderRadius ?? 1,
+                            widget.borderRadius ?? 8,
                           ),
                           borderSide: BorderSide(
                             color: AppColors.greyE2E8F0,
@@ -193,7 +193,7 @@ class _AppFieldState extends State<AppField> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(
-                            widget.borderRadius ?? 1,
+                            widget.borderRadius ?? 8,
                           ),
                           borderSide: BorderSide(
                             color: AppColors.greyE2E8F0,
@@ -202,7 +202,7 @@ class _AppFieldState extends State<AppField> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(
-                            widget.borderRadius ?? 1,
+                            widget.borderRadius ?? 8,
                           ),
                           borderSide: BorderSide(
                             color: theme.colorScheme.primary,

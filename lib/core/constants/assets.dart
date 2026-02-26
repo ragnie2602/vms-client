@@ -197,5 +197,6 @@ class AppAssets {
   static const icEventType = '$_svgPath/event_type.svg';
   static const icObjectName = '$_svgPath/object_name.svg';
   static const icObjectType = '$_svgPath/object_type.svg';
+  static const icPlaybackError = '$_svgPath/playback_error.svg';
   static const icRefresh = '$_svgPath/refresh.svg';
 }
