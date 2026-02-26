@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/event_constants.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
@@ -90,7 +91,13 @@ class _EventScreenState extends State<EventScreen> {
                         presetHour = null;
                       }
                     }),
-                    padding: EdgeInsets.only(bottom: 12, left: 16, right: 12, top: 12),
+                    padding: EdgeInsets.only(bottom: 16, left: 16, right: 12, top: 16),
+                    style: AppTypography.style(
+                      14,
+                      color: AppColors.black,
+                      fontWeight: FontWeight.w400,
+                      lineHeight: 17 / 14,
+                    ),
                   ),
                 ),
                 SizedBox(width: 16),
@@ -351,19 +358,12 @@ class _EventScreenState extends State<EventScreen> {
                             type: ToastificationType.info,
                           );
                         } else if (state is ExportEventSuccess) {
-                          Toastification().show(
+                          ToastUtil.toastSuccess(
                             context: context,
                             title: Text('Xuất file thành công: ${state.filePath}'),
-                            autoCloseDuration: const Duration(seconds: 3),
-                            type: ToastificationType.success,
                           );
                         } else if (state is ExportEventFailure) {
-                          Toastification().show(
-                            context: context,
-                            title: Text(state.message),
-                            autoCloseDuration: const Duration(seconds: 3),
-                            type: ToastificationType.error,
-                          );
+                          ToastUtil.toastFail(context: context, title: Text(state.message));
                         }
                       },
                       child: BlocBuilder<EventBloc, EventState>(

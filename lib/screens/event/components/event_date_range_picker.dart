@@ -13,6 +13,7 @@ class EventDateRangePicker extends StatefulWidget {
   final void Function(DateTimeRange?)? onChanged;
   final EdgeInsetsGeometry? padding;
   final bool isDense;
+  final TextStyle? style;
 
   const EventDateRangePicker({
     super.key,
@@ -22,6 +23,7 @@ class EventDateRangePicker extends StatefulWidget {
     this.onChanged,
     this.padding,
     this.isDense = false,
+    this.style,
   });
 
   @override
@@ -98,6 +100,9 @@ class EventDateRangePickerState extends State<EventDateRangePicker> {
           keyboardType: TextInputType.none,
           onTap: _showDateRangePicker,
           readOnly: true,
+          style:
+              widget.style ??
+              AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
         ),
       ],
     );

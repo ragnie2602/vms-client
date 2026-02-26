@@ -132,38 +132,11 @@ class _EventMultiFilterDropdownState<T> extends State<EventMultiFilterDropdown<T
     }
     if (_selectedValues!.isEmpty) return Text('');
 
-    return Row(
-      spacing: 8,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.greyDFE4EA),
-            borderRadius: BorderRadius.circular(6),
-            color: const Color.fromARGB(255, 215, 216, 220),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 6),
-          child: Row(
-            children: [
-              InkWell(
-                onTap: () => setState(() {
-                  _selectedValues!.removeAt(0);
-                  widget.onChanged(_selectedValues!);
-                }),
-                child: SvgPicture.asset(
-                  AppAssets.icClose,
-                  colorFilter: ColorFilter.mode(AppColors.grey9CA3AF, BlendMode.srcIn),
-                  height: 16,
-                  width: 16,
-                ),
-              ),
-              Text(
-                '${_selectedValues![0]}',
-                style: AppTypography.style(14, fontWeight: FontWeight.w400),
-              ),
-            ],
-          ),
-        ),
-        if (_selectedValues!.length > 1)
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        spacing: 8,
+        children: [
           Container(
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.greyDFE4EA),
@@ -171,12 +144,42 @@ class _EventMultiFilterDropdownState<T> extends State<EventMultiFilterDropdown<T
               color: const Color.fromARGB(255, 215, 216, 220),
             ),
             padding: EdgeInsets.symmetric(horizontal: 5, vertical: 6),
-            child: Text(
-              '+${_selectedValues!.length - 1}',
-              style: AppTypography.style(14, fontWeight: FontWeight.w400),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () => setState(() {
+                    _selectedValues!.removeAt(0);
+                    widget.onChanged(_selectedValues!);
+                  }),
+                  child: SvgPicture.asset(
+                    AppAssets.icClose,
+                    colorFilter: ColorFilter.mode(AppColors.grey9CA3AF, BlendMode.srcIn),
+                    height: 16,
+                    width: 16,
+                  ),
+                ),
+                Text(
+                  '${_selectedValues![0]}',
+                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                ),
+              ],
             ),
           ),
-      ],
+          if (_selectedValues!.length > 1)
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.greyDFE4EA),
+                borderRadius: BorderRadius.circular(6),
+                color: const Color.fromARGB(255, 215, 216, 220),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 6),
+              child: Text(
+                '+${_selectedValues!.length - 1}',
+                style: AppTypography.style(14, fontWeight: FontWeight.w400),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
