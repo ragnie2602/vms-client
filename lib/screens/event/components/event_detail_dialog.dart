@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
@@ -13,8 +16,10 @@ import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
+import 'package:vms_flutter_client/screens/event/components/volume_slider.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
+import 'package:vms_flutter_client/screens/shared/player/components/fullscreen_portal.dart';
 import 'package:vms_flutter_client/screens/shared/player/sources.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
@@ -42,15 +47,25 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   late TabController tabController;
   final ValueNotifier<int> _tabIdx = ValueNotifier(0);
 
+  DateTime? endTime;
   bool imageMode = true;
   DateTime? rewindTime;
-  DateTime? endTime;
 
-  final ValueNotifier<PlayerStatus> _playerStatus = ValueNotifier(PlayerStatus.playing);
-  final ValueNotifier<double> _volume = ValueNotifier(1.0);
-  final ValueNotifier<double> _speed = ValueNotifier(1.0);
+  final ScrollController _controlsScrollController = ScrollController();
   final ValueNotifier<double?> _downloadProgress = ValueNotifier(null);
+  int _errorCause = 0;
+  final ValueNotifier<PlayerStatus> _playerStatus = ValueNotifier(PlayerStatus.playing);
+  final ValueNotifier<double> _speed = ValueNotifier(1.0);
+  final ValueNotifier<double> _volume = ValueNotifier(1.0);
+
+  Timer? _autoHideControlsTimer;
   DateTime? currentTime;
+  final GlobalKey<FullscreenPortalState> _fullscreenKey = GlobalKey();
+  final TransformationController _imageTransformController = TransformationController();
+  Size _imageViewportSize = Size.zero;
+  bool _showControls = true;
+
+  StreamSubscription<InternetConnectionStatus>? internetSubscription;
 
   @override
   void initState() {
@@ -65,6 +80,14 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
     tabController = TabController(length: 2, vsync: this);
     tabController.addListener(() => _tabIdx.value = tabController.index);
+
+    internetSubscription = InternetConnectionChecker.instance.onStatusChange.listen((status) {
+      if (status == InternetConnectionStatus.connected) {
+        setState(() => _errorCause = _errorCause & ~1);
+      } else {
+        setState(() => _errorCause = _errorCause | 1);
+      }
+    });
   }
 
   @override
@@ -130,9 +153,33 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                 child: Center(
                                   child: AspectRatio(
                                     aspectRatio: 16 / 9,
-                                    child: TabBarView(
-                                      controller: tabController,
-                                      children: [_imageTab(event), _videoTab(event)],
+                                    child: MouseRegion(
+                                      onEnter: (_) {
+                                        _autoHideControlsTimer?.cancel();
+                                        if (!_showControls && mounted) {
+                                          setState(() => _showControls = true);
+                                        }
+                                      },
+                                      onExit: (_) {
+                                        _autoHideControlsTimer?.cancel();
+                                        _autoHideControlsTimer = Timer(
+                                          const Duration(seconds: 1),
+                                          () {
+                                            if (!mounted || !_showControls) return;
+                                            setState(() => _showControls = false);
+                                          },
+                                        );
+                                      },
+                                      onHover: (_) {
+                                        _autoHideControlsTimer?.cancel();
+                                        if (!_showControls && mounted) {
+                                          setState(() => _showControls = true);
+                                        }
+                                      },
+                                      child: TabBarView(
+                                        controller: tabController,
+                                        children: [_imageTab(event), _videoTab(event)],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -231,101 +278,123 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                         flex: 374,
                         child: Container(
                           decoration: BoxDecoration(color: AppColors.greyAthens),
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                event.eventName ?? '',
-                                style: AppTypography.style(16, fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: 18),
-                              CustomTable(
-                                columnSpacing: 10,
-                                data: CustomTableData(
-                                  columnFlexes: [0, 1, 1],
-                                  data: [
-                                    [
-                                      SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
-                                      Text(
-                                        'Thời gian',
-                                        style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                      ),
-                                      Text(
-                                        DateFormat('HH:mm dd/MM/yyyy').format(
-                                          DateTime.fromMillisecondsSinceEpoch(
-                                            event.timeEvent * 1000,
-                                          ),
-                                        ),
-                                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                      ),
-                                    ],
-                                    [
-                                      SvgPicture.asset(AppAssets.icVideoOn, height: 20),
-                                      Text(
-                                        'Tên camera',
-                                        style: AppTypography.style(13, fontWeight: FontWeight.w500),
-                                      ),
-                                      Text(
-                                        event.camera?.name ?? '',
-                                        style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                defaultVerticalAlignment: CrossAxisAlignment.center,
-                                horizontalAlignments: [
-                                  CrossAxisAlignment.start,
-                                  CrossAxisAlignment.start,
-                                  CrossAxisAlignment.end,
-                                ],
-                                rowSpacing: 18,
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Ghi chú:',
-                                style: AppTypography.style(14, fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(height: 12),
-                              Expanded(
-                                child: TextField(
-                                  controller: descriptionController,
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
-                                      borderSide: BorderSide(color: AppColors.greyE2E8F0),
-                                    ),
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 18,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
-                                      borderSide: BorderSide(color: AppColors.greyE2E8F0),
-                                    ),
-                                    fillColor: AppColors.white,
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(3),
-                                      borderSide: BorderSide(color: AppColors.secondary),
-                                    ),
-                                    focusColor: AppColors.white,
-                                    hintStyle: AppTypography.style(
-                                      14,
-                                      color: AppColors.grey92929D,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    hintText: 'Nhập nội dung ghi chú',
-                                    hoverColor: AppColors.white,
+                          height: double.infinity,
+                          padding: const EdgeInsets.only(left: 24, right: 12, top: 24, bottom: 16),
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    event.eventName ?? '',
+                                    style: AppTypography.style(16, fontWeight: FontWeight.w600),
                                   ),
-                                  minLines: 3,
-                                  maxLines: 100,
-                                  textAlignVertical: TextAlignVertical.top,
-                                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                                ),
+                                  const SizedBox(height: 18),
+                                  CustomTable(
+                                    columnSpacing: 10,
+                                    data: CustomTableData(
+                                      columnFlexes: [0, 1, 1],
+                                      data: [
+                                        [
+                                          SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
+                                          Text(
+                                            'Thời gian',
+                                            style: AppTypography.style(
+                                              13,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            DateFormat('HH:mm dd/MM/yyyy').format(
+                                              DateTime.fromMillisecondsSinceEpoch(
+                                                event.timeEvent * 1000,
+                                              ),
+                                            ),
+                                            overflow: TextOverflow.visible,
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ],
+                                        [
+                                          SvgPicture.asset(AppAssets.icVideoOn, height: 20),
+                                          Text(
+                                            'Tên camera',
+                                            style: AppTypography.style(
+                                              13,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          Text(
+                                            event.camera?.name ?? '',
+                                            overflow: TextOverflow.visible,
+                                            style: AppTypography.style(
+                                              14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    defaultVerticalAlignment: CrossAxisAlignment.start,
+                                    horizontalAlignments: [
+                                      CrossAxisAlignment.start,
+                                      CrossAxisAlignment.start,
+                                      CrossAxisAlignment.end,
+                                    ],
+                                    rowSpacing: 18,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    'Ghi chú:',
+                                    style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: descriptionController,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 18,
+                                      ),
+                                      counter: const SizedBox(),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                                      ),
+                                      fillColor: AppColors.white,
+                                      filled: true,
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                        borderSide: BorderSide(color: AppColors.secondary),
+                                      ),
+                                      focusColor: AppColors.white,
+                                      hintStyle: AppTypography.style(
+                                        14,
+                                        color: AppColors.grey92929D,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      hintText: 'Nhập nội dung ghi chú',
+                                      hoverColor: AppColors.white,
+                                    ),
+                                    maxLength: 500,
+                                    maxLines: 10,
+                                    minLines: 3,
+                                    textAlignVertical: TextAlignVertical.top,
+                                    style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -365,7 +434,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                     borderColor: AppColors.greyD1D5DB,
                     borderRadius: 5,
                     label: 'Huỷ',
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => _cancel(),
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                     textStyle: AppTypography.style(
                       14,
@@ -407,11 +476,10 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                           ),
                     listener: (context, state) {
                       if (state is UpdateEventSuccess) {
+                        ToastUtil.toastSuccess(title: Text('Cập nhật ghi chú thành công'));
                         Navigator.pop(context);
                       } else if (state is UpdateEventFailure) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(state.message)));
+                        ToastUtil.toastFail(title: Text(state.message));
                       }
                     },
                   ),
@@ -426,6 +494,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
   @override
   void dispose() {
+    _autoHideControlsTimer?.cancel();
     playbackBloc.close();
     playerController.onTimeChanged.remove(_handleTimeChanged);
     playerController.detach();
@@ -433,74 +502,12 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     _volume.dispose();
     _speed.dispose();
     _downloadProgress.dispose();
+    _controlsScrollController.dispose();
+    _imageTransformController.dispose();
     super.dispose();
   }
 
   // Widgets
-  Widget _buildControls(bool isFullscreen, PlayerState playerState) {
-    if (playerState != PlayerState.initialized) return SizedBox.shrink();
-
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: AppColors.contentBg,
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(6)),
-          boxShadow: [
-            BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.05),
-              spreadRadius: 2,
-              blurRadius: 30,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ValueListenableBuilder<PlayerStatus>(
-          valueListenable: _playerStatus,
-          builder: (_, status, __) => Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildVolumeControl(),
-              _buildControlButton(
-                icon: AppAssets.icFastBackward,
-                onTap: () => playerController.seek?.call(Duration(seconds: -3)),
-              ),
-              _buildControlButton(
-                icon: status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
-                onTap: () {
-                  if (reachEnd) playerController.seek?.call(Duration(seconds: -20));
-                  playerController.togglePlay?.call();
-                },
-              ),
-              _buildControlButton(
-                icon: AppAssets.icFastForward,
-                onTap: () {
-                  if (reachEnd) return;
-                  playerController.seek?.call(Duration(seconds: 3));
-                },
-              ),
-              _buildSpeedControl(),
-              _buildControlButton(
-                icon: AppAssets.icZoomIn,
-                onTap: () => playerController.zoom?.call(1),
-              ),
-              _buildControlButton(
-                icon: AppAssets.icZoomOut,
-                onTap: () => playerController.zoom?.call(-1),
-              ),
-              _buildControlButton(
-                icon: AppAssets.icFullscreen,
-                onTap: () => playerController.toggleFullscreen?.call(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildControlButton({required String icon, required VoidCallback onTap}) {
     return InkWell(
@@ -512,37 +519,117 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     );
   }
 
-  Widget _buildVolumeControl() {
-    return ValueListenableBuilder<double>(
-      valueListenable: _volume,
-      builder: (context, volume, _) {
-        return MouseRegion(
-          child: Container(
-            height: 60,
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                InkWell(
-                  onTap: () {
-                    final newVolume = volume > 0 ? 0.0 : 1.0;
-                    _volume.value = newVolume;
-                    playerController.changeVolume?.call(newVolume);
-                  },
-                  child: SvgPicture.asset(
-                    volume == 1
-                        ? AppAssets.icVolumeFull
-                        : volume == 0
-                        ? AppAssets.icVolumeMuted
-                        : AppAssets.icVolumeHalf,
-                    width: 28,
-                    height: 28,
-                  ),
+  Widget _buildImageControls() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: _showControls ? 1 : 0,
+        child: Container(
+          alignment: Alignment.center,
+          height: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(6)),
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, 0.05),
+                spreadRadius: 2,
+                blurRadius: 30,
+                offset: Offset(0, 4),
+              ),
+            ],
+            color: AppColors.contentBg,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildControlButton(icon: AppAssets.icZoomIn, onTap: () => _zoomImageBy(0.2)),
+              _buildControlButton(icon: AppAssets.icZoomOut, onTap: () => _zoomImageBy(-0.2)),
+              _buildControlButton(icon: AppAssets.icFullscreen, onTap: () => _fullscreenImage()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoControls(bool isFullscreen, PlayerState playerState) {
+    if (playerState != PlayerState.initialized) return SizedBox.shrink();
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: _showControls ? 1 : 0,
+        child: Container(
+          alignment: Alignment.center,
+          height: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(6)),
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, 0.05),
+                spreadRadius: 2,
+                blurRadius: 30,
+                offset: Offset(0, 4),
+              ),
+            ],
+            color: AppColors.contentBg,
+          ),
+          child: ValueListenableBuilder<PlayerStatus>(
+            valueListenable: _playerStatus,
+            builder: (_, status, __) => Scrollbar(
+              controller: _controlsScrollController,
+              thickness: 3.2,
+              child: SingleChildScrollView(
+                controller: _controlsScrollController,
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildVolumeControl(),
+                    _buildControlButton(
+                      icon: AppAssets.icFastBackward,
+                      onTap: () => playerController.seek?.call(Duration(seconds: -3)),
+                    ),
+                    _buildControlButton(
+                      icon: status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
+                      onTap: () {
+                        if (reachEnd) playerController.seek?.call(Duration(seconds: -20));
+                        playerController.togglePlay?.call();
+                      },
+                    ),
+                    _buildControlButton(
+                      icon: AppAssets.icFastForward,
+                      onTap: () {
+                        if (reachEnd) return;
+                        playerController.seek?.call(Duration(seconds: 3));
+                      },
+                    ),
+                    _buildSpeedControl(),
+                    _buildControlButton(
+                      icon: AppAssets.icZoomIn,
+                      onTap: () => playerController.zoom?.call(1),
+                    ),
+                    _buildControlButton(
+                      icon: AppAssets.icZoomOut,
+                      onTap: () => playerController.zoom?.call(-1),
+                    ),
+                    _buildControlButton(
+                      icon: AppAssets.icFullscreen,
+                      onTap: () => playerController.toggleFullscreen?.call(),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -579,6 +666,15 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     );
   }
 
+  Widget _buildVolumeControl() {
+    return VolumeSlider(
+      onVolumeChanged: (volume) {
+        _volume.value = volume;
+        playerController.changeVolume?.call(volume);
+      },
+    );
+  }
+
   Widget _functionBtn({Widget? icon, String? label, Function()? onTap}) {
     return ElevatedButton(
       onPressed: onTap,
@@ -606,54 +702,63 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   }
 
   Widget _imageTab(EventEntity event) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
-      child: Image.network(
-        event.imageUrl ?? '',
-        errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
-        fit: BoxFit.contain,
+    return FullscreenPortal(
+      key: _fullscreenKey,
+      tag: hashCode.toString(),
+      builder: (isFullscreen) => ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final nextViewportSize = constraints.biggest;
+            final viewportChanged = nextViewportSize != _imageViewportSize;
+            _imageViewportSize = nextViewportSize;
+            if (viewportChanged) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                _clampCurrentImageTransform();
+              });
+            }
+
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: InteractiveViewer(
+                    maxScale: 4.0,
+                    minScale: 1.0,
+                    panEnabled: true,
+                    scaleEnabled: true,
+                    transformationController: _imageTransformController,
+                    onInteractionEnd: (_) => _clampCurrentImageTransform(),
+                    child: Center(
+                      child: Image.network(
+                        event.imageUrl ?? '',
+                        errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+                if (!isFullscreen) _buildImageControls(),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _videoTab(EventEntity event) {
-    return BlocConsumer<PlaybackBloc, PlaybackState>(
+    return BlocBuilder<PlaybackBloc, PlaybackState>(
       buildWhen: (pre, cur) {
         if (pre is PlaybackSuccess && cur is PlaybackSuccess) {
           return pre.playbacks != cur.playbacks || pre.initialIndex != cur.initialIndex;
         }
         return true;
       },
-      builder: (context, state) => stateBuilder<PlaybackSuccess>(
-        state,
-        onReload: () {
-          if (event.camera?.id != null && rewindTime != null) {
-            context.read<PlaybackBloc>().add(GetVideoPlaybacks(event.camera!.id, rewindTime!));
-          }
-        },
-        child: (state) => Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Colors.black),
-          clipBehavior: Clip.antiAlias,
-          child: PlaybackPlayer(
-            enableZoom: true,
-            playlist: state.playbacks.toList(),
-            name: event.camera?.name ?? '',
-            initialIndex: state.initialIndex,
-            controller: playerController,
-            onStatusChanged: (status) {
-              _playerStatus.value = status;
-            },
-            onInitializedValues: ({required double volume, required double speed}) {
-              _volume.value = volume;
-              _speed.value = speed;
-            },
-            controlsBuilder: (fullscreen, playerState) =>
-                fullscreen ? Container() : _buildControls(fullscreen, playerState),
-          ),
-        ),
-      ),
-      listener: (context, state) {
-        if (rewindTime != null && state is PlaybackSuccess) {
+      builder: (context, state) {
+        if (state is! PlaybackSuccess) return SizedBox.shrink();
+
+        if (rewindTime != null) {
           final rewindTimeCopy = rewindTime!;
           final idx = state.playbacks.indexWhere(
             (e) => e.startTime.isBefore(rewindTimeCopy) && e.endTime.isAfter(rewindTimeCopy),
@@ -664,14 +769,205 @@ class _EventDetailDialogState extends State<EventDetailDialog>
             playerController.waitForAttached.future.then((_) {
               playerController.jumpToDate?.call(rewindTimeCopy, dateIndex: idx);
             });
+          } else {
+            _errorCause = _errorCause | 2;
           }
           rewindTime = null;
+        } else {
+          _errorCause = _errorCause | 2;
         }
+
+        return Container(
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Colors.black),
+          clipBehavior: Clip.antiAlias,
+          child: _errorCause != 0
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(AppAssets.icPlaybackError, width: 40, height: 40),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Dữ liệu video không khả dụng do ${_errorTranslator()}',
+                        style: AppTypography.style(14, color: Colors.white.withAlpha(182)),
+                      ),
+                    ],
+                  ),
+                )
+              : PlaybackPlayer(
+                  enableZoom: true,
+                  playlist: state.playbacks.toList(),
+                  name: event.camera?.name ?? '',
+                  initialIndex: state.initialIndex,
+                  controller: playerController,
+                  onStatusChanged: (status) {
+                    _playerStatus.value = status;
+                  },
+                  onInitializedValues: ({required double volume, required double speed}) {
+                    _volume.value = volume;
+                    _speed.value = speed;
+                  },
+                  controlsBuilder: (fullscreen, playerState) =>
+                      fullscreen ? Container() : _buildVideoControls(fullscreen, playerState),
+                ),
+        );
       },
     );
   }
 
   // _Functions
+
+  /// Common functions
+  void _cancel() {
+    if (descriptionController.text == (event?.description ?? '')) {
+      return Navigator.pop(context);
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(36),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Xác nhận huỷ',
+                    style: AppTypography.style(
+                      30,
+                      color: AppColors.blackOrWhite,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Bạn có chắc chắn muốn hủy bỏ hành động đang thực hiện mà không lưu?',
+                    style: AppTypography.style(
+                      14,
+                      color: AppColors.blackOrWhite,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blackOrWhiteReverse,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                            side: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                          ),
+                          child: Text(
+                            'Hủy',
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.blackOrWhite,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 130.5 / 1600,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blackOrWhite,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                          ),
+                          child: Text(
+                            'Xác nhận',
+                            style: AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.blackOrWhiteReverse,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, size: 20),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _save() {
+    context.read<EventBloc>().add(
+      UpdateEvent(eventId: widget.id, description: descriptionController.text),
+    );
+  }
+
+  /// Image functions
+  void _clampCurrentImageTransform() {
+    _imageTransformController.value = _clampImageMatrix(_imageTransformController.value.clone());
+  }
+
+  Matrix4 _clampImageMatrix(Matrix4 matrix) {
+    final scale = matrix.getMaxScaleOnAxis();
+    if (_imageViewportSize == Size.zero || scale <= 1.0) {
+      matrix.storage[12] = 0;
+      matrix.storage[13] = 0;
+      return matrix;
+    }
+
+    final minX = _imageViewportSize.width * (1 - scale);
+    final minY = _imageViewportSize.height * (1 - scale);
+    final tx = matrix.storage[12];
+    final ty = matrix.storage[13];
+    matrix.storage[12] = tx.clamp(minX, 0).toDouble();
+    matrix.storage[13] = ty.clamp(minY, 0).toDouble();
+    return matrix;
+  }
+
+  void _fullscreenImage() {
+    _imageTransformController.value = Matrix4.identity();
+    _fullscreenKey.currentState?.toggleFullscreen(context);
+  }
+
+  void _zoomImageBy(double delta) {
+    final currentScale = _imageTransformController.value.getMaxScaleOnAxis();
+    final targetScale = (currentScale + delta).clamp(1.0, 4.0).toDouble();
+    if (targetScale == currentScale) return;
+
+    final scaleFactor = targetScale / currentScale;
+    final nextMatrix = _imageTransformController.value.clone()..scale(scaleFactor);
+    _imageTransformController.value = _clampImageMatrix(nextMatrix);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _clampCurrentImageTransform();
+    });
+  }
+
+  /// Video functions
   bool get reachEnd => currentTime?.isAfter(endTime!) ?? false;
 
   void _downloadImage(EventEntity event) async {
@@ -727,6 +1023,16 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     if (mounted) context.read<EventBloc>().add(SaveVideo(targetPlayback.urlPlayback, path));
   }
 
+  String _errorTranslator() {
+    if (_errorCause & 1 == 1) {
+      return 'mất kết nối đến máy chủ lưu trữ';
+    }
+    if (_errorCause & 2 == 2) {
+      return 'không tìm thấy video playback';
+    }
+    return 'lỗi không xác định';
+  }
+
   void _handleTimeChanged(DateTime currentTime, [bool isUserSeeking = false]) {
     this.currentTime = currentTime;
     if (endTime != null && currentTime.isAfter(endTime!)) {
@@ -765,12 +1071,6 @@ class _EventDetailDialogState extends State<EventDetailDialog>
           key: UniqueKey(),
         ),
       ),
-    );
-  }
-
-  _save() {
-    context.read<EventBloc>().add(
-      UpdateEvent(eventId: widget.id, description: descriptionController.text),
     );
   }
 }
