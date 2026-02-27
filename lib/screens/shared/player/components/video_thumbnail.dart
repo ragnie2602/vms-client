@@ -72,7 +72,7 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
         'from': 0,
         'width': width ?? -1,
         'height': height ?? -1,
-        'timeout': 10000,
+        'timeout': 15000,
       });
 
       return _cachedProvider = ResizeImage(
@@ -81,7 +81,12 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
         height: height,
       );
     } catch (e) {
-      Logger.error("Thumbnail error: ${e.toString()}");
+      String message = e.toString();
+      if (e is PlatformException) {
+        message = "${e.code}: ${e.message} (${widget.source})";
+      }
+
+      Logger.warn(message, tag: 'THUMBNAIL');
       return null;
     }
   }
