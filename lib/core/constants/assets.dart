@@ -200,4 +200,5 @@ class AppAssets {
   static const icRefresh = '$_svgPath/refresh.svg';
 
   static const icDrag = '$_svgPath/drag_icon.svg';
+  static const icUpload2 = '$_svgPath/ic_upload2.svg';
 }

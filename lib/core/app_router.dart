@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_user_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
-import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
@@ -15,6 +15,9 @@ import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.d
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/account/mobile_account_screen.dart';
 import 'package:vms_flutter_client/screens/account/mobile_info_screen.dart';
+import 'package:vms_flutter_client/screens/ai_box/ai_box_screen.dart';
+import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/schedule/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
@@ -34,19 +37,18 @@ import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dar
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
+import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
+import 'package:vms_flutter_client/screens/object_group/object_group_screen.dart';
 import 'package:vms_flutter_client/screens/object_type/bloc/object_type_bloc.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_screen.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
-import 'package:vms_flutter_client/screens/camera_configuration/bloc/schedule/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/system_configuration_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
-import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
-import 'package:vms_flutter_client/screens/ai_box/ai_box_screen.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
 import '../domain/usecases/register/register_usecase.dart';
@@ -80,10 +82,15 @@ enum Routes {
     name: 'custom_live_view',
     path: '/custom_live_view',
     title: 'Chế độ tùy biến',
-    description: 'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
+    description:
+        'Hiển thị các màn hình theo dõi theo thời gian thực theo các view được tạo sẵn',
   ),
   cameraDetail(name: 'camera_detail', path: '/camera_detail'),
-  multi_playback(name: 'multi_playback', path: '/multi_playback', title: 'Xem lại nhiều camera'),
+  multi_playback(
+    name: 'multi_playback',
+    path: '/multi_playback',
+    title: 'Xem lại nhiều camera',
+  ),
   playback(
     name: 'playback',
     path: '/playback',
@@ -94,10 +101,21 @@ enum Routes {
     name: 'emap',
     path: '/emap',
     title: 'Bản đồ camera',
-    description: 'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
+    description:
+        'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
   ),
-  aiBox(name: 'aiBox', path: '/aiBox', title: 'Quản lý AI Box', description: ''),
-  users(name: 'users', path: '/users', title: 'Quản lý tài khoản', description: ''),
+  aiBox(
+    name: 'aiBox',
+    path: '/aiBox',
+    title: 'Quản lý AI Box',
+    description: '',
+  ),
+  users(
+    name: 'users',
+    path: '/users',
+    title: 'Quản lý tài khoản',
+    description: '',
+  ),
   events(
     name: 'events',
     path: '/events',
@@ -108,7 +126,15 @@ enum Routes {
     name: 'objectTypes',
     path: '/objectTypes',
     title: 'Quản lý loại đối tượng',
-    description: 'Quản lý và cấu hình trường dữ liệu cho các đối tượng người dùng trên hệ thống',
+    description:
+        'Quản lý và cấu hình trường dữ liệu cho các đối tượng người dùng trên hệ thống',
+  ),
+  objectGroups(
+    name: 'objectGroups',
+    path: '/objectGroups',
+    title: 'Quản lý nhóm đối tượng',
+    description:
+        'Quản lý và cấu hình trường dữ liệu cho các đối tượng người dùng trên hệ thống',
   ),
   configuration(
     name: 'system_configuration',
@@ -124,7 +150,12 @@ enum Routes {
   final String path;
   final String title;
   final String description;
-  const Routes({required this.name, required this.path, this.title = '', this.description = ''});
+  const Routes({
+    required this.name,
+    required this.path,
+    this.title = '',
+    this.description = '',
+  });
 
   static final _mapper = {for (var element in values) element.name: element};
   static Routes? fromName(String name) => _mapper[name];
@@ -155,7 +186,8 @@ class AppRouter {
         path: Routes.login.path,
         name: Routes.login.name,
         builder: (context, state) => BlocProvider(
-          create: (context) => LoginBloc(loginUseCase: context.read<LoginUseCase>()),
+          create: (context) =>
+              LoginBloc(loginUseCase: context.read<LoginUseCase>()),
           child: PlatformBuilder.builder(
             onDesktop: (_) => LoginScreen(),
             onMobile: (_) => MobileLoginScreen(),
@@ -166,7 +198,8 @@ class AppRouter {
         path: Routes.register.path,
         name: Routes.register.name,
         builder: (context, state) => BlocProvider(
-          create: (context) => RegisterBloc(registerUseCase: context.read<RegisterUseCase>()),
+          create: (context) =>
+              RegisterBloc(registerUseCase: context.read<RegisterUseCase>()),
           child: MobileRegisterScreen(),
         ),
       ),
@@ -177,12 +210,18 @@ class AppRouter {
             BlocProvider(create: (context) => HomeBloc()),
             BlocProvider(
               create: (context) =>
-                  StorageFolderBloc(context.read(), context.read())..add(StorageFolderStarted()),
+                  StorageFolderBloc(context.read(), context.read())
+                    ..add(StorageFolderStarted()),
               lazy: false,
             ),
             BlocProvider(
               create: (context) =>
-                  MonitorBloc(context.read(), context.read(), context.read(), context.read())..add(
+                  MonitorBloc(
+                    context.read(),
+                    context.read(),
+                    context.read(),
+                    context.read(),
+                  )..add(
                     ReopenMonitor(
                       context.read<AppBloc>().reopenViewId,
                       context.read<AppBloc>().reopenViewMode,
@@ -203,7 +242,8 @@ class AppRouter {
               create: (context) => GroupCameraBloc(
                 groupCameraRepository: context.read(),
                 searchGroupUseCase: context.read<SearchGroupUseCase>(),
-                filterCameraNotInGroupUsecase: context.read<FilterCameraNotInGroupUsecase>(),
+                filterCameraNotInGroupUsecase: context
+                    .read<FilterCameraNotInGroupUsecase>(),
               )..add(GetAllGroupCameraEvent()),
               lazy: false,
             ),
@@ -213,7 +253,8 @@ class AppRouter {
                 filterTagCameraUseCase: context.read<FilterTagCameraUseCase>(),
                 controlGroupRepository: context.read(),
                 filterCameraUseCase: context.read<FilterCameraUseCase>(),
-                filterCameraNoGroupUseCase: context.read<FilterCameraNoGroupUseCase>(),
+                filterCameraNoGroupUseCase: context
+                    .read<FilterCameraNoGroupUseCase>(),
                 deleteCameraUseCase: context.read<DeleteCameraUseCase>(),
               ),
             ),
@@ -237,7 +278,14 @@ class AppRouter {
             BlocProvider(create: (context) => ObjectTypeBloc(context.read())),
             BlocProvider(
               create: (context) =>
-                  SetupInfoFieldBloc(context.read(), context.read(), context.read()),
+                  ObjectGroupBloc(context.read(), context.read()),
+            ),
+            BlocProvider(
+              create: (context) => SetupInfoFieldBloc(
+                context.read(),
+                context.read(),
+                context.read(),
+              ),
             ),
             BlocProvider(
               create: (context) => AiBoxBloc(
@@ -257,7 +305,10 @@ class AppRouter {
                 searchUserUseCase: context.read<SearchUserUseCase>(),
               ),
             ),
-            BlocProvider(create: (context) => ChangeMyInfoBloc(context.read(), context.read())),
+            BlocProvider(
+              create: (context) =>
+                  ChangeMyInfoBloc(context.read(), context.read()),
+            ),
           ],
           child: HomeScreen(body: child, currentPath: state.uri.path),
         ),
@@ -268,8 +319,11 @@ class AppRouter {
               GoRoute(
                 path: Routes.monitoring.path,
                 name: Routes.monitoring.name,
-                pageBuilder: (context, state) =>
-                    fadeTransition(context: context, state: state, child: DefaultMonitorPane()),
+                pageBuilder: (context, state) => fadeTransition(
+                  context: context,
+                  state: state,
+                  child: DefaultMonitorPane(),
+                ),
               ),
               GoRoute(
                 path: Routes.custom_live_view.path,
@@ -280,7 +334,9 @@ class AppRouter {
                   return fadeTransition(
                     context: context,
                     state: state,
-                    child: CustomMonitorPane(mode: args?.mode ?? CustomMonitorPaneMode.view),
+                    child: CustomMonitorPane(
+                      mode: args?.mode ?? CustomMonitorPaneMode.view,
+                    ),
                   );
                 },
               ),
@@ -290,8 +346,11 @@ class AppRouter {
           GoRoute(
             path: Routes.account.path,
             name: Routes.account.name,
-            pageBuilder: (context, state) =>
-                fadeTransition(context: context, state: state, child: MobileAccountScreen()),
+            pageBuilder: (context, state) => fadeTransition(
+              context: context,
+              state: state,
+              child: MobileAccountScreen(),
+            ),
           ),
 
           GoRoute(
@@ -302,9 +361,12 @@ class AppRouter {
                 context: context,
                 state: state,
                 child: PlatformBuilder.builder(
-                  onDesktop: (_) => CameraDetailScreen(args: state.extra as CameraDetailScreenArgs),
-                  onMobile: (_) =>
-                      MobileCameraDetailScreen(args: state.extra as CameraDetailScreenArgs),
+                  onDesktop: (_) => CameraDetailScreen(
+                    args: state.extra as CameraDetailScreenArgs,
+                  ),
+                  onMobile: (_) => MobileCameraDetailScreen(
+                    args: state.extra as CameraDetailScreenArgs,
+                  ),
                 ),
               );
             },
@@ -313,8 +375,11 @@ class AppRouter {
           GoRoute(
             path: Routes.info.path,
             name: Routes.info.name,
-            pageBuilder: (context, state) =>
-                fadeTransition(context: context, state: state, child: MobileInfoScreen()),
+            pageBuilder: (context, state) => fadeTransition(
+              context: context,
+              state: state,
+              child: MobileInfoScreen(),
+            ),
           ),
 
           GoRoute(
@@ -336,7 +401,8 @@ class AppRouter {
                       key: args.key,
                       onBack: args.onBack,
                       description: args.description,
-                      openCamerasPanelImmediately: args.openCamerasPanelImmediately,
+                      openCamerasPanelImmediately:
+                          args.openCamerasPanelImmediately,
                     ),
                   ),
                 ),
@@ -348,7 +414,11 @@ class AppRouter {
             path: Routes.about.path,
             name: Routes.about.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: AboutScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: AboutScreen(),
+              );
             },
           ),
 
@@ -356,7 +426,11 @@ class AppRouter {
             path: Routes.events.path,
             name: Routes.events.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: EventScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: EventScreen(),
+              );
             },
           ),
 
@@ -364,7 +438,22 @@ class AppRouter {
             path: Routes.objectTypes.path,
             name: Routes.objectTypes.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: ObjectTypeScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: ObjectTypeScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.objectGroups.path,
+            name: Routes.objectGroups.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: ObjectGroupScreen(),
+              );
             },
           ),
 
@@ -384,7 +473,11 @@ class AppRouter {
             path: Routes.addGroupCamera.path,
             name: Routes.addGroupCamera.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: ControlCameraScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: ControlCameraScreen(),
+              );
             },
           ),
 
@@ -392,21 +485,33 @@ class AppRouter {
             path: Routes.emap.path,
             name: Routes.emap.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: EmapScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: EmapScreen(),
+              );
             },
           ),
           GoRoute(
             path: Routes.multi_playback.path,
             name: Routes.multi_playback.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: MultiPlaybackScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: MultiPlaybackScreen(),
+              );
             },
           ),
           GoRoute(
             path: Routes.aiBox.path,
             name: Routes.aiBox.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: AiBoxScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: AiBoxScreen(),
+              );
             },
           ),
 
@@ -414,7 +519,11 @@ class AppRouter {
             path: Routes.users.path,
             name: Routes.users.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: UserManagementScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: UserManagementScreen(),
+              );
             },
           ),
         ],
@@ -433,10 +542,11 @@ CustomTransitionPage fadeTransition<T>({
     child: child,
     transitionDuration: const Duration(milliseconds: 0),
     reverseTransitionDuration: const Duration(milliseconds: 0),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(
-      opacity: CurveTween(curve: Curves.easeIn).animate(animation),
-      child: child,
-    ),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(
+          opacity: CurveTween(curve: Curves.easeIn).animate(animation),
+          child: child,
+        ),
   );
 }
 
