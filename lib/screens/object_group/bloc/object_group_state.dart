@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
 enum ObjectGroupStatus { initial, loading, loaded, error }
@@ -13,6 +14,8 @@ class ObjectGroupState extends Equatable {
   final int totalObjects;
   final String? errorMessage;
   final int totalPages;
+  // mock data
+  final List<MockObject>? listGroup;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -23,6 +26,7 @@ class ObjectGroupState extends Equatable {
     this.totalObjects = 0,
     this.errorMessage,
     this.totalPages = 1,
+    this.listGroup,
   });
 
   ObjectGroupState copyWith({
@@ -34,6 +38,7 @@ class ObjectGroupState extends Equatable {
     int? totalObjects,
     String? errorMessage,
     int? totalPages,
+      List<MockObject>? listGroup,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,
@@ -44,6 +49,7 @@ class ObjectGroupState extends Equatable {
       totalObjects: totalObjects ?? this.totalObjects,
       errorMessage: errorMessage ?? this.errorMessage,
       totalPages: totalPages ?? this.totalPages,
+      listGroup: listGroup ?? this.listGroup,
     );
   }
 
@@ -57,5 +63,6 @@ class ObjectGroupState extends Equatable {
     totalObjects,
     errorMessage,
     totalPages,
+    listGroup
   ];
 }

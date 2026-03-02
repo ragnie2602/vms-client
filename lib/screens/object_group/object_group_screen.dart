@@ -26,83 +26,29 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
   final TextEditingController _searchController = TextEditingController();
   TabController? _tabController;
 
-  final TreeNode<MockObject> _tree =
-      TreeNode<MockObject>.root(
-        data: MockObject(name: "Root", id: "0"),
-      )..addAll([
-        TreeNode<MockObject>(
-          key: "1",
-          data: MockObject(name: "Danh sách đối tượng", id: "1"),
-        ),
-        TreeNode<MockObject>(
-          key: "2",
-          data: MockObject(name: "Khối THCS", id: "2"),
-        ),
-        TreeNode<MockObject>(
-          key: "3",
-          data: MockObject(name: "Khối THPT", id: "3"),
-        )..addAll([
-          TreeNode<MockObject>(
-            key: "3_1",
-            data: MockObject(name: "Khối 1", id: "3_1"),
-          )..addAll([
-            TreeNode<MockObject>(
-              key: "3_1_1",
-              data: MockObject(name: "Các lớp 1A", id: "3_1_1"),
-            )..addAll([
-              TreeNode<MockObject>(
-                key: "3_1_1_1",
-                data: MockObject(name: "Lớp 1A1", id: "3_1_1_1"),
-              ),
-              TreeNode<MockObject>(
-                key: "3_1_1_2",
-                data: MockObject(name: "Lớp 1A2", id: "3_1_1_2"),
-              ),
-              TreeNode<MockObject>(
-                key: "3_1_1_3",
-                data: MockObject(name: "Lớp 1A3", id: "3_1_1_3"),
-              ),
-              TreeNode<MockObject>(
-                key: "3_1_1_4",
-                data: MockObject(name: "Lớp 1A4", id: "3_1_1_4"),
-              ),
-              TreeNode<MockObject>(
-                key: "3_1_1_5",
-                data: MockObject(name: "Lớp 1A5", id: "3_1_1_5"),
-              ),
-            ]),
-            TreeNode<MockObject>(
-              key: "3_1_2",
-              data: MockObject(name: "Các lớp 1B", id: "3_1_2"),
-            ),
-            TreeNode<MockObject>(
-              key: "3_1_3",
-              data: MockObject(name: "Các lớp 1C", id: "3_1_3"),
-            ),
-            TreeNode<MockObject>(
-              key: "3_1_4",
-              data: MockObject(name: "Các lớp 1D", id: "3_1_4"),
-            ),
-            TreeNode<MockObject>(
-              key: "3_1_5",
-              data: MockObject(name: "Các lớp 1E", id: "3_1_5"),
-            ),
-          ]),
-          TreeNode<MockObject>(
-            key: "3_2",
-            data: MockObject(name: "Khối 2", id: "3_2"),
-          ),
-          TreeNode<MockObject>(
-            key: "3_3",
-            data: MockObject(name: "Khối 3", id: "3_3"),
-          ),
-        ]),
-      ]);
+  /// Chuyển đổi List<MockObject> thành TreeNode<MockObject> cho tree widget
+  TreeNode<MockObject> _buildTree(List<MockObject> groups) {
+    final tree = TreeNode<MockObject>.root(
+      data: MockObject(name: "Root", id: "0"),
+    );
+    tree.addAll(groups.map((g) => _buildTreeNode(g)).toList());
+    return tree;
+  }
+
+  TreeNode<MockObject> _buildTreeNode(MockObject obj) {
+    final node = TreeNode<MockObject>(key: obj.id ?? '', data: obj);
+    if (obj.children != null && obj.children!.isNotEmpty) {
+      node.addAll(obj.children!.map((c) => _buildTreeNode(c)).toList());
+    }
+    return node;
+  }
 
   @override
   void initState() {
     super.initState();
-    context.read<ObjectGroupBloc>().add(const LoadObjectGroups(page: 1, size: 20));
+    context.read<ObjectGroupBloc>().add(
+      const InitializeObjectGroup(page: 1, size: 20),
+    );
   }
 
   @override
@@ -161,65 +107,77 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                   ),
                 ),
                 Expanded(
-                  child: GroupObjectTreeWidget(
-                    tree: _tree,
-                    actionBuilder: (node) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          iconTheme: const IconThemeData(size: 20),
-                        ),
-                        child: PopupMenuButton<GroupObjectAction>(
-                          tooltip: '',
-                          key: ValueKey(node.key),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          splashRadius: 20,
-                          position: PopupMenuPosition.under,
-                          offset: const Offset(0, 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 3,
-                          shadowColor: const Color(0x1A000000),
-                          surfaceTintColor: Colors.transparent,
-                          color: Colors.white,
-                          onSelected: (action) {
-                            // action.onTap();
-                          },
-                          itemBuilder: (context) {
-                            List<GroupObjectAction> listAction = List.of(
-                              GroupObjectAction.values,
-                            );
+                  child: BlocBuilder<ObjectGroupBloc, ObjectGroupState>(
+                    buildWhen: (previous, current) =>
+                        previous.listGroup != current.listGroup,
+                    builder: (context, state) {
+                      final tree = _buildTree(state.listGroup ?? []);
+                      return GroupObjectTreeWidget(
+                        tree: tree,
+                        actionBuilder: (node) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              iconTheme: const IconThemeData(size: 20),
+                            ),
+                            child: PopupMenuButton<GroupObjectAction>(
+                              tooltip: '',
+                              key: ValueKey(node.key),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              splashRadius: 20,
+                              position: PopupMenuPosition.under,
+                              offset: const Offset(0, 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 3,
+                              shadowColor: const Color(0x1A000000),
+                              surfaceTintColor: Colors.transparent,
+                              color: Colors.white,
+                              onSelected: (action) async {
+                                // update selected node
+                              },
+                              itemBuilder: (context) {
+                                List<GroupObjectAction> listAction = List.of(
+                                  GroupObjectAction.values,
+                                );
 
-                            final List<PopupMenuEntry<GroupObjectAction>>
-                            entries = [];
-                            for (int i = 0; i < listAction.length; i++) {
-                              final action = listAction[i];
-                              entries.add(
-                                PopupMenuItem<GroupObjectAction>(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  value: action,
-                                  child: action.widgetView,
-                                ),
-                              );
-                              if (i != listAction.length - 1) {
-                                entries.add(const PopupMenuDivider(height: 1));
-                              }
-                            }
-                            return entries;
-                          },
-                          child: const Icon(
-                            Icons.more_horiz,
-                            color: AppColors.black,
-                          ),
-                        ),
+                                final List<PopupMenuEntry<GroupObjectAction>>
+                                entries = [];
+                                for (int i = 0; i < listAction.length; i++) {
+                                  final action = listAction[i];
+                                  entries.add(
+                                    PopupMenuItem<GroupObjectAction>(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      value: action,
+                                      child: action.widgetView,
+                                    ),
+                                  );
+                                  if (i != listAction.length - 1) {
+                                    entries.add(
+                                      const PopupMenuDivider(
+                                        height: 1,
+                                        color: AppColors.greyF2F4FA,
+                                      ),
+                                    );
+                                  }
+                                }
+                                return entries;
+                              },
+                              child: const Icon(
+                                Icons.more_horiz,
+                                color: AppColors.black,
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),

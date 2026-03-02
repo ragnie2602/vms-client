@@ -7,7 +7,15 @@ abstract class ObjectGroupEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
+class InitializeObjectGroup extends ObjectGroupEvent {
+  final int page;
+  final int size;
 
+  const InitializeObjectGroup({this.page = 1, this.size = 20});
+
+  @override
+  List<Object> get props => [page, size];
+}
 class LoadObjectGroups extends ObjectGroupEvent {
   final int page;
   final int size;
