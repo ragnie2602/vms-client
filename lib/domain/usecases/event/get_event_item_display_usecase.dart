@@ -10,7 +10,7 @@ part 'get_event_item_display_output.dart';
 
 class GetEventItemDisplayUsecase
     extends FutureUseCase<GetEventItemDisplayInput, GetEventItemDisplayOutput> {
-  static const Map<String, EventDisplayConfigEntity> _eventDisplayConfigs = {};
+  static const Map<String, EventDisplayConfig> _eventDisplayConfigs = {};
 
   final IEventRepository _eventRepository;
 
@@ -21,9 +21,9 @@ class GetEventItemDisplayUsecase
     Map<String, dynamic> raw = {};
     if (input.event.eventType == null) return GetEventItemDisplayOutput(raw);
 
-    EventDisplayConfigEntity? config = _eventDisplayConfigs[input.event.eventType];
+    EventDisplayConfig? config = _eventDisplayConfigs[input.event.eventType];
     if (config == null) {
-      final result = await _eventRepository.getEventDisplayConfig(input.event.eventType!);
+      final result = await _eventRepository.getEventDisplayConfig(input.event.eventType!, 1);
       result.fold(
         (failure) => throw failure,
         (success) => config = _eventDisplayConfigs[input.event.eventType!] = success,

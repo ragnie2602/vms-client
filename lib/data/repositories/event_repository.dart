@@ -8,6 +8,8 @@ import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 
 class EventRepository extends BaseRepository implements IEventRepository {
+  static const Map<(String, int), EventDisplayConfig> configTable = {};
+
   final EventService eventService;
 
   EventRepository(this.eventService);
@@ -48,10 +50,20 @@ class EventRepository extends BaseRepository implements IEventRepository {
   }
 
   @override
-  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig(String eventType) async {
-    return await catchError<EventDisplayConfigEntity>(() async {
-      final data = await eventService.getEventDisplayConfig(eventType);
-      return Right(EventDisplayConfigEntity.fromJson(data));
+  Future<Either<Failure, EventDisplayConfig>> getEventDisplayConfig(
+    String eventType,
+    int typeConfig,
+  ) async {
+    final key = (eventType, typeConfig);
+    if (configTable.containsKey(key)) return Right(configTable[key]!);
+
+    return await catchError<EventDisplayConfig>(() async {
+      final data = await eventService.getEventDisplayConfig(eventType, typeConfig);
+
+      EventDisplayConfig config = EventDisplayConfig.fromJson(data);
+      configTable[key] = config;
+
+      return Right(EventDisplayConfig.fromJson(data));
     });
   }
 
@@ -85,16 +97,20 @@ class EventRepository extends BaseRepository implements IEventRepository {
   }
 
   @override
-  Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
+  Future<Either<Failure, EventDisplayConfig>> updateEventDisplayConfig({
     required List<String> listField,
     required String eventType,
   }) async {
-    return await catchError<EventDisplayConfigEntity>(() async {
+    return await catchError<EventDisplayConfig>(() async {
       final data = await eventService.updateEventDisplayConfig(
         listField: listField,
         eventType: eventType,
       );
-      return Right(EventDisplayConfigEntity.fromJson(data));
+
+      EventDisplayConfig config = EventDisplayConfig.fromJson(data);
+      configTable[(eventType, config.typeConfig)] = config;
+
+      return Right(EventDisplayConfig.fromJson(data));
     });
   }
 }

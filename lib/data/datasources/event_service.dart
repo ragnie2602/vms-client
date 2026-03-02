@@ -47,8 +47,15 @@ class EventService {
     return response.data;
   }
 
-  getEventDisplayConfig(String eventType) async {
-    final raw = await httpClient.get('${EndPoints.configEventDisplay}/$eventType');
+  getEventDisplayConfig(String eventType, int typeConfig, {int? subjectTypeId}) async {
+    final raw = await httpClient.get(
+      EndPoints.configEventDisplay,
+      queryParameters: {
+        'eventType': eventType,
+        'typeConfig': typeConfig,
+        if (subjectTypeId != null) 'subjectTypeId': subjectTypeId,
+      },
+    );
 
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) throw Exception(response.message);

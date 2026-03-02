@@ -1,56 +1,66 @@
-import 'dart:convert';
+class EventDisplayConfig {
+  int? id;
+  late String eventType;
+  late String eventTypeName;
+  late int typeConfig;
+  List<Fields>? fields;
+  List<String>? sorting;
 
-import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
+  EventDisplayConfig({
+    this.id,
+    required this.eventType,
+    required this.eventTypeName,
+    required this.typeConfig,
+    this.fields,
+    this.sorting,
+  });
 
-EventDisplayConfigEntity eventDisplayConfigEntityFromJson(String str) =>
-    EventDisplayConfigEntity.fromJson(json.decode(str));
-
-String eventDisplayConfigEntityToJson(EventDisplayConfigEntity data) =>
-    json.encode(data.toJson());
-
-class EventDisplayConfigEntity {
-  int? eventTypeId;
-  String? eventTypeName;
-  List<FieldConfigEntity>? fields;
-
-  EventDisplayConfigEntity({this.eventTypeId, this.eventTypeName, this.fields});
-
-  EventDisplayConfigEntity copyWith({
-    int? eventTypeId,
-    String? eventTypeName,
-    List<FieldConfigEntity>? fields,
-  }) => EventDisplayConfigEntity(
-    eventTypeId: eventTypeId ?? this.eventTypeId,
-    eventTypeName: eventTypeName ?? this.eventTypeName,
-    fields: fields ?? this.fields,
-  );
-
-  factory EventDisplayConfigEntity.fromJson(Map<String, dynamic> json) =>
-      EventDisplayConfigEntity(
-        eventTypeId: json["eventTypeId"],
-        eventTypeName: json["eventTypeName"],
-        fields: json["fields"] == null
-            ? []
-            : List<FieldConfigEntity>.from(
-                json["fields"]!.map((x) => FieldConfigEntity.fromJson(x)),
-              ),
-      );
-
-  Map<String, dynamic> toJson() => {
-    "eventTypeId": eventTypeId,
-    "eventTypeName": eventTypeName,
-    "fields": fields == null
-        ? []
-        : List<FieldConfigEntity>.from(fields!.map((x) => x.toJson())),
-  };
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is EventDisplayConfigEntity &&
-        other.eventTypeId == eventTypeId;
+  EventDisplayConfig.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    eventType = json['eventType'];
+    eventTypeName = json['eventTypeName'];
+    typeConfig = json['typeConfig'];
+    if (json['fields'] != null) {
+      fields = <Fields>[];
+      json['fields'].forEach((v) {
+        fields!.add(Fields.fromJson(v));
+      });
+    }
+    sorting = json['sorting'].cast<String>();
   }
 
-  @override
-  int get hashCode => eventTypeId.hashCode;
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['eventType'] = eventType;
+    data['eventTypeName'] = eventTypeName;
+    data['typeConfig'] = typeConfig;
+    if (fields != null) {
+      data['fields'] = fields!.map((v) => v.toJson()).toList();
+    }
+    data['sorting'] = sorting;
+    return data;
+  }
+}
+
+class Fields {
+  String? fieldKey;
+  String? fieldName;
+  String? icon;
+
+  Fields({this.fieldKey, this.fieldName, this.icon});
+
+  Fields.fromJson(Map<String, dynamic> json) {
+    fieldKey = json['fieldKey'];
+    fieldName = json['fieldName'];
+    icon = json['icon'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['fieldKey'] = fieldKey;
+    data['fieldName'] = fieldName;
+    data['icon'] = icon;
+    return data;
+  }
 }

@@ -164,7 +164,7 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
                             showDialog(
                               context: context,
                               builder: (dialogContext) => BlocProvider.value(
-                                value: context.read<SetupInfoFieldBloc>(),
+                                value: context.read<SetupEventDisplayBloc>(),
                                 child: SetupInfoFieldDialog(
                                   typeConfig: EventTypeConfig.LIVEVIEW,
                                   typeEvents: detectState.typeEvents,

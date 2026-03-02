@@ -9,7 +9,6 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/event_constants.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
-import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/entities/group/device_group.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
@@ -24,9 +23,6 @@ import 'package:vms_flutter_client/screens/event/components/setup_info_field_dia
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_state.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 class EventScreen extends StatefulWidget {
@@ -39,7 +35,7 @@ class EventScreen extends StatefulWidget {
 class _EventScreenState extends State<EventScreen> {
   late final EventBloc eventBloc;
   late final MonitorBloc monitorBloc;
-  late final SetupInfoFieldBloc setupInfoFieldBloc;
+  late final SetupEventDisplayBloc setupInfoFieldBloc;
 
   GlobalKey<EventDateRangePickerState> dateRangeKey = GlobalKey<EventDateRangePickerState>();
   int? presetHour = 720;
@@ -62,8 +58,8 @@ class _EventScreenState extends State<EventScreen> {
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
     context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
-    setupInfoFieldBloc = context.read<SetupInfoFieldBloc>()
-      ..add(SetupInfoFieldInit(EventTypeConfig.EVENT_MANAGEMENT, null));
+    // setupInfoFieldBloc = context.read<SetupEventDisplayBloc>()
+    //   ..add(SetupInfoFieldInit(EventTypeConfig.EVENT_MANAGEMENT, null));
   }
 
   @override
@@ -98,7 +94,7 @@ class _EventScreenState extends State<EventScreen> {
                 ),
                 SizedBox(width: 16),
                 Expanded(
-                  child: BlocConsumer<EventBloc, EventState>(
+                  child: BlocBuilder<EventBloc, EventState>(
                     buildWhen: (previous, current) => current is GetAllEventTypeSuccess,
                     builder: (context, state) => EventMultiFilterDropdown<EventType>(
                       allMode: true,
@@ -116,24 +112,6 @@ class _EventScreenState extends State<EventScreen> {
                       onChanged: (et) => eventType = et?.map((e) => e.eventKey).toList(),
                       padding: EdgeInsets.all(12),
                     ),
-                    listener: (context, state) {
-                      if (state is GetAllEventTypeSuccess) {
-                        setupInfoFieldBloc.add(
-                          SetupInfoFieldInit(
-                            EventTypeConfig.EVENT_MANAGEMENT,
-                            state.eventTypes
-                                .map(
-                                  (e) => TypeEventDetectEntity(
-                                    name: e.name,
-                                    type: e.type,
-                                    typeName: e.eventKey,
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        );
-                      }
-                    },
                   ),
                 ),
                 SizedBox(width: 16),
@@ -439,15 +417,13 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
-  _config() {
-    showDialog(
-      context: context,
-      builder: (_) => BlocProvider.value(
-        value: context.read<SetupInfoFieldBloc>(),
-        child: SetupInfoFieldDialog(typeConfig: EventTypeConfig.EVENT_MANAGEMENT),
-      ),
-    );
-  }
+  _config() => showDialog(
+    context: context,
+    builder: (_) => BlocProvider.value(
+      value: context.read<SetupEventDisplayBloc>(),
+      child: SetupInfoFieldDialog(typeConfig: EventTypeConfig.EVENT_MANAGEMENT),
+    ),
+  );
 
   void _onFilter({int page = 1}) {
     eventBloc.add(

@@ -81,56 +81,56 @@ class EventItem extends StatelessWidget {
               ],
             ),
           ),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.greyE2E8F0),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(8),
-                  bottomRight: Radius.circular(8),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 10,
-                    color: AppColors.black.withAlpha(34),
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                color: AppColors.greyF2F4FA,
-              ),
-              padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
-              child: BlocBuilder<SetupInfoFieldBloc, SetupInfoFieldState>(
-                builder: (context, state) {
-                  if (state.configTableStatus == ConfigTableStatus.success) {
-                    return _buildContent(
-                      event,
-                      context.read<SetupInfoFieldBloc>().configTable[event.eventType ?? ''] ?? [],
-                    );
-                  } else if (state.configTableStatus == ConfigTableStatus.loading) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  } else if (state.configTableStatus == ConfigTableStatus.failure) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text('Không thể tải cấu hình', style: TextStyle(color: Colors.red)),
-                      ),
-                    );
-                  }
+          // Expanded(
+          //   child: Container(
+          //     decoration: BoxDecoration(
+          //       border: Border.all(color: AppColors.greyE2E8F0),
+          //       borderRadius: BorderRadius.only(
+          //         bottomLeft: Radius.circular(8),
+          //         bottomRight: Radius.circular(8),
+          //       ),
+          //       boxShadow: [
+          //         BoxShadow(
+          //           blurRadius: 10,
+          //           color: AppColors.black.withAlpha(34),
+          //           offset: const Offset(0, 4),
+          //         ),
+          //       ],
+          //       color: AppColors.greyF2F4FA,
+          //     ),
+          //     padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
+          //     child: BlocBuilder<SetupInfoFieldBloc, SetupInfoFieldState>(
+          //       builder: (context, state) {
+          //         if (state.configTableStatus == ConfigTableStatus.success) {
+          //           return _buildContent(
+          //             event,
+          //             context.read<SetupInfoFieldBloc>().configTable[event.eventType ?? ''] ?? [],
+          //           );
+          //         } else if (state.configTableStatus == ConfigTableStatus.loading) {
+          //           return const Center(
+          //             child: Padding(
+          //               padding: EdgeInsets.all(20),
+          //               child: CircularProgressIndicator(),
+          //             ),
+          //           );
+          //         } else if (state.configTableStatus == ConfigTableStatus.failure) {
+          //           return const Center(
+          //             child: Padding(
+          //               padding: EdgeInsets.all(20),
+          //               child: Text('Không thể tải cấu hình', style: TextStyle(color: Colors.red)),
+          //             ),
+          //           );
+          //         }
 
-                  return const SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: Center(child: Text('Đang khởi tạo...')),
-                  );
-                },
-              ),
-            ),
-          ),
+          //         return const SizedBox(
+          //           width: double.infinity,
+          //           height: 60,
+          //           child: Center(child: Text('Đang khởi tạo...')),
+          //         );
+          //       },
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

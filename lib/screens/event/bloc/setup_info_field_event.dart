@@ -1,43 +1,46 @@
 part of 'setup_info_field_bloc.dart';
 
-abstract class SetupInfoFieldEvent extends Equatable {
-  const SetupInfoFieldEvent();
+abstract class SetupEventDisplayEvent extends Equatable {
+  const SetupEventDisplayEvent();
 
   @override
   List<Object?> get props => [];
 }
 
-class SetupInfoFieldInit extends SetupInfoFieldEvent {
+class GetEventDisplayConfig extends SetupEventDisplayEvent {
+  final String eventType;
   final int typeConfig;
-  final List<TypeEventDetectEntity>? typeEvents;
 
-  const SetupInfoFieldInit(this.typeConfig, this.typeEvents);
+  const GetEventDisplayConfig(this.eventType, this.typeConfig);
+
+  @override
+  List<Object?> get props => [eventType, typeConfig];
 }
 
-class SetupInfoFieldSelectType extends SetupInfoFieldEvent {
+class SetupInfoFieldSelectType extends SetupEventDisplayEvent {
   final int typeConfig;
   final TypeEventDetectEntity type;
 
   const SetupInfoFieldSelectType(this.typeConfig, this.type);
 }
 
-class SetupInfoFieldAddField extends SetupInfoFieldEvent {
+class SetupInfoFieldAddField extends SetupEventDisplayEvent {
   final FieldConfigEntity field;
   const SetupInfoFieldAddField(this.field);
 }
 
-class SetupInfoFieldRemoveField extends SetupInfoFieldEvent {
+class SetupInfoFieldRemoveField extends SetupEventDisplayEvent {
   final FieldConfigEntity field;
   const SetupInfoFieldRemoveField(this.field);
 }
 
-class SetupInfoFieldReorder extends SetupInfoFieldEvent {
+class SetupInfoFieldReorder extends SetupEventDisplayEvent {
   final int oldIndex;
   final int newIndex;
   const SetupInfoFieldReorder(this.oldIndex, this.newIndex);
 }
 
-class SetupInfoFieldSave extends SetupInfoFieldEvent {
+class SetupInfoFieldSave extends SetupEventDisplayEvent {
   final int typeConfig;
 
   const SetupInfoFieldSave(this.typeConfig);

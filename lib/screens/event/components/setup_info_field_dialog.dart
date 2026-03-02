@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,6 +8,8 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
@@ -21,76 +25,70 @@ class SetupInfoFieldDialog extends StatefulWidget {
 }
 
 class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
-  late final SetupInfoFieldBloc bloc;
+  late final SetupEventDisplayBloc bloc;
+  late final EventBloc eventBloc;
+
+  String _selectedEventType = '';
 
   @override
   void initState() {
     super.initState();
 
-    bloc = context.read<SetupInfoFieldBloc>()
-      ..add(SetupInfoFieldInit(widget.typeConfig, widget.typeEvents));
+    bloc = context.read();
+    eventBloc = context.read()..add(GetAllEventType());
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SetupInfoFieldBloc, SetupInfoFieldState>(
-      listenWhen: (previous, current) => previous.saveStatus != current.saveStatus,
-      listener: (context, state) {
-        if (state.saveStatus == SetupInfoFieldStatus.success) {
-          ToastUtil.toastSuccess(context: context, title: const Text('Lưu cấu hình thành công'));
-          Navigator.pop(context);
-        } else if (state.saveStatus == SetupInfoFieldStatus.failure) {
-          ToastUtil.toastFail(context: context, title: Text(state.saveErrorMessage));
-        }
-      },
-      child: Dialog(
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: AppColors.white,
-          ),
-          height: 479,
-          width: 613,
-          // height: MediaQuery.heightOf(context) * 479 / 900,
-          // width: MediaQuery.widthOf(context) * 613 / 1600,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildHeader(context),
-              Expanded(
-                child: BlocBuilder<SetupInfoFieldBloc, SetupInfoFieldState>(
-                  buildWhen: (previous, current) =>
-                      previous.status != current.status ||
-                      previous.typeEvents != current.typeEvents ||
-                      previous.selectedType != current.selectedType ||
-                      previous.configStatus != current.configStatus,
-                  builder: (context, state) {
-                    if (state.status == SetupInfoFieldStatus.loading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+    return Dialog(
+      child: Container(
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.white),
+        height: max(479, MediaQuery.heightOf(context) * 479 / 900),
+        width: max(613, MediaQuery.widthOf(context) * 613 / 1600),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(context),
+            Expanded(
+              child: BlocBuilder<EventBloc, EventState>(
+                buildWhen: (previous, current) =>
+                    current is GettingAllEventType ||
+                    current is GetAllEventTypeSuccess ||
+                    current is GetAllEventTypeFailure,
+                builder: (context, state) {
+                  if (state is GettingAllEventType) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is! GetAllEventTypeSuccess) {
+                    return const Center(child: Text('Có lỗi xảy ra'));
+                  }
 
-                    if (state.typeEvents.isEmpty) {
-                      return const Center(child: Text('Không có dữ liệu'));
-                    }
-                    return Row(
-                      children: [
-                        Expanded(
-                          flex: 200,
-                          child: LayoutBuilder(
-                            builder: (context, constraints) => Container(
-                              color: AppColors.greyF9FAFB,
-                              height: constraints.maxHeight,
-                              padding: const EdgeInsets.all(8),
-                              child: SingleChildScrollView(
-                                child: Column(
+                  if (state.eventTypes.isEmpty) return Center(child: Text('Không có dữ liệu'));
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        flex: 200,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) => Container(
+                            color: AppColors.greyF9FAFB,
+                            height: constraints.maxHeight,
+                            padding: const EdgeInsets.all(8),
+                            child: SingleChildScrollView(
+                              child: StatefulBuilder(
+                                builder: (context, setState) => Column(
                                   mainAxisSize: MainAxisSize.min,
                                   spacing: 4,
-                                  children: state.typeEvents.map((typeEvent) {
+                                  children: state.eventTypes.map((et) {
                                     return _buildVerticalTab(
                                       context,
-                                      typeEvent,
-                                      state.selectedType,
+                                      et,
+                                      onSelected: () {
+                                        bloc.add(
+                                          GetEventDisplayConfig(et.eventKey, widget.typeConfig),
+                                        );
+                                        setState(() => _selectedEventType = et.eventKey);
+                                      },
                                     );
                                   }).toList(),
                                 ),
@@ -98,22 +96,24 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                             ),
                           ),
                         ),
-                        Expanded(
-                          flex: 413,
-                          child: state.configStatus == SetupInfoFieldConfigStatus.loading
-                              ? const Center(child: CircularProgressIndicator())
-                              : state.selectedType == null
-                              ? const SizedBox.shrink()
-                              : _buildTabContent(context),
+                      ),
+                      Expanded(
+                        flex: 413,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) => Container(
+                            height: constraints.maxHeight,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                            child: CustomReorderableListView(),
+                          ),
                         ),
-                      ],
-                    );
-                  },
-                ),
+                      ),
+                    ],
+                  );
+                },
               ),
-              _buildFooter(context),
-            ],
-          ),
+            ),
+            _buildFooter(context),
+          ],
         ),
       ),
     );
@@ -141,46 +141,35 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
 
   Widget _buildVerticalTab(
     BuildContext context,
-    TypeEventDetectEntity typeEvent,
-    TypeEventDetectEntity? selectedType,
-  ) {
-    final isSelected = typeEvent.typeName == selectedType?.typeName;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(6),
-        onTap: () {
-          context.read<SetupInfoFieldBloc>().add(
-            SetupInfoFieldSelectType(widget.typeConfig, typeEvent),
-          );
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
-            color: isSelected ? AppColors.blueEFF6FF : null,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          width: double.infinity,
-          child: Text(
-            typeEvent.name ?? '',
-            maxLines: 3,
-            style: AppTypography.style(
-              14,
-              color: isSelected ? AppColors.blue005EB8 : AppColors.grey64748B,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+    EventType typeEvent, {
+    required Function() onSelected,
+  }) {
+    final isSelected = typeEvent.eventKey == _selectedEventType;
+
+    return StatefulBuilder(
+      builder: (context, setState) => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(6),
+          onTap: onSelected,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              color: isSelected ? AppColors.blueEFF6FF : null,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            width: double.infinity,
+            child: Text(
+              typeEvent.name,
+              maxLines: 3,
+              style: AppTypography.style(
+                14,
+                color: isSelected ? AppColors.blue005EB8 : AppColors.grey64748B,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTabContent(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => Container(
-        height: constraints.maxHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: SingleChildScrollView(child: Column(children: const [CustomReorderableListView()])),
       ),
     );
   }
@@ -276,7 +265,7 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SetupInfoFieldBloc, SetupInfoFieldState>(
+    return BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
       builder: (context, state) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,7 +279,9 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                 dragBoundaryProvider: (context) => DragBoundary.forRectOf(context),
                 onReorder: (int oldIndex, int newIndex) {
                   if (oldIndex < newIndex) newIndex -= 1;
-                  context.read<SetupInfoFieldBloc>().add(SetupInfoFieldReorder(oldIndex, newIndex));
+                  context.read<SetupEventDisplayBloc>().add(
+                    SetupInfoFieldReorder(oldIndex, newIndex),
+                  );
                 },
                 shrinkWrap: true,
                 children: List.generate(state.currentFields.length, (index) {
@@ -373,6 +364,12 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
     );
   }
 
+  @override
+  void dispose() {
+    _removePopup();
+    super.dispose();
+  }
+
   Widget _getIconForField(FieldConfigEntity item) {
     final iconPath = item.icon;
     if (iconPath == null || iconPath.isEmpty) {
@@ -402,12 +399,6 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
       errorBuilder: (context, error, stackTrace) =>
           SvgPicture.asset(AppAssets.icEventType, height: 24, width: 24),
     );
-  }
-
-  @override
-  void dispose() {
-    _removePopup();
-    super.dispose();
   }
 
   void showAddDataPopup(
