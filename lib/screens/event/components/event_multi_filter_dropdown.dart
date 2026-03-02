@@ -91,29 +91,32 @@ class _EventMultiFilterDropdownState<T> extends State<EventMultiFilterDropdown<T
       _selectedValues = _selectedValues!.where((v) => widget.items.contains(v)).toList();
     }
 
-    final nextInitial = widget.initialValue;
-    if (nextInitial == null) {
-      if (_selectedValues != null) {
-        setState(() => _selectedValues = null);
+    if (widget.initialValue != oldWidget.initialValue) {
+      final nextInitial = widget.initialValue;
+
+      if (nextInitial == null) {
+        if (_selectedValues != null) {
+          setState(() => _selectedValues = null);
+        }
+        return;
       }
-      return;
-    }
 
-    if (nextInitial.isEmpty) {
-      if (_selectedValues != null && _selectedValues!.isNotEmpty) {
-        setState(() => _selectedValues = <T>[]);
+      if (nextInitial.isEmpty) {
+        if (_selectedValues != null && _selectedValues!.isNotEmpty) {
+          setState(() => _selectedValues = <T>[]);
+        }
+        return;
       }
-      return;
-    }
 
-    if (!nextInitial.every((e) => widget.items.contains(e))) return;
+      if (!nextInitial.every((e) => widget.items.contains(e))) return;
 
-    final current = _selectedValues ?? <T>[];
-    final currentSet = current.toSet();
-    final nextSet = nextInitial.toSet();
+      final current = _selectedValues ?? <T>[];
+      final currentSet = current.toSet();
+      final nextSet = nextInitial.toSet();
 
-    if (currentSet.length != nextSet.length || !currentSet.containsAll(nextSet)) {
-      setState(() => _selectedValues = List<T>.from(nextInitial));
+      if (currentSet.length != nextSet.length || !currentSet.containsAll(nextSet)) {
+        setState(() => _selectedValues = List<T>.from(nextInitial));
+      }
     }
   }
 

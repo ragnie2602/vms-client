@@ -285,14 +285,76 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
 
   Widget _buildCalendar() {
     return TableCalendar(
-      firstDay: DateTime.fromMillisecondsSinceEpoch(0),
-      lastDay: DateTime.now(),
-      focusedDay: _focusedDay,
       calendarFormat: CalendarFormat.month,
-      startingDayOfWeek: StartingDayOfWeek.monday,
+      calendarStyle: CalendarStyle(
+        defaultTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
+        disabledTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.grey94A3B8,
+        ),
+        outsideTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.grey94A3B8,
+        ),
+        rangeEndDecoration: const BoxDecoration(
+          color: AppColors.secondary,
+          shape: BoxShape.circle,
+        ),
+        rangeHighlightColor: AppColors.blueE7F3FF,
+        rangeStartDecoration: const BoxDecoration(
+          color: AppColors.secondary,
+          shape: BoxShape.circle,
+        ),
+        selectedDecoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.secondary,
+        ),
+        selectedTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+        todayDecoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.fromBorderSide(BorderSide(color: AppColors.secondary)),
+          color: Colors.transparent,
+        ),
+        todayTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.black,
+        ),
+        weekendTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
+        withinRangeDecoration: const BoxDecoration(color: Colors.transparent),
+        withinRangeTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
+      ),
+      daysOfWeekHeight: 32,
+      firstDay: DateTime.fromMillisecondsSinceEpoch(0),
+      focusedDay: _focusedDay,
+      headerStyle: const HeaderStyle(
+        formatButtonVisible: false,
+        leftChevronVisible: false,
+        rightChevronVisible: false,
+        titleCentered: false,
+      ),
+      headerVisible: true,
+      lastDay: DateTime.now(),
       locale: 'vi',
-      rangeStartDay: _rangeStart,
-      rangeEndDay: _rangeEnd,
+      onCalendarCreated: (controller) => _pageController = controller,
       onDaySelected: (selectedDay, focusedDay) {
         if (_rangeEnd != null) {
           setState(() {
@@ -313,61 +375,10 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
       onPageChanged: (focusedDay) {
         _focusedDay = focusedDay;
       },
-      onCalendarCreated: (controller) => _pageController = controller,
-      headerVisible: true,
-      headerStyle: const HeaderStyle(
-        formatButtonVisible: false,
-        leftChevronVisible: false,
-        rightChevronVisible: false,
-        titleCentered: false,
-      ),
-      daysOfWeekHeight: 32,
+      rangeStartDay: _rangeStart,
+      rangeEndDay: _rangeEnd,
       rowHeight: 50,
-      calendarStyle: CalendarStyle(
-        rangeHighlightColor: AppColors.blueE7F3FF,
-        rangeStartDecoration: const BoxDecoration(
-          color: AppColors.secondary,
-          shape: BoxShape.circle,
-        ),
-        rangeEndDecoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
-        withinRangeDecoration: const BoxDecoration(color: Colors.transparent),
-        withinRangeTextStyle: AppTypography.style(
-          12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.black,
-        ),
-        defaultTextStyle: AppTypography.style(
-          12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.black,
-        ),
-        weekendTextStyle: AppTypography.style(
-          12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.black,
-        ),
-        outsideTextStyle: AppTypography.style(
-          12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.grey94A3B8,
-        ),
-        disabledTextStyle: AppTypography.style(
-          12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.grey94A3B8,
-        ),
-        selectedTextStyle: AppTypography.style(
-          12,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-        todayDecoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.fromBorderSide(BorderSide(color: AppColors.secondary)),
-          color: Colors.transparent,
-        ),
-        selectedDecoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.secondary),
-      ),
+      startingDayOfWeek: StartingDayOfWeek.monday,
       calendarBuilders: CalendarBuilders(
         headerTitleBuilder: (context, day) {
           return Container(
