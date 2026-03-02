@@ -9,8 +9,8 @@ import 'package:vms_flutter_client/screens/event/components/event_custom_button.
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
-import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/add_object_dialog.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/add_edit_group_object_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_action.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/object_list_table.dart';
@@ -25,23 +25,6 @@ class ObjectGroupScreen extends StatefulWidget {
 class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   TabController? _tabController;
-
-  /// Chuyển đổi List<MockObject> thành TreeNode<MockObject> cho tree widget
-  TreeNode<MockObject> _buildTree(List<MockObject> groups) {
-    final tree = TreeNode<MockObject>.root(
-      data: MockObject(name: "Root", id: "0"),
-    );
-    tree.addAll(groups.map((g) => _buildTreeNode(g)).toList());
-    return tree;
-  }
-
-  TreeNode<MockObject> _buildTreeNode(MockObject obj) {
-    final node = TreeNode<MockObject>(key: obj.id ?? '', data: obj);
-    if (obj.children != null && obj.children!.isNotEmpty) {
-      node.addAll(obj.children!.map((c) => _buildTreeNode(c)).toList());
-    }
-    return node;
-  }
 
   @override
   void initState() {
@@ -111,7 +94,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                     buildWhen: (previous, current) =>
                         previous.listGroup != current.listGroup,
                     builder: (context, state) {
-                      final tree = _buildTree(state.listGroup ?? []);
+                      final tree = (state.listGroup ?? []).convertTree;
+                      // limit max level is 5
                       return GroupObjectTreeWidget(
                         tree: tree,
                         actionBuilder: (node) {
@@ -138,7 +122,40 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                               shadowColor: const Color(0x1A000000),
                               surfaceTintColor: Colors.transparent,
                               color: Colors.white,
-                              onSelected: (action) async {
+                              onSelected: (action) {
+                                switch (action) {
+                                  case GroupObjectAction.add:
+                                    showDialogAddEditGroupObject(
+                                      context,
+                                      addEditType: AddEditGroupObjectType.add,
+                                      parentGroup: node.data,
+                                      listGroupAvailable: context
+                                          .read<ObjectGroupBloc>()
+                                          .state
+                                          .listGroup
+                                          ?.expand(
+                                            (e) => e.convertToOneLevel(
+                                              hideFromLevel: 4,
+                                            ),
+                                          )
+                                          .toList(),
+                                      onConfirm:
+                                          ({
+                                            String? nameNewGroup,
+                                            MockObject? parentGroup,
+                                            MockObject? currentGroup,
+                                          }) {
+                                            // gọi API
+                                          },
+                                    );
+                                    return;
+                                  case GroupObjectAction.edit:
+                                    return;
+                                  case GroupObjectAction.delete:
+                                    return;
+                                  case GroupObjectAction.addObject:
+                                    return;
+                                }
                                 // update selected node
                               },
                               itemBuilder: (context) {

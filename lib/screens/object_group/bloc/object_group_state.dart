@@ -16,6 +16,7 @@ class ObjectGroupState extends Equatable {
   final int totalPages;
   // mock data
   final List<MockObject>? listGroup;
+  final MockObject? selectedGroup;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -27,6 +28,7 @@ class ObjectGroupState extends Equatable {
     this.errorMessage,
     this.totalPages = 1,
     this.listGroup,
+    this.selectedGroup,
   });
 
   ObjectGroupState copyWith({
@@ -38,7 +40,8 @@ class ObjectGroupState extends Equatable {
     int? totalObjects,
     String? errorMessage,
     int? totalPages,
-      List<MockObject>? listGroup,
+    List<MockObject>? listGroup,
+    MockObject? selectedGroup,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,
@@ -50,6 +53,7 @@ class ObjectGroupState extends Equatable {
       errorMessage: errorMessage ?? this.errorMessage,
       totalPages: totalPages ?? this.totalPages,
       listGroup: listGroup ?? this.listGroup,
+      selectedGroup: selectedGroup ?? this.selectedGroup,
     );
   }
 
@@ -63,6 +67,7 @@ class ObjectGroupState extends Equatable {
     totalObjects,
     errorMessage,
     totalPages,
-    listGroup
+    listGroup,
+    selectedGroup,
   ];
 }

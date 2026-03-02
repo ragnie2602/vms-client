@@ -13,6 +13,47 @@ class MockObject {
   final List<MockObject>? children;
 
   MockObject({this.name, this.id, this.type, this.children});
+
+  TreeNode<MockObject> toTreeNode() {
+    final node = TreeNode<MockObject>(key: id ?? '', data: this);
+    if (children != null) {
+      for (final child in children!) {
+        node.add(child.toTreeNode());
+      }
+    }
+    return node;
+  }
+
+  List<MockObject> convertToOneLevel({
+    int? hideFromLevel,
+    int currentLevel = 1,
+  }) {
+    if (hideFromLevel != null && currentLevel >= hideFromLevel) {
+      return [];
+    }
+    List<MockObject> result = [this];
+    if (children != null) {
+      for (var child in children!) {
+        result.addAll(
+          child.convertToOneLevel(
+            hideFromLevel: hideFromLevel,
+            currentLevel: currentLevel + 1,
+          ),
+        );
+      }
+    }
+    return result;
+  }
+}
+
+extension TreeObjectGroupExt on List<MockObject> {
+  TreeNode<MockObject> get convertTree {
+    TreeNode<MockObject> tree = TreeNode.root();
+    for (var group in this) {
+      tree.add(group.toTreeNode());
+    }
+    return tree;
+  }
 }
 
 class GroupObjectTreeWidget extends StatefulWidget {
