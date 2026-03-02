@@ -150,6 +150,29 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                                     );
                                     return;
                                   case GroupObjectAction.edit:
+                                    showDialogAddEditGroupObject(
+                                      context,
+                                      addEditType: AddEditGroupObjectType.edit,
+                                      currentGroup: node.data,
+                                      listGroupAvailable: context
+                                          .read<ObjectGroupBloc>()
+                                          .state
+                                          .listGroup
+                                          ?.expand(
+                                            (e) => e.convertToOneLevel(
+                                              hideFromLevel: 4,
+                                            ),
+                                          )
+                                          .toList(),
+                                      onConfirm:
+                                          ({
+                                            String? nameNewGroup,
+                                            MockObject? parentGroup,
+                                            MockObject? currentGroup,
+                                          }) {
+                                            // gọi API
+                                          },
+                                    );
                                     return;
                                   case GroupObjectAction.delete:
                                     return;
