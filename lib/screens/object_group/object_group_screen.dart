@@ -9,8 +9,10 @@ import 'package:vms_flutter_client/screens/event/components/event_custom_button.
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
+import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/add_object_dialog.dart';
-import 'package:vms_flutter_client/screens/object_group/widgets/object_group_sidebar.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/group_object_action.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/object_list_table.dart';
 
 class ObjectGroupScreen extends StatefulWidget {
@@ -23,6 +25,79 @@ class ObjectGroupScreen extends StatefulWidget {
 class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   TabController? _tabController;
+
+  final TreeNode<MockObject> _tree =
+      TreeNode<MockObject>.root(
+        data: MockObject(name: "Root", id: "0"),
+      )..addAll([
+        TreeNode<MockObject>(
+          key: "1",
+          data: MockObject(name: "Danh sách đối tượng", id: "1"),
+        ),
+        TreeNode<MockObject>(
+          key: "2",
+          data: MockObject(name: "Khối THCS", id: "2"),
+        ),
+        TreeNode<MockObject>(
+          key: "3",
+          data: MockObject(name: "Khối THPT", id: "3"),
+        )..addAll([
+          TreeNode<MockObject>(
+            key: "3_1",
+            data: MockObject(name: "Khối 1", id: "3_1"),
+          )..addAll([
+            TreeNode<MockObject>(
+              key: "3_1_1",
+              data: MockObject(name: "Các lớp 1A", id: "3_1_1"),
+            )..addAll([
+              TreeNode<MockObject>(
+                key: "3_1_1_1",
+                data: MockObject(name: "Lớp 1A1", id: "3_1_1_1"),
+              ),
+              TreeNode<MockObject>(
+                key: "3_1_1_2",
+                data: MockObject(name: "Lớp 1A2", id: "3_1_1_2"),
+              ),
+              TreeNode<MockObject>(
+                key: "3_1_1_3",
+                data: MockObject(name: "Lớp 1A3", id: "3_1_1_3"),
+              ),
+              TreeNode<MockObject>(
+                key: "3_1_1_4",
+                data: MockObject(name: "Lớp 1A4", id: "3_1_1_4"),
+              ),
+              TreeNode<MockObject>(
+                key: "3_1_1_5",
+                data: MockObject(name: "Lớp 1A5", id: "3_1_1_5"),
+              ),
+            ]),
+            TreeNode<MockObject>(
+              key: "3_1_2",
+              data: MockObject(name: "Các lớp 1B", id: "3_1_2"),
+            ),
+            TreeNode<MockObject>(
+              key: "3_1_3",
+              data: MockObject(name: "Các lớp 1C", id: "3_1_3"),
+            ),
+            TreeNode<MockObject>(
+              key: "3_1_4",
+              data: MockObject(name: "Các lớp 1D", id: "3_1_4"),
+            ),
+            TreeNode<MockObject>(
+              key: "3_1_5",
+              data: MockObject(name: "Các lớp 1E", id: "3_1_5"),
+            ),
+          ]),
+          TreeNode<MockObject>(
+            key: "3_2",
+            data: MockObject(name: "Khối 2", id: "3_2"),
+          ),
+          TreeNode<MockObject>(
+            key: "3_3",
+            data: MockObject(name: "Khối 3", id: "3_3"),
+          ),
+        ]),
+      ]);
 
   @override
   void initState() {
@@ -48,8 +123,110 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left Sidebar Tree View (Mocked)
-          const ObjectGroupSidebar(),
+          Container(
+            width: 270,
+            color: Colors.white,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SvgPicture.asset(AppAssets.icSearch),
+                      ),
+                      hintText: 'Nhập tên nhóm',
+                      hintStyle: AppTypography.style(
+                        14,
+                        color: AppColors.grey64748B,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide: const BorderSide(
+                          color: AppColors.greyE2E8F0,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        borderSide: const BorderSide(
+                          color: AppColors.greyE2E8F0,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GroupObjectTreeWidget(
+                    tree: _tree,
+                    actionBuilder: (node) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          splashColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          iconTheme: const IconThemeData(size: 20),
+                        ),
+                        child: PopupMenuButton<GroupObjectAction>(
+                          tooltip: '',
+                          key: ValueKey(node.key),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          splashRadius: 20,
+                          position: PopupMenuPosition.under,
+                          offset: const Offset(0, 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 3,
+                          shadowColor: const Color(0x1A000000),
+                          surfaceTintColor: Colors.transparent,
+                          color: Colors.white,
+                          onSelected: (action) {
+                            // action.onTap();
+                          },
+                          itemBuilder: (context) {
+                            List<GroupObjectAction> listAction = List.of(
+                              GroupObjectAction.values,
+                            );
+
+                            final List<PopupMenuEntry<GroupObjectAction>>
+                            entries = [];
+                            for (int i = 0; i < listAction.length; i++) {
+                              final action = listAction[i];
+                              entries.add(
+                                PopupMenuItem<GroupObjectAction>(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  value: action,
+                                  child: action.widgetView,
+                                ),
+                              );
+                              if (i != listAction.length - 1) {
+                                entries.add(const PopupMenuDivider(height: 1));
+                              }
+                            }
+                            return entries;
+                          },
+                          child: const Icon(
+                            Icons.more_horiz,
+                            color: AppColors.black,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
 
           const SizedBox(width: 8),
 
