@@ -270,9 +270,7 @@ class AiBoxView extends BaseView<AiBoxBloc> {
                   children: [
                     const AiBoxTitleWidget(),
                     const SizedBox(height: 16),
-                    state is AiBoxLoadingState
-                        ? const Center(child: CircularProgressIndicator())
-                        : state is AiBoxErrorState
+                    state is AiBoxErrorState
                         ? Flexible(
                             child: Center(
                               child: Column(
@@ -306,91 +304,120 @@ class AiBoxView extends BaseView<AiBoxBloc> {
                               ),
                             ),
                           )
-                        : state is AIBoxLoadedState
+                        : state is AIBoxLoadedState ||
+                              state is AiBoxLoadingState
                         ? Flexible(
-                            child: Builder(
-                              builder: (BuildContext context) {
-                                final displayList =
-                                    state.paginatedAiBoxes ?? [];
+                            child: Stack(
+                              children: [
+                                Builder(
+                                  builder: (BuildContext context) {
+                                    final loadedState =
+                                        state is AIBoxLoadedState
+                                        ? state
+                                        : _bloc.lastLoadedState;
 
-                                if (displayList.isEmpty) {
-                                  return Center(
-                                    child: Text(
-                                      'Không có kết quả phù hợp!',
-                                      style: AppTypography.style(14),
-                                    ),
-                                  );
-                                }
+                                    if (loadedState == null) {
+                                      return const SizedBox();
+                                    }
 
-                                return Column(
-                                  children: [
-                                    Expanded(
-                                      child: Scrollbar(
-                                        controller: listController,
-                                        thumbVisibility: true,
-                                        child: ListView.separated(
-                                          controller: listController,
-                                          primary: false,
-                                          physics: ClampingScrollPhysics(),
-                                          separatorBuilder: (_, __) =>
-                                              const Divider(
-                                                height: 1,
-                                                color: AppColors.greyF1F5F9,
-                                              ),
-                                          shrinkWrap: true,
-                                          itemCount: displayList.length,
-                                          itemBuilder: (context, index) {
-                                            final globalIndex =
-                                                (state.page - 1) *
-                                                    state.pageSize +
-                                                index;
-                                            return AiBoxItemWidget(
-                                              itemAiBox: displayList[index],
-                                              index: globalIndex + 1,
-                                              onDelete: () {
-                                                checkEnableRemove(
-                                                  context,
-                                                  aiBox: displayList[index],
+                                    final displayList =
+                                        loadedState.paginatedAiBoxes ?? [];
+
+                                    if (displayList.isEmpty) {
+                                      return Center(
+                                        child: Text(
+                                          'Không có kết quả phù hợp!',
+                                          style: AppTypography.style(14),
+                                        ),
+                                      );
+                                    }
+
+                                    return Column(
+                                      children: [
+                                        Expanded(
+                                          child: Scrollbar(
+                                            controller: listController,
+                                            thumbVisibility: true,
+                                            child: ListView.separated(
+                                              controller: listController,
+                                              primary: false,
+                                              physics: ClampingScrollPhysics(),
+                                              separatorBuilder: (_, __) =>
+                                                  const Divider(
+                                                    height: 1,
+                                                    color: AppColors.greyF1F5F9,
+                                                  ),
+                                              shrinkWrap: true,
+                                              itemCount: displayList.length,
+                                              itemBuilder: (context, index) {
+                                                final globalIndex =
+                                                    (loadedState.page - 1) *
+                                                        loadedState.pageSize +
+                                                    index;
+                                                return AiBoxItemWidget(
+                                                  itemAiBox: displayList[index],
+                                                  index: globalIndex + 1,
+                                                  onDelete: () {
+                                                    checkEnableRemove(
+                                                      context,
+                                                      aiBox: displayList[index],
+                                                    );
+                                                  },
+                                                  onEdit: () {
+                                                    final aiBoxId =
+                                                        displayList[index].id;
+                                                    if (aiBoxId != null) {
+                                                      showAddAiBoxDialog(
+                                                        context,
+                                                        type: AiBoxDialogType
+                                                            .edit,
+                                                        aiBoxId: aiBoxId,
+                                                        onConfirm:
+                                                            (payload) async {
+                                                              _editAiBox(
+                                                                aiBoxId:
+                                                                    aiBoxId,
+                                                                aiBox: payload,
+                                                              );
+                                                            },
+                                                      );
+                                                    }
+                                                  },
                                                 );
                                               },
-                                              onEdit: () {
-                                                final aiBoxId =
-                                                    displayList[index].id;
-                                                if (aiBoxId != null) {
-                                                  showAddAiBoxDialog(
-                                                    context,
-                                                    type: AiBoxDialogType.edit,
-                                                    aiBoxId: aiBoxId,
-                                                    onConfirm: (payload) async {
-                                                      _editAiBox(
-                                                        aiBoxId: aiBoxId,
-                                                        aiBox: payload,
-                                                      );
-                                                    },
-                                                  );
-                                                }
-                                              },
-                                            );
-                                          },
+                                            ),
+                                          ),
                                         ),
+                                        if (loadedState.totalCount >
+                                                loadedState.pageSize &&
+                                            loadedState.aiBoxes != null &&
+                                            loadedState
+                                                .aiBoxes!
+                                                .isNotEmpty) ...[
+                                          const SizedBox(height: 16),
+                                          AiBoxPaginationBar(
+                                            totalItems: loadedState.totalCount,
+                                            currentPage: loadedState.page,
+                                            pageSize: loadedState.pageSize,
+                                            onPageChanged: (page) {
+                                              _bloc.add(GetAiBoxAtPage(page));
+                                            },
+                                          ),
+                                        ],
+                                      ],
+                                    );
+                                  },
+                                ),
+                                if (state is AiBoxLoadingState)
+                                  Positioned.fill(
+                                    child: Container(
+                                      color: Colors.white.withOpacity(0.6),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
                                       ),
                                     ),
-                                    if (state.totalCount > state.pageSize &&
-                                        state.aiBoxes != null &&
-                                        state.aiBoxes!.isNotEmpty) ...[
-                                      const SizedBox(height: 16),
-                                      AiBoxPaginationBar(
-                                        totalItems: state.totalCount,
-                                        currentPage: state.page,
-                                        pageSize: state.pageSize,
-                                        onPageChanged: (page) {
-                                          _bloc.add(GetAiBoxAtPage(page));
-                                        },
-                                      ),
-                                    ],
-                                  ],
-                                );
-                              },
+                                  ),
+                              ],
                             ),
                           )
                         : const SizedBox(),

@@ -28,8 +28,7 @@ extension AiBoxStatusExtension on AiBoxStatus {
   }
 }
 
-AiBoxEntity aiBoxEntityFromJson(String str) =>
-    AiBoxEntity.fromJson(json.decode(str));
+AiBoxEntity aiBoxEntityFromJson(String str) => AiBoxEntity.fromJson(json.decode(str));
 
 String aiBoxEntityToJson(AiBoxEntity data) => json.encode(data.toJson());
 
@@ -53,9 +52,7 @@ class AiBoxEntity {
 
   /* Getters */
   String get dropDownLabel => '$name (${roadUsed ?? '_'}/${roads ?? '_'})';
-  bool get isFullSlot =>
-      (maxCamera ?? 9999999999999) <= (numberCameraUsed ?? 0) ||
-      (roads ?? 9999999999999) <= (roadUsed ?? 0);
+  bool get isFullSlot => (roads ?? 9999999999999) <= (roadUsed ?? 0);
 
   AiBoxEntity({
     this.id,

@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:protobuf/protobuf.dart';
 import 'package:vms_flutter_client/core/constants/api_constants.dart';
 import 'package:vms_flutter_client/core/lang/language.dart';
@@ -99,19 +98,4 @@ class ApiException implements Exception {
 
   @override
   String toString() => message;
-}
-
-/// Sử dụng trong các service khi cần xử lý lỗi từ API
-String parseError(dynamic exception) {
-  if (exception is DioException) {
-    if (exception.type == DioExceptionType.badResponse &&
-        exception.response?.data != null) {
-      final responseData = exception.response!.data;
-      if (responseData is Map<String, dynamic>) {
-        return responseData['message'] ?? 'Lỗi không xác định';
-      }
-    }
-    return exception.message ?? 'Lỗi kết nối';
-  }
-  return exception.toString();
 }

@@ -103,7 +103,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   late Map<String, int> _playlistMapper;
   int get initialIndex => widget.initialIndex;
   int get currentIndex => _playlistIndex.value;
-  PlaybackVideo? get currentPlayback => currentIndex < 0 ? null : widget.playlist[currentIndex];
+  PlaybackVideo? get currentPlayback => (currentIndex < 0 || currentIndex >= widget.playlist.length)
+      ? null
+      : widget.playlist[currentIndex];
   PlaybackVideo? get nextPlayback =>
       currentIndex < widget.playlist.length - 1 ? widget.playlist[currentIndex + 1] : null;
 
