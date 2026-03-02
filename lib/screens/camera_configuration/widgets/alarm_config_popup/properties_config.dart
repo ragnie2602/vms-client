@@ -15,7 +15,6 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     aiBoxRepository: context.read(),
     filterAiBoxUseCase: context.read(),
   );
-  late final alarmSoundBloc = AlarmSoundBloc(context.read());
 
   int? _savedAiBoxId;
   int? _savedStatus;
@@ -114,8 +113,31 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     setState(() {});
   }
 
+  void _initSelectedSound() {
+    if (widget.alarmConfig.soundId == null || _selectedSound != null) return;
+
+    void _onLoaded(AlarmSoundLoaded state) {
+      if (!mounted) return;
+      selectedSound = state.alarmSounds.firstWhereOrNull((e) => e.id == widget.alarmConfig.soundId);
+      Future.delayed(Duration.zero, () => mounted ? setState(() {}) : null);
+    }
+
+    final state = context.read<AlarmSoundBloc>().state;
+    if (state is AlarmSoundLoaded) {
+      _onLoaded(state);
+    } else {
+      context
+          .read<AlarmSoundBloc>()
+          .stream
+          .firstWhere((state) => state is AlarmSoundLoaded)
+          .then((state) => _onLoaded(state as AlarmSoundLoaded));
+    }
+  }
+
   @override
   void initState() {
+    _initSelectedSound();
+
     _savedAiBoxId = widget.alarmConfig.aiBoxId;
     _savedStatus = widget.alarmConfig.status;
     super.initState();
@@ -140,38 +162,24 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
         },
       ),
     );
-
-    alarmSoundBloc.add(
-      GetAlarmSounds(
-        onSuccess: () {
-          if (widget.alarmConfig.soundId == null) return;
-
-          selectedSound = (alarmSoundBloc.state as AlarmSoundLoaded).alarmSounds.firstWhereOrNull(
-            (e) => e.id == widget.alarmConfig.soundId,
-          );
-          if (selectedSound != null) setState(() {});
-        },
-      ),
-    );
   }
 
   @override
   void dispose() {
     aiBoxBloc.close();
-    alarmSoundBloc.close();
     _audioPlayer.dispose();
     super.dispose();
   }
 
+  late final titleStyle = AppTypography.style(
+    14,
+    fontWeight: FontWeight.w500,
+    color: Color(0xFF334155),
+    lineHeight: 20 / 14,
+  );
+
   @override
   Widget build(BuildContext context) {
-    final titleStyle = AppTypography.style(
-      14,
-      fontWeight: FontWeight.w500,
-      color: Color(0xFF334155),
-      lineHeight: 20 / 14,
-    );
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +237,7 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
           children: <Widget>[
             Expanded(child: _buildAlarmSoundSelection()),
             SizedBox(width: 12),
-            _buildAudioPlayerButton(selectedSound?.url),
+            _buildAudioPlayerButton(selectedSound?.localFilePath ?? selectedSound?.url),
           ],
         ),
       ],
@@ -330,62 +338,59 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       itemBuilder: Container(
         width: double.infinity,
         constraints: BoxConstraints(minHeight: 36),
-        child: BlocProvider.value(
-          value: alarmSoundBloc,
-          child: BlocBuilder<AlarmSoundBloc, AlarmSoundState>(
-            builder: (context, state) => stateBuilder<AlarmSoundLoaded>(
-              state,
-              errorBuilder: (message) => _buildStateError(
-                "Có lỗi xảy ra trong quá trình tải danh sách âm thanh cảnh báo, hãy thử lại sau!",
-                () => alarmSoundBloc.add(GetAlarmSounds()),
-              ),
-              loadingBuilder: () => Center(
-                child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
-              ),
-              emptyBuilder: () => Center(
-                child: Text(
-                  'Không có âm thanh cảnh báo nào.',
-                  maxLines: 3,
-                  textAlign: TextAlign.center,
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.redFF2F2F,
-                  ),
+        child: BlocBuilder<AlarmSoundBloc, AlarmSoundState>(
+          builder: (context, state) => stateBuilder<AlarmSoundLoaded>(
+            state,
+            errorBuilder: (message) => _buildStateError(
+              "Có lỗi xảy ra trong quá trình tải danh sách âm thanh cảnh báo, hãy thử lại sau!",
+              () => context.read<AlarmSoundBloc>().add(GetAlarmSounds()),
+            ),
+            loadingBuilder: () => Center(
+              child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
+            ),
+            emptyBuilder: () => Center(
+              child: Text(
+                'Không có âm thanh cảnh báo nào.',
+                maxLines: 3,
+                textAlign: TextAlign.center,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.redFF2F2F,
                 ),
               ),
-              child: (state) => ListView.separated(
-                shrinkWrap: true,
-                itemCount: state.alarmSounds.length,
-                separatorBuilder: (context, index) => Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16),
-                  color: AppColors.greyF2F4FA,
-                  height: 1,
-                ),
-                itemBuilder: (context, index) {
-                  final item = state.alarmSounds[index];
+            ),
+            child: (state) => ListView.separated(
+              shrinkWrap: true,
+              itemCount: state.alarmSounds.length,
+              separatorBuilder: (context, index) => Container(
+                margin: EdgeInsets.symmetric(horizontal: 16),
+                color: AppColors.greyF2F4FA,
+                height: 1,
+              ),
+              itemBuilder: (context, index) {
+                final item = state.alarmSounds[index];
 
-                  return InkWell(
-                    onTap: () => Navigator.pop(context, item),
-                    child: Container(
-                      color: item.id == selectedSound?.id
-                          ? Theme.of(context).highlightColor
-                          : Colors.transparent,
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Text(
-                        item.name,
-                        maxLines: 3,
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w400,
-                          lineHeight: 20 / 14,
-                          color: Color(0xFF0F172A),
-                        ),
+                return InkWell(
+                  onTap: () => Navigator.pop(context, item),
+                  child: Container(
+                    color: item.id == selectedSound?.id
+                        ? Theme.of(context).highlightColor
+                        : Colors.transparent,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text(
+                      item.name,
+                      maxLines: 3,
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w400,
+                        lineHeight: 20 / 14,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ),

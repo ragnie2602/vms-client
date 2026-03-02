@@ -105,6 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: 0);
                   context.goNamed(
                     setting.isDefaultMode ? Routes.monitoring.name : Routes.custom_live_view.name,
+                    extra: 'isFreshLogin',
                   );
                 } else if (state.isLoading == false && state.errorMessage != null) {
                   showAppMessageDialog(
