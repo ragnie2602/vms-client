@@ -185,39 +185,49 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         /* Global switch */
-        Row(
-          spacing: 16,
-          children: <Widget>[
-            Text(widget.alarm.name, style: titleStyle),
-            /*  */
-            SizedBox(
-              width: 42,
-              height: 28,
-              child: FittedBox(
-                fit: BoxFit.fill,
-                child: Switch(
-                  activeTrackColor: AppColors.blue005AA9,
-                  inactiveTrackColor: Color(0xFFE4E4E4),
-                  thumbColor: WidgetStateProperty.all(Colors.white),
-                  trackOutlineWidth: WidgetStateProperty.all(0),
-                  trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                  value: widget.alarmConfig.status == 1,
-                  splashRadius: 0,
-                  onChanged: (value) {
-                    setState(() => widget.alarmConfig.status = value ? 1 : 0);
+        _buildSwitch(
+          title: widget.alarm.name,
+          value: widget.alarmConfig.status == 1,
+          onChanged: (value) {
+            setState(() {
+              widget.alarmConfig.status = value ? 1 : 0;
 
-                    // Bật thì validate or auto fill ai box
-                    if (value && selectedAiBox == null) {
-                      _autofillAiBox();
-                    } else if (value && selectedAiBox != null) {
-                      _validateAiBox();
-                    }
-                  },
-                ),
+              if (widget.alarm.type == AIAlarmType.faceDetection && !value) {
+                widget.alarmConfig.nonHitAlarm = 0;
+              }
+            });
+
+            // Bật thì validate or auto fill ai box
+            if (value && selectedAiBox == null) {
+              _autofillAiBox();
+            } else if (value && selectedAiBox != null) {
+              _validateAiBox();
+            }
+          },
+        ),
+
+        /* Sub switch - Cảnh báo người lạ - Cảnh báo xâm nhập */
+        if (widget.alarm.type == AIAlarmType.faceDetection)
+          CustomPaint(
+            painter: _CurvedCornerBorderPainter(color: AppColors.greyE4E4E4),
+            child: Padding(
+              padding: EdgeInsets.only(top: 8, left: 22),
+              child: _buildSwitch(
+                title: 'Cảnh báo người lạ',
+                value: widget.alarmConfig.nonHitAlarm == 1,
+                onChanged: (value) {
+                  if (widget.alarmConfig.status != 1) {
+                    return ToastUtil.toastWarning(
+                      message: 'Vui lòng bật phát hiện khuôn mặt để kích hoạt tính năng này.',
+                    );
+                  }
+
+                  setState(() => widget.alarmConfig.nonHitAlarm = value ? 1 : 0);
+                },
+                disable: widget.alarmConfig.status != 1,
               ),
             ),
-          ],
-        ),
+          ),
 
         /* Điều kiện cảnh báo */
         _buildConditionConfig(),
@@ -239,6 +249,39 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
             SizedBox(width: 12),
             _buildAudioPlayerButton(selectedSound?.localFilePath ?? selectedSound?.url),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSwitch({
+    required String title,
+    required bool value,
+    required Function(bool) onChanged,
+    bool disable = false,
+  }) {
+    return Row(
+      spacing: 16,
+      children: <Widget>[
+        Text(title, style: titleStyle),
+        /*  */
+        SizedBox(
+          width: 42,
+          height: 28,
+          child: FittedBox(
+            fit: BoxFit.fill,
+            child: Switch(
+              mouseCursor: disable ? SystemMouseCursors.forbidden : null,
+              activeTrackColor: AppColors.blue005AA9,
+              inactiveTrackColor: Color(0xFFE4E4E4),
+              thumbColor: WidgetStateProperty.all(Colors.white),
+              trackOutlineWidth: WidgetStateProperty.all(0),
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+              value: value,
+              splashRadius: 0,
+              onChanged: onChanged,
+            ),
+          ),
         ),
       ],
     );
@@ -789,6 +832,34 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       ),
     );
   }
+}
+
+class _CurvedCornerBorderPainter extends CustomPainter {
+  final Color color;
+  _CurvedCornerBorderPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final height = size.height - 8 - 5; // 8: padding top, 5: title height / 2
+
+    Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final path = Path()
+      ..moveTo(8, 0)
+      ..lineTo(8, height - 8)
+      ..arcToPoint(Offset(16, height), radius: Radius.circular(8), clockwise: false)
+      ..lineTo(16 + 1, height)
+    //
+    ;
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _BorderProgressPainter extends CustomPainter {

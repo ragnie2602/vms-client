@@ -96,6 +96,7 @@ class AIAlarmConfig {
   final int? id;
   final AIAlarmType type;
   int status;
+  int? nonHitAlarm;
   int? aiBoxId;
   int? suggestedAiBoxId;
   int? soundId;
@@ -112,6 +113,7 @@ class AIAlarmConfig {
     AlarmConditions? alarmConditions,
     List<ROIConfig>? rois,
     List<TimesConfig>? times,
+    this.nonHitAlarm,
   }) : rois = rois ?? [],
        times = times ?? [],
        alarmConditions = alarmConditions ?? AlarmConditions();
@@ -132,6 +134,7 @@ class AIAlarmConfig {
       times: json['times'] != null
           ? (json['times'] as List).map<TimesConfig>((e) => TimesConfig.fromJson(e)).toList()
           : <TimesConfig>[],
+      nonHitAlarm: type == AIAlarmType.faceDetection ? (json['nonHitAlarm'] ?? 0) : null,
     );
   }
 
@@ -152,6 +155,7 @@ class AIAlarmConfig {
           .map((e) => {'days': e.days, 'startTime': e.startTime, 'endTime': e.endTime})
           .toList(),
       'alarmConditions': alarmConditions.toJson(),
+      if (type == AIAlarmType.faceDetection) 'nonHitAlarm': nonHitAlarm ?? 0,
     };
   }
 
