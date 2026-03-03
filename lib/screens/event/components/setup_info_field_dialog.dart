@@ -6,12 +6,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
+import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
-import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 
 class SetupInfoFieldDialog extends StatefulWidget {
@@ -51,7 +50,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
           children: [
             _buildHeader(context),
             Expanded(
-              child: BlocBuilder<EventBloc, EventState>(
+              child: BlocConsumer<EventBloc, EventState>(
                 buildWhen: (previous, current) =>
                     current is GettingAllEventType ||
                     current is GetAllEventTypeSuccess ||
@@ -83,12 +82,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                                     return _buildVerticalTab(
                                       context,
                                       et,
-                                      onSelected: () {
-                                        bloc.add(
-                                          GetEventDisplayConfig(et.eventKey, widget.typeConfig),
-                                        );
-                                        setState(() => _selectedEventType = et.eventKey);
-                                      },
+                                      onSelected: () => _changeTab(et),
                                     );
                                   }).toList(),
                                 ),
@@ -103,12 +97,30 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                           builder: (context, constraints) => Container(
                             height: constraints.maxHeight,
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                            child: CustomReorderableListView(),
+                            child: BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+                              buildWhen: (previous, current) =>
+                                  current is SEDGetEventDisplayConfigSuccess ||
+                                  current is SEDGettingEventDisplayConfig ||
+                                  current is SEDGetEventDisplayConfigFailure,
+                              builder: (context, state) {
+                                if (state is SEDGetEventDisplayConfigSuccess) {
+                                  return CustomReorderableListView(state.config);
+                                } else if (state is SEDGetEventDisplayConfigFailure) {
+                                  return Center(child: Text('Không có dữ liệu'));
+                                }
+                                return Center(child: CircularProgressIndicator());
+                              },
+                            ),
                           ),
                         ),
                       ),
                     ],
                   );
+                },
+                listener: (context, state) {
+                  if (state is GetAllEventTypeSuccess) {
+                    _changeTab(state.eventTypes.first);
+                  }
                 },
               ),
             ),
@@ -118,8 +130,8 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
       ),
     );
   }
-  // ...
 
+  // WIDGETS
   Widget _buildHeader(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
@@ -198,10 +210,10 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
             ),
           ),
           const SizedBox(width: 17),
-          BlocBuilder<SetupInfoFieldBloc, SetupInfoFieldState>(
-            buildWhen: (previous, current) => previous.saveStatus != current.saveStatus,
+          BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
             builder: (context, state) {
-              final isLoading = state.saveStatus == SetupInfoFieldStatus.loading;
+              final isLoading = state is SEDSavingConfigs;
+
               return EventCustomButton(
                 backgroundColor: AppColors.secondary,
                 borderColor: AppColors.secondary,
@@ -220,7 +232,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                     spreadRadius: -1,
                   ),
                 ],
-                label: 'Lưu',
+                label: isLoading ? '' : 'Lưu',
                 prefix: isLoading
                     ? const SizedBox(
                         width: 16,
@@ -232,9 +244,9 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                 onPressed: isLoading
                     ? () {}
                     : () {
-                        context.read<SetupInfoFieldBloc>().add(
-                          SetupInfoFieldSave(widget.typeConfig),
-                        );
+                        // context.read<SetupInfoFieldBloc>().add(
+                        //   SetupInfoFieldSave(widget.typeConfig),
+                        // );
                       },
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                 textStyle: AppTypography.style(
@@ -250,10 +262,18 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
       ),
     );
   }
+
+  // FUNCTIONS
+  void _changeTab(EventType et) {
+    bloc.add(GetEventDisplayConfig(et.eventKey, widget.typeConfig));
+    setState(() => _selectedEventType = et.eventKey);
+  }
 }
 
 class CustomReorderableListView extends StatefulWidget {
-  const CustomReorderableListView({super.key});
+  final EventDisplayConfig config;
+
+  const CustomReorderableListView(this.config, {super.key});
 
   @override
   State<CustomReorderableListView> createState() => _CustomReorderableListViewState();
@@ -265,102 +285,93 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
-      builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 10),
-            DragBoundary(
-              child: ReorderableListView(
-                key: _listKey,
-                buildDefaultDragHandles: false,
-                dragBoundaryProvider: (context) => DragBoundary.forRectOf(context),
-                onReorder: (int oldIndex, int newIndex) {
-                  if (oldIndex < newIndex) newIndex -= 1;
-                  context.read<SetupEventDisplayBloc>().add(
-                    SetupInfoFieldReorder(oldIndex, newIndex),
-                  );
-                },
-                shrinkWrap: true,
-                children: List.generate(state.currentFields.length, (index) {
-                  final item = state.currentFields[index];
-                  return Container(
-                    key: ValueKey(item.code),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.greyE2E8F0),
-                      borderRadius: BorderRadius.circular(3),
-                      color: AppColors.white,
+    final sf = sortedFields();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 10),
+        DragBoundary(
+          child: ReorderableListView(
+            key: _listKey,
+            buildDefaultDragHandles: false,
+            dragBoundaryProvider: (context) => DragBoundary.forRectOf(context),
+            onReorder: (int oldIndex, int newIndex) {
+              if (oldIndex < newIndex) newIndex -= 1;
+              context.read<SetupEventDisplayBloc>().add(SetupInfoFieldReorder(oldIndex, newIndex));
+            },
+            shrinkWrap: true,
+            children: List.generate(sf.length, (index) {
+              final f = sf[index];
+
+              return Container(
+                key: ValueKey(f.fieldKey),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.greyE2E8F0),
+                  borderRadius: BorderRadius.circular(3),
+                  color: AppColors.white,
+                ),
+                margin: const EdgeInsets.only(bottom: 2.5, top: 2.5),
+                child: Row(
+                  children: [
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: Container(
+                        color: AppColors.greyE2E8F0,
+                        height: 40,
+                        width: 23,
+                        child: Center(child: SvgPicture.asset(AppAssets.icDrawable)),
+                      ),
                     ),
-                    margin: const EdgeInsets.only(bottom: 2.5, top: 2.5),
-                    child: Row(
-                      children: [
-                        ReorderableDragStartListener(
-                          index: index,
-                          child: Container(
-                            color: AppColors.greyE2E8F0,
-                            height: 40,
-                            width: 23,
-                            child: Center(child: SvgPicture.asset(AppAssets.icDrawable)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Row(
+                        spacing: 8,
+                        children: [
+                          SizedBox(width: 24, height: 24, child: _getIconForField(f.icon)),
+                          Text(
+                            f.fieldName,
+                            style: AppTypography.style(14, fontWeight: FontWeight.w400),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Row(
-                            spacing: 8,
-                            children: [
-                              SizedBox(width: 24, height: 24, child: _getIconForField(item)),
-                              Text(
-                                item.label ?? item.code ?? '',
-                                style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        IconButton(
-                          icon: SvgPicture.asset(AppAssets.icClose, height: 20, width: 20),
-                          onPressed: () {
-                            context.read<SetupInfoFieldBloc>().add(SetupInfoFieldRemoveField(item));
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  );
-                }),
-              ),
-            ),
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: (state.availableFields.length == state.currentFields.length)
-                  ? null
-                  : () => showAddDataPopup(context, state.availableFields, state.currentFields),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.add,
-                    color: (state.availableFields.length == state.currentFields.length)
-                        ? AppColors.grey64748B
-                        : AppColors.secondary,
-                    size: 18,
-                  ),
-                  Text(
-                    'Thêm trường thông tin',
-                    style: AppTypography.style(
-                      14,
-                      color: (state.availableFields.length == state.currentFields.length)
-                          ? AppColors.grey64748B
-                          : AppColors.secondary,
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(width: 10),
+                    IconButton(
+                      icon: SvgPicture.asset(AppAssets.icClose, height: 20, width: 20),
+                      onPressed: () {
+                        // context.read<SetupInfoFieldBloc>().add(SetupInfoFieldRemoveField(item));
+                      },
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 10),
+        InkWell(
+          onTap: (canAppend) ? () => showAddDataPopup(context) : null,
+          child: Row(
+            children: [
+              Icon(
+                Icons.add,
+                color: (canAppend) ? AppColors.grey64748B : AppColors.secondary,
+                size: 18,
               ),
-            ),
-          ],
-        );
-      },
+              Text(
+                'Thêm trường thông tin',
+                style: AppTypography.style(
+                  14,
+                  color: (canAppend) ? AppColors.grey64748B : AppColors.secondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -370,17 +381,24 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
     super.dispose();
   }
 
-  Widget _getIconForField(FieldConfigEntity item) {
-    final iconPath = item.icon;
-    if (iconPath == null || iconPath.isEmpty) {
-      return SvgPicture.asset(AppAssets.icEventType, height: 24, width: 24);
-    }
+  bool get canAppend => widget.config.fields.length > widget.config.sorting.length;
 
-    final isSvg = iconPath.toLowerCase().endsWith('.svg');
+  List<Fields> sortedFields() {
+    final Map<String, Fields> fieldsByKey = {for (final f in widget.config.fields) f.fieldKey: f};
 
+    return [
+      for (final key in widget.config.sorting)
+        if (fieldsByKey.containsKey(key)) fieldsByKey[key]!,
+    ];
+  }
+
+  Widget _getIconForField(String? url) {
+    if (url == null || url.isEmpty) return SizedBox(height: 24, width: 24);
+
+    final isSvg = url.toLowerCase().endsWith('.svg');
     if (isSvg) {
       return SvgPicture.network(
-        iconPath,
+        url,
         width: 20,
         height: 20,
         placeholderBuilder: (context) => const SizedBox(
@@ -390,26 +408,29 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
         ),
         fit: BoxFit.contain,
       );
+    } else {
+      return Image.network(
+        url,
+        width: 24,
+        height: 24,
+        errorBuilder: (context, error, stackTrace) =>
+            SvgPicture.asset(AppAssets.icEventType, height: 24, width: 24),
+      );
     }
-
-    return Image.network(
-      iconPath,
-      width: 24,
-      height: 24,
-      errorBuilder: (context, error, stackTrace) =>
-          SvgPicture.asset(AppAssets.icEventType, height: 24, width: 24),
-    );
   }
 
-  void showAddDataPopup(
-    BuildContext context,
-    List<FieldConfigEntity> availableFields,
-    List<FieldConfigEntity> currentFields,
-  ) {
-    if (_popupEntry != null) {
-      _removePopup();
-      return;
-    }
+  void _removePopup() {
+    _popupEntry?.remove();
+    _popupEntry = null;
+  }
+
+  void showAddDataPopup(BuildContext context) {
+    final _f = widget.config.fields;
+    final _s = widget.config.sorting;
+
+    final bloc = context.read<SetupEventDisplayBloc>();
+
+    final _fieldsToShow = _f.where((af) => !_s.contains(af.fieldKey)).toList();
 
     final listContext = _listKey.currentContext;
     if (listContext == null) return;
@@ -422,13 +443,6 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
       Offset(0, listBox.size.height),
       ancestor: overlayBox,
     );
-
-    final bloc = context.read<SetupInfoFieldBloc>();
-
-    // Filter danh sách cac field có thể thêm (loại các trường đã được setup)
-    final optionsToShow = availableFields
-        .where((af) => !currentFields.any((cf) => cf.code == af.code))
-        .toList();
 
     _popupEntry = OverlayEntry(
       builder: (ctx) => Stack(
@@ -463,20 +477,19 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                   child: ListView.separated(
                     itemBuilder: (context, index) => TextButton(
                       onPressed: () {
-                        bloc.add(SetupInfoFieldAddField(optionsToShow[index]));
+                        // bloc.add(SetupInfoFieldAddField(optionsToShow[index]));
                         _removePopup();
                       },
-
                       style: TextButton.styleFrom(alignment: Alignment.centerLeft),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Text(
-                          optionsToShow[index].label ?? optionsToShow[index].code ?? '',
+                          _fieldsToShow[index].fieldName ?? _fieldsToShow[index].fieldKey ?? '',
                           style: AppTypography.style(14, fontWeight: FontWeight.w400),
                         ),
                       ),
                     ),
-                    itemCount: optionsToShow.length,
+                    itemCount: _fieldsToShow.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 4),
                     shrinkWrap: true,
                   ),
@@ -489,10 +502,5 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
     );
 
     overlayState.insert(_popupEntry!);
-  }
-
-  void _removePopup() {
-    _popupEntry?.remove();
-    _popupEntry = null;
   }
 }

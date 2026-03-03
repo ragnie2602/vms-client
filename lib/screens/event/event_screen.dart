@@ -58,8 +58,7 @@ class _EventScreenState extends State<EventScreen> {
     monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
       ..add(GetAllCamera());
     context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
-    // setupInfoFieldBloc = context.read<SetupEventDisplayBloc>()
-    //   ..add(SetupInfoFieldInit(EventTypeConfig.EVENT_MANAGEMENT, null));
+    setupInfoFieldBloc = context.read<SetupEventDisplayBloc>();
   }
 
   @override
@@ -419,8 +418,20 @@ class _EventScreenState extends State<EventScreen> {
 
   _config() => showDialog(
     context: context,
-    builder: (_) => BlocProvider.value(
-      value: context.read<SetupEventDisplayBloc>(),
+    builder: (_) => MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => EventBloc(
+            context.read(),
+            context.read(),
+            context.read(),
+            context.read(),
+            context.read(),
+            context.read(),
+          ),
+        ),
+        BlocProvider.value(value: setupInfoFieldBloc),
+      ],
       child: SetupInfoFieldDialog(typeConfig: EventTypeConfig.EVENT_MANAGEMENT),
     ),
   );

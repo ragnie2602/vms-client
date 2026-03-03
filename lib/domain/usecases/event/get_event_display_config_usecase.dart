@@ -17,9 +17,17 @@ class GetEventDisplayConfigUsecase
   Future<GetEventDisplayConfigOutput> buildUseCase(GetEventDisplayConfigInput input) async {
     final result = await _eventRepository.getEventDisplayConfig(input.eventType, input.typeConfig);
 
-    return result.fold(
-      (failure) => throw Exception(failure),
-      (config) => GetEventDisplayConfigOutput(config),
-    );
+    return result.fold((failure) => throw Exception(failure), (config) {
+      for (var f in config.fields) {
+        if (f.fieldKey == 'cameraId') {
+          f.fieldKey = 'cameraName';
+          f.fieldName = 'Tên camera';
+        }
+      }
+      int i = config.sorting.indexOf('cameraId');
+      if (i != -1) config.sorting[i] = 'cameraName';
+
+      return GetEventDisplayConfigOutput(config);
+    });
   }
 }

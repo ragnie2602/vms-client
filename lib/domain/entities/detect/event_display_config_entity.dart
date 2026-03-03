@@ -3,16 +3,18 @@ class EventDisplayConfig {
   late String eventType;
   late String eventTypeName;
   late int typeConfig;
-  List<Fields>? fields;
-  List<String>? sorting;
+  int? subjectTypeId;
+  late List<Fields> fields;
+  late List<String> sorting;
 
   EventDisplayConfig({
     this.id,
     required this.eventType,
     required this.eventTypeName,
     required this.typeConfig,
-    this.fields,
-    this.sorting,
+    this.subjectTypeId,
+    required this.fields,
+    required this.sorting,
   });
 
   EventDisplayConfig.fromJson(Map<String, dynamic> json) {
@@ -20,47 +22,26 @@ class EventDisplayConfig {
     eventType = json['eventType'];
     eventTypeName = json['eventTypeName'];
     typeConfig = json['typeConfig'];
+    subjectTypeId = json['subjectTypeId'];
+    fields = <Fields>[];
     if (json['fields'] != null) {
-      fields = <Fields>[];
-      json['fields'].forEach((v) {
-        fields!.add(Fields.fromJson(v));
-      });
+      json['fields'].forEach((v) => fields.add(Fields.fromJson(v)));
     }
-    sorting = json['sorting'].cast<String>();
-  }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['eventType'] = eventType;
-    data['eventTypeName'] = eventTypeName;
-    data['typeConfig'] = typeConfig;
-    if (fields != null) {
-      data['fields'] = fields!.map((v) => v.toJson()).toList();
-    }
-    data['sorting'] = sorting;
-    return data;
+    sorting = json['sorting'].cast<String>();
   }
 }
 
 class Fields {
-  String? fieldKey;
-  String? fieldName;
+  late String fieldKey;
+  late String fieldName;
   String? icon;
 
-  Fields({this.fieldKey, this.fieldName, this.icon});
+  Fields({required this.fieldKey, required this.fieldName, this.icon});
 
   Fields.fromJson(Map<String, dynamic> json) {
     fieldKey = json['fieldKey'];
     fieldName = json['fieldName'];
     icon = json['icon'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['fieldKey'] = fieldKey;
-    data['fieldName'] = fieldName;
-    data['icon'] = icon;
-    return data;
   }
 }

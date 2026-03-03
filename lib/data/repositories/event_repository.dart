@@ -8,7 +8,7 @@ import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 
 class EventRepository extends BaseRepository implements IEventRepository {
-  static const Map<(String, int), EventDisplayConfig> configTable = {};
+  static final Map<(String, int), EventDisplayConfig> configTable = {};
 
   final EventService eventService;
 
