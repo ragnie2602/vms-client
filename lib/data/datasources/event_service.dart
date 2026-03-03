@@ -99,11 +99,8 @@ class EventService {
     return response.data;
   }
 
-  updateEventDisplayConfig({required List<String> listField, required String eventType}) async {
-    final raw = await httpClient.put(
-      url: '${EndPoints.configEventDisplay}/$eventType',
-      data: {'data': listField},
-    );
+  updateEventDisplayConfig(List<Map<String, dynamic>> configs) async {
+    final raw = await httpClient.put(url: EndPoints.configEventDisplay, data: configs);
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) throw Exception(response.message);
 

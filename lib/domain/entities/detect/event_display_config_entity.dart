@@ -30,6 +30,35 @@ class EventDisplayConfig {
 
     sorting = json['sorting'].cast<String>();
   }
+
+  EventDisplayConfig copyWith({
+    int? id,
+    String? eventType,
+    String? eventTypeName,
+    int? typeConfig,
+    int? subjectTypeId,
+    List<Fields>? fields,
+    List<String>? sorting,
+  }) {
+    return EventDisplayConfig(
+      id: id ?? this.id,
+      eventType: eventType ?? this.eventType,
+      eventTypeName: eventTypeName ?? this.eventTypeName,
+      typeConfig: typeConfig ?? this.typeConfig,
+      subjectTypeId: subjectTypeId ?? this.subjectTypeId,
+      fields: fields ?? List.from(this.fields),
+      sorting: sorting ?? List.from(this.sorting),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'eventType': eventType,
+      'typeConfig': typeConfig,
+      'subjectTypeId': subjectTypeId,
+      'sorting': sorting,
+    }..removeWhere((k, v) => v == null);
+  }
 }
 
 class Fields {

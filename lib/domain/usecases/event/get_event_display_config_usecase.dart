@@ -24,10 +24,13 @@ class GetEventDisplayConfigUsecase
           f.fieldName = 'Tên camera';
         }
       }
-      int i = config.sorting.indexOf('cameraId');
-      if (i != -1) config.sorting[i] = 'cameraName';
+      // FIX: Tạo list mới (Deep copy) để không ảnh hưởng đến cache
+      var newSorting = List<String>.from(config.sorting);
 
-      return GetEventDisplayConfigOutput(config);
+      int i = newSorting.indexOf('cameraId');
+      if (i != -1) newSorting[i] = 'cameraName';
+
+      return GetEventDisplayConfigOutput(config.copyWith(sorting: newSorting));
     });
   }
 }

@@ -7,6 +7,19 @@ abstract class SetupEventDisplayEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class CancelChangeConfigs extends SetupEventDisplayEvent {
+  const CancelChangeConfigs();
+}
+
+class ChangeConfig extends SetupEventDisplayEvent {
+  final EventDisplayConfig config;
+
+  const ChangeConfig(this.config);
+
+  @override
+  List<Object?> get props => [config];
+}
+
 class GetEventDisplayConfig extends SetupEventDisplayEvent {
   final String eventType;
   final int typeConfig;
@@ -17,34 +30,6 @@ class GetEventDisplayConfig extends SetupEventDisplayEvent {
   List<Object?> get props => [eventType, typeConfig];
 }
 
-class SetupInfoFieldSelectType extends SetupEventDisplayEvent {
-  final int typeConfig;
-  final TypeEventDetectEntity type;
-
-  const SetupInfoFieldSelectType(this.typeConfig, this.type);
-}
-
-class SetupInfoFieldAddField extends SetupEventDisplayEvent {
-  final FieldConfigEntity field;
-  const SetupInfoFieldAddField(this.field);
-}
-
-class SetupInfoFieldRemoveField extends SetupEventDisplayEvent {
-  final FieldConfigEntity field;
-  const SetupInfoFieldRemoveField(this.field);
-}
-
-class SetupInfoFieldReorder extends SetupEventDisplayEvent {
-  final int oldIndex;
-  final int newIndex;
-  const SetupInfoFieldReorder(this.oldIndex, this.newIndex);
-}
-
-class SetupInfoFieldSave extends SetupEventDisplayEvent {
-  final int typeConfig;
-
-  const SetupInfoFieldSave(this.typeConfig);
-
-  @override
-  List<Object?> get props => [typeConfig];
+class SaveConfigs extends SetupEventDisplayEvent {
+  const SaveConfigs();
 }

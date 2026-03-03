@@ -35,6 +35,7 @@ import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/get_event_display_config_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_event_display_config_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
@@ -172,6 +173,9 @@ class DependencyInjection {
     ),
     Provider<GetEventDisplayConfigUsecase>(
       create: (context) => GetEventDisplayConfigUsecase(context.read()),
+    ),
+    Provider<SaveEventDisplayConfigUsecase>(
+      create: (context) => SaveEventDisplayConfigUsecase(context.read()),
     ),
 
     // Bloc

@@ -24,8 +24,8 @@ class SetupInfoFieldDialog extends StatefulWidget {
 }
 
 class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
-  late final SetupEventDisplayBloc bloc;
   late final EventBloc eventBloc;
+  late final SetupEventDisplayBloc bloc;
 
   String _selectedEventType = '';
 
@@ -145,7 +145,13 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
             'Cài đặt hiển thị cảnh báo',
             style: AppTypography.style(20, fontWeight: FontWeight.w600),
           ),
-          IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+          IconButton(
+            onPressed: () {
+              bloc.add(const CancelChangeConfigs());
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.close),
+          ),
         ],
       ),
     );
@@ -200,7 +206,10 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
             borderColor: AppColors.greyD1D5DB,
             borderRadius: 5,
             label: 'Huỷ',
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              bloc.add(const CancelChangeConfigs());
+              Navigator.pop(context);
+            },
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
             textStyle: AppTypography.style(
               14,
@@ -241,13 +250,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                       )
                     : null,
                 prefixGap: isLoading ? 8 : null,
-                onPressed: isLoading
-                    ? () {}
-                    : () {
-                        // context.read<SetupInfoFieldBloc>().add(
-                        //   SetupInfoFieldSave(widget.typeConfig),
-                        // );
-                      },
+                onPressed: isLoading ? () {} : () => bloc.add(const SaveConfigs()),
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                 textStyle: AppTypography.style(
                   14,
@@ -280,8 +283,16 @@ class CustomReorderableListView extends StatefulWidget {
 }
 
 class _CustomReorderableListViewState extends State<CustomReorderableListView> {
+  late final SetupEventDisplayBloc bloc;
+
   final GlobalKey _listKey = GlobalKey();
   OverlayEntry? _popupEntry;
+
+  @override
+  void initState() {
+    super.initState();
+    if (mounted) bloc = context.read();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +310,11 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
             dragBoundaryProvider: (context) => DragBoundary.forRectOf(context),
             onReorder: (int oldIndex, int newIndex) {
               if (oldIndex < newIndex) newIndex -= 1;
-              context.read<SetupEventDisplayBloc>().add(SetupInfoFieldReorder(oldIndex, newIndex));
+              setState(() {
+                final k = widget.config.sorting.removeAt(oldIndex);
+                widget.config.sorting.insert(newIndex, k);
+              });
+              bloc.add(ChangeConfig(widget.config));
             },
             shrinkWrap: true,
             children: List.generate(sf.length, (index) {
@@ -341,7 +356,8 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                     IconButton(
                       icon: SvgPicture.asset(AppAssets.icClose, height: 20, width: 20),
                       onPressed: () {
-                        // context.read<SetupInfoFieldBloc>().add(SetupInfoFieldRemoveField(item));
+                        setState(() => widget.config.sorting.remove(f.fieldKey));
+                        bloc.add(ChangeConfig(widget.config));
                       },
                     ),
                   ],
@@ -357,14 +373,14 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
             children: [
               Icon(
                 Icons.add,
-                color: (canAppend) ? AppColors.grey64748B : AppColors.secondary,
+                color: (canAppend) ? AppColors.secondary : AppColors.grey64748B,
                 size: 18,
               ),
               Text(
                 'Thêm trường thông tin',
                 style: AppTypography.style(
                   14,
-                  color: (canAppend) ? AppColors.grey64748B : AppColors.secondary,
+                  color: (canAppend) ? AppColors.secondary : AppColors.grey64748B,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -378,10 +394,14 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   @override
   void dispose() {
     _removePopup();
+    bloc.add(const CancelChangeConfigs());
     super.dispose();
   }
 
   bool get canAppend => widget.config.fields.length > widget.config.sorting.length;
+
+  List<Fields> get availableFields =>
+      widget.config.fields.where((f) => !widget.config.sorting.contains(f.fieldKey)).toList();
 
   List<Fields> sortedFields() {
     final Map<String, Fields> fieldsByKey = {for (final f in widget.config.fields) f.fieldKey: f};
@@ -425,12 +445,7 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   }
 
   void showAddDataPopup(BuildContext context) {
-    final _f = widget.config.fields;
-    final _s = widget.config.sorting;
-
-    final bloc = context.read<SetupEventDisplayBloc>();
-
-    final _fieldsToShow = _f.where((af) => !_s.contains(af.fieldKey)).toList();
+    final _fieldsToShow = availableFields;
 
     final listContext = _listKey.currentContext;
     if (listContext == null) return;
@@ -484,7 +499,7 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Text(
-                          _fieldsToShow[index].fieldName ?? _fieldsToShow[index].fieldKey ?? '',
+                          _fieldsToShow[index].fieldName,
                           style: AppTypography.style(14, fontWeight: FontWeight.w400),
                         ),
                       ),

@@ -31,8 +31,5 @@ abstract class IEventRepository {
 
   Future<Either<Failure, EventEntity>> updateEvent(int eventId, String description);
 
-  Future<Either<Failure, EventDisplayConfig>> updateEventDisplayConfig({
-    required List<String> listField,
-    required String eventType,
-  });
+  Future<Either<Failure, void>> updateEventDisplayConfig(List<EventDisplayConfig> configs);
 }
