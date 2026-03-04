@@ -7,7 +7,6 @@ import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_t
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
-import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 
 class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
   final GetObjectTypesUsecase _getObjectTypesUseCase;

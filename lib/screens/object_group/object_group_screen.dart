@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
@@ -12,7 +13,7 @@ import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.d
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/add_object_dialog.dart';
-import 'package:vms_flutter_client/screens/object_group/widgets/add_subject_group_dialog.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/add_edit_group_object_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_action.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/object_list_table.dart';
@@ -56,6 +57,48 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         objectTypeId: selectedType.id,
         search: searchText.isNotEmpty ? searchText : null,
       ),
+    );
+  }
+
+  void _onShowDialogAddEditGroupObject({
+    required BuildContext c,
+    required List<SubjectGroup> listGroupInput,
+    SubjectGroup? parentGroup,
+    SubjectGroup? currentGroup,
+    AddEditGroupObjectType? addEditType,
+  }) {
+    showDialogAddEditGroupObject(
+      c,
+      listGroupAvailable: listGroupInput,
+      parentGroup: parentGroup,
+      addEditType: addEditType ?? AddEditGroupObjectType.add,
+      currentGroup: currentGroup,
+      onConfirm:
+          ({
+            String? nameNewGroup,
+            SubjectGroup? parentGroup,
+            SubjectGroup? currentGroup,
+          }) async {
+            final bloc = c.read<ObjectGroupBloc>();
+            if (addEditType == AddEditGroupObjectType.add) {
+              if (nameNewGroup != null) {
+                bloc.add(
+                  CreateSubjectGroup(
+                    name: nameNewGroup,
+                    parentId: parentGroup?.id ?? 0,
+                  ),
+                );
+                if (c.mounted) {
+                  ToastUtil.toastSuccess(
+                    context: c,
+                    title: Text('Thêm nhóm đối tượng thành công'),
+                  );
+                
+                }
+              }
+            } else if (addEditType == AddEditGroupObjectType.edit &&
+                currentGroup != null) {}
+          },
     );
   }
 
@@ -106,7 +149,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 Expanded(
                   child: BlocBuilder<ObjectGroupBloc, ObjectGroupState>(
                     buildWhen: (previous, current) =>
-                        previous.subjectGroupTree != current.subjectGroupTree,
+                        previous.subjectGroups != current.subjectGroups,
                     builder: (context, state) {
                       final tree =
                           state.subjectGroupTree ??
@@ -140,17 +183,14 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                               onSelected: (action) {
                                 switch (action) {
                                   case GroupObjectAction.add:
-                                    final bloc = context
-                                        .read<ObjectGroupBloc>();
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) => BlocProvider.value(
-                                        value: bloc,
-                                        child: AddSubjectGroupDialog(
-                                          parentGroupName: node.data?.name,
-                                          parentGroupId: node.data?.id,
-                                        ),
-                                      ),
+                                    _onShowDialogAddEditGroupObject(
+                                      c: context,
+                                      listGroupInput: context
+                                          .read<ObjectGroupBloc>()
+                                          .state
+                                          .subjectGroups,
+                                      addEditType: AddEditGroupObjectType.add,
+                                      parentGroup: node.data,
                                     );
                                     break;
                                   case GroupObjectAction.addObject:
@@ -199,13 +239,13 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                           );
                         },
                         onClickAddGroup: () {
-                          final bloc = context.read<ObjectGroupBloc>();
-                          showDialog(
-                            context: context,
-                            builder: (_) => BlocProvider.value(
-                              value: bloc,
-                              child: const AddSubjectGroupDialog(),
-                            ),
+                          _onShowDialogAddEditGroupObject(
+                            c: context,
+                            listGroupInput: context
+                                .read<ObjectGroupBloc>()
+                                .state
+                                .subjectGroups,
+                            addEditType: AddEditGroupObjectType.add,
                           );
                         },
                       );

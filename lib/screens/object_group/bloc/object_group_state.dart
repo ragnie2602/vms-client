@@ -2,7 +2,6 @@ import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:equatable/equatable.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
-import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
 enum ObjectGroupStatus { initial, loading, loaded, error }

@@ -53,6 +53,10 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
     if (oldWidget.selectedObjectId != widget.selectedObjectId) {
       _syncSelectedNodeFromProp();
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resetTreeExpansion(widget.tree);
+      _treeController?.expandAllChildren(widget.tree);
+    });
   }
 
   /// Reset expansion notifiers so expandAllChildren works on reused TreeNode objects.
@@ -177,9 +181,10 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
                         ),
                       )
                     : TreeView.simple(
-                        key: ValueKey(
-                          'tree_${widget.tree.length}_${widget.tree.childrenAsList.map((e) => e.key).join('_')}',
-                        ),
+                        key: ValueKey(widget.tree.hashCode),
+                        // key: ValueKey(
+                        //   'tree_${widget.tree.length}_${widget.tree.childrenAsList.map((e) => e.key).join('_')}',
+                        // ),
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         showRootNode: false,
                         tree: widget.tree,
