@@ -2,6 +2,7 @@ import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -60,18 +61,58 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     );
   }
 
-  void _onShowDialogAddEditGroupObject({
+  // add group
+  void _onShowDialogAddGroupObject({
     required BuildContext c,
-    required List<SubjectGroup> listGroupInput,
+    required TreeNode<SubjectGroup> tree,
     SubjectGroup? parentGroup,
-    SubjectGroup? currentGroup,
-    AddEditGroupObjectType? addEditType,
   }) {
+    List<SubjectGroup> listGroupOneLevel = tree.convertTreeToListOneLevel();
+
     showDialogAddEditGroupObject(
       c,
-      listGroupAvailable: listGroupInput,
+      listGroupAvailable: listGroupOneLevel,
       parentGroup: parentGroup,
-      addEditType: addEditType ?? AddEditGroupObjectType.add,
+      addEditType: AddEditGroupObjectType.add,
+      onConfirm:
+          ({
+            String? nameNewGroup,
+            SubjectGroup? parentGroup,
+            SubjectGroup? currentGroup,
+          }) async {
+            final bloc = c.read<ObjectGroupBloc>();
+            if (nameNewGroup != null) {
+              bloc.add(
+                CreateSubjectGroup(
+                  name: nameNewGroup,
+                  parentId: parentGroup?.id ?? 0,
+                ),
+              );
+              if (c.mounted) {
+                ToastUtil.toastSuccess(
+                  context: c,
+                  title: Text('Thêm mới nhóm đối tượng thành công'),
+                );
+              }
+            }
+          },
+    );
+  }
+
+  // edit group
+  void _onShowDialogEditGroupObject({
+    required BuildContext c,
+    required TreeNode<SubjectGroup> tree,
+    SubjectGroup? parentGroup,
+    SubjectGroup? currentGroup,
+  }) {
+    List<SubjectGroup> listGroupOneLevel = tree.convertTreeToListOneLevel();
+
+    showDialogAddEditGroupObject(
+      c,
+      listGroupAvailable: listGroupOneLevel,
+      parentGroup: parentGroup,
+      addEditType: AddEditGroupObjectType.edit,
       currentGroup: currentGroup,
       onConfirm:
           ({
@@ -80,23 +121,23 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
             SubjectGroup? currentGroup,
           }) async {
             final bloc = c.read<ObjectGroupBloc>();
-            if (addEditType == AddEditGroupObjectType.add) {
-              if (nameNewGroup != null) {
-                bloc.add(
-                  CreateSubjectGroup(
+            if (nameNewGroup != null) {
+              bloc.add(
+                UpdateSubjectGroup(
+                  id: currentGroup?.id??0,
+                  subjectGroup: SubjectGroup(
                     name: nameNewGroup,
-                    parentId: parentGroup?.id ?? 0,
+                    parentId: parentGroup?.id,
                   ),
+                ),
+              );
+              if (c.mounted) {
+                ToastUtil.toastSuccess(
+                  context: c,
+                  title: Text('Sửa nhóm đối tượng thành công'),
                 );
-                if (c.mounted) {
-                  ToastUtil.toastSuccess(
-                    context: c,
-                    title: Text('Thêm nhóm đối tượng thành công'),
-                  );
-                }
               }
-            } else if (addEditType == AddEditGroupObjectType.edit &&
-                currentGroup != null) {}
+            }
           },
     );
   }
@@ -166,10 +207,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                             ),
                             child: PopupMenuButton<GroupObjectAction>(
                               tooltip: '',
-                              key: ValueKey(node.key),
+                              key: ValueKey(node.data?.id),
                               padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
                               splashRadius: 20,
+                              menuPadding: EdgeInsets.zero,
                               position: PopupMenuPosition.under,
                               offset: const Offset(0, 8),
                               shape: RoundedRectangleBorder(
@@ -182,21 +223,27 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                               onSelected: (action) {
                                 switch (action) {
                                   case GroupObjectAction.add:
-                                    _onShowDialogAddEditGroupObject(
+                                    _onShowDialogAddGroupObject(
                                       c: context,
-                                      listGroupInput: context
-                                          .read<ObjectGroupBloc>()
-                                          .state
-                                          .subjectGroups,
-                                      addEditType: AddEditGroupObjectType.add,
+                                      tree: tree,
+
                                       parentGroup: node.data,
                                     );
                                     break;
                                   case GroupObjectAction.addObject:
-                                    // Handled by existing logic
                                     break;
                                   case GroupObjectAction.edit:
-                                    // TODO: edit
+                                    final parentNode = node.parent;
+                                    final parentGroup =
+                                        parentNode is TreeNode<SubjectGroup>
+                                        ? parentNode.data
+                                        : null;
+                                    _onShowDialogEditGroupObject(
+                                      c: context,
+                                      tree: tree,
+                                      parentGroup: parentGroup,
+                                      currentGroup: node.data,
+                                    );
                                     break;
                                   case GroupObjectAction.delete:
                                     // TODO: delete
@@ -207,7 +254,11 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                 List<GroupObjectAction> listAction = List.of(
                                   GroupObjectAction.values,
                                 );
-
+                                // cấp 5 => không cho thêm nhóm con nữa
+                                if (node.level >=
+                                    AppConfig.OBJECT_GROUP_MAX_LEVEL) {
+                                  listAction.remove(GroupObjectAction.add);
+                                }
                                 final List<PopupMenuEntry<GroupObjectAction>>
                                 entries = [];
                                 for (int i = 0; i < listAction.length; i++) {
@@ -224,7 +275,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                   );
                                   if (i != listAction.length - 1) {
                                     entries.add(
-                                      const PopupMenuDivider(height: 1),
+                                      const PopupMenuDivider(
+                                        height: 1,
+                                        color: AppColors.greyF2F4FA,
+                                      ),
                                     );
                                   }
                                 }
@@ -238,14 +292,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                           );
                         },
                         onClickAddGroup: () {
-                          _onShowDialogAddEditGroupObject(
-                            c: context,
-                            listGroupInput: context
-                                .read<ObjectGroupBloc>()
-                                .state
-                                .subjectGroups,
-                            addEditType: AddEditGroupObjectType.add,
-                          );
+                          _onShowDialogAddGroupObject(c: context, tree: tree);
                         },
                       );
                     },

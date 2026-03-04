@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_g
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 
@@ -13,12 +14,14 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
   final GetObjectsByTypeUsecase _getObjectsByTypeUsecase;
   final GetSubjectGroupsUsecase _getSubjectGroupsUsecase;
   final CreateSubjectGroupUsecase _createSubjectGroupUsecase;
+  final UpdateSubjectGroupUsecase _updateSubjectGroupUsecase;
 
   ObjectGroupBloc(
     this._getObjectTypesUseCase,
     this._getObjectsByTypeUsecase,
     this._getSubjectGroupsUsecase,
     this._createSubjectGroupUsecase,
+    this._updateSubjectGroupUsecase,
   ) : super(const ObjectGroupState()) {
     on<LoadObjectGroups>(_onLoadObjectGroups);
     // thay đổi tab kiểu đối tượng => load lại dữ liệu đối tượng
@@ -27,6 +30,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     // load cây nhóm đối tượng
     on<LoadSubjectGroups>(_onLoadSubjectGroups);
     on<CreateSubjectGroup>(_onCreateSubjectGroup);
+    on<UpdateSubjectGroup>(_onUpdateSubjectGroup);
   }
 
   Future<void> _onLoadObjectGroups(
@@ -154,7 +158,33 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       // Reload subject groups to refresh the tree
       add(const LoadSubjectGroups());
     } catch (e) {
-      emit(state.copyWith(errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          errorMessage: e.toString(),
+          status: ObjectGroupStatus.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onUpdateSubjectGroup(
+    UpdateSubjectGroup event,
+    Emitter<ObjectGroupState> emit,
+  ) async {
+    try {
+      final input = UpdateSubjectGroupInput(
+        id: event.id,
+        request: event.subjectGroup!,
+      );
+      await _updateSubjectGroupUsecase.execute(input);
+      add(const LoadSubjectGroups());
+    } catch (e) {
+      emit(
+        state.copyWith(
+          errorMessage: e.toString(),
+          status: ObjectGroupStatus.error,
+        ),
+      );
     }
   }
 

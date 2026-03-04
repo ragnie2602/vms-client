@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/data/datasources/event_service.dart';
 import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
+import 'package:vms_flutter_client/data/datasources/subject_group_service.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
 import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
 import 'package:vms_flutter_client/data/repositories/ai_config_repository.dart';
@@ -51,6 +52,7 @@ import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_g
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
@@ -91,6 +93,7 @@ class DependencyInjection {
       create: (context) => UserService(context.read(), context.read()),
     ),
     Provider<AiBoxService>(create: (context) => AiBoxService(context.read())),
+    Provider<SubjectGroupService>(create: (context) => SubjectGroupService(context.read())),
     Provider<CustomLiveViewService>(
       create: (context) => CustomLiveViewService(context.read()),
     ),
@@ -153,7 +156,7 @@ class DependencyInjection {
       create: (context) => ObjectTypeRepository(context.read()),
     ),
     Provider<IObjectGroupRepository>(
-      create: (context) => ObjectGroupRepository(context.read<HttpClient>()),
+      create: (context) => ObjectGroupRepository(context.read<HttpClient>(), context.read()),
     ),
     Provider<IScheduleRepository>(
       create: (context) => ScheduleRepository(context.read()),
@@ -258,6 +261,9 @@ class DependencyInjection {
     ),
     Provider<CreateSubjectGroupUsecase>(
       create: (context) => CreateSubjectGroupUsecase(context.read()),
+    ),
+    Provider<UpdateSubjectGroupUsecase>(
+      create: (context) => UpdateSubjectGroupUsecase(context.read()),
     ),
 
     Provider<GetCameraUseCase>(

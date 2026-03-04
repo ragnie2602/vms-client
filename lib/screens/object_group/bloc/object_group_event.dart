@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
 abstract class ObjectGroupEvent extends Equatable {
@@ -7,6 +8,7 @@ abstract class ObjectGroupEvent extends Equatable {
   @override
   List<Object?> get props => [];
 }
+
 class InitializeObjectGroup extends ObjectGroupEvent {
   final int page;
   final int size;
@@ -16,6 +18,7 @@ class InitializeObjectGroup extends ObjectGroupEvent {
   @override
   List<Object> get props => [page, size];
 }
+
 class LoadObjectGroups extends ObjectGroupEvent {
   final int page;
   final int size;
@@ -68,4 +71,14 @@ class CreateSubjectGroup extends ObjectGroupEvent {
 
   @override
   List<Object> get props => [name, parentId];
+}
+
+class UpdateSubjectGroup extends ObjectGroupEvent {
+  final int id;
+  final SubjectGroup? subjectGroup;
+
+  const UpdateSubjectGroup({required this.id, this.subjectGroup});
+
+  @override
+  List<Object?> get props => [id, subjectGroup];
 }

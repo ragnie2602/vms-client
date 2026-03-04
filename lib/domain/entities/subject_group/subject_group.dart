@@ -1,4 +1,6 @@
+import 'package:animated_tree_view/tree_view/tree_node.dart';
 import 'package:equatable/equatable.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 
 class SubjectGroup extends Equatable {
   final int? id;
@@ -37,4 +39,35 @@ class SubjectGroup extends Equatable {
 
   @override
   List<Object?> get props => [id, name, parentId, createdAt, updatedAt];
+}
+
+extension TreeObjectGroupExtension on TreeNode<SubjectGroup> {
+  List<SubjectGroup> convertTreeToListOneLevel({
+    int hideFromLevel = AppConfig.OBJECT_GROUP_MAX_LEVEL,
+  }) {
+    List<SubjectGroup> listGroupOneLevel = [];
+    if (isRoot) {
+      for (var child in childrenAsList) {
+        listGroupOneLevel.addAll(
+          (child as TreeNode<SubjectGroup>).convertTreeToListOneLevel(
+            hideFromLevel: hideFromLevel,
+          ),
+        );
+      }
+      return listGroupOneLevel;
+    }
+    if (level < hideFromLevel) {
+      if (data != null) {
+        listGroupOneLevel.add(data!);
+      }
+      for (var child in childrenAsList) {
+        listGroupOneLevel.addAll(
+          (child as TreeNode<SubjectGroup>).convertTreeToListOneLevel(
+            hideFromLevel: hideFromLevel,
+          ),
+        );
+      }
+    }
+    return listGroupOneLevel;
+  }
 }
