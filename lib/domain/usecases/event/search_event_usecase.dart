@@ -24,6 +24,7 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
       endTime: input.endTime != null ? input.endTime!.millisecondsSinceEpoch ~/ 1000 : null,
       eventType: input.eventTypes,
       cameraIds: cameraIds,
+      subjectName: input.subjectName,
     );
 
     List<EventType> eventTypes = [];

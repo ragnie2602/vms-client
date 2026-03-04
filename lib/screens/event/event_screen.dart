@@ -39,6 +39,7 @@ class _EventScreenState extends State<EventScreen> {
 
   GlobalKey<EventDateRangePickerState> dateRangeKey = GlobalKey<EventDateRangePickerState>();
   int? presetHour = 720;
+  TextEditingController searchController = TextEditingController();
 
   List<String>? cameraIds;
   List<String>? eventType;
@@ -72,14 +73,78 @@ class _EventScreenState extends State<EventScreen> {
             padding: EdgeInsets.all(10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
+              spacing: 16,
               children: [
                 Expanded(
+                  flex: 269,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 8,
+                    children: [
+                      Text(
+                        'Tìm kiếm',
+                        style: AppTypography.style(
+                          13,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.black,
+                        ),
+                      ),
+                      TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(3),
+                            borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 17),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(3),
+                            borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(3),
+                            borderSide: BorderSide(color: AppColors.greyE2E8F0),
+                          ),
+                          hintText: 'Tìm kiếm tên đối tượng',
+                          hintStyle: AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.grey64748B,
+                          ),
+                          isDense: true,
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 16),
+                            child: SvgPicture.asset(
+                              AppAssets.icSearch,
+                              color: AppColors.black,
+                              height: 16,
+                              width: 16,
+                            ),
+                          ),
+                          prefixIconConstraints: const BoxConstraints(),
+                        ),
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  flex: 230,
                   child: EventDateRangePicker(
                     key: dateRangeKey,
                     hintText: 'Từ ngày - đến ngày',
                     initialDateRange: DateTimeRange(start: startTime, end: endTime),
                     isDense: true,
                     label: 'Thời gian',
+                    labelStyle: AppTypography.style(
+                      13,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.black,
+                    ),
                     onChanged: (dateRange) => setState(() {
                       if (dateRange != null) {
                         startTime = dateRange.start;
@@ -91,8 +156,8 @@ class _EventScreenState extends State<EventScreen> {
                     padding: EdgeInsets.only(bottom: 12, left: 16, right: 12, top: 12),
                   ),
                 ),
-                SizedBox(width: 16),
                 Expanded(
+                  flex: 200,
                   child: BlocBuilder<EventBloc, EventState>(
                     buildWhen: (previous, current) => current is GetAllEventTypeSuccess,
                     builder: (context, state) => EventMultiFilterDropdown<EventType>(
@@ -108,13 +173,18 @@ class _EventScreenState extends State<EventScreen> {
                       ),
                       items: state is GetAllEventTypeSuccess ? state.eventTypes : [],
                       label: 'Sự kiện',
+                      labelStyle: AppTypography.style(
+                        13,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.black,
+                      ),
                       onChanged: (et) => eventType = et?.map((e) => e.eventKey).toList(),
                       padding: EdgeInsets.all(12),
                     ),
                   ),
                 ),
-                SizedBox(width: 16),
                 Expanded(
+                  flex: 200,
                   child: BlocBuilder<GroupCameraBloc, GroupCameraState>(
                     buildWhen: (previous, current) =>
                         current is GetAllGroupCameraSuccessState ||
@@ -133,6 +203,11 @@ class _EventScreenState extends State<EventScreen> {
                           ? [null, ..._recursionDeviceGroup(state.groups ?? [])]
                           : [],
                       label: 'Nhóm camera',
+                      labelStyle: AppTypography.style(
+                        13,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.black,
+                      ),
                       onChanged: (value) {
                         if (value == null) {
                           cameraGroupName = 'Tất cả';
@@ -151,8 +226,8 @@ class _EventScreenState extends State<EventScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: 16),
                 Expanded(
+                  flex: 200,
                   child: BlocConsumer<MonitorBloc, MonitorState>(
                     bloc: monitorBloc,
                     builder: (context, state) {
@@ -171,6 +246,11 @@ class _EventScreenState extends State<EventScreen> {
                         ),
                         items: state is MonitorSuccess ? state.cameras : [],
                         label: 'Tên camera',
+                        labelStyle: AppTypography.style(
+                          13,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.black,
+                        ),
                         onChanged: (cams) => cameraIds = cams?.map((e) => e.camId).toList(),
                         padding: EdgeInsets.all(12),
                       );
@@ -184,7 +264,6 @@ class _EventScreenState extends State<EventScreen> {
                     },
                   ),
                 ),
-                SizedBox(width: 20),
                 EventCustomButton(
                   backgroundColor: AppColors.blue005AA9,
                   borderColor: AppColors.blue005AA9,
@@ -450,6 +529,7 @@ class _EventScreenState extends State<EventScreen> {
         eventTypes: eventType,
         cameraIds: cameraIds,
         cameras: cameras,
+        subjectName: searchController.text,
       ),
     );
   }

@@ -26,6 +26,7 @@ abstract class IEventRepository {
   );
 
   Future<Either<Failure, Pageable<EventEntity>>> searchEvent({
+    String? subjectName,
     int? startTime,
     int? endTime,
     List<String>? eventType,

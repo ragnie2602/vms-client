@@ -81,6 +81,7 @@ class EventService {
     List<String>? eventType,
     List<String>? cameraIds,
     int? page,
+    String? subjectName,
   }) async {
     final raw = await httpClient.post(
       url: EndPoints.searchEvent,
@@ -90,6 +91,7 @@ class EventService {
         if (eventType != null) 'eventTypes': eventType,
         if (cameraIds != null) 'cameraIds': cameraIds,
         'page': page,
+        if (subjectName?.isNotEmpty == true) 'subjectName': subjectName,
       },
     );
 

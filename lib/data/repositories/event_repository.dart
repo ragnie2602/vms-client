@@ -91,6 +91,7 @@ class EventRepository extends BaseRepository implements IEventRepository {
     int? endTime,
     List<String>? eventType,
     int? startTime,
+    String? subjectName,
   }) async {
     return await catchError<Pageable<EventEntity>>(() async {
       final data = await eventService.searchEvent(
@@ -99,6 +100,7 @@ class EventRepository extends BaseRepository implements IEventRepository {
         eventType: eventType,
         startTime: startTime,
         page: page,
+        subjectName: subjectName,
       );
 
       return Right(Pageable.fromJson(data, EventEntity.fromJson));
