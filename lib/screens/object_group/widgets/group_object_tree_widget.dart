@@ -11,6 +11,7 @@ class GroupObjectTreeWidget extends StatefulWidget {
   const GroupObjectTreeWidget({
     super.key,
     required this.tree,
+    this.treeKey,
     this.controller,
     this.actionBuilder,
     this.selectedObjectId,
@@ -23,6 +24,7 @@ class GroupObjectTreeWidget extends StatefulWidget {
   });
 
   final TreeViewController<SubjectGroup, TreeNode<SubjectGroup>>? controller;
+  final String? treeKey;
   final TreeNode<SubjectGroup> tree;
   final Widget? Function(TreeNode<SubjectGroup> node)? actionBuilder;
   final String? selectedObjectId;
@@ -181,7 +183,7 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
                         ),
                       )
                     : TreeView.simple(
-                        key: ValueKey(widget.tree.hashCode),
+                        key: ValueKey(widget.treeKey ?? widget.tree.hashCode),
                         // key: ValueKey(
                         //   'tree_${widget.tree.length}_${widget.tree.childrenAsList.map((e) => e.key).join('_')}',
                         // ),

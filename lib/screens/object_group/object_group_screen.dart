@@ -127,7 +127,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                   id: currentGroup?.id ?? 0,
                   subjectGroup: SubjectGroup(
                     name: nameNewGroup,
-                    parentId: parentGroup?.id ?? 0, // ko có group cha -> truyền 0
+                    parentId:
+                        parentGroup?.id ?? 0, // ko có group cha -> truyền 0
                   ),
                 ),
               );
@@ -195,6 +196,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                           state.subjectGroupTree ??
                           TreeNode<SubjectGroup>.root();
                       return GroupObjectTreeWidget(
+                        treeKey: state.treeKey,
                         tree: tree,
                         actionBuilder: (node) {
                           return Theme(

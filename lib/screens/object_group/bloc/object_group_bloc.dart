@@ -136,7 +136,13 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       // Build tree from flat list
       final tree = _buildTreeFromFlatList(groups);
 
-      emit(state.copyWith(subjectGroups: groups, subjectGroupTree: tree));
+      emit(
+        state.copyWith(
+          subjectGroups: groups,
+          subjectGroupTree: tree,
+          treeKey: DateTime.now().millisecondsSinceEpoch.toString(),
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: e.toString()));
     }

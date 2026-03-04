@@ -17,6 +17,7 @@ class ObjectGroupState extends Equatable {
   final int totalPages;
   final List<SubjectGroup> subjectGroups;
   final TreeNode<SubjectGroup>? subjectGroupTree;
+  final String treeKey;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -29,6 +30,7 @@ class ObjectGroupState extends Equatable {
     this.totalPages = 1,
     this.subjectGroups = const [],
     this.subjectGroupTree,
+    this.treeKey = '',
   });
 
   ObjectGroupState copyWith({
@@ -42,6 +44,7 @@ class ObjectGroupState extends Equatable {
     int? totalPages,
     List<SubjectGroup>? subjectGroups,
     TreeNode<SubjectGroup>? subjectGroupTree,
+    String? treeKey,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,
@@ -54,6 +57,7 @@ class ObjectGroupState extends Equatable {
       totalPages: totalPages ?? this.totalPages,
       subjectGroups: subjectGroups ?? this.subjectGroups,
       subjectGroupTree: subjectGroupTree ?? this.subjectGroupTree,
+      treeKey: treeKey ?? this.treeKey,
     );
   }
 
@@ -69,5 +73,6 @@ class ObjectGroupState extends Equatable {
     totalPages,
     subjectGroups,
     subjectGroupTree,
+    treeKey,
   ];
 }
