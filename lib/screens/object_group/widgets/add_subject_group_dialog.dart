@@ -298,7 +298,7 @@ class _AddSubjectGroupDialogState extends State<AddSubjectGroupDialog> {
               return DropdownMenuItem<int>(
                 value: group.id,
                 child: Text(
-                  group.name,
+                  group.name??'',
                   style: AppTypography.style(14, color: AppColors.black),
                 ),
               );

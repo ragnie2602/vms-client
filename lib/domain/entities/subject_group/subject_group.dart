@@ -1,16 +1,16 @@
 import 'package:equatable/equatable.dart';
 
 class SubjectGroup extends Equatable {
-  final int id;
-  final String name;
-  final int parentId;
+  final int? id;
+  final String? name;
+  final int? parentId;
   final String? createdAt;
   final String? updatedAt;
 
   const SubjectGroup({
-    required this.id,
-    required this.name,
-    required this.parentId,
+    this.id,
+    this.name,
+    this.parentId,
     this.createdAt,
     this.updatedAt,
   });

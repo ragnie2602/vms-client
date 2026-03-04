@@ -17,7 +17,7 @@ class ObjectGroupState extends Equatable {
   final String? errorMessage;
   final int totalPages;
   final List<SubjectGroup> subjectGroups;
-  final TreeNode<MockObject>? subjectGroupTree;
+  final TreeNode<SubjectGroup>? subjectGroupTree;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -42,7 +42,7 @@ class ObjectGroupState extends Equatable {
     String? errorMessage,
     int? totalPages,
     List<SubjectGroup>? subjectGroups,
-    TreeNode<MockObject>? subjectGroupTree,
+    TreeNode<SubjectGroup>? subjectGroupTree,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,

@@ -25,6 +25,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     // thay đổi tab kiểu đối tượng => load lại dữ liệu đối tượng
     on<SelectObjectType>(_onSelectObjectType);
     on<LoadObjects>(_onLoadObjects);
+    // load cây nhóm đối tượng
     on<LoadSubjectGroups>(_onLoadSubjectGroups);
     on<CreateSubjectGroup>(_onCreateSubjectGroup);
   }
@@ -161,19 +162,17 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
   /// Rules:
   /// - parentId == 0 → root node
   /// - parentId != 0 → child of the node with matching id
-  TreeNode<MockObject> _buildTreeFromFlatList(List<SubjectGroup> groups) {
-    final root = TreeNode<MockObject>.root(
-      data: MockObject(name: "Root", id: "0"),
-    );
+  TreeNode<SubjectGroup> _buildTreeFromFlatList(List<SubjectGroup> groups) {
+    final root = TreeNode<SubjectGroup>.root();
 
     // Create a map of id -> TreeNode for quick lookup
-    final Map<int, TreeNode<MockObject>> nodeMap = {};
+    final Map<int?, TreeNode<SubjectGroup>> nodeMap = {};
 
     // First pass: create all TreeNode objects
     for (final group in groups) {
-      final node = TreeNode<MockObject>(
+      final node = TreeNode<SubjectGroup>(
         key: group.id.toString(),
-        data: MockObject(name: group.name, id: group.id.toString()),
+        data: group,
       );
       nodeMap[group.id] = node;
     }

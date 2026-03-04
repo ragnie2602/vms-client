@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
@@ -109,9 +110,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     builder: (context, state) {
                       final tree =
                           state.subjectGroupTree ??
-                          TreeNode<MockObject>.root(
-                            data: MockObject(name: "Root", id: "0"),
-                          );
+                          TreeNode<SubjectGroup>.root();
                       return GroupObjectTreeWidget(
                         tree: tree,
                         actionBuilder: (node) {
@@ -149,9 +148,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                         value: bloc,
                                         child: AddSubjectGroupDialog(
                                           parentGroupName: node.data?.name,
-                                          parentGroupId: int.tryParse(
-                                            node.data?.id ?? '',
-                                          ),
+                                          parentGroupId: node.data?.id,
                                         ),
                                       ),
                                     );

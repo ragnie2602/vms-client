@@ -3,9 +3,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/group/widget/drop_down_search_widget.dart';
 import 'package:vms_flutter_client/screens/home/components/app_field.dart';
-import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 
 enum AddEditGroupObjectType { add, edit }
 
@@ -13,13 +13,13 @@ Future<T?> showDialogAddEditGroupObject<T>(
   BuildContext context, {
   Function({
     String? nameNewGroup,
-    MockObject? parentGroup,
-    MockObject? currentGroup, // case edit
+    SubjectGroup? parentGroup,
+    SubjectGroup? currentGroup, // case edit
   })?
   onConfirm,
-  List<MockObject>? listGroupAvailable,
-  MockObject? parentGroup,
-  MockObject? currentGroup, // case edit
+  List<SubjectGroup>? listGroupAvailable,
+  SubjectGroup? parentGroup,
+  SubjectGroup? currentGroup, // case edit
   AddEditGroupObjectType? addEditType,
 }) {
   return showDialog<T>(
@@ -45,15 +45,15 @@ class AddEditGroupObjectWidget extends StatefulWidget {
     this.addEditType,
   });
 
-  final List<MockObject>? listGroupAvailable;
-  final MockObject? parentGroup;
+  final List<SubjectGroup>? listGroupAvailable;
+  final SubjectGroup? parentGroup;
   final Function({
     String? nameNewGroup,
-    MockObject? parentGroup,
-    MockObject? currentGroup,
+    SubjectGroup? parentGroup,
+    SubjectGroup? currentGroup,
   })?
   onConfirm;
-  final MockObject? currentGroup;
+  final SubjectGroup? currentGroup;
   final AddEditGroupObjectType? addEditType;
 
   @override
@@ -64,7 +64,7 @@ class AddEditGroupObjectWidget extends StatefulWidget {
 class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
   final _nameGroupController = TextEditingController();
   final formAddEditKey = GlobalKey<FormState>();
-  MockObject? _selectedParentGroup;
+  SubjectGroup? _selectedParentGroup;
   bool _isConfirming = false;
 
   @override
@@ -155,7 +155,7 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                     ),
                     const SizedBox(height: 24),
                     // drop down search nhóm cha
-                    AppDropdownSearch<MockObject>(
+                    AppDropdownSearch<SubjectGroup>(
                       label: 'Nhóm cha',
                       borderRadius: 3,
                       items: widget.listGroupAvailable ?? [],

@@ -5,56 +5,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-
-class MockObject {
-  final String? name;
-  final String? id;
-  final String? type;
-  final List<MockObject>? children;
-
-  MockObject({this.name, this.id, this.type, this.children});
-
-  TreeNode<MockObject> toTreeNode() {
-    final node = TreeNode<MockObject>(key: id ?? '', data: this);
-    if (children != null) {
-      for (final child in children!) {
-        node.add(child.toTreeNode());
-      }
-    }
-    return node;
-  }
-
-  List<MockObject> convertToOneLevel({
-    int? hideFromLevel,
-    int currentLevel = 1,
-  }) {
-    if (hideFromLevel != null && currentLevel >= hideFromLevel) {
-      return [];
-    }
-    List<MockObject> result = [this];
-    if (children != null) {
-      for (var child in children!) {
-        result.addAll(
-          child.convertToOneLevel(
-            hideFromLevel: hideFromLevel,
-            currentLevel: currentLevel + 1,
-          ),
-        );
-      }
-    }
-    return result;
-  }
-}
-
-extension TreeObjectGroupExt on List<MockObject> {
-  TreeNode<MockObject> get convertTree {
-    TreeNode<MockObject> tree = TreeNode.root();
-    for (var group in this) {
-      tree.add(group.toTreeNode());
-    }
-    return tree;
-  }
-}
+import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
 class GroupObjectTreeWidget extends StatefulWidget {
   const GroupObjectTreeWidget({
@@ -71,24 +22,24 @@ class GroupObjectTreeWidget extends StatefulWidget {
     this.onMenuDelete,
   });
 
-  final TreeViewController<MockObject, TreeNode<MockObject>>? controller;
-  final TreeNode<MockObject> tree;
-  final Widget? Function(TreeNode<MockObject> node)? actionBuilder;
+  final TreeViewController<SubjectGroup, TreeNode<SubjectGroup>>? controller;
+  final TreeNode<SubjectGroup> tree;
+  final Widget? Function(TreeNode<SubjectGroup> node)? actionBuilder;
   final String? selectedObjectId;
   final Function(BuildContext, String)? onClickObjectNode;
   final VoidCallback? onClickAddGroup;
-  final Function(TreeNode<MockObject>)? onMenuAddObject;
-  final Function(TreeNode<MockObject>)? onMenuAddGroup;
-  final Function(TreeNode<MockObject>)? onMenuEdit;
-  final Function(TreeNode<MockObject>)? onMenuDelete;
+  final Function(TreeNode<SubjectGroup>)? onMenuAddObject;
+  final Function(TreeNode<SubjectGroup>)? onMenuAddGroup;
+  final Function(TreeNode<SubjectGroup>)? onMenuEdit;
+  final Function(TreeNode<SubjectGroup>)? onMenuDelete;
 
   @override
   State<GroupObjectTreeWidget> createState() => _GroupObjectTreeWidgetState();
 }
 
 class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
-  TreeViewController<MockObject, TreeNode<MockObject>>? _treeController;
-  TreeNode<MockObject>? _selectedNode;
+  TreeViewController<SubjectGroup, TreeNode<SubjectGroup>>? _treeController;
+  TreeNode<SubjectGroup>? _selectedNode;
 
   @override
   void didChangeDependencies() {
@@ -108,9 +59,9 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
   /// When switching tabs, TreeView is recreated (fresh flat list) but TreeNode
   /// objects persist in BLoC state with isExpanded=true from previous session.
   /// expandNode checks isExpanded and skips insertion if true, so we must reset.
-  void _resetTreeExpansion(TreeNode<MockObject> node) {
+  void _resetTreeExpansion(TreeNode<SubjectGroup> node) {
     for (final child in node.childrenAsList) {
-      final treeChild = child as TreeNode<MockObject>;
+      final treeChild = child as TreeNode<SubjectGroup>;
       treeChild.expansionNotifier.value = false;
       if (treeChild.childrenAsList.isNotEmpty) {
         _resetTreeExpansion(treeChild);
@@ -123,8 +74,8 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
       setState(() => _selectedNode = null);
       return;
     }
-    TreeNode<MockObject>? foundNodeOnTree;
-    void searchOnTree(TreeNode<MockObject> node) {
+    TreeNode<SubjectGroup>? foundNodeOnTree;
+    void searchOnTree(TreeNode<SubjectGroup> node) {
       if (foundNodeOnTree != null) return;
       if (node.data?.id == widget.selectedObjectId) {
         foundNodeOnTree = node;
@@ -133,11 +84,11 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
       final dynamic children = node.children;
       if (children is Iterable) {
         for (var c in children) {
-          searchOnTree(c as TreeNode<MockObject>);
+          searchOnTree(c as TreeNode<SubjectGroup>);
         }
       } else if (children is Map) {
         for (var c in children.values) {
-          searchOnTree(c as TreeNode<MockObject>);
+          searchOnTree(c as TreeNode<SubjectGroup>);
         }
       }
     }
@@ -149,13 +100,13 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
   }
 
   void _onNodeTap({
-    required TreeNode<MockObject> node,
+    required TreeNode<SubjectGroup> node,
     required BuildContext context,
   }) {
     setState(() {
       _selectedNode = node;
     });
-    widget.onClickObjectNode?.call(context, node.data?.id ?? "");
+    // widget.onClickObjectNode?.call(context, node.data?.id ?? "");
   }
 
   @override
@@ -286,7 +237,7 @@ class GroupObjectNodeWidget extends StatelessWidget {
     this.onMenuDelete,
   });
 
-  final TreeNode<MockObject> node;
+  final TreeNode<SubjectGroup> node;
   final Function()? onTap;
   final Function()? onToggleExpansion;
   final Widget? actions;
