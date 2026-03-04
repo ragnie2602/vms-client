@@ -2,6 +2,7 @@ import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -62,14 +63,16 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
   void _onShowDialogAddEditGroupObject({
     required BuildContext c,
-    required List<SubjectGroup> listGroupInput,
+    required TreeNode<SubjectGroup> tree,
     SubjectGroup? parentGroup,
     SubjectGroup? currentGroup,
     AddEditGroupObjectType? addEditType,
   }) {
+    List<SubjectGroup> listGroupOneLevel = tree.convertTreeToListOneLevel();
+
     showDialogAddEditGroupObject(
       c,
-      listGroupAvailable: listGroupInput,
+      listGroupAvailable: listGroupOneLevel,
       parentGroup: parentGroup,
       addEditType: addEditType ?? AddEditGroupObjectType.add,
       currentGroup: currentGroup,
@@ -93,7 +96,6 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     context: c,
                     title: Text('Thêm nhóm đối tượng thành công'),
                   );
-                
                 }
               }
             } else if (addEditType == AddEditGroupObjectType.edit &&
@@ -167,10 +169,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                             ),
                             child: PopupMenuButton<GroupObjectAction>(
                               tooltip: '',
-                              key: ValueKey(node.key),
+                              key: ValueKey(node.data?.id),
                               padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
                               splashRadius: 20,
+                              menuPadding: EdgeInsets.zero,
                               position: PopupMenuPosition.under,
                               offset: const Offset(0, 8),
                               shape: RoundedRectangleBorder(
@@ -185,10 +187,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                   case GroupObjectAction.add:
                                     _onShowDialogAddEditGroupObject(
                                       c: context,
-                                      listGroupInput: context
-                                          .read<ObjectGroupBloc>()
-                                          .state
-                                          .subjectGroups,
+                                      tree: tree,
                                       addEditType: AddEditGroupObjectType.add,
                                       parentGroup: node.data,
                                     );
@@ -208,7 +207,11 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                 List<GroupObjectAction> listAction = List.of(
                                   GroupObjectAction.values,
                                 );
-
+                                // cấp 5 => không cho thêm nhóm con nữa
+                                if (node.level >=
+                                    AppConfig.OBJECT_GROUP_MAX_LEVEL) {
+                                  listAction.remove(GroupObjectAction.add);
+                                }
                                 final List<PopupMenuEntry<GroupObjectAction>>
                                 entries = [];
                                 for (int i = 0; i < listAction.length; i++) {
@@ -225,7 +228,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                   );
                                   if (i != listAction.length - 1) {
                                     entries.add(
-                                      const PopupMenuDivider(height: 1),
+                                      const PopupMenuDivider(
+                                        height: 1,
+                                        color: AppColors.greyF2F4FA,
+                                      ),
                                     );
                                   }
                                 }
@@ -241,10 +247,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                         onClickAddGroup: () {
                           _onShowDialogAddEditGroupObject(
                             c: context,
-                            listGroupInput: context
-                                .read<ObjectGroupBloc>()
-                                .state
-                                .subjectGroups,
+                            tree: tree,
                             addEditType: AddEditGroupObjectType.add,
                           );
                         },

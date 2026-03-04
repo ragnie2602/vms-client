@@ -77,6 +77,9 @@ class AppConfig {
   static const double MONITOR_GRID_SPACING = 4.0;
   static const int? OVERRIDE_MONITOR_GRID_ROWS = null; // = null;
   static const int? OVERRIDE_MONITOR_GRID_COLUMNS = null; // = null;
+
+  // object group
+  static const int OBJECT_GROUP_MAX_LEVEL = 5;
 }
 
 enum LiveviewDetailAudioSource {
