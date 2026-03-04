@@ -141,12 +141,17 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                               onSelected: (action) {
                                 switch (action) {
                                   case GroupObjectAction.add:
+                                    final bloc = context
+                                        .read<ObjectGroupBloc>();
                                     showDialog(
                                       context: context,
-                                      builder: (_) => AddSubjectGroupDialog(
-                                        parentGroupName: node.data?.name,
-                                        parentGroupId: int.tryParse(
-                                          node.data?.id ?? '',
+                                      builder: (_) => BlocProvider.value(
+                                        value: bloc,
+                                        child: AddSubjectGroupDialog(
+                                          parentGroupName: node.data?.name,
+                                          parentGroupId: int.tryParse(
+                                            node.data?.id ?? '',
+                                          ),
                                         ),
                                       ),
                                     );
@@ -197,9 +202,13 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                           );
                         },
                         onClickAddGroup: () {
+                          final bloc = context.read<ObjectGroupBloc>();
                           showDialog(
                             context: context,
-                            builder: (_) => const AddSubjectGroupDialog(),
+                            builder: (_) => BlocProvider.value(
+                              value: bloc,
+                              child: const AddSubjectGroupDialog(),
+                            ),
                           );
                         },
                       );
