@@ -1,15 +1,20 @@
 import 'package:dio/dio.dart';
+import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
+import 'package:vms_flutter_client/data/datasources/subject_group_service.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
+import 'package:vms_flutter_client/data/repositories/base_repository.dart';
 import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
-class ObjectGroupRepository implements IObjectGroupRepository {
+class ObjectGroupRepository extends BaseRepository
+    implements IObjectGroupRepository {
   final HttpClient _apiClient;
+  final SubjectGroupService _subjectGroupService;
 
-  ObjectGroupRepository(this._apiClient);
+  ObjectGroupRepository(this._apiClient, this._subjectGroupService);
 
   @override
   Future<Map<String, dynamic>> getObjectTypes(int page, int size) async {
@@ -177,5 +182,19 @@ class ObjectGroupRepository implements IObjectGroupRepository {
       return;
     }
     throw Exception('Failed to create subject group');
+  }
+
+  @override
+  Future<Either<Failure, SubjectGroup>> editObjectGroup({
+    required int objectGroupId,
+    required SubjectGroup request,
+  }) async {
+    return await catchError<SubjectGroup>(() async {
+      final data = await _subjectGroupService.putEditSubjectGroup(
+        subjectGroupId: objectGroupId,
+        request: request,
+      );
+      return Right(data);
+    });
   }
 }

@@ -1,3 +1,4 @@
+import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
@@ -22,4 +23,8 @@ abstract class IObjectGroupRepository {
   Future<void> deleteObject(int objectId);
   Future<List<SubjectGroup>> getSubjectGroups();
   Future<void> createSubjectGroup(String name, int parentId);
+  Future<Either<Failure, SubjectGroup>> editObjectGroup({
+    required int objectGroupId,
+    required SubjectGroup request,
+  });
 }
