@@ -1,5 +1,7 @@
+import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:equatable/equatable.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
@@ -14,9 +16,8 @@ class ObjectGroupState extends Equatable {
   final int totalObjects;
   final String? errorMessage;
   final int totalPages;
-  // mock data
-  final List<MockObject>? listGroup;
-  final MockObject? selectedGroup;
+  final List<SubjectGroup> subjectGroups;
+  final TreeNode<MockObject>? subjectGroupTree;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -27,8 +28,8 @@ class ObjectGroupState extends Equatable {
     this.totalObjects = 0,
     this.errorMessage,
     this.totalPages = 1,
-    this.listGroup,
-    this.selectedGroup,
+    this.subjectGroups = const [],
+    this.subjectGroupTree,
   });
 
   ObjectGroupState copyWith({
@@ -40,8 +41,8 @@ class ObjectGroupState extends Equatable {
     int? totalObjects,
     String? errorMessage,
     int? totalPages,
-    List<MockObject>? listGroup,
-    MockObject? selectedGroup,
+    List<SubjectGroup>? subjectGroups,
+    TreeNode<MockObject>? subjectGroupTree,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,
@@ -52,8 +53,8 @@ class ObjectGroupState extends Equatable {
       totalObjects: totalObjects ?? this.totalObjects,
       errorMessage: errorMessage ?? this.errorMessage,
       totalPages: totalPages ?? this.totalPages,
-      listGroup: listGroup ?? this.listGroup,
-      selectedGroup: selectedGroup ?? this.selectedGroup,
+      subjectGroups: subjectGroups ?? this.subjectGroups,
+      subjectGroupTree: subjectGroupTree ?? this.subjectGroupTree,
     );
   }
 
@@ -67,7 +68,7 @@ class ObjectGroupState extends Equatable {
     totalObjects,
     errorMessage,
     totalPages,
-    listGroup,
-    selectedGroup,
+    subjectGroups,
+    subjectGroupTree,
   ];
 }

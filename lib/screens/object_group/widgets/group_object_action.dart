@@ -3,15 +3,15 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
-enum GroupObjectAction { add, addObject, edit, delete }
+enum GroupObjectAction { addObject, add, edit, delete }
 
 extension ItemGroupActionExt on GroupObjectAction {
   String getName() {
     switch (this) {
-      case GroupObjectAction.add:
-        return 'Thêm';
       case GroupObjectAction.addObject:
         return 'Thêm đối tượng';
+      case GroupObjectAction.add:
+        return 'Thêm nhóm đối tượng';
       case GroupObjectAction.edit:
         return 'Sửa';
       case GroupObjectAction.delete:
@@ -21,9 +21,9 @@ extension ItemGroupActionExt on GroupObjectAction {
 
   String get icon {
     switch (this) {
-      case GroupObjectAction.add:
-        return AppAssets.iconAdd;
       case GroupObjectAction.addObject:
+        return AppAssets.iconAdd;
+      case GroupObjectAction.add:
         return AppAssets.iconAdd;
       case GroupObjectAction.edit:
         return AppAssets.iconEdit;
