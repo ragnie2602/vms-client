@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/config_dialog.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 import '../../shared/player/sources.dart';
@@ -67,6 +68,16 @@ class PlayerControls extends StatelessWidget {
 
           return Row(
             children: <Widget>[
+              SizedBox(width: 20),
+              IconButton(
+                tooltip: "Cấu hình",
+                onPressed: () => showDialogConfig(
+                  context,
+                  camera: context.read<CameraDetailBloc>().state.camera!,
+                ),
+                icon: SvgPicture.asset(AppAssets.icConfig, width: 28, height: 28),
+              ),
+
               Expanded(
                 child: Material(
                   color: Colors.transparent,
