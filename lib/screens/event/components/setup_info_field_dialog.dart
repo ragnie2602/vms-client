@@ -97,20 +97,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                           builder: (context, constraints) => Container(
                             height: constraints.maxHeight,
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                            child: BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
-                              buildWhen: (previous, current) =>
-                                  current is SEDGetEventDisplayConfigSuccess ||
-                                  current is SEDGettingEventDisplayConfig ||
-                                  current is SEDGetEventDisplayConfigFailure,
-                              builder: (context, state) {
-                                if (state is SEDGetEventDisplayConfigSuccess) {
-                                  return CustomReorderableListView(state.config);
-                                } else if (state is SEDGetEventDisplayConfigFailure) {
-                                  return Center(child: Text('Không có dữ liệu'));
-                                }
-                                return Center(child: CircularProgressIndicator());
-                              },
-                            ),
+                            child: _buildTabContent(context),
                           ),
                         ),
                       ),
@@ -118,9 +105,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                   );
                 },
                 listener: (context, state) {
-                  if (state is GetAllEventTypeSuccess) {
-                    _changeTab(state.eventTypes.first);
-                  }
+                  if (state is GetAllEventTypeSuccess) _changeTab(state.eventTypes.first);
                 },
               ),
             ),
@@ -157,41 +142,6 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
     );
   }
 
-  Widget _buildVerticalTab(
-    BuildContext context,
-    EventType typeEvent, {
-    required Function() onSelected,
-  }) {
-    final isSelected = typeEvent.eventKey == _selectedEventType;
-
-    return StatefulBuilder(
-      builder: (context, setState) => Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(6),
-          onTap: onSelected,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              color: isSelected ? AppColors.blueEFF6FF : null,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            width: double.infinity,
-            child: Text(
-              typeEvent.name,
-              maxLines: 3,
-              style: AppTypography.style(
-                14,
-                color: isSelected ? AppColors.blue005EB8 : AppColors.grey64748B,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildFooter(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
@@ -219,7 +169,7 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
             ),
           ),
           const SizedBox(width: 17),
-          BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+          BlocConsumer<SetupEventDisplayBloc, SetupEventDisplayState>(
             builder: (context, state) {
               final isLoading = state is SEDSavingConfigs;
 
@@ -260,23 +210,167 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                 ),
               );
             },
+            listener: (context, state) =>
+                state is SEDSavingConfigsSuccess ? Navigator.pop(context) : null,
           ),
         ],
       ),
     );
   }
 
+  Widget _buildTabContent(BuildContext context) {
+    if (_selectedEventType != 'face_detection') {
+      return BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+        key: ValueKey(_selectedEventType),
+        buildWhen: (previous, current) =>
+            current is SEDGetEventDisplayConfigSuccess ||
+            current is SEDGettingEventDisplayConfig ||
+            current is SEDGetEventDisplayConfigFailure,
+        builder: (context, state) {
+          if (state is SEDGetEventDisplayConfigSuccess) {
+            return CustomReorderableListView(state.config);
+          } else if (state is SEDGetEventDisplayConfigFailure) {
+            return Center(child: Text('Không có dữ liệu'));
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      );
+    }
+
+    Widget _reorderedListView({int? subjectTypeId}) =>
+        BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+          key: ValueKey(subjectTypeId),
+          buildWhen: (previous, current) {
+            if (current is SEDGetEventDisplayConfigSuccess) {
+              return current.config.subjectTypeId == subjectTypeId;
+            } else if (current is SEDGetEventDisplayConfigFailure) {
+              return current.subjectTypeId == subjectTypeId;
+            } else if (current is SEDGettingEventDisplayConfig) {
+              return current.subjectTypeId == subjectTypeId;
+            }
+
+            return false;
+          },
+          builder: (context, state) {
+            if (state is SEDGetEventDisplayConfigSuccess) {
+              return CustomReorderableListView(state.config, subjectTypeId: subjectTypeId);
+            } else if (state is SEDGetEventDisplayConfigFailure) {
+              return Center(child: Text('Không có dữ liệu'));
+            }
+            return Center(child: CircularProgressIndicator());
+          },
+        );
+
+    return BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+      buildWhen: (previous, current) =>
+          current is SEDGetAllSubjectTypesSuccess ||
+          current is SEDGetAllSubjectTypesFailure ||
+          current is SEDGettingAllSubjectTypes,
+      builder: (context, state) {
+        if (state is SEDGetAllSubjectTypesSuccess) {
+          final st = state.subjectTypes;
+
+          return ListView.builder(
+            itemBuilder: (context, index) => Container(
+              margin: const EdgeInsets.only(bottom: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.greyF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ListTileTheme(
+                dense: true,
+                child: ExpansionTileTheme(
+                  data: ExpansionTileThemeData(
+                    childrenPadding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+                    collapsedIconColor: AppColors.grey94A3B8,
+                    iconColor: AppColors.grey94A3B8,
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    shape: const RoundedRectangleBorder(side: BorderSide.none),
+                  ),
+                  child: ExpansionTile(
+                    minTileHeight: 40,
+                    onExpansionChanged: (value) {
+                      if (value) {
+                        bloc.add(
+                          GetEventDisplayConfig(
+                            _selectedEventType,
+                            widget.typeConfig,
+                            subjectTypeId: st[index].id,
+                          ),
+                        );
+                      }
+                    },
+                    title: Text(
+                      'Dữ liệu ${st[index].name}',
+                      style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                    ),
+                    children: [_reorderedListView(subjectTypeId: st[index].id)],
+                  ),
+                ),
+              ),
+            ),
+            itemCount: st.length,
+          );
+        } else if (state is SEDGetAllSubjectTypesFailure) {
+          return Center(child: Text('Có lỗi khi lấy danh sách đối tượng'));
+        }
+        return Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  Widget _buildVerticalTab(
+    BuildContext context,
+    EventType typeEvent, {
+    required Function() onSelected,
+  }) {
+    final isSelected = typeEvent.eventKey == _selectedEventType;
+
+    return StatefulBuilder(
+      builder: (context, setState) => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(6),
+          onTap: onSelected,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              color: isSelected ? AppColors.blueEFF6FF : null,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            width: double.infinity,
+            child: Text(
+              typeEvent.name,
+              maxLines: 3,
+              style: AppTypography.style(
+                14,
+                color: isSelected ? AppColors.blue005EB8 : AppColors.grey64748B,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   // FUNCTIONS
   void _changeTab(EventType et) {
-    bloc.add(GetEventDisplayConfig(et.eventKey, widget.typeConfig));
+    if (et.eventKey != 'face_detection') {
+      bloc.add(GetEventDisplayConfig(et.eventKey, widget.typeConfig));
+    } else {
+      bloc.add(GetAllSubjectTypes());
+    }
     setState(() => _selectedEventType = et.eventKey);
   }
 }
 
 class CustomReorderableListView extends StatefulWidget {
   final EventDisplayConfig config;
+  final int? subjectTypeId;
 
-  const CustomReorderableListView(this.config, {super.key});
+  const CustomReorderableListView(this.config, {super.key, this.subjectTypeId});
 
   @override
   State<CustomReorderableListView> createState() => _CustomReorderableListViewState();
@@ -299,10 +393,13 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
     final sf = sortedFields();
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: forSubjectType ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 10),
+        if (!forSubjectType) ...[
+          Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 10),
+        ],
         DragBoundary(
           child: ReorderableListView(
             key: _listKey,
@@ -367,21 +464,26 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
           ),
         ),
         const SizedBox(height: 10),
-        InkWell(
-          onTap: (canAppend) ? () => showAddDataPopup(context) : null,
+        ElevatedButton(
+          onPressed: canAppend ? () => showAddDataPopup(context) : () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: btnBgColor(),
+            elevation: 0,
+            minimumSize: Size.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 5,
             children: [
-              Icon(
-                Icons.add,
-                color: (canAppend) ? AppColors.secondary : AppColors.grey64748B,
-                size: 18,
-              ),
+              Icon(Icons.add, color: btnFgColor(), size: forSubjectType ? 13 : 18),
               Text(
-                'Thêm trường thông tin',
+                forSubjectType ? 'Thêm trường dữ liệu' : 'Thêm trường thông tin',
                 style: AppTypography.style(
-                  14,
-                  color: (canAppend) ? AppColors.secondary : AppColors.grey64748B,
-                  fontWeight: FontWeight.w500,
+                  forSubjectType ? 12 : 13,
+                  color: btnFgColor(),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -399,6 +501,25 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   }
 
   bool get canAppend => widget.config.fields.length > widget.config.sorting.length;
+  bool get forSubjectType => widget.subjectTypeId != null;
+
+  Color btnBgColor() {
+    if (forSubjectType) {
+      if (canAppend) return AppColors.secondary;
+      return AppColors.grey64748B;
+    } else {
+      return Colors.white;
+    }
+  }
+
+  Color btnFgColor() {
+    if (!forSubjectType) {
+      if (canAppend) return AppColors.secondary;
+      return AppColors.grey64748B;
+    } else {
+      return Colors.white;
+    }
+  }
 
   List<Fields> get availableFields =>
       widget.config.fields.where((f) => !widget.config.sorting.contains(f.fieldKey)).toList();
@@ -492,7 +613,8 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
                   child: ListView.separated(
                     itemBuilder: (context, index) => TextButton(
                       onPressed: () {
-                        // bloc.add(SetupInfoFieldAddField(optionsToShow[index]));
+                        setState(() => widget.config.sorting.add(_fieldsToShow[index].fieldKey));
+                        bloc.add(ChangeConfig(widget.config));
                         _removePopup();
                       },
                       style: TextButton.styleFrom(alignment: Alignment.centerLeft),

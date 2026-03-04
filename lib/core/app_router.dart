@@ -227,7 +227,8 @@ class AppRouter {
             ),
             BlocProvider(create: (context) => DetectBloc(context.read())),
             BlocProvider(
-              create: (context) => SetupEventDisplayBloc(context.read(), context.read()),
+              create: (context) =>
+                  SetupEventDisplayBloc(context.read(), context.read(), context.read()),
             ),
             BlocProvider(
               create: (context) => AiBoxBloc(

@@ -375,7 +375,12 @@ class _EventScreenState extends State<EventScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.stretch,
                                           children: [
                                             for (int i = startIndex; i < endIndex; i++) ...[
-                                              Expanded(child: EventItem(event: state.events[i])),
+                                              Expanded(
+                                                child: EventItem(
+                                                  state.events[i],
+                                                  sedBloc: setupInfoFieldBloc,
+                                                ),
+                                              ),
                                               if (i < endIndex - 1) const SizedBox(width: 16),
                                             ],
                                             for (int i = 0; i < emptySlots; i++) ...[

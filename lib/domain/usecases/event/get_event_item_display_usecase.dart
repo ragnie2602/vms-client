@@ -23,7 +23,7 @@ class GetEventItemDisplayUsecase
 
     EventDisplayConfig? config = _eventDisplayConfigs[input.event.eventType];
     if (config == null) {
-      final result = await _eventRepository.getEventDisplayConfig(input.event.eventType!, 1);
+      final result = await _eventRepository.getEventDisplayConfig(input.event.eventType!, 1, null);
       result.fold(
         (failure) => throw failure,
         (success) => config = _eventDisplayConfigs[input.event.eventType!] = success,

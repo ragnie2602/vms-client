@@ -307,11 +307,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                             ),
                                           ),
                                           Text(
-                                            DateFormat('HH:mm dd/MM/yyyy').format(
-                                              DateTime.fromMillisecondsSinceEpoch(
-                                                event.timeEvent * 1000,
-                                              ),
-                                            ),
+                                            DateFormat('HH:mm dd/MM/yyyy').format(event.timeEvent),
                                             overflow: TextOverflow.visible,
                                             style: AppTypography.style(
                                               14,
@@ -406,7 +402,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                 if (state is EventDetailSuccess) {
                   event = state.event;
 
-                  final eventTime = DateTime.fromMillisecondsSinceEpoch(event!.timeEvent * 1000);
+                  final eventTime = event!.timeEvent;
                   currentTime = rewindTime = eventTime.subtract(Duration(seconds: 10));
                   endTime = eventTime.add(Duration(seconds: 10));
 
@@ -985,7 +981,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
       ext = '.jpg';
     }
 
-    final eventTime = DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000);
+    final eventTime = event.timeEvent;
     final eventName = event.eventName?.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_') ?? 'event';
     final timeStr = eventTime.format("yyyyMMdd_HHmmss");
     final fileName = '${eventName}_$timeStr$ext';
@@ -1005,7 +1001,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
       return;
     }
 
-    final eventTime = DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000);
+    final eventTime = event.timeEvent;
     final targetPlayback = playbackState.playbacks.firstWhere(
       (p) => p.startTime.isBefore(eventTime) && p.endTime.isAfter(eventTime),
       orElse: () => playbackState.playbacks[playbackState.currentIndex],
@@ -1066,7 +1062,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
         extra: CameraDetailScreenArgs(
           data: event!.camera,
           isPlayback: true,
-          rewind: DateTime.fromMillisecondsSinceEpoch(event!.timeEvent * 1000),
+          rewind: event!.timeEvent,
           title: 'Xem lại',
           key: UniqueKey(),
         ),

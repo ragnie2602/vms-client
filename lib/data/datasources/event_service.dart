@@ -38,6 +38,18 @@ class EventService {
     return response.data;
   }
 
+  getSubjectTypes({String? status, int? size}) async {
+    final raw = await httpClient.get(
+      EndPoints.baseSubjectType,
+      queryParameters: {'status': status, 'size': size},
+    );
+
+    final response = BaseResponse.fromJson(raw);
+
+    if (response.code != 200) throw Exception(response.message);
+    return response.data;
+  }
+
   getEventDetail(int eventId) async {
     final raw = await httpClient.get('${EndPoints.baseEvent}/$eventId');
 

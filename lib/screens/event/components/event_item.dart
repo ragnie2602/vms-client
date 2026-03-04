@@ -3,9 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
-import 'package:vms_flutter_client/core/constants/event_constants.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
+import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
@@ -18,8 +17,13 @@ import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_fol
 
 class EventItem extends StatelessWidget {
   final EventEntity event;
+  final SetupEventDisplayBloc sedBloc;
 
-  const EventItem({super.key, required this.event});
+  EventItem(this.event, {super.key, required this.sedBloc}) {
+    sedBloc.add(
+      GetEventDisplayConfig(event.eventType ?? '', 2, subjectTypeId: event.subjectTypeId),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,63 +85,53 @@ class EventItem extends StatelessWidget {
               ],
             ),
           ),
-          // Expanded(
-          //   child: Container(
-          //     decoration: BoxDecoration(
-          //       border: Border.all(color: AppColors.greyE2E8F0),
-          //       borderRadius: BorderRadius.only(
-          //         bottomLeft: Radius.circular(8),
-          //         bottomRight: Radius.circular(8),
-          //       ),
-          //       boxShadow: [
-          //         BoxShadow(
-          //           blurRadius: 10,
-          //           color: AppColors.black.withAlpha(34),
-          //           offset: const Offset(0, 4),
-          //         ),
-          //       ],
-          //       color: AppColors.greyF2F4FA,
-          //     ),
-          //     padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
-          //     child: BlocBuilder<SetupInfoFieldBloc, SetupInfoFieldState>(
-          //       builder: (context, state) {
-          //         if (state.configTableStatus == ConfigTableStatus.success) {
-          //           return _buildContent(
-          //             event,
-          //             context.read<SetupInfoFieldBloc>().configTable[event.eventType ?? ''] ?? [],
-          //           );
-          //         } else if (state.configTableStatus == ConfigTableStatus.loading) {
-          //           return const Center(
-          //             child: Padding(
-          //               padding: EdgeInsets.all(20),
-          //               child: CircularProgressIndicator(),
-          //             ),
-          //           );
-          //         } else if (state.configTableStatus == ConfigTableStatus.failure) {
-          //           return const Center(
-          //             child: Padding(
-          //               padding: EdgeInsets.all(20),
-          //               child: Text('Không thể tải cấu hình', style: TextStyle(color: Colors.red)),
-          //             ),
-          //           );
-          //         }
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.greyE2E8F0),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10,
+                    color: AppColors.black.withAlpha(34),
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                color: AppColors.greyF2F4FA,
+              ),
+              padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
+              child: BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+                buildWhen: (previous, current) =>
+                    current is SEDGetEventDisplayConfigSuccess ||
+                    current is SEDSavingConfigsSuccess,
+                builder: (context, state) {
+                  final config = sedBloc.configs[(event.eventType ?? '', event.subjectTypeId)];
 
-          //         return const SizedBox(
-          //           width: double.infinity,
-          //           height: 60,
-          //           child: Center(child: Text('Đang khởi tạo...')),
-          //         );
-          //       },
-          //     ),
-          //   ),
-          // ),
+                  if (config == null) {
+                    return const SizedBox(
+                      width: double.infinity,
+                      height: 60,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+
+                  return _buildContent(event, config);
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildContent(EventEntity event, List<FieldConfigEntity> currentFields) {
-    if (currentFields.isEmpty) return const SizedBox(width: double.infinity);
+  Widget _buildContent(EventEntity e, EventDisplayConfig c) {
+    if (c.sorting.isEmpty || c.fields.isEmpty) return const SizedBox(width: double.infinity);
+
+    final obj = e.toJson();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,10 +139,9 @@ class EventItem extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: Text(
-            EventTypeConfig.translator(currentFields.first.code ?? '', event),
+            obj[c.sorting.first].toString(),
+            overflow: TextOverflow.visible,
             style: AppTypography.style(14, fontWeight: FontWeight.w600),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(height: 10),
@@ -156,15 +149,17 @@ class EventItem extends StatelessWidget {
           columnSpacing: 10,
           data: CustomTableData(
             columnFlexes: [0, 1],
-            data: currentFields
+            data: c
+                .sortedFields()
                 .sublist(1)
                 .map(
-                  (field) => [
-                    SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
-                    Text(
-                      EventTypeConfig.translator(field.code ?? '', event),
-                      style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                  (f) => [
+                    SvgPicture.network(
+                      f.icon ?? '',
+                      height: 20,
+                      errorBuilder: (context, error, stackTrace) => SizedBox(width: 20),
                     ),
+                    Text(obj[f.fieldKey].toString()),
                   ],
                 )
                 .toList(),

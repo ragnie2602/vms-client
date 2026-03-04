@@ -15,7 +15,11 @@ class GetEventDisplayConfigUsecase
 
   @override
   Future<GetEventDisplayConfigOutput> buildUseCase(GetEventDisplayConfigInput input) async {
-    final result = await _eventRepository.getEventDisplayConfig(input.eventType, input.typeConfig);
+    final result = await _eventRepository.getEventDisplayConfig(
+      input.eventType,
+      input.typeConfig,
+      input.subjectTypeId,
+    );
 
     return result.fold((failure) => throw Exception(failure), (config) {
       for (var f in config.fields) {

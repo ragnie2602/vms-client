@@ -43,4 +43,9 @@ class EndPoints {
   static const String getListTypeEventDetect = '/$baseDetect/event-types';
   static const String getAvailableFields = '/$baseDetect/available-fields';
   static String eventDisplayConfigByName(String typeName) => '$baseDetect/$typeName';
+
+  // Subject
+
+  // Subject types
+  static const String baseSubjectType = '/api/object-types';
 }

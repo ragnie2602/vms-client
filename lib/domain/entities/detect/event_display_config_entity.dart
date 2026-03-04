@@ -17,6 +17,14 @@ class EventDisplayConfig {
     required this.sorting,
   });
 
+  List<Fields> sortedFields() {
+    final Map<String, Fields> fieldsByKey = {for (final f in fields) f.fieldKey: f};
+    return [
+      for (final key in sorting)
+        if (fieldsByKey.containsKey(key)) fieldsByKey[key]!,
+    ];
+  }
+
   EventDisplayConfig.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     eventType = json['eventType'];

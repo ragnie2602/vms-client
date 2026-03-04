@@ -23,12 +23,15 @@ class ChangeConfig extends SetupEventDisplayEvent {
 class GetEventDisplayConfig extends SetupEventDisplayEvent {
   final String eventType;
   final int typeConfig;
+  final int? subjectTypeId;
 
-  const GetEventDisplayConfig(this.eventType, this.typeConfig);
+  const GetEventDisplayConfig(this.eventType, this.typeConfig, {this.subjectTypeId});
 
   @override
-  List<Object?> get props => [eventType, typeConfig];
+  List<Object?> get props => [eventType, typeConfig, subjectTypeId];
 }
+
+class GetAllSubjectTypes extends SetupEventDisplayEvent {}
 
 class SaveConfigs extends SetupEventDisplayEvent {
   const SaveConfigs();

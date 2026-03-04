@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/core/utils/pageable.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 
 abstract class IEventRepository {
   Future<Either<Failure, List<EventEntity>>> exportEvent(
@@ -14,11 +15,14 @@ abstract class IEventRepository {
 
   Future<Either<Failure, List<EventType>>> getAllEventType();
 
+  Future<Either<Failure, List<ObjectType>>> getAllSubjectTypes();
+
   Future<Either<Failure, EventEntity>> getEventDetail(int eventId);
 
   Future<Either<Failure, EventDisplayConfig>> getEventDisplayConfig(
     String eventType,
     int typeConfig,
+    int? subjectTypeId,
   );
 
   Future<Either<Failure, Pageable<EventEntity>>> searchEvent({

@@ -7,6 +7,28 @@ class SetupEventDisplayState extends Equatable {
   List<Object?> get props => [];
 }
 
+class SEDGetAllSubjectTypesSuccess extends SetupEventDisplayState {
+  final List<ObjectType> subjectTypes;
+
+  const SEDGetAllSubjectTypesSuccess(this.subjectTypes);
+
+  @override
+  List<Object?> get props => [subjectTypes];
+}
+
+class SEDGetAllSubjectTypesFailure extends SetupEventDisplayState {
+  final String message;
+
+  const SEDGetAllSubjectTypesFailure(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class SEDGettingAllSubjectTypes extends SetupEventDisplayState {
+  const SEDGettingAllSubjectTypes();
+}
+
 class SEDGetEventDisplayConfigSuccess extends SetupEventDisplayState {
   final EventDisplayConfig config;
 
@@ -18,15 +40,21 @@ class SEDGetEventDisplayConfigSuccess extends SetupEventDisplayState {
 
 class SEDGetEventDisplayConfigFailure extends SetupEventDisplayState {
   final String message;
+  final int? subjectTypeId;
 
-  const SEDGetEventDisplayConfigFailure(this.message);
+  const SEDGetEventDisplayConfigFailure(this.message, this.subjectTypeId);
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, subjectTypeId];
 }
 
 class SEDGettingEventDisplayConfig extends SetupEventDisplayState {
-  const SEDGettingEventDisplayConfig();
+  final int? subjectTypeId;
+
+  const SEDGettingEventDisplayConfig({this.subjectTypeId});
+
+  @override
+  List<Object?> get props => [subjectTypeId];
 }
 
 class SEDSavingConfigs extends SetupEventDisplayState {

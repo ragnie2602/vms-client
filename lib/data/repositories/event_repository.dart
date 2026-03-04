@@ -5,10 +5,11 @@ import 'package:vms_flutter_client/data/repositories/base_repository.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 
 class EventRepository extends BaseRepository implements IEventRepository {
-  static final Map<(String, int), EventDisplayConfig> configTable = {};
+  static final Map<(String, int, int?), EventDisplayConfig> configTable = {};
 
   final EventService eventService;
 
@@ -34,6 +35,17 @@ class EventRepository extends BaseRepository implements IEventRepository {
   }
 
   @override
+  Future<Either<Failure, List<ObjectType>>> getAllSubjectTypes() async {
+    return await catchError<List<ObjectType>>(() async {
+      final data = await eventService.getSubjectTypes(
+        size: 100,
+        status: ObjectTypeStatus.active.name,
+      );
+      return Right(Pageable.fromJson(data, ObjectType.fromJson).content);
+    });
+  }
+
+  @override
   Future<Either<Failure, List<EventType>>> getAllEventType() async {
     return await catchError<List<EventType>>(() async {
       final data = await eventService.getAllEventType();
@@ -53,12 +65,17 @@ class EventRepository extends BaseRepository implements IEventRepository {
   Future<Either<Failure, EventDisplayConfig>> getEventDisplayConfig(
     String eventType,
     int typeConfig,
+    int? subjectTypeId,
   ) async {
-    final key = (eventType, typeConfig);
+    final key = (eventType, typeConfig, subjectTypeId);
     if (configTable.containsKey(key)) return Right(configTable[key]!);
 
     return await catchError<EventDisplayConfig>(() async {
-      final data = await eventService.getEventDisplayConfig(eventType, typeConfig);
+      final data = await eventService.getEventDisplayConfig(
+        eventType,
+        typeConfig,
+        subjectTypeId: subjectTypeId,
+      );
 
       EventDisplayConfig config = EventDisplayConfig.fromJson(data);
       configTable[key] = config;
@@ -99,15 +116,15 @@ class EventRepository extends BaseRepository implements IEventRepository {
   @override
   Future<Either<Failure, void>> updateEventDisplayConfig(List<EventDisplayConfig> configs) async {
     return await catchError<void>(() async {
-      final List<Map<String, dynamic>> result = await eventService.updateEventDisplayConfig(
+      final List<dynamic> result = await eventService.updateEventDisplayConfig(
         configs.map((e) => e.toJson()).toList(),
       );
 
-      List<EventDisplayConfig> updated = result
-          .map<EventDisplayConfig>((e) => EventDisplayConfig.fromJson(e))
-          .toList();
-
-      configTable[(updated, )]
+      result.map<EventDisplayConfig>((e) {
+        final c = EventDisplayConfig.fromJson(e);
+        configTable[(c.eventType, c.typeConfig, c.subjectTypeId)] = c;
+        return c;
+      }).toList();
 
       return Right(null);
     });
