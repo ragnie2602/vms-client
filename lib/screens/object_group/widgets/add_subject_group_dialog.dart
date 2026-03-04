@@ -272,9 +272,11 @@ class _AddSubjectGroupDialogState extends State<AddSubjectGroupDialog> {
           child: DropdownButtonFormField<int>(
             value: _selectedParentId,
             isExpanded: true,
+            style: AppTypography.style(14, color: AppColors.black),
             decoration: InputDecoration(
+              helperStyle: AppTypography.style(14, color: AppColors.redFF0000),
               hintText: 'Chọn nhóm đối tượng cha',
-              hintStyle: AppTypography.style(14, color: AppColors.grey94A3B8),
+              hintStyle: AppTypography.style(14, color: AppColors.grey64748B),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
                 vertical: 8,
