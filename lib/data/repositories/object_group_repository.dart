@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
 class ObjectGroupRepository implements IObjectGroupRepository {
@@ -31,10 +32,18 @@ class ObjectGroupRepository implements IObjectGroupRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> getObjects(int objectTypeId, int page, int size) async {
-    final response = await _apiClient.get(
-      '${EndPoints.baseUrl}/api/objects?objectTypeId=$objectTypeId&page=$page&size=$size',
-    );
+  Future<Map<String, dynamic>> getObjects(
+    int objectTypeId,
+    int page,
+    int size, {
+    String? search,
+  }) async {
+    var url =
+        '${EndPoints.baseUrl}/api/objects?objectTypeId=$objectTypeId&page=$page&size=$size';
+    if (search != null && search.isNotEmpty) {
+      url += '&search=${Uri.encodeComponent(search)}';
+    }
+    final response = await _apiClient.get(url);
 
     if (response['code'] == 200 || response['code'] == 0) {
       final data = response['data'];
@@ -52,7 +61,9 @@ class ObjectGroupRepository implements IObjectGroupRepository {
 
   @override
   Future<ObjectType> getObjectTypeDetail(int id) async {
-    final response = await _apiClient.get('${EndPoints.baseUrl}/api/object-types/$id');
+    final response = await _apiClient.get(
+      '${EndPoints.baseUrl}/api/object-types/$id',
+    );
 
     if (response['code'] == 200 || response['code'] == 0) {
       return ObjectType.fromJson(response['data'] as Map<String, dynamic>);
@@ -74,16 +85,97 @@ class ObjectGroupRepository implements IObjectGroupRepository {
   }
 
   @override
-  Future<void> createObject(int objectTypeId, Map<String, dynamic> fieldValues) async {
+  Future<void> createObject(
+    int objectTypeId,
+    Map<String, dynamic> fieldValues,
+  ) async {
     final response = await _apiClient.post(
       url: '${EndPoints.baseUrl}/api/objects',
       data: {'objectTypeId': objectTypeId, 'fieldValues': fieldValues},
     );
 
     if (response != null &&
-        (response['code'] == 200 || response['code'] == 0 || response['code'] == 201)) {
+        (response['code'] == 200 ||
+            response['code'] == 0 ||
+            response['code'] == 201)) {
       return;
     }
     throw Exception(response?['message'] ?? 'Failed to create object');
+  }
+
+  @override
+  Future<ObjectData> getObjectDetail(int objectId) async {
+    final response = await _apiClient.get(
+      '${EndPoints.baseUrl}/api/objects/$objectId',
+    );
+
+    if (response['code'] == 200 || response['code'] == 0) {
+      return ObjectData.fromJson(response['data'] as Map<String, dynamic>);
+    }
+    throw Exception(response['message'] ?? 'Failed to load object detail');
+  }
+
+  @override
+  Future<void> updateObject(
+    int objectId,
+    int objectTypeId,
+    Map<String, dynamic> fieldValues,
+  ) async {
+    final response = await _apiClient.put(
+      url: '${EndPoints.baseUrl}/api/objects/$objectId',
+      data: {'objectTypeId': objectTypeId, 'fieldValues': fieldValues},
+    );
+
+    if (response != null &&
+        (response['code'] == 200 ||
+            response['code'] == 0 ||
+            response['code'] == 201)) {
+      return;
+    }
+    throw Exception(response?['message'] ?? 'Failed to update object');
+  }
+
+  @override
+  Future<void> deleteObject(int objectId) async {
+    final response = await _apiClient.delete(
+      url: '${EndPoints.baseUrl}/api/objects/$objectId',
+    );
+
+    if (response != null &&
+        (response['code'] == 200 ||
+            response['code'] == 0 ||
+            response['code'] == 204)) {
+      return;
+    }
+    throw Exception(response?['message'] ?? 'Failed to delete object');
+  }
+
+  @override
+  Future<List<SubjectGroup>> getSubjectGroups() async {
+    final response = await _apiClient.get(
+      '${EndPoints.baseUrl}${EndPoints.baseSubjectGroup}',
+    );
+
+    // API returns raw JSON array directly (not wrapped in {code, data})
+    if (response is List) {
+      return response
+          .map((item) => SubjectGroup.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+    throw Exception('Failed to load subject groups');
+  }
+
+  @override
+  Future<void> createSubjectGroup(String name, int parentId) async {
+    final response = await _apiClient.post(
+      url: '${EndPoints.baseUrl}${EndPoints.baseSubjectGroup}',
+      data: {'name': name, 'parentId': parentId},
+    );
+
+    // API may return the created object or a success response
+    if (response != null) {
+      return;
+    }
+    throw Exception('Failed to create subject group');
   }
 }

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
-import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 
 class MockObject {
   final String? name;
@@ -58,11 +58,22 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
   @override
   void didUpdateWidget(GroupObjectTreeWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _treeController?.expandAllChildren(widget.tree);
-    });
     if (oldWidget.selectedObjectId != widget.selectedObjectId) {
       _syncSelectedNodeFromProp();
+    }
+  }
+
+  /// Reset expansion notifiers so expandAllChildren works on reused TreeNode objects.
+  /// When switching tabs, TreeView is recreated (fresh flat list) but TreeNode
+  /// objects persist in BLoC state with isExpanded=true from previous session.
+  /// expandNode checks isExpanded and skips insertion if true, so we must reset.
+  void _resetTreeExpansion(TreeNode<MockObject> node) {
+    for (final child in node.childrenAsList) {
+      final treeChild = child as TreeNode<MockObject>;
+      treeChild.expansionNotifier.value = false;
+      if (treeChild.childrenAsList.isNotEmpty) {
+        _resetTreeExpansion(treeChild);
+      }
     }
   }
 
@@ -174,7 +185,9 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
                         ),
                       )
                     : TreeView.simple(
-                        key: ValueKey(widget.tree.hashCode),
+                        key: ValueKey(
+                          'tree_${widget.tree.length}_${widget.tree.childrenAsList.map((e) => e.key).join('_')}',
+                        ),
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         showRootNode: false,
                         tree: widget.tree,
@@ -202,11 +215,10 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
                         ),
                         onTreeReady: (treeViewController) {
                           _treeController = treeViewController;
-                          Future.delayed(
-                            Duration.zero,
-                            () =>
-                                _treeController?.expandAllChildren(widget.tree),
-                          );
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _resetTreeExpansion(widget.tree);
+                            _treeController?.expandAllChildren(widget.tree);
+                          });
                         },
                       ),
               );

@@ -10,20 +10,20 @@ import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
-import 'package:vms_flutter_client/data/repositories/object_group_repository.dart';
 import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
 import 'package:vms_flutter_client/data/repositories/ai_config_repository.dart';
 import 'package:vms_flutter_client/data/repositories/detect_repository.dart';
 import 'package:vms_flutter_client/data/repositories/event_repository.dart';
+import 'package:vms_flutter_client/data/repositories/object_group_repository.dart';
 import 'package:vms_flutter_client/data/repositories/object_type_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
-import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
@@ -43,12 +43,14 @@ import 'package:vms_flutter_client/domain/usecases/event/fetch_config_table_usec
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
@@ -250,6 +252,12 @@ class DependencyInjection {
     ),
     Provider<GetObjectsByTypeUsecase>(
       create: (context) => GetObjectsByTypeUsecase(context.read()),
+    ),
+    Provider<GetSubjectGroupsUsecase>(
+      create: (context) => GetSubjectGroupsUsecase(context.read()),
+    ),
+    Provider<CreateSubjectGroupUsecase>(
+      create: (context) => CreateSubjectGroupUsecase(context.read()),
     ),
 
     Provider<GetCameraUseCase>(

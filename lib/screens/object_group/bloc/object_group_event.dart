@@ -33,9 +33,29 @@ class LoadObjects extends ObjectGroupEvent {
   final int objectTypeId;
   final int page;
   final int size;
+  final String? search;
 
-  const LoadObjects({required this.objectTypeId, this.page = 1, this.size = 20});
+  const LoadObjects({
+    required this.objectTypeId,
+    this.page = 1,
+    this.size = 20,
+    this.search,
+  });
 
   @override
-  List<Object> get props => [objectTypeId, page, size];
+  List<Object?> get props => [objectTypeId, page, size, search];
+}
+
+class LoadSubjectGroups extends ObjectGroupEvent {
+  const LoadSubjectGroups();
+}
+
+class CreateSubjectGroup extends ObjectGroupEvent {
+  final String name;
+  final int parentId;
+
+  const CreateSubjectGroup({required this.name, required this.parentId});
+
+  @override
+  List<Object> get props => [name, parentId];
 }

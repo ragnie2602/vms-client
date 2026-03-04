@@ -7,8 +7,14 @@ class GetObjectsByTypeInput extends BaseInput {
   final int objectTypeId;
   final int page;
   final int size;
+  final String? search;
 
-  GetObjectsByTypeInput({required this.objectTypeId, required this.page, required this.size});
+  GetObjectsByTypeInput({
+    required this.objectTypeId,
+    required this.page,
+    required this.size,
+    this.search,
+  });
 }
 
 class GetObjectsByTypeOutput extends BaseOutput {
@@ -17,19 +23,27 @@ class GetObjectsByTypeOutput extends BaseOutput {
   GetObjectsByTypeOutput(this.data);
 }
 
-class GetObjectsByTypeUsecase extends FutureUseCase<GetObjectsByTypeInput, GetObjectsByTypeOutput> {
+class GetObjectsByTypeUsecase
+    extends FutureUseCase<GetObjectsByTypeInput, GetObjectsByTypeOutput> {
   final IObjectGroupRepository _repository;
 
   GetObjectsByTypeUsecase(this._repository);
 
   @override
-  Future<GetObjectsByTypeOutput> buildUseCase(GetObjectsByTypeInput input) async {
+  Future<GetObjectsByTypeOutput> buildUseCase(
+    GetObjectsByTypeInput input,
+  ) async {
     return execute(input);
   }
 
   @override
   Future<GetObjectsByTypeOutput> execute(GetObjectsByTypeInput input) async {
-    final result = await _repository.getObjects(input.objectTypeId, input.page, input.size);
+    final result = await _repository.getObjects(
+      input.objectTypeId,
+      input.page,
+      input.size,
+      search: input.search,
+    );
     return GetObjectsByTypeOutput(result);
   }
 }

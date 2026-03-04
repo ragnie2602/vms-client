@@ -1,3 +1,4 @@
+import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,8 +10,8 @@ import 'package:vms_flutter_client/screens/event/components/event_custom_button.
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
-import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/add_object_dialog.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/add_subject_group_dialog.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_action.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/object_list_table.dart';
@@ -22,87 +23,18 @@ class ObjectGroupScreen extends StatefulWidget {
   State<ObjectGroupScreen> createState() => _ObjectGroupScreenState();
 }
 
-class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProviderStateMixin {
+class _ObjectGroupScreenState extends State<ObjectGroupScreen>
+    with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   TabController? _tabController;
-
-  final TreeNode<MockObject> _tree =
-      TreeNode<MockObject>.root(
-        data: MockObject(name: "Root", id: "0"),
-      )..addAll([
-        TreeNode<MockObject>(
-          key: "1",
-          data: MockObject(name: "Danh sách đối tượng", id: "1"),
-        ),
-        TreeNode<MockObject>(
-          key: "2",
-          data: MockObject(name: "Khối THCS", id: "2"),
-        ),
-        TreeNode<MockObject>(
-          key: "3",
-          data: MockObject(name: "Khối THPT", id: "3"),
-        )..addAll([
-          TreeNode<MockObject>(
-            key: "3_1",
-            data: MockObject(name: "Khối 1", id: "3_1"),
-          )..addAll([
-            TreeNode<MockObject>(
-              key: "3_1_1",
-              data: MockObject(name: "Các lớp 1A", id: "3_1_1"),
-            )..addAll([
-              TreeNode<MockObject>(
-                key: "3_1_1_1",
-                data: MockObject(name: "Lớp 1A1", id: "3_1_1_1"),
-              ),
-              TreeNode<MockObject>(
-                key: "3_1_1_2",
-                data: MockObject(name: "Lớp 1A2", id: "3_1_1_2"),
-              ),
-              TreeNode<MockObject>(
-                key: "3_1_1_3",
-                data: MockObject(name: "Lớp 1A3", id: "3_1_1_3"),
-              ),
-              TreeNode<MockObject>(
-                key: "3_1_1_4",
-                data: MockObject(name: "Lớp 1A4", id: "3_1_1_4"),
-              ),
-              TreeNode<MockObject>(
-                key: "3_1_1_5",
-                data: MockObject(name: "Lớp 1A5", id: "3_1_1_5"),
-              ),
-            ]),
-            TreeNode<MockObject>(
-              key: "3_1_2",
-              data: MockObject(name: "Các lớp 1B", id: "3_1_2"),
-            ),
-            TreeNode<MockObject>(
-              key: "3_1_3",
-              data: MockObject(name: "Các lớp 1C", id: "3_1_3"),
-            ),
-            TreeNode<MockObject>(
-              key: "3_1_4",
-              data: MockObject(name: "Các lớp 1D", id: "3_1_4"),
-            ),
-            TreeNode<MockObject>(
-              key: "3_1_5",
-              data: MockObject(name: "Các lớp 1E", id: "3_1_5"),
-            ),
-          ]),
-          TreeNode<MockObject>(
-            key: "3_2",
-            data: MockObject(name: "Khối 2", id: "3_2"),
-          ),
-          TreeNode<MockObject>(
-            key: "3_3",
-            data: MockObject(name: "Khối 3", id: "3_3"),
-          ),
-        ]),
-      ]);
 
   @override
   void initState() {
     super.initState();
-    context.read<ObjectGroupBloc>().add(const LoadObjectGroups(page: 1, size: 20));
+    context.read<ObjectGroupBloc>().add(
+      const LoadObjectGroups(page: 1, size: 20),
+    );
+    context.read<ObjectGroupBloc>().add(const LoadSubjectGroups());
   }
 
   @override
@@ -113,7 +45,17 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
   }
 
   void _onSearch() {
-    // TODO: trigger search/filter
+    final state = context.read<ObjectGroupBloc>().state;
+    final selectedType = state.selectedObjectType;
+    if (selectedType == null) return;
+
+    final searchText = _searchController.text.trim();
+    context.read<ObjectGroupBloc>().add(
+      LoadObjects(
+        objectTypeId: selectedType.id,
+        search: searchText.isNotEmpty ? searchText : null,
+      ),
+    );
   }
 
   @override
@@ -161,65 +103,105 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                   ),
                 ),
                 Expanded(
-                  child: GroupObjectTreeWidget(
-                    tree: _tree,
-                    actionBuilder: (node) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          iconTheme: const IconThemeData(size: 20),
-                        ),
-                        child: PopupMenuButton<GroupObjectAction>(
-                          tooltip: '',
-                          key: ValueKey(node.key),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          splashRadius: 20,
-                          position: PopupMenuPosition.under,
-                          offset: const Offset(0, 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 3,
-                          shadowColor: const Color(0x1A000000),
-                          surfaceTintColor: Colors.transparent,
-                          color: Colors.white,
-                          onSelected: (action) {
-                            // action.onTap();
-                          },
-                          itemBuilder: (context) {
-                            List<GroupObjectAction> listAction = List.of(
-                              GroupObjectAction.values,
-                            );
+                  child: BlocBuilder<ObjectGroupBloc, ObjectGroupState>(
+                    buildWhen: (previous, current) =>
+                        previous.subjectGroupTree != current.subjectGroupTree,
+                    builder: (context, state) {
+                      final tree =
+                          state.subjectGroupTree ??
+                          TreeNode<MockObject>.root(
+                            data: MockObject(name: "Root", id: "0"),
+                          );
+                      return GroupObjectTreeWidget(
+                        tree: tree,
+                        actionBuilder: (node) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              iconTheme: const IconThemeData(size: 20),
+                            ),
+                            child: PopupMenuButton<GroupObjectAction>(
+                              tooltip: '',
+                              key: ValueKey(node.key),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              splashRadius: 20,
+                              position: PopupMenuPosition.under,
+                              offset: const Offset(0, 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 3,
+                              shadowColor: const Color(0x1A000000),
+                              surfaceTintColor: Colors.transparent,
+                              color: Colors.white,
+                              onSelected: (action) {
+                                switch (action) {
+                                  case GroupObjectAction.add:
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => AddSubjectGroupDialog(
+                                        parentGroupName: node.data?.name,
+                                        parentGroupId: int.tryParse(
+                                          node.data?.id ?? '',
+                                        ),
+                                      ),
+                                    );
+                                    break;
+                                  case GroupObjectAction.addObject:
+                                    // Handled by existing logic
+                                    break;
+                                  case GroupObjectAction.edit:
+                                    // TODO: edit
+                                    break;
+                                  case GroupObjectAction.delete:
+                                    // TODO: delete
+                                    break;
+                                }
+                              },
+                              itemBuilder: (context) {
+                                List<GroupObjectAction> listAction = List.of(
+                                  GroupObjectAction.values,
+                                );
 
-                            final List<PopupMenuEntry<GroupObjectAction>>
-                            entries = [];
-                            for (int i = 0; i < listAction.length; i++) {
-                              final action = listAction[i];
-                              entries.add(
-                                PopupMenuItem<GroupObjectAction>(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  value: action,
-                                  child: action.widgetView,
-                                ),
-                              );
-                              if (i != listAction.length - 1) {
-                                entries.add(const PopupMenuDivider(height: 1));
-                              }
-                            }
-                            return entries;
-                          },
-                          child: const Icon(
-                            Icons.more_horiz,
-                            color: AppColors.black,
-                          ),
-                        ),
+                                final List<PopupMenuEntry<GroupObjectAction>>
+                                entries = [];
+                                for (int i = 0; i < listAction.length; i++) {
+                                  final action = listAction[i];
+                                  entries.add(
+                                    PopupMenuItem<GroupObjectAction>(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      value: action,
+                                      child: action.widgetView,
+                                    ),
+                                  );
+                                  if (i != listAction.length - 1) {
+                                    entries.add(
+                                      const PopupMenuDivider(height: 1),
+                                    );
+                                  }
+                                }
+                                return entries;
+                              },
+                              child: const Icon(
+                                Icons.more_horiz,
+                                color: AppColors.black,
+                              ),
+                            ),
+                          );
+                        },
+                        onClickAddGroup: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => const AddSubjectGroupDialog(),
+                          );
+                        },
                       );
                     },
                   ),
@@ -238,7 +220,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                   previous.objectTypes != current.objectTypes ||
                   previous.selectedObjectType != current.selectedObjectType,
               builder: (context, state) {
-                if (state.status == ObjectGroupStatus.loading && state.objectTypes.isEmpty) {
+                if (state.status == ObjectGroupStatus.loading &&
+                    state.objectTypes.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
@@ -252,26 +235,41 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                 }
 
                 if (state.objectTypes.isEmpty) {
-                  return Center(child: Text('Không có dữ liệu', style: AppTypography.style(14)));
+                  return Center(
+                    child: Text(
+                      'Không có dữ liệu',
+                      style: AppTypography.style(14),
+                    ),
+                  );
                 }
 
                 // Ensure TabController is initialized/recreated when objectTypes change
-                if (_tabController == null || _tabController!.length != state.objectTypes.length) {
+                if (_tabController == null ||
+                    _tabController!.length != state.objectTypes.length) {
                   _tabController?.dispose();
-                  _tabController = TabController(length: state.objectTypes.length, vsync: this);
+                  _tabController = TabController(
+                    length: state.objectTypes.length,
+                    vsync: this,
+                  );
 
                   _tabController!.addListener(() {
                     if (!_tabController!.indexIsChanging) {
-                      final selectedType = state.objectTypes[_tabController!.index];
-                      context.read<ObjectGroupBloc>().add(SelectObjectType(selectedType));
+                      final selectedType =
+                          state.objectTypes[_tabController!.index];
+                      context.read<ObjectGroupBloc>().add(
+                        SelectObjectType(selectedType),
+                      );
                     }
                   });
                 }
 
                 // Sync selected tab index
                 if (state.selectedObjectType != null) {
-                  final selectedIndex = state.objectTypes.indexOf(state.selectedObjectType!);
-                  if (selectedIndex >= 0 && _tabController!.index != selectedIndex) {
+                  final selectedIndex = state.objectTypes.indexOf(
+                    state.selectedObjectType!,
+                  );
+                  if (selectedIndex >= 0 &&
+                      _tabController!.index != selectedIndex) {
                     _tabController!.index = selectedIndex;
                   }
                 }
@@ -288,12 +286,22 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                         indicatorColor: AppColors.primary,
                         labelColor: AppColors.primary,
                         unselectedLabelColor: AppColors.grey64748B,
-                        labelStyle: AppTypography.style(14, fontWeight: FontWeight.w600),
-                        unselectedLabelStyle: AppTypography.style(14, fontWeight: FontWeight.w500),
+                        labelStyle: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        unselectedLabelStyle: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w500,
+                        ),
                         tabAlignment: TabAlignment.start,
                         padding: EdgeInsets.zero,
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-                        tabs: state.objectTypes.map((type) => Tab(text: type.name)).toList(),
+                        labelPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        tabs: state.objectTypes
+                            .map((type) => Tab(text: type.name))
+                            .toList(),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -325,7 +333,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
 
   Widget _buildActionBar() {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(5)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(5),
+      ),
       margin: const EdgeInsets.only(right: 10),
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: Column(
@@ -348,10 +359,16 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                   borderRadius: 3,
                   label: 'Tìm kiếm',
                   onPressed: _onSearch,
-                  padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 23,
+                    vertical: 10,
+                  ),
                   prefix: SvgPicture.asset(
                     AppAssets.icSearch,
-                    colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.white,
+                      BlendMode.srcIn,
+                    ),
                     height: 16,
                     width: 16,
                   ),
@@ -375,12 +392,18 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                 borderRadius: 3,
                 label: 'Tải file mẫu',
                 onPressed: () {},
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 prefix: SvgPicture.asset(
                   AppAssets.icFile,
                   height: 16,
                   width: 16,
-                  colorFilter: const ColorFilter.mode(AppColors.secondary, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.secondary,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 prefixGap: 8,
                 textStyle: AppTypography.style(
@@ -395,12 +418,18 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                 borderRadius: 3,
                 label: 'Import dữ liệu',
                 onPressed: () {},
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 prefix: SvgPicture.asset(
                   AppAssets.icUpload2,
                   height: 16,
                   width: 16,
-                  colorFilter: const ColorFilter.mode(AppColors.secondary, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.secondary,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 prefixGap: 8,
                 textStyle: AppTypography.style(
@@ -415,12 +444,18 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                 borderRadius: 3,
                 label: 'Xuất file',
                 onPressed: () {},
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 prefix: SvgPicture.asset(
                   AppAssets.icDownloadFile,
                   height: 16,
                   width: 16,
-                  colorFilter: const ColorFilter.mode(AppColors.secondary, BlendMode.srcIn),
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.secondary,
+                    BlendMode.srcIn,
+                  ),
                 ),
                 prefixGap: 8,
                 textStyle: AppTypography.style(
@@ -444,18 +479,28 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
                   final repo = context.read<IObjectGroupRepository>();
 
                   try {
-                    final objectTypeDetail = await repo.getObjectTypeDetail(selectedType.id);
+                    final objectTypeDetail = await repo.getObjectTypeDetail(
+                      selectedType.id,
+                    );
                     if (!context.mounted) return;
                     showDialog(
                       context: context,
-                      builder: (_) => AddObjectDialog(objectType: objectTypeDetail),
+                      builder: (_) =>
+                          AddObjectDialog(objectType: objectTypeDetail),
                     );
                   } catch (e) {
                     messenger.showSnackBar(SnackBar(content: Text('Lỗi: $e')));
                   }
                 },
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                prefix: const Icon(Icons.add, color: AppColors.blue005AA9, size: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                prefix: const Icon(
+                  Icons.add,
+                  color: AppColors.blue005AA9,
+                  size: 16,
+                ),
                 prefixGap: 8,
                 textStyle: AppTypography.style(
                   14,
@@ -480,25 +525,40 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen> with TickerProvid
             controller: _searchController,
             decoration: InputDecoration(
               prefixIcon: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 12,
+                ),
                 child: SvgPicture.asset(AppAssets.icSearch),
               ),
               fillColor: AppColors.white,
               filled: true,
               hintText: 'Nhập từ khoá tìm kiếm',
               hintStyle: AppTypography.style(14, color: AppColors.grey64748B),
-              contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 12,
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                borderSide: const BorderSide(
+                  color: AppColors.greyE2E8F0,
+                  width: 1,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1,
+                ),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                borderSide: const BorderSide(
+                  color: AppColors.greyE2E8F0,
+                  width: 1,
+                ),
               ),
             ),
           ),

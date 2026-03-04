@@ -277,8 +277,12 @@ class AppRouter {
             BlocProvider(create: (context) => DetectBloc(context.read())),
             BlocProvider(create: (context) => ObjectTypeBloc(context.read())),
             BlocProvider(
-              create: (context) =>
-                  ObjectGroupBloc(context.read(), context.read()),
+              create: (context) => ObjectGroupBloc(
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
+              ),
             ),
             BlocProvider(
               create: (context) => SetupInfoFieldBloc(

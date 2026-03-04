@@ -6,7 +6,6 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
-import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 import 'package:vms_flutter_client/screens/object_type/widget/confirm_delete_dialog.dart';
@@ -82,13 +81,41 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     super.dispose();
   }
 
-  void _addField() {
+  void _addObjectInfoField() {
     setState(() {
       _fields.add(
         ObjectTypeField(
           id: 'new_field_${_nextFieldId++}',
           fieldName: '',
           displayName: '',
+          dataType: FieldDataType.text,
+          isDefault: false,
+        ),
+      );
+    });
+  }
+
+  void _addFaceRecognitionField() {
+    setState(() {
+      _fields.add(
+        ObjectTypeField(
+          id: 'new_field_${_nextFieldId++}',
+          fieldName: 'Ảnh nhận diện khuôn mặt',
+          displayName: 'Ảnh nhận diện',
+          dataType: FieldDataType.file,
+          isDefault: false,
+        ),
+      );
+    });
+  }
+
+  void _addLicensePlateField() {
+    setState(() {
+      _fields.add(
+        ObjectTypeField(
+          id: 'new_field_${_nextFieldId++}',
+          fieldName: 'Biển số xe',
+          displayName: 'Biển số xe',
           dataType: FieldDataType.text,
           isDefault: false,
         ),
@@ -156,8 +183,14 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         children: [
           Expanded(
             child: Text(
-              widget.isEditMode ? 'Chỉnh sửa loại đối tượng' : 'Thêm loại đối tượng',
-              style: AppTypography.style(20, fontWeight: FontWeight.w600, color: AppColors.black),
+              widget.isEditMode
+                  ? 'Chỉnh sửa loại đối tượng'
+                  : 'Thêm loại đối tượng',
+              style: AppTypography.style(
+                20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.black,
+              ),
             ),
           ),
           IconButton(
@@ -191,8 +224,9 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                           requiredField: true,
                           borderRadius: 3,
                           paddingBottomLabel: 3,
-                          validator: (v) =>
-                              v!.trim().isEmpty ? 'Tên loại đối tượng không được để trống' : null,
+                          validator: (v) => v!.trim().isEmpty
+                              ? 'Tên loại đối tượng không được để trống'
+                              : null,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -231,7 +265,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AppButton.outline(label: 'Hủy', onPressed: () => Navigator.pop(context)),
+              AppButton.outline(
+                label: 'Hủy',
+                onPressed: () => Navigator.pop(context),
+              ),
               const SizedBox(width: 12),
               AppButton.filled(label: 'Lưu', onPressed: _handleSubmit),
             ],
@@ -248,7 +285,11 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         RichText(
           text: TextSpan(
             text: 'Trạng thái',
-            style: AppTypography.style(14, color: AppColors.black, fontWeight: FontWeight.w500),
+            style: AppTypography.style(
+              14,
+              color: AppColors.black,
+              fontWeight: FontWeight.w500,
+            ),
             children: const [
               TextSpan(
                 text: ' *',
@@ -363,19 +404,91 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Cấu hình trường dữ liệu',
-              style: AppTypography.style(14, color: AppColors.black, fontWeight: FontWeight.w500),
+              'Thông tin',
+              style: AppTypography.style(
+                14,
+                color: AppColors.black,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            EventCustomButton(
-              backgroundColor: AppColors.blue005AA9,
-              borderColor: AppColors.blue005AA9,
-              borderRadius: 3,
-              label: 'Thêm trường dữ liệu',
-              onPressed: _addField,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              suffixIcon: const Icon(Icons.arrow_drop_down_outlined, color: Colors.white, size: 16),
-              suffixIconGap: 8,
-              textStyle: AppTypography.style(14, color: Colors.white, fontWeight: FontWeight.w500),
+            MenuAnchor(
+              menuChildren: [
+                SubmenuButton(
+                  menuChildren: [
+                    MenuItemButton(
+                      onPressed: () => _addFaceRecognitionField(),
+                      child: Text(
+                        'Ảnh nhận diện khuôn mặt',
+                        style: AppTypography.style(
+                          14,
+                          color: AppColors.grey334155,
+                        ),
+                      ),
+                    ),
+                    MenuItemButton(
+                      onPressed: () => _addLicensePlateField(),
+                      child: Text(
+                        'Biển số xe',
+                        style: AppTypography.style(
+                          14,
+                          color: AppColors.grey334155,
+                        ),
+                      ),
+                    ),
+                  ],
+                  child: Text(
+                    'Thêm thông tin nhận diện',
+                    style: AppTypography.style(14, color: AppColors.grey334155),
+                  ),
+                ),
+                MenuItemButton(
+                  onPressed: () => _addObjectInfoField(),
+                  child: Text(
+                    'Thêm thông tin đối tượng',
+                    style: AppTypography.style(14, color: AppColors.grey334155),
+                  ),
+                ),
+              ],
+              builder: (context, controller, child) {
+                return InkWell(
+                  onTap: () {
+                    if (controller.isOpen) {
+                      controller.close();
+                    } else {
+                      controller.open();
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.blue005AA9,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Thêm trường dữ liệu',
+                          style: AppTypography.style(
+                            14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -398,7 +511,11 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             buildDefaultDragHandles: false,
             itemBuilder: (context, index) {
               final field = _fields[index];
-              return _buildFieldRow(key: ValueKey(field.id), field: field, index: index);
+              return _buildFieldRow(
+                key: ValueKey(field.id),
+                field: field,
+                index: index,
+              );
             },
           ),
       ],
@@ -480,12 +597,20 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     );
   }
 
-  Widget _buildFieldRow({required Key key, required ObjectTypeField field, required int index}) {
+  Widget _buildFieldRow({
+    required Key key,
+    required ObjectTypeField field,
+    required int index,
+  }) {
     return Container(
       key: key,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.greyE2E8F0.withValues(alpha: 0.5))),
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.greyE2E8F0.withValues(alpha: 0.5),
+          ),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -512,7 +637,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           ),
           const SizedBox(width: 8),
           // Icon
-          Expanded(flex: 1, child: Center(child: _buildIconPicker(index, field))),
+          Expanded(
+            flex: 1,
+            child: Center(child: _buildIconPicker(index, field)),
+          ),
           const SizedBox(width: 8),
           // Display name
           Expanded(
@@ -534,10 +662,46 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           SizedBox(
             width: 60,
             child: Center(
-              child: IconButton(
-                icon: const Icon(Icons.more_horiz, color: Colors.red, size: 18),
+              child: PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_horiz,
+                  color: AppColors.grey6F767E,
+                  size: 18,
+                ),
                 splashRadius: 16,
-                onPressed: () => _removeField(index),
+                offset: const Offset(0, 36),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                color: Colors.white,
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    _removeField(index);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          AppAssets.icDelete,
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.red,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Xóa',
+                          style: AppTypography.style(14, color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -569,7 +733,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           const SizedBox(width: 4),
           InkWell(
             onTap: () {
-              _updateField(index, field.copyWith(iconName: null, iconUrl: null));
+              _updateField(
+                index,
+                field.copyWith(iconName: null, iconUrl: null),
+              );
             },
             child: const Icon(Icons.cancel, size: 16, color: Colors.red),
           ),
@@ -582,7 +749,11 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       onTap: () => _showIconPicker(index, field),
       borderRadius: BorderRadius.circular(4),
       child: CustomPaint(
-        painter: DashedBorderPainter(color: AppColors.grey6F767E, strokeWidth: 1.0, gap: 4.0),
+        painter: DashedBorderPainter(
+          color: AppColors.grey6F767E,
+          strokeWidth: 1.0,
+          gap: 4.0,
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Row(
@@ -590,7 +761,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             children: [
               const Icon(Icons.add, size: 14, color: AppColors.secondary),
               const SizedBox(width: 4),
-              Text('Thêm icon', style: AppTypography.style(12, color: AppColors.secondary)),
+              Text(
+                'Thêm icon',
+                style: AppTypography.style(12, color: AppColors.secondary),
+              ),
             ],
           ),
         ),
@@ -612,7 +786,9 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         hintText: hintText,
         hintStyle: AppTypography.style(12, color: AppColors.grey64748B),
         counterText: '', // Hide default counter below
-        suffixText: maxLength != null ? '${initialValue?.length ?? 0}/$maxLength' : null,
+        suffixText: maxLength != null
+            ? '${initialValue?.length ?? 0}/$maxLength'
+            : null,
         suffixStyle: AppTypography.style(11, color: AppColors.grey64748B),
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         isDense: true,
@@ -660,7 +836,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           padding: const EdgeInsets.symmetric(horizontal: 8),
         ),
         dropdownStyleData: DropdownStyleData(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.white),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -676,7 +855,11 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text(
           'Chọn icon',
-          style: AppTypography.style(16, fontWeight: FontWeight.w600, color: AppColors.black),
+          style: AppTypography.style(
+            16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.black,
+          ),
         ),
         content: SizedBox(
           width: 400,
@@ -718,7 +901,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                   final isSelected = field.iconUrl == url;
                   return InkWell(
                     onTap: () {
-                      _updateField(index, field.copyWith(iconName: name, iconUrl: url));
+                      _updateField(
+                        index,
+                        field.copyWith(iconName: name, iconUrl: url),
+                      );
                       Navigator.pop(dialogContext);
                     },
                     borderRadius: BorderRadius.circular(8),
@@ -726,7 +912,9 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color: isSelected ? AppColors.secondary : AppColors.greyE2E8F0,
+                          color: isSelected
+                              ? AppColors.secondary
+                              : AppColors.greyE2E8F0,
                           width: isSelected ? 2 : 1,
                         ),
                         borderRadius: BorderRadius.circular(8),
@@ -755,7 +943,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Đóng')),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Đóng'),
+          ),
         ],
       ),
     );
@@ -767,7 +958,11 @@ class DashedBorderPainter extends CustomPainter {
   final double strokeWidth;
   final double gap;
 
-  DashedBorderPainter({required this.color, this.strokeWidth = 1.0, this.gap = 5.0});
+  DashedBorderPainter({
+    required this.color,
+    this.strokeWidth = 1.0,
+    this.gap = 5.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -791,7 +986,10 @@ class DashedBorderPainter extends CustomPainter {
       double distance = 0.0;
       while (distance < metric.length) {
         final double end = distance + dashWidth;
-        canvas.drawPath(metric.extractPath(distance, end.clamp(0, metric.length)), paint);
+        canvas.drawPath(
+          metric.extractPath(distance, end.clamp(0, metric.length)),
+          paint,
+        );
         distance = end + dashSpace;
       }
     }
