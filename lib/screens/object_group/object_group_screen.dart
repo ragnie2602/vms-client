@@ -124,10 +124,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
             if (nameNewGroup != null) {
               bloc.add(
                 UpdateSubjectGroup(
-                  id: currentGroup?.id??0,
+                  id: currentGroup?.id ?? 0,
                   subjectGroup: SubjectGroup(
                     name: nameNewGroup,
-                    parentId: parentGroup?.id,
+                    parentId: parentGroup?.id ?? 0, // ko có group cha -> truyền 0
                   ),
                 ),
               );
