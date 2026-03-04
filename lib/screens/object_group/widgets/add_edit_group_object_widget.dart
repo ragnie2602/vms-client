@@ -147,8 +147,8 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                           }
                           return null;
                         },
-                        hintText: 'Nhập tên nhóm',
-                        label: 'Tên nhóm quản lý đối tượng',
+                        hintText: 'Nhập tên nhóm đối tượng',
+                        label: 'Tên nhóm đối tượng',
                         requiredField: true,
                         maxLength: 50,
                       ),
@@ -156,7 +156,7 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                     const SizedBox(height: 24),
                     // drop down search nhóm cha
                     AppDropdownSearch<SubjectGroup>(
-                      label: 'Nhóm cha',
+                      label: 'Nhóm đối tượng cha',
                       borderRadius: 3,
                       items: widget.listGroupAvailable ?? [],
                       selectedItem: _selectedParentGroup,

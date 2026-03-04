@@ -308,7 +308,15 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
           // Main Content Area
           Expanded(
-            child: BlocBuilder<ObjectGroupBloc, ObjectGroupState>(
+            child: BlocConsumer<ObjectGroupBloc, ObjectGroupState>(
+              listener: (context, state) {
+                if (state.status == ObjectGroupStatus.error) {
+                  ToastUtil.toastFail(
+                    context: context,
+                    title: Text(state.errorMessage ?? 'Đã xảy ra lỗi'),
+                  );
+                }
+              },
               buildWhen: (previous, current) =>
                   previous.status != current.status ||
                   previous.objectTypes != current.objectTypes ||
