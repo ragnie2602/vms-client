@@ -93,7 +93,6 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     context: c,
                     title: Text('Thêm nhóm đối tượng thành công'),
                   );
-                
                 }
               }
             } else if (addEditType == AddEditGroupObjectType.edit &&
@@ -531,8 +530,13 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     if (!context.mounted) return;
                     showDialog(
                       context: context,
-                      builder: (_) =>
-                          AddObjectDialog(objectType: objectTypeDetail),
+                      builder: (_) => AddObjectDialog(
+                        objectType: objectTypeDetail,
+                        subjectGroups: context
+                            .read<ObjectGroupBloc>()
+                            .state
+                            .subjectGroups,
+                      ),
                     );
                   } catch (e) {
                     messenger.showSnackBar(SnackBar(content: Text('Lỗi: $e')));

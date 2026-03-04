@@ -35,11 +35,12 @@ class ObjectGroupRepository implements IObjectGroupRepository {
   Future<Map<String, dynamic>> getObjects(
     int objectTypeId,
     int page,
+    int subjectGroupId,
     int size, {
     String? search,
   }) async {
     var url =
-        '${EndPoints.baseUrl}/api/objects?objectTypeId=$objectTypeId&page=$page&size=$size';
+        '${EndPoints.baseUrl}/api/objects?objectTypeId=$objectTypeId&page=$page&size=$size&subjectGroupId=$subjectGroupId';
     if (search != null && search.isNotEmpty) {
       url += '&search=${Uri.encodeComponent(search)}';
     }
@@ -87,11 +88,19 @@ class ObjectGroupRepository implements IObjectGroupRepository {
   @override
   Future<void> createObject(
     int objectTypeId,
-    Map<String, dynamic> fieldValues,
-  ) async {
+    Map<String, dynamic> fieldValues, {
+    List<int>? subjectGroupIds,
+  }) async {
+    final data = <String, dynamic>{
+      'objectTypeId': objectTypeId,
+      'fieldValues': fieldValues,
+    };
+    if (subjectGroupIds != null && subjectGroupIds.isNotEmpty) {
+      data['subjectGroupIds'] = subjectGroupIds;
+    }
     final response = await _apiClient.post(
       url: '${EndPoints.baseUrl}/api/objects',
-      data: {'objectTypeId': objectTypeId, 'fieldValues': fieldValues},
+      data: data,
     );
 
     if (response != null &&
@@ -119,11 +128,19 @@ class ObjectGroupRepository implements IObjectGroupRepository {
   Future<void> updateObject(
     int objectId,
     int objectTypeId,
-    Map<String, dynamic> fieldValues,
-  ) async {
+    Map<String, dynamic> fieldValues, {
+    List<int>? subjectGroupIds,
+  }) async {
+    final data = <String, dynamic>{
+      'objectTypeId': objectTypeId,
+      'fieldValues': fieldValues,
+    };
+    if (subjectGroupIds != null && subjectGroupIds.isNotEmpty) {
+      data['subjectGroupIds'] = subjectGroupIds;
+    }
     final response = await _apiClient.put(
       url: '${EndPoints.baseUrl}/api/objects/$objectId',
-      data: {'objectTypeId': objectTypeId, 'fieldValues': fieldValues},
+      data: data,
     );
 
     if (response != null &&

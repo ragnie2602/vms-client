@@ -96,7 +96,9 @@ class ObjectTypeField {
     final iconPath = json['icon'] as String?;
     String? fullIconUrl;
     if (iconPath != null && iconPath.isNotEmpty) {
-      fullIconUrl = iconPath.startsWith('http') ? iconPath : '${EndPoints.baseUrl}$iconPath';
+      fullIconUrl = iconPath.startsWith('http')
+          ? iconPath
+          : '${EndPoints.baseUrl}$iconPath';
     }
     return ObjectTypeField(
       id: json['fieldName'] as String? ?? '',
@@ -174,7 +176,11 @@ class ObjectType {
       'status': status.name.toUpperCase(),
       'aiFeature': aiFeature.name.toUpperCase(),
       'description': description,
-      'dataFields': fields.asMap().entries.map((e) => e.value.toJson(e.key)).toList(),
+      'dataFields': fields
+          .asMap()
+          .entries
+          .map((e) => e.value.toJson(e.key))
+          .toList(),
     };
   }
 
@@ -190,7 +196,9 @@ class ObjectType {
       description: json['description'] as String? ?? '',
       aiFeature: AIFeature.fromString(json['aiFeature'] as String? ?? 'FACE'),
       aiFeatureDisplayName: json['aiFeatureDisplayName'] as String?,
-      status: ObjectTypeStatus.fromString(json['status'] as String? ?? 'ACTIVE'),
+      status: ObjectTypeStatus.fromString(
+        json['status'] as String? ?? 'ACTIVE',
+      ),
       statusDisplayName: json['statusDisplayName'] as String?,
       fields: dataFields,
       objectCount: json['objectCount'] as int? ?? 0,
@@ -226,31 +234,4 @@ class ObjectType {
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
-}
-
-// ==============================================================================
-// MOCK DATA - Remove this class when API is ready
-// ==============================================================================
-
-/// Mock data for development.
-/// TODO: Remove this class and use API data from repository/bloc instead.
-class ObjectTypeMockData {
-  ObjectTypeMockData._();
-
-  static const List<ObjectTypeField> defaultFields = [
-    ObjectTypeField(
-      id: 'default_1',
-      fieldName: 'Tên đối tượng',
-      displayName: 'Tên cán bộ',
-      dataType: FieldDataType.text,
-      isDefault: true,
-    ),
-    ObjectTypeField(
-      id: 'default_2',
-      fieldName: 'Ảnh nhận diện',
-      displayName: 'Ảnh đại diện',
-      dataType: FieldDataType.file,
-      isDefault: true,
-    ),
-  ];
 }

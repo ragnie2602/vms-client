@@ -309,8 +309,11 @@ class ObjectListTable extends StatelessWidget {
 
       final result = await showDialog<bool>(
         context: context,
-        builder: (_) =>
-            AddObjectDialog(objectType: objectTypeDetail, existingObject: data),
+        builder: (_) => AddObjectDialog(
+          objectType: objectTypeDetail,
+          existingObject: data,
+          subjectGroups: bloc.state.subjectGroups,
+        ),
       );
 
       if (result == true) {

@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/map/widgets/dash_border_widget.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
@@ -15,11 +16,13 @@ import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 class AddObjectDialog extends StatefulWidget {
   final ObjectType objectType;
   final ObjectData? existingObject; // null for create, non-null for edit
+  final List<SubjectGroup> subjectGroups;
 
   const AddObjectDialog({
     super.key,
     required this.objectType,
     this.existingObject,
+    this.subjectGroups = const [],
   });
 
   bool get isEditMode => existingObject != null;
@@ -43,6 +46,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   bool _isLoadingDetail = false;
   // Overall submitting state
   bool _isSubmitting = false;
+  // Selected subject group IDs
+  final Set<int> _selectedSubjectGroupIds = {};
 
   @override
   void initState() {
@@ -223,14 +228,21 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         }
       }
 
+      final subjectGroupIds = _selectedSubjectGroupIds.toList();
+
       if (widget.isEditMode) {
         await repo.updateObject(
           widget.existingObject!.id,
           widget.objectType.id,
           fieldValues,
+          subjectGroupIds: subjectGroupIds,
         );
       } else {
-        await repo.createObject(widget.objectType.id, fieldValues);
+        await repo.createObject(
+          widget.objectType.id,
+          fieldValues,
+          subjectGroupIds: subjectGroupIds,
+        );
       }
 
       if (mounted) {
@@ -335,6 +347,10 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                             }
                             return fieldWidget;
                           }),
+                          if (widget.subjectGroups.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _buildSubjectGroupMultiSelect(),
+                          ],
                         ],
                       ),
                     ),
@@ -633,6 +649,278 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                         ),
                       ],
                     ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubjectGroupMultiSelect() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel('Nhóm đối tượng'),
+        const SizedBox(height: 8),
+        _SubjectGroupMultiSelectDropdown(
+          groups: widget.subjectGroups,
+          selectedIds: _selectedSubjectGroupIds,
+          onChanged: (ids) {
+            setState(() {
+              _selectedSubjectGroupIds
+                ..clear()
+                ..addAll(ids);
+            });
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// A custom multi-select dropdown with checkboxes for subject groups.
+class _SubjectGroupMultiSelectDropdown extends StatefulWidget {
+  final List<SubjectGroup> groups;
+  final Set<int> selectedIds;
+  final ValueChanged<Set<int>> onChanged;
+
+  const _SubjectGroupMultiSelectDropdown({
+    required this.groups,
+    required this.selectedIds,
+    required this.onChanged,
+  });
+
+  @override
+  State<_SubjectGroupMultiSelectDropdown> createState() =>
+      _SubjectGroupMultiSelectDropdownState();
+}
+
+class _SubjectGroupMultiSelectDropdownState
+    extends State<_SubjectGroupMultiSelectDropdown> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  bool _isOpen = false;
+
+  void _toggleDropdown() {
+    if (_isOpen) {
+      _closeDropdown();
+    } else {
+      _openDropdown();
+    }
+  }
+
+  void _openDropdown() {
+    final renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _closeDropdown,
+        child: Stack(
+          children: [
+            CompositedTransformFollower(
+              link: _layerLink,
+              showWhenUnlinked: false,
+              offset: Offset(0, size.height + 4),
+              child: Material(
+                elevation: 4,
+                borderRadius: BorderRadius.circular(4),
+                color: Colors.white,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: 200,
+                    maxWidth: size.width,
+                    minWidth: size.width,
+                  ),
+                  child: StatefulBuilder(
+                    builder: (context, setOverlayState) {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: widget.groups.length,
+                        itemBuilder: (context, index) {
+                          final group = widget.groups[index];
+                          final groupId = group.id;
+                          if (groupId == null) return const SizedBox.shrink();
+                          final isSelected = widget.selectedIds.contains(
+                            groupId,
+                          );
+                          return InkWell(
+                            onTap: () {
+                              final newIds = Set<int>.from(widget.selectedIds);
+                              if (isSelected) {
+                                newIds.remove(groupId);
+                              } else {
+                                newIds.add(groupId);
+                              }
+                              widget.onChanged(newIds);
+                              setOverlayState(() {});
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: Checkbox(
+                                      value: isSelected,
+                                      onChanged: (_) {
+                                        final newIds = Set<int>.from(
+                                          widget.selectedIds,
+                                        );
+                                        if (isSelected) {
+                                          newIds.remove(groupId);
+                                        } else {
+                                          newIds.add(groupId);
+                                        }
+                                        widget.onChanged(newIds);
+                                        setOverlayState(() {});
+                                      },
+                                      activeColor: AppColors.blue005AA9,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      side: const BorderSide(
+                                        color: AppColors.greyE2E8F0,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      group.name ?? '',
+                                      style: AppTypography.style(
+                                        14,
+                                        color: AppColors.black,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    setState(() => _isOpen = true);
+  }
+
+  void _closeDropdown() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    setState(() => _isOpen = false);
+  }
+
+  @override
+  void dispose() {
+    _overlayEntry?.remove();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedGroups = widget.groups
+        .where((g) => g.id != null && widget.selectedIds.contains(g.id))
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CompositedTransformTarget(
+          link: _layerLink,
+          child: InkWell(
+            onTap: _toggleDropdown,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _isOpen ? AppColors.primary : AppColors.greyE2E8F0,
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: selectedGroups.isEmpty
+                        ? Text(
+                            'Chọn nhóm đối tượng',
+                            style: AppTypography.style(
+                              14,
+                              color: AppColors.grey94A3B8,
+                            ),
+                          )
+                        : Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: selectedGroups.map((g) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.greyF2F4FA,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      g.name ?? '',
+                                      style: AppTypography.style(
+                                        12,
+                                        color: AppColors.grey334155,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    InkWell(
+                                      onTap: () {
+                                        final newIds = Set<int>.from(
+                                          widget.selectedIds,
+                                        );
+                                        newIds.remove(g.id);
+                                        widget.onChanged(newIds);
+                                      },
+                                      child: const Icon(
+                                        Icons.close,
+                                        size: 14,
+                                        color: AppColors.grey64748B,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                  ),
+                  Icon(
+                    _isOpen
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: AppColors.grey64748B,
+                    size: 20,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

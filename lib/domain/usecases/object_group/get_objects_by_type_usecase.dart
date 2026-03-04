@@ -7,12 +7,14 @@ class GetObjectsByTypeInput extends BaseInput {
   final int objectTypeId;
   final int page;
   final int size;
+  final int subjectGroupId;
   final String? search;
 
   GetObjectsByTypeInput({
     required this.objectTypeId,
     required this.page,
     required this.size,
+    required this.subjectGroupId,
     this.search,
   });
 }
@@ -41,6 +43,7 @@ class GetObjectsByTypeUsecase
     final result = await _repository.getObjects(
       input.objectTypeId,
       input.page,
+      input.subjectGroupId,
       input.size,
       search: input.search,
     );

@@ -7,18 +7,24 @@ abstract class IObjectGroupRepository {
   Future<Map<String, dynamic>> getObjects(
     int objectTypeId,
     int page,
+    int subjectGroupId,
     int size, {
     String? search,
   });
   Future<ObjectType> getObjectTypeDetail(int id);
   Future<int> uploadFile(String filePath);
-  Future<void> createObject(int objectTypeId, Map<String, dynamic> fieldValues);
+  Future<void> createObject(
+    int objectTypeId,
+    Map<String, dynamic> fieldValues, {
+    List<int>? subjectGroupIds,
+  });
   Future<ObjectData> getObjectDetail(int objectId);
   Future<void> updateObject(
     int objectId,
     int objectTypeId,
-    Map<String, dynamic> fieldValues,
-  );
+    Map<String, dynamic> fieldValues, {
+    List<int>? subjectGroupIds,
+  });
   Future<void> deleteObject(int objectId);
   Future<List<SubjectGroup>> getSubjectGroups();
   Future<void> createSubjectGroup(String name, int parentId);
