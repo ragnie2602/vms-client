@@ -50,7 +50,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       _fetchDetail(obj.id);
     } else {
       // Default fields for new object type
-      _fields = List.from(ObjectTypeMockData.defaultFields);
+      _fields = [];
     }
   }
 

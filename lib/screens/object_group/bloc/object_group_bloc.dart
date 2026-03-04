@@ -86,6 +86,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       LoadObjects(
         objectTypeId: event.objectType.id,
         page: event.page,
+        subjectGroupId: event.subjectGroupId,
         size: event.size,
       ),
     );
@@ -100,6 +101,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       final input = GetObjectsByTypeInput(
         objectTypeId: event.objectTypeId,
         page: event.page,
+        subjectGroupId: event.subjectGroupId,
         size: event.size,
         search: event.search,
       );
@@ -192,7 +194,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     }
   }
 
-  /// Convert flat list of SubjectGroup to TreeNode<MockObject> hierarchy.
+  /// Convert flat list of SubjectGroup to TreeNode<SubjectGroup> hierarchy.
   ///
   /// Rules:
   /// - parentId == 0 → root node

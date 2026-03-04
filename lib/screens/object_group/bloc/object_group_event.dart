@@ -33,8 +33,8 @@ class SelectObjectType extends ObjectGroupEvent {
   final ObjectType objectType;
   final int page;
   final int size;
-
-  const SelectObjectType(this.objectType, {this.page = 1, this.size = 20});
+  final int subjectGroupId;
+  const SelectObjectType(this.objectType, {this.page = 1, this.size = 20, this.subjectGroupId = 0});
 
   @override
   List<Object> get props => [objectType, page, size];
@@ -44,12 +44,14 @@ class LoadObjects extends ObjectGroupEvent {
   final int objectTypeId;
   final int page;
   final int size;
+  final int subjectGroupId;
   final String? search;
 
   const LoadObjects({
     required this.objectTypeId,
     this.page = 1,
     this.size = 20,
+    this.subjectGroupId = 0,
     this.search,
   });
 
