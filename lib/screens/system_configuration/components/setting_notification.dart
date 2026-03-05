@@ -1,7 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
+import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/widgets/alarm_config_popup/alarm_config_popup.dart';
 
 class SettingNotificationView extends StatefulWidget {
@@ -16,44 +22,66 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
   final _intervalController = TextEditingController(text: '10');
   String _selectedUnit = 'Giây';
 
-  // Notification config data
-  final List<_NotificationConfigItem> _configItems = [
-    _NotificationConfigItem(
-      label: 'Cảnh báo xâm nhập',
-      autoPopup: true,
-      sound: true,
-    ),
-    _NotificationConfigItem(
-      label: 'Cảnh báo hút thuốc',
-      autoPopup: false,
-      sound: true,
-    ),
-    _NotificationConfigItem(
-      label: 'Sử dụng điện thoại',
-      autoPopup: false,
-      sound: true,
-    ),
-    _NotificationConfigItem(
-      label: 'Cảnh báo tụ tập',
-      autoPopup: false,
-      sound: false,
-    ),
-    _NotificationConfigItem(
-      label: 'Cảnh báo cháy',
-      autoPopup: true,
-      sound: true,
-    ),
-    _NotificationConfigItem(
-      label: 'Nhận diện khuôn mặt',
-      autoPopup: false,
-      sound: true,
-    ),
-    _NotificationConfigItem(
-      label: 'Cảnh báo người lạ',
-      autoPopup: false,
-      sound: false,
-    ),
-  ];
+  // Notification config data - loaded from SharedPreferences
+  List<_NotificationConfigItem> _configItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConfigFromLocal();
+  }
+
+  void _loadConfigFromLocal() {
+    // Load danh sách loại sự kiện từ SharedPreferences
+    final typeEventsJson = AppData.instance.read<String>(
+      AppKeys.SP_TYPE_EVENT_DETECT,
+    );
+    // Load cấu hình thông báo từ SharedPreferences
+    final notificationSettingJson = AppData.instance.read<String>(
+      AppKeys.SP_NOTIFICATION_SETTING,
+    );
+
+    NotificationSettingEntity? notificationSetting;
+    if (notificationSettingJson != null) {
+      notificationSetting = NotificationSettingEntity.fromJson(
+        json.decode(notificationSettingJson),
+      );
+      // Cập nhật giá trị interval từ cấu hình đã lưu
+      if (notificationSetting.cooldownValue != null) {
+        _intervalController.text = notificationSetting.cooldownValue.toString();
+      }
+      if (notificationSetting.cooldownUnit != null) {
+        _selectedUnit = notificationSetting.cooldownUnit == 'SECOND'
+            ? 'Giây'
+            : 'Phút';
+      }
+    }
+
+    if (typeEventsJson != null) {
+      final List<dynamic> jsonList = json.decode(typeEventsJson);
+      final typeEvents = jsonList
+          .map((e) => TypeEventDetectEntity.fromJson(e))
+          .toList();
+
+      setState(() {
+        _configItems = typeEvents.map((typeEvent) {
+          // Tìm cấu hình tương ứng trong notificationSetting
+          final eventConfig = notificationSetting?.eventConfigs?.firstWhere(
+            (config) => config.eventType == typeEvent.typeName,
+            orElse: () =>
+                EventConfigEntity(popupEnabled: false, soundEnabled: false),
+          );
+
+          return _NotificationConfigItem(
+            label: typeEvent.name ?? typeEvent.typeName ?? '',
+            typeName: typeEvent.typeName,
+            autoPopup: eventConfig?.popupEnabled ?? false,
+            sound: eventConfig?.soundEnabled ?? false,
+          );
+        }).toList();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -415,11 +443,13 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
 /// Model cho mỗi dòng trong bảng cấu hình
 class _NotificationConfigItem {
   final String label;
+  final String? typeName;
   bool autoPopup;
   bool sound;
 
   _NotificationConfigItem({
     required this.label,
+    this.typeName,
     required this.autoPopup,
     required this.sound,
   });

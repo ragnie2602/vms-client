@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
@@ -25,17 +28,32 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     return super.close();
   }
 
-  FutureOr<void> _onDetectInitial(DetectInitial event, Emitter<DetectState> emit) async {
+  FutureOr<void> _onDetectInitial(
+    DetectInitial event,
+    Emitter<DetectState> emit,
+  ) async {
     emit(state.copyWith(status: DetectStatus.loading));
 
     // step1: Load danh sách loại sự kiện
     final result = await detectRepository.getListTypeEventDetect();
     result.fold(
       (failure) {
-        emit(state.copyWith(status: DetectStatus.failure, errorMessage: failure.toString()));
+        emit(
+          state.copyWith(
+            status: DetectStatus.failure,
+            errorMessage: failure.toString(),
+          ),
+        );
       },
       (typeEvents) {
-        emit(state.copyWith(status: DetectStatus.success, typeEvents: typeEvents));
+        emit(
+          state.copyWith(status: DetectStatus.success, typeEvents: typeEvents),
+        );
+        // Lưu typeEvents vào SharedPreferences để màn hình notification settings sử dụng
+        final jsonString = json.encode(
+          typeEvents.map((e) => e.toJson()).toList(),
+        );
+        AppData.instance.save<String>(AppKeys.SP_TYPE_EVENT_DETECT, jsonString);
       },
     );
     // step 2: Lắng nghe sự kiện từ stream
@@ -45,7 +63,10 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     });
   }
 
-  FutureOr<void> _onDetectOnReceiveEvent(DetectOnReceiveEvent event, Emitter<DetectState> emit) {
+  FutureOr<void> _onDetectOnReceiveEvent(
+    DetectOnReceiveEvent event,
+    Emitter<DetectState> emit,
+  ) {
     if (state.status == DetectStatus.success) {
       final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)
         ..insert(0, event.event);
@@ -81,22 +102,37 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     }
   }
 
-  FutureOr<void> _onUpdateFilterTypes(UpdateFilterTypes event, Emitter<DetectState> emit) {
+  FutureOr<void> _onUpdateFilterTypes(
+    UpdateFilterTypes event,
+    Emitter<DetectState> emit,
+  ) {
     if (state.status == DetectStatus.success) {
       emit(state.copyWith(selectedFilterTypes: event.selectedTypes));
       _emitFilteredEvents(emit, state.receiveEvents);
     }
   }
 
-  FutureOr<void> _onUpdateTabIndex(UpdateTabIndex event, Emitter<DetectState> emit) {
+  FutureOr<void> _onUpdateTabIndex(
+    UpdateTabIndex event,
+    Emitter<DetectState> emit,
+  ) {
     if (state.status == DetectStatus.success) {
-      final newViewingCameraIds = event.viewingCameraIds ?? state.viewingCameraIds;
-      emit(state.copyWith(currentTabIndex: event.tabIndex, viewingCameraIds: newViewingCameraIds));
+      final newViewingCameraIds =
+          event.viewingCameraIds ?? state.viewingCameraIds;
+      emit(
+        state.copyWith(
+          currentTabIndex: event.tabIndex,
+          viewingCameraIds: newViewingCameraIds,
+        ),
+      );
       _emitFilteredEvents(emit, state.receiveEvents);
     }
   }
 
-  void _emitFilteredEvents(Emitter<DetectState> emit, List<ReceiveEventEntity> sourceEvents) {
+  void _emitFilteredEvents(
+    Emitter<DetectState> emit,
+    List<ReceiveEventEntity> sourceEvents,
+  ) {
     final filteredEvents = sourceEvents.where((receiveEvent) {
       // Check camera filter (only if on "Cam đang xem" tab)
       if (state.isViewingCamTab && state.viewingCameraIds.isNotEmpty) {
@@ -114,7 +150,8 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
         if (eventType == null) return false;
         final matchesType = state.typeEvents.any(
           (typeEvent) =>
-              state.selectedFilterTypes.contains(typeEvent.type) && typeEvent.typeName == eventType,
+              state.selectedFilterTypes.contains(typeEvent.type) &&
+              typeEvent.typeName == eventType,
         );
         if (!matchesType) return false;
       }

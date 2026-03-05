@@ -9,4 +9,5 @@ class AppKeys {
 
   static const String SP_ACCESS_TOKEN = "accessToken";
   static const String SP_NOTIFICATION_SETTING = "notificationSetting";
+  static const String SP_TYPE_EVENT_DETECT = "typeEventDetect";
 }
