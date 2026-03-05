@@ -114,7 +114,7 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
     setState(() {
       _selectedNode = node;
     });
-    // widget.onClickObjectNode?.call(context, node.data?.id ?? "");
+    widget.onClickObjectNode?.call(context, node.data?.id?.toString() ?? "");
   }
 
   @override

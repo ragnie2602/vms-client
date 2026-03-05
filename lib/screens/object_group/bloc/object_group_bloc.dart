@@ -2,11 +2,11 @@ import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 
@@ -35,6 +35,22 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     on<CreateSubjectGroup>(_onCreateSubjectGroup);
     on<UpdateSubjectGroup>(_onUpdateSubjectGroup);
     on<DeleteSubjectGroup>(_onDeleteSubjectGroup);
+    on<SelectSubjectGroup>(_onSelectSubjectGroup);
+  }
+
+  Future<void> _onSelectSubjectGroup(
+    SelectSubjectGroup event,
+    Emitter<ObjectGroupState> emit,
+  ) async {
+    emit(state.copyWith(selectedSubjectGroupId: event.subjectGroupId));
+    final selectedType = state.selectedObjectType;
+    if (selectedType == null) return;
+    add(
+      LoadObjects(
+        objectTypeId: selectedType.id,
+        subjectGroupId: event.subjectGroupId,
+      ),
+    );
   }
 
   Future<void> _onLoadObjectGroups(
@@ -90,7 +106,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       LoadObjects(
         objectTypeId: event.objectType.id,
         page: event.page,
-        subjectGroupId: event.subjectGroupId,
+        subjectGroupId: state.selectedSubjectGroupId,
         size: event.size,
       ),
     );

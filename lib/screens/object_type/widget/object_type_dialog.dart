@@ -49,13 +49,20 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       // Fetch detail to get full dataFields
       _fetchDetail(obj.id);
     } else {
-      // Default fields for new object type - SRS: must include "Tên đối tượng"
+      // Default fields for new object type - SRS: must include "Tên đối tượng" and "Ảnh nhận diện khuôn mặt"
       _fields = [
         const ObjectTypeField(
           id: 'default_name',
           fieldName: 'Tên đối tượng',
           displayName: 'Tên đối tượng',
           dataType: FieldDataType.text,
+          isDefault: true,
+        ),
+        const ObjectTypeField(
+          id: 'default_face',
+          fieldName: 'Ảnh nhận diện khuôn mặt',
+          displayName: 'Ảnh nhận diện',
+          dataType: FieldDataType.file,
           isDefault: true,
         ),
       ];
@@ -693,17 +700,25 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
               child: SvgPicture.asset(AppAssets.icDrag),
             ),
           ),
-          // Field name
+          // Field name — read-only for default and recognition fields
           Expanded(
             flex: 2,
-            child: _buildSmallTextField(
-              initialValue: field.fieldName,
-              hintText: 'Tên dữ liệu',
-              maxLength: 50,
-              onChanged: (value) {
-                _updateField(index, field.copyWith(fieldName: value));
-              },
-            ),
+            child: (field.isDefault || _isRecognitionField(field))
+                ? _buildSmallTextField(
+                    initialValue: field.fieldName,
+                    hintText: 'Tên dữ liệu',
+                    maxLength: 50,
+                    readOnly: true,
+                    onChanged: (_) {},
+                  )
+                : _buildSmallTextField(
+                    initialValue: field.fieldName,
+                    hintText: 'Tên dữ liệu',
+                    maxLength: 50,
+                    onChanged: (value) {
+                      _updateField(index, field.copyWith(fieldName: value));
+                    },
+                  ),
           ),
           const SizedBox(width: 8),
           // Icon
@@ -857,10 +872,12 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     required String hintText,
     int? maxLength,
     required ValueChanged<String> onChanged,
+    bool readOnly = false,
   }) {
     return TextFormField(
       initialValue: initialValue,
-      onChanged: onChanged,
+      onChanged: readOnly ? null : onChanged,
+      readOnly: readOnly,
       maxLength: maxLength,
       decoration: InputDecoration(
         hintText: hintText,
@@ -872,6 +889,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         suffixStyle: AppTypography.style(11, color: AppColors.grey64748B),
         contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         isDense: true,
+        filled: readOnly,
+        fillColor: readOnly
+            ? AppColors.greyE2E8F0.withValues(alpha: 0.3)
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
           borderSide: const BorderSide(color: AppColors.greyE2E8F0),
@@ -885,7 +906,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           borderSide: const BorderSide(color: AppColors.secondary),
         ),
       ),
-      style: AppTypography.style(12, color: AppColors.black),
+      style: AppTypography.style(
+        12,
+        color: readOnly ? AppColors.grey64748B : AppColors.black,
+      ),
     );
   }
 
