@@ -214,4 +214,12 @@ class ObjectGroupRepository extends BaseRepository
       return Right(data);
     });
   }
+
+  @override
+  Future<Either<Failure, int>> deleteSubjectGroup({required int objectGroupId}) async {
+    return await catchError<int>(() async {
+      await _subjectGroupService.deleteSubjectGroup(subjectGroupId: objectGroupId);
+      return Right(objectGroupId);
+    });
+  }
 }

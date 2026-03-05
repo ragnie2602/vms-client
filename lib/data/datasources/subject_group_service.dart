@@ -23,4 +23,15 @@ class SubjectGroupService {
     }
     return SubjectGroup.fromJson(response.data);
   }
+
+  Future<void> deleteSubjectGroup({required int subjectGroupId}) async {
+    final raw = await httpClient.delete(
+      url: '${EndPoints.baseSubjectGroup}/$subjectGroupId',
+    );
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 204) {
+      throw ApiException(response.message);
+    }
+    return response.data;
+  }
 }

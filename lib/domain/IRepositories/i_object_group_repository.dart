@@ -33,4 +33,5 @@ abstract class IObjectGroupRepository {
     required int objectGroupId,
     required SubjectGroup request,
   });
+  Future<Either<Failure, int>> deleteSubjectGroup({required int objectGroupId});
 }

@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 
@@ -15,6 +16,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
   final GetSubjectGroupsUsecase _getSubjectGroupsUsecase;
   final CreateSubjectGroupUsecase _createSubjectGroupUsecase;
   final UpdateSubjectGroupUsecase _updateSubjectGroupUsecase;
+  final DeleteSubjectGroupUsecase _deleteSubjectGroupUsecase;
 
   ObjectGroupBloc(
     this._getObjectTypesUseCase,
@@ -22,6 +24,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     this._getSubjectGroupsUsecase,
     this._createSubjectGroupUsecase,
     this._updateSubjectGroupUsecase,
+    this._deleteSubjectGroupUsecase,
   ) : super(const ObjectGroupState()) {
     on<LoadObjectGroups>(_onLoadObjectGroups);
     // thay đổi tab kiểu đối tượng => load lại dữ liệu đối tượng
@@ -31,6 +34,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     on<LoadSubjectGroups>(_onLoadSubjectGroups);
     on<CreateSubjectGroup>(_onCreateSubjectGroup);
     on<UpdateSubjectGroup>(_onUpdateSubjectGroup);
+    on<DeleteSubjectGroup>(_onDeleteSubjectGroup);
   }
 
   Future<void> _onLoadObjectGroups(
@@ -233,5 +237,24 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     }
 
     return root;
+  }
+
+  Future<void> _onDeleteSubjectGroup(
+    DeleteSubjectGroup event,
+    Emitter<ObjectGroupState> emit,
+  ) async {
+    emit(state.copyWith(status: ObjectGroupStatus.loading));
+    try {
+      final input = DeleteSubjectGroupInput(id: event.id);
+      await _deleteSubjectGroupUsecase.execute(input);
+      add(const LoadSubjectGroups());
+    } catch (e) {
+      emit(
+        state.copyWith(
+          errorMessage: e.toString(),
+          status: ObjectGroupStatus.error,
+        ),
+      );
+    }
   }
 }

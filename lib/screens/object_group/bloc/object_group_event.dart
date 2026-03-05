@@ -82,3 +82,12 @@ class UpdateSubjectGroup extends ObjectGroupEvent {
   @override
   List<Object?> get props => [id, subjectGroup];
 }
+
+class DeleteSubjectGroup extends ObjectGroupEvent {
+  final int id;
+
+  const DeleteSubjectGroup({required this.id});
+
+  @override
+  List<Object> get props => [id];
+}

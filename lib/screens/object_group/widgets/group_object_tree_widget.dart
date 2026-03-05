@@ -55,10 +55,12 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
     if (oldWidget.selectedObjectId != widget.selectedObjectId) {
       _syncSelectedNodeFromProp();
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _resetTreeExpansion(widget.tree);
-      _treeController?.expandAllChildren(widget.tree);
-    });
+    if (oldWidget.treeKey == widget.treeKey) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _resetTreeExpansion(widget.tree);
+        _treeController?.expandAllChildren(widget.tree);
+      });
+    }
   }
 
   /// Reset expansion notifiers so expandAllChildren works on reused TreeNode objects.

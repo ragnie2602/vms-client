@@ -14,6 +14,7 @@ import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.d
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/add_object_dialog.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/confirm_remove_group_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/add_edit_group_object_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_action.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
@@ -143,6 +144,33 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     );
   }
 
+  void _onShowDialogRemoveGroupObject({
+    required BuildContext c,
+    SubjectGroup? currentGroup,
+    bool hasChildren = false,
+  }) {
+    if (currentGroup == null) return;
+    showDialog(
+      context: c,
+      builder: (BuildContext context) {
+        return RemoveGroupObjectDialog(
+          hasChildren: hasChildren,
+          groupName: currentGroup.name,
+          onConfirm: () {
+            final bloc = c.read<ObjectGroupBloc>();
+            bloc.add(DeleteSubjectGroup(id: currentGroup.id ?? 0));
+            if (c.mounted) {
+              ToastUtil.toastSuccess(
+                context: c,
+                title: Text('Xóa nhóm đối tượng thành công'),
+              );
+            }
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -248,7 +276,11 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                     );
                                     break;
                                   case GroupObjectAction.delete:
-                                    // TODO: delete
+                                    _onShowDialogRemoveGroupObject(
+                                      c: context,
+                                      currentGroup: node.data,
+                                      hasChildren: node.children.isNotEmpty,
+                                    );
                                     break;
                                 }
                               },
