@@ -88,6 +88,13 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         }
       }
 
+      // Pre-select subject groups from existing object
+      if (detail.subjectGroups.isNotEmpty) {
+        _selectedSubjectGroupIds.addAll(
+          detail.subjectGroups.where((g) => g.id != null).map((g) => g.id!),
+        );
+      }
+
       setState(() => _isLoadingDetail = false);
     } catch (e) {
       if (mounted) {

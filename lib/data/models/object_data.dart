@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
 class ObjectData extends Equatable {
   final int id;
@@ -7,6 +8,7 @@ class ObjectData extends Equatable {
   final String? thumbnailUrl;
   final String? createdAt;
   final String? updatedAt;
+  final List<SubjectGroup> subjectGroups;
 
   const ObjectData({
     required this.id,
@@ -15,6 +17,7 @@ class ObjectData extends Equatable {
     this.thumbnailUrl,
     this.createdAt,
     this.updatedAt,
+    this.subjectGroups = const [],
   });
 
   factory ObjectData.fromJson(Map<String, dynamic> json) {
@@ -25,6 +28,11 @@ class ObjectData extends Equatable {
       thumbnailUrl: json['thumbnailUrl'] as String?,
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
+      subjectGroups:
+          (json['subjectGroups'] as List<dynamic>?)
+              ?.map((e) => SubjectGroup.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -36,6 +44,7 @@ class ObjectData extends Equatable {
       'thumbnailUrl': thumbnailUrl,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'subjectGroups': subjectGroups.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -46,6 +55,7 @@ class ObjectData extends Equatable {
     String? thumbnailUrl,
     String? createdAt,
     String? updatedAt,
+    List<SubjectGroup>? subjectGroups,
   }) {
     return ObjectData(
       id: id ?? this.id,
@@ -54,9 +64,18 @@ class ObjectData extends Equatable {
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      subjectGroups: subjectGroups ?? this.subjectGroups,
     );
   }
 
   @override
-  List<Object?> get props => [id, objectTypeId, fieldValues, thumbnailUrl, createdAt, updatedAt];
+  List<Object?> get props => [
+    id,
+    objectTypeId,
+    fieldValues,
+    thumbnailUrl,
+    createdAt,
+    updatedAt,
+    subjectGroups,
+  ];
 }
