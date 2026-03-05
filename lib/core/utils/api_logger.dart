@@ -17,94 +17,102 @@ class ApiLogInterceptor extends Interceptor {
     String _color(String msg) => '\x1B[36m$msg\x1B[0m'; // xanh dương
 
     final buffer = StringBuffer();
-    buffer.writeln(_color('\x1B[3m[${options.method.toUpperCase()}] ${options.uri}'));
-    buffer.writeln(_color('╔${'═' * maxWidth}'));
-    // buffer.writeln('║ 🚀 REQUEST');
-    // buffer.writeln('╠══════════════════════════════════════════════════════════════');
-    // buffer.writeln('║ Method: ${options.method}');
-    // buffer.writeln('║ URL: ${options.uri}');
-    buffer.writeln(_color('║ Time: ${DateTime.now().toLocal()}'));
-    // buffer.writeln(_color('║ Env: ${AppConfig.env.name.toUpperCase()}'));
-    buffer.writeln(_color('╠${'─' * maxWidth}'));
-    buffer.writeln(_color('║ Headers:'));
-    options.headers.forEach((key, value) {
-      // Mask sensitive headers
-      // if (key.toLowerCase() == 'authorization') {
-      //   final val = value.toString();
-      //   if (val.length > 20) {
-      //     buffer.writeln('║   $key: ${val.substring(0, 20)}...[HIDDEN]');
-      //   } else {
-      //     buffer.writeln('║   $key: [HIDDEN]');
-      //   }
-      // } else {
-      buffer.writeln(_color('║   $key: $value'));
-      // }
-    });
 
-    if (options.queryParameters.isNotEmpty) {
+    // Download
+    if (options.responseType == ResponseType.stream) {
+      final savedPath = options.extra['savedPath'] as String?;
+      buffer.writeln(_color('\x1B[3m[DOWNLOADING] ${options.uri} ───➤ $savedPath'));
+      buffer.writeln('\u200B');
+    } else {
+      buffer.writeln(_color('\x1B[3m[${options.method.toUpperCase()}] ${options.uri}'));
+      buffer.writeln(_color('╔${'═' * maxWidth}'));
+      // buffer.writeln('║ 🚀 REQUEST');
+      // buffer.writeln('╠══════════════════════════════════════════════════════════════');
+      // buffer.writeln('║ Method: ${options.method}');
+      // buffer.writeln('║ URL: ${options.uri}');
+      buffer.writeln(_color('║ Time: ${DateTime.now().toLocal()}'));
+      // buffer.writeln(_color('║ Env: ${AppConfig.env.name.toUpperCase()}'));
       buffer.writeln(_color('╠${'─' * maxWidth}'));
-      buffer.writeln(_color('║ Query Parameters:'));
-      options.queryParameters.forEach((key, value) {
+      buffer.writeln(_color('║ Headers:'));
+      options.headers.forEach((key, value) {
+        // Mask sensitive headers
+        // if (key.toLowerCase() == 'authorization') {
+        //   final val = value.toString();
+        //   if (val.length > 20) {
+        //     buffer.writeln('║   $key: ${val.substring(0, 20)}...[HIDDEN]');
+        //   } else {
+        //     buffer.writeln('║   $key: [HIDDEN]');
+        //   }
+        // } else {
         buffer.writeln(_color('║   $key: $value'));
+        // }
       });
-    }
 
-    if (options.data != null) {
+      if (options.queryParameters.isNotEmpty) {
+        buffer.writeln(_color('╠${'─' * maxWidth}'));
+        buffer.writeln(_color('║ Query Parameters:'));
+        options.queryParameters.forEach((key, value) {
+          buffer.writeln(_color('║   $key: $value'));
+        });
+      }
+
+      if (options.data != null) {
+        buffer.writeln(_color('╠${'─' * maxWidth}'));
+        buffer.writeln(_color('║ Body:'));
+        // [MỚI] Xử lý riêng cho FormData
+        if (options.data is FormData) {
+          final formData = options.data as FormData;
+
+          // 1. Log các trường text (Fields)
+          if (formData.fields.isNotEmpty) {
+            buffer.writeln(_color('║ 🔹 Fields'));
+            for (final entry in formData.fields) {
+              buffer.writeln(_color('║    ├─ ${entry.key} : ${entry.value}'));
+            }
+            buffer.writeln(_color('║'));
+          }
+
+          // 2. Log các file upload (Files)
+          if (formData.files.isNotEmpty) {
+            buffer.writeln(_color('║ 📎 Files'));
+            for (final entry in formData.files) {
+              final key = entry.key;
+              final file = entry.value;
+              final fileName = file.filename ?? 'unknown_file';
+              final length = file.length;
+              final contentType = file.contentType?.mimeType ?? 'unknown';
+
+              buffer.writeln(_color('║    ├─ $key :'));
+              buffer.writeln(_color('║    │   • name : $fileName'));
+              buffer.writeln(_color('║    │   • size : ${length.readableBytes}'));
+              buffer.writeln(_color('║    │   • type : $contentType'));
+            }
+          }
+        }
+        // [CŨ] Xử lý JSON như bình thường
+        else {
+          final prettyBody = formatJson(options.data);
+          for (final line in prettyBody.split('\n')) {
+            buffer.writeln(_color('║   $line'));
+          }
+        }
+      }
+
+      // --- PHẦN THÊM CURI ---
       buffer.writeln(_color('╠${'─' * maxWidth}'));
-      buffer.writeln(_color('║ Body:'));
-      // [MỚI] Xử lý riêng cho FormData
-      if (options.data is FormData) {
-        final formData = options.data as FormData;
-
-        // 1. Log các trường text (Fields)
-        if (formData.fields.isNotEmpty) {
-          buffer.writeln(_color('║ 🔹 Fields'));
-          for (final entry in formData.fields) {
-            buffer.writeln(_color('║    ├─ ${entry.key} : ${entry.value}'));
-          }
-          buffer.writeln(_color('║'));
-        }
-
-        // 2. Log các file upload (Files)
-        if (formData.files.isNotEmpty) {
-          buffer.writeln(_color('║ 📎 Files'));
-          for (final entry in formData.files) {
-            final key = entry.key;
-            final file = entry.value;
-            final fileName = file.filename ?? 'unknown_file';
-            final length = file.length;
-            final contentType = file.contentType?.mimeType ?? 'unknown';
-
-            buffer.writeln(_color('║    ├─ $key :'));
-            buffer.writeln(_color('║    │   • name : $fileName'));
-            buffer.writeln(_color('║    │   • size : ${length.readableBytes}'));
-            buffer.writeln(_color('║    │   • type : $contentType'));
-          }
-        }
+      buffer.writeln(_color('║ cURL:'));
+      try {
+        final curl = renderCurlRepresentation(options);
+        buffer.writeln(_color('║   $curl'));
+      } catch (e) {
+        buffer.writeln(_color('║ (Unable to generate cURL: $e)'));
       }
-      // [CŨ] Xử lý JSON như bình thường
-      else {
-        final prettyBody = formatJson(options.data);
-        for (final line in prettyBody.split('\n')) {
-          buffer.writeln(_color('║   $line'));
-        }
-      }
-    }
+      // -----------------------
 
-    // --- PHẦN THÊM CURI ---
-    buffer.writeln(_color('╠${'─' * maxWidth}'));
-    buffer.writeln(_color('║ cURL:'));
-    try {
-      final curl = renderCurlRepresentation(options);
-      buffer.writeln(_color('║   $curl'));
-    } catch (e) {
-      buffer.writeln(_color('║ (Unable to generate cURL: $e)'));
+      buffer.writeln(_color('╚${'═' * maxWidth}'));
+      buffer.writeln('');
+      buffer.writeln('\u200B');
     }
-    // -----------------------
-
-    buffer.writeln(_color('╚${'═' * maxWidth}'));
-    buffer.writeln('');
-    buffer.writeln('\u200B');
 
     _log(buffer.toString(), name: '🚀');
     handler.next(options);
@@ -195,30 +203,42 @@ class ApiLogInterceptor extends Interceptor {
     String _color(String msg) => response.statusCode == 200 ? '\x1B[32m$msg\x1B[0m' : msg; // xanh
 
     final buffer = StringBuffer();
-    buffer.writeln(_color('\x1B[3m[${response.statusCode}] ${response.requestOptions.uri}'));
-    buffer.writeln(_color('╔${'═' * maxWidth}'));
-    // buffer.writeln('║ ✅ RESPONSE');
-    // buffer.writeln('╠══════════════════════════════════════════════════════════════');
-    // buffer.writeln('║ URL: ${response.requestOptions.uri}');
-    // buffer.writeln('║ Status Code: ${response.statusCode} ${response.statusMessage ?? ''}');
-    buffer.writeln(_color('║ Duration: ${duration}ms'));
-    buffer.writeln(_color('║ Time: ${DateTime.now().toLocal()}'));
-    // buffer.writeln('╠══════════════════════════════════════════════════════════════');
-    // buffer.writeln('║ Response Headers:');
-    // response.headers.forEach((name, values) {
-    //   buffer.writeln('║   $name: ${values.join(', ')}');
-    // });
-    buffer.writeln(_color('╠${'─' * maxWidth}'));
-    buffer.writeln(_color('║ Response Data:'));
 
-    final prettyData = formatJson(response.data);
-    for (final line in prettyData.split('\n')) {
-      buffer.writeln(_color('║   $line'));
+    // Download
+    if (response.requestOptions.responseType == ResponseType.stream) {
+      final savedPath = response.requestOptions.extra['savedPath'] as String?;
+      buffer.writeln(
+        _color(
+          '\x1B[3m[DOWNLOADED | ${(response.data as ResponseBody?)?.contentLength.readableBytes ?? ''}] ${response.requestOptions.uri} ───➤ $savedPath',
+        ),
+      );
+      buffer.writeln('\u200B');
+    } else {
+      buffer.writeln(_color('\x1B[3m[${response.statusCode}] ${response.requestOptions.uri}'));
+      buffer.writeln(_color('╔${'═' * maxWidth}'));
+      // buffer.writeln('║ ✅ RESPONSE');
+      // buffer.writeln('╠══════════════════════════════════════════════════════════════');
+      // buffer.writeln('║ URL: ${response.requestOptions.uri}');
+      // buffer.writeln('║ Status Code: ${response.statusCode} ${response.statusMessage ?? ''}');
+      buffer.writeln(_color('║ Duration: ${duration}ms'));
+      buffer.writeln(_color('║ Time: ${DateTime.now().toLocal()}'));
+      // buffer.writeln('╠══════════════════════════════════════════════════════════════');
+      // buffer.writeln('║ Response Headers:');
+      // response.headers.forEach((name, values) {
+      //   buffer.writeln('║   $name: ${values.join(', ')}');
+      // });
+      buffer.writeln(_color('╠${'─' * maxWidth}'));
+      buffer.writeln(_color('║ Response Data:'));
+
+      final prettyData = formatJson(response.data);
+      for (final line in prettyData.split('\n')) {
+        buffer.writeln(_color('║   $line'));
+      }
+
+      buffer.writeln(_color('╚${'═' * maxWidth}'));
+      buffer.writeln('');
+      buffer.writeln('\u200B');
     }
-
-    buffer.writeln(_color('╚${'═' * maxWidth}'));
-    buffer.writeln('');
-    buffer.writeln('\u200B');
 
     _log(buffer.toString(), name: '📥');
     handler.next(response);
@@ -306,5 +326,3 @@ class ApiLogInterceptor extends Interceptor {
     log(message, name: name ?? '🔥');
   }
 }
-
-

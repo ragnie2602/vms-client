@@ -1,9 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/event_constants.dart';
-import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';

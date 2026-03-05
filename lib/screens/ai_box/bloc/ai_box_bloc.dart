@@ -21,6 +21,8 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
   AiBoxStatus _currentStatusFilter = AiBoxStatus.all;
   // Lưu danh sách gốc để filter
   List<AiBoxEntity> _originalList = [];
+  // Lưu trạng thái loaded cuối cùng để hiển thị list khi loading
+  AIBoxLoadedState? lastLoadedState;
 
   AiBoxBloc({required this.aiBoxRepository, required this.filterAiBoxUseCase})
     : super(const AiBoxState()) {
@@ -30,6 +32,14 @@ class AiBoxBloc extends BaseBloc<AiBoxEvent, AiBoxState> {
     on<EditAiBoxEvent>(_onEditAiBox);
     on<FilterAiBoxEvent>(_onFilterAiBox);
     on<GetAiBoxAtPage>(_onGetAiBoxAtPage);
+  }
+
+  @override
+  void onChange(Change<AiBoxState> change) {
+    super.onChange(change);
+    if (change.nextState is AIBoxLoadedState) {
+      lastLoadedState = change.nextState as AIBoxLoadedState;
+    }
   }
 
   List<AiBoxEntity> _paginateList(

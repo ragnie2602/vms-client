@@ -33,7 +33,15 @@ Future<int> initialMultiWindowConfig(List<String> args) async {
   } else {
     final controller = WindowController.main();
 
-    await windowManager.maximize();
+    windowManager.waitUntilReadyToShow(WindowOptions(center: true), () async {
+      await windowManager.maximize();
+
+      final maxSize = await windowManager.getSize();
+      await windowManager.setMinimumSize(maxSize * 2 / 3);
+
+      await windowManager.show();
+      await windowManager.focus();
+    });
 
     return controller.windowId; // Main window ID is always 0
   }
