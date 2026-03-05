@@ -68,14 +68,6 @@ class LoadSubjectGroups extends ObjectGroupEvent {
   const LoadSubjectGroups();
 }
 
-class SelectSubjectGroup extends ObjectGroupEvent {
-  final int subjectGroupId;
-
-  const SelectSubjectGroup({required this.subjectGroupId});
-
-  @override
-  List<Object> get props => [subjectGroupId];
-}
 
 class CreateSubjectGroup extends ObjectGroupEvent {
   final String name;
@@ -104,4 +96,22 @@ class DeleteSubjectGroup extends ObjectGroupEvent {
 
   @override
   List<Object> get props => [id];
+}
+
+class SearchSubjectGroup extends ObjectGroupEvent {
+  final String query;
+
+  const SearchSubjectGroup({required this.query});
+
+  @override
+  List<Object> get props => [query];
+}
+
+class SelectSubjectGroup extends ObjectGroupEvent {
+  final SubjectGroup? subjectGroup;
+
+  const SelectSubjectGroup(this.subjectGroup);
+
+  @override
+  List<Object?> get props => [subjectGroup];
 }

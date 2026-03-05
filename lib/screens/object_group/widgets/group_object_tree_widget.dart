@@ -28,7 +28,7 @@ class GroupObjectTreeWidget extends StatefulWidget {
   final TreeNode<SubjectGroup> tree;
   final Widget? Function(TreeNode<SubjectGroup> node)? actionBuilder;
   final String? selectedObjectId;
-  final Function(BuildContext, String)? onClickObjectNode;
+  final Function(SubjectGroup?)? onClickObjectNode;
   final VoidCallback? onClickAddGroup;
   final Function(TreeNode<SubjectGroup>)? onMenuAddObject;
   final Function(TreeNode<SubjectGroup>)? onMenuAddGroup;
@@ -56,9 +56,13 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
       _syncSelectedNodeFromProp();
     }
     if (oldWidget.treeKey == widget.treeKey) {
+      final controller = _treeController;
+      final tree = widget.tree;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _resetTreeExpansion(widget.tree);
-        _treeController?.expandAllChildren(widget.tree);
+        if (!mounted) return;
+        if (_treeController != controller) return; // stale callback
+        _resetTreeExpansion(tree);
+        controller?.expandAllChildren(tree);
       });
     }
   }
@@ -85,7 +89,7 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
     TreeNode<SubjectGroup>? foundNodeOnTree;
     void searchOnTree(TreeNode<SubjectGroup> node) {
       if (foundNodeOnTree != null) return;
-      if (node.data?.id == widget.selectedObjectId) {
+      if (node.data?.id?.toString() == widget.selectedObjectId) {
         foundNodeOnTree = node;
         return;
       }
@@ -114,7 +118,7 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
     setState(() {
       _selectedNode = node;
     });
-    widget.onClickObjectNode?.call(context, node.data?.id?.toString() ?? "");
+    widget.onClickObjectNode?.call(node.data);
   }
 
   @override
@@ -216,9 +220,14 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
                         ),
                         onTreeReady: (treeViewController) {
                           _treeController = treeViewController;
+                          final controller = treeViewController;
+                          final tree = widget.tree;
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            _resetTreeExpansion(widget.tree);
-                            _treeController?.expandAllChildren(widget.tree);
+                            if (!mounted) return;
+                            if (_treeController != controller)
+                              return; // stale callback
+                            _resetTreeExpansion(tree);
+                            controller.expandAllChildren(tree);
                           });
                         },
                       ),

@@ -35,20 +35,23 @@ class ObjectGroupScreen extends StatefulWidget {
 class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _groupSearchController = TextEditingController();
   TabController? _tabController;
 
   @override
   void initState() {
     super.initState();
-    context.read<ObjectGroupBloc>().add(
-      const LoadObjectGroups(page: 1, size: 20),
-    );
-    context.read<ObjectGroupBloc>().add(const LoadSubjectGroups());
+    final bloc = context.read<ObjectGroupBloc>();
+    _groupSearchController.text = bloc.state.searchQuery;
+
+    bloc.add(const LoadObjectGroups(page: 1, size: 20));
+    bloc.add(const LoadSubjectGroups());
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _groupSearchController.dispose();
     _tabController?.dispose();
     super.dispose();
   }
@@ -63,7 +66,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     bloc.add(
       LoadObjects(
         objectTypeId: selectedType.id,
-        subjectGroupId: state.selectedSubjectGroupId,
+        subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
         search: searchText.isNotEmpty ? searchText : null,
       ),
     );
@@ -139,7 +142,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
     try {
       final repo = context.read<IObjectGroupRepository>();
-      final subjectGroupId = state.selectedSubjectGroupId;
+      final subjectGroupId = state.selectedSubjectGroup?.id ?? 0;
       final subjectGroupIds = subjectGroupId > 0 ? [subjectGroupId] : <int>[];
 
       // Upload file and get import ID
@@ -210,7 +213,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         title: const Text('Đang xuất file...'),
       );
       final repo = context.read<IObjectGroupRepository>();
-      final subjectGroupId = state.selectedSubjectGroupId;
+      final subjectGroupId = state.selectedSubjectGroup?.id ?? 0;
       final tempPath = await repo.exportObjects(
         selectedType.id,
         subjectGroupId: subjectGroupId > 0 ? subjectGroupId : null,
@@ -249,7 +252,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     required TreeNode<SubjectGroup> tree,
     SubjectGroup? parentGroup,
   }) {
-    List<SubjectGroup> listGroupOneLevel = tree.convertTreeToListOneLevel();
+    List<SubjectGroup> listGroupOneLevel = tree
+        .convertTreeToListOneLevel()
+        .where((g) => g.id != 0)
+        .toList();
 
     showDialogAddEditGroupObject(
       c,
@@ -288,7 +294,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     SubjectGroup? parentGroup,
     SubjectGroup? currentGroup,
   }) {
-    List<SubjectGroup> listGroupOneLevel = tree.convertTreeToListOneLevel();
+    List<SubjectGroup> listGroupOneLevel = tree
+        .convertTreeToListOneLevel()
+        .where((g) => g.id != 0)
+        .toList();
 
     showDialogAddEditGroupObject(
       c,
@@ -364,50 +373,88 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
             color: Colors.white,
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: SvgPicture.asset(AppAssets.icSearch),
-                      ),
-                      hintText: 'Nhập tên nhóm',
-                      hintStyle: AppTypography.style(
-                        14,
-                        color: AppColors.grey64748B,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: const BorderSide(
-                          color: AppColors.greyE2E8F0,
+                BlocListener<ObjectGroupBloc, ObjectGroupState>(
+                  listenWhen: (previous, current) =>
+                      previous.searchQuery != current.searchQuery,
+                  listener: (context, state) {
+                    if (_groupSearchController.text != state.searchQuery) {
+                      _groupSearchController.text = state.searchQuery;
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 20,
+                    ),
+                    child: TextField(
+                      controller: _groupSearchController,
+                      decoration: InputDecoration(
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SvgPicture.asset(AppAssets.icSearch),
+                        ),
+                        hintText: 'Nhập tên nhóm',
+                        hintStyle: AppTypography.style(
+                          14,
+                          color: AppColors.grey64748B,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: const BorderSide(
+                            color: AppColors.greyE2E8F0,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: const BorderSide(
+                            color: AppColors.greyE2E8F0,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
                         ),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: const BorderSide(
-                          color: AppColors.greyE2E8F0,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
+                      onChanged: (value) {
+                        context.read<ObjectGroupBloc>().add(
+                          SearchSubjectGroup(query: value),
+                        );
+                      },
                     ),
                   ),
                 ),
                 Expanded(
                   child: BlocBuilder<ObjectGroupBloc, ObjectGroupState>(
                     buildWhen: (previous, current) =>
-                        previous.subjectGroups != current.subjectGroups,
+                        previous.treeKey != current.treeKey ||
+                        previous.filteredSubjectGroupTree !=
+                            current.filteredSubjectGroupTree,
                     builder: (context, state) {
-                      final tree =
+                      // Tree to display (filtered by bloc via SearchSubjectGroupUsecase)
+                      final displayTree =
+                          state.filteredSubjectGroupTree ??
                           state.subjectGroupTree ??
                           TreeNode<SubjectGroup>.root();
+
+                      // Full tree used by add/edit dialogs (always shows all groups)
+                      final fullTree =
+                          state.subjectGroupTree ??
+                          TreeNode<SubjectGroup>.root();
+
                       return GroupObjectTreeWidget(
                         treeKey: state.treeKey,
-                        tree: tree,
+                        tree: displayTree,
+                        selectedObjectId: (state.selectedSubjectGroup?.id ?? 0)
+                            .toString(),
+                        onClickObjectNode: (subjectGroup) {
+                          context.read<ObjectGroupBloc>().add(
+                            SelectSubjectGroup(subjectGroup),
+                          );
+                        },
                         actionBuilder: (node) {
+                          if (node.data?.id == 0)
+                            return const SizedBox.shrink();
                           return Theme(
                             data: Theme.of(context).copyWith(
                               splashColor: Colors.transparent,
@@ -436,8 +483,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                   case GroupObjectAction.add:
                                     _onShowDialogAddGroupObject(
                                       c: context,
-                                      tree: tree,
-
+                                      tree: fullTree,
                                       parentGroup: node.data,
                                     );
                                     break;
@@ -451,7 +497,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                         : null;
                                     _onShowDialogEditGroupObject(
                                       c: context,
-                                      tree: tree,
+                                      tree: fullTree,
                                       parentGroup: parentGroup,
                                       currentGroup: node.data,
                                     );
@@ -507,14 +553,12 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                           );
                         },
                         onClickAddGroup: () {
-                          _onShowDialogAddGroupObject(c: context, tree: tree);
-                        },
-                        onClickObjectNode: (ctx, groupIdStr) {
-                          final groupId = int.tryParse(groupIdStr) ?? 0;
-                          context.read<ObjectGroupBloc>().add(
-                            SelectSubjectGroup(subjectGroupId: groupId),
+                          _onShowDialogAddGroupObject(
+                            c: context,
+                            tree: fullTree,
                           );
                         },
+                        
                       );
                     },
                   ),

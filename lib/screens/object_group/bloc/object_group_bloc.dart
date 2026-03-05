@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_g
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
@@ -17,6 +18,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
   final CreateSubjectGroupUsecase _createSubjectGroupUsecase;
   final UpdateSubjectGroupUsecase _updateSubjectGroupUsecase;
   final DeleteSubjectGroupUsecase _deleteSubjectGroupUsecase;
+  final SearchSubjectGroupUsecase _searchSubjectGroupUsecase;
 
   ObjectGroupBloc(
     this._getObjectTypesUseCase,
@@ -25,6 +27,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     this._createSubjectGroupUsecase,
     this._updateSubjectGroupUsecase,
     this._deleteSubjectGroupUsecase,
+    this._searchSubjectGroupUsecase,
   ) : super(const ObjectGroupState()) {
     on<LoadObjectGroups>(_onLoadObjectGroups);
     // thay đổi tab kiểu đối tượng => load lại dữ liệu đối tượng
@@ -42,13 +45,13 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     SelectSubjectGroup event,
     Emitter<ObjectGroupState> emit,
   ) async {
-    emit(state.copyWith(selectedSubjectGroupId: event.subjectGroupId));
+    emit(state.copyWith(selectedSubjectGroup: event.subjectGroup));
     final selectedType = state.selectedObjectType;
     if (selectedType == null) return;
     add(
       LoadObjects(
         objectTypeId: selectedType.id,
-        subjectGroupId: event.subjectGroupId,
+        subjectGroupId: event.subjectGroup?.id ?? 0,
       ),
     );
   }
@@ -106,7 +109,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       LoadObjects(
         objectTypeId: event.objectType.id,
         page: event.page,
-        subjectGroupId: state.selectedSubjectGroupId,
+        subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
         size: event.size,
       ),
     );
@@ -162,7 +165,10 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
         state.copyWith(
           subjectGroups: groups,
           subjectGroupTree: tree,
+          filteredSubjectGroups: groups,
+          filteredSubjectGroupTree: tree,
           treeKey: DateTime.now().millisecondsSinceEpoch.toString(),
+          searchQuery: '',
         ),
       );
     } catch (e) {
@@ -222,6 +228,18 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
   TreeNode<SubjectGroup> _buildTreeFromFlatList(List<SubjectGroup> groups) {
     final root = TreeNode<SubjectGroup>.root();
 
+    // Thêm node "Danh sách đối tượng" luôn ở đầu cây
+    root.add(
+      TreeNode<SubjectGroup>(
+        key: 'all_node',
+        data: const SubjectGroup(
+          id: 0,
+          name: 'Danh sách đối tượng',
+          parentId: 0,
+        ),
+      ),
+    );
+
     // Create a map of id -> TreeNode for quick lookup
     final Map<int?, TreeNode<SubjectGroup>> nodeMap = {};
 
@@ -272,5 +290,52 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
         ),
       );
     }
+  }
+
+  // void _onSelectSubjectGroup(
+  //   SelectSubjectGroup event,
+  //   Emitter<ObjectGroupState> emit,
+  // ) {
+  //   emit(
+  //     state.copyWith(
+  //       selectedSubjectGroup: event.subjectGroup,
+  //       clearSelectedSubjectGroup: event.subjectGroup == null,
+  //       currentObjectsPage: 1,
+  //       objects: [],
+  //     ),
+  //   );
+  //   if (state.selectedObjectType != null) {
+  //     add(
+  //       LoadObjects(
+  //         objectTypeId: state.selectedObjectType!.id,
+  //         page: 1,
+  //         subjectGroupId: event.subjectGroup?.id ?? 0,
+  //         size: 20,
+  //       ),
+  //     );
+  //   }
+  // }
+
+  void _onSearchSubjectGroup(
+    SearchSubjectGroup event,
+    Emitter<ObjectGroupState> emit,
+  ) {
+    final output = _searchSubjectGroupUsecase.buildUseCase(
+      SearchSubjectGroupInput(
+        allGroups: state.subjectGroups,
+        query: event.query,
+      ),
+    );
+
+    final filteredTree = _buildTreeFromFlatList(output.filteredGroups);
+
+    emit(
+      state.copyWith(
+        filteredSubjectGroups: output.filteredGroups,
+        filteredSubjectGroupTree: filteredTree,
+        searchQuery: event.query,
+        treeKey: DateTime.now().millisecondsSinceEpoch.toString(),
+      ),
+    );
   }
 }
