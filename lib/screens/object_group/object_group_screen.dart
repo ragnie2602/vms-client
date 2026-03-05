@@ -361,7 +361,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     );
   }
 
-  Future<void> _onShowDialogAddObject(BuildContext context) async {
+  Future<void> _onShowDialogAddObject(
+    BuildContext context, {
+    SubjectGroup? initialGroup,
+  }) async {
     final state = context.read<ObjectGroupBloc>().state;
     final selectedType = state.selectedObjectType;
     if (selectedType == null) return;
@@ -376,6 +379,11 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         builder: (_) => AddObjectDialog(
           objectType: objectTypeDetail,
           subjectGroups: context.read<ObjectGroupBloc>().state.subjectGroups,
+          initialSubjectGroup:
+              initialGroup ??
+              (state.selectedSubjectGroup?.id == 0
+                  ? null // ID=0 is 'Danh sách đối tượng', shouldn't be pre-selected
+                  : state.selectedSubjectGroup),
         ),
       );
     } catch (e) {
@@ -516,7 +524,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                     );
                                     break;
                                   case GroupObjectAction.addObject:
-                                    _onShowDialogAddObject(context);
+                                    _onShowDialogAddObject(
+                                      context,
+                                      initialGroup: node.data,
+                                    );
                                     break;
                                   case GroupObjectAction.edit:
                                     final parentNode = node.parent;

@@ -18,12 +18,14 @@ class AddObjectDialog extends StatefulWidget {
   final ObjectType objectType;
   final ObjectData? existingObject; // null for create, non-null for edit
   final List<SubjectGroup> subjectGroups;
+  final SubjectGroup? initialSubjectGroup;
 
   const AddObjectDialog({
     super.key,
     required this.objectType,
     this.existingObject,
     this.subjectGroups = const [],
+    this.initialSubjectGroup,
   });
 
   bool get isEditMode => existingObject != null;
@@ -65,6 +67,11 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     // If edit mode, fetch detail and pre-fill
     if (widget.isEditMode) {
       _loadObjectDetail();
+    } else {
+      // check init group
+      if (widget.initialSubjectGroup?.id != null) {
+        _selectedSubjectGroupIds.add(widget.initialSubjectGroup!.id!);
+      }
     }
   }
 
