@@ -361,6 +361,29 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     );
   }
 
+  Future<void> _onShowDialogAddObject(BuildContext context) async {
+    final state = context.read<ObjectGroupBloc>().state;
+    final selectedType = state.selectedObjectType;
+    if (selectedType == null) return;
+
+    final repo = context.read<IObjectGroupRepository>();
+
+    try {
+      final objectTypeDetail = await repo.getObjectTypeDetail(selectedType.id);
+      if (!context.mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => AddObjectDialog(
+          objectType: objectTypeDetail,
+          subjectGroups: context.read<ObjectGroupBloc>().state.subjectGroups,
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ToastUtil.toastFail(context: context, title: Text('Lỗi: $e'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -493,6 +516,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                     );
                                     break;
                                   case GroupObjectAction.addObject:
+                                    _onShowDialogAddObject(context);
                                     break;
                                   case GroupObjectAction.edit:
                                     final parentNode = node.parent;
@@ -565,7 +589,6 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                             tree: fullTree,
                           );
                         },
-                        
                       );
                     },
                   ),
@@ -842,33 +865,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 borderColor: AppColors.blue005AA9,
                 borderRadius: 3,
                 label: 'Thêm đối tượng',
-                onPressed: () async {
-                  final state = context.read<ObjectGroupBloc>().state;
-                  final selectedType = state.selectedObjectType;
-                  if (selectedType == null) return;
-
-                  final messenger = ScaffoldMessenger.of(context);
-                  final repo = context.read<IObjectGroupRepository>();
-
-                  try {
-                    final objectTypeDetail = await repo.getObjectTypeDetail(
-                      selectedType.id,
-                    );
-                    if (!context.mounted) return;
-                    showDialog(
-                      context: context,
-                      builder: (_) => AddObjectDialog(
-                        objectType: objectTypeDetail,
-                        subjectGroups: context
-                            .read<ObjectGroupBloc>()
-                            .state
-                            .subjectGroups,
-                      ),
-                    );
-                  } catch (e) {
-                    messenger.showSnackBar(SnackBar(content: Text('Lỗi: $e')));
-                  }
-                },
+                onPressed: () => _onShowDialogAddObject(context),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 10,
