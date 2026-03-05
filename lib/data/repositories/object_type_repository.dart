@@ -4,18 +4,19 @@ import 'package:vms_flutter_client/data/repositories/base_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
-class ObjectTypeRepository extends BaseRepository implements IObjectTypeRepository {
+class ObjectTypeRepository extends BaseRepository
+    implements IObjectTypeRepository {
   final ObjectTypeService service;
   const ObjectTypeRepository(this.service);
 
   @override
-  Future<Either<Failure, List<ObjectType>>> getObjectTypes({
+  Future<Either<Failure, Map<String, dynamic>>> getObjectTypes({
     int page = 1,
     int size = 20,
     String? keyword,
     String? status,
   }) async {
-    return await catchError<List<ObjectType>>(() async {
+    return await catchError<Map<String, dynamic>>(() async {
       final data = await service.getObjectTypes(
         page: page,
         size: size,
@@ -43,7 +44,10 @@ class ObjectTypeRepository extends BaseRepository implements IObjectTypeReposito
   }
 
   @override
-  Future<Either<Failure, void>> updateObjectType(int id, ObjectType data) async {
+  Future<Either<Failure, void>> updateObjectType(
+    int id,
+    ObjectType data,
+  ) async {
     return await catchError<void>(() async {
       await service.updateObjectType(id, data.toJson());
       return const Right(null);

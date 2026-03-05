@@ -49,8 +49,16 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       // Fetch detail to get full dataFields
       _fetchDetail(obj.id);
     } else {
-      // Default fields for new object type
-      _fields = [];
+      // Default fields for new object type - SRS: must include "Tên đối tượng"
+      _fields = [
+        const ObjectTypeField(
+          id: 'default_name',
+          fieldName: 'Tên đối tượng',
+          displayName: 'Tên đối tượng',
+          dataType: FieldDataType.text,
+          isDefault: true,
+        ),
+      ];
     }
   }
 
@@ -123,18 +131,50 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     });
   }
 
+  /// Whether this field is a recognition field (Ảnh nhận diện / Biển số xe)
+  bool _isRecognitionField(ObjectTypeField field) {
+    return field.fieldName == 'Ảnh nhận diện khuôn mặt' ||
+        field.fieldName == 'Biển số xe';
+  }
+
+  /// Whether this is a draft field (not yet saved to server)
+  bool _isDraftField(ObjectTypeField field) {
+    return field.id.startsWith('new_field_') || field.id.startsWith('default_');
+  }
+
   void _removeField(int index) {
     final field = _fields[index];
+
+    // SRS: Fixed default fields cannot be deleted
+    if (field.isDefault) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Trường bắt buộc không thể xóa'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // SRS: Draft fields (newly added, not yet saved) → delete instantly
+    if (_isDraftField(field)) {
+      setState(() => _fields.removeAt(index));
+      return;
+    }
+
+    // SRS: Saved fields → show confirmation popup
+    // For edit mode, determine the right message
+    final displayLabel = field.displayName.isNotEmpty
+        ? field.displayName
+        : field.fieldName;
     showDialog(
       context: context,
       builder: (context) => ConfirmDeleteDialog(
         title: 'Xóa trường dữ liệu',
         content:
-            'Trường ${field.displayName} đang chứa dữ liệu của các đối tượng trong hệ thống.\nBạn có chắc chắn muốn tiếp tục?',
+            'Bạn có chắc chắn muốn xóa trường dữ liệu $displayLabel không?',
         onConfirm: () {
-          setState(() {
-            _fields.removeAt(index);
-          });
+          setState(() => _fields.removeAt(index));
         },
       ),
     );
@@ -157,18 +197,48 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   }
 
   void _handleSubmit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      final objectType = ObjectType(
-        id: widget.objectType?.id ?? DateTime.now().millisecondsSinceEpoch,
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        aiFeature: _selectedAIFeature,
-        status: _selectedStatus,
-        fields: _fields,
-        objectCount: widget.objectType?.objectCount ?? 0,
-      );
-      widget.onSubmit(objectType);
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    // SRS: Validate all field rows
+    final fieldErrors = <String>[];
+    final displayNames = <String>{};
+    for (int i = 0; i < _fields.length; i++) {
+      final f = _fields[i];
+      if (f.fieldName.trim().isEmpty) {
+        fieldErrors.add(
+          'Dòng ${i + 1}: Tên trường dữ liệu không được để trống',
+        );
+      }
+      if (f.displayName.trim().isEmpty) {
+        fieldErrors.add('Dòng ${i + 1}: Tên hiển thị không được để trống');
+      }
+      // SRS: Validate duplicate displayName
+      final dn = f.displayName.trim().toLowerCase();
+      if (dn.isNotEmpty) {
+        if (displayNames.contains(dn)) {
+          fieldErrors.add('Dòng ${i + 1}: Tên hiển thị bị trùng');
+        }
+        displayNames.add(dn);
+      }
     }
+
+    if (fieldErrors.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(fieldErrors.first), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final objectType = ObjectType(
+      id: widget.objectType?.id ?? DateTime.now().millisecondsSinceEpoch,
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
+      aiFeature: _selectedAIFeature,
+      status: _selectedStatus,
+      fields: _fields,
+      objectCount: widget.objectType?.objectCount ?? 0,
+    );
+    widget.onSubmit(objectType);
   }
 
   @override
@@ -655,8 +725,18 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             ),
           ),
           const SizedBox(width: 8),
-          // Data type
-          Expanded(flex: 1, child: _buildDataTypeDropdown(index, field)),
+          // Data type – SRS: disabled for recognition fields
+          Expanded(
+            flex: 1,
+            child: _isRecognitionField(field) || field.isDefault
+                ? AbsorbPointer(
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: _buildDataTypeDropdown(index, field),
+                    ),
+                  )
+                : _buildDataTypeDropdown(index, field),
+          ),
           const SizedBox(width: 8),
           // Actions
           SizedBox(

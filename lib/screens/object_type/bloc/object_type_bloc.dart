@@ -19,7 +19,10 @@ class ObjectTypeBloc extends Bloc<ObjectTypeEvent, ObjectTypeState> {
     on<DeleteObjectType>(_onDeleteObjectType);
   }
 
-  FutureOr<void> _onLoadObjectTypes(LoadObjectTypes event, Emitter<ObjectTypeState> emit) async {
+  FutureOr<void> _onLoadObjectTypes(
+    LoadObjectTypes event,
+    Emitter<ObjectTypeState> emit,
+  ) async {
     emit(const ObjectTypeLoading());
 
     final res = await repository.getObjectTypes(
@@ -29,10 +32,13 @@ class ObjectTypeBloc extends Bloc<ObjectTypeEvent, ObjectTypeState> {
       status: event.status,
     );
 
-    res.fold(
-      (failure) => emit(ObjectTypeError(failure.parseMessage())),
-      (objectTypes) => emit(ObjectTypeLoaded(objectTypes: objectTypes)),
-    );
+    res.fold((failure) => emit(ObjectTypeError(failure.parseMessage())), (
+      data,
+    ) {
+      final items = data['items'] as List<ObjectType>;
+      final totalPages = data['totalPages'] as int? ?? 1;
+      emit(ObjectTypeLoaded(objectTypes: items, totalPages: totalPages));
+    });
   }
 
   FutureOr<void> _onLoadObjectTypeDetail(
@@ -49,7 +55,10 @@ class ObjectTypeBloc extends Bloc<ObjectTypeEvent, ObjectTypeState> {
     );
   }
 
-  FutureOr<void> _onCreateObjectType(CreateObjectType event, Emitter<ObjectTypeState> emit) async {
+  FutureOr<void> _onCreateObjectType(
+    CreateObjectType event,
+    Emitter<ObjectTypeState> emit,
+  ) async {
     emit(const ObjectTypeCreating());
 
     final res = await repository.createObjectType(event.objectType);
@@ -60,7 +69,10 @@ class ObjectTypeBloc extends Bloc<ObjectTypeEvent, ObjectTypeState> {
     );
   }
 
-  FutureOr<void> _onUpdateObjectType(UpdateObjectType event, Emitter<ObjectTypeState> emit) async {
+  FutureOr<void> _onUpdateObjectType(
+    UpdateObjectType event,
+    Emitter<ObjectTypeState> emit,
+  ) async {
     emit(const ObjectTypeUpdating());
 
     final res = await repository.updateObjectType(event.id, event.objectType);
@@ -71,7 +83,10 @@ class ObjectTypeBloc extends Bloc<ObjectTypeEvent, ObjectTypeState> {
     );
   }
 
-  FutureOr<void> _onDeleteObjectType(DeleteObjectType event, Emitter<ObjectTypeState> emit) async {
+  FutureOr<void> _onDeleteObjectType(
+    DeleteObjectType event,
+    Emitter<ObjectTypeState> emit,
+  ) async {
     emit(const ObjectTypeDeleting());
 
     final res = await repository.deleteObjectType(event.id);
