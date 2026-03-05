@@ -21,6 +21,7 @@ class ObjectGroupState extends Equatable {
   final TreeNode<SubjectGroup>? filteredSubjectGroupTree;
   final String treeKey;
   final String searchQuery;
+  final SubjectGroup? selectedSubjectGroup;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -37,6 +38,7 @@ class ObjectGroupState extends Equatable {
     this.filteredSubjectGroupTree,
     this.treeKey = '',
     this.searchQuery = '',
+    this.selectedSubjectGroup,
   });
 
   ObjectGroupState copyWith({
@@ -54,6 +56,8 @@ class ObjectGroupState extends Equatable {
     TreeNode<SubjectGroup>? filteredSubjectGroupTree,
     String? treeKey,
     String? searchQuery,
+    SubjectGroup? selectedSubjectGroup,
+    bool clearSelectedSubjectGroup = false,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,
@@ -72,6 +76,9 @@ class ObjectGroupState extends Equatable {
           filteredSubjectGroupTree ?? this.filteredSubjectGroupTree,
       treeKey: treeKey ?? this.treeKey,
       searchQuery: searchQuery ?? this.searchQuery,
+      selectedSubjectGroup: clearSelectedSubjectGroup
+          ? null
+          : (selectedSubjectGroup ?? this.selectedSubjectGroup),
     );
   }
 
@@ -91,5 +98,6 @@ class ObjectGroupState extends Equatable {
     filteredSubjectGroupTree,
     treeKey,
     searchQuery,
+    selectedSubjectGroup,
   ];
 }

@@ -60,6 +60,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     context.read<ObjectGroupBloc>().add(
       LoadObjects(
         objectTypeId: selectedType.id,
+        subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
         search: searchText.isNotEmpty ? searchText : null,
       ),
     );
@@ -71,7 +72,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     required TreeNode<SubjectGroup> tree,
     SubjectGroup? parentGroup,
   }) {
-    List<SubjectGroup> listGroupOneLevel = tree.convertTreeToListOneLevel();
+    List<SubjectGroup> listGroupOneLevel = tree
+        .convertTreeToListOneLevel()
+        .where((g) => g.id != 0)
+        .toList();
 
     showDialogAddEditGroupObject(
       c,
@@ -110,7 +114,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     SubjectGroup? parentGroup,
     SubjectGroup? currentGroup,
   }) {
-    List<SubjectGroup> listGroupOneLevel = tree.convertTreeToListOneLevel();
+    List<SubjectGroup> listGroupOneLevel = tree
+        .convertTreeToListOneLevel()
+        .where((g) => g.id != 0)
+        .toList();
 
     showDialogAddEditGroupObject(
       c,
@@ -258,7 +265,16 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                       return GroupObjectTreeWidget(
                         treeKey: state.treeKey,
                         tree: displayTree,
+                        selectedObjectId: (state.selectedSubjectGroup?.id ?? 0)
+                            .toString(),
+                        onClickObjectNode: (subjectGroup) {
+                          context.read<ObjectGroupBloc>().add(
+                            SelectSubjectGroup(subjectGroup),
+                          );
+                        },
                         actionBuilder: (node) {
+                          if (node.data?.id == 0)
+                            return const SizedBox.shrink();
                           return Theme(
                             data: Theme.of(context).copyWith(
                               splashColor: Colors.transparent,

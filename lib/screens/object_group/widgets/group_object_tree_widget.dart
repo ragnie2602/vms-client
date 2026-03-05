@@ -28,7 +28,7 @@ class GroupObjectTreeWidget extends StatefulWidget {
   final TreeNode<SubjectGroup> tree;
   final Widget? Function(TreeNode<SubjectGroup> node)? actionBuilder;
   final String? selectedObjectId;
-  final Function(BuildContext, String)? onClickObjectNode;
+  final Function(SubjectGroup?)? onClickObjectNode;
   final VoidCallback? onClickAddGroup;
   final Function(TreeNode<SubjectGroup>)? onMenuAddObject;
   final Function(TreeNode<SubjectGroup>)? onMenuAddGroup;
@@ -89,7 +89,7 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
     TreeNode<SubjectGroup>? foundNodeOnTree;
     void searchOnTree(TreeNode<SubjectGroup> node) {
       if (foundNodeOnTree != null) return;
-      if (node.data?.id == widget.selectedObjectId) {
+      if (node.data?.id?.toString() == widget.selectedObjectId) {
         foundNodeOnTree = node;
         return;
       }
@@ -118,7 +118,7 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
     setState(() {
       _selectedNode = node;
     });
-    // widget.onClickObjectNode?.call(context, node.data?.id ?? "");
+    widget.onClickObjectNode?.call(node.data);
   }
 
   @override

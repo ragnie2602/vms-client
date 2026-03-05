@@ -100,3 +100,12 @@ class SearchSubjectGroup extends ObjectGroupEvent {
   @override
   List<Object> get props => [query];
 }
+
+class SelectSubjectGroup extends ObjectGroupEvent {
+  final SubjectGroup? subjectGroup;
+
+  const SelectSubjectGroup(this.subjectGroup);
+
+  @override
+  List<Object?> get props => [subjectGroup];
+}

@@ -39,6 +39,8 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     on<UpdateSubjectGroup>(_onUpdateSubjectGroup);
     on<DeleteSubjectGroup>(_onDeleteSubjectGroup);
     on<SearchSubjectGroup>(_onSearchSubjectGroup);
+    // select subject group trong cây => load lại dữ liệu đối tượng
+    on<SelectSubjectGroup>(_onSelectSubjectGroup);
   }
 
   Future<void> _onLoadObjectGroups(
@@ -94,7 +96,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       LoadObjects(
         objectTypeId: event.objectType.id,
         page: event.page,
-        subjectGroupId: event.subjectGroupId,
+        subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
         size: event.size,
       ),
     );
@@ -213,6 +215,18 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
   TreeNode<SubjectGroup> _buildTreeFromFlatList(List<SubjectGroup> groups) {
     final root = TreeNode<SubjectGroup>.root();
 
+    // Thêm node "Danh sách đối tượng" luôn ở đầu cây
+    root.add(
+      TreeNode<SubjectGroup>(
+        key: 'all_node',
+        data: const SubjectGroup(
+          id: 0,
+          name: 'Danh sách đối tượng',
+          parentId: 0,
+        ),
+      ),
+    );
+
     // Create a map of id -> TreeNode for quick lookup
     final Map<int?, TreeNode<SubjectGroup>> nodeMap = {};
 
@@ -260,6 +274,30 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
         state.copyWith(
           errorMessage: e.toString(),
           status: ObjectGroupStatus.error,
+        ),
+      );
+    }
+  }
+
+  void _onSelectSubjectGroup(
+    SelectSubjectGroup event,
+    Emitter<ObjectGroupState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        selectedSubjectGroup: event.subjectGroup,
+        clearSelectedSubjectGroup: event.subjectGroup == null,
+        currentObjectsPage: 1,
+        objects: [],
+      ),
+    );
+    if (state.selectedObjectType != null) {
+      add(
+        LoadObjects(
+          objectTypeId: state.selectedObjectType!.id,
+          page: 1,
+          subjectGroupId: event.subjectGroup?.id ?? 0,
+          size: 20,
         ),
       );
     }
