@@ -4,14 +4,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/monitor/stream_event_usecase.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
 
 class DetectBloc extends Bloc<DetectEvent, DetectState> {
   final IDetectRepository detectRepository;
+
+  final StreamEventUsecase streamEventUsecase;
+
   StreamSubscription? _subscription;
 
-  DetectBloc(this.detectRepository) : super(const DetectState()) {
+  DetectBloc(this.detectRepository, this.streamEventUsecase) : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
     on<DetectOnReceiveEvent>(_onDetectOnReceiveEvent);
     on<FilterEventsByViewingCameras>(_onFilterEventsByViewingCameras);
@@ -40,15 +44,14 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     );
     // step 2: Lắng nghe sự kiện từ stream
     _subscription?.cancel();
-    _subscription = detectRepository.receiveEventStream.listen((event) {
-      add(DetectOnReceiveEvent(event));
-    });
+    _subscription = streamEventUsecase
+        .execute(StreamEventInput())
+        .listen((event) => add(DetectOnReceiveEvent(event.liveEvent)));
   }
 
   FutureOr<void> _onDetectOnReceiveEvent(DetectOnReceiveEvent event, Emitter<DetectState> emit) {
     if (state.status == DetectStatus.success) {
-      final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)
-        ..insert(0, event.event);
+      final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)..insert(0, event.event);
       bool? _reachedMax;
 
       // quá 100 cắt ở đây
@@ -57,12 +60,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
         _reachedMax = true;
       }
 
-      emit(
-        state.copyWith(
-          receiveEvents: newEvents,
-          hasReachedMaxEvents: _reachedMax,
-        ),
-      );
+      emit(state.copyWith(receiveEvents: newEvents, hasReachedMaxEvents: _reachedMax));
 
       // Recalculate selectedEvents if filter is active
       if (state.shouldShowSelectedEvents) {

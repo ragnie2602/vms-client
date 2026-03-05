@@ -9,8 +9,6 @@ import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dar
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 
 class EventRepository extends BaseRepository implements IEventRepository {
-  static final Map<(String, int, int?), EventDisplayConfig> configTable = {};
-
   final EventService eventService;
 
   EventRepository(this.eventService);
@@ -67,18 +65,12 @@ class EventRepository extends BaseRepository implements IEventRepository {
     int typeConfig,
     int? subjectTypeId,
   ) async {
-    final key = (eventType, typeConfig, subjectTypeId);
-    if (configTable.containsKey(key)) return Right(configTable[key]!);
-
     return await catchError<EventDisplayConfig>(() async {
       final data = await eventService.getEventDisplayConfig(
         eventType,
         typeConfig,
         subjectTypeId: subjectTypeId,
       );
-
-      EventDisplayConfig config = EventDisplayConfig.fromJson(data);
-      configTable[key] = config;
 
       return Right(EventDisplayConfig.fromJson(data));
     });
@@ -124,7 +116,6 @@ class EventRepository extends BaseRepository implements IEventRepository {
 
       result.map<EventDisplayConfig>((e) {
         final c = EventDisplayConfig.fromJson(e);
-        configTable[(c.eventType, c.typeConfig, c.subjectTypeId)] = c;
         return c;
       }).toList();
 

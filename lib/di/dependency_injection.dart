@@ -43,6 +43,7 @@ import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.da
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/monitor/stream_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
@@ -180,6 +181,10 @@ class DependencyInjection {
     ),
     Provider<GetAllSubjectTypesUsecase>(
       create: (context) => GetAllSubjectTypesUsecase(context.read()),
+    ),
+
+    Provider<StreamEventUsecase>(
+      create: (context) => StreamEventUsecase(context.read(), context.read()),
     ),
 
     // Bloc
