@@ -439,7 +439,7 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
     }
     final notificationSetting = NotificationSettingEntity(
       id: _notificationSettingId,
-      cooldownUnit: _selectedUnit,
+      cooldownUnit: _selectedUnit == 'Giây' ? 'SECOND' : 'MINUTE',
       cooldownValue: int.parse(_intervalController.text),
       eventConfigs: _configItems.map((e) => e.toEntity()).toList(),
     );
@@ -451,6 +451,7 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
   void _onCancel() {
     _intervalController.clear();
     setState(() => _selectedUnit = 'Giây');
+    
   }
 }
 

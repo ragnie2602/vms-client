@@ -2,17 +2,23 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
+import 'package:vms_flutter_client/domain/entities/notification/notification_alert_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
+import 'package:vms_flutter_client/screens/home/widgets/alert_detail_popup.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
+import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
 
 class DetectBloc extends Bloc<DetectEvent, DetectState> {
   final IDetectRepository detectRepository;
   StreamSubscription? _subscription;
+  bool _isDialogShowing = false;
 
   DetectBloc(this.detectRepository) : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
@@ -60,6 +66,34 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     _subscription?.cancel();
     _subscription = detectRepository.receiveEventStream.listen((event) {
       add(DetectOnReceiveEvent(event));
+      final context = AppRouter.rootNavigatorKey.currentContext;
+      if (context != null) {
+        
+        // Đóng dialog cũ trước khi hiện dialog mới
+        if (_isDialogShowing) {
+          Navigator.of(context, rootNavigator: true).pop();
+        }
+        _isDialogShowing = true;
+        final eventName = event.eventType ?? 'Không rõ';
+        final evenData= event.eventDataEntity;
+        AlertDetailPopup.show(
+          context,
+          alert: NotificationAlertEntity(
+            cameraName: 'Camera Tầng 1',
+            cameraGroupName: 'Camera Tầng 1',
+            categoryLabel: 'Cảnh báo sự kiện mới',
+            message: 'Phát hiện sự kiện: $eventName',
+            alertType: AlertType.fire,
+            time: DateTime.now().millisecondsSinceEpoch.toString(),
+            id: '1',
+          ),
+          snapshotUrl: evenData.imageUrl ?? '',
+          cameraLabel: 'Camera Tầng 1',
+          onViewDetail: () {
+            /* navigate */
+          },
+        );
+      }
     });
   }
 

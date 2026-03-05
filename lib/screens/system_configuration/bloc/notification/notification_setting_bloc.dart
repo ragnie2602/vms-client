@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_notication_repostory.dart';
 
@@ -27,9 +31,12 @@ class NotificationBloc
         (failure) {
           emit(NotificationSettingLoadFailed(message: failure.toString()));
         },
-        (notificationSetting) {
-          emit(
-            NotificationSettingLoaded(notificationSetting: notificationSetting),
+        (notificationSetting) async {
+          //save notification setting
+          final jsonString = json.encode(notificationSetting.toJson());
+          await AppData.instance.save<String>(
+            AppKeys.SP_NOTIFICATION_SETTING,
+            jsonString,
           );
         },
       );
