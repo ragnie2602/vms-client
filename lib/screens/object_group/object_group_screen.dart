@@ -558,7 +558,6 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                             tree: fullTree,
                           );
                         },
-                        
                       );
                     },
                   ),
