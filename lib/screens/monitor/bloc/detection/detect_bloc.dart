@@ -9,16 +9,25 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_alert_entity.dart';
+import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
+import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
+import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
+import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/home/widgets/alert_detail_popup.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
-import 'package:vms_flutter_client/screens/shared/app_message_dialog.dart';
+
+import 'package:vms_flutter_client/screens/shared/player/audio_player.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 class DetectBloc extends Bloc<DetectEvent, DetectState> {
   final IDetectRepository detectRepository;
   StreamSubscription? _subscription;
   bool _isDialogShowing = false;
+  AudioPlayer audioPlayer = AudioPlayer();
 
   DetectBloc(this.detectRepository) : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
@@ -31,6 +40,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
   @override
   Future<void> close() {
     _subscription?.cancel();
+    audioPlayer.dispose();
     return super.close();
   }
 
@@ -66,33 +76,94 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     _subscription?.cancel();
     _subscription = detectRepository.receiveEventStream.listen((event) {
       add(DetectOnReceiveEvent(event));
-      final context = AppRouter.rootNavigatorKey.currentContext;
-      if (context != null) {
-        
-        // Đóng dialog cũ trước khi hiện dialog mới
-        if (_isDialogShowing) {
-          Navigator.of(context, rootNavigator: true).pop();
-        }
-        _isDialogShowing = true;
-        final eventName = event.eventType ?? 'Không rõ';
-        final evenData= event.eventDataEntity;
-        AlertDetailPopup.show(
-          context,
-          alert: NotificationAlertEntity(
-            cameraName: 'Camera Tầng 1',
-            cameraGroupName: 'Camera Tầng 1',
-            categoryLabel: 'Cảnh báo sự kiện mới',
-            message: 'Phát hiện sự kiện: $eventName',
-            alertType: AlertType.fire,
-            time: DateTime.now().millisecondsSinceEpoch.toString(),
-            id: '1',
-          ),
-          snapshotUrl: evenData.imageUrl ?? '',
-          cameraLabel: 'Camera Tầng 1',
-          onViewDetail: () {
-            /* navigate */
-          },
+      final rootContext = AppRouter.rootNavigatorKey.currentContext;
+      final homeContext = AppRouter.homeNavigatorKey.currentContext;
+      if (rootContext != null) {
+        // Đọc cấu hình thông báo từ SharedPreferences
+        bool popupEnabled = true; // mặc định bật nếu chưa có cấu hình
+        bool soundEnabled = true;
+        final notificationSettingJson = AppData.instance.read<String>(
+          AppKeys.SP_NOTIFICATION_SETTING,
         );
+        if (notificationSettingJson != null) {
+          final notificationSetting = NotificationSettingEntity.fromJson(
+            json.decode(notificationSettingJson),
+          );
+          // Tìm eventConfig tương ứng với eventType nhận được
+          final eventConfig = notificationSetting.eventConfigs?.firstWhere(
+            (config) => config.eventType == event.eventType,
+            orElse: () =>
+                EventConfigEntity(popupEnabled: true, soundEnabled: true),
+          );
+          popupEnabled = eventConfig?.popupEnabled ?? true;
+          soundEnabled = eventConfig?.soundEnabled ?? true;
+        }
+
+        // Nếu cả 2 đều tắt thì bỏ qua
+        if (!popupEnabled && !soundEnabled) return;
+
+        // Play âm thanh nếu soundEnabled == true
+        if (soundEnabled &&
+            homeContext != null &&
+            homeContext.read<AlarmSoundBloc>().state is AlarmSoundLoaded) {
+          final alarmSounds =
+              (homeContext.read<AlarmSoundBloc>().state as AlarmSoundLoaded)
+                  .alarmSounds;
+          if (alarmSounds.isNotEmpty) {
+            final alarmSound = alarmSounds.firstWhere(
+              (element) => element.id == event.eventDataEntity.audio,
+              orElse: () => alarmSounds.first,
+            );
+            audioPlayer.play(alarmSound.localFilePath ?? alarmSound.url);
+          }
+        }
+
+        // Show popup nếu popupEnabled == true
+        if (popupEnabled) {
+          // Đóng dialog cũ trước khi hiện dialog mới
+          if (_isDialogShowing) {
+            Navigator.of(rootContext, rootNavigator: true).pop();
+          }
+          _isDialogShowing = true;
+          final eventName = event.eventType ?? 'Không rõ';
+          final evenData = event.eventDataEntity;
+          AlertDetailPopup.show(
+            rootContext,
+            alert: NotificationAlertEntity(
+              cameraName: 'Camera Tầng 1',
+              cameraGroupName: 'Camera Tầng 1',
+              categoryLabel: 'Cảnh báo sự kiện mới',
+              message: 'Phát hiện sự kiện: $eventName',
+              alertType: AlertType.fire,
+              time: event.eventDataEntity.captureTime ?? '',
+              id: '1',
+            ),
+            snapshotUrl: evenData.imageUrl ?? '',
+            cameraLabel: 'Camera Tầng 1',
+            onViewDetail: () {
+              if (homeContext == null) return;
+              showDialog(
+                context: rootContext,
+                builder: (c) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider.value(value: homeContext.read<EventBloc>()),
+                    BlocProvider.value(value: homeContext.read<HomeBloc>()),
+                    BlocProvider(
+                      create: (context) =>
+                          PlaybackBloc(context.read(), context.read()),
+                    ),
+                    BlocProvider.value(
+                      value: homeContext.read<StorageFolderBloc>(),
+                    ),
+                  ],
+                  child: EventDetailDialog(
+                    id: event.eventDataEntity.eventId ?? 0,
+                  ),
+                ),
+              );
+            },
+          );
+        }
       }
     });
   }

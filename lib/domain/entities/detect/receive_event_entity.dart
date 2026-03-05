@@ -27,9 +27,10 @@ class EventDataEntity {
   final String? captureTime;
   final String? imageUrl;
   final int? eventId;
+  final int? audio;
   final List<ConfigEventDataEntity>? configData;
 
-  EventDataEntity({this.captureTime, this.imageUrl, this.eventId, this.configData});
+  EventDataEntity({this.captureTime, this.imageUrl, this.eventId, this.audio, this.configData});
 
   factory EventDataEntity.fromJson(Map<String, dynamic> json) {
     return EventDataEntity(
