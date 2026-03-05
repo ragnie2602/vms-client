@@ -21,6 +21,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dar
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/alarm_sound/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
@@ -45,6 +46,7 @@ import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/osd/osd_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
 
@@ -171,11 +173,16 @@ class DependencyInjection {
       create: (context) => SearchEventUseCase(context.read<IEventRepository>()),
     ),
     Provider<FetchConfigTableUsecase>(create: (context) => FetchConfigTableUsecase(context.read())),
+    Provider<SyncAlarmSoundsUseCase>(create: (context) => SyncAlarmSoundsUseCase(context.read())),
+    Provider<SyncAlarmSoundUseCase>(create: (context) => SyncAlarmSoundUseCase(context.read())),
 
     // Bloc
     Provider<OsdBloc>(create: (context) => OsdBloc(context.read(), context.read())),
     Provider<AppBloc>(
       create: (context) => AppBloc(context.read(), context.read(), context.read(), context.read()),
+    ),
+    Provider<AlarmSoundBloc>(
+      create: (context) => AlarmSoundBloc(context.read(), context.read(), context.read()),
     ),
 
     // Controller

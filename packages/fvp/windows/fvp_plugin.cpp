@@ -233,8 +233,9 @@ void FvpPlugin::HandleMethodCall(
 
     // Cấu hình player
     player->setProperty("rtsp_transport", "tcp");
-    player->setProperty("avformat.probesize", "65536");
-    player->setProperty("avformat.analyzeduration", "100000");
+    player->setProperty("avformat.probesize", "32768");
+    player->setProperty("avformat.analyzeduration", "50000");
+    player->setBufferRange(0, 1000); // Hạn chế đệm dữ liệu (vì chỉ lấy 1 frame)
     player->setDecoders(MediaType::Video, {"auto"});
     player->setProperty("videodecoder.threads", "1");
     player->onSync([] { return DBL_MAX; });
@@ -285,17 +286,27 @@ void FvpPlugin::HandleMethodCall(
 
     // 4. Luồng quản lý Timeout và dọn dẹp (Lifecycle Thread)
     std::thread([ctx, player, timeoutMs]() {
-        {
+        bool isTimeout = false;
+
+        { // Mở block phạm vi khóa
             std::unique_lock<std::mutex> lock(ctx->mtx);
+
             // Đợi cho đến khi finished hoặc hết thời gian
             ctx->cv.wait_for(lock, std::chrono::milliseconds(timeoutMs), [&] { return ctx->isFinished; });
 
+            // Kiểm tra trạng thái sau khi chờ
             if (!ctx->isFinished) {
-                clog << "[GetThumbnail] Timeout!" << endl;
-                ctx->sendOnce([](auto* res) {
-                    res->Error("TIMEOUT", "Get thumbnail timed out");
-                });
+                isTimeout = true; // Đánh dấu là timeout nhưng KHÔNG gọi sendOnce vội
             }
+        } // Đóng block -> mtx tự động ĐƯỢC MỞ KHÓA (UNLOCK) tại dòng này!
+
+        // Thực hiện gửi kết quả sau khi đã nhả mutex để đảm bảo an toàn
+        // Tránh Deadlock (Khóa chéo Mutex) --> Microsoft Visual C++ Runtime Library
+        if (isTimeout) {
+            clog << "[GetThumbnail] Timeout!" << endl;
+            ctx->sendOnce([](auto* res) {
+                res->Error("TIMEOUT", "Get thumbnail timed out");
+            });
         }
 
         // Đảm bảo player dừng hẳn trước khi luồng này kết thúc
