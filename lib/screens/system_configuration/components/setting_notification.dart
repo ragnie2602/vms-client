@@ -449,9 +449,8 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
   }
 
   void _onCancel() {
-    _intervalController.clear();
-    setState(() => _selectedUnit = 'Giây');
-    
+    // Reset lại tất cả giá trị về trạng thái đã lưu gần nhất trong SharedPreferences
+    _loadConfigFromLocal();
   }
 }
 
