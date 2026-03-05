@@ -273,8 +273,9 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                           );
                         },
                         actionBuilder: (node) {
-                          if (node.data?.id == 0)
+                          if (node.data?.id == 0) {
                             return const SizedBox.shrink();
+                          }
                           return Theme(
                             data: Theme.of(context).copyWith(
                               splashColor: Colors.transparent,
@@ -299,6 +300,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                               surfaceTintColor: Colors.transparent,
                               color: Colors.white,
                               onSelected: (action) {
+                                context.read<ObjectGroupBloc>().add(
+                                  SelectSubjectGroup(node.data),
+                                );
+
                                 switch (action) {
                                   case GroupObjectAction.add:
                                     _onShowDialogAddGroupObject(
@@ -326,7 +331,9 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                     _onShowDialogRemoveGroupObject(
                                       c: context,
                                       currentGroup: node.data,
-                                      hasChildren: node.children.isNotEmpty,
+                                      hasChildren:
+                                          node.children.isNotEmpty ||
+                                          state.objects.isNotEmpty,
                                     );
                                     break;
                                 }

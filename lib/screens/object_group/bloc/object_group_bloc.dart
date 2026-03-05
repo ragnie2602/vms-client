@@ -156,6 +156,13 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
           filteredSubjectGroupTree: tree,
           treeKey: DateTime.now().millisecondsSinceEpoch.toString(),
           searchQuery: '',
+          selectedSubjectGroup:
+              state.selectedSubjectGroup ??
+              const SubjectGroup(
+                id: 0,
+                name: 'Danh sách đối tượng',
+                parentId: 0,
+              ),
         ),
       );
     } catch (e) {

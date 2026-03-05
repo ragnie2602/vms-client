@@ -6,6 +6,7 @@ class SubjectGroup extends Equatable {
   final int? id;
   final String? name;
   final int? parentId;
+  final int? level;
   final String? createdAt;
   final String? updatedAt;
 
@@ -13,6 +14,7 @@ class SubjectGroup extends Equatable {
     this.id,
     this.name,
     this.parentId,
+    this.level,
     this.createdAt,
     this.updatedAt,
   });
@@ -22,6 +24,7 @@ class SubjectGroup extends Equatable {
       id: json['id'] as int,
       name: json['name'] as String? ?? '',
       parentId: json['parentId'] as int? ?? 0,
+      level: json['level'] as int?,
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
     );
@@ -32,13 +35,14 @@ class SubjectGroup extends Equatable {
       'id': id,
       'name': name,
       'parentId': parentId,
+      'level': level,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
   }
 
   @override
-  List<Object?> get props => [id, name, parentId, createdAt, updatedAt];
+  List<Object?> get props => [id, name, parentId, level, createdAt, updatedAt];
 }
 
 extension TreeObjectGroupExtension on TreeNode<SubjectGroup> {
