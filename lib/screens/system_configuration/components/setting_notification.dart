@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
@@ -9,6 +10,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/widgets/alarm_config_popup/alarm_config_popup.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/notification/notification_setting_bloc.dart';
 
 class SettingNotificationView extends StatefulWidget {
   const SettingNotificationView({super.key});
@@ -24,6 +26,7 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
 
   // Notification config data - loaded from SharedPreferences
   List<_NotificationConfigItem> _configItems = [];
+  int? _notificationSettingId;
 
   @override
   void initState() {
@@ -46,6 +49,7 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
       notificationSetting = NotificationSettingEntity.fromJson(
         json.decode(notificationSettingJson),
       );
+      _notificationSettingId = notificationSetting.id;
       // Cập nhật giá trị interval từ cấu hình đã lưu
       if (notificationSetting.cooldownValue != null) {
         _intervalController.text = notificationSetting.cooldownValue.toString();
@@ -73,6 +77,7 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
           );
 
           return _NotificationConfigItem(
+            id: eventConfig?.id,
             label: typeEvent.name ?? typeEvent.typeName ?? '',
             typeName: typeEvent.typeName,
             autoPopup: eventConfig?.popupEnabled ?? false,
@@ -432,6 +437,15 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
       _intervalController.text = '10';
       setState(() => _selectedUnit = 'Giây');
     }
+    final notificationSetting = NotificationSettingEntity(
+      id: _notificationSettingId,
+      cooldownUnit: _selectedUnit,
+      cooldownValue: int.parse(_intervalController.text),
+      eventConfigs: _configItems.map((e) => e.toEntity()).toList(),
+    );
+    context.read<NotificationBloc>().add(
+      UpdateNotificationSettingEvent(notificationSetting: notificationSetting),
+    );
   }
 
   void _onCancel() {
@@ -446,11 +460,22 @@ class _NotificationConfigItem {
   final String? typeName;
   bool autoPopup;
   bool sound;
+  final int? id;
 
   _NotificationConfigItem({
     required this.label,
     this.typeName,
     required this.autoPopup,
     required this.sound,
+    this.id,
   });
+
+  EventConfigEntity toEntity() {
+    return EventConfigEntity(
+      id: id,
+      eventType: typeName,
+      popupEnabled: autoPopup,
+      soundEnabled: sound,
+    );
+  }
 }
