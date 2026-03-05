@@ -4,44 +4,66 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
-class EventLiveViewItem extends StatelessWidget {
+class EventLiveViewItem extends StatefulWidget {
   const EventLiveViewItem({super.key, required this.event});
   final ReceiveEventEntity event;
 
   @override
+  State<EventLiveViewItem> createState() => _EventLiveViewItemState();
+}
+
+class _EventLiveViewItemState extends State<EventLiveViewItem> {
+  SetupEventDisplayBloc? _sedBloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    try {
+      _sedBloc = context.read<SetupEventDisplayBloc>();
+      final eventData = widget.event.eventData ?? {};
+      final subjectTypeId = eventData['subjectTypeId'];
+
+      _sedBloc?.add(
+        GetEventDisplayConfig(
+          widget.event.eventType ?? '',
+          2,
+          subjectTypeId: subjectTypeId is int ? subjectTypeId : null,
+        ),
+      );
+    } catch (e) {
+      debugPrint('SetupEventDisplayBloc not found in context: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final eventData = event.eventDataEntity;
-    final configData = eventData.configData ?? [];
+    final eventData = widget.event.eventData ?? {};
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          // check ko có eventId -> không mở được detail
-          if (eventData.eventId == null) {
-            return;
-          } else {
-            // open detail qua eventId
+          if (eventData['eventId'] != null) {
             showDialog(
               context: context,
               builder: (c) => MultiBlocProvider(
                 providers: [
                   BlocProvider.value(value: context.read<EventBloc>()),
                   BlocProvider.value(value: context.read<HomeBloc>()),
-                  BlocProvider(
-                    create: (context) =>
-                        PlaybackBloc(context.read(), context.read()),
-                  ),
+                  BlocProvider(create: (context) => PlaybackBloc(context.read(), context.read())),
                   BlocProvider.value(value: context.read<StorageFolderBloc>()),
                 ],
-                child: EventDetailDialog(id: eventData.eventId ?? 0),
+                child: EventDetailDialog(id: eventData['eventId'] ?? 0),
               ),
             );
           }
@@ -51,7 +73,6 @@ class EventLiveViewItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Ảnh bên trái
               Container(
                 width: 71,
                 height: 71,
@@ -62,78 +83,134 @@ class EventLiveViewItem extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: CachedNetworkImage(
-                    imageUrl: eventData.imageUrl ?? '',
+                    imageUrl: eventData['imageUrl'] ?? '',
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    placeholder: (context, url) =>
+                        Center(child: CircularProgressIndicator(strokeWidth: 2)),
                     errorWidget: (context, url, error) => Container(
                       color: AppColors.greyDFDFDF,
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: AppColors.grey4B5563,
-                        size: 40,
-                      ),
+                      child: Icon(Icons.image_not_supported, color: AppColors.grey4B5563, size: 40),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              // Thông tin bên phải
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Phần tử đầu tiên của configData - chỉ hiển thị data (tiêu đề)
-                    if (configData.isNotEmpty)
-                      Padding(
-                        padding: EdgeInsets.only(top: 3),
-                        child: Text(
-                          configData[0].data ?? '_',
-                          style: AppTypography.style(
-                            12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.black,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    const SizedBox(height: 5),
-                    // Các phần tử tiếp theo - hiển thị icon + data
-                    ...configData.skip(1).map((config) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Row(
-                          children: [
-                            if (config.icon != null && config.icon!.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: _buildIcon(config.icon!),
-                              ),
-                            Expanded(
-                              child: Text(
-                                config.data ?? '_',
-                                style: AppTypography.style(
-                                  12,
-                                  color: AppColors.grey4B5563,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
+                child: _sedBloc != null
+                    ? BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+                        bloc: _sedBloc,
+                        buildWhen: (previous, current) =>
+                            current is SEDGetEventDisplayConfigSuccess ||
+                            current is SEDSavingConfigsSuccess,
+                        builder: (context, state) {
+                          final subjectTypeId = eventData['subjectTypeId'];
+                          final config =
+                              _sedBloc!.configs[(
+                                widget.event.eventType ?? '',
+                                subjectTypeId is int ? subjectTypeId : null,
+                              )];
+
+                          if (config == null) {
+                            return _buildFallbackContent(eventData);
+                          }
+
+                          return _buildConfiguredContent(eventData, config);
+                        },
+                      )
+                    : _buildFallbackContent(eventData),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // View cũ dùng khi chưa có config hoặc không có Bloc
+  Widget _buildFallbackContent(Map<String, dynamic> eventData) {
+    if (eventData.isEmpty) return const SizedBox();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (eventData.values.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.only(top: 3),
+            child: Text(
+              eventData.values.first?.toString() ?? '_',
+              style: AppTypography.style(12, fontWeight: FontWeight.w600, color: AppColors.black),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        const SizedBox(height: 5),
+        ...eventData.entries
+            .skip(1)
+            .map(
+              (e) => Text(
+                e.value.toString(),
+                style: AppTypography.style(
+                  12,
+                  color: AppColors.grey4B5563,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+      ],
+    );
+  }
+
+  Widget _buildConfiguredContent(Map<String, dynamic> eventData, EventDisplayConfig c) {
+    if (c.sorting.isEmpty || c.fields.isEmpty) return const SizedBox();
+
+    final titleKey = c.sorting.first;
+    final sortedFields = c.sortedFields();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title (item đầu tiên trong sorting)
+        Padding(
+          padding: EdgeInsets.only(top: 3),
+          child: Text(
+            eventData[titleKey]?.toString() ?? '_',
+            style: AppTypography.style(12, fontWeight: FontWeight.w600, color: AppColors.black),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(height: 5),
+        // Các field còn lại (từ index 1 trở đi)
+        ...sortedFields.sublist(1).map((f) {
+          final value = eventData[f.fieldKey]?.toString() ?? '';
+          if (value.isEmpty) return const SizedBox.shrink();
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (f.icon != null && f.icon!.isNotEmpty) ...[
+                  _buildIcon(f.icon!),
+                  const SizedBox(width: 4),
+                ],
+                Expanded(
+                  child: Text(
+                    value,
+                    style: AppTypography.style(
+                      12,
+                      color: AppColors.grey4B5563,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 
@@ -143,30 +220,20 @@ class EventLiveViewItem extends StatelessWidget {
     if (isSvg) {
       return SvgPicture.network(
         iconUrl,
-        width: 18,
-        height: 18,
+        width: 14, // Giảm size chút cho phù hợp live view (cũ là 18)
+        height: 14,
         colorFilter: ColorFilter.mode(AppColors.grey4B5563, BlendMode.srcIn),
-        placeholderBuilder: (context) => SizedBox(
-          width: 18,
-          height: 18,
-          child: Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 1,
-              color: AppColors.grey4B5563,
-            ),
-          ),
-        ),
+        placeholderBuilder: (context) => SizedBox(width: 14, height: 14),
       );
     }
 
-    // nếu là ảnh thường
     return Image.network(
       iconUrl,
-      width: 18,
-      height: 18,
+      width: 14,
+      height: 14,
       color: AppColors.grey4B5563,
       errorBuilder: (context, error, stackTrace) {
-        return Icon(Icons.broken_image, color: AppColors.grey4B5563, size: 18);
+        return SizedBox(width: 14, height: 14); // Ẩn icon lỗi thay vì hiện broken image to
       },
     );
   }

@@ -65,7 +65,11 @@ class DetectService {
           return event['packetType'] == PacketType.receiveEvent.value;
         })
         .map((event) {
-          return pb.ReceiveEvent.fromBuffer(event['data'] as List<int>).toDomain();
+          final res = pb.ReceiveEvent.fromBuffer(event['data'] as List<int>).toDomain();
+
+          print(res.eventData);
+
+          return res;
         });
   }
 }
