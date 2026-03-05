@@ -119,7 +119,7 @@ class DependencyInjection {
     ),
 
     Provider<LoginUseCase>(
-      create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>()),
+      create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>(), detectRepository: context.read<IDetectRepository>()),
     ),
 
     Provider<RegisterUseCase>(

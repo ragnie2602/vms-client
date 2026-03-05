@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
+import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 
@@ -19,4 +20,6 @@ abstract class IDetectRepository {
     required String eventTypeName,
   });
   Stream<ReceiveEventEntity> get receiveEventStream;
+  // danh sách cấu hình thông báo
+  Future<Either<Failure, NotificationSettingEntity>> getNotificationSetting();
 }

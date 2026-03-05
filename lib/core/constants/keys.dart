@@ -8,4 +8,5 @@ class AppKeys {
   static const String SP_SERVER_KEY = "server";
 
   static const String SP_ACCESS_TOKEN = "accessToken";
+  static const String SP_NOTIFICATION_SETTING = "notificationSetting";
 }

@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.3.pb.dart'
     as pb;
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
+import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 
@@ -79,4 +80,13 @@ class DetectService {
           ).toDomain();
         });
   }
+   Future<NotificationSettingEntity> getNotificationSetting() async {
+    final raw = await httpClient.get(EndPoints.notificationSetting);
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+    return NotificationSettingEntity.fromJson(response.data);
+  }
 }
+
