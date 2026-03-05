@@ -2,12 +2,12 @@ import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 
@@ -38,9 +38,23 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     on<CreateSubjectGroup>(_onCreateSubjectGroup);
     on<UpdateSubjectGroup>(_onUpdateSubjectGroup);
     on<DeleteSubjectGroup>(_onDeleteSubjectGroup);
-    on<SearchSubjectGroup>(_onSearchSubjectGroup);
-    // select subject group trong cây => load lại dữ liệu đối tượng
     on<SelectSubjectGroup>(_onSelectSubjectGroup);
+    on<SearchSubjectGroup>(_onSearchSubjectGroup);
+  }
+
+  Future<void> _onSelectSubjectGroup(
+    SelectSubjectGroup event,
+    Emitter<ObjectGroupState> emit,
+  ) async {
+    emit(state.copyWith(selectedSubjectGroup: event.subjectGroup));
+    final selectedType = state.selectedObjectType;
+    if (selectedType == null) return;
+    add(
+      LoadObjects(
+        objectTypeId: selectedType.id,
+        subjectGroupId: event.subjectGroup?.id ?? 0,
+      ),
+    );
   }
 
   Future<void> _onLoadObjectGroups(
@@ -158,11 +172,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
           searchQuery: '',
           selectedSubjectGroup:
               state.selectedSubjectGroup ??
-              const SubjectGroup(
-                id: 0,
-                name: 'Danh sách đối tượng',
-                parentId: 0,
-              ),
+              SubjectGroup(id: 0, name: 'Danh sách đối tượng', parentId: 0),
         ),
       );
     } catch (e) {
@@ -226,11 +236,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     root.add(
       TreeNode<SubjectGroup>(
         key: 'all_node',
-        data: const SubjectGroup(
-          id: 0,
-          name: 'Danh sách đối tượng',
-          parentId: 0,
-        ),
+        data: SubjectGroup(id: 0, name: 'Danh sách đối tượng', parentId: 0),
       ),
     );
 
@@ -286,29 +292,29 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     }
   }
 
-  void _onSelectSubjectGroup(
-    SelectSubjectGroup event,
-    Emitter<ObjectGroupState> emit,
-  ) {
-    emit(
-      state.copyWith(
-        selectedSubjectGroup: event.subjectGroup,
-        clearSelectedSubjectGroup: event.subjectGroup == null,
-        currentObjectsPage: 1,
-        objects: [],
-      ),
-    );
-    if (state.selectedObjectType != null) {
-      add(
-        LoadObjects(
-          objectTypeId: state.selectedObjectType!.id,
-          page: 1,
-          subjectGroupId: event.subjectGroup?.id ?? 0,
-          size: 20,
-        ),
-      );
-    }
-  }
+  // void _onSelectSubjectGroup(
+  //   SelectSubjectGroup event,
+  //   Emitter<ObjectGroupState> emit,
+  // ) {
+  //   emit(
+  //     state.copyWith(
+  //       selectedSubjectGroup: event.subjectGroup,
+  //       clearSelectedSubjectGroup: event.subjectGroup == null,
+  //       currentObjectsPage: 1,
+  //       objects: [],
+  //     ),
+  //   );
+  //   if (state.selectedObjectType != null) {
+  //     add(
+  //       LoadObjects(
+  //         objectTypeId: state.selectedObjectType!.id,
+  //         page: 1,
+  //         subjectGroupId: event.subjectGroup?.id ?? 0,
+  //         size: 20,
+  //       ),
+  //     );
+  //   }
+  // }
 
   void _onSearchSubjectGroup(
     SearchSubjectGroup event,

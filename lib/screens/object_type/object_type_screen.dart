@@ -203,13 +203,19 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
                     Expanded(child: _buildContent()),
                     // Pagination
                     if (_totalPages > 1)
-                      TablePaginator(
-                        _totalPages,
-                        _currentPage - 1, // TablePaginator is 0-indexed
-                        (pageIndex) {
-                          setState(() => _currentPage = pageIndex + 1);
-                          _loadData();
-                        },
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: SizedBox(
+                          height: 48,
+                          child: TablePaginator(
+                            _totalPages,
+                            _currentPage - 1, // TablePaginator is 0-indexed
+                            (pageIndex) {
+                              setState(() => _currentPage = pageIndex + 1);
+                              _loadData();
+                            },
+                          ),
+                        ),
                       ),
                   ],
                 ),

@@ -34,7 +34,12 @@ class SelectObjectType extends ObjectGroupEvent {
   final int page;
   final int size;
   final int subjectGroupId;
-  const SelectObjectType(this.objectType, {this.page = 1, this.size = 20, this.subjectGroupId = 0});
+  const SelectObjectType(
+    this.objectType, {
+    this.page = 1,
+    this.size = 20,
+    this.subjectGroupId = 0,
+  });
 
   @override
   List<Object> get props => [objectType, page, size];
@@ -62,6 +67,7 @@ class LoadObjects extends ObjectGroupEvent {
 class LoadSubjectGroups extends ObjectGroupEvent {
   const LoadSubjectGroups();
 }
+
 
 class CreateSubjectGroup extends ObjectGroupEvent {
   final String name;

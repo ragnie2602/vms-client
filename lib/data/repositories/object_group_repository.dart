@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/datasources/subject_group_service.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
@@ -95,6 +99,7 @@ class ObjectGroupRepository extends BaseRepository
     int objectTypeId,
     Map<String, dynamic> fieldValues, {
     List<int>? subjectGroupIds,
+    List<int>? fileIds,
   }) async {
     final data = <String, dynamic>{
       'objectTypeId': objectTypeId,
@@ -102,6 +107,9 @@ class ObjectGroupRepository extends BaseRepository
     };
     if (subjectGroupIds != null && subjectGroupIds.isNotEmpty) {
       data['subjectGroupIds'] = subjectGroupIds;
+    }
+    if (fileIds != null && fileIds.isNotEmpty) {
+      data['fileIds'] = fileIds;
     }
     final response = await _apiClient.post(
       url: '${EndPoints.baseUrl}/api/objects',
@@ -135,6 +143,7 @@ class ObjectGroupRepository extends BaseRepository
     int objectTypeId,
     Map<String, dynamic> fieldValues, {
     List<int>? subjectGroupIds,
+    List<int>? fileIds,
   }) async {
     final data = <String, dynamic>{
       'objectTypeId': objectTypeId,
@@ -142,6 +151,9 @@ class ObjectGroupRepository extends BaseRepository
     };
     if (subjectGroupIds != null && subjectGroupIds.isNotEmpty) {
       data['subjectGroupIds'] = subjectGroupIds;
+    }
+    if (fileIds != null && fileIds.isNotEmpty) {
+      data['fileIds'] = fileIds;
     }
     final response = await _apiClient.put(
       url: '${EndPoints.baseUrl}/api/objects/$objectId',
@@ -178,13 +190,26 @@ class ObjectGroupRepository extends BaseRepository
       '${EndPoints.baseUrl}${EndPoints.baseSubjectGroup}',
     );
 
-    // API returns raw JSON array directly (not wrapped in {code, data})
+    // Handle both response formats:
+    // 1. Raw JSON array: [{ ... }, { ... }]
+    // 2. Wrapped response: { code: 200, data: [{ ... }] }
+    List<dynamic> items;
     if (response is List) {
-      return response
-          .map((item) => SubjectGroup.fromJson(item as Map<String, dynamic>))
-          .toList();
+      items = response;
+    } else if (response is Map<String, dynamic>) {
+      final data = response['data'];
+      if (data is List) {
+        items = data;
+      } else {
+        items = [];
+      }
+    } else {
+      throw Exception('Failed to load subject groups');
     }
-    throw Exception('Failed to load subject groups');
+
+    return items
+        .map((item) => SubjectGroup.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   @override
@@ -216,10 +241,101 @@ class ObjectGroupRepository extends BaseRepository
   }
 
   @override
-  Future<Either<Failure, int>> deleteSubjectGroup({required int objectGroupId}) async {
+  Future<Either<Failure, int>> deleteSubjectGroup({
+    required int objectGroupId,
+  }) async {
     return await catchError<int>(() async {
-      await _subjectGroupService.deleteSubjectGroup(subjectGroupId: objectGroupId);
+      await _subjectGroupService.deleteSubjectGroup(
+        subjectGroupId: objectGroupId,
+      );
       return Right(objectGroupId);
     });
+  }
+
+  @override
+  Future<String> downloadTemplate(int objectTypeId) async {
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final tempDir = await Directory.systemTemp.createTemp('template_');
+    final savePath = '${tempDir.path}/template_$objectTypeId.xlsx';
+
+    await _apiClient.dio.download(
+      '${EndPoints.baseUrl}/api/objects/template',
+      savePath,
+      queryParameters: {'objectTypeId': objectTypeId},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return savePath;
+  }
+
+  @override
+  Future<int> importObjects(
+    int objectTypeId,
+    String filePath,
+    List<int> subjectGroupIds,
+  ) async {
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final queryParams = <String, dynamic>{'objectTypeId': objectTypeId};
+    if (subjectGroupIds.isNotEmpty) {
+      queryParams['subjectGroupIds'] = subjectGroupIds;
+    }
+
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(filePath),
+    });
+
+    final response = await _apiClient.dio.post(
+      '${EndPoints.baseUrl}/api/objects/import',
+      data: formData,
+      queryParameters: queryParams,
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'multipart/form-data',
+        },
+      ),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return data['importId'] ?? data['id'] ?? 0;
+      }
+      return 0;
+    }
+    throw Exception('Failed to import objects');
+  }
+
+  @override
+  Future<Map<String, dynamic>> getImportStatus(int importId) async {
+    final response = await _apiClient.get(
+      '${EndPoints.baseUrl}/api/objects/import/status/$importId',
+    );
+
+    if (response != null && response is Map<String, dynamic>) {
+      return response;
+    }
+    throw Exception('Failed to get import status');
+  }
+
+  @override
+  Future<String> exportObjects(int objectTypeId, {int? subjectGroupId}) async {
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final tempDir = await Directory.systemTemp.createTemp('export_');
+    final savePath = '${tempDir.path}/export_$objectTypeId.xlsx';
+
+    final queryParams = <String, dynamic>{'objectTypeId': objectTypeId};
+    if (subjectGroupId != null && subjectGroupId > 0) {
+      queryParams['subjectGroupId'] = subjectGroupId;
+    }
+
+    await _apiClient.dio.download(
+      '${EndPoints.baseUrl}/api/objects/export',
+      savePath,
+      queryParameters: queryParams,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return savePath;
   }
 }

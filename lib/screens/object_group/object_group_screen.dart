@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:animated_tree_view/animated_tree_view.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -13,11 +17,12 @@ import 'package:vms_flutter_client/screens/event/components/event_custom_button.
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/add_edit_group_object_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/add_object_dialog.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/confirm_remove_group_widget.dart';
-import 'package:vms_flutter_client/screens/object_group/widgets/add_edit_group_object_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_action.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
+import 'package:vms_flutter_client/screens/object_group/widgets/import_progress_dialog.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/object_list_table.dart';
 
 class ObjectGroupScreen extends StatefulWidget {
@@ -52,18 +57,193 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
   }
 
   void _onSearch() {
-    final state = context.read<ObjectGroupBloc>().state;
+    final bloc = context.read<ObjectGroupBloc>();
+    final state = bloc.state;
     final selectedType = state.selectedObjectType;
     if (selectedType == null) return;
 
     final searchText = _searchController.text.trim();
-    context.read<ObjectGroupBloc>().add(
+    bloc.add(
       LoadObjects(
         objectTypeId: selectedType.id,
         subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
         search: searchText.isNotEmpty ? searchText : null,
       ),
     );
+  }
+
+  // === Template download ===
+  Future<void> _onDownloadTemplate(BuildContext context) async {
+    final state = context.read<ObjectGroupBloc>().state;
+    final selectedType = state.selectedObjectType;
+    if (selectedType == null) {
+      ToastUtil.toastFail(
+        context: context,
+        title: const Text('Vui lòng chọn loại đối tượng'),
+      );
+      return;
+    }
+
+    try {
+      ToastUtil.toastSuccess(
+        context: context,
+        title: const Text('Đang tải file mẫu...'),
+      );
+      final repo = context.read<IObjectGroupRepository>();
+      final tempPath = await repo.downloadTemplate(selectedType.id);
+
+      // Copy to Downloads or let user choose save location
+      final downloadsDir =
+          await getDownloadsDirectory() ??
+          await getApplicationDocumentsDirectory();
+      final fileName = 'template_${selectedType.name}.xlsx';
+      final savePath = '${downloadsDir.path}/$fileName';
+
+      await File(tempPath).copy(savePath);
+      await File(tempPath).delete();
+
+      if (context.mounted) {
+        ToastUtil.toastSuccess(
+          context: context,
+          title: Text('Đã tải file mẫu: $fileName'),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: Text('Tải file mẫu thất bại: $e'),
+        );
+      }
+    }
+  }
+
+  // === Import data ===
+  Future<void> _onImportData(BuildContext context) async {
+    final state = context.read<ObjectGroupBloc>().state;
+    final selectedType = state.selectedObjectType;
+    if (selectedType == null) {
+      ToastUtil.toastFail(
+        context: context,
+        title: const Text('Vui lòng chọn loại đối tượng'),
+      );
+      return;
+    }
+
+    // Pick file
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      allowMultiple: false,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+    final filePath = result.files.first.path;
+    if (filePath == null) return;
+
+    try {
+      final repo = context.read<IObjectGroupRepository>();
+      final subjectGroupId = state.selectedSubjectGroup?.id ?? 0;
+      final subjectGroupIds = subjectGroupId > 0 ? [subjectGroupId] : <int>[];
+
+      // Upload file and get import ID
+      final importId = await repo.importObjects(
+        selectedType.id,
+        filePath,
+        subjectGroupIds,
+      );
+
+      if (!context.mounted) return;
+
+      if (importId > 0) {
+        // Show progress dialog with polling
+        final success = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) =>
+              ImportProgressDialog(repository: repo, importId: importId),
+        );
+
+        // Refresh objects list if import succeeded
+        if (success == true && context.mounted) {
+          context.read<ObjectGroupBloc>().add(
+            LoadObjects(
+              objectTypeId: selectedType.id,
+              subjectGroupId: subjectGroupId,
+            ),
+          );
+        }
+      } else {
+        // No importId returned — import may have completed immediately
+        ToastUtil.toastSuccess(
+          context: context,
+          title: const Text('Import dữ liệu thành công'),
+        );
+        context.read<ObjectGroupBloc>().add(
+          LoadObjects(
+            objectTypeId: selectedType.id,
+            subjectGroupId: subjectGroupId,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: Text('Import thất bại: $e'),
+        );
+      }
+    }
+  }
+
+  // === Export data ===
+  Future<void> _onExportData(BuildContext context) async {
+    final state = context.read<ObjectGroupBloc>().state;
+    final selectedType = state.selectedObjectType;
+    if (selectedType == null) {
+      ToastUtil.toastFail(
+        context: context,
+        title: const Text('Vui lòng chọn loại đối tượng'),
+      );
+      return;
+    }
+
+    try {
+      ToastUtil.toastSuccess(
+        context: context,
+        title: const Text('Đang xuất file...'),
+      );
+      final repo = context.read<IObjectGroupRepository>();
+      final subjectGroupId = state.selectedSubjectGroup?.id ?? 0;
+      final tempPath = await repo.exportObjects(
+        selectedType.id,
+        subjectGroupId: subjectGroupId > 0 ? subjectGroupId : null,
+      );
+
+      // Copy to Downloads
+      final downloadsDir =
+          await getDownloadsDirectory() ??
+          await getApplicationDocumentsDirectory();
+      final fileName =
+          'export_${selectedType.name}_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+      final savePath = '${downloadsDir.path}/$fileName';
+
+      await File(tempPath).copy(savePath);
+      await File(tempPath).delete();
+
+      if (context.mounted) {
+        ToastUtil.toastSuccess(
+          context: context,
+          title: Text('Đã xuất file: $fileName'),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: Text('Xuất file thất bại: $e'),
+        );
+      }
+    }
   }
 
   // add group
@@ -385,6 +565,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                             tree: fullTree,
                           );
                         },
+                        
                       );
                     },
                   ),
@@ -582,7 +763,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 borderColor: AppColors.secondary,
                 borderRadius: 3,
                 label: 'Tải file mẫu',
-                onPressed: () {},
+                onPressed: () => _onDownloadTemplate(context),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 10,
@@ -608,7 +789,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 borderColor: AppColors.secondary,
                 borderRadius: 3,
                 label: 'Import dữ liệu',
-                onPressed: () {},
+                onPressed: () => _onImportData(context),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 10,
@@ -634,7 +815,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 borderColor: AppColors.secondary,
                 borderRadius: 3,
                 label: 'Xuất file',
-                onPressed: () {},
+                onPressed: () => _onExportData(context),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 10,

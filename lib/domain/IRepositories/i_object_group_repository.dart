@@ -18,6 +18,7 @@ abstract class IObjectGroupRepository {
     int objectTypeId,
     Map<String, dynamic> fieldValues, {
     List<int>? subjectGroupIds,
+    List<int>? fileIds,
   });
   Future<ObjectData> getObjectDetail(int objectId);
   Future<void> updateObject(
@@ -25,6 +26,7 @@ abstract class IObjectGroupRepository {
     int objectTypeId,
     Map<String, dynamic> fieldValues, {
     List<int>? subjectGroupIds,
+    List<int>? fileIds,
   });
   Future<void> deleteObject(int objectId);
   Future<List<SubjectGroup>> getSubjectGroups();
@@ -34,4 +36,20 @@ abstract class IObjectGroupRepository {
     required SubjectGroup request,
   });
   Future<Either<Failure, int>> deleteSubjectGroup({required int objectGroupId});
+
+  /// Download template file for an object type
+  Future<String> downloadTemplate(int objectTypeId);
+
+  /// Import objects from a file
+  Future<int> importObjects(
+    int objectTypeId,
+    String filePath,
+    List<int> subjectGroupIds,
+  );
+
+  /// Get import status by import ID
+  Future<Map<String, dynamic>> getImportStatus(int importId);
+
+  /// Export objects to a file
+  Future<String> exportObjects(int objectTypeId, {int? subjectGroupId});
 }

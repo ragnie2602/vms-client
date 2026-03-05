@@ -24,7 +24,7 @@ class SubjectGroup extends Equatable {
       id: json['id'] as int,
       name: json['name'] as String? ?? '',
       parentId: json['parentId'] as int? ?? 0,
-      level: json['level'] as int?,
+      level: json['level'] as int? ?? 0,
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
     );
@@ -35,6 +35,7 @@ class SubjectGroup extends Equatable {
       'id': id,
       'name': name,
       'parentId': parentId,
+      'level': level,
       'level': level,
       'createdAt': createdAt,
       'updatedAt': updatedAt,

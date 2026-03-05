@@ -663,7 +663,9 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         _buildLabel('Nhóm đối tượng'),
         const SizedBox(height: 8),
         _SubjectGroupMultiSelectDropdown(
-          groups: widget.subjectGroups,
+          groups: widget.subjectGroups
+              .where((g) => (g.level ?? 0) <= 3)
+              .toList(),
           selectedIds: _selectedSubjectGroupIds,
           onChanged: (ids) {
             setState(() {
@@ -678,7 +680,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   }
 }
 
-/// A custom multi-select dropdown with checkboxes for subject groups.
+/// A custom multi-select dropdown with checkboxes for subject groups,
+/// displayed as a tree hierarchy.
 class _SubjectGroupMultiSelectDropdown extends StatefulWidget {
   final List<SubjectGroup> groups;
   final Set<int> selectedIds;
@@ -700,6 +703,43 @@ class _SubjectGroupMultiSelectDropdownState
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
   bool _isOpen = false;
+  // Track collapsed parent nodes
+  final Set<int> _collapsedIds = {};
+
+  /// Build a sorted flat list from the tree hierarchy (DFS order)
+  List<SubjectGroup> _buildTreeOrderedList() {
+    // Build parent -> children map
+    final Map<int, List<SubjectGroup>> childrenMap = {};
+    final List<SubjectGroup> roots = [];
+
+    for (final group in widget.groups) {
+      if (group.parentId == null || group.parentId == 0) {
+        roots.add(group);
+      } else {
+        childrenMap.putIfAbsent(group.parentId!, () => []).add(group);
+      }
+    }
+
+    // DFS traversal
+    final List<SubjectGroup> ordered = [];
+    void dfs(SubjectGroup node) {
+      ordered.add(node);
+      if (_collapsedIds.contains(node.id)) return; // skip children if collapsed
+      final children = childrenMap[node.id] ?? [];
+      for (final child in children) {
+        dfs(child);
+      }
+    }
+
+    for (final root in roots) {
+      dfs(root);
+    }
+    return ordered;
+  }
+
+  bool _hasChildren(SubjectGroup group) {
+    return widget.groups.any((g) => g.parentId == group.id);
+  }
 
   void _toggleDropdown() {
     if (_isOpen) {
@@ -729,23 +769,28 @@ class _SubjectGroupMultiSelectDropdownState
                 color: Colors.white,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: 200,
+                    maxHeight: 280,
                     maxWidth: size.width,
                     minWidth: size.width,
                   ),
                   child: StatefulBuilder(
                     builder: (context, setOverlayState) {
+                      final orderedGroups = _buildTreeOrderedList();
                       return ListView.builder(
                         shrinkWrap: true,
                         padding: EdgeInsets.zero,
-                        itemCount: widget.groups.length,
+                        itemCount: orderedGroups.length,
                         itemBuilder: (context, index) {
-                          final group = widget.groups[index];
+                          final group = orderedGroups[index];
                           final groupId = group.id;
                           if (groupId == null) return const SizedBox.shrink();
                           final isSelected = widget.selectedIds.contains(
                             groupId,
                           );
+                          final level = group.level ?? 0;
+                          final hasChildren = _hasChildren(group);
+                          final isCollapsed = _collapsedIds.contains(groupId);
+
                           return InkWell(
                             onTap: () {
                               final newIds = Set<int>.from(widget.selectedIds);
@@ -758,12 +803,43 @@ class _SubjectGroupMultiSelectDropdownState
                               setOverlayState(() {});
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
+                              padding: EdgeInsets.only(
+                                left: 12.0 + level * 20.0,
+                                right: 12,
+                                top: 8,
+                                bottom: 8,
                               ),
                               child: Row(
                                 children: [
+                                  // Expand/collapse toggle for parents
+                                  if (hasChildren)
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (isCollapsed) {
+                                            _collapsedIds.remove(groupId);
+                                          } else {
+                                            _collapsedIds.add(groupId);
+                                          }
+                                        });
+                                        setOverlayState(() {});
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 4,
+                                        ),
+                                        child: Icon(
+                                          isCollapsed
+                                              ? Icons.arrow_right
+                                              : Icons.arrow_drop_down,
+                                          size: 18,
+                                          color: AppColors.grey64748B,
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    const SizedBox(width: 22),
+                                  // Checkbox
                                   SizedBox(
                                     width: 20,
                                     height: 20,
@@ -791,13 +867,17 @@ class _SubjectGroupMultiSelectDropdownState
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 8),
+                                  // Name
                                   Expanded(
                                     child: Text(
                                       group.name ?? '',
                                       style: AppTypography.style(
                                         14,
                                         color: AppColors.black,
+                                        fontWeight: level == 0
+                                            ? FontWeight.w600
+                                            : FontWeight.w400,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
