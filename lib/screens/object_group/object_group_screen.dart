@@ -30,20 +30,23 @@ class ObjectGroupScreen extends StatefulWidget {
 class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _groupSearchController = TextEditingController();
   TabController? _tabController;
 
   @override
   void initState() {
     super.initState();
-    context.read<ObjectGroupBloc>().add(
-      const LoadObjectGroups(page: 1, size: 20),
-    );
-    context.read<ObjectGroupBloc>().add(const LoadSubjectGroups());
+    final bloc = context.read<ObjectGroupBloc>();
+    _groupSearchController.text = bloc.state.searchQuery;
+
+    bloc.add(const LoadObjectGroups(page: 1, size: 20));
+    bloc.add(const LoadSubjectGroups());
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _groupSearchController.dispose();
     _tabController?.dispose();
     super.dispose();
   }
@@ -183,49 +186,78 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
             color: Colors.white,
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: SvgPicture.asset(AppAssets.icSearch),
-                      ),
-                      hintText: 'Nhập tên nhóm',
-                      hintStyle: AppTypography.style(
-                        14,
-                        color: AppColors.grey64748B,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: const BorderSide(
-                          color: AppColors.greyE2E8F0,
+                BlocListener<ObjectGroupBloc, ObjectGroupState>(
+                  listenWhen: (previous, current) =>
+                      previous.searchQuery != current.searchQuery,
+                  listener: (context, state) {
+                    if (_groupSearchController.text != state.searchQuery) {
+                      _groupSearchController.text = state.searchQuery;
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 20,
+                    ),
+                    child: TextField(
+                      controller: _groupSearchController,
+                      decoration: InputDecoration(
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SvgPicture.asset(AppAssets.icSearch),
+                        ),
+                        hintText: 'Nhập tên nhóm',
+                        hintStyle: AppTypography.style(
+                          14,
+                          color: AppColors.grey64748B,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: const BorderSide(
+                            color: AppColors.greyE2E8F0,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(4),
+                          borderSide: const BorderSide(
+                            color: AppColors.greyE2E8F0,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
                         ),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: const BorderSide(
-                          color: AppColors.greyE2E8F0,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
+                      onChanged: (value) {
+                        context.read<ObjectGroupBloc>().add(
+                          SearchSubjectGroup(query: value),
+                        );
+                      },
                     ),
                   ),
                 ),
                 Expanded(
                   child: BlocBuilder<ObjectGroupBloc, ObjectGroupState>(
                     buildWhen: (previous, current) =>
-                        previous.subjectGroups != current.subjectGroups,
+                        previous.treeKey != current.treeKey ||
+                        previous.filteredSubjectGroupTree !=
+                            current.filteredSubjectGroupTree,
                     builder: (context, state) {
-                      final tree =
+                      // Tree to display (filtered by bloc via SearchSubjectGroupUsecase)
+                      final displayTree =
+                          state.filteredSubjectGroupTree ??
                           state.subjectGroupTree ??
                           TreeNode<SubjectGroup>.root();
+
+                      // Full tree used by add/edit dialogs (always shows all groups)
+                      final fullTree =
+                          state.subjectGroupTree ??
+                          TreeNode<SubjectGroup>.root();
+
                       return GroupObjectTreeWidget(
                         treeKey: state.treeKey,
-                        tree: tree,
+                        tree: displayTree,
                         actionBuilder: (node) {
                           return Theme(
                             data: Theme.of(context).copyWith(
@@ -255,8 +287,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                   case GroupObjectAction.add:
                                     _onShowDialogAddGroupObject(
                                       c: context,
-                                      tree: tree,
-
+                                      tree: fullTree,
                                       parentGroup: node.data,
                                     );
                                     break;
@@ -270,7 +301,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                         : null;
                                     _onShowDialogEditGroupObject(
                                       c: context,
-                                      tree: tree,
+                                      tree: fullTree,
                                       parentGroup: parentGroup,
                                       currentGroup: node.data,
                                     );
@@ -326,7 +357,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                           );
                         },
                         onClickAddGroup: () {
-                          _onShowDialogAddGroupObject(c: context, tree: tree);
+                          _onShowDialogAddGroupObject(
+                            c: context,
+                            tree: fullTree,
+                          );
                         },
                       );
                     },

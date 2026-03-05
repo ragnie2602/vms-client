@@ -56,9 +56,13 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
       _syncSelectedNodeFromProp();
     }
     if (oldWidget.treeKey == widget.treeKey) {
+      final controller = _treeController;
+      final tree = widget.tree;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _resetTreeExpansion(widget.tree);
-        _treeController?.expandAllChildren(widget.tree);
+        if (!mounted) return;
+        if (_treeController != controller) return; // stale callback
+        _resetTreeExpansion(tree);
+        controller?.expandAllChildren(tree);
       });
     }
   }
@@ -216,9 +220,14 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
                         ),
                         onTreeReady: (treeViewController) {
                           _treeController = treeViewController;
+                          final controller = treeViewController;
+                          final tree = widget.tree;
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            _resetTreeExpansion(widget.tree);
-                            _treeController?.expandAllChildren(widget.tree);
+                            if (!mounted) return;
+                            if (_treeController != controller)
+                              return; // stale callback
+                            _resetTreeExpansion(tree);
+                            controller.expandAllChildren(tree);
                           });
                         },
                       ),

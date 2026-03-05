@@ -54,6 +54,7 @@ import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_t
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
@@ -271,6 +272,9 @@ class DependencyInjection {
     ),
     Provider<DeleteSubjectGroupUsecase>(
       create: (context) => DeleteSubjectGroupUsecase(context.read()),
+    ),
+    Provider<SearchSubjectGroupUsecase>(
+      create: (context) => const SearchSubjectGroupUsecase(),
     ),
 
     Provider<GetCameraUseCase>(

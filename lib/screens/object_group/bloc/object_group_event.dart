@@ -91,3 +91,12 @@ class DeleteSubjectGroup extends ObjectGroupEvent {
   @override
   List<Object> get props => [id];
 }
+
+class SearchSubjectGroup extends ObjectGroupEvent {
+  final String query;
+
+  const SearchSubjectGroup({required this.query});
+
+  @override
+  List<Object> get props => [query];
+}
