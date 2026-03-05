@@ -15,11 +15,12 @@ class ObjectTypeLoading extends ObjectTypeState {
 
 class ObjectTypeLoaded extends ObjectTypeState {
   final List<ObjectType> objectTypes;
+  final int totalPages;
 
-  const ObjectTypeLoaded({required this.objectTypes});
+  const ObjectTypeLoaded({required this.objectTypes, this.totalPages = 1});
 
   @override
-  List<Object?> get props => [objectTypes];
+  List<Object?> get props => [objectTypes, totalPages];
 }
 
 class ObjectTypeError extends ObjectTypeState {

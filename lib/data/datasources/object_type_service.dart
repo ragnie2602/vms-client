@@ -10,7 +10,8 @@ class ObjectTypeService {
   const ObjectTypeService(this.httpClient);
 
   /// Fetch paginated list of object types
-  Future<List<ObjectType>> getObjectTypes({
+  /// Returns a Map with 'items', 'totalElements', 'totalPages'
+  Future<Map<String, dynamic>> getObjectTypes({
     int page = 1,
     int size = 20,
     String? keyword,
@@ -24,12 +25,22 @@ class ObjectTypeService {
       queryParams['status'] = status;
     }
 
-    final raw = await httpClient.get(EndPoints.baseObjectType, queryParameters: queryParams);
+    final raw = await httpClient.get(
+      EndPoints.baseObjectType,
+      queryParameters: queryParams,
+    );
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) throw ApiException(response.message);
     final data = response.data as Map<String, dynamic>;
     final dataList = (data['data'] as List<dynamic>?) ?? [];
-    return dataList.map((e) => ObjectType.fromJson(e as Map<String, dynamic>)).toList();
+    final items = dataList
+        .map((e) => ObjectType.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return {
+      'items': items,
+      'totalElements': data['totalElements'] ?? items.length,
+      'totalPages': data['totalPages'] ?? 1,
+    };
   }
 
   /// Fetch object type detail by ID (includes dataFields)
@@ -42,16 +53,24 @@ class ObjectTypeService {
 
   /// Create a new object type
   Future<void> createObjectType(Map<String, dynamic> data) async {
-    final raw = await httpClient.post(url: EndPoints.baseObjectType, data: data);
+    final raw = await httpClient.post(
+      url: EndPoints.baseObjectType,
+      data: data,
+    );
     final response = BaseResponse.fromJson(raw);
-    if (response.code != 200 && response.code != 201) throw ApiException(response.message);
+    if (response.code != 200 && response.code != 201)
+      throw ApiException(response.message);
   }
 
   /// Update an existing object type
   Future<void> updateObjectType(int id, Map<String, dynamic> data) async {
-    final raw = await httpClient.put(url: '${EndPoints.baseObjectType}/$id', data: data);
+    final raw = await httpClient.put(
+      url: '${EndPoints.baseObjectType}/$id',
+      data: data,
+    );
     final response = BaseResponse.fromJson(raw);
-    if (response.code != 200 && response.code != 201) throw ApiException(response.message);
+    if (response.code != 200 && response.code != 201)
+      throw ApiException(response.message);
   }
 
   /// Delete an object type by ID

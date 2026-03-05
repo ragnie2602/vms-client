@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
+import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
 import 'package:vms_flutter_client/screens/object_type/bloc/object_type_bloc.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 import 'package:vms_flutter_client/screens/object_type/widget/confirm_delete_dialog.dart';
@@ -26,6 +27,8 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
 
   int _currentPage = 1;
   final int _pageSize = 20;
+  int _totalPages = 1;
+  String? _lastDeletedName;
 
   @override
   void initState() {
@@ -38,7 +41,9 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
       LoadObjectTypes(
         page: _currentPage,
         size: _pageSize,
-        keyword: _searchController.text.isNotEmpty ? _searchController.text : null,
+        keyword: _searchController.text.isNotEmpty
+            ? _searchController.text
+            : null,
         status: _selectedStatus?.name.toUpperCase(),
       ),
     );
@@ -70,7 +75,10 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
             _loadData();
           } else if (state is ObjectTypeCreateError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text('Lỗi: ${state.message}'),
+                backgroundColor: Colors.red,
+              ),
             );
           } else if (state is ObjectTypeUpdated) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -82,19 +90,28 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
             _loadData();
           } else if (state is ObjectTypeUpdateError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text('Lỗi: ${state.message}'),
+                backgroundColor: Colors.red,
+              ),
             );
           } else if (state is ObjectTypeDeleted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Xóa loại đối tượng thành công'),
+              SnackBar(
+                content: Text(
+                  'Xóa ${_lastDeletedName ?? 'loại đối tượng'} thành công!',
+                ),
                 backgroundColor: Colors.green,
               ),
             );
+            _lastDeletedName = null;
             _loadData();
           } else if (state is ObjectTypeDeleteError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Lỗi: ${state.message}'), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text('Lỗi: ${state.message}'),
+                backgroundColor: Colors.red,
+              ),
             );
           }
         },
@@ -121,10 +138,16 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
                     borderRadius: 3,
                     label: 'Tìm kiếm',
                     onPressed: _onSearch,
-                    padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 23,
+                      vertical: 12,
+                    ),
                     prefix: SvgPicture.asset(
                       AppAssets.icSearch,
-                      colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                      colorFilter: const ColorFilter.mode(
+                        AppColors.white,
+                        BlendMode.srcIn,
+                      ),
                       height: 16,
                       width: 16,
                     ),
@@ -141,8 +164,15 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
                     borderRadius: 3,
                     label: 'Thêm loại đối tượng',
                     onPressed: () => _showAddDialog(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    prefix: SvgPicture.asset(AppAssets.icAdd, height: 16, width: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    prefix: SvgPicture.asset(
+                      AppAssets.icAdd,
+                      height: 16,
+                      width: 16,
+                    ),
                     prefixGap: 8,
                     textStyle: AppTypography.style(
                       14,
@@ -162,12 +192,25 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
                   color: Colors.white,
                 ),
                 margin: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 15,
+                ),
                 child: Column(
                   children: [
                     const ObjectTypeTitleWidget(),
                     const SizedBox(height: 16),
                     Expanded(child: _buildContent()),
+                    // Pagination
+                    if (_totalPages > 1)
+                      TablePaginator(
+                        _totalPages,
+                        _currentPage - 1, // TablePaginator is 0-indexed
+                        (pageIndex) {
+                          setState(() => _currentPage = pageIndex + 1);
+                          _loadData();
+                        },
+                      ),
                   ],
                 ),
               ),
@@ -181,7 +224,9 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
   Widget _buildContent() {
     return BlocBuilder<ObjectTypeBloc, ObjectTypeState>(
       buildWhen: (previous, current) =>
-          current is ObjectTypeLoading || current is ObjectTypeLoaded || current is ObjectTypeError,
+          current is ObjectTypeLoading ||
+          current is ObjectTypeLoaded ||
+          current is ObjectTypeError,
       builder: (context, state) {
         if (state is ObjectTypeLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -191,21 +236,39 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Có lỗi xảy ra', style: AppTypography.style(14, color: Colors.red)),
+                Text(
+                  'Có lỗi xảy ra',
+                  style: AppTypography.style(14, color: Colors.red),
+                ),
                 const SizedBox(height: 8),
-                Text(state.message, style: AppTypography.style(12, color: AppColors.grey64748B)),
+                Text(
+                  state.message,
+                  style: AppTypography.style(12, color: AppColors.grey64748B),
+                ),
                 const SizedBox(height: 16),
-                ElevatedButton(onPressed: _loadData, child: const Text('Thử lại')),
+                ElevatedButton(
+                  onPressed: _loadData,
+                  child: const Text('Thử lại'),
+                ),
               ],
             ),
           );
         }
         if (state is ObjectTypeLoaded) {
+          // Update totalPages for pagination widget
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _totalPages != state.totalPages) {
+              setState(() => _totalPages = state.totalPages);
+            }
+          });
           if (state.objectTypes.isEmpty) {
-            return Center(child: Text('Không có dữ liệu', style: AppTypography.style(14)));
+            return Center(
+              child: Text('Không có dữ liệu', style: AppTypography.style(14)),
+            );
           }
           return ListView.separated(
-            separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.greyF1F5F9),
+            separatorBuilder: (_, __) =>
+                const Divider(height: 1, color: AppColors.greyF1F5F9),
             itemCount: state.objectTypes.length,
             itemBuilder: (context, index) => ObjectTypeItemWidget(
               item: state.objectTypes[index],
@@ -226,7 +289,11 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
       children: [
         Text(
           'Tìm kiếm',
-          style: AppTypography.style(14, color: AppColors.grey334155, fontWeight: FontWeight.w500),
+          style: AppTypography.style(
+            14,
+            color: AppColors.grey334155,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 8),
         SizedBox(
@@ -236,27 +303,42 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
             onSubmitted: (_) => _onSearch(),
             decoration: InputDecoration(
               prefixIcon: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 12,
+                ),
                 child: SvgPicture.asset(AppAssets.icSearch),
               ),
-              hintText: 'Nhập từ khóa tìm kiếm',
+              hintText: 'Nhập tên loại đối tượng hoặc mô tả',
               hintStyle: AppTypography.style(
                 14,
                 color: AppColors.grey64748B,
                 fontWeight: FontWeight.w400,
               ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 12,
+              ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                borderSide: const BorderSide(
+                  color: AppColors.greyE2E8F0,
+                  width: 1,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                borderSide: const BorderSide(
+                  color: AppColors.greyE2E8F0,
+                  width: 1,
+                ),
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                borderSide: const BorderSide(
+                  color: AppColors.greyE2E8F0,
+                  width: 1,
+                ),
               ),
             ),
           ),
@@ -271,7 +353,11 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
       children: [
         Text(
           'Trạng thái',
-          style: AppTypography.style(14, color: AppColors.grey334155, fontWeight: FontWeight.w500),
+          style: AppTypography.style(
+            14,
+            color: AppColors.grey334155,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 8),
         CustomCommonDropdown<ObjectTypeStatus?>(
@@ -280,7 +366,11 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
           itemAsString: (item) => item?.displayName ?? 'Tất cả',
           hint: Text(
             'Tất cả',
-            style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+            style: AppTypography.style(
+              14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.black,
+            ),
           ),
           onChanged: (value) {
             setState(() {
@@ -300,7 +390,9 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
       builder: (dialogContext) => ObjectTypeDialog(
         onSubmit: (objectType) {
           Navigator.pop(dialogContext);
-          context.read<ObjectTypeBloc>().add(CreateObjectType(objectType: objectType));
+          context.read<ObjectTypeBloc>().add(
+            CreateObjectType(objectType: objectType),
+          );
         },
       ),
     );
@@ -323,14 +415,30 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
   }
 
   void _onDelete(ObjectType objectType) {
+    // SRS: If object type has data objects, block deletion with toast
+    if (objectType.objectCount > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Loại đối tượng đang có dữ liệu đối tượng đi kèm, không thể xóa',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // SRS: No data → show confirmation popup
     showDialog(
       context: context,
       builder: (_) => ConfirmDeleteDialog(
         title: 'Xóa loại đối tượng',
-        content:
-            'Loại đối tượng ${objectType.name} đang chứa ${objectType.objectCount} trường dữ liệu của các đối tượng trong hệ thống.\nBạn có chắc chắn muốn xóa?',
+        content: 'Bạn có chắc chắn muốn xóa ${objectType.name}?',
         onConfirm: () {
-          context.read<ObjectTypeBloc>().add(DeleteObjectType(id: objectType.id));
+          _lastDeletedName = objectType.name;
+          context.read<ObjectTypeBloc>().add(
+            DeleteObjectType(id: objectType.id),
+          );
         },
       ),
     );
