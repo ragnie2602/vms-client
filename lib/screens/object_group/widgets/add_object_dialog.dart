@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -48,6 +49,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   bool _isSubmitting = false;
   // Selected subject group IDs
   final Set<int> _selectedSubjectGroupIds = {};
+  // Drag and drop state per field
+  final Map<String, bool> _isDragging = {};
 
   @override
   void initState() {
@@ -115,18 +118,29 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   }
 
   Future<void> _pickAndUploadFiles(String fieldName) async {
+    const maxImages = 6;
+    final currentExisting = (_existingImageUrls[fieldName] ?? []).length;
+    final currentLocal = (_localFilePaths[fieldName] ?? []).length;
+    final remaining = maxImages - currentExisting - currentLocal;
+    if (remaining <= 0) return;
+
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
-      allowMultiple: true,
+      allowMultiple: remaining > 1,
     );
 
     if (result == null || result.files.isEmpty) return;
 
-    final newPaths = result.files
+    var newPaths = result.files
         .where((f) => f.path != null)
         .map((f) => f.path!)
         .toList();
     if (newPaths.isEmpty) return;
+
+    // Truncate to remaining slots
+    if (newPaths.length > remaining) {
+      newPaths = newPaths.sublist(0, remaining);
+    }
 
     // Add local paths for preview immediately
     setState(() {
@@ -503,35 +517,58 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     final localPaths = _localFilePaths[field.fieldName] ?? [];
     final existingUrls = _existingImageUrls[field.fieldName] ?? [];
     final isUploading = _uploadingFields[field.fieldName] == true;
+    final totalImages = existingUrls.length + localPaths.length;
+    const maxImages = 6;
+    final canAddMore = totalImages < maxImages && !isUploading;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildLabel(field.displayName),
-        const SizedBox(height: 8),
+    return DropTarget(
+      onDragEntered: (_) => setState(() => _isDragging[field.fieldName] = true),
+      onDragExited: (_) => setState(() => _isDragging[field.fieldName] = false),
+      onDragDone: (details) {
+        setState(() => _isDragging[field.fieldName] = false);
+        _handleDroppedFiles(field.fieldName, details);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: (_isDragging[field.fieldName] == true)
+              ? Border.all(color: AppColors.primary, width: 2)
+              : null,
+          color: (_isDragging[field.fieldName] == true)
+              ? AppColors.primary.withValues(alpha: 0.05)
+              : null,
+        ),
+        padding: (_isDragging[field.fieldName] == true)
+            ? const EdgeInsets.all(6)
+            : EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildLabel(field.displayName),
+            const SizedBox(height: 8),
 
-        // Show existing images from server (edit mode)
-        if (existingUrls.isNotEmpty || localPaths.isNotEmpty) ...[
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              // Existing server images
-              ...existingUrls.asMap().entries.map((entry) {
-                final index = entry.key;
-                final url = entry.value;
-                return Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
+            if (totalImages > 0 || isUploading) ...[
+              // Grid layout: 3 columns
+              GridView.count(
+                crossAxisCount: 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 80 / 96,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  // Existing server images
+                  ...existingUrls.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final url = entry.value;
+                    return _buildImageTile(
                       child: CachedNetworkImage(
                         imageUrl: url,
-                        width: 80,
-                        height: 96,
+                        width: double.infinity,
+                        height: double.infinity,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          width: 80,
-                          height: 96,
                           color: AppColors.greyE2E8F0,
                           child: const Center(
                             child: SizedBox(
@@ -542,103 +579,76 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          width: 80,
-                          height: 96,
                           color: AppColors.greyE2E8F0,
                           child: const Icon(Icons.broken_image, size: 20),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      top: 2,
-                      right: 2,
-                      child: InkWell(
-                        onTap: () =>
-                            _removeExistingImage(field.fieldName, index),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.8),
-                            shape: BoxShape.circle,
-                          ),
-                          padding: const EdgeInsets.all(3),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }),
-              // Newly picked local images
-              ...localPaths.asMap().entries.map((entry) {
-                final index = entry.key;
-                final path = entry.value;
-                return Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
+                      onRemove: () =>
+                          _removeExistingImage(field.fieldName, index),
+                    );
+                  }),
+                  // Newly picked local images
+                  ...localPaths.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final path = entry.value;
+                    return _buildImageTile(
                       child: Image.file(
                         File(path),
-                        width: 80,
-                        height: 96,
+                        width: double.infinity,
+                        height: double.infinity,
                         fit: BoxFit.cover,
                       ),
-                    ),
-                    Positioned(
-                      top: 2,
-                      right: 2,
-                      child: InkWell(
-                        onTap: () => _removeLocalFile(field.fieldName, index),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.8),
-                            shape: BoxShape.circle,
-                          ),
-                          padding: const EdgeInsets.all(3),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 12,
+                      onRemove: () => _removeLocalFile(field.fieldName, index),
+                    );
+                  }),
+                  // "+" add button (inline in grid)
+                  if (canAddMore)
+                    InkWell(
+                      onTap: () => _pickAndUploadFiles(field.fieldName),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.greyE2E8F0),
+                          borderRadius: BorderRadius.circular(4),
+                          color: AppColors.greyF2F4FA,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.add,
+                            size: 32,
+                            color: AppColors.grey94A3B8,
                           ),
                         ),
                       ),
                     ),
-                  ],
-                );
-              }),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
-
-        // Pick file button
-        CustomPaint(
-          painter: DashedBorderPainter(),
-          child: InkWell(
-            onTap: isUploading
-                ? null
-                : () => _pickAndUploadFiles(field.fieldName),
-            child: Container(
-              height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.center,
-              child: isUploading
-                  ? const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 16,
-                          height: 16,
+                  // Uploading indicator
+                  if (isUploading)
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.greyE2E8F0),
+                        borderRadius: BorderRadius.circular(4),
+                        color: AppColors.greyF2F4FA,
+                      ),
+                      child: const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        SizedBox(width: 8),
-                        Text('Đang tải lên...'),
-                      ],
-                    )
-                  : Row(
+                      ),
+                    ),
+                ],
+              ),
+            ] else ...[
+              // No images yet — show dashed upload area
+              CustomPaint(
+                painter: DashedBorderPainter(),
+                child: InkWell(
+                  onTap: () => _pickAndUploadFiles(field.fieldName),
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    alignment: Alignment.center,
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(
@@ -656,6 +666,106 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                         ),
                       ],
                     ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleDroppedFiles(
+    String fieldName,
+    DropDoneDetails details,
+  ) async {
+    const maxImages = 6;
+    final currentExisting = (_existingImageUrls[fieldName] ?? []).length;
+    final currentLocal = (_localFilePaths[fieldName] ?? []).length;
+    final remaining = maxImages - currentExisting - currentLocal;
+    if (remaining <= 0) return;
+
+    // Filter for image files only
+    final imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'];
+    var droppedPaths = details.files
+        .where((f) {
+          final ext = f.path.toLowerCase();
+          return imageExtensions.any((e) => ext.endsWith(e));
+        })
+        .map((f) => f.path)
+        .toList();
+
+    if (droppedPaths.isEmpty) return;
+
+    // Truncate to remaining slots
+    if (droppedPaths.length > remaining) {
+      droppedPaths = droppedPaths.sublist(0, remaining);
+    }
+
+    // Add local paths for preview
+    setState(() {
+      final existing = _localFilePaths[fieldName] ?? [];
+      _localFilePaths[fieldName] = [...existing, ...droppedPaths];
+      _uploadingFields[fieldName] = true;
+    });
+
+    // Upload each file
+    final repo = context.read<IObjectGroupRepository>();
+    try {
+      final existingIds = _uploadedFileIds[fieldName] ?? [];
+      final List<int> newIds = [];
+
+      for (final path in droppedPaths) {
+        final fileId = await repo.uploadFile(path);
+        newIds.add(fileId);
+      }
+
+      if (mounted) {
+        setState(() {
+          _uploadedFileIds[fieldName] = [...existingIds, ...newIds];
+          _uploadingFields[fieldName] = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          final paths = _localFilePaths[fieldName] ?? [];
+          for (final path in droppedPaths) {
+            paths.remove(path);
+          }
+          _localFilePaths[fieldName] = paths;
+          _uploadingFields[fieldName] = false;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Tải file thất bại: $e')));
+      }
+    }
+  }
+
+  Widget _buildImageTile({
+    required Widget child,
+    required VoidCallback onRemove,
+  }) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: SizedBox.expand(child: child),
+        ),
+        Positioned(
+          top: 2,
+          right: 2,
+          child: InkWell(
+            onTap: onRemove,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.8),
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(3),
+              child: const Icon(Icons.close, color: Colors.white, size: 12),
             ),
           ),
         ),
@@ -955,48 +1065,53 @@ class _SubjectGroupMultiSelectDropdownState
                               color: AppColors.grey94A3B8,
                             ),
                           )
-                        : Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: selectedGroups.map((g) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.greyF2F4FA,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      g.name ?? '',
-                                      style: AppTypography.style(
-                                        12,
-                                        color: AppColors.grey334155,
-                                      ),
+                        : ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 64),
+                            child: SingleChildScrollView(
+                              child: Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: selectedGroups.map((g) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
                                     ),
-                                    const SizedBox(width: 4),
-                                    InkWell(
-                                      onTap: () {
-                                        final newIds = Set<int>.from(
-                                          widget.selectedIds,
-                                        );
-                                        newIds.remove(g.id);
-                                        widget.onChanged(newIds);
-                                      },
-                                      child: const Icon(
-                                        Icons.close,
-                                        size: 14,
-                                        color: AppColors.grey64748B,
-                                      ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.greyF2F4FA,
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          g.name ?? '',
+                                          style: AppTypography.style(
+                                            12,
+                                            color: AppColors.grey334155,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        InkWell(
+                                          onTap: () {
+                                            final newIds = Set<int>.from(
+                                              widget.selectedIds,
+                                            );
+                                            newIds.remove(g.id);
+                                            widget.onChanged(newIds);
+                                          },
+                                          child: const Icon(
+                                            Icons.close,
+                                            size: 14,
+                                            color: AppColors.grey64748B,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
                           ),
                   ),
                   Icon(
