@@ -3,7 +3,6 @@ import 'package:vms_flutter_client/data/datasources/detect_service.dart';
 import 'package:vms_flutter_client/data/repositories/base_repository.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
-import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
@@ -52,14 +51,5 @@ class DetectRepository extends BaseRepository implements IDetectRepository {
   }
 
   @override
-  Stream<ReceiveEventEntity> get receiveEventStream =>
-      service.receiveEventStream;
-
-  @override
-  Future<Either<Failure, NotificationSettingEntity>> getNotificationSetting() async {
-    return await catchError<NotificationSettingEntity>(() async {
-      final data = await service.getNotificationSetting();
-      return Right(data);
-    });
-  }
+  Stream<ReceiveEventEntity> get receiveEventStream => service.receiveEventStream;
 }

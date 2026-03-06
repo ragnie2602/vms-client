@@ -20,4 +20,12 @@ class NotificationRepository extends BaseRepository
       return Right(data);
     });
   }
+
+  @override
+  Future<Either<Failure, NotificationSettingEntity>> getNotificationSetting() async {
+    return await catchError<NotificationSettingEntity>(() async {
+      final data = await notificationService.getNotificationSetting();
+      return Right(data);
+    });
+  }
 }

@@ -5,4 +5,6 @@ abstract class INotificationRepository {
   Future<Either<Failure, NotificationSettingEntity>> updateNotificationSetting(
     NotificationSettingEntity notificationSetting,
   );
+
+  Future<Either<Failure, NotificationSettingEntity>> getNotificationSetting();
 }
