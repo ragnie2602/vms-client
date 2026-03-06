@@ -29,7 +29,8 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     this._deleteSubjectGroupUsecase,
     this._searchSubjectGroupUsecase,
   ) : super(const ObjectGroupState()) {
-    on<LoadObjectGroups>(_onLoadObjectGroups);
+    // lấy list danh sách các object type để hiển thị tab bên trái
+    on<LoadObjectTypes>(_onLoadObjectTypes);
     // thay đổi tab kiểu đối tượng => load lại dữ liệu đối tượng
     on<SelectObjectType>(_onSelectObjectType);
     on<LoadObjects>(_onLoadObjects);
@@ -58,8 +59,8 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     );
   }
 
-  Future<void> _onLoadObjectGroups(
-    LoadObjectGroups event,
+  Future<void> _onLoadObjectTypes(
+    LoadObjectTypes event,
     Emitter<ObjectGroupState> emit,
   ) async {
     emit(state.copyWith(status: ObjectGroupStatus.loading));

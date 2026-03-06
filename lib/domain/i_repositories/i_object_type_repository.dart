@@ -1,5 +1,5 @@
 import 'package:vms_flutter_client/core/base_response.dart';
-import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 
 abstract class IObjectTypeRepository {
   Future<Either<Failure, Map<String, dynamic>>> getObjectTypes({

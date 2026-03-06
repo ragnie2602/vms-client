@@ -2,7 +2,7 @@ import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/models/response/base_response.dart';
-import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 
 class ObjectTypeService {
   final HttpClient httpClient;

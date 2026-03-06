@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
-import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
 part 'object_type_event.dart';
 part 'object_type_state.dart';

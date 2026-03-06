@@ -1,8 +1,8 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
 import 'package:vms_flutter_client/data/repositories/base_repository.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
-import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
 class ObjectTypeRepository extends BaseRepository
     implements IObjectTypeRepository {

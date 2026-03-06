@@ -1,7 +1,7 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
-import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
 abstract class IObjectGroupRepository {
   Future<Map<String, dynamic>> getObjectTypes(int page, int size);

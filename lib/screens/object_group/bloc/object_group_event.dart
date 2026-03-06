@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
-import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 
 abstract class ObjectGroupEvent extends Equatable {
   const ObjectGroupEvent();
@@ -23,11 +23,11 @@ class InitializeObjectGroup extends ObjectGroupEvent {
   List<Object> get props => [page, size];
 }
 
-class LoadObjectGroups extends ObjectGroupEvent {
+class LoadObjectTypes extends ObjectGroupEvent {
   final int page;
   final int size;
 
-  const LoadObjectGroups({this.page = 1, this.size = 20});
+  const LoadObjectTypes({this.page = 1, this.size = 20});
 
   @override
   List<Object> get props => [page, size];

@@ -7,8 +7,8 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
-import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 import 'package:vms_flutter_client/screens/object_type/widget/confirm_delete_dialog.dart';
 
 /// Dialog for adding/editing Object Type with drag-drop field configuration
