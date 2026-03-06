@@ -41,13 +41,16 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_cus
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/event/fetch_config_table_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/get_all_subject_type_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/get_event_display_config_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_event_display_config_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/monitor/stream_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
@@ -291,11 +294,24 @@ class DependencyInjection {
     Provider<SearchEventUseCase>(
       create: (context) => SearchEventUseCase(context.read<IEventRepository>()),
     ),
+    Provider<GetEventDisplayConfigUsecase>(
+      create: (context) => GetEventDisplayConfigUsecase(context.read()),
+    ),
+    Provider<SaveEventDisplayConfigUsecase>(
+      create: (context) => SaveEventDisplayConfigUsecase(context.read()),
+    ),
+    Provider<GetAllSubjectTypesUsecase>(
+      create: (context) => GetAllSubjectTypesUsecase(context.read()),
+    ),
+
+    Provider<StreamEventUsecase>(
+      create: (context) => StreamEventUsecase(context.read(), context.read()),
+    ),
     Provider<SyncAlarmSoundsUseCase>(create: (context) => SyncAlarmSoundsUseCase(context.read())),
     Provider<SyncAlarmSoundUseCase>(create: (context) => SyncAlarmSoundUseCase(context.read())),
-    Provider<FetchConfigTableUsecase>(
-      create: (context) => FetchConfigTableUsecase(context.read()),
-    ),
+    // Provider<FetchConfigTableUsecase>(
+    //   create: (context) => FetchConfigTableUsecase(context.read()),
+    // ),
 
     // Bloc
     Provider<OsdBloc>(create: (context) => OsdBloc(context.read(), context.read())),

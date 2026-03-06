@@ -9,6 +9,7 @@ class SearchEventInput extends BaseInput {
   final List<String>? cameraIds;
   final List<String>? eventTypes;
   final List<CameraEntity> cameras;
+  final String? subjectName;
 
   const SearchEventInput({
     this.page = 1,
@@ -18,5 +19,6 @@ class SearchEventInput extends BaseInput {
     this.cameraIds,
     this.eventTypes,
     required this.cameras,
+    this.subjectName,
   });
 }

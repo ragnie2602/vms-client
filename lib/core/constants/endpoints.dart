@@ -51,4 +51,8 @@ class EndPoints {
 
   // Subject Group
   static const String baseSubjectGroup = '/api/subject-groups';
+  // Subject
+
+  // Subject types
+  static const String baseSubjectType = '/api/object-types';
 }

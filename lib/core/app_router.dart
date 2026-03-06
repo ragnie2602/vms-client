@@ -275,7 +275,7 @@ class AppRouter {
                 context.read(),
               ),
             ),
-            BlocProvider(create: (context) => DetectBloc(context.read())),
+            BlocProvider(create: (context) => DetectBloc(context.read(), context.read())),
             BlocProvider(create: (context) => ObjectTypeBloc(context.read())),
             BlocProvider(
               create: (context) => ObjectGroupBloc(
@@ -289,11 +289,8 @@ class AppRouter {
               ),
             ),
             BlocProvider(
-              create: (context) => SetupInfoFieldBloc(
-                context.read(),
-                context.read(),
-                context.read(),
-              ),
+              create: (context) =>
+                  SetupEventDisplayBloc(context.read(), context.read(), context.read()),
             ),
             BlocProvider(
               create: (context) => AiBoxBloc(

@@ -29,6 +29,7 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
           : null,
       eventType: input.eventTypes,
       cameraIds: cameraIds,
+      subjectName: input.subjectName,
     );
 
     List<EventType> eventTypes = [];

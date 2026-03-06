@@ -38,6 +38,18 @@ class EventService {
     return response.data;
   }
 
+  getSubjectTypes({String? status, int? size}) async {
+    final raw = await httpClient.get(
+      EndPoints.baseSubjectType,
+      queryParameters: {'status': status, 'size': size},
+    );
+
+    final response = BaseResponse.fromJson(raw);
+
+    if (response.code != 200) throw Exception(response.message);
+    return response.data;
+  }
+
   getEventDetail(int eventId) async {
     final raw = await httpClient.get('${EndPoints.baseEvent}/$eventId');
 
@@ -47,8 +59,15 @@ class EventService {
     return response.data;
   }
 
-  getEventDisplayConfig(String eventType) async {
-    final raw = await httpClient.get('${EndPoints.configEventDisplay}/$eventType');
+  getEventDisplayConfig(String eventType, int typeConfig, {int? subjectTypeId}) async {
+    final raw = await httpClient.get(
+      EndPoints.configEventDisplay,
+      queryParameters: {
+        'eventType': eventType,
+        'typeConfig': typeConfig,
+        if (subjectTypeId != null) 'subjectTypeId': subjectTypeId,
+      },
+    );
 
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) throw Exception(response.message);
@@ -62,6 +81,7 @@ class EventService {
     List<String>? eventType,
     List<String>? cameraIds,
     int? page,
+    String? subjectName,
   }) async {
     final raw = await httpClient.post(
       url: EndPoints.searchEvent,
@@ -71,6 +91,7 @@ class EventService {
         if (eventType != null) 'eventTypes': eventType,
         if (cameraIds != null) 'cameraIds': cameraIds,
         'page': page,
+        if (subjectName?.isNotEmpty == true) 'subjectName': subjectName,
       },
     );
 
@@ -92,11 +113,8 @@ class EventService {
     return response.data;
   }
 
-  updateEventDisplayConfig({required List<String> listField, required String eventType}) async {
-    final raw = await httpClient.put(
-      url: '${EndPoints.configEventDisplay}/$eventType',
-      data: {'data': listField},
-    );
+  updateEventDisplayConfig(List<Map<String, dynamic>> configs) async {
+    final raw = await httpClient.put(url: EndPoints.configEventDisplay, data: configs);
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) throw Exception(response.message);
 

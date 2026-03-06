@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
 class EventEntity {
@@ -7,11 +7,12 @@ class EventEntity {
   String? eventType;
   String? eventName;
   String? cameraId;
-  int timeEvent;
+  DateTime timeEvent;
   String? imageUrl;
   String? description;
   Map<String, dynamic>? payload;
   CameraEntity? camera;
+  int? subjectTypeId;
 
   EventEntity({
     required this.id,
@@ -22,6 +23,7 @@ class EventEntity {
     this.imageUrl,
     this.description,
     this.payload,
+    this.subjectTypeId,
   });
 
   factory EventEntity.fromJson(Map<String, dynamic> json) {
@@ -30,12 +32,28 @@ class EventEntity {
       eventType: json['eventType'],
       eventName: json['eventName'],
       cameraId: json['cameraId'],
-      timeEvent: json['timeEvent'],
+      timeEvent: DateTime.fromMillisecondsSinceEpoch(json['timeEvent'] * 1000),
       imageUrl: json['imageUrl'],
       description: json['description'],
       payload: (json['payload'] != null && json['payload'].toString().isNotEmpty)
           ? jsonDecode(json['payload'])
           : null,
+      subjectTypeId: json['subjectTypeId'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'eventType': eventType,
+      'eventName': eventName,
+      'cameraId': cameraId,
+      'timeEvent': timeEvent.format("HH:mm dd/MM/yyyy"),
+      'imageUrl': imageUrl,
+      'description': description,
+      'payload': payload,
+      'cameraName': camera?.name,
+      'subjectTypeId': subjectTypeId,
+    };
   }
 }
