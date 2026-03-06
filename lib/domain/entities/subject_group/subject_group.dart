@@ -36,7 +36,6 @@ class SubjectGroup extends Equatable {
       'name': name,
       'parentId': parentId,
       'level': level,
-      'level': level,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
