@@ -16,12 +16,14 @@ class CameraDetailDesktopLayout extends StatefulWidget {
     this.rightPanelWidth = 280,
     required this.mode,
     this.openCamerasPanelImmediately = false,
+    this.showFullCamera = false,
   });
   final Widget? content;
   final double leftPanelWidth;
   final double rightPanelWidth;
   final CameraDetailMode mode;
   final bool openCamerasPanelImmediately;
+  final bool showFullCamera;
 
   @override
   State<CameraDetailDesktopLayout> createState() => _CameraDetailDesktopLayoutState();
@@ -50,6 +52,7 @@ class _CameraDetailDesktopLayoutState extends State<CameraDetailDesktopLayout> {
           rightController: _rightController,
           mode: widget.mode,
           openCamerasPanelImmediately: widget.openCamerasPanelImmediately,
+          showFullCamera: widget.showFullCamera,
         ),
         Container(width: double.infinity, height: 1, color: AppColors.scaffoldBg),
         Expanded(

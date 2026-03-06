@@ -137,6 +137,7 @@ class DrawerTile extends StatelessWidget {
         isPlayback: true,
         title: 'Xem lại',
         key: UniqueKey(),
+        showFullCamera: true,
       );
     }
 

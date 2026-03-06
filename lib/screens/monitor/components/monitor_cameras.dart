@@ -22,11 +22,13 @@ class MonitorCameras extends StatefulWidget {
     this.onTap,
     this.selectedCamera,
     this.highlightSelected = false,
+    this.showFullCamera = false,
   });
   final double maxWidth;
   final Function(CameraEntity)? onTap;
   final CameraEntity? selectedCamera;
   final bool highlightSelected;
+  final bool showFullCamera;
 
   @override
   State<MonitorCameras> createState() => _MonitorCamerasState();
@@ -238,7 +240,9 @@ class _MonitorCamerasState extends State<MonitorCameras>
                   child: ValueListenableBuilder(
                     valueListenable: _searchController,
                     builder: (context, value, child) {
-                      final cameras = state.cameras.where(_filterFunc).toList();
+                      final cameras = (widget.showFullCamera ? state.allCameras : state.cameras)
+                          .where(_filterFunc)
+                          .toList();
 
                       if (cameras.isEmpty &&
                           (value.text.isNotEmpty || _selectedTags.isNotEmpty)) {
