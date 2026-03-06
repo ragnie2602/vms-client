@@ -13,6 +13,7 @@ class EventFilterDropdown<T> extends StatefulWidget {
   final List<T> items;
   final T? initialValue;
   final String? label;
+  final TextStyle? labelStyle;
   final void Function(T?) onChanged;
   final EdgeInsetsGeometry? padding;
   final TextStyle? style;
@@ -26,6 +27,7 @@ class EventFilterDropdown<T> extends StatefulWidget {
     required this.items,
     this.initialValue,
     this.label,
+    this.labelStyle,
     required this.onChanged,
     this.padding,
     this.style,
@@ -49,7 +51,7 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.label != null) Text(widget.label!),
+        if (widget.label != null) Text(widget.label!, style: widget.labelStyle),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(

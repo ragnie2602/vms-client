@@ -226,10 +226,10 @@ class AppRouter {
                 context.read(),
               ),
             ),
-            BlocProvider(create: (context) => DetectBloc(context.read())),
+            BlocProvider(create: (context) => DetectBloc(context.read(), context.read())),
             BlocProvider(
               create: (context) =>
-                  SetupInfoFieldBloc(context.read(), context.read(), context.read()),
+                  SetupEventDisplayBloc(context.read(), context.read(), context.read()),
             ),
             BlocProvider(
               create: (context) => AiBoxBloc(

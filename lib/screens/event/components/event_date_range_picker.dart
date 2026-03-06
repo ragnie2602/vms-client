@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/utils/date_util.dart';
 
 class EventDateRangePicker extends StatefulWidget {
   final String? label;
+  final TextStyle? labelStyle;
   final String? hintText;
   final DateTimeRange? initialDateRange;
   final void Function(DateTimeRange?)? onChanged;
@@ -18,6 +19,7 @@ class EventDateRangePicker extends StatefulWidget {
   const EventDateRangePicker({
     super.key,
     this.label,
+    this.labelStyle,
     this.hintText,
     this.initialDateRange,
     this.onChanged,
@@ -60,7 +62,9 @@ class EventDateRangePickerState extends State<EventDateRangePicker> {
         if (widget.label != null)
           Text(
             widget.label!,
-            style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+            style:
+                widget.labelStyle ??
+                AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
           ),
         const SizedBox(height: 8),
         TextField(
