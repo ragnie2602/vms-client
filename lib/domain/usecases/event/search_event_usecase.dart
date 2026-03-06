@@ -18,10 +18,15 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
   Future<SearchEventOutput> buildUseCase(SearchEventInput input) async {
     List<String> cameraIds = input.cameraIds ?? input.cameras.map((e) => e.camId).toList();
 
+    // Minus 25200 because of converting GMT+7 -> GMT+0
     final res = await eventRepository.searchEvent(
       page: input.page,
-      startTime: input.startTime != null ? input.startTime!.millisecondsSinceEpoch ~/ 1000 : null,
-      endTime: input.endTime != null ? input.endTime!.millisecondsSinceEpoch ~/ 1000 : null,
+      startTime: input.startTime != null
+          ? input.startTime!.millisecondsSinceEpoch ~/ 1000 - 25200
+          : null,
+      endTime: input.endTime != null
+          ? (input.endTime!.millisecondsSinceEpoch ~/ 1000 + 61199)
+          : null,
       eventType: input.eventTypes,
       cameraIds: cameraIds,
     );

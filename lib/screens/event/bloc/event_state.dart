@@ -33,6 +33,9 @@ class GetAllEventTypeSuccess extends EventState {
   final List<EventType> eventTypes;
 
   const GetAllEventTypeSuccess(this.eventTypes);
+
+  @override
+  List<Object?> get props => [eventTypes];
 }
 
 class GetAllEventTypeFailure extends EventState {
