@@ -27,7 +27,9 @@ class PlayerWrapper {
 
   void attachMediaStatusListener() {
     player.onMediaStatus((pre, cur) {
-      lastUsed = DateTime.now();
+      if (isBusy) {
+        lastUsed = DateTime.now();
+      }
       if (cur.test(MediaStatus.invalid)) {
         Logger.warn('Player Pool [$windowId]: Player $id detected invalid media status! Marking as corrupted.');
         isCorrupted = true;
@@ -81,7 +83,7 @@ class PlayerPoolManager {
   final Set<PlayerWrapper> _quarantinedPlayers = {};
   int _idCounter = 0;
 
-  final int minPoolSize = 2;
+  final int minPoolSize = 36;
   final int maxPoolSize = 100;
   Timer? _cleanupTimer;
 
@@ -193,7 +195,7 @@ class PlayerPoolManager {
 
     // 4. Safely evaluate cache hit logic and apply URL
     bool cacheHit = player.lastMediaUrl == mediaUrl;
-    player.lastMediaUrl = mediaUrl ?? player.lastMediaUrl;
+    player.lastMediaUrl = mediaUrl; // Bug #1 Fixed: Force apply URL even if null
     
     _busyPlayers.add(player);
     Logger.log(
@@ -252,6 +254,8 @@ class PlayerPoolManager {
       }
       
       if (wrapper.lastMediaUrl != null) {
+        // Leak #3 Fixed: Clean reference before adding cache
+        _idleUrlCache[wrapper.lastMediaUrl!]?.remove(wrapper);
         _idleUrlCache.putIfAbsent(wrapper.lastMediaUrl!, () => []).add(wrapper);
       }
     }
@@ -280,6 +284,32 @@ class PlayerPoolManager {
           
           p.player.dispose();
           targetToRemove--;
+          return true;
+        }
+        return false;
+      });
+    }
+
+    // Bug #2 Fixed: Add lazy cleanup for HQ players (> 10 mins)
+    int targetToRemoveHq = _idleHqPlayers.length - 1; // Giữ lại ít nhất 1 HQ player
+    if (targetToRemoveHq > 0) {
+      _idleHqPlayers.removeWhere((p) {
+        if (targetToRemoveHq <= 0) return false;
+        
+        if (now.difference(p.lastUsed).inMinutes > 10) {
+          Logger.log(
+            'Player Pool [$_currentWindowId]: Lazy Cleanup -> disposing HQ player ${p.id}',
+          );
+          
+          if (p.lastMediaUrl != null) {
+            _idleUrlCache[p.lastMediaUrl!]?.remove(p);
+            if (_idleUrlCache[p.lastMediaUrl!]?.isEmpty ?? false) {
+              _idleUrlCache.remove(p.lastMediaUrl);
+            }
+          }
+          
+          p.player.dispose();
+          targetToRemoveHq--;
           return true;
         }
         return false;

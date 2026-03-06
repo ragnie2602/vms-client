@@ -222,7 +222,10 @@ class Player {
     bool synchronized = false,
     Duration? timeout,
   }) async {
+    if (_isDisposed) return -1;
+    
     Future<int> fn() async {
+      if (_isDisposed) return -1;
       if (_creatingCompleter?.isCompleted == false) return textureId.value ?? -1;
 
       _creatingCompleter = Completer<void>();
@@ -234,6 +237,12 @@ class Player {
 
       final size =
           await _videoSize.future.timeout(timeout ?? Duration(seconds: 30), onTimeout: () => null);
+
+      if (_isDisposed) {
+        _creatingCompleter!.complete(null);
+        return -1;
+      }
+
       if (size == null) {
         _creatingCompleter!.complete(null);
         return -1;
@@ -277,6 +286,7 @@ class Player {
 
   /// Mute the audio or not
   set mute(bool value) {
+    if (_isDisposed) return;
     _mute = value;
     _player.ref.setMute.asFunction<void Function(Pointer<mdkPlayer>, bool)>(
         isLeaf: true)(_player.ref.object, value);
@@ -287,6 +297,7 @@ class Player {
 
   /// Set audio volume value. 1.0 is source value
   set volume(double value) {
+    if (_isDisposed) return;
     _volume = value;
     _player.ref.setVolume
             .asFunction<void Function(Pointer<mdkPlayer>, double)>()(
@@ -298,6 +309,7 @@ class Player {
 
   /// Set the audio renderer. Can be 'AudioTrack', 'OpenSL' on android.
   set audioBackends(List<String> value) {
+    if (_isDisposed) return;
     final u8p = value.toCZ();
     _player.ref.setAudioBackends.asFunction<
             void Function(Pointer<mdkPlayer>, Pointer<Pointer<Char>>)>()(
@@ -325,6 +337,7 @@ class Player {
   /// Current media.
   String get media => _media;
   String get nativeMedia {
+    if (_isDisposed) return '';
     final ptr = _player.ref.url
         .asFunction<Pointer<Char> Function(Pointer<mdkPlayer>)>()(_player.ref.object);
 
@@ -382,11 +395,15 @@ class Player {
   PlaybackState get state => _state;
 
   /// Current [MediaStatus] value
-  MediaStatus get mediaStatus => MediaStatus(_player.ref.mediaStatus
-      .asFunction<int Function(Pointer<mdkPlayer>)>()(_player.ref.object));
+  MediaStatus get mediaStatus {
+    if (_isDisposed) return const MediaStatus(MediaStatus.noMedia);
+    return MediaStatus(_player.ref.mediaStatus
+        .asFunction<int Function(Pointer<mdkPlayer>)>()(_player.ref.object));
+  }
 
   /// Set loop count. -1 is infinite loop. 0 is no loop.
   set loop(int value) {
+    if (_isDisposed) return;
     _loop = value;
     _player.ref.setLoop.asFunction<void Function(Pointer<mdkPlayer>, int)>()(
         _player.ref.object, value);
@@ -397,6 +414,7 @@ class Player {
 
   /// Preload the next media set by [setNext] immediately or when current playback is finished.
   set preloadImmediately(bool value) {
+    if (_isDisposed) return;
     _preloadImmediately = value;
     _player.ref.setPreloadImmediately
             .asFunction<void Function(Pointer<mdkPlayer>, bool)>()(
@@ -407,11 +425,15 @@ class Player {
 
   /// Get current playback position in milliseconds relative to media's first timestamp.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#int64_t-position-const
-  int get position => _player.ref.position
-      .asFunction<int Function(Pointer<mdkPlayer>)>()(_player.ref.object);
+  int get position {
+    if (_isDisposed) return 0;
+    return _player.ref.position
+        .asFunction<int Function(Pointer<mdkPlayer>)>()(_player.ref.object);
+  }
 
   /// Playback speed. 1.0 is original speed.
   set playbackRate(double value) {
+    if (_isDisposed) return;
     _playbackRate = value;
     _player.ref.setPlaybackRate
             .asFunction<void Function(Pointer<mdkPlayer>, double)>()(
@@ -426,6 +448,7 @@ class Player {
 
   /// Media information.
   MediaInfo get mediaInfo {
+    if (_isDisposed) return MediaInfo();
     _mediaInfoC = _player.ref.mediaInfo
             .asFunction<Pointer<mdkMediaInfo> Function(Pointer<mdkPlayer>)>()(
         _player.ref.object);
@@ -460,6 +483,7 @@ class Player {
   /// Set decoder priority.
   /// Detail: https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setdecodersmediatype-type-const-stdvectorstdstring-names
   void setDecoders(MediaType type, List<String> value) {
+    if (_isDisposed) return;
     switch (type) {
       case MediaType.audio:
         _adec = value;
@@ -478,6 +502,7 @@ class Player {
   /// Set active tracks of [type]. Other tracks of [type] will be disabled.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setactivetracksmediatype-type-const-stdsetint-tracks
   void setActiveTracks(MediaType type, List<int> value) {
+    if (_isDisposed) return;
     switch (type) {
       case MediaType.audio:
         _activeAT = value;
@@ -501,6 +526,7 @@ class Player {
   /// An external media can contains other [MediaType] tracks although they will not be used.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setmediaconst-char-url-mediatype-type
   void setMedia(String uri, MediaType type) {
+    if (_isDisposed) return;
     final cs = uri.toNativeUtf8();
     _player.ref.setMediaForType.asFunction<
             void Function(Pointer<mdkPlayer>, Pointer<Char>, int)>()(
@@ -521,6 +547,7 @@ class Player {
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setnextmediaconst-char-url-int64_t-startposition--0-seekflag-flags--seekflagfromstart
   void setNext(String uri,
       {int from = 0, SeekFlag seekFlag = const SeekFlag(SeekFlag.defaultFlags)}) {
+    if (_isDisposed) return;
     nextMedia = uri;
     final cs = uri.toNativeUtf8();
     _player.ref.setNextMedia
@@ -530,9 +557,12 @@ class Player {
   }
 
   /// Wait for [state] in current thread
-  bool waitFor(PlaybackState state, {int timeout = -1}) => _player.ref.waitFor
-          .asFunction<bool Function(Pointer<mdkPlayer>, int, int)>()(
-      _player.ref.object, state.rawValue, timeout);
+  bool waitFor(PlaybackState state, {int timeout = -1}) {
+    if (_isDisposed) return false;
+    return _player.ref.waitFor
+        .asFunction<bool Function(Pointer<mdkPlayer>, int, int)>()(
+        _player.ref.object, state.rawValue, timeout);
+  }
 
   /// Seek to [position] in milliseconds
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#bool-seekint64_t-pos-seekflag-flags-stdfunctionvoidint64_t-ret-cb--nullptr
@@ -551,6 +581,7 @@ class Player {
   }
 
   List<DurationRange> bufferedTimeRanges() {
+    if (_isDisposed) return [];
     const int n = 16;
     final cbytes = calloc<Int64>(2 * n);
     final count = _player.ref.bufferedTimeRanges.asFunction<
@@ -568,6 +599,7 @@ class Player {
   /// Return buffered duration in milliseconds.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#int64_t-bufferedint64_t-bytes--nullptr-const
   int buffered() {
+    if (_isDisposed) return 0;
     //var cbytes = calloc<Int64>();
     final ret = _player.ref.buffered
             .asFunction<int Function(Pointer<mdkPlayer>, Pointer<Int64>)>()(
@@ -596,6 +628,7 @@ class Player {
   /// Start to record if [to] is not null. Stop recording if [to] is null.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-recordconst-char-url--nullptr-const-char-format--nullptr
   void record({String? to, String? format}) {
+    if (_isDisposed) return;
     final cto = to?.toNativeUtf8();
     final cfmt = format?.toNativeUtf8();
     _player.ref.record.asFunction<
@@ -633,6 +666,7 @@ class Player {
   /// Set additional properties.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setpropertyconst-stdstring-key-const-stdstring-value
   void setProperty(String name, String value) {
+    if (_isDisposed) return;
     final ck = name.toNativeUtf8();
     final cv = value.toNativeUtf8();
     _player.ref.setProperty.asFunction<
@@ -644,6 +678,7 @@ class Player {
 
   /// Get property value for [name]
   String? getProperty(String name) {
+    if (_isDisposed) return null;
     final ck = name.toNativeUtf8();
     final cv = _player.ref.getProperty.asFunction<
             Pointer<Char> Function(Pointer<mdkPlayer>, Pointer<Char>)>()(

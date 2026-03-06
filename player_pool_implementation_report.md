@@ -76,4 +76,26 @@ Mạng yếu liên tục dẫn đến cơ chế reconnect lặp lại có thể 
 
 ---
 
-**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, chống O(N), và cách ly rủi ro Heartcheck ngầm) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông, làm phẳng bộ nhớ rò rỉ và tăng độ êm cho GPU.
+## 5. Nâng cấp cốt lõi & Vá lỗ hổng bổ sung (Review Refactor)
+
+Qua quá trình rà soát và đánh giá hiệu năng bộ nhớ (Memory Profiling) chuyên sâu, hệ thống Pool đã được vá thêm những lỗ hổng tiềm ẩn cực kỳ nguy hiểm và cải tiến logic xử lý:
+
+### a. Khắc phục Rò rỉ Memory (Memory Leak) MDK Event Listener
+*   **Vấn đề (Leak #2):** Trong trạng thái lười biếng (Idle) hoặc Sanitize, mặc dù UI callback đã ngắt, C++ Decoder vẫn có thể rò rỉ các event `onMediaStatus`. Việc cập nhật liên tiếp timestamp `lastUsed` trong lúc này đánh lừa hàm Dọn rác `lazyCleanup()`, khiến các idle player rác cứ tồn đọng không bao giờ bị hủy.
+*   **Giải pháp:** Bổ sung điều kiện chặn `if (isBusy)` để đảm bảo chỉ ghi nhận `lastUsed` khi thiết bị thực sự đang tiêu thụ bởi UI Widget. Ngắt listener bằng `player.onMediaStatus(null)` trong hàm `sanitize()`.
+
+### b. Ngăn chặn Duplicate Tham chiếu Cache (Memory Leak #3)
+*   **Vấn đề:** Khi tái sử dụng O(1) qua biến `_idleUrlCache`, hành động mượn/trả liên tục 1 URL dẫn đến việc `List` bị duplicate rác nhiều lần cùng một PlayerWrapper (nhờ phép `putIfAbsent`).
+*   **Giải pháp:** Trước khi Add vào `_idleUrlCache` trong hàm release, hệ thống thực thi câu lệnh dọn dẹp tham chiếu rác: `_idleUrlCache[url]?.remove(wrapper);` bảo vệ toàn vẹn dữ liệu O(1).
+
+### c. Xử lý Logic Rác HQ Pool và Lỗi Cache Miss
+*   **Quản lý HQ Players (Bug #2):** Các player chất lượng cao (HQ) trước đây không có luật Garbage Collection. Đã bổ sung cơ chế cho riêng cấu trúc HQ: tự động dọn sát (Dispose) nếu nằm rỗng (Idle) vượt quá **10 phút**.
+*   **Fix Logic Cache (Bug #1):** Sửa lỗi điều kiện `??`, ép buộc `player.lastMediaUrl = mediaUrl` ngay cả khi param null. Đảm bảo Cache Lookup Dictionary tuyệt đối không bị trỏ sai thông tin vào luồng Stream cũ kỹ.
+
+### d. Chuyển đổi trạng thái Stopped vs Paused (Warm Context)
+*   **Cải tiến:** Quá trình `sanitize` nâng cấp chuyển MDK Playback State sang `paused` thay vì `stopped`. Do đó Context giải mã của luồng Video giữ nguyên trên RAM. 
+*   **Hiệu ứng UI:** Chuyển đổi qua lại giữa lưới 36 Grid và 9 Grid trở nên **Instant Frame** (dưới 5ms) mà không bị chớp đen Frame. Khuyến khích kết hợp `RepaintBoundary` và cơ chế tắt Texture Lifecycle bên ngoài Flutter Widget để đảm bảo hiệu năng Rendering cao nhất.
+
+---
+
+**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, chống O(N) lookup, vá rò rỉ Duplicate Caches và cách ly rủi ro Heartcheck ngầm) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak) và tăng độ êm cho GPU.

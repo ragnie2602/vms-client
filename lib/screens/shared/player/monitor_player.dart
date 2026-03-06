@@ -501,6 +501,16 @@ class MonitorPlayerState extends State<MonitorPlayer>
       _status.value = PlayerStatus.paused;
     } else {
       _shouldSyncPlayerTime = true;
+
+      // Clear accumulated buffer to avoid speed-up/lag on resume
+      final buffered = _player.buffered();
+      if (buffered > 0) {
+        await _player.seek(
+          position: buffered,
+          flags: const SeekFlag(SeekFlag.fromNow | SeekFlag.keyFrame),
+        );
+      }
+
       _player.play();
       _status.value = PlayerStatus.playing;
     }
