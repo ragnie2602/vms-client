@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -21,6 +22,8 @@ import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/screens/shared/player/player_pool_manager.dart';
 import 'package:volume_controller/volume_controller.dart';
 
 import 'components/dual_task_queue.dart';
@@ -84,7 +87,8 @@ class MonitorPlayerState extends State<MonitorPlayer>
   AnimationController? _zoomAnimationController;
   Animation<double>? _zoomAnimation;
 
-  late Player _player;
+  late PlayerWrapper _playerWrapper;
+  Player get _player => _playerWrapper.player;
   Completer<bool>? _waitForFirstFrame;
   Completer<void> _waitForUnloadedOldMedia = Completer<void>()..safeComplete();
 
@@ -174,16 +178,19 @@ class MonitorPlayerState extends State<MonitorPlayer>
   }
 
   Future<void> _init() async {
+    final windowId = context.read<AppBloc>().windowId;
+    final isHighQuality = widget.mode == MonitorMode.liveview;
+
     if (widget.mode == MonitorMode.monitoring) {
       TaskPool.instance.add(() async {
-        await _initPlayer();
+        await _initPlayer(windowId, isHighQuality);
         await _connecting();
         await Future.delayed(const Duration(milliseconds: 100));
 
         if (!mounted) _tryDisposePlayer();
       });
     } else {
-      await _initPlayer();
+      await _initPlayer(windowId, isHighQuality);
       await _connecting();
     }
   }
@@ -265,19 +272,20 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   Future<void> _tryDisposePlayer() async {
     try {
-      await _player.dispose(
-        delay: const Duration(milliseconds: 100),
-        synchronized: widget.mode == MonitorMode.monitoring,
-      );
+      if (_state.value == PlayerState.error || _state.value == PlayerState.error_again) {
+        _playerWrapper.isCorrupted = true;
+      }
+      PlayerPoolManager.instance.release(_playerWrapper);
     } catch (_) {}
   }
 
   /* =============================== CONNECTION FUNCTIONS =============================== */
-  Future<void> _initPlayer() async {
+  Future<void> _initPlayer(int windowId, bool isHighQuality) async {
     if (!mounted) return;
 
-    _player = Player();
-    _player.onMediaStatus((pre, cur) {
+    _playerWrapper = await PlayerPoolManager.instance.acquire(windowId, isHighQuality: isHighQuality);
+
+    _playerWrapper.setUiStatusCallback((pre, cur) {
       if (_waitForFirstFrame != null && !_waitForFirstFrame!.isCompleted) {
         if (cur.test(MediaStatus.invalid)) _waitForFirstFrame!.complete(false);
         if (pre.test(MediaStatus.buffering) && cur.test(MediaStatus.buffered)) {
