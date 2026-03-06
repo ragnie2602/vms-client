@@ -1165,9 +1165,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         _buildLabel('Nhóm đối tượng', isRequired: true),
         const SizedBox(height: 8),
         _SubjectGroupMultiSelectDropdown(
-          groups: widget.subjectGroups
-              .where((g) => (g.level ?? 0) <= 3)
-              .toList(),
+          // hiển thị full list nhóm
+          groups: widget.subjectGroups.toList(),
           selectedIds: _selectedSubjectGroupIds,
           onChanged: (ids) {
             setState(() {
