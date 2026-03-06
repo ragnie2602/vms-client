@@ -1,94 +1,204 @@
 
-⸻
 
-Problem 1 — O(N) scan each acquire
+Leak #2 (NGHIÊM TRỌNG)
 
-_findFreePlayer()
+Trong acquire():
 
-_pool.firstWhere(...)
+player.attachMediaStatusListener();
 
-This is O(N).
+Nhưng constructor của wrapper đã gọi:
 
-If you scale to:
+attachMediaStatusListener()
 
-36 players × many acquire/release per second
+Khi acquire lại:
 
-this becomes inefficient.
+sanitize()
+→ clear listener
 
-Recommended improvement
+acquire()
+→ attach again
 
-Maintain two lists
+Điều này đúng.
 
-freePlayers
-busyPlayers
+Nhưng có vấn đề:
 
-Example:
+onMediaStatus() overwrite callback
 
-List<PlayerWrapper> _freePlayers = [];
-Set<PlayerWrapper> _busyPlayers = {};
-
-Acquire becomes O(1).
+OK.
 
 ⸻
 
-Problem 2 — cast<PlayerWrapper?>() is unnecessary
+Nhưng bug ở đây:
 
-Example:
+attachMediaStatusListener():
 
-_pool.cast<PlayerWrapper?>()
+lastUsed = DateTime.now();
 
-This creates extra allocation and runtime casting.
+Mỗi media event sẽ:
 
-Replace with:
+update lastUsed
 
-_pool.firstWhere(...)
+→ lazy cleanup sẽ không bao giờ chạy với player idle nếu:
 
-Cleaner and faster.
+decoder vẫn emit status
+
+Điều này có thể xảy ra.
+
+⸻
+
+Fix
+
+Chỉ update lastUsed nếu:
+
+isBusy == true
+
+if (isBusy) {
+  lastUsed = DateTime.now();
+}
+
+
+⸻
+
+Leak #3 (nguy hiểm)
+
+Trong release():
+
+_idleUrlCache.putIfAbsent(wrapper.lastMediaUrl!, () => []).add(wrapper);
+
+Nhưng trong _lazyCleanup() bạn remove:
+
+_idleUrlCache[p.lastMediaUrl!]?.remove(p);
+
+Nếu player:
+
+release
+→ acquire
+→ release
+→ acquire
+
+wrapper có thể bị duplicate trong cache list.
+
+⸻
+
+Fix an toàn
+
+_idleUrlCache[wrapper.lastMediaUrl!]?.remove(wrapper);
+_idleUrlCache.putIfAbsent(...).add(wrapper);
+
+
+⸻
+
+Leak #4 (Texture leak risk)
+
+Trong dispose() của widget:
+
+_player.pause();
+
+sau đó:
+
+_tryDisposePlayer()
+
+trong đó:
+
+release(wrapper)
+
+OK.
+
+⸻
+
+Nhưng nếu:
+
+widget dispose
+player still rendering texture
+
+có thể gây Flutter texture leak.
+
+Bạn nên:
+
+_player.state = PlaybackState.stopped
+
+trước khi release khi widget dispose.
 
 ⸻
 
 
-Missing safety
+⸻
 
-This is dangerous:
+5. Lỗi logic quan trọng
 
-wrapper.player.dispose();
-_pool.remove(wrapper);
+Bug #1 (nghiêm trọng)
 
-If the UI still references the player, Flutter may crash.
+Trong acquire():
 
-Safer pattern:
+player.lastMediaUrl = mediaUrl ?? player.lastMediaUrl;
 
-wrapper.isCorrupted = true
-wrapper.isBusy = false
+Nếu:
 
-and dispose later.
+mediaUrl == null
+
+player sẽ giữ URL cũ.
+
+Sau đó release:
+
+cache map sẽ trỏ sai URL
+
 
 ⸻
 
+Fix
+
+player.lastMediaUrl = mediaUrl;
 
 
-10. Missing Player Health Check
+⸻
 
-You have:
+Bug #2
 
-isCorrupted
+Trong _lazyCleanup():
 
-but nowhere you detect corruption.
+_idleNormalPlayers.removeWhere
+
+nhưng HQ player không cleanup.
+
+Nếu HQ player bị unused:
+
+memory leak
 
 
+⸻
 
-11. Critical Feature Missing for 36 Cameras
+fix
 
-For large grids you should support player reuse without destroying decoders.
+cleanup HQ nếu:
 
-Instead of:
+>10 minutes
 
-player.media = ""
+⸻
 
-prefer:
+8. Một optimization rất mạnh bạn chưa dùng
 
-player.media = newStream
+Trong acquire():
 
-Decoder reuse improves performance significantly.
+Hiện tại:
 
+media = widget.source
+
+mỗi lần connect.
+
+Nhưng nếu:
+
+cacheHit == true
+
+bạn có thể skip reconnect.
+
+Pseudo:
+
+if (cacheHit && player.state == playing) {
+  return immediately
+}
+
+Switch:
+
+36 → 9 → 36
+
+sẽ instant.

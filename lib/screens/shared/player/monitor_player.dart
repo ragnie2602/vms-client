@@ -283,7 +283,11 @@ class MonitorPlayerState extends State<MonitorPlayer>
   Future<void> _initPlayer(int windowId, bool isHighQuality) async {
     if (!mounted) return;
 
-    _playerWrapper = await PlayerPoolManager.instance.acquire(windowId, isHighQuality: isHighQuality);
+    _playerWrapper = await PlayerPoolManager.instance.acquire(
+      windowId,
+      isHighQuality: isHighQuality,
+      mediaUrl: widget.source,
+    );
 
     _playerWrapper.setUiStatusCallback((pre, cur) {
       if (_waitForFirstFrame != null && !_waitForFirstFrame!.isCompleted) {

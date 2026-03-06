@@ -11,6 +11,7 @@ class PlayerWrapper {
   bool isBusy = false;
   bool isCorrupted = false;
   DateTime lastUsed = DateTime.now();
+  String? lastMediaUrl;
 
   final List<StreamSubscription> _activeSubscriptions = [];
   bool Function(MediaStatus, MediaStatus)? _uiStatusCallback;
@@ -21,8 +22,12 @@ class PlayerWrapper {
     this.windowId, {
     this.isHighQualityReserved = false,
   }) {
-    // Health check ngầm định của Wrapper
+    attachMediaStatusListener();
+  }
+
+  void attachMediaStatusListener() {
     player.onMediaStatus((pre, cur) {
+      lastUsed = DateTime.now();
       if (cur.test(MediaStatus.invalid)) {
         Logger.warn('Player Pool [$windowId]: Player $id detected invalid media status! Marking as corrupted.');
         isCorrupted = true;
@@ -48,7 +53,8 @@ class PlayerWrapper {
 
   void sanitize() {
     Logger.log('Player Pool [$windowId]: Sanitizing player $id (Warm pool)');
-    player.state = PlaybackState.stopped; // Đóng băng Decoder, giữ tiết kiệm CPU nhưng không clear URL để tái sử dụng
+    player.onMediaStatus(null); // Clear MDK callback to prevent memory leak
+    player.state = PlaybackState.paused; // Warm pause instead of stopped, keep context for fast switch
     _uiStatusCallback = null;
 
     for (final sub in _activeSubscriptions) {
@@ -62,11 +68,17 @@ class PlayerPoolManager {
   static final PlayerPoolManager instance = PlayerPoolManager._();
   PlayerPoolManager._();
 
-  // Single Isolate isolation
   int? _currentWindowId;
 
-  final List<PlayerWrapper> _idlePlayers = [];
+  // Split pools for O(1) and logical clarity
+  final List<PlayerWrapper> _idleHqPlayers = [];
+  final List<PlayerWrapper> _idleNormalPlayers = [];
+  
+  // O(1) Cache Lookup mapping MediaURL -> List of idle players
+  final Map<String, List<PlayerWrapper>> _idleUrlCache = {};
+  
   final Set<PlayerWrapper> _busyPlayers = {};
+  final Set<PlayerWrapper> _quarantinedPlayers = {};
   int _idCounter = 0;
 
   final int minPoolSize = 2;
@@ -82,39 +94,44 @@ class PlayerPoolManager {
 
   void disposePool() {
     _cleanupTimer?.cancel();
-    for (var p in _idlePlayers) {
-      p.player.dispose();
-    }
-    _idlePlayers.clear();
-    for (var p in _busyPlayers) {
-      p.player.dispose();
-    }
+    for (var p in _idleHqPlayers) p.player.dispose();
+    _idleHqPlayers.clear();
+
+    for (var p in _idleNormalPlayers) p.player.dispose();
+    _idleNormalPlayers.clear();
+    
+    _idleUrlCache.clear();
+
+    for (var p in _busyPlayers) p.player.dispose();
     _busyPlayers.clear();
+
+    for (var p in _quarantinedPlayers) p.player.dispose();
+    _quarantinedPlayers.clear();
   }
 
   Future<void> initializePool(int windowId) async {
     if (_currentWindowId != null && _currentWindowId == windowId) return;
     _currentWindowId = windowId;
 
-    if (_idlePlayers.isNotEmpty || _busyPlayers.isNotEmpty) return;
+    if (_idleHqPlayers.isNotEmpty || _idleNormalPlayers.isNotEmpty || _busyPlayers.isNotEmpty) return;
 
     // High Quality reserved player
-    _idlePlayers.add(
-      PlayerWrapper(
-        Player(),
-        'hw_${_idCounter++}',
-        windowId,
-        isHighQualityReserved: true,
-      ),
+    var hqPlayer = PlayerWrapper(
+      Player(),
+      'hw_${_idCounter++}',
+      windowId,
+      isHighQualityReserved: true,
     );
+    _idleHqPlayers.add(hqPlayer);
 
     // Normal players
     for (int i = 0; i < minPoolSize; i++) {
-      _idlePlayers.add(PlayerWrapper(Player(), 'pw_${_idCounter++}', windowId));
+      var normalPlayer = PlayerWrapper(Player(), 'pw_${_idCounter++}', windowId);
+      _idleNormalPlayers.add(normalPlayer);
     }
 
     Logger.log(
-      'Player Pool [$windowId]: Initialized core pool with ${_idlePlayers.length} players',
+      'Player Pool [$windowId]: Initialized core pool with ${_idleHqPlayers.length + _idleNormalPlayers.length} players',
     );
 
     startCleanupTimer();
@@ -123,63 +140,85 @@ class PlayerPoolManager {
   Future<PlayerWrapper> acquire(
     int windowId, {
     bool isHighQuality = false,
+    String? mediaUrl,
   }) async {
-    if (_currentWindowId != windowId || (_idlePlayers.isEmpty && _busyPlayers.isEmpty)) {
+    if (_currentWindowId != windowId || (_idleHqPlayers.isEmpty && _idleNormalPlayers.isEmpty && _busyPlayers.isEmpty)) {
       await initializePool(windowId);
     }
 
-    if (isHighQuality) {
-      PlayerWrapper? hqPlayer;
-      for (final p in _idlePlayers) {
-        if (p.isHighQualityReserved) {
-          hqPlayer = p;
-          break;
-        }
-      }
+    PlayerWrapper? player;
 
-      if (hqPlayer != null) {
-        _idlePlayers.remove(hqPlayer);
+    // 1. O(1) Lookup: Check exact Cache Hit
+    if (mediaUrl != null && _idleUrlCache.containsKey(mediaUrl) && _idleUrlCache[mediaUrl]!.isNotEmpty) {
+      int idx = _idleUrlCache[mediaUrl]!.indexWhere((p) => p.isHighQualityReserved == isHighQuality);
+      if (idx != -1) {
+        player = _idleUrlCache[mediaUrl]!.removeAt(idx);
       } else {
-        hqPlayer = _idlePlayers.isNotEmpty ? _idlePlayers.removeLast() : _createNewPlayer(windowId);
+        player = _idleUrlCache[mediaUrl]!.removeLast(); // Better than nothing if type mis-match
       }
+      
+      if (player.isHighQualityReserved) {
+        _idleHqPlayers.remove(player);
+      } else {
+        _idleNormalPlayers.remove(player);
+      }
+      
+      if (_idleUrlCache[mediaUrl]!.isEmpty) {
+        _idleUrlCache.remove(mediaUrl);
+      }
+    }
 
-      hqPlayer.isBusy = true;
-      _busyPlayers.add(hqPlayer);
-      Logger.log(
-        'Player Pool [$windowId]: Acquired HIGH QUALITY player ${hqPlayer.id}',
-      );
-      return hqPlayer;
-    } else {
-      PlayerWrapper? player;
-      // Dành sự ưu tiên giữ lại các player High Quality nếu có thể
-      for (int i = _idlePlayers.length - 1; i >= 0; i--) {
-        if (!_idlePlayers[i].isHighQualityReserved) {
-          player = _idlePlayers.removeAt(i);
-          break;
+    // 2. Fetch from specific pool if no hit
+    if (player == null) {
+      if (isHighQuality && _idleHqPlayers.isNotEmpty) {
+        player = _idleHqPlayers.removeLast();
+      } else if (!isHighQuality && _idleNormalPlayers.isNotEmpty) {
+        player = _idleNormalPlayers.removeLast();
+      } else {
+        // Cross-pool steal fallback
+        if (_idleNormalPlayers.isNotEmpty) {
+          player = _idleNormalPlayers.removeLast();
+        } else if (_idleHqPlayers.isNotEmpty) {
+          player = _idleHqPlayers.removeLast();
         }
       }
-
-      player ??= _idlePlayers.isNotEmpty ? _idlePlayers.removeLast() : _createNewPlayer(windowId);
-
-      player.isBusy = true;
-      _busyPlayers.add(player);
-      Logger.log(
-        'Player Pool [$windowId]: Acquired normal player ${player.id}',
-      );
-      return player;
     }
+
+    // 3. Create if still null
+    player ??= _createNewPlayer(windowId, isHighQualityReserved: isHighQuality);
+
+    player.attachMediaStatusListener(); // Re-attach MDK listening previously cleared in sanitize
+    player.isBusy = true;
+    player.lastUsed = DateTime.now();
+
+    // 4. Safely evaluate cache hit logic and apply URL
+    bool cacheHit = player.lastMediaUrl == mediaUrl;
+    player.lastMediaUrl = mediaUrl ?? player.lastMediaUrl;
+    
+    _busyPlayers.add(player);
+    Logger.log(
+      'Player Pool [$windowId]: Acquired ${isHighQuality ? "HIGH QUALITY" : "normal"} player ${player.id} (Cache Hit: $cacheHit)',
+    );
+    return player;
   }
 
-  PlayerWrapper _createNewPlayer(int windowId) {
-    if ((_idlePlayers.length + _busyPlayers.length) >= maxPoolSize) {
+  PlayerWrapper _createNewPlayer(int windowId, {bool isHighQualityReserved = false}) {
+    int totalPlayers = _idleHqPlayers.length + _idleNormalPlayers.length + _busyPlayers.length + _quarantinedPlayers.length;
+    if (totalPlayers >= maxPoolSize) {
       Logger.error(
         'Player Pool [$windowId]: Max pool size ($maxPoolSize) reached! Cannot create more players.',
       );
       throw Exception('MAX_POOL_SIZE_REACHED');
     }
-    final wrapper = PlayerWrapper(Player(), 'pw_${_idCounter++}', windowId);
+    final String prefix = isHighQualityReserved ? 'hw' : 'pw';
+    final wrapper = PlayerWrapper(
+      Player(), 
+      '${prefix}_${_idCounter++}', 
+      windowId,
+      isHighQualityReserved: isHighQualityReserved,
+    );
     Logger.log(
-      'Player Pool [$windowId]: Scaling UP -> creating new player ${wrapper.id}. Total: ${_idlePlayers.length + _busyPlayers.length + 1}',
+      'Player Pool [$windowId]: Scaling UP -> creating new player ${wrapper.id}. Total: ${totalPlayers + 1}',
     );
     return wrapper;
   }
@@ -195,14 +234,26 @@ class PlayerPoolManager {
       Logger.log(
         'Player Pool [${wrapper.windowId}]: Quarantining corrupted player ${wrapper.id}',
       );
-      // Hủy từ từ để an toàn giao diện UI không bị lỗi Texture
+      _quarantinedPlayers.add(wrapper);
+      
+      // Hủy từ từ để an toàn giao diện UI không bị lỗi Texture, nhưng giữ nó trong quarantine báo limit chuẩn
       Future.delayed(const Duration(seconds: 1), () {
         wrapper.player.dispose();
+        _quarantinedPlayers.remove(wrapper);
       });
     } else {
       wrapper.isBusy = false;
       wrapper.lastUsed = DateTime.now();
-      _idlePlayers.add(wrapper);
+      
+      if (wrapper.isHighQualityReserved) {
+        _idleHqPlayers.add(wrapper);
+      } else {
+        _idleNormalPlayers.add(wrapper);
+      }
+      
+      if (wrapper.lastMediaUrl != null) {
+        _idleUrlCache.putIfAbsent(wrapper.lastMediaUrl!, () => []).add(wrapper);
+      }
     }
   }
 
@@ -210,26 +261,29 @@ class PlayerPoolManager {
     if (_currentWindowId == null) return;
     final now = DateTime.now();
 
-    final nonHqPlayers = _idlePlayers.where((p) => !p.isHighQualityReserved).toList();
-
-    while (nonHqPlayers.length > minPoolSize) {
-      // Find player to kill: not busy, and not used recently
-      final candidate = nonHqPlayers.cast<PlayerWrapper?>().firstWhere(
-        (p) =>
-            p != null && now.difference(p.lastUsed).inMinutes > 5,
-        orElse: () => null,
-      );
-
-      if (candidate != null) {
-        Logger.log(
-          'Player Pool [$_currentWindowId]: Lazy Cleanup -> disposing player ${candidate.id}',
-        );
-        candidate.player.dispose();
-        _idlePlayers.remove(candidate);
-        nonHqPlayers.remove(candidate);
-      } else {
-        break; // No more disposable candidates
-      }
+    int targetToRemove = _idleNormalPlayers.length - minPoolSize;
+    if (targetToRemove > 0) {
+      _idleNormalPlayers.removeWhere((p) {
+        if (targetToRemove <= 0) return false;
+        
+        if (now.difference(p.lastUsed).inMinutes > 5) {
+          Logger.log(
+            'Player Pool [$_currentWindowId]: Lazy Cleanup -> disposing player ${p.id}',
+          );
+          
+          if (p.lastMediaUrl != null) {
+            _idleUrlCache[p.lastMediaUrl!]?.remove(p);
+            if (_idleUrlCache[p.lastMediaUrl!]?.isEmpty ?? false) {
+              _idleUrlCache.remove(p.lastMediaUrl);
+            }
+          }
+          
+          p.player.dispose();
+          targetToRemove--;
+          return true;
+        }
+        return false;
+      });
     }
   }
 }
