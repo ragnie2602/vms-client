@@ -78,6 +78,7 @@ class ObjectTypeField {
   final String displayName;
   final FieldDataType dataType;
   final bool isDefault;
+  final bool isRequired;
 
   const ObjectTypeField({
     required this.id,
@@ -88,6 +89,7 @@ class ObjectTypeField {
     required this.dataType,
     this.isDefault = false,
     this.sortOrder,
+    this.isRequired = false,
   });
 
   final int? sortOrder;
@@ -106,6 +108,7 @@ class ObjectTypeField {
       displayName: json['displayName'] as String? ?? '',
       dataType: FieldDataType.fromString(json['dataType'] as String? ?? 'text'),
       sortOrder: json['sortOrder'] as int?,
+      isRequired: json['isRequired'] as bool? ?? false,
     );
   }
 
@@ -117,6 +120,7 @@ class ObjectTypeField {
     String? displayName,
     FieldDataType? dataType,
     bool? isDefault,
+    bool? isRequired,
   }) {
     return ObjectTypeField(
       id: id ?? this.id,
@@ -126,6 +130,7 @@ class ObjectTypeField {
       displayName: displayName ?? this.displayName,
       dataType: dataType ?? this.dataType,
       isDefault: isDefault ?? this.isDefault,
+      isRequired: isRequired ?? this.isRequired,
     );
   }
 
@@ -136,6 +141,7 @@ class ObjectTypeField {
       'displayName': displayName,
       'dataType': dataType.name,
       'sortOrder': sortOrder,
+      'isRequired': isRequired,
     };
   }
 }

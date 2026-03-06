@@ -12,18 +12,53 @@ class HomeTab {
   final String title;
   final String svg;
   final List<HomeTab> nested;
+  final bool useMaterialIcon;
+  final String? materialIcon;
 
-  const HomeTab(this.route, {required this.title, required this.svg, this.nested = const []});
+  const HomeTab(
+    this.route, {
+    required this.title,
+    required this.svg,
+    this.nested = const [],
+    this.useMaterialIcon = false,
+    this.materialIcon,
+  });
 
   static const tabs = [
-    HomeTab(Routes.monitoring, title: 'Xem trực tiếp', svg: AppAssets.tabMonitor),
+    HomeTab(
+      Routes.monitoring,
+      title: 'Xem trực tiếp',
+      svg: AppAssets.tabMonitor,
+    ),
     HomeTab(Routes.playback, title: 'Xem lại', svg: AppAssets.tabPlayback),
-    HomeTab(Routes.addGroupCamera, title: 'Quản lý camera', svg: AppAssets.tabCameraGroups),
+    HomeTab(
+      Routes.addGroupCamera,
+      title: 'Quản lý camera',
+      svg: AppAssets.tabCameraGroups,
+    ),
     HomeTab(Routes.emap, title: 'Bản đồ camera', svg: AppAssets.tabMap),
     HomeTab(Routes.events, title: 'Quản lý sự kiện', svg: AppAssets.tabEvents),
     HomeTab(Routes.aiBox, title: 'Quản lý AI Box', svg: AppAssets.tabAIBox),
     HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
-    HomeTab(Routes.configuration, title: 'Cấu hình hệ thống', svg: AppAssets.tabSystemConfig),
+    HomeTab(
+      Routes.objectTypes,
+      title: 'Quản lý đối tượng',
+      svg: AppAssets.tabUsers,
+      useMaterialIcon: true,
+      materialIcon: 'person',
+    ),
+    HomeTab(
+      Routes.objectGroups,
+      title: 'Quản lý nhóm đối tượng',
+      svg: AppAssets.tabUsers,
+      useMaterialIcon: true,
+      materialIcon: 'group',
+    ),
+    HomeTab(
+      Routes.configuration,
+      title: 'Cấu hình hệ thống',
+      svg: AppAssets.tabSystemConfig,
+    ),
     HomeTab(Routes.about, title: 'Thông tin ứng dụng', svg: AppAssets.tabInfo),
   ];
 }
@@ -37,7 +72,10 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
 
   bool? _lastSidebarState;
 
-  FutureOr<void> _onToggleSidebar(ToggleSidebar event, Emitter<HomeState> emit) async {
+  FutureOr<void> _onToggleSidebar(
+    ToggleSidebar event,
+    Emitter<HomeState> emit,
+  ) async {
     // Đóng và save trạng thái trước đó
     if (event.type == 1) {
       _lastSidebarState = state.expandedSidebar;
@@ -45,7 +83,11 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
     }
     // Khôi phục lại trạng thái đã save
     else if (event.type == 2) {
-      emit(state.copyWith(expandedSidebar: _lastSidebarState ?? state.expandedSidebar));
+      emit(
+        state.copyWith(
+          expandedSidebar: _lastSidebarState ?? state.expandedSidebar,
+        ),
+      );
       _lastSidebarState = null;
     }
     // Toggle bình thường
@@ -60,11 +102,17 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
 
     emit(state.copyWith(selectedTab: event.tab, onBackCanNull: true));
     if (event.tab.route != null || event.route != null) {
-      AppRouter.router.goNamed(event.route?.name ?? event.tab.route!.name, extra: event.extra);
+      AppRouter.router.goNamed(
+        event.route?.name ?? event.tab.route!.name,
+        extra: event.extra,
+      );
     }
   }
 
-  FutureOr<void> _onChangePageInfo(ChangePageInfo event, Emitter<HomeState> emit) async {
+  FutureOr<void> _onChangePageInfo(
+    ChangePageInfo event,
+    Emitter<HomeState> emit,
+  ) async {
     emit(
       state.copyWith(
         pageTitle: event.title,
@@ -135,5 +183,11 @@ class HomeState extends BaseState {
   }
 
   @override
-  List<Object?> get props => [selectedTab, pageTitle, pageDescription, onBack, expandedSidebar];
+  List<Object?> get props => [
+    selectedTab,
+    pageTitle,
+    pageDescription,
+    onBack,
+    expandedSidebar,
+  ];
 }
