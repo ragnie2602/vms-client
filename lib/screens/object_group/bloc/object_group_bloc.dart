@@ -194,7 +194,9 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
 
       // Reload subject groups to refresh the tree
       add(const LoadSubjectGroups());
+      event.onSuccess?.call();
     } catch (e) {
+      event.onError?.call(e.toString());
       emit(
         state.copyWith(
           errorMessage: e.toString(),
@@ -215,7 +217,9 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       );
       await _updateSubjectGroupUsecase.execute(input);
       add(const LoadSubjectGroups());
+      event.onSuccess?.call();
     } catch (e) {
+      event.onError?.call(e.toString());
       emit(
         state.copyWith(
           errorMessage: e.toString(),
@@ -284,7 +288,9 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
       await _deleteSubjectGroupUsecase.execute(input);
       add(const SelectSubjectGroup(null));
       add(const LoadSubjectGroups());
+      event.onSuccess?.call();
     } catch (e) {
+      event.onError?.call(e.toString());
       emit(
         state.copyWith(
           errorMessage: e.toString(),

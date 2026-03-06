@@ -276,14 +276,16 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 CreateSubjectGroup(
                   name: nameNewGroup,
                   parentId: parentGroup?.id ?? 0,
+                  onSuccess: () {
+                    if (c.mounted) {
+                      ToastUtil.toastSuccess(
+                        context: c,
+                        title: const Text('Thêm mới nhóm đối tượng thành công'),
+                      );
+                    }
+                  },
                 ),
               );
-              if (c.mounted) {
-                ToastUtil.toastSuccess(
-                  context: c,
-                  title: Text('Thêm mới nhóm đối tượng thành công'),
-                );
-              }
             }
           },
     );
@@ -323,14 +325,16 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     parentId:
                         parentGroup?.id ?? 0, // ko có group cha -> truyền 0
                   ),
+                  onSuccess: () {
+                    if (c.mounted) {
+                      ToastUtil.toastSuccess(
+                        context: c,
+                        title: const Text('Sửa nhóm đối tượng thành công'),
+                      );
+                    }
+                  },
                 ),
               );
-              if (c.mounted) {
-                ToastUtil.toastSuccess(
-                  context: c,
-                  title: Text('Sửa nhóm đối tượng thành công'),
-                );
-              }
             }
           },
     );
@@ -350,13 +354,19 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           groupName: currentGroup.name,
           onConfirm: () {
             final bloc = c.read<ObjectGroupBloc>();
-            bloc.add(DeleteSubjectGroup(id: currentGroup.id ?? 0));
-            if (c.mounted) {
-              ToastUtil.toastSuccess(
-                context: c,
-                title: Text('Xóa nhóm đối tượng thành công'),
-              );
-            }
+            bloc.add(
+              DeleteSubjectGroup(
+                id: currentGroup.id ?? 0,
+                onSuccess: () {
+                  if (c.mounted) {
+                    ToastUtil.toastSuccess(
+                      context: c,
+                      title: const Text('Xóa nhóm đối tượng thành công'),
+                    );
+                  }
+                },
+              ),
+            );
           },
         );
       },
@@ -376,7 +386,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     try {
       final objectTypeDetail = await repo.getObjectTypeDetail(selectedType.id);
       if (!context.mounted) return;
-      showDialog(
+      final result = await showDialog<bool>(
         context: context,
         builder: (_) => AddObjectDialog(
           objectType: objectTypeDetail,
@@ -388,6 +398,14 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                   : state.selectedSubjectGroup),
         ),
       );
+      if (result == true && context.mounted) {
+        context.read<ObjectGroupBloc>().add(
+          LoadObjects(
+            objectTypeId: selectedType.id,
+            subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
+          ),
+        );
+      }
     } catch (e) {
       if (!context.mounted) return;
       ToastUtil.toastFail(context: context, title: Text('Lỗi: $e'));

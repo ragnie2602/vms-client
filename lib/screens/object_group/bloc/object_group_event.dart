@@ -72,34 +72,49 @@ class LoadSubjectGroups extends ObjectGroupEvent {
   const LoadSubjectGroups();
 }
 
-
 class CreateSubjectGroup extends ObjectGroupEvent {
   final String name;
   final int parentId;
+  final void Function()? onSuccess;
+  final void Function(String)? onError;
 
-  const CreateSubjectGroup({required this.name, required this.parentId});
+  const CreateSubjectGroup({
+    required this.name,
+    required this.parentId,
+    this.onSuccess,
+    this.onError,
+  });
 
   @override
-  List<Object> get props => [name, parentId];
+  List<Object?> get props => [name, parentId, onSuccess, onError];
 }
 
 class UpdateSubjectGroup extends ObjectGroupEvent {
   final int id;
   final SubjectGroup? subjectGroup;
+  final void Function()? onSuccess;
+  final void Function(String)? onError;
 
-  const UpdateSubjectGroup({required this.id, this.subjectGroup});
+  const UpdateSubjectGroup({
+    required this.id,
+    this.subjectGroup,
+    this.onSuccess,
+    this.onError,
+  });
 
   @override
-  List<Object?> get props => [id, subjectGroup];
+  List<Object?> get props => [id, subjectGroup, onSuccess, onError];
 }
 
 class DeleteSubjectGroup extends ObjectGroupEvent {
   final int id;
+  final void Function()? onSuccess;
+  final void Function(String)? onError;
 
-  const DeleteSubjectGroup({required this.id});
+  const DeleteSubjectGroup({required this.id, this.onSuccess, this.onError});
 
   @override
-  List<Object> get props => [id];
+  List<Object?> get props => [id, onSuccess, onError];
 }
 
 class SearchSubjectGroup extends ObjectGroupEvent {

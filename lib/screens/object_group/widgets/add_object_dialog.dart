@@ -13,6 +13,7 @@ import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.d
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/map/widgets/dash_border_widget.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 
 class AddObjectDialog extends StatefulWidget {
   final ObjectType objectType;
@@ -109,9 +110,10 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingDetail = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi tải dữ liệu: $e')));
+        ToastUtil.toastFail(
+          context: context,
+          title: Text('Lỗi tải dữ liệu: $e'),
+        );
       }
     }
   }
@@ -184,9 +186,10 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
           _localFilePaths[fieldName] = paths;
           _uploadingFields[fieldName] = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Tải file thất bại: $e')));
+        ToastUtil.toastFail(
+          context: context,
+          title: Text('Tải file thất bại: $e'),
+        );
       }
     }
   }
@@ -275,26 +278,24 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
 
       if (mounted) {
         Navigator.pop(context, true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              widget.isEditMode
-                  ? 'Sửa đối tượng thành công'
-                  : 'Thêm đối tượng thành công',
-            ),
+        ToastUtil.toastSuccess(
+          context: context,
+          title: Text(
+            widget.isEditMode
+                ? 'Sửa đối tượng thành công'
+                : 'Thêm đối tượng thành công',
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              widget.isEditMode
-                  ? 'Sửa đối tượng thất bại: $e'
-                  : 'Thêm đối tượng thất bại: $e',
-            ),
+        ToastUtil.toastFail(
+          context: context,
+          title: Text(
+            widget.isEditMode
+                ? 'Sửa đối tượng thất bại: $e'
+                : 'Thêm đối tượng thất bại: $e',
           ),
         );
       }
