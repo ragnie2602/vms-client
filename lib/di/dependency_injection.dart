@@ -19,7 +19,7 @@ import 'package:vms_flutter_client/data/repositories/object_group_repository.dar
 import 'package:vms_flutter_client/data/repositories/object_type_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
-import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';

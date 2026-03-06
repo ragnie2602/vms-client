@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 
 class ImportProgressDialog extends StatefulWidget {
   final IObjectGroupRepository repository;

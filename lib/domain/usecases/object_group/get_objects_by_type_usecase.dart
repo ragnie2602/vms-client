@@ -1,4 +1,4 @@
-import 'package:vms_flutter_client/domain/IRepositories/i_object_group_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/base_input.dart';
 import 'package:vms_flutter_client/domain/usecases/base_output.dart';
 import 'package:vms_flutter_client/domain/usecases/future_use_case.dart';
