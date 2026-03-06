@@ -18,6 +18,8 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
   Future<SearchEventOutput> buildUseCase(SearchEventInput input) async {
     List<String> cameraIds = input.cameraIds ?? input.cameras.map((e) => e.camId).toList();
 
+    final subjectName = input.subjectName?.isNotEmpty == true ? input.subjectName : null;
+
     // Minus 25200 because of converting GMT+7 -> GMT+0
     final res = await eventRepository.searchEvent(
       page: input.page,
@@ -29,7 +31,7 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
           : null,
       eventType: input.eventTypes,
       cameraIds: cameraIds,
-      subjectName: input.subjectName,
+      subjectName: subjectName,
     );
 
     List<EventType> eventTypes = [];

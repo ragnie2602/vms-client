@@ -512,6 +512,7 @@ class _EventScreenState extends State<EventScreen> {
             context.read(),
             context.read(),
             context.read(),
+            context.read(),
           ),
         ),
         BlocProvider.value(value: setupInfoFieldBloc),

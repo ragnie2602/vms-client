@@ -54,8 +54,11 @@ class GettingEventDetail extends EventState {
 
 class EventDetailSuccess extends EventState {
   final EventEntity event;
+  final List<(Widget, String, dynamic)> displayData;
+  const EventDetailSuccess(this.event, this.displayData);
 
-  const EventDetailSuccess(this.event);
+  @override
+  List<Object?> get props => [event, displayData];
 }
 
 class EventDetailFailure extends EventState {

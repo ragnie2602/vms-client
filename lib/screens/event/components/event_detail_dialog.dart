@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -82,6 +81,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     tabController.addListener(() => _tabIdx.value = tabController.index);
 
     internetSubscription = InternetConnectionChecker.instance.onStatusChange.listen((status) {
+      if (!mounted) return;
       if (status == InternetConnectionStatus.connected) {
         setState(() => _errorCause = _errorCause & ~1);
       } else {
@@ -130,10 +130,10 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (state is EventDetailFailure) return Center(child: Text(state.message));
-
                 if (state is! EventDetailSuccess) return SizedBox.shrink();
 
                 final event = state.event;
+                final displayData = state.displayData;
 
                 return Expanded(
                   child: Row(
@@ -296,46 +296,9 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                     columnSpacing: 10,
                                     data: CustomTableData(
                                       columnFlexes: [0, 1, 1],
-                                      data: [
-                                        [
-                                          SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
-                                          Text(
-                                            'Thời gian',
-                                            style: AppTypography.style(
-                                              13,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          Text(
-                                            DateFormat('HH:mm dd/MM/yyyy').format(event.timeEvent),
-                                            overflow: TextOverflow.visible,
-                                            style: AppTypography.style(
-                                              14,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            textAlign: TextAlign.end,
-                                          ),
-                                        ],
-                                        [
-                                          SvgPicture.asset(AppAssets.icVideoOn, height: 20),
-                                          Text(
-                                            'Tên camera',
-                                            style: AppTypography.style(
-                                              13,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          Text(
-                                            event.camera?.name ?? '',
-                                            overflow: TextOverflow.visible,
-                                            style: AppTypography.style(
-                                              14,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            textAlign: TextAlign.end,
-                                          ),
-                                        ],
-                                      ],
+                                      data: displayData
+                                          .map((d) => [d.$1, Text(d.$2), Text(d.$3.toString())])
+                                          .toList(),
                                     ),
                                     defaultVerticalAlignment: CrossAxisAlignment.start,
                                     horizontalAlignments: [
@@ -500,6 +463,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     _downloadProgress.dispose();
     _controlsScrollController.dispose();
     _imageTransformController.dispose();
+    internetSubscription?.cancel();
     super.dispose();
   }
 

@@ -4,18 +4,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/stream_event_usecase.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
 
 class DetectBloc extends Bloc<DetectEvent, DetectState> {
   final IDetectRepository detectRepository;
+  final IEventRepository eventRepository;
 
   final StreamEventUsecase streamEventUsecase;
 
   StreamSubscription? _subscription;
 
-  DetectBloc(this.detectRepository, this.streamEventUsecase) : super(const DetectState()) {
+  DetectBloc(this.detectRepository, this.eventRepository, this.streamEventUsecase)
+    : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
     on<DetectOnReceiveEvent>(_onDetectOnReceiveEvent);
     on<FilterEventsByViewingCameras>(_onFilterEventsByViewingCameras);
@@ -33,7 +36,17 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     emit(state.copyWith(status: DetectStatus.loading));
 
     // step1: Load danh sách loại sự kiện
-    final result = await detectRepository.getListTypeEventDetect();
+    // final result = await detectRepository.getListTypeEventDetect();
+    // result.fold(
+    //   (failure) {
+    //     emit(state.copyWith(status: DetectStatus.failure, errorMessage: failure.toString()));
+    //   },
+    //   (typeEvents) {
+    //     emit(state.copyWith(status: DetectStatus.success, typeEvents: typeEvents));
+    //   },
+    // );
+
+    final result = await eventRepository.getAllEventType();
     result.fold(
       (failure) {
         emit(state.copyWith(status: DetectStatus.failure, errorMessage: failure.toString()));
@@ -42,6 +55,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
         emit(state.copyWith(status: DetectStatus.success, typeEvents: typeEvents));
       },
     );
+
     // step 2: Lắng nghe sự kiện từ stream
     _subscription?.cancel();
     _subscription = streamEventUsecase
@@ -112,7 +126,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
         if (eventType == null) return false;
         final matchesType = state.typeEvents.any(
           (typeEvent) =>
-              state.selectedFilterTypes.contains(typeEvent.type) && typeEvent.typeName == eventType,
+              state.selectedFilterTypes.contains(typeEvent.type) && typeEvent.eventKey == eventType,
         );
         if (!matchesType) return false;
       }
