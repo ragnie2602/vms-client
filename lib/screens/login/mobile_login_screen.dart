@@ -105,7 +105,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
                       child: BlocConsumer<LoginBloc, LoginState>(
                         listener: (context, state) {
                           if (state.isSuccess) {
-                            context.goNamed(Routes.monitoring.name);
+                            context.goNamed(Routes.monitoring.name, extra: 'isFreshLogin');
                           } else if (state.errorMessage?.isNotEmpty == true) {
                             showAppMessageDialog(
                               context,

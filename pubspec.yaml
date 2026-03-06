@@ -87,6 +87,7 @@ dependencies:
   toastification: ^3.0.3
   diacritic: ^0.1.6
   path_provider: ^2.1.5
+  crypto: ^3.0.7
 
   # Mobile
   gal: ^2.3.2

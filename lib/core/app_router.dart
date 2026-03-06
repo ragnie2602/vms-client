@@ -15,6 +15,7 @@ import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.d
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/account/mobile_account_screen.dart';
 import 'package:vms_flutter_client/screens/account/mobile_info_screen.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
@@ -249,6 +250,9 @@ class AppRouter {
               ),
             ),
             BlocProvider(create: (context) => ChangeMyInfoBloc(context.read(), context.read())),
+            BlocProvider.value(value: context.read<AlarmSoundBloc>()..add(GetAlarmSounds(
+              force: state.extra == 'isFreshLogin',
+            ))),
           ],
           child: HomeScreen(body: child, currentPath: state.uri.path),
         ),

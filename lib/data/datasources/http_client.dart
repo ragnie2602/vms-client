@@ -13,7 +13,7 @@ class HttpClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: EndPoints.baseUrl,
-        connectTimeout: const Duration(seconds: 30), 
+        connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 40),
         headers: {'Content-Type': 'application/json'},
       ),
@@ -126,6 +126,30 @@ class HttpClient {
 
     if ([200, 201].contains(response.statusCode) && response.data != null) {
       return response.data;
+    }
+  }
+
+  Future<bool> download(
+    String url,
+    String savedPath, {
+    void Function(int, int)? onReceiveProgress,
+    Options? options,
+  }) async {
+    try {
+      final downloadOptions =
+          options?.copyWith(extra: {...options.extra ?? {}, 'savedPath': savedPath}) ??
+          Options(extra: {'savedPath': savedPath});
+
+      final res = await _dio.download(
+        url,
+        savedPath,
+        onReceiveProgress: onReceiveProgress,
+        options: downloadOptions,
+      );
+
+      return res.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 }

@@ -99,7 +99,11 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
                     margin: EdgeInsets.all(0.5),
                     width: maxWidth,
                     height: maxHeight,
-                    child: VideoThumbnail(source: widget.cameraSource, borderRadius: 8),
+                    child: VideoThumbnail(
+                      source: widget.cameraSource,
+                      borderRadius: 8,
+                      fit: BoxFit.fill,
+                    ),
                   ),
 
                   Listener(
