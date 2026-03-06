@@ -102,6 +102,7 @@ class AuthenticateService {
 
       return response.fold(
         (failure) {
+          _socketApiClient.disconnect();
           final msg = failure.parseMessage(Login_Error.valueOf);
           Logger.error(msg);
           return false;
