@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
 
 part 'object_type_event.dart';
 part 'object_type_state.dart';
 
-class ObjectTypeBloc extends Bloc<ObjectTypeEvent, ObjectTypeState> {
+class ObjectTypeBloc extends BaseBloc<ObjectTypeEvent, ObjectTypeState> {
   final IObjectTypeRepository repository;
 
   ObjectTypeBloc(this.repository) : super(const ObjectTypeState()) {

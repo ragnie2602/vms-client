@@ -1,6 +1,6 @@
 part of 'object_type_bloc.dart';
 
-class ObjectTypeEvent extends Equatable {
+class ObjectTypeEvent extends BaseEvent {
   const ObjectTypeEvent();
 
   @override

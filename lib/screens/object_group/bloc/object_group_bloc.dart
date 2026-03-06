@@ -1,5 +1,6 @@
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
@@ -11,7 +12,7 @@ import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_g
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 
-class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
+class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
   final GetObjectTypesUsecase _getObjectTypesUseCase;
   final GetObjectsByTypeUsecase _getObjectsByTypeUsecase;
   final GetSubjectGroupsUsecase _getSubjectGroupsUsecase;

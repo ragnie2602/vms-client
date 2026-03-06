@@ -1,8 +1,8 @@
-import 'package:equatable/equatable.dart';
+import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
-abstract class ObjectGroupEvent extends Equatable {
+class ObjectGroupEvent extends BaseEvent {
   const ObjectGroupEvent();
 
   @override

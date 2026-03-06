@@ -1,12 +1,13 @@
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:equatable/equatable.dart';
+import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
 enum ObjectGroupStatus { initial, loading, loaded, error }
 
-class ObjectGroupState extends Equatable {
+class ObjectGroupState extends BaseState with EquatableMixin {
   final ObjectGroupStatus status;
   final List<ObjectType> objectTypes;
   final ObjectType? selectedObjectType;

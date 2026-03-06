@@ -1,6 +1,6 @@
 part of 'object_type_bloc.dart';
 
-class ObjectTypeState extends Equatable {
+class ObjectTypeState extends BaseState with EquatableMixin {
   const ObjectTypeState();
 
   @override
