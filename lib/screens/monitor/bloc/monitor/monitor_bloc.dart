@@ -61,7 +61,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         MonitorSuccess(
           cameras: output.cameras ?? [],
           mode: lastState?.mode ?? ViewMode.v2x2,
-          allCameras: output.cameras ?? [],
+          allCameras: output.allCameras ?? output.cameras ?? [],
         ),
       );
     } else {
@@ -75,13 +75,19 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     TaskPool.instance.clean();
     emit(MonitorLoading());
 
-    final output = await getCameraUseCase.execute(GetCameraInput(groupId: event.groupId, tags: event.tags));
+    final output = await getCameraUseCase.execute(
+      GetCameraInput(
+        groupId: event.groupId,
+        tags: event.tags,
+        includeAllCameras: lastState == null, // Lần đầu call
+      ),
+    );
     if (output.isSuccess) {
       emit(
         MonitorSuccess(
           cameras: output.cameras ?? [],
           mode: ViewMode.fitWithLength(output.cameras!.length, min: ViewMode.v2x2),
-          allCameras: lastState?.allCameras ?? output.cameras ?? [],
+          allCameras: lastState?.allCameras ?? output.allCameras ?? output.cameras ?? [],
         ),
       );
     } else {
@@ -90,8 +96,6 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
   }
 
   FutureOr<void> _onGetAllCameraNoGroup(GetAllCameraNoGroup event, Emitter<MonitorState> emit) async {
-    final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
-
     TaskPool.instance.clean();
     emit(MonitorLoading());
 
@@ -101,7 +105,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         MonitorSuccess(
           cameras: output.cameras ?? [],
           mode: ViewMode.fitWithLength(output.cameras!.length, min: ViewMode.v2x2),
-          allCameras: lastState?.allCameras ?? output.cameras ?? [],
+          allCameras: output.allCameras ?? output.cameras ?? [],
         ),
       );
     } else {
