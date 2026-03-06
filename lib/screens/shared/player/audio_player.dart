@@ -36,7 +36,8 @@ class AudioPlayer {
 
     /* Callbacks */
     _player.onStateChanged((pre, cur) {
-      if (cur == PlaybackState.stopped) stop();
+      // Trường hợp gọi play lại --> state về stopped (đổi/reload url)
+      if (cur == PlaybackState.stopped && state.value != AudioPlayerState.initializing) stop();
 
       // print("=========================> STATE: $pre - $cur");
     });
