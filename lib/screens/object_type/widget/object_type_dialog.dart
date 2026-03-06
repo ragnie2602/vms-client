@@ -2,6 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -1007,7 +1008,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                     onTap: () {
                       _updateField(
                         index,
-                        field.copyWith(iconName: name, iconUrl: url),
+                        field.copyWith(iconName: '${AppConfig.BASE_ICON_PATH}/$name', iconUrl: url),
                       );
                       Navigator.pop(dialogContext);
                     },

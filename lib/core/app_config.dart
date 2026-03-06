@@ -80,6 +80,7 @@ class AppConfig {
 
   // object group
   static const int OBJECT_GROUP_MAX_LEVEL = 5;
+  static const String BASE_ICON_PATH = 'icons';
 }
 
 enum LiveviewDetailAudioSource {
