@@ -337,12 +337,13 @@ class ObjectListTable extends StatelessWidget {
     final repo = context.read<IObjectGroupRepository>();
     final bloc = context.read<ObjectGroupBloc>();
 
+    final objectName = data.fieldValues['Tên đối tượng'] ?? 'đối tượng';
+
     showDialog(
       context: context,
       builder: (_) => ConfirmDeleteDialog(
         title: 'Xóa đối tượng',
-        content:
-            'Bạn có chắc chắn muốn xóa đối tượng này không?\nHành động này không thể hoàn tác.',
+        content: 'Bạn có chắc chắn muốn xóa đối tượng $objectName?',
         onConfirm: () async {
           try {
             await repo.deleteObject(data.id);
