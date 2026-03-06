@@ -40,6 +40,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     on<DeleteSubjectGroup>(_onDeleteSubjectGroup);
     on<SelectSubjectGroup>(_onSelectSubjectGroup);
     on<SearchSubjectGroup>(_onSearchSubjectGroup);
+    on<ResetObjectGroupState>((event, emit) => emit(const ObjectGroupState()));
   }
 
   Future<void> _onSelectSubjectGroup(
@@ -281,6 +282,7 @@ class ObjectGroupBloc extends Bloc<ObjectGroupEvent, ObjectGroupState> {
     try {
       final input = DeleteSubjectGroupInput(id: event.id);
       await _deleteSubjectGroupUsecase.execute(input);
+      add(const SelectSubjectGroup(null));
       add(const LoadSubjectGroups());
     } catch (e) {
       emit(

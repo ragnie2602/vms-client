@@ -42,8 +42,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
   void initState() {
     super.initState();
     final bloc = context.read<ObjectGroupBloc>();
-    _groupSearchController.text = bloc.state.searchQuery;
-
+    // reset clear data cũ
+    bloc.add(const ResetObjectGroupState());
+    _groupSearchController.text = '';
+    // load init data mới
     bloc.add(const LoadObjectGroups(page: 1, size: 20));
     bloc.add(const LoadSubjectGroups());
   }

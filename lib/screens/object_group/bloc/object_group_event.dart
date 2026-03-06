@@ -9,6 +9,10 @@ abstract class ObjectGroupEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class ResetObjectGroupState extends ObjectGroupEvent {
+  const ResetObjectGroupState();
+}
+
 class InitializeObjectGroup extends ObjectGroupEvent {
   final int page;
   final int size;
