@@ -127,7 +127,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
           togglePlay();
           if (_shouldReconnectOnResume) {
             _shouldReconnectOnResume = false;
-            _connecting();
+            _connecting(isReconnecting: true);
           }
         }
       }
@@ -287,6 +287,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
       windowId,
       isHighQuality: isHighQuality,
       mediaUrl: widget.source,
+      cameraName: widget.name,
     );
 
     _playerWrapper.setUiStatusCallback((pre, cur) {
@@ -365,16 +366,52 @@ class MonitorPlayerState extends State<MonitorPlayer>
       if (!mounted) return timer.cancel();
 
       _reconnectingTimer?.cancel();
-      await _connecting(showLoading: false);
+      await _connecting(showLoading: false, isReconnecting: true);
     });
   }
 
-  Future<void> _connecting({bool showLoading = true, bool shortDelay = false}) async {
+  Future<void> _connecting({bool showLoading = true, bool shortDelay = false, bool isReconnecting = false}) async {
     if (!mounted) return;
 
     _timer?.cancel();
     _debounce?.cancel();
     _reconnectingTimer?.cancel();
+
+    // ═══════════════ FAST-PATH: Cache Hit ═══════════════
+    // Player was warm-paused by sanitize() with the same media URL still loaded.
+    // Skip media reload + texture creation entirely → just seek past stale buffer and resume.
+    if (_playerWrapper.isCacheHit && !isReconnecting && !_player.isDisposed) {
+      // Validate texture is still alive before taking fast-path
+      int cachedTextureId = -1;
+      try {
+        cachedTextureId = _player.textureId.value ?? -1;
+      } catch (_) {}
+
+      if (cachedTextureId >= 0) {
+        Logger.log('Player [${_playerWrapper.id}]: Fast-path resume from cache');
+        _state.value = PlayerState.initializing;
+
+        // Skip accumulated buffer to jump to realtime (live stream)
+        final buffered = _player.buffered();
+        if (buffered > 0) {
+          await _player.seek(
+            position: buffered,
+            flags: const SeekFlag(SeekFlag.fromNow | SeekFlag.keyFrame),
+          );
+        }
+
+        // Resume playback (player was paused by sanitize)
+        _player.state = PlaybackState.playing;
+
+        if (!mounted) return;
+        await _onInitialized();
+        return;
+      }
+      // textureId invalid → fall through to normal path
+      Logger.warn('Player [${_playerWrapper.id}]: Cache hit but texture invalid, falling back to normal path');
+    }
+
+    // ═══════════════ NORMAL PATH: Full reconnection ═══════════════
     _state.value = showLoading ? PlayerState.initializing : PlayerState.error_again;
 
     // Nếu kết nối lại sau khi bị disconnect --> set rỗng --> set lại source cũ
@@ -677,26 +714,28 @@ class MonitorPlayerState extends State<MonitorPlayer>
                     child: Center(
                       child: AspectRatio(
                         aspectRatio: _aspectRatio,
-                        child: ValueListenableBuilder(
-                          valueListenable: _player.textureId,
-                          builder: (context, id, _) {
-                            final player = id == null
-                                ? const SizedBox.shrink()
-                                : widget.borderRadius != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadiusGeometry.circular(
-                                      widget.borderRadius!,
-                                    ),
-                                    child: Texture(textureId: id),
-                                  )
-                                : Texture(textureId: id);
+                        child: _player.isDisposed
+                            ? const SizedBox.shrink()
+                            : ValueListenableBuilder(
+                                valueListenable: _player.textureId,
+                                builder: (context, id, _) {
+                                  final player = id == null
+                                      ? const SizedBox.shrink()
+                                      : widget.borderRadius != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadiusGeometry.circular(
+                                            widget.borderRadius!,
+                                          ),
+                                          child: Texture(textureId: id),
+                                        )
+                                      : Texture(textureId: id);
 
-                            return RepaintBoundary(
-                              key: isFullscreen ? null : _captureKey,
-                              child: player,
-                            );
-                          },
-                        ),
+                                  return RepaintBoundary(
+                                    key: isFullscreen ? null : _captureKey,
+                                    child: player,
+                                  );
+                                },
+                              ),
                       ),
                     ),
                   ),

@@ -10,6 +10,7 @@ class PlayerWrapper {
 
   bool isBusy = false;
   bool isCorrupted = false;
+  bool isCacheHit = false;
   DateTime lastUsed = DateTime.now();
   String? lastMediaUrl;
 
@@ -30,7 +31,7 @@ class PlayerWrapper {
       if (isBusy) {
         lastUsed = DateTime.now();
       }
-      if (cur.test(MediaStatus.invalid)) {
+      if (!isCorrupted && cur.test(MediaStatus.invalid)) {
         Logger.warn('Player Pool [$windowId]: Player $id detected invalid media status! Marking as corrupted.');
         isCorrupted = true;
       }
@@ -143,6 +144,7 @@ class PlayerPoolManager {
     int windowId, {
     bool isHighQuality = false,
     String? mediaUrl,
+    String? cameraName,
   }) async {
     if (_currentWindowId != windowId || (_idleHqPlayers.isEmpty && _idleNormalPlayers.isEmpty && _busyPlayers.isEmpty)) {
       await initializePool(windowId);
@@ -194,12 +196,13 @@ class PlayerPoolManager {
     player.lastUsed = DateTime.now();
 
     // 4. Safely evaluate cache hit logic and apply URL
-    bool cacheHit = player.lastMediaUrl == mediaUrl;
+    bool cacheHit = player.lastMediaUrl == mediaUrl && mediaUrl != null;
+    player.isCacheHit = cacheHit;
     player.lastMediaUrl = mediaUrl; // Bug #1 Fixed: Force apply URL even if null
     
     _busyPlayers.add(player);
     Logger.log(
-      'Player Pool [$windowId]: Acquired ${isHighQuality ? "HIGH QUALITY" : "normal"} player ${player.id} (Cache Hit: $cacheHit)',
+      'Player Pool [$windowId]: Acquired ${isHighQuality ? "HIGH QUALITY" : "normal"} player ${player.id} for "${cameraName ?? 'unknown'}" (Cache Hit: $cacheHit)',
     );
     return player;
   }
@@ -240,7 +243,9 @@ class PlayerPoolManager {
       
       // Hủy từ từ để an toàn giao diện UI không bị lỗi Texture, nhưng giữ nó trong quarantine báo limit chuẩn
       Future.delayed(const Duration(seconds: 1), () {
-        wrapper.player.dispose();
+        if (!wrapper.player.isDisposed) {
+          wrapper.player.dispose();
+        }
         _quarantinedPlayers.remove(wrapper);
       });
     } else {
