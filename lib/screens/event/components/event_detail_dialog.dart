@@ -773,8 +773,6 @@ class _EventDetailDialogState extends State<EventDetailDialog>
             _errorCause = _errorCause | 2;
           }
           rewindTime = null;
-        } else {
-          _errorCause = _errorCause | 2;
         }
 
         return Container(

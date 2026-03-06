@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 import 'al_alarm_enums.dart';
 export 'al_alarm_enums.dart';
 
@@ -82,13 +84,19 @@ class TimesConfig {
   }
 
   bool isEmpty() => days.isEmpty && startTime == null && endTime == null;
-  bool isValid() => isEmpty() || (days.isNotEmpty && startTime != null && endTime != null);
+  bool isValid() =>
+      isEmpty() ||
+      (days.isNotEmpty &&
+          startTime != null &&
+          endTime != null &&
+          DateFormat("HH:mm").parse(endTime!).compareTo(DateFormat("HH:mm").parse(startTime!)) > 0);
 }
 
 class AIAlarmConfig {
   final int? id;
   final AIAlarmType type;
   int status;
+  int? nonHitAlarm;
   int? aiBoxId;
   int? suggestedAiBoxId;
   int? soundId;
@@ -105,6 +113,7 @@ class AIAlarmConfig {
     AlarmConditions? alarmConditions,
     List<ROIConfig>? rois,
     List<TimesConfig>? times,
+    this.nonHitAlarm,
   }) : rois = rois ?? [],
        times = times ?? [],
        alarmConditions = alarmConditions ?? AlarmConditions();
@@ -125,6 +134,7 @@ class AIAlarmConfig {
       times: json['times'] != null
           ? (json['times'] as List).map<TimesConfig>((e) => TimesConfig.fromJson(e)).toList()
           : <TimesConfig>[],
+      nonHitAlarm: type == AIAlarmType.faceDetection ? (json['nonHitAlarm'] ?? 0) : null,
     );
   }
 
@@ -145,6 +155,7 @@ class AIAlarmConfig {
           .map((e) => {'days': e.days, 'startTime': e.startTime, 'endTime': e.endTime})
           .toList(),
       'alarmConditions': alarmConditions.toJson(),
+      if (type == AIAlarmType.faceDetection) 'nonHitAlarm': nonHitAlarm ?? 0,
     };
   }
 

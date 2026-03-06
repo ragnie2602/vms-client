@@ -8,6 +8,17 @@ sealed class AlarmSoundEvent extends Equatable {
 }
 
 class GetAlarmSounds extends AlarmSoundEvent {
-  final Function()? onSuccess;
-  const GetAlarmSounds({this.onSuccess});
+  final bool force;
+
+  const GetAlarmSounds({this.force = true});
+}
+
+class SyncAlarmSounds extends AlarmSoundEvent {
+  final bool force;
+  const SyncAlarmSounds({this.force = false});
+}
+
+class SyncAlarmSound extends AlarmSoundEvent {
+  final int soundId;
+  const SyncAlarmSound(this.soundId);
 }

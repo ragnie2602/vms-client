@@ -26,6 +26,10 @@ final class AlarmSoundLoaded extends AlarmSoundState {
   List<Object> get props => [alarmSounds];
   @override
   StateType get type => alarmSounds.isNotEmpty ? StateType.success : StateType.empty;
+
+  AlarmSoundLoaded copyWith({List<AlarmSound>? alarmSounds}) {
+    return AlarmSoundLoaded(alarmSounds: alarmSounds ?? this.alarmSounds);
+  }
 }
 
 final class AlarmSoundError extends AlarmSoundState {

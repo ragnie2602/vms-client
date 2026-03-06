@@ -91,29 +91,32 @@ class _EventMultiFilterDropdownState<T> extends State<EventMultiFilterDropdown<T
       _selectedValues = _selectedValues!.where((v) => widget.items.contains(v)).toList();
     }
 
-    final nextInitial = widget.initialValue;
-    if (nextInitial == null) {
-      if (_selectedValues != null) {
-        setState(() => _selectedValues = null);
+    if (widget.initialValue != oldWidget.initialValue) {
+      final nextInitial = widget.initialValue;
+
+      if (nextInitial == null) {
+        if (_selectedValues != null) {
+          setState(() => _selectedValues = null);
+        }
+        return;
       }
-      return;
-    }
 
-    if (nextInitial.isEmpty) {
-      if (_selectedValues != null && _selectedValues!.isNotEmpty) {
-        setState(() => _selectedValues = <T>[]);
+      if (nextInitial.isEmpty) {
+        if (_selectedValues != null && _selectedValues!.isNotEmpty) {
+          setState(() => _selectedValues = <T>[]);
+        }
+        return;
       }
-      return;
-    }
 
-    if (!nextInitial.every((e) => widget.items.contains(e))) return;
+      if (!nextInitial.every((e) => widget.items.contains(e))) return;
 
-    final current = _selectedValues ?? <T>[];
-    final currentSet = current.toSet();
-    final nextSet = nextInitial.toSet();
+      final current = _selectedValues ?? <T>[];
+      final currentSet = current.toSet();
+      final nextSet = nextInitial.toSet();
 
-    if (currentSet.length != nextSet.length || !currentSet.containsAll(nextSet)) {
-      setState(() => _selectedValues = List<T>.from(nextInitial));
+      if (currentSet.length != nextSet.length || !currentSet.containsAll(nextSet)) {
+        setState(() => _selectedValues = List<T>.from(nextInitial));
+      }
     }
   }
 
@@ -132,38 +135,11 @@ class _EventMultiFilterDropdownState<T> extends State<EventMultiFilterDropdown<T
     }
     if (_selectedValues!.isEmpty) return Text('');
 
-    return Row(
-      spacing: 8,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.greyDFE4EA),
-            borderRadius: BorderRadius.circular(6),
-            color: const Color.fromARGB(255, 215, 216, 220),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 6),
-          child: Row(
-            children: [
-              InkWell(
-                onTap: () => setState(() {
-                  _selectedValues!.removeAt(0);
-                  widget.onChanged(_selectedValues!);
-                }),
-                child: SvgPicture.asset(
-                  AppAssets.icClose,
-                  colorFilter: ColorFilter.mode(AppColors.grey9CA3AF, BlendMode.srcIn),
-                  height: 16,
-                  width: 16,
-                ),
-              ),
-              Text(
-                '${_selectedValues![0]}',
-                style: AppTypography.style(14, fontWeight: FontWeight.w400),
-              ),
-            ],
-          ),
-        ),
-        if (_selectedValues!.length > 1)
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        spacing: 8,
+        children: [
           Container(
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.greyDFE4EA),
@@ -171,12 +147,42 @@ class _EventMultiFilterDropdownState<T> extends State<EventMultiFilterDropdown<T
               color: const Color.fromARGB(255, 215, 216, 220),
             ),
             padding: EdgeInsets.symmetric(horizontal: 5, vertical: 6),
-            child: Text(
-              '+${_selectedValues!.length - 1}',
-              style: AppTypography.style(14, fontWeight: FontWeight.w400),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () => setState(() {
+                    _selectedValues!.removeAt(0);
+                    widget.onChanged(_selectedValues!);
+                  }),
+                  child: SvgPicture.asset(
+                    AppAssets.icClose,
+                    colorFilter: ColorFilter.mode(AppColors.grey9CA3AF, BlendMode.srcIn),
+                    height: 16,
+                    width: 16,
+                  ),
+                ),
+                Text(
+                  '${_selectedValues![0]}',
+                  style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                ),
+              ],
             ),
           ),
-      ],
+          if (_selectedValues!.length > 1)
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.greyDFE4EA),
+                borderRadius: BorderRadius.circular(6),
+                color: const Color.fromARGB(255, 215, 216, 220),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 6),
+              child: Text(
+                '+${_selectedValues!.length - 1}',
+                style: AppTypography.style(14, fontWeight: FontWeight.w400),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

@@ -15,7 +15,6 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     aiBoxRepository: context.read(),
     filterAiBoxUseCase: context.read(),
   );
-  late final alarmSoundBloc = AlarmSoundBloc(context.read());
 
   int? _savedAiBoxId;
   int? _savedStatus;
@@ -114,8 +113,31 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
     setState(() {});
   }
 
+  void _initSelectedSound() {
+    if (widget.alarmConfig.soundId == null || _selectedSound != null) return;
+
+    void _onLoaded(AlarmSoundLoaded state) {
+      if (!mounted) return;
+      selectedSound = state.alarmSounds.firstWhereOrNull((e) => e.id == widget.alarmConfig.soundId);
+      Future.delayed(Duration.zero, () => mounted ? setState(() {}) : null);
+    }
+
+    final state = context.read<AlarmSoundBloc>().state;
+    if (state is AlarmSoundLoaded) {
+      _onLoaded(state);
+    } else {
+      context
+          .read<AlarmSoundBloc>()
+          .stream
+          .firstWhere((state) => state is AlarmSoundLoaded)
+          .then((state) => _onLoaded(state as AlarmSoundLoaded));
+    }
+  }
+
   @override
   void initState() {
+    _initSelectedSound();
+
     _savedAiBoxId = widget.alarmConfig.aiBoxId;
     _savedStatus = widget.alarmConfig.status;
     super.initState();
@@ -140,76 +162,72 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
         },
       ),
     );
-
-    alarmSoundBloc.add(
-      GetAlarmSounds(
-        onSuccess: () {
-          if (widget.alarmConfig.soundId == null) return;
-
-          selectedSound = (alarmSoundBloc.state as AlarmSoundLoaded).alarmSounds.firstWhereOrNull(
-            (e) => e.id == widget.alarmConfig.soundId,
-          );
-          if (selectedSound != null) setState(() {});
-        },
-      ),
-    );
   }
 
   @override
   void dispose() {
     aiBoxBloc.close();
-    alarmSoundBloc.close();
     _audioPlayer.dispose();
     super.dispose();
   }
 
+  late final titleStyle = AppTypography.style(
+    14,
+    fontWeight: FontWeight.w500,
+    color: Color(0xFF334155),
+    lineHeight: 20 / 14,
+  );
+
   @override
   Widget build(BuildContext context) {
-    final titleStyle = AppTypography.style(
-      14,
-      fontWeight: FontWeight.w500,
-      color: Color(0xFF334155),
-      lineHeight: 20 / 14,
-    );
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         /* Global switch */
-        Row(
-          spacing: 16,
-          children: <Widget>[
-            Text(widget.alarm.name, style: titleStyle),
-            /*  */
-            SizedBox(
-              width: 42,
-              height: 28,
-              child: FittedBox(
-                fit: BoxFit.fill,
-                child: Switch(
-                  activeTrackColor: AppColors.blue005AA9,
-                  inactiveTrackColor: Color(0xFFE4E4E4),
-                  thumbColor: WidgetStateProperty.all(Colors.white),
-                  trackOutlineWidth: WidgetStateProperty.all(0),
-                  trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                  value: widget.alarmConfig.status == 1,
-                  splashRadius: 0,
-                  onChanged: (value) {
-                    setState(() => widget.alarmConfig.status = value ? 1 : 0);
+        _buildSwitch(
+          title: widget.alarm.name,
+          value: widget.alarmConfig.status == 1,
+          onChanged: (value) {
+            setState(() {
+              widget.alarmConfig.status = value ? 1 : 0;
 
-                    // Bật thì validate or auto fill ai box
-                    if (value && selectedAiBox == null) {
-                      _autofillAiBox();
-                    } else if (value && selectedAiBox != null) {
-                      _validateAiBox();
-                    }
-                  },
-                ),
+              if (widget.alarm.type == AIAlarmType.faceDetection && !value) {
+                widget.alarmConfig.nonHitAlarm = 0;
+              }
+            });
+
+            // Bật thì validate or auto fill ai box
+            if (value && selectedAiBox == null) {
+              _autofillAiBox();
+            } else if (value && selectedAiBox != null) {
+              _validateAiBox();
+            }
+          },
+        ),
+
+        /* Sub switch - Cảnh báo người lạ - Cảnh báo xâm nhập */
+        if (widget.alarm.type == AIAlarmType.faceDetection)
+          CustomPaint(
+            painter: _CurvedCornerBorderPainter(color: AppColors.greyE4E4E4),
+            child: Padding(
+              padding: EdgeInsets.only(top: 8, left: 22),
+              child: _buildSwitch(
+                title: 'Cảnh báo người lạ',
+                value: widget.alarmConfig.nonHitAlarm == 1,
+                onChanged: (value) {
+                  if (widget.alarmConfig.status != 1) {
+                    return ToastUtil.toastWarning(
+                      message: 'Vui lòng bật phát hiện khuôn mặt để kích hoạt tính năng này.',
+                    );
+                  }
+
+                  setState(() => widget.alarmConfig.nonHitAlarm = value ? 1 : 0);
+                },
+                disable: widget.alarmConfig.status != 1,
               ),
             ),
-          ],
-        ),
+          ),
 
         /* Điều kiện cảnh báo */
         _buildConditionConfig(),
@@ -229,8 +247,41 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
           children: <Widget>[
             Expanded(child: _buildAlarmSoundSelection()),
             SizedBox(width: 12),
-            _buildAudioPlayerButton(selectedSound?.url),
+            _buildAudioPlayerButton(selectedSound?.localFilePath ?? selectedSound?.url),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSwitch({
+    required String title,
+    required bool value,
+    required Function(bool) onChanged,
+    bool disable = false,
+  }) {
+    return Row(
+      spacing: 16,
+      children: <Widget>[
+        Text(title, style: titleStyle),
+        /*  */
+        SizedBox(
+          width: 42,
+          height: 28,
+          child: FittedBox(
+            fit: BoxFit.fill,
+            child: Switch(
+              mouseCursor: disable ? SystemMouseCursors.forbidden : null,
+              activeTrackColor: AppColors.blue005AA9,
+              inactiveTrackColor: Color(0xFFE4E4E4),
+              thumbColor: WidgetStateProperty.all(Colors.white),
+              trackOutlineWidth: WidgetStateProperty.all(0),
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+              value: value,
+              splashRadius: 0,
+              onChanged: onChanged,
+            ),
+          ),
         ),
       ],
     );
@@ -330,62 +381,59 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       itemBuilder: Container(
         width: double.infinity,
         constraints: BoxConstraints(minHeight: 36),
-        child: BlocProvider.value(
-          value: alarmSoundBloc,
-          child: BlocBuilder<AlarmSoundBloc, AlarmSoundState>(
-            builder: (context, state) => stateBuilder<AlarmSoundLoaded>(
-              state,
-              errorBuilder: (message) => _buildStateError(
-                "Có lỗi xảy ra trong quá trình tải danh sách âm thanh cảnh báo, hãy thử lại sau!",
-                () => alarmSoundBloc.add(GetAlarmSounds()),
-              ),
-              loadingBuilder: () => Center(
-                child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
-              ),
-              emptyBuilder: () => Center(
-                child: Text(
-                  'Không có âm thanh cảnh báo nào.',
-                  maxLines: 3,
-                  textAlign: TextAlign.center,
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.redFF2F2F,
-                  ),
+        child: BlocBuilder<AlarmSoundBloc, AlarmSoundState>(
+          builder: (context, state) => stateBuilder<AlarmSoundLoaded>(
+            state,
+            errorBuilder: (message) => _buildStateError(
+              "Có lỗi xảy ra trong quá trình tải danh sách âm thanh cảnh báo, hãy thử lại sau!",
+              () => context.read<AlarmSoundBloc>().add(GetAlarmSounds()),
+            ),
+            loadingBuilder: () => Center(
+              child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
+            ),
+            emptyBuilder: () => Center(
+              child: Text(
+                'Không có âm thanh cảnh báo nào.',
+                maxLines: 3,
+                textAlign: TextAlign.center,
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.redFF2F2F,
                 ),
               ),
-              child: (state) => ListView.separated(
-                shrinkWrap: true,
-                itemCount: state.alarmSounds.length,
-                separatorBuilder: (context, index) => Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16),
-                  color: AppColors.greyF2F4FA,
-                  height: 1,
-                ),
-                itemBuilder: (context, index) {
-                  final item = state.alarmSounds[index];
+            ),
+            child: (state) => ListView.separated(
+              shrinkWrap: true,
+              itemCount: state.alarmSounds.length,
+              separatorBuilder: (context, index) => Container(
+                margin: EdgeInsets.symmetric(horizontal: 16),
+                color: AppColors.greyF2F4FA,
+                height: 1,
+              ),
+              itemBuilder: (context, index) {
+                final item = state.alarmSounds[index];
 
-                  return InkWell(
-                    onTap: () => Navigator.pop(context, item),
-                    child: Container(
-                      color: item.id == selectedSound?.id
-                          ? Theme.of(context).highlightColor
-                          : Colors.transparent,
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Text(
-                        item.name,
-                        maxLines: 3,
-                        style: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w400,
-                          lineHeight: 20 / 14,
-                          color: Color(0xFF0F172A),
-                        ),
+                return InkWell(
+                  onTap: () => Navigator.pop(context, item),
+                  child: Container(
+                    color: item.id == selectedSound?.id
+                        ? Theme.of(context).highlightColor
+                        : Colors.transparent,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text(
+                      item.name,
+                      maxLines: 3,
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w400,
+                        lineHeight: 20 / 14,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -784,6 +832,34 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
       ),
     );
   }
+}
+
+class _CurvedCornerBorderPainter extends CustomPainter {
+  final Color color;
+  _CurvedCornerBorderPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final height = size.height - 8 - 5; // 8: padding top, 5: title height / 2
+
+    Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final path = Path()
+      ..moveTo(8, 0)
+      ..lineTo(8, height - 8)
+      ..arcToPoint(Offset(16, height), radius: Radius.circular(8), clockwise: false)
+      ..lineTo(16 + 1, height)
+    //
+    ;
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _BorderProgressPainter extends CustomPainter {
