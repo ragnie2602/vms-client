@@ -17,9 +17,8 @@ import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_fol
 class EventLiveViewItem extends StatelessWidget {
   final ReceiveEventEntity event;
   final SetupEventDisplayBloc sedBloc;
-  final int? subjectTypeId;
 
-  EventLiveViewItem({super.key, required this.event, required this.sedBloc, this.subjectTypeId}) {
+  EventLiveViewItem({super.key, required this.event, required this.sedBloc}) {
     sedBloc.add(
       GetEventDisplayConfig(
         event.eventType ?? '',
@@ -27,34 +26,6 @@ class EventLiveViewItem extends StatelessWidget {
         subjectTypeId: subjectTypeId,
       ),
     );
-  }
-
-  @override
-  State<EventLiveViewItem> createState() => _EventLiveViewItemState();
-}
-
-class _EventLiveViewItemState extends State<EventLiveViewItem> {
-  SetupEventDisplayBloc? _sedBloc;
-
-  @override
-  void initState() {
-    super.initState();
-
-    try {
-      _sedBloc = context.read<SetupEventDisplayBloc>();
-      final eventData = widget.event.eventData ?? {};
-      final subjectTypeId = eventData['subjectTypeId'];
-
-      _sedBloc?.add(
-        GetEventDisplayConfig(
-          widget.event.eventType ?? '',
-          2,
-          subjectTypeId: subjectTypeId is int ? subjectTypeId : null,
-        ),
-      );
-    } catch (e) {
-      debugPrint('SetupEventDisplayBloc not found in context: $e');
-    }
   }
 
   @override
@@ -223,8 +194,8 @@ class _EventLiveViewItemState extends State<EventLiveViewItem> {
 
     return Image.network(
       iconUrl,
-      width: 14,
-      height: 14,
+      width: 18,
+      height: 18,
       color: AppColors.grey4B5563,
       errorBuilder: (context, error, stackTrace) =>
           const Icon(Icons.broken_image, color: AppColors.grey4B5563, size: 18),
