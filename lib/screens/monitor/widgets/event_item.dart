@@ -96,28 +96,33 @@ class _EventLiveViewItemState extends State<EventLiveViewItem> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _sedBloc != null
-                    ? BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
-                        bloc: _sedBloc,
-                        buildWhen: (previous, current) =>
-                            current is SEDGetEventDisplayConfigSuccess ||
-                            current is SEDSavingConfigsSuccess,
-                        builder: (context, state) {
-                          final subjectTypeId = eventData['subjectTypeId'];
-                          final config =
-                              _sedBloc!.configs[(
-                                widget.event.eventType ?? '',
-                                subjectTypeId is int ? subjectTypeId : null,
-                              )];
+                child: BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+                  bloc: _sedBloc,
+                  buildWhen: (previous, current) =>
+                      current is SEDGetEventDisplayConfigSuccess ||
+                      current is SEDSavingConfigsSuccess,
+                  builder: (context, state) {
+                    final subjectTypeId = eventData['subjectTypeId'];
+                    final config =
+                        _sedBloc?.configs[(
+                          widget.event.eventType ?? '',
+                          subjectTypeId is int ? subjectTypeId : null,
+                        )];
 
-                          if (config == null) {
-                            return _buildFallbackContent(eventData);
-                          }
+                    if (config == null) {
+                      return Text(
+                        'Không lấy được cấu hình hiển thị',
+                        style: AppTypography.style(
+                          12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.black,
+                        ),
+                      );
+                    }
 
-                          return _buildConfiguredContent(eventData, config);
-                        },
-                      )
-                    : _buildFallbackContent(eventData),
+                    return _buildConfiguredContent(eventData, config);
+                  },
+                ),
               ),
             ],
           ),
@@ -126,7 +131,6 @@ class _EventLiveViewItemState extends State<EventLiveViewItem> {
     );
   }
 
-  // View cũ dùng khi chưa có config hoặc không có Bloc
   Widget _buildFallbackContent(Map<String, dynamic> eventData) {
     if (eventData.isEmpty) return const SizedBox();
 
