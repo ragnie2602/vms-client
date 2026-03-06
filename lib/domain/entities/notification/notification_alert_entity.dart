@@ -1,3 +1,5 @@
+import 'package:vms_flutter_client/domain/entities/ai_alarm/al_alarm_enums.dart';
+
 /// Enum cho các loại cảnh báo
 enum AlertType {
   intrusion, // Xâm nhập
@@ -6,6 +8,19 @@ enum AlertType {
   smoking, // Hút thuốc
   fire, // Cháy
   objectDetection, // Nhận diện đối tượng
+  ;
+
+  factory AlertType.fromAIAlarmType(AIAlarmType type) {
+    return switch (type) {
+      AIAlarmType.zoneIntrusion => AlertType.intrusion,
+      AIAlarmType.crowdGathering => AlertType.crowding,
+      AIAlarmType.usingPhone => AlertType.phoneUsage,
+      AIAlarmType.smoking => AlertType.smoking,
+      AIAlarmType.fireAlarm => AlertType.fire,
+      AIAlarmType.faceDetection => AlertType.objectDetection,
+      AIAlarmType.unknown => throw Exception('Unknown AI alarm type: $type'),
+    };
+  }
 }
 
 class NotificationAlertEntity {
