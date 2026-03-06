@@ -151,7 +151,7 @@ class EventItem extends StatelessWidget {
             columnFlexes: [0, 1],
             data: c
                 .sortedFields()
-                .sublist(1)
+                .sublist(1, 5)
                 .map(
                   (f) => [
                     SvgPicture.network(

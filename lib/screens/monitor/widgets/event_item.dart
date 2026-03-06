@@ -95,7 +95,7 @@ class EventLiveViewItem extends StatelessWidget {
     final titleKey = config.sorting.firstOrNull;
     final title = titleKey != null ? (eventData[titleKey]?.toString() ?? '_') : '_';
 
-    final detailFields = sortedFields.length > 1 ? sortedFields.sublist(1) : <Fields>[];
+    final detailFields = sortedFields.length > 1 ? sortedFields.sublist(1, 5) : <Fields>[];
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
