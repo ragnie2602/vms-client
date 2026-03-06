@@ -379,7 +379,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
     // ═══════════════ FAST-PATH: Cache Hit ═══════════════
     // Player was warm-paused by sanitize() with the same media URL still loaded.
-    // Skip media reload + texture creation entirely → just seek past stale buffer and resume.
+    // Show the last rendered frame INSTANTLY, then resume + seek in background.
     if (_playerWrapper.isCacheHit && !isReconnecting && !_player.isDisposed) {
       // Validate texture is still alive before taking fast-path
       int cachedTextureId = -1;
@@ -389,22 +389,47 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
       if (cachedTextureId >= 0) {
         Logger.log('Player [${_playerWrapper.id}]: Fast-path resume from cache');
-        _state.value = PlayerState.initializing;
 
-        // Skip accumulated buffer to jump to realtime (live stream)
+        // 1. Restore aspect ratio from previous session (synchronous, no await)
+        final videoData = _player.mediaInfo.video?.firstOrNull;
+        if (videoData != null && videoData.codec.height > 0) {
+          _aspectRatio = videoData.codec.width / videoData.codec.height;
+        }
+
+        // 2. Show last frame IMMEDIATELY — no loading spinner
+        _state.value = PlayerState.initialized;
+
+        // 2. Resume playback (player was paused by sanitize)
+        _player.state = PlaybackState.playing;
+
+        // 3. Skip stale buffer to jump to realtime (fire-and-forget, non-blocking)
         final buffered = _player.buffered();
         if (buffered > 0) {
-          await _player.seek(
+          _player.seek(
             position: buffered,
             flags: const SeekFlag(SeekFlag.fromNow | SeekFlag.keyFrame),
           );
         }
 
-        // Resume playback (player was paused by sanitize)
-        _player.state = PlaybackState.playing;
-
+        // 4. Start connection monitoring timer (inlined from _onInitialized)
         if (!mounted) return;
-        await _onInitialized();
+        _timer?.cancel();
+        _debounce?.cancel();
+        _reconnectingTimer?.cancel();
+        _lastPosition = -1;
+        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          if (!mounted) return _timer?.cancel();
+
+          _player.position.let((pos) {
+            if (_lastPosition != pos) {
+              if (_status.value != PlayerStatus.playing && _shouldSyncPlayerTime) {
+                _status.value = PlayerStatus.playing;
+              }
+              _debounceConnectionLost();
+            }
+            _lastPosition = pos;
+          });
+        });
         return;
       }
       // textureId invalid → fall through to normal path

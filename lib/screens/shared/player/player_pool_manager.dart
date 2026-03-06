@@ -86,6 +86,7 @@ class PlayerPoolManager {
 
   final int minPoolSize = 36;
   final int maxPoolSize = 100;
+  final int minHqPoolSize = 2;
   Timer? _cleanupTimer;
 
   void startCleanupTimer() {
@@ -118,14 +119,16 @@ class PlayerPoolManager {
 
     if (_idleHqPlayers.isNotEmpty || _idleNormalPlayers.isNotEmpty || _busyPlayers.isNotEmpty) return;
 
-    // High Quality reserved player
-    var hqPlayer = PlayerWrapper(
-      Player(),
-      'hw_${_idCounter++}',
-      windowId,
-      isHighQualityReserved: true,
-    );
-    _idleHqPlayers.add(hqPlayer);
+    // High Quality reserved players
+    for (int i = 0; i < minHqPoolSize; i++) {
+      var hqPlayer = PlayerWrapper(
+        Player(),
+        'hw_${_idCounter++}',
+        windowId,
+        isHighQualityReserved: true,
+      );
+      _idleHqPlayers.add(hqPlayer);
+    }
 
     // Normal players
     for (int i = 0; i < minPoolSize; i++) {
@@ -172,18 +175,29 @@ class PlayerPoolManager {
       }
     }
 
-    // 2. Fetch from specific pool if no hit
+    // 2. Fetch from specific pool if no hit — prefer "clean" players (no cached URL)
+    //    to avoid polluting the cache of players warm for other streams
     if (player == null) {
-      if (isHighQuality && _idleHqPlayers.isNotEmpty) {
-        player = _idleHqPlayers.removeLast();
-      } else if (!isHighQuality && _idleNormalPlayers.isNotEmpty) {
-        player = _idleNormalPlayers.removeLast();
-      } else {
-        // Cross-pool steal fallback
-        if (_idleNormalPlayers.isNotEmpty) {
-          player = _idleNormalPlayers.removeLast();
-        } else if (_idleHqPlayers.isNotEmpty) {
-          player = _idleHqPlayers.removeLast();
+      final targetPool = isHighQuality
+          ? (_idleHqPlayers.isNotEmpty ? _idleHqPlayers : _idleNormalPlayers)
+          : (_idleNormalPlayers.isNotEmpty ? _idleNormalPlayers : _idleHqPlayers);
+
+      if (targetPool.isNotEmpty) {
+        // Prefer a player with no cached URL (clean) to avoid cache pollution
+        final cleanIdx = targetPool.lastIndexWhere((p) => p.lastMediaUrl == null);
+        if (cleanIdx != -1) {
+          player = targetPool.removeAt(cleanIdx);
+        } else {
+          // All players have cached URLs → take the oldest (first in list)
+          player = targetPool.removeAt(0);
+          
+          // Purge the stolen player from the URL cache so we don't leave a dangling reference
+          if (player.lastMediaUrl != null) {
+            _idleUrlCache[player.lastMediaUrl]?.remove(player);
+            if (_idleUrlCache[player.lastMediaUrl]?.isEmpty ?? false) {
+              _idleUrlCache.remove(player.lastMediaUrl);
+            }
+          }
         }
       }
     }
@@ -215,6 +229,7 @@ class PlayerPoolManager {
       );
       throw Exception('MAX_POOL_SIZE_REACHED');
     }
+
     final String prefix = isHighQualityReserved ? 'hw' : 'pw';
     final wrapper = PlayerWrapper(
       Player(), 
@@ -296,7 +311,7 @@ class PlayerPoolManager {
     }
 
     // Bug #2 Fixed: Add lazy cleanup for HQ players (> 10 mins)
-    int targetToRemoveHq = _idleHqPlayers.length - 1; // Giữ lại ít nhất 1 HQ player
+    int targetToRemoveHq = _idleHqPlayers.length - minHqPoolSize;
     if (targetToRemoveHq > 0) {
       _idleHqPlayers.removeWhere((p) {
         if (targetToRemoveHq <= 0) return false;

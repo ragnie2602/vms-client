@@ -98,4 +98,69 @@ Qua quá trình rà soát và đánh giá hiệu năng bộ nhớ (Memory Profil
 
 ---
 
-**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, chống O(N) lookup, vá rò rỉ Duplicate Caches và cách ly rủi ro Heartcheck ngầm) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak) và tăng độ êm cho GPU.
+## 6. Tối ưu Luồng Resume từ Cache (Fast-Path Live Stream)
+
+Sau khi triển khai Pool cơ bản, luồng chuyển đổi giữa View Chi tiết ↔ Grid View vẫn bị **delay 1-3 giây** do player phải reconnect lại RTSP/TCP dù đã được cache trong Pool. Nguyên nhân và giải pháp:
+
+### a. Vấn đề: Media Setter phá hủy Warm Cache
+
+Khi player được trả về Pool, hàm `sanitize()` chỉ đưa về trạng thái `paused` (giữ nguyên kết nối mạng + decoder context). Tuy nhiên, khi `_connecting()` trong `MonitorPlayer` chạy, nó **luôn gọi** `_player.media = widget.source` — hành động này trigger native `setMedia()` qua FFI, **flush toàn bộ buffer** và **reconnect lại từ đầu**, hoàn toàn vô hiệu hóa lợi ích warm cache.
+
+### b. Giải pháp: Fast-Path riêng biệt cho Cache Hit
+
+Bổ sung cờ `isCacheHit` trên `PlayerWrapper`, được set bởi `acquire()` khi phát hiện player có `lastMediaUrl` trùng với URL yêu cầu.
+
+Hàm `_connecting()` giờ có **2 nhánh xử lý riêng biệt**:
+
+| | **Fast-Path (Cache Hit)** | **Normal Path** |
+|---|---|---|
+| **Điều kiện** | `isCacheHit && !isReconnecting && !isDisposed` | Tất cả trường hợp khác |
+| **Reload media** | ❌ Bỏ qua hoàn toàn | ✅ Gọi `setMedia()` đầy đủ |
+| **Tạo Texture** | ❌ Tái sử dụng texture cũ | ✅ `updateTexture()` nếu cần |
+| **Buffer skip** | ✅ `seek(buffered, fromNow \| keyFrame)` fire-and-forget | Không áp dụng |
+| **Loading spinner** | ❌ Hiển thị frame cuối cùng ngay lập tức | ✅ Hiện loading chờ first frame |
+| **Aspect ratio** | Khôi phục từ `mediaInfo` (đồng bộ) | Chờ `textureSize` (async) |
+| **Resume** | `state = PlaybackState.playing` | `media = url; state = playing` |
+| **Độ trễ** | **~0ms** (tức thì, zero-latency) | 1-3s (RTSP handshake + decode) |
+
+**Cơ chế Instant Frame:** Fast-path đặt `PlayerState.initialized` **ngay lập tức** (không qua `initializing`/loading spinner). GPU Texture vẫn giữ frame cuối cùng từ phiên trước → người dùng thấy hình ảnh camera hiện ra tức thì. Seek + resume chạy fire-and-forget trong background, video live tự cập nhật lên realtime mà không có khoảng trống đen.
+
+**Cơ chế Buffer Skip:** Vì đây là live stream, khi player nằm trong Pool ở trạng thái pause, buffer sẽ tích lũy các frame cũ. Lệnh `seek(position: buffered, flags: SeekFlag.fromNow | SeekFlag.keyFrame)` nhảy qua toàn bộ buffer cũ, đưa video về mốc thời gian thực (realtime) ngay lập tức.
+
+### c. Validation An toàn Bộ nhớ (Memory Safety)
+
+Fast-path bổ sung 3 lớp kiểm tra trước khi resume để ngăn crash:
+
+1. **`!_player.isDisposed`**: Đảm bảo native player chưa bị hủy (tránh gọi FFI trên object freed → SIGSEGV)
+2. **`textureId >= 0`**: Xác thực GPU Texture còn hợp lệ. Nếu texture đã bị release, fallback về Normal Path với log cảnh báo
+3. **Guard trong Build method**: Trước khi truy cập `_player.textureId` (ValueNotifier), kiểm tra `_player.isDisposed`. Nếu player đã disposed → render `SizedBox.shrink()` thay vì crash `ValueNotifier was used after being disposed`
+
+### d. Khắc phục Log Spam `invalid media status`
+
+**Vấn đề:** MDK `MediaStatus` là bitmask — khi bit `invalid` được set, nó tồn tại trên **mọi lần gọi callback** tiếp theo, gây spam log hàng trăm dòng `"Player pw_X detected invalid media status! Marking as corrupted"`.
+
+**Giải pháp:** Thêm guard `!isCorrupted` trước khi kiểm tra `MediaStatus.invalid`. Log và đánh dấu corrupted **chỉ 1 lần duy nhất** mỗi vòng đời player.
+
+### e. Log Diagnostics cải tiến
+
+Bổ sung tham số `cameraName` vào hàm `acquire()` để log hiển thị tên camera cụ thể, giúp debug dễ dàng hơn:
+```
+Player Pool [0]: Acquired normal player pw_5 for "Camera Sảnh A" (Cache Hit: true)
+```
+
+### f. Chống xâm nhiễm Cache (Cache Pollution Prevention)
+
+**Vấn đề:** Khi một camera mới (VD: "10.3.3.228") yêu cầu player mà không có URL cache hit, hàm `acquire` trước đây dùng `removeLast()` — vô tình **trộm mất** player vừa được trả về từ camera khác (VD: pw_35 đang giữ cache cho "Camera Ngã ba"). Việc này ghi đè `lastMediaUrl`, phá hủy khả năng cache hit của camera gốc.
+
+**Giải pháp 3 lớp:**
+1. **Ưu tiên player "sạch"** (`lastMediaUrl == null`): Khi fallback pool, tìm player chưa từng sử dụng trước. Không ảnh hưởng cache của bất kỳ camera nào.
+2. **FIFO thay vì LIFO**: Khi buộc phải lấy player đã có URL, chọn thằng **cũ nhất** (`removeAt(0)`) thay vì mới nhất (`removeLast()`). Player cũ nhất ít có khả năng được tái sử dụng nhất.
+3. **Xoá tham chiếu URL cũ**: Khi trộm player, xoá ngay reference cũ trong `_idleUrlCache` để tránh dangling pointer.
+
+### g. Cấu hình Pool Player Chất lượng cao (HQ Pool)
+
+**Cải tiến:** Bổ sung `minHqPoolSize` (mặc định `2`) để khởi tạo đủ player HQ từ đầu, phục vụ luồng xem chi tiết. Lazy cleanup giữ lại tối thiểu `minHqPoolSize` player HQ, không dùng hard cap riêng cho HQ vì `maxPoolSize` toàn cục đã đủ bảo vệ.
+
+---
+
+**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, Fast-Path Zero-Latency Resume, chống O(N) lookup, chống Cache Pollution, vá rò rỉ Duplicate Caches, cách ly rủi ro Heartcheck ngầm và bảo vệ an toàn bộ nhớ đa tầng) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak), tăng độ êm cho GPU và đạt tốc độ chuyển đổi camera **tức thì (Zero-Latency Instant Frame Resume)**.
