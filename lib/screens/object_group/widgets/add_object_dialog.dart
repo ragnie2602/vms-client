@@ -14,6 +14,9 @@ import 'package:vms_flutter_client/screens/event/components/event_custom_button.
 import 'package:vms_flutter_client/screens/map/widgets/dash_border_widget.dart';
 import 'package:vms_flutter_client/screens/object_type/object_type_model.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class AddObjectDialog extends StatefulWidget {
   final ObjectType objectType;
@@ -54,6 +57,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   final Set<int> _selectedSubjectGroupIds = {};
   // Drag and drop state per field
   final Map<String, bool> _isDragging = {};
+  // Validation errors
+  final Map<String, String?> _errors = {};
 
   @override
   void initState() {
@@ -62,6 +67,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     for (final field in widget.objectType.fields) {
       if (field.dataType != FieldDataType.file) {
         _textControllers[field.fieldName] = TextEditingController();
+        _errors[field.fieldName] = null;
       }
     }
 
@@ -133,12 +139,19 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     final remaining = maxImages - currentExisting - currentLocal;
     if (remaining <= 0) return;
 
+    // Pick files
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
       allowMultiple: remaining > 1,
     );
 
     if (result == null || result.files.isEmpty) return;
+
+    setState(() {
+      if (_errors[fieldName] != null) {
+        _errors[fieldName] = null;
+      }
+    });
 
     var newPaths = result.files
         .where((f) => f.path != null)
@@ -151,44 +164,96 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       newPaths = newPaths.sublist(0, remaining);
     }
 
+    // Process and compress images if needed
+    final List<String> processedPaths = [];
+    for (final path in newPaths) {
+      final file = File(path);
+      final length = await file.length();
+      if (length > 1000000) {
+        // > 1MB
+        final tempDir = await getTemporaryDirectory();
+        final ext = p.extension(path);
+        // Use jpeg if extension is unsupported by compressor
+        final targetExt =
+            (ext.toLowerCase() == '.png' ||
+                ext.toLowerCase() == '.jpg' ||
+                ext.toLowerCase() == '.jpeg' ||
+                ext.toLowerCase() == '.webp')
+            ? ext
+            : '.jpg';
+        final targetPath = p.join(
+          tempDir.path,
+          '${DateTime.now().millisecondsSinceEpoch}_comp$targetExt',
+        );
+
+        final format = targetExt.toLowerCase() == '.png'
+            ? CompressFormat.png
+            : (targetExt.toLowerCase() == '.webp'
+                  ? CompressFormat.webp
+                  : CompressFormat.jpeg);
+
+        final result = await FlutterImageCompress.compressAndGetFile(
+          path,
+          targetPath,
+          quality: 70, // Adjust quality as needed
+          format: format,
+        );
+        if (result != null) {
+          processedPaths.add(result.path);
+        } else {
+          processedPaths.add(path); // Fallback to original
+        }
+      } else {
+        processedPaths.add(path);
+      }
+    }
+
     // Add local paths for preview immediately
     setState(() {
       final existing = _localFilePaths[fieldName] ?? [];
-      _localFilePaths[fieldName] = [...existing, ...newPaths];
+      _localFilePaths[fieldName] = [...existing, ...processedPaths];
       _uploadingFields[fieldName] = true;
     });
 
     // Upload each file immediately
     final repo = context.read<IObjectGroupRepository>();
-    try {
-      final existingIds = _uploadedFileIds[fieldName] ?? [];
-      final List<int> newIds = [];
+    final List<String> failedPaths = [];
+    final List<int> newIds = [];
 
-      for (final path in newPaths) {
+    for (final path in processedPaths) {
+      try {
         final fileId = await repo.uploadFile(path);
         newIds.add(fileId);
+      } catch (e) {
+        failedPaths.add(path);
       }
+    }
 
-      if (mounted) {
-        setState(() {
-          _uploadedFileIds[fieldName] = [...existingIds, ...newIds];
-          _uploadingFields[fieldName] = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        // Remove the failed paths from preview
-        setState(() {
+    if (mounted) {
+      setState(() {
+        final existingIds = _uploadedFileIds[fieldName] ?? [];
+        _uploadedFileIds[fieldName] = [...existingIds, ...newIds];
+        _uploadingFields[fieldName] = false;
+
+        if (failedPaths.isNotEmpty) {
+          // Remove failed paths from preview
           final paths = _localFilePaths[fieldName] ?? [];
-          for (final path in newPaths) {
-            paths.remove(path);
+          for (final p in failedPaths) {
+            paths.remove(p);
           }
           _localFilePaths[fieldName] = paths;
-          _uploadingFields[fieldName] = false;
-        });
+        }
+      });
+
+      if (failedPaths.length == processedPaths.length) {
         ToastUtil.toastFail(
           context: context,
-          title: Text('Tải file thất bại: $e'),
+          title: const Text('Ảnh không đạt tiêu chuẩn. Vui lòng thử lại.'),
+        );
+      } else if (failedPaths.isNotEmpty) {
+        ToastUtil.toastSuccess(
+          context: context,
+          title: const Text('Tải ảnh thành công một phần. Đã loại bỏ ảnh lỗi.'),
         );
       }
     }
@@ -226,6 +291,43 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   }
 
   Future<void> _onConfirm() async {
+    // Validate required fields
+    bool hasError = false;
+    setState(() {
+      _errors.clear();
+      for (final field in widget.objectType.fields) {
+        final isNameField =
+            field.fieldName == 'name' || field.fieldName == 'Tên đối tượng';
+        final isImageField = field.fieldName == 'Ảnh nhận diện khuôn mặt';
+        final isRequired = field.isRequired || isNameField || isImageField;
+
+        if (field.dataType != FieldDataType.file) {
+          final text = _textControllers[field.fieldName]?.text.trim() ?? '';
+          if (isRequired && text.isEmpty) {
+            _errors[field.fieldName] =
+                '${field.displayName} không được để trống';
+            hasError = true;
+          }
+        } else {
+          final localPaths = _localFilePaths[field.fieldName] ?? [];
+          final existingUrls = _existingImageUrls[field.fieldName] ?? [];
+          if (isRequired && localPaths.isEmpty && existingUrls.isEmpty) {
+            _errors[field.fieldName] =
+                'Vui lòng chọn ít nhất 1 ${field.displayName.toLowerCase()}';
+            hasError = true;
+          }
+        }
+      }
+
+      // Additional check for subject group if required
+      if (widget.subjectGroups.isNotEmpty && _selectedSubjectGroupIds.isEmpty) {
+        _errors['subjectGroup'] = 'Vui lòng chọn ít nhất 1 nhóm đối tượng';
+        hasError = true;
+      }
+    });
+
+    if (hasError) return;
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -485,19 +587,30 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   }
 
   Widget _buildTextField(ObjectTypeField field) {
+    final isNameField =
+        field.fieldName == 'name' || field.fieldName == 'Tên đối tượng';
+    final isRequired = field.isRequired || isNameField;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(field.displayName),
+        _buildLabel(field.displayName, isRequired: isRequired),
         const SizedBox(height: 8),
         SizedBox(
-          height: 40,
+          height: _errors[field.fieldName] != null ? 60 : 40,
           child: TextField(
             controller: _textControllers[field.fieldName],
             style: AppTypography.style(14, color: AppColors.black),
+            onChanged: (val) {
+              if (_errors[field.fieldName] != null) {
+                setState(() => _errors[field.fieldName] = null);
+              }
+            },
             decoration: InputDecoration(
               hintText: 'Nhập ${field.displayName.toLowerCase()}',
               hintStyle: AppTypography.style(14, color: AppColors.grey94A3B8),
+              errorText: _errors[field.fieldName],
+              errorStyle: AppTypography.style(12, color: AppColors.redFF0004),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
                 vertical: 8,
@@ -528,12 +641,19 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     final totalImages = existingUrls.length + localPaths.length;
     const maxImages = 6;
     final canAddMore = totalImages < maxImages && !isUploading;
+    final isImageField = field.fieldName == 'Ảnh nhận diện khuôn mặt';
+    final isRequired = field.isRequired || isImageField;
 
     return DropTarget(
       onDragEntered: (_) => setState(() => _isDragging[field.fieldName] = true),
       onDragExited: (_) => setState(() => _isDragging[field.fieldName] = false),
       onDragDone: (details) {
-        setState(() => _isDragging[field.fieldName] = false);
+        setState(() {
+          _isDragging[field.fieldName] = false;
+          if (_errors[field.fieldName] != null) {
+            _errors[field.fieldName] = null;
+          }
+        });
         _handleDroppedFiles(field.fieldName, details);
       },
       child: AnimatedContainer(
@@ -553,7 +673,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildLabel(field.displayName),
+            _buildLabel(field.displayName, isRequired: isRequired),
             const SizedBox(height: 8),
 
             if (totalImages > 0 || isUploading) ...[
@@ -571,24 +691,30 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                     final index = entry.key;
                     final url = entry.value;
                     return _buildImageTile(
-                      child: CachedNetworkImage(
-                        imageUrl: url,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: AppColors.greyE2E8F0,
-                          child: const Center(
-                            child: SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                      child: InkWell(
+                        onTap: () =>
+                            _showImagePreviewDialog(context, imageUrl: url),
+                        child: CachedNetworkImage(
+                          imageUrl: url,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: AppColors.greyE2E8F0,
+                            child: const Center(
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: AppColors.greyE2E8F0,
-                          child: const Icon(Icons.broken_image, size: 20),
+                          errorWidget: (context, url, error) => Container(
+                            color: AppColors.greyE2E8F0,
+                            child: const Icon(Icons.broken_image, size: 20),
+                          ),
                         ),
                       ),
                       onRemove: () =>
@@ -600,11 +726,15 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                     final index = entry.key;
                     final path = entry.value;
                     return _buildImageTile(
-                      child: Image.file(
-                        File(path),
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
+                      child: InkWell(
+                        onTap: () =>
+                            _showImagePreviewDialog(context, localPath: path),
+                        child: Image.file(
+                          File(path),
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                       onRemove: () => _removeLocalFile(field.fieldName, index),
                     );
@@ -647,37 +777,49 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                 ],
               ),
             ] else ...[
-              // No images yet — show dashed upload area
-              CustomPaint(
-                painter: DashedBorderPainter(),
-                child: InkWell(
-                  onTap: () => _pickAndUploadFiles(field.fieldName),
-                  child: Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    alignment: Alignment.center,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.add,
-                          color: AppColors.grey94A3B8,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Vui lòng chọn file có định dạng .PNG, .JPEG',
-                          style: AppTypography.style(
-                            14,
+              Tooltip(
+                message: 'Chỉ chấp nhận ảnh chụp rõ nét.',
+                child: CustomPaint(
+                  painter: DashedBorderPainter(
+                    isError: _errors[field.fieldName] != null,
+                  ),
+                  child: InkWell(
+                    onTap: () => _pickAndUploadFiles(field.fieldName),
+                    child: Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.add,
                             color: AppColors.grey94A3B8,
+                            size: 24,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            'Vui lòng chọn file có định dạng BMP, JPG, PNG',
+                            style: AppTypography.style(
+                              14,
+                              color: AppColors.grey94A3B8,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ],
+            if (_errors[field.fieldName] != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _errors[field.fieldName]!,
+                  style: AppTypography.style(12, color: AppColors.redFF0004),
+                ),
+              ),
           ],
         ),
       ),
@@ -711,43 +853,95 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       droppedPaths = droppedPaths.sublist(0, remaining);
     }
 
+    // Process and compress images if needed
+    final List<String> processedPaths = [];
+    for (final path in droppedPaths) {
+      final file = File(path);
+      final length = await file.length();
+      if (length > 1000000) {
+        // > 1MB
+        final tempDir = await getTemporaryDirectory();
+        final ext = p.extension(path);
+        final targetExt =
+            (ext.toLowerCase() == '.png' ||
+                ext.toLowerCase() == '.jpg' ||
+                ext.toLowerCase() == '.jpeg' ||
+                ext.toLowerCase() == '.webp')
+            ? ext
+            : '.jpg';
+        final targetPath = p.join(
+          tempDir.path,
+          '${DateTime.now().millisecondsSinceEpoch}_comp$targetExt',
+        );
+
+        final format = targetExt.toLowerCase() == '.png'
+            ? CompressFormat.png
+            : (targetExt.toLowerCase() == '.webp'
+                  ? CompressFormat.webp
+                  : CompressFormat.jpeg);
+
+        final result = await FlutterImageCompress.compressAndGetFile(
+          path,
+          targetPath,
+          quality: 70,
+          format: format,
+        );
+        if (result != null) {
+          processedPaths.add(result.path);
+        } else {
+          processedPaths.add(path); // Fallback to original
+        }
+      } else {
+        processedPaths.add(path);
+      }
+    }
+
     // Add local paths for preview
     setState(() {
       final existing = _localFilePaths[fieldName] ?? [];
-      _localFilePaths[fieldName] = [...existing, ...droppedPaths];
+      _localFilePaths[fieldName] = [...existing, ...processedPaths];
       _uploadingFields[fieldName] = true;
     });
 
     // Upload each file
     final repo = context.read<IObjectGroupRepository>();
-    try {
-      final existingIds = _uploadedFileIds[fieldName] ?? [];
-      final List<int> newIds = [];
+    final List<String> failedPaths = [];
+    final List<int> newIds = [];
 
-      for (final path in droppedPaths) {
+    for (final path in processedPaths) {
+      try {
         final fileId = await repo.uploadFile(path);
         newIds.add(fileId);
+      } catch (e) {
+        failedPaths.add(path);
       }
+    }
 
-      if (mounted) {
-        setState(() {
-          _uploadedFileIds[fieldName] = [...existingIds, ...newIds];
-          _uploadingFields[fieldName] = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
+    if (mounted) {
+      setState(() {
+        final existingIds = _uploadedFileIds[fieldName] ?? [];
+        _uploadedFileIds[fieldName] = [...existingIds, ...newIds];
+        _uploadingFields[fieldName] = false;
+
+        if (failedPaths.isNotEmpty) {
           final paths = _localFilePaths[fieldName] ?? [];
-          for (final path in droppedPaths) {
-            paths.remove(path);
+          for (final p in failedPaths) {
+            paths.remove(p);
           }
           _localFilePaths[fieldName] = paths;
-          _uploadingFields[fieldName] = false;
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Tải file thất bại: $e')));
+        }
+      });
+
+      if (failedPaths.length == processedPaths.length) {
+        ToastUtil.toastFail(
+          context: context,
+          title: const Text('Ảnh không đạt tiêu chuẩn. Vui lòng thử lại.'),
+        );
+      } else if (failedPaths.isNotEmpty) {
+        ToastUtil.toastSuccess(
+          context: context,
+          title: const Text('Tải ảnh thành công một phần. Đã loại bỏ ảnh lỗi.'),
+        );
       }
     }
   }
@@ -781,11 +975,55 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     );
   }
 
+  void _showImagePreviewDialog(
+    BuildContext context, {
+    String? imageUrl,
+    String? localPath,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: Stack(
+            fit: StackFit.loose,
+            alignment: Alignment.center,
+            children: [
+              InteractiveViewer(
+                child: imageUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.contain,
+                        errorWidget: (context, url, error) => const Icon(
+                          Icons.broken_image,
+                          color: Colors.white,
+                          size: 50,
+                        ),
+                      )
+                    : Image.file(File(localPath!), fit: BoxFit.contain),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.pop(context),
+                  style: IconButton.styleFrom(backgroundColor: Colors.black45),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildSubjectGroupMultiSelect() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('Nhóm đối tượng'),
+        _buildLabel('Nhóm đối tượng', isRequired: true),
         const SizedBox(height: 8),
         _SubjectGroupMultiSelectDropdown(
           groups: widget.subjectGroups
@@ -794,12 +1032,23 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
           selectedIds: _selectedSubjectGroupIds,
           onChanged: (ids) {
             setState(() {
+              if (_errors['subjectGroup'] != null) {
+                _errors['subjectGroup'] = null;
+              }
               _selectedSubjectGroupIds
                 ..clear()
                 ..addAll(ids);
             });
           },
         ),
+        if (_errors['subjectGroup'] != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              _errors['subjectGroup']!,
+              style: AppTypography.style(12, color: AppColors.redFF0004),
+            ),
+          ),
       ],
     );
   }
