@@ -7,24 +7,31 @@ import 'package:vms_flutter_client/data/datasources/detect_service.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/event_service.dart';
 import 'package:vms_flutter_client/data/datasources/notification_service.dart';
+import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
+import 'package:vms_flutter_client/data/datasources/subject_group_service.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
+import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
 import 'package:vms_flutter_client/data/repositories/ai_config_repository.dart';
+import 'package:vms_flutter_client/data/repositories/detect_repository.dart';
 import 'package:vms_flutter_client/data/repositories/event_repository.dart';
 import 'package:vms_flutter_client/data/repositories/notification_repository.dart';
+import 'package:vms_flutter_client/data/repositories/object_group_repository.dart';
+import 'package:vms_flutter_client/data/repositories/object_type_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
-import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
-import 'package:vms_flutter_client/data/repositories/detect_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_notication_repostory.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/alarm_sound/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/send_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
@@ -35,23 +42,32 @@ import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_custo
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/create_temp_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/get_list_custom_live_view_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/custom_live_view/update_custom_live_view_use_case.dart';
-import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/event/fetch_config_table_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/get_all_subject_type_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/get_event_display_config_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_event_display_config_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
+import 'package:vms_flutter_client/domain/usecases/monitor/stream_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
-import 'package:vms_flutter_client/screens/system_configuration/bloc/osd/osd_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/osd/osd_bloc.dart';
 
 class DependencyInjection {
   static List<SingleChildWidget> providers = [
@@ -87,6 +103,9 @@ class DependencyInjection {
       create: (context) => UserService(context.read(), context.read()),
     ),
     Provider<AiBoxService>(create: (context) => AiBoxService(context.read())),
+    Provider<SubjectGroupService>(
+      create: (context) => SubjectGroupService(context.read()),
+    ),
     Provider<CustomLiveViewService>(
       create: (context) => CustomLiveViewService(context.read()),
     ),
@@ -114,6 +133,9 @@ class DependencyInjection {
     ),
     Provider<PlaybackService>(
       create: (context) => PlaybackService(context.read()),
+    ),
+    Provider<ObjectTypeService>(
+      create: (context) => ObjectTypeService(context.read()),
     ),
 
     // Repositories
@@ -144,6 +166,13 @@ class DependencyInjection {
     ),
     Provider<IDetectRepository>(
       create: (context) => DetectRepository(context.read()),
+    ),
+    Provider<IObjectTypeRepository>(
+      create: (context) => ObjectTypeRepository(context.read()),
+    ),
+    Provider<IObjectGroupRepository>(
+      create: (context) =>
+          ObjectGroupRepository(context.read<HttpClient>(), context.read()),
     ),
     Provider<IScheduleRepository>(
       create: (context) => ScheduleRepository(context.read()),
@@ -243,6 +272,27 @@ class DependencyInjection {
     ),
     Provider<SearchEmapUseCase>(create: (context) => SearchEmapUseCase()),
     Provider<FilterAiBoxUseCase>(create: (context) => FilterAiBoxUseCase()),
+    Provider<GetObjectTypesUsecase>(
+      create: (context) => GetObjectTypesUsecase(context.read()),
+    ),
+    Provider<GetObjectsByTypeUsecase>(
+      create: (context) => GetObjectsByTypeUsecase(context.read()),
+    ),
+    Provider<GetSubjectGroupsUsecase>(
+      create: (context) => GetSubjectGroupsUsecase(context.read()),
+    ),
+    Provider<CreateSubjectGroupUsecase>(
+      create: (context) => CreateSubjectGroupUsecase(context.read()),
+    ),
+    Provider<UpdateSubjectGroupUsecase>(
+      create: (context) => UpdateSubjectGroupUsecase(context.read()),
+    ),
+    Provider<DeleteSubjectGroupUsecase>(
+      create: (context) => DeleteSubjectGroupUsecase(context.read()),
+    ),
+    Provider<SearchSubjectGroupUsecase>(
+      create: (context) => const SearchSubjectGroupUsecase(),
+    ),
 
     Provider<GetCameraUseCase>(
       create: (context) => GetCameraUseCase(context.read()),
@@ -256,12 +306,24 @@ class DependencyInjection {
     Provider<SearchEventUseCase>(
       create: (context) => SearchEventUseCase(context.read<IEventRepository>()),
     ),
-    Provider<FetchConfigTableUsecase>(
-      create: (context) => FetchConfigTableUsecase(context.read()),
+    Provider<GetEventDisplayConfigUsecase>(
+      create: (context) => GetEventDisplayConfigUsecase(context.read()),
     ),
-    Provider<FetchConfigTableUsecase>(create: (context) => FetchConfigTableUsecase(context.read())),
+    Provider<SaveEventDisplayConfigUsecase>(
+      create: (context) => SaveEventDisplayConfigUsecase(context.read()),
+    ),
+    Provider<GetAllSubjectTypesUsecase>(
+      create: (context) => GetAllSubjectTypesUsecase(context.read()),
+    ),
+
+    Provider<StreamEventUsecase>(
+      create: (context) => StreamEventUsecase(context.read(), context.read()),
+    ),
     Provider<SyncAlarmSoundsUseCase>(create: (context) => SyncAlarmSoundsUseCase(context.read())),
     Provider<SyncAlarmSoundUseCase>(create: (context) => SyncAlarmSoundUseCase(context.read())),
+    // Provider<FetchConfigTableUsecase>(
+    //   create: (context) => FetchConfigTableUsecase(context.read()),
+    // ),
 
     // Bloc
     Provider<OsdBloc>(

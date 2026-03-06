@@ -5,8 +5,7 @@ import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/datasources/socket_api_client.dart';
 import 'package:vms_flutter_client/data/mappers/detect_event_mapper.dart';
 import 'package:vms_flutter_client/data/models/response/base_response.dart';
-import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.3.pb.dart'
-    as pb;
+import 'package:vms_flutter_client/data/proto/models/comm.vsv.1.3.pb.dart' as pb;
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/field_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
@@ -24,9 +23,7 @@ class DetectService {
     if (response.code != 200) {
       throw ApiException(response.message);
     }
-    return (response.data as List<dynamic>)
-        .map((e) => TypeEventDetectEntity.fromJson(e))
-        .toList();
+    return (response.data as List<dynamic>).map((e) => TypeEventDetectEntity.fromJson(e)).toList();
   }
 
   Future<List<FieldConfigEntity>> getListFieldAvailable() async {
@@ -35,25 +32,19 @@ class DetectService {
     if (response.code != 200) {
       throw ApiException(response.message);
     }
-    return (response.data as List<dynamic>)
-        .map((e) => FieldConfigEntity.fromJson(e))
-        .toList();
+    return (response.data as List<dynamic>).map((e) => FieldConfigEntity.fromJson(e)).toList();
   }
 
-  Future<EventDisplayConfigEntity> getEventDisplayConfig({
-    required String eventTypeName,
-  }) async {
-    final raw = await httpClient.get(
-      EndPoints.eventDisplayConfigByName(eventTypeName),
-    );
+  Future<EventDisplayConfig> getEventDisplayConfig({required String eventTypeName}) async {
+    final raw = await httpClient.get(EndPoints.eventDisplayConfigByName(eventTypeName));
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) {
       throw ApiException(response.message);
     }
-    return EventDisplayConfigEntity.fromJson(response.data);
+    return EventDisplayConfig.fromJson(response.data);
   }
 
-  Future<EventDisplayConfigEntity> updateEventDisplayConfig({
+  Future<EventDisplayConfig> updateEventDisplayConfig({
     required List<String> listField,
     required String eventTypeName,
   }) async {
@@ -65,7 +56,7 @@ class DetectService {
     if (response.code != 200) {
       throw ApiException(response.message);
     }
-    return EventDisplayConfigEntity.fromJson(response.data);
+    return EventDisplayConfig.fromJson(response.data);
   }
 
   Stream<ReceiveEventEntity> get receiveEventStream {
@@ -75,9 +66,11 @@ class DetectService {
           return event['packetType'] == PacketType.receiveEvent.value;
         })
         .map((event) {
-          return pb.ReceiveEvent.fromBuffer(
-            event['data'] as List<int>,
-          ).toDomain();
+          final res = pb.ReceiveEvent.fromBuffer(event['data'] as List<int>).toDomain();
+
+          print(res.eventData);
+
+          return res;
         });
   }
    Future<NotificationSettingEntity> getNotificationSetting() async {

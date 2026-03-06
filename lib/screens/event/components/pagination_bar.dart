@@ -49,7 +49,7 @@ class PaginationBar extends StatelessWidget {
 
   Widget _buildPageButton(int page) {
     return InkWell(
-      onTap: () => onPageChanged(page),
+      onTap: page != 0 ? () => onPageChanged(page) : null,
       child: Container(
         width: 32,
         height: 32,

@@ -94,5 +94,12 @@ class AppColors {
 
   static const white = Colors.white;
 
+  // Object Type Management colors
+  static const orangeFF8C00 = Color(0xFFFF8C00); // AI feature text
+  static const orangeFFF2E2 = Color(0xFFFFF2E2); // AI feature background
+  static const green03BF00 = Color(0xFF03BF00); // Active status text
+  static const greenECFFD7 = Color(0xFFECFFD7); // Active status background
+  static const greyF8F9FE = Color(0xFFF8F9FE); // Paused status background
+
   static const yellowFFFBEB = Color(0xFFFFFBEB);
 }

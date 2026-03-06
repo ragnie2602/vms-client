@@ -67,9 +67,7 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
 
       for (var i = 0; i < events.length; i++) {
         final event = events[i];
-        final time = DateFormat(
-          'dd/MM/yyyy HH:mm:ss',
-        ).format(DateTime.fromMillisecondsSinceEpoch(event.timeEvent * 1000));
+        final time = DateFormat('dd/MM/yyyy HH:mm:ss').format(event.timeEvent);
 
         final cameraName =
             input.cameras.firstWhereOrNull((c) => c.camId == event.cameraId)?.name ?? '';

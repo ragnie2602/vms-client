@@ -10,6 +10,8 @@ class EventCustomButton extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final Widget? prefix;
   final double? prefixGap;
+  final Widget? suffixIcon;
+  final double? suffixIconGap;
   final TextStyle? textStyle;
 
   const EventCustomButton({
@@ -23,6 +25,8 @@ class EventCustomButton extends StatelessWidget {
     this.padding,
     this.prefixGap,
     this.prefix,
+    this.suffixIcon,
+    this.suffixIconGap,
     this.textStyle,
   });
 
@@ -51,6 +55,8 @@ class EventCustomButton extends StatelessWidget {
               if (prefix != null) prefix!,
               if (prefixGap != null) SizedBox(width: prefixGap!),
               Text(label, style: textStyle),
+              if (suffixIcon != null) SizedBox(width: suffixIconGap ?? 8),
+              if (suffixIcon != null) suffixIcon!,
             ],
           ),
         ),

@@ -222,15 +222,21 @@ class DrawerTile extends StatelessWidget {
                       : null,
                 ),
                 SizedBox(width: 20),
-                SvgPicture.asset(
-                  tab.svg,
-                  colorFilter: ColorFilter.mode(
-                    isSelected ? AppColors.primary : AppColors.contentFg,
-                    BlendMode.srcIn,
-                  ),
-                  width: 20,
-                  height: 20,
-                ),
+                tab.useMaterialIcon && tab.materialIcon != null
+                    ? Icon(
+                        _getMaterialIcon(tab.materialIcon!),
+                        color: isSelected ? AppColors.primary : AppColors.contentFg,
+                        size: 20,
+                      )
+                    : SvgPicture.asset(
+                        tab.svg,
+                        colorFilter: ColorFilter.mode(
+                          isSelected ? AppColors.primary : AppColors.contentFg,
+                          BlendMode.srcIn,
+                        ),
+                        width: 20,
+                        height: 20,
+                      ),
                 SizedBox(width: 20),
                 Flexible(
                   child: Text(
@@ -264,5 +270,20 @@ class DrawerTile extends StatelessWidget {
                 ),
         )
         .let((child) => onTap != null ? InkWell(onTap: onTap, child: child) : child);
+  }
+
+  IconData _getMaterialIcon(String iconName) {
+    switch (iconName) {
+      case 'person':
+        return Icons.person;
+      case 'group':
+        return Icons.group;
+      case 'face':
+        return Icons.face;
+      case 'badge':
+        return Icons.badge;
+      default:
+        return Icons.help_outline;
+    }
   }
 }

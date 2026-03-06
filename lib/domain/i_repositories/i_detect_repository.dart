@@ -9,13 +9,13 @@ abstract class IDetectRepository {
   // danh sách loại sự kiện detect
   Future<Either<Failure, List<TypeEventDetectEntity>>> getListTypeEventDetect();
   // cấu hình hiển thị của từng loại sự kiện detect
-  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig({
+  Future<Either<Failure, EventDisplayConfig>> getEventDisplayConfig({
     required String eventTypeName,
   });
   // danh sách các field có thể chọn để cấu hình hiển thị cho sự kiện
   Future<Either<Failure, List<FieldConfigEntity>>> getListFieldAvailable();
   // update cấu hình hiển thị của từng loại sự kiện detect
-  Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
+  Future<Either<Failure, EventDisplayConfig>> updateEventDisplayConfig({
     required List<String> listField,
     required String eventTypeName,
   });

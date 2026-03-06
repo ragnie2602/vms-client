@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/data/repositories/base_repository.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 
 class EventRepository extends BaseRepository implements IEventRepository {
@@ -32,6 +33,17 @@ class EventRepository extends BaseRepository implements IEventRepository {
   }
 
   @override
+  Future<Either<Failure, List<ObjectType>>> getAllSubjectTypes() async {
+    return await catchError<List<ObjectType>>(() async {
+      final data = await eventService.getSubjectTypes(
+        size: 100,
+        status: ObjectTypeStatus.active.name,
+      );
+      return Right(Pageable.fromJson(data, ObjectType.fromJson).content);
+    });
+  }
+
+  @override
   Future<Either<Failure, List<EventType>>> getAllEventType() async {
     return await catchError<List<EventType>>(() async {
       final data = await eventService.getAllEventType();
@@ -48,10 +60,19 @@ class EventRepository extends BaseRepository implements IEventRepository {
   }
 
   @override
-  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig(String eventType) async {
-    return await catchError<EventDisplayConfigEntity>(() async {
-      final data = await eventService.getEventDisplayConfig(eventType);
-      return Right(EventDisplayConfigEntity.fromJson(data));
+  Future<Either<Failure, EventDisplayConfig>> getEventDisplayConfig(
+    String eventType,
+    int typeConfig,
+    int? subjectTypeId,
+  ) async {
+    return await catchError<EventDisplayConfig>(() async {
+      final data = await eventService.getEventDisplayConfig(
+        eventType,
+        typeConfig,
+        subjectTypeId: subjectTypeId,
+      );
+
+      return Right(EventDisplayConfig.fromJson(data));
     });
   }
 
@@ -62,6 +83,7 @@ class EventRepository extends BaseRepository implements IEventRepository {
     int? endTime,
     List<String>? eventType,
     int? startTime,
+    String? subjectName,
   }) async {
     return await catchError<Pageable<EventEntity>>(() async {
       final data = await eventService.searchEvent(
@@ -70,6 +92,7 @@ class EventRepository extends BaseRepository implements IEventRepository {
         eventType: eventType,
         startTime: startTime,
         page: page,
+        subjectName: subjectName,
       );
 
       return Right(Pageable.fromJson(data, EventEntity.fromJson));
@@ -85,16 +108,18 @@ class EventRepository extends BaseRepository implements IEventRepository {
   }
 
   @override
-  Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
-    required List<String> listField,
-    required String eventType,
-  }) async {
-    return await catchError<EventDisplayConfigEntity>(() async {
-      final data = await eventService.updateEventDisplayConfig(
-        listField: listField,
-        eventType: eventType,
+  Future<Either<Failure, void>> updateEventDisplayConfig(List<EventDisplayConfig> configs) async {
+    return await catchError<void>(() async {
+      final List<dynamic> result = await eventService.updateEventDisplayConfig(
+        configs.map((e) => e.toJson()).toList(),
       );
-      return Right(EventDisplayConfigEntity.fromJson(data));
+
+      result.map<EventDisplayConfig>((e) {
+        final c = EventDisplayConfig.fromJson(e);
+        return c;
+      }).toList();
+
+      return Right(null);
     });
   }
 }

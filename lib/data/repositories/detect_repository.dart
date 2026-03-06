@@ -12,8 +12,7 @@ class DetectRepository extends BaseRepository implements IDetectRepository {
   final DetectService service;
   const DetectRepository(this.service);
   @override
-  Future<Either<Failure, List<TypeEventDetectEntity>>>
-  getListTypeEventDetect() async {
+  Future<Either<Failure, List<TypeEventDetectEntity>>> getListTypeEventDetect() async {
     return await catchError<List<TypeEventDetectEntity>>(() async {
       final data = await service.getListTypeEventDetect();
       return Right(data);
@@ -21,20 +20,17 @@ class DetectRepository extends BaseRepository implements IDetectRepository {
   }
 
   @override
-  Future<Either<Failure, EventDisplayConfigEntity>> getEventDisplayConfig({
+  Future<Either<Failure, EventDisplayConfig>> getEventDisplayConfig({
     required String eventTypeName,
   }) async {
-    return await catchError<EventDisplayConfigEntity>(() async {
-      final data = await service.getEventDisplayConfig(
-        eventTypeName: eventTypeName,
-      );
+    return await catchError<EventDisplayConfig>(() async {
+      final data = await service.getEventDisplayConfig(eventTypeName: eventTypeName);
       return Right(data);
     });
   }
 
   @override
-  Future<Either<Failure, List<FieldConfigEntity>>>
-  getListFieldAvailable() async {
+  Future<Either<Failure, List<FieldConfigEntity>>> getListFieldAvailable() async {
     return await catchError<List<FieldConfigEntity>>(() async {
       final data = await service.getListFieldAvailable();
       return Right(data);
@@ -42,11 +38,11 @@ class DetectRepository extends BaseRepository implements IDetectRepository {
   }
 
   @override
-  Future<Either<Failure, EventDisplayConfigEntity>> updateEventDisplayConfig({
+  Future<Either<Failure, EventDisplayConfig>> updateEventDisplayConfig({
     required List<String> listField,
     required String eventTypeName,
   }) async {
-    return await catchError<EventDisplayConfigEntity>(() async {
+    return await catchError<EventDisplayConfig>(() async {
       final data = await service.updateEventDisplayConfig(
         listField: listField,
         eventTypeName: eventTypeName,

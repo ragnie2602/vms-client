@@ -76,6 +76,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         cameraIds: event.cameraIds,
         eventTypes: event.eventTypes,
         cameras: event.cameras,
+        subjectName: event.subjectName,
       ),
     );
 

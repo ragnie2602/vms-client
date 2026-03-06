@@ -8,20 +8,24 @@ import 'package:vms_flutter_client/core/utils/date_util.dart';
 
 class EventDateRangePicker extends StatefulWidget {
   final String? label;
+  final TextStyle? labelStyle;
   final String? hintText;
   final DateTimeRange? initialDateRange;
   final void Function(DateTimeRange?)? onChanged;
   final EdgeInsetsGeometry? padding;
   final bool isDense;
+  final TextStyle? style;
 
   const EventDateRangePicker({
     super.key,
     this.label,
+    this.labelStyle,
     this.hintText,
     this.initialDateRange,
     this.onChanged,
     this.padding,
     this.isDense = false,
+    this.style,
   });
 
   @override
@@ -58,7 +62,9 @@ class EventDateRangePickerState extends State<EventDateRangePicker> {
         if (widget.label != null)
           Text(
             widget.label!,
-            style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+            style:
+                widget.labelStyle ??
+                AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
           ),
         const SizedBox(height: 8),
         TextField(
@@ -98,6 +104,9 @@ class EventDateRangePickerState extends State<EventDateRangePicker> {
           keyboardType: TextInputType.none,
           onTap: _showDateRangePicker,
           readOnly: true,
+          style:
+              widget.style ??
+              AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
         ),
       ],
     );
@@ -163,7 +172,6 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
   late DateTime _focusedDay;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
-  RangeSelectionMode _rangeSelectionMode = RangeSelectionMode.toggledOn;
 
   @override
   void initState() {
@@ -270,77 +278,46 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
   }
 
   String _buildRangeLabel() {
-    if (_rangeStart == null && _rangeEnd == null) return 'Ngày bắt đầu – Ngày kết thúc';
-    if (_rangeStart != null && _rangeEnd == null) {
-      return '${_rangeStart!.format('d MMM yyyy', locale: 'vi')} – ...';
+    if (_rangeStart == null && _rangeEnd == null) {
+      return 'Ngày bắt đầu - Ngày kết thúc';
     }
-    return '${_rangeStart!.format('d MMM yyyy', locale: 'vi')} – ${_rangeEnd!.format('d MMM yyyy', locale: 'vi')}';
+    if (_rangeStart != null && _rangeEnd == null) {
+      return '${_rangeStart!.format('d MMM yyyy', locale: 'vi')} - ...';
+    }
+    return '${_rangeStart!.format('d MMM yyyy', locale: 'vi')} - ${_rangeEnd!.format('d MMM yyyy', locale: 'vi')}';
   }
 
   Widget _buildCalendar() {
     return TableCalendar(
-      firstDay: DateTime.fromMillisecondsSinceEpoch(0),
-      lastDay: DateTime.now(),
-      focusedDay: _focusedDay,
       calendarFormat: CalendarFormat.month,
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      locale: 'vi',
-      rangeStartDay: _rangeStart,
-      rangeEndDay: _rangeEnd,
-      rangeSelectionMode: _rangeSelectionMode,
-      onRangeSelected: (start, end, focusedDay) {
-        setState(() {
-          _focusedDay = focusedDay;
-          _rangeStart = start;
-          _rangeEnd = end;
-          _rangeSelectionMode = RangeSelectionMode.toggledOn;
-        });
-      },
-      onPageChanged: (focusedDay) {
-        _focusedDay = focusedDay;
-      },
-      onCalendarCreated: (controller) => _pageController = controller,
-      headerVisible: true,
-      headerStyle: const HeaderStyle(
-        formatButtonVisible: false,
-        leftChevronVisible: false,
-        rightChevronVisible: false,
-        titleCentered: false,
-      ),
-      daysOfWeekHeight: 32,
-      rowHeight: 50,
       calendarStyle: CalendarStyle(
-        rangeHighlightColor: AppColors.blueE7F3FF,
-        rangeStartDecoration: const BoxDecoration(
-          color: AppColors.secondary,
-          shape: BoxShape.circle,
-        ),
-        rangeEndDecoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
-        withinRangeDecoration: const BoxDecoration(color: Colors.transparent),
-        withinRangeTextStyle: AppTypography.style(
-          12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.black,
-        ),
         defaultTextStyle: AppTypography.style(
           12,
           fontWeight: FontWeight.w400,
           color: AppColors.black,
         ),
-        weekendTextStyle: AppTypography.style(
+        disabledTextStyle: AppTypography.style(
           12,
           fontWeight: FontWeight.w400,
-          color: AppColors.black,
+          color: AppColors.grey94A3B8,
         ),
         outsideTextStyle: AppTypography.style(
           12,
           fontWeight: FontWeight.w400,
           color: AppColors.grey94A3B8,
         ),
-        disabledTextStyle: AppTypography.style(
-          12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.grey94A3B8,
+        rangeEndDecoration: const BoxDecoration(
+          color: AppColors.secondary,
+          shape: BoxShape.circle,
+        ),
+        rangeHighlightColor: AppColors.blueE7F3FF,
+        rangeStartDecoration: const BoxDecoration(
+          color: AppColors.secondary,
+          shape: BoxShape.circle,
+        ),
+        selectedDecoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.secondary,
         ),
         selectedTextStyle: AppTypography.style(
           12,
@@ -352,8 +329,60 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
           border: Border.fromBorderSide(BorderSide(color: AppColors.secondary)),
           color: Colors.transparent,
         ),
-        selectedDecoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.secondary),
+        todayTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.black,
+        ),
+        weekendTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
+        withinRangeDecoration: const BoxDecoration(color: Colors.transparent),
+        withinRangeTextStyle: AppTypography.style(
+          12,
+          fontWeight: FontWeight.w400,
+          color: AppColors.black,
+        ),
       ),
+      daysOfWeekHeight: 32,
+      firstDay: DateTime.fromMillisecondsSinceEpoch(0),
+      focusedDay: _focusedDay,
+      headerStyle: const HeaderStyle(
+        formatButtonVisible: false,
+        leftChevronVisible: false,
+        rightChevronVisible: false,
+        titleCentered: false,
+      ),
+      headerVisible: true,
+      lastDay: DateTime.now(),
+      locale: 'vi',
+      onCalendarCreated: (controller) => _pageController = controller,
+      onDaySelected: (selectedDay, focusedDay) {
+        if (_rangeEnd != null) {
+          setState(() {
+            _rangeStart = selectedDay;
+            _rangeEnd = null;
+          });
+        } else {
+          setState(() {
+            if (selectedDay.isBefore(_rangeStart ?? selectedDay)) {
+              _rangeEnd = _rangeStart;
+              _rangeStart = selectedDay;
+            } else {
+              _rangeEnd = selectedDay;
+            }
+          });
+        }
+      },
+      onPageChanged: (focusedDay) {
+        _focusedDay = focusedDay;
+      },
+      rangeStartDay: _rangeStart,
+      rangeEndDay: _rangeEnd,
+      rowHeight: 50,
+      startingDayOfWeek: StartingDayOfWeek.monday,
       calendarBuilders: CalendarBuilders(
         headerTitleBuilder: (context, day) {
           return Container(

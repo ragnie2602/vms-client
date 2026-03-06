@@ -26,6 +26,11 @@
 - [ ] Pagination, Sort, Filter được xử lý thống nhất
 - [ ] Có debounce cho search input
 
+### State Management Details
+- [ ] Loading state được emit trước khi gọi API
+- [ ] Error state được emit khi exception xảy ra
+- [ ] Success state chứa đầy đủ data cần thiết
+
 ---
 
 ## II. UC-SK01 – Danh sách Quản lý Sự kiện
@@ -271,6 +276,11 @@
 - [ ] Có loading / skeleton hợp lý
 - [ ] Không giật UI khi load ảnh/video
 - [ ] Responsive tốt cho Desktop resize
+
+### Error Handling
+- [ ] Validate DatePicker (From ≤ To) trước khi search
+- [ ] Toast/Dialog hiển thị error message user-friendly
+- [ ] Timeout handling cho API calls
 
 ---
 

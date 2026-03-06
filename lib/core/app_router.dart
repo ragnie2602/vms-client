@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/export_file_user_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_tag_camera_use_case.dart';
-import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/delete_camera/delete_camera_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/emap/search_emap_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/filter_camera_not_in_group/filter_camera_not_in_group_usecase.dart';
@@ -16,6 +16,9 @@ import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dar
 import 'package:vms_flutter_client/screens/account/mobile_account_screen.dart';
 import 'package:vms_flutter_client/screens/account/mobile_info_screen.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
+import 'package:vms_flutter_client/screens/ai_box/ai_box_screen.dart';
+import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/schedule/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
@@ -35,18 +38,19 @@ import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dar
 import 'package:vms_flutter_client/screens/monitor/custom_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/default_monitor_pane.dart';
 import 'package:vms_flutter_client/screens/monitor/monitor_screen.dart';
+import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
+import 'package:vms_flutter_client/screens/object_group/object_group_screen.dart';
+import 'package:vms_flutter_client/screens/object_type/bloc/object_type_bloc.dart';
+import 'package:vms_flutter_client/screens/object_type/object_type_screen.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
-import 'package:vms_flutter_client/screens/camera_configuration/bloc/schedule/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/notification/notification_setting_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/system_configuration_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
-import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
-import 'package:vms_flutter_client/screens/ai_box/ai_box_screen.dart';
 
 import '../domain/usecases/login/login_usecase.dart';
 import '../domain/usecases/register/register_usecase.dart';
@@ -119,6 +123,20 @@ enum Routes {
     path: '/events',
     title: 'Quản lý sự kiện',
     description: 'Cho phép quản trị viên tạo và quản lý sự kiện',
+  ),
+  objectTypes(
+    name: 'objectTypes',
+    path: '/objectTypes',
+    title: 'Quản lý loại đối tượng',
+    description:
+        'Quản lý và cấu hình trường dữ liệu cho các đối tượng người dùng trên hệ thống',
+  ),
+  objectGroups(
+    name: 'objectGroups',
+    path: '/objectGroups',
+    title: 'Quản lý nhóm đối tượng',
+    description:
+        'Quản lý và cấu hình trường dữ liệu cho các đối tượng người dùng trên hệ thống',
   ),
   configuration(
     name: 'system_configuration',
@@ -258,13 +276,22 @@ class AppRouter {
                 context.read(),
               ),
             ),
-            BlocProvider(create: (context) => DetectBloc(context.read())),
+            BlocProvider(create: (context) => DetectBloc(context.read(), context.read())),
+            BlocProvider(create: (context) => ObjectTypeBloc(context.read())),
             BlocProvider(
-              create: (context) => SetupInfoFieldBloc(
+              create: (context) => ObjectGroupBloc(
+                context.read(),
+                context.read(),
+                context.read(),
+                context.read(),
                 context.read(),
                 context.read(),
                 context.read(),
               ),
+            ),
+            BlocProvider(
+              create: (context) =>
+                  SetupEventDisplayBloc(context.read(), context.read(), context.read()),
             ),
             BlocProvider(
               create: (context) => AiBoxBloc(
@@ -414,6 +441,29 @@ class AppRouter {
                 context: context,
                 state: state,
                 child: EventScreen(),
+              );
+            },
+          ),
+
+          GoRoute(
+            path: Routes.objectTypes.path,
+            name: Routes.objectTypes.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: ObjectTypeScreen(),
+              );
+            },
+          ),
+          GoRoute(
+            path: Routes.objectGroups.path,
+            name: Routes.objectGroups.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: ObjectGroupScreen(),
               );
             },
           ),

@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/event_constants.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/setup_info_field_dialog.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
@@ -187,8 +188,11 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
                             );
                             showDialog(
                               context: context,
-                              builder: (dialogContext) => BlocProvider.value(
-                                value: context.read<SetupInfoFieldBloc>(),
+                              builder: (dialogContext) => MultiBlocProvider(
+                                providers: [
+                                  BlocProvider.value(value: context.read<EventBloc>()),
+                                  BlocProvider.value(value: context.read<SetupEventDisplayBloc>()),
+                                ],
                                 child: SetupInfoFieldDialog(
                                   typeConfig: EventTypeConfig.LIVEVIEW,
                                   typeEvents: detectState.typeEvents,

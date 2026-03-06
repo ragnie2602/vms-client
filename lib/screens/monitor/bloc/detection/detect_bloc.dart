@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
-import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/ai_alarm/al_alarm_enums.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
@@ -23,9 +21,9 @@ import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/home/widgets/alert_detail_popup.dart';
+import 'package:vms_flutter_client/domain/usecases/monitor/stream_event_usecase.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
-import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 import 'package:vms_flutter_client/screens/shared/player/audio_player.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
@@ -34,13 +32,15 @@ import 'async_delay_queue.dart';
 
 class DetectBloc extends Bloc<DetectEvent, DetectState> {
   final IDetectRepository detectRepository;
+  final StreamEventUsecase streamEventUsecase;
+
   StreamSubscription? _subscription;
 
   bool _isDialogShowing = false;
   AsyncDelayQueue asyncDelayQueue = AsyncDelayQueue(delay: Duration(seconds: 10));
   AudioPlayer audioPlayer = AudioPlayer();
 
-  DetectBloc(this.detectRepository) : super(const DetectState()) {
+  DetectBloc(this.detectRepository, this.streamEventUsecase) : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
     on<DetectOnReceiveEvent>(_onDetectOnReceiveEvent);
     on<FilterEventsByViewingCameras>(_onFilterEventsByViewingCameras);
@@ -87,7 +87,8 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
 
     // step 2: Lắng nghe sự kiện từ stream
     _subscription?.cancel();
-    _subscription = detectRepository.receiveEventStream.listen((event) {
+    _subscription = streamEventUsecase.execute(StreamEventInput()).listen((ev) {
+      final event = ev.liveEvent;
       add(DetectOnReceiveEvent(event));
 
       print("[Pending alert count]: ${asyncDelayQueue.pendingCount}");
@@ -136,8 +137,8 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
                 (homeContext.read<AlarmSoundBloc>().state as AlarmSoundLoaded).alarmSounds;
             if (alarmSounds.isNotEmpty) {
               final alarmSound = alarmSounds.firstWhere(
-                (element) => element.id == event.eventDataEntity.audio,
-                orElse: () => alarmSounds[Random().nextInt(alarmSounds.length)],
+                (element) => element.id == event.eventData?['audio'],
+                orElse: () => alarmSounds.first,
               );
               audioPlayer.play(alarmSound.localFilePath ?? alarmSound.url);
             }
@@ -151,33 +152,37 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
             }
 
             _isDialogShowing = true;
-            final eventName = event.eventType ?? 'Không rõ';
-            final evenData = jsonDecode(event.eventData ?? '{}');
+
+            final evenData = event.eventData ?? {};
+            final eventName = evenData['eventName'] ?? '---';
+            final eventId = evenData['eventId'] ?? DateTime.now().millisecondsSinceEpoch;
             final alertType = AlertType.fromAIAlarmType(AIAlarmType.fromKey(event.eventType ?? ''));
-            String? cameraName;
-            if (homeContext?.read<MonitorBloc>().state is MonitorSuccess) {
-              cameraName = (homeContext!.read<MonitorBloc>().state as MonitorSuccess).allCameras
-                  .firstWhereOrNull((element) => listEquals(element.id, event.cameraId))
-                  ?.name;
-            }
+            String? cameraName = evenData['cameraName'];
+            // if (homeContext?.read<MonitorBloc>().state is MonitorSuccess) {
+            //   cameraName = (homeContext!.read<MonitorBloc>().state as MonitorSuccess).allCameras
+            //       .firstWhereOrNull((element) => listEquals(element.id, event.cameraId))
+            //       ?.name;
+            // }
 
             await AlertDetailPopup.show(
               rootContext,
               alert: NotificationAlertEntity(
                 cameraName: cameraName,
                 cameraGroupName: cameraName,
-                categoryLabel: evenData['eventName'] ?? 'Cảnh báo sự kiện mới',
+                categoryLabel: eventName,
                 message: 'Phát hiện sự kiện: $eventName',
                 alertType: alertType,
                 time: evenData['timeEvent'] != null
                     ? DateFormat('HH:mm dd/MM/yyyy').format(DateTime.parse(evenData['timeEvent']))
-                    : '',
-                id: evenData['eventId'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+                    : '---',
+                id: eventId.toString(),
               ),
-              snapshotUrl: event.eventDataEntity.imageUrl ?? '',
+              snapshotUrl: evenData['imageUrl'],
               cameraLabel: cameraName,
               onViewDetail: () {
                 if (homeContext == null) return;
+
+                audioPlayer.stop();
                 showDialog(
                   context: rootContext,
                   builder: (c) => MultiBlocProvider(
@@ -189,7 +194,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
                       ),
                       BlocProvider.value(value: homeContext.read<StorageFolderBloc>()),
                     ],
-                    child: EventDetailDialog(id: event.eventDataEntity.eventId ?? 0),
+                    child: EventDetailDialog(id: eventId ?? 0),
                   ),
                 );
               },
@@ -208,8 +213,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     Emitter<DetectState> emit,
   ) {
     if (state.status == DetectStatus.success) {
-      final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)
-        ..insert(0, event.event);
+      final newEvents = List<ReceiveEventEntity>.from(state.receiveEvents)..insert(0, event.event);
       bool? _reachedMax;
 
       // quá 100 cắt ở đây
@@ -218,12 +222,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
         _reachedMax = true;
       }
 
-      emit(
-        state.copyWith(
-          receiveEvents: newEvents,
-          hasReachedMaxEvents: _reachedMax,
-        ),
-      );
+      emit(state.copyWith(receiveEvents: newEvents, hasReachedMaxEvents: _reachedMax));
 
       // Recalculate selectedEvents if filter is active
       if (state.shouldShowSelectedEvents) {
