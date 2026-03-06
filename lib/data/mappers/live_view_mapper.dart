@@ -1,9 +1,8 @@
-import 'package:vms_flutter_client/core/constants/scope_functions.dart';
+import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
 import 'package:vms_flutter_client/data/proto/models/comm.model.pb.dart' as pb;
 import 'package:vms_flutter_client/domain/entities/live_view/base_view.dart';
-import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.dart';
 import 'package:vms_flutter_client/domain/entities/live_view/custom_live_view.dart';
-import 'package:vms_flutter_client/data/mappers/camera_mapper.dart';
+import 'package:vms_flutter_client/domain/entities/live_view/live_view_position.dart';
 
 extension BaseViewMapper on pb.Base_View {
   ViewMode toDomain() {
