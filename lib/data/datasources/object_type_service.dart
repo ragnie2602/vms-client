@@ -77,7 +77,7 @@ class ObjectTypeService {
   Future<void> deleteObjectType(int id) async {
     final raw = await httpClient.delete(url: '${EndPoints.baseObjectType}/$id');
     final response = BaseResponse.fromJson(raw);
-    if (response.code != 200) throw ApiException(response.message);
+    if (response.code != 204) throw ApiException(response.message);
   }
 
   /// Fetch available icons for object type fields

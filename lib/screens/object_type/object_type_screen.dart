@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/dropdown_widget.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
@@ -66,52 +67,37 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
       body: BlocListener<ObjectTypeBloc, ObjectTypeState>(
         listener: (context, state) {
           if (state is ObjectTypeCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Thêm loại đối tượng thành công'),
-                backgroundColor: Colors.green,
-              ),
+            ToastUtil.toastSuccess(
+              context: context,
+              message: 'Thêm mới loại đối tượng thành công',
             );
             _loadData();
           } else if (state is ObjectTypeCreateError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Lỗi: ${state.message}'),
-                backgroundColor: Colors.red,
-              ),
+            ToastUtil.toastFail(
+              context: context,
+              message: 'Có lỗi xảy ra, vui lòng thử lại',
             );
           } else if (state is ObjectTypeUpdated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Cập nhật loại đối tượng thành công'),
-                backgroundColor: Colors.green,
-              ),
+            ToastUtil.toastSuccess(
+              context: context,
+              message: 'Cập nhật loại đối tượng thành công',
             );
             _loadData();
           } else if (state is ObjectTypeUpdateError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Lỗi: ${state.message}'),
-                backgroundColor: Colors.red,
-              ),
+            ToastUtil.toastFail(
+              context: context,
+              message: 'Có lỗi xảy ra, vui lòng thử lại',
             );
           } else if (state is ObjectTypeDeleted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Xóa ${_lastDeletedName ?? 'loại đối tượng'} thành công!',
-                ),
-                backgroundColor: Colors.green,
-              ),
+            ToastUtil.toastSuccess(
+              context: context,
+              message: 'Xóa ${_lastDeletedName ?? 'loại đối tượng'} thành công!',
             );
-            _lastDeletedName = null;
             _loadData();
           } else if (state is ObjectTypeDeleteError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Lỗi: ${state.message}'),
-                backgroundColor: Colors.red,
-              ),
+            ToastUtil.toastFail(
+              context: context,
+              message: 'Có lỗi xảy ra, vui lòng thử lại',
             );
           }
         },
@@ -423,13 +409,10 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
   void _onDelete(ObjectType objectType) {
     // SRS: If object type has data objects, block deletion with toast
     if (objectType.objectCount > 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
+      ToastUtil.toastFail(
+        context: context,
+        message:
             'Loại đối tượng đang có dữ liệu đối tượng đi kèm, không thể xóa',
-          ),
-          backgroundColor: Colors.red,
-        ),
       );
       return;
     }
