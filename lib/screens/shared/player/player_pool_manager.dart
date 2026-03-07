@@ -84,7 +84,18 @@ class PlayerPoolManager {
   final Set<PlayerWrapper> _quarantinedPlayers = {};
   int _idCounter = 0;
 
-  final int minPoolSize = 36;
+  int _minPoolSize = 36;
+
+  /// Adapts pool floor based on actual camera count.
+  /// Formula: min(36, cameraCount) + 1
+  /// The +1 provides a small headroom for transient operations (e.g. HQ detail switch).
+  void updateMinPoolSize(int cameraCount) {
+    final newSize = (cameraCount < 36 ? cameraCount : 36) + 1;
+    if (newSize != _minPoolSize) {
+      Logger.log('Player Pool: Adaptive minPoolSize updated from $_minPoolSize to $newSize (cameras: $cameraCount)');
+      _minPoolSize = newSize;
+    }
+  }
   final int maxPoolSize = 100;
   final int minHqPoolSize = 2;
   Timer? _cleanupTimer;
@@ -131,7 +142,7 @@ class PlayerPoolManager {
     }
 
     // Normal players
-    for (int i = 0; i < minPoolSize; i++) {
+    for (int i = 0; i < _minPoolSize; i++) {
       var normalPlayer = PlayerWrapper(Player(), 'pw_${_idCounter++}', windowId);
       _idleNormalPlayers.add(normalPlayer);
     }
@@ -188,16 +199,21 @@ class PlayerPoolManager {
         if (cleanIdx != -1) {
           player = targetPool.removeAt(cleanIdx);
         } else {
-          // All players have cached URLs → take the oldest (first in list)
-          player = targetPool.removeAt(0);
-          
-          // Purge the stolen player from the URL cache so we don't leave a dangling reference
-          if (player.lastMediaUrl != null) {
-            _idleUrlCache[player.lastMediaUrl]?.remove(player);
-            if (_idleUrlCache[player.lastMediaUrl]?.isEmpty ?? false) {
-              _idleUrlCache.remove(player.lastMediaUrl);
+          // All players have cached URLs → prefer creating a new player
+          // over stealing a cached one (preserves cache hits for other cameras).
+          // Only steal if we've hit maxPoolSize and can't create more.
+          int totalPlayers = _idleHqPlayers.length + _idleNormalPlayers.length + _busyPlayers.length + _quarantinedPlayers.length;
+          if (totalPlayers >= maxPoolSize) {
+            // Hard limit reached — must steal oldest cached player
+            player = targetPool.removeAt(0);
+            if (player.lastMediaUrl != null) {
+              _idleUrlCache[player.lastMediaUrl]?.remove(player);
+              if (_idleUrlCache[player.lastMediaUrl]?.isEmpty ?? false) {
+                _idleUrlCache.remove(player.lastMediaUrl);
+              }
             }
           }
+          // else: fall through to step 3 → _createNewPlayer()
         }
       }
     }
@@ -285,7 +301,7 @@ class PlayerPoolManager {
     if (_currentWindowId == null) return;
     final now = DateTime.now();
 
-    int targetToRemove = _idleNormalPlayers.length - minPoolSize;
+    int targetToRemove = _idleNormalPlayers.length - _minPoolSize;
     if (targetToRemove > 0) {
       _idleNormalPlayers.removeWhere((p) {
         if (targetToRemove <= 0) return false;

@@ -161,6 +161,32 @@ Player Pool [0]: Acquired normal player pw_5 for "Camera Sảnh A" (Cache Hit: t
 
 **Cải tiến:** Bổ sung `minHqPoolSize` (mặc định `2`) để khởi tạo đủ player HQ từ đầu, phục vụ luồng xem chi tiết. Lazy cleanup giữ lại tối thiểu `minHqPoolSize` player HQ, không dùng hard cap riêng cho HQ vì `maxPoolSize` toàn cục đã đủ bảo vệ.
 
+### h. Adaptive minPoolSize & Bảo vệ Cache khi Acquire (Cache-Preserving Acquire)
+
+**Vấn đề 1 — Lãng phí RAM khi số lượng camera nhỏ:** Trước đây `minPoolSize` cố định bằng `36`. Với hệ thống chỉ có 8 camera, Pool khởi tạo dư thừa 28 Player C++ không bao giờ dùng đến, tiêu tốn RAM và GPU Texture vô ích.
+
+**Giải pháp — Adaptive minPoolSize:** Biến `minPoolSize` thành giá trị thích ứng, được cập nhật tự động khi ứng dụng fetch danh sách camera từ API (`getAllCamera`). Công thức: `_minPoolSize = min(36, cameraCount) + 1`.
+*   **Cận dưới:** Hệ thống 8 camera → `minPoolSize = 9`. Chỉ tạo 9 player, tiết kiệm ~75% RAM so với trước.
+*   **Cận trên:** Hệ thống 100+ camera → `minPoolSize = 37`. Giới hạn bộ khởi tạo ban đầu ở mức hợp lý.
+*   **+1 Headroom:** Dành cho thao tác nhất thời như mở xem chi tiết HQ (Detail View) trong khi lưới Grid đang hiển thị đầy đủ.
+*   **Thread-safe:** Dart là single-threaded (event loop), mọi truy cập `_minPoolSize` đều trên cùng Isolate — không cần mutex/lock.
+*   **Điểm gọi:** `MonitorBloc._onGetAllCamera()` gọi `PlayerPoolManager.instance.updateMinPoolSize(cameras.length)` ngay sau khi nhận dữ liệu camera thành công.
+*   Pool vẫn co giãn động (elastic) vượt `_minPoolSize` khi cần qua `_createNewPlayer()`, và `_lazyCleanup` tự thu hồi về `_minPoolSize` sau 5 phút idle.
+
+**Vấn đề 2 — Camera chập chờn phá hoại Cache player khác:** Khi tất cả idle player đều có cached URL, một camera liên tục disconnect/reconnect sẽ khiến player bị Quarantine → mất khỏi Pool. Lần reconnect tiếp theo, hàm `acquire()` buộc phải **trộm (steal)** player đang giữ cache cho camera online khác → camera bị trộm mất cache hit, phải reconnect RTSP lại từ đầu (delay 1-3s).
+
+**Kịch bản cụ thể:**
+1.  Lưới 6×6 (36 camera), tất cả busy
+2.  Camera X mất mạng → player bị corrupted → Quarantine → chỉ còn 35 idle khi trả về Pool
+3.  Người dùng mở Detail View rồi quay lại Grid → 36 acquire() gọi đồng thời
+4.  35 camera khớp cache, Camera X không khớp → **trộm player cũ nhất** (của Camera A)
+5.  Camera A bị mất cache → cũng phải reconnect → hiệu ứng domino
+
+**Giải pháp — Ưu tiên tạo mới thay vì trộm (Prefer Create over Steal):** Khi không còn idle player "sạch" (chưa có `lastMediaUrl`) và phải fallback, hệ thống **không trộm player có cache** nữa. Thay vào đó, kiểm tra `totalPlayers < maxPoolSize`:
+*   **Dưới giới hạn:** Bỏ qua idle pool, rơi thẳng xuống `_createNewPlayer()` — tạo player mới mà không phá hoại cache của ai.
+*   **Đạt giới hạn cứng** (`maxPoolSize = 100`): Lúc này mới thực hiện steal oldest (LRU eviction) — đây là biện pháp cuối cùng khi tài nguyên hệ thống thực sự cạn kiệt.
+*   `_lazyCleanup` tự động thu hồi các player dư thừa về `_minPoolSize` sau 5 phút idle, đảm bảo RAM không bị phình vĩnh viễn.
+
 ---
 
-**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, Fast-Path Zero-Latency Resume, chống O(N) lookup, chống Cache Pollution, vá rò rỉ Duplicate Caches, cách ly rủi ro Heartcheck ngầm và bảo vệ an toàn bộ nhớ đa tầng) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak), tăng độ êm cho GPU và đạt tốc độ chuyển đổi camera **tức thì (Zero-Latency Instant Frame Resume)**.
+**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, Fast-Path Zero-Latency Resume, chống O(N) lookup, chống Cache Pollution, vá rò rỉ Duplicate Caches, cách ly rủi ro Heartcheck ngầm, bảo vệ an toàn bộ nhớ đa tầng, Adaptive Pool Size thích ứng số lượng camera, và cơ chế Prefer-Create-over-Steal bảo toàn cache) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak), tăng độ êm cho GPU và đạt tốc độ chuyển đổi camera **tức thì (Zero-Latency Instant Frame Resume)**.
