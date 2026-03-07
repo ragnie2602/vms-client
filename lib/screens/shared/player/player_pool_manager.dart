@@ -128,28 +128,7 @@ class PlayerPoolManager {
     if (_currentWindowId != null && _currentWindowId == windowId) return;
     _currentWindowId = windowId;
 
-    if (_idleHqPlayers.isNotEmpty || _idleNormalPlayers.isNotEmpty || _busyPlayers.isNotEmpty) return;
-
-    // High Quality reserved players
-    for (int i = 0; i < minHqPoolSize; i++) {
-      var hqPlayer = PlayerWrapper(
-        Player(),
-        'hw_${_idCounter++}',
-        windowId,
-        isHighQualityReserved: true,
-      );
-      _idleHqPlayers.add(hqPlayer);
-    }
-
-    // Normal players
-    for (int i = 0; i < _minPoolSize; i++) {
-      var normalPlayer = PlayerWrapper(Player(), 'pw_${_idCounter++}', windowId);
-      _idleNormalPlayers.add(normalPlayer);
-    }
-
-    Logger.log(
-      'Player Pool [$windowId]: Initialized core pool with ${_idleHqPlayers.length + _idleNormalPlayers.length} players',
-    );
+    Logger.log('Player Pool [$windowId]: Elastic pool bounds initialized. Players will be created on-demand.');
 
     startCleanupTimer();
   }

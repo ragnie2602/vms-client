@@ -31,11 +31,13 @@ Thay vì ném thô `Player` vào Pool, ta bọc nó bằng `PlayerWrapper` để
 *   `isCorrupted`: Cờ đánh dấu luồng C++ bên dưới đã bị sập (lỗi mạng lâu dài, lỗi core MDK) cần bị đào thải.
 *   `lastUsed`: Timestamp ghi lại thời gian cuối cùng trả về Pool, phục vụ dọn rác.
 
-### b. Quy trình Khởi tạo - Mượn - Trả O(1)
-Để loại bỏ vòng lặp `O(N)` khi tìm Player rảnh rỗi (Rất nặng nề nếu lưới 36 camera mượn/trả liên tục), hệ thống sử dụng cấu trúc lưu trữ phân mảnh:
+### b. Quy trình Khởi tạo Động (Elastic Creation) - Mượn - Trả O(1)
+Để loại bỏ vòng lặp `O(N)` khi tìm Player rảnh rỗi và loại bỏ hiện tượng giật lag khi khởi tạo hàng loạt (Startup Spike), hệ thống sử dụng cấu trúc lưu trữ phân mảnh và khởi tạo lười (lazy creation):
 *   `_idlePlayers` (Kiểu List/Queue): Chứa các Player rảnh rỗi.
 *   `_busyPlayers` (Kiểu Set): Chứa các Player đang làm việc.
-*   **Mượn (Acquire):** Rất nhanh chóng `_idlePlayers.removeLast()` (Lấy phần tử O(1)) và nạp vào `_busyPlayers.add()`. Nếu cạn kiệt, Manager lập tức **scale-up** (mở rộng mảng động).
+*   **Khởi tạo Động (Elastic):** Hệ thống KHÔNG tạo sẵn 36 player ngay khi mở app. Thay vào đó, nó theo dõi nhu cầu thực tế. Khi Widget đầu tiên gọi `acquire()`, nếu pool rỗng, nó sẽ tự động `_createNewPlayer()`.
+*   **Mượn (Acquire):** Rất nhanh chóng `_idlePlayers.removeLast()` (Lấy phần tử O(1)) và nạp vào `_busyPlayers.add()`. Nếu cạn kiệt rảnh rỗi nhưng tổng số player vẫn dưới `maxPoolSize`, Manager lập tức tạo mới.
+*   **Gián hạn Rác (minPoolSize):** `minPoolSize` đóng vai trò là sàn (floor) cho Garbage Collection. Nếu số lượng idle player vượt quá `minPoolSize`, `_lazyCleanup` sẽ dọn dẹp phần dư thừa sau 5 phút. Nếu dưới `minPoolSize`, hệ thống giữ player ấm (warm) trên RAM sãn sàng cho lần mở lưới tiếp theo.
 *   **Giới hạn RAM (MaxPoolSize):** Cài đặt `maxPoolSize = 100`. Ngăn chặn vọt lố vô tận làm sập RAM máy chủ tính toán.
 *   **Trả (Release):** Gỡ khỏi `_busyPlayers` và cất ngược vào cuối hàng đợi `_idlePlayers`.
 
