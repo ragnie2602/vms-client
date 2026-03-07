@@ -74,7 +74,9 @@ class MyProfile {
       tel: json['tel'],
       host: json['host'],
       port: json['port'],
-      permissions: json['permissions'],
+      permissions: json['permissions'] == null
+          ? []
+          : List.from(json['permissions']).map((e) => e.toString()).toList(),
       userType: UserType.fromValue(json['userType']),
     );
   }
