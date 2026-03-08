@@ -185,10 +185,24 @@ Player Pool [0]: Acquired normal player pw_5 for "Camera Sảnh A" (Cache Hit: t
 5.  Camera A bị mất cache → cũng phải reconnect → hiệu ứng domino
 
 **Giải pháp — Ưu tiên tạo mới thay vì trộm (Prefer Create over Steal):** Khi không còn idle player "sạch" (chưa có `lastMediaUrl`) và phải fallback, hệ thống **không trộm player có cache** nữa. Thay vào đó, kiểm tra `totalPlayers < maxPoolSize`:
-*   **Dưới giới hạn:** Bỏ qua idle pool, rơi thẳng xuống `_createNewPlayer()` — tạo player mới mà không phá hoại cache của ai.
+**Dưới giới hạn:** Bỏ qua idle pool, rơi thẳng xuống `_createNewPlayer()` — tạo player mới mà không phá hoại cache của ai.
 *   **Đạt giới hạn cứng** (`maxPoolSize = 100`): Lúc này mới thực hiện steal oldest (LRU eviction) — đây là biện pháp cuối cùng khi tài nguyên hệ thống thực sự cạn kiệt.
 *   `_lazyCleanup` tự động thu hồi các player dư thừa về `_minPoolSize` sau 5 phút idle, đảm bảo RAM không bị phình vĩnh viễn.
 
+### i. Cơ chế Cool-down Pass (Giải phóng kết nối mạng rảnh rỗi)
+
+**Vấn đề:** Các player sau khi trả về Pool sẽ rơi vào trạng thái `paused` (Warm Pool). Việc này duy trì kết nối RTSP/TCP với camera. Nếu giữ kết nối mở quá lâu (mãi mãi) cho các camera không còn hiển thị trên màn hình:
+1. Gây cạn kiệt số lượng luồng (connection slots) cho phép của con Camera IP.
+2. Sóng/Router tự động ngắt kết nối (stale socket/dead socket), khiến quá trình vuốt (swipe) trang lúc sau gọi lại Cache Hit bị "đứng hình" (Freeze/Timeout) mỏi mòn.
+
+**Giải pháp:** Bổ sung bước **Remove from cache, keep in idle pool (Cool-down Pass)** vào cuối hàm `_lazyCleanup()` chạy mỗi phút.
+*   Nếu `PlayerWrapper` nằm rảnh rỗi trong pool vượt quá `CacheDuration`, hệ thống chủ động gọi `player.media = ''` để nhả socket ngắt hoàn toàn kết nối với camera, biến player thành một "vỏ bọc rỗng sạch mạng".
+*   `PlayerWrapper` này bị tước tham chiếu trong `_idleUrlCache` (Mất Cache), nhưng nó **vẫn được giữ lại trong `_idlePlayers` Pool** để tránh phải gọi trình cấp phát tạo thẻ FFI C++ mới ở lần mượn sau.
+
+**Phân tách cấu hình riêng biệt (Grid vs Detail):** Tính chịu lỗi của giao diện khác nhau yêu cầu thời gian sinh tồn khác nhau:
+*   `normalPlayerCacheDuration = 3 phút`: Dành cho Grid view (ví dụ lưới 36). Nếu lỗi 1/36 không phải thảm họa, do đó cho phép nó tồn tại trong Cache lâu hơn (3 phút) để phục vụ hành vi chuyển qua lại trang lưới liên tục của User mà không phải tải lại.
+*   `hqPlayerCacheDuration = 2 phút`: Dành cho luồng một camera chất lượng cao Detail View trực tiếp. Nếu Camera này bị ngẽn/stale socket thì toàn bộ tính năng trông như bị sập hoàn toàn (Critical Error). Do đó rút ngắn vòng đời kết nối thừa (2 phút) để ép hệ thống dùng một liên kết kết nối hoàn toàn mới mẻ, sạch sẽ (Fresh Connection).
+
 ---
 
-**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, Fast-Path Zero-Latency Resume, chống O(N) lookup, chống Cache Pollution, vá rò rỉ Duplicate Caches, cách ly rủi ro Heartcheck ngầm, bảo vệ an toàn bộ nhớ đa tầng, Adaptive Pool Size thích ứng số lượng camera, và cơ chế Prefer-Create-over-Steal bảo toàn cache) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak), tăng độ êm cho GPU và đạt tốc độ chuyển đổi camera **tức thì (Zero-Latency Instant Frame Resume)**.
+**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, Fast-Path Zero-Latency Resume, chống O(N) lookup, chống Cache Pollution, vá rò rỉ Duplicate Caches, cách ly rủi ro Heartcheck ngầm, bảo vệ an toàn bộ nhớ đa tầng, Adaptive Pool Size thích ứng số lượng camera, cơ chế Prefer-Create-over-Steal bảo toàn cache, **và cơ chế Cool-down giải phóng mạng rảnh rỗi**) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak), tăng độ êm cho GPU và đạt tốc độ chuyển đổi camera **tức thì (Zero-Latency Instant Frame Resume)**.

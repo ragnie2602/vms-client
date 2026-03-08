@@ -55,7 +55,7 @@ class PlayerWrapper {
   }
 
   void sanitize() {
-    Logger.log('Player Pool [$windowId]: Sanitizing player $id (Warm pool)');
+    // Logger.log('Player Pool [$windowId]: Sanitizing player $id (Warm pool)');
     player.onMediaStatus(null); // Clear MDK callback to prevent memory leak
     player.state = PlaybackState.paused; // Warm pause instead of stopped, keep context for fast switch
     _uiStatusCallback = null;
@@ -98,11 +98,16 @@ class PlayerPoolManager {
   }
   final int maxPoolSize = 100;
   final int minHqPoolSize = 2;
+  
+  // Duration to keep player in "paused" state before cleanup and put back to idle queue
+  final Duration normalPlayerCacheDuration = const Duration(minutes: 3);
+  final Duration hqPlayerCacheDuration = const Duration(minutes: 2);
+  
   Timer? _cleanupTimer;
 
   void startCleanupTimer() {
     _cleanupTimer?.cancel();
-    _cleanupTimer = Timer.periodic(const Duration(minutes: 2), (_) {
+    _cleanupTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _lazyCleanup();
     });
   }
@@ -210,9 +215,9 @@ class PlayerPoolManager {
     player.lastMediaUrl = mediaUrl; // Bug #1 Fixed: Force apply URL even if null
     
     _busyPlayers.add(player);
-    Logger.log(
-      'Player Pool [$windowId]: Acquired ${isHighQuality ? "HIGH QUALITY" : "normal"} player ${player.id} for "${cameraName ?? 'unknown'}" (Cache Hit: $cacheHit)',
-    );
+    // Logger.log(
+    //   'Player Pool [$windowId]: Acquired ${isHighQuality ? "HIGH QUALITY" : "normal"} player ${player.id} for "${cameraName ?? 'unknown'}" (Cache Hit: $cacheHit)',
+    // );
     return player;
   }
 
@@ -312,9 +317,9 @@ class PlayerPoolManager {
         if (targetToRemoveHq <= 0) return false;
         
         if (now.difference(p.lastUsed).inMinutes > 10) {
-          Logger.log(
-            'Player Pool [$_currentWindowId]: Lazy Cleanup -> disposing HQ player ${p.id}',
-          );
+          // Logger.log(
+          //   'Player Pool [$_currentWindowId]: Lazy Cleanup -> disposing HQ player ${p.id}',
+          // );
           
           if (p.lastMediaUrl != null) {
             _idleUrlCache[p.lastMediaUrl!]?.remove(p);
@@ -330,5 +335,27 @@ class PlayerPoolManager {
         return false;
       });
     }
+
+    // Remove from cache of "paused" player, clean media URL and move to idle pool
+    void removeFromCacheKeepInPool(List<PlayerWrapper> pool, Duration cacheDuration) {
+      for (var p in pool) {
+        if (p.lastMediaUrl != null && now.difference(p.lastUsed) >= cacheDuration) {
+          // Logger.log('Player Pool [$_currentWindowId]: Removing player ${p.id} from cache, keep in idle pool');
+          
+          _idleUrlCache[p.lastMediaUrl!]?.remove(p);
+          if (_idleUrlCache[p.lastMediaUrl!]?.isEmpty ?? false) {
+            _idleUrlCache.remove(p.lastMediaUrl);
+          }
+          
+          p.player.media = '';
+          p.player.state = PlaybackState.stopped; // Ensure state is gracefully stopped when media clears
+          p.lastMediaUrl = null;
+          p.isCacheHit = false;
+        }
+      }
+    }
+
+    removeFromCacheKeepInPool(_idleNormalPlayers, normalPlayerCacheDuration);
+    removeFromCacheKeepInPool(_idleHqPlayers, hqPlayerCacheDuration);
   }
 }
