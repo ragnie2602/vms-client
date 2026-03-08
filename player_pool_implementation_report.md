@@ -203,6 +203,19 @@ Player Pool [0]: Acquired normal player pw_5 for "Camera Sảnh A" (Cache Hit: t
 *   `normalPlayerCacheDuration = 3 phút`: Dành cho Grid view (ví dụ lưới 36). Nếu lỗi 1/36 không phải thảm họa, do đó cho phép nó tồn tại trong Cache lâu hơn (3 phút) để phục vụ hành vi chuyển qua lại trang lưới liên tục của User mà không phải tải lại.
 *   `hqPlayerCacheDuration = 2 phút`: Dành cho luồng một camera chất lượng cao Detail View trực tiếp. Nếu Camera này bị ngẽn/stale socket thì toàn bộ tính năng trông như bị sập hoàn toàn (Critical Error). Do đó rút ngắn vòng đời kết nối thừa (2 phút) để ép hệ thống dùng một liên kết kết nối hoàn toàn mới mẻ, sạch sẽ (Fresh Connection).
 
+### j. Cơ chế Frame Watchdog (Bảo vệ luồng bị kẹt)
+
+**Vấn đề:** Trong một số trường hợp, `MonitorPlayer` nhận trạng thái Đang Phát (`PlayerStatus.playing`) nhưng thực tế luồng video bên dưới bị nghẽn mạng im lìm, không có khung hình mới (stuck frame). Màn hình ứng dụng trông như bị treo (Freeze).
+
+**Giải pháp:** Hệ thống cảnh giới Frame Watchdog tự động.
+*   Sử dụng vòng lặp `Timer.periodic(1 giây)` cục bộ độc lập của **từng Widget `MonitorPlayer`**.
+*   Khởi tạo bộ đếm riêng `int frozenTicks = 0`.
+*   Mỗi giây, hệ thống so sánh `_player.position` hiện tại với vị trí giây trước đó. 
+    *   Nếu Vị trí thay đổi (Player đang chạy bình thường): `frozenTicks = 0` (Healthy).
+    *   Nếu Vị trí đứng im phăng phắc, VÀ Player cho rằng nó đang `playing`: tăng `frozenTicks++`.
+    *   Nếu đứng im liên tục **4 giây** (`frozenTicks >= 4`): Watchdog kích hoạt, tự động gọi hàm kết nối lại `_connecting(isReconnecting: true)`, tuýt còi flush buffer để C++ FFI tạo socket tải stream tươi rói từ Network.
+*   Hiệu năng siêu nhẹ: Bộ giám sát kẹp chung với hệ thống kiểm tra Timeout có sẵn của App. Mỗi giây chỉ xử lý 1 phép ++ và 1 phép == nên chi phí CPU xem như bằng 0.
+
 ---
 
-**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, Fast-Path Zero-Latency Resume, chống O(N) lookup, chống Cache Pollution, vá rò rỉ Duplicate Caches, cách ly rủi ro Heartcheck ngầm, bảo vệ an toàn bộ nhớ đa tầng, Adaptive Pool Size thích ứng số lượng camera, cơ chế Prefer-Create-over-Steal bảo toàn cache, **và cơ chế Cool-down giải phóng mạng rảnh rỗi**) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak), tăng độ êm cho GPU và đạt tốc độ chuyển đổi camera **tức thì (Zero-Latency Instant Frame Resume)**.
+**Tổng kết:** Kiến trúc Player Pool sau nâng cấp (hỗ trợ Warm Pool, Fast-Path Zero-Latency Resume, chống O(N) lookup, chống Cache Pollution, vá rò rỉ Duplicate Caches, cách ly rủi ro Heartcheck ngầm, bảo vệ an toàn bộ nhớ đa tầng, Adaptive Pool Size thích ứng số lượng camera, cơ chế Prefer-Create-over-Steal bảo toàn cache, cơ chế Cool-down giải phóng mạng rảnh rỗi, **và hệ thống Frame Watchdog giám sát chống kẹt khung hình**) biến VMS Flutter Client từ một phần mềm load tải camera thông thường trở thành một trạm giám sát chịu tải nặng thực thụ. Tối giản đáng kinh ngạc băng thông vòng lặp, làm phẳng hoàn toàn bộ nhớ (Zero Memory Leak), tăng độ êm cho GPU và đạt tốc độ chuyển đổi camera **tức thì (Zero-Latency Instant Frame Resume)**.

@@ -413,23 +413,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
         // 4. Start connection monitoring timer (inlined from _onInitialized)
         if (!mounted) return;
-        _timer?.cancel();
-        _debounce?.cancel();
-        _reconnectingTimer?.cancel();
-        _lastPosition = -1;
-        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          if (!mounted) return _timer?.cancel();
-
-          _player.position.let((pos) {
-            if (_lastPosition != pos) {
-              if (_status.value != PlayerStatus.playing && _shouldSyncPlayerTime) {
-                _status.value = PlayerStatus.playing;
-              }
-              _debounceConnectionLost();
-            }
-            _lastPosition = pos;
-          });
-        });
+        _startConnectionMonitorTimer();
         return;
       }
       // textureId invalid → fall through to normal path
@@ -497,20 +481,39 @@ class MonitorPlayerState extends State<MonitorPlayer>
     _aspectRatio = (size?.width ?? 1920) / (size?.height ?? 1080);
     _state.value = PlayerState.initialized;
 
+    _startConnectionMonitorTimer();
+  }
+
+  void _startConnectionMonitorTimer() {
     _timer?.cancel();
     _debounce?.cancel();
     _reconnectingTimer?.cancel();
     _lastPosition = -1;
+    int frozenTicks = 0;
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return _timer?.cancel();
 
       _player.position.let((pos) {
         if (_lastPosition != pos) {
+          frozenTicks = 0; // Position is advancing normally
+          
           // Case đang dừng --> tự động play bởi thư viện --> update _status
           if (_status.value != PlayerStatus.playing && _shouldSyncPlayerTime) {
             _status.value = PlayerStatus.playing;
           }
           _debounceConnectionLost();
+        } else {
+          // FRAME WATCHDOG: Detect stuck player when it's supposed to be playing
+          if (_status.value == PlayerStatus.playing) {
+            frozenTicks++;
+            // If frozen for 4 consecutive ticks (4 seconds), trigger media reset
+            if (frozenTicks >= 4) {
+              Logger.warn("Player [${_playerWrapper.id}]: Frame Watchdog triggered! Player stuck for 4s (dirty). Resetting media...");
+              frozenTicks = 0;
+              _connecting(showLoading: false, isReconnecting: true);
+            }
+          }
         }
         _lastPosition = pos;
       });
