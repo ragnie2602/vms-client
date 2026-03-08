@@ -164,24 +164,29 @@ class ObjectListTable extends StatelessWidget {
               builder: (context) {
                 final imageUrl = _getImageUrl(data);
                 if (imageUrl != null && imageUrl.isNotEmpty) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        width: 48,
-                        height: 48,
-                        color: AppColors.greyE2E8F0,
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        width: 48,
-                        height: 48,
-                        color: AppColors.greyE2E8F0,
-                        child: const Icon(
-                          Icons.broken_image,
-                          size: 20,
-                          color: AppColors.grey6F767E,
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: CachedNetworkImage(
+                        width: 50,
+                        height: 50,
+                        imageUrl: imageUrl,
+                        fit: BoxFit.fitHeight,
+                        placeholder: (context, url) => Container(
+                          width: 48,
+                          height: 48,
+                          color: AppColors.greyE2E8F0,
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 48,
+                          height: 48,
+                          color: AppColors.greyE2E8F0,
+                          child: const Icon(
+                            Icons.broken_image,
+                            size: 20,
+                            color: AppColors.grey6F767E,
+                          ),
                         ),
                       ),
                     ),
@@ -332,12 +337,13 @@ class ObjectListTable extends StatelessWidget {
     final repo = context.read<IObjectGroupRepository>();
     final bloc = context.read<ObjectGroupBloc>();
 
+    final objectName = data.fieldValues['Tên đối tượng'] ?? 'đối tượng';
+
     showDialog(
       context: context,
       builder: (_) => ConfirmDeleteDialog(
         title: 'Xóa đối tượng',
-        content:
-            'Bạn có chắc chắn muốn xóa đối tượng này không?\nHành động này không thể hoàn tác.',
+        content: 'Bạn có chắc chắn muốn xóa đối tượng $objectName?',
         onConfirm: () async {
           try {
             await repo.deleteObject(data.id);
