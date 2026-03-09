@@ -144,6 +144,7 @@ class AIAlarmConfig {
       'status': status,
       'soundId': soundId,
       'rois': rois
+          .where((e) => e.points.length >= 3)
           .map(
             (e) => {
               'points': e.points.map((e) => {'x': e.x, 'y': e.y, 'seq': e.seq}).toList(),

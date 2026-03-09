@@ -218,6 +218,8 @@ class _ROIAreaConfigState extends State<ROIAreaConfig> {
 
                   if (!isDrawing)
                     ...widget.alarmConfig.rois.mapIndexed((idx, region) {
+                      if (region.points.isEmpty) return SizedBox.shrink();
+
                       // Tính toán vị trí: lấy điểm đầu tiên và đẩy vào trong 20px
                       final buttonPos = _getInwardPosition(
                         region.points,
