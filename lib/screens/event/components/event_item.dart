@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -151,7 +153,7 @@ class EventItem extends StatelessWidget {
             columnFlexes: [0, 1],
             data: c
                 .sortedFields()
-                .sublist(1, 5)
+                .sublist(1, min(5, c.sortedFields().length))
                 .map(
                   (f) => [
                     SvgPicture.network(

@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
-import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 
 enum DetectStatus { initial, loading, success, failure }
 
 class DetectState extends Equatable {
   final DetectStatus status;
   final String errorMessage;
-  final List<TypeEventDetectEntity> typeEvents;
+  final List<EventType> typeEvents;
   final List<ReceiveEventEntity> receiveEvents;
   final List<ReceiveEventEntity> selectedEvents;
   final List<int> selectedFilterTypes;
@@ -34,7 +34,7 @@ class DetectState extends Equatable {
   DetectState copyWith({
     DetectStatus? status,
     String? errorMessage,
-    List<TypeEventDetectEntity>? typeEvents,
+    List<EventType>? typeEvents,
     List<ReceiveEventEntity>? receiveEvents,
     List<ReceiveEventEntity>? selectedEvents,
     List<int>? selectedFilterTypes,
