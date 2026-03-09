@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/check_subject_group_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
 abstract class IObjectGroupRepository {
@@ -37,6 +38,9 @@ abstract class IObjectGroupRepository {
   });
   Future<Either<Failure, int>> deleteSubjectGroup({required int objectGroupId});
 
+  /// Check if subject group has children or objects
+  Future<Either<Failure, CheckSubjectGroupModel>> checkSubjectGroup(int id);
+
   /// Download template file for an object type
   Future<String> downloadTemplate(int objectTypeId);
 
@@ -51,5 +55,9 @@ abstract class IObjectGroupRepository {
   Future<Map<String, dynamic>> getImportStatus(int importId);
 
   /// Export objects to a file
-  Future<String> exportObjects(int objectTypeId, {int? subjectGroupId});
+  Future<String> exportObjects(
+    int objectTypeId, {
+    int? subjectGroupId,
+    String? search,
+  });
 }

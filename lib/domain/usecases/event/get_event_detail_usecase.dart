@@ -28,11 +28,14 @@ class GetEventDetailUseCase extends FutureUseCase<GetEventDetailInput, GetEventD
       (onSuccess) => onSuccess,
     );
 
-    final cameraRes = await cameraRepository.getAllCamera(cameraId: event.cameraId!.codeUnits);
-    cameraRes.fold(
-      (onFailure) => throw Exception(onFailure.parseMessage()),
-      (onSuccess) => event.camera = onSuccess.firstWhere((e) => e.camId == event.cameraId),
-    );
+    final cameraId = event.cameraId?.codeUnits ?? event.payload?['cameraId']?.codeUnits;
+    if (cameraId != null) {
+      final cameraRes = await cameraRepository.getAllCamera(cameraId: event.cameraId!.codeUnits);
+      cameraRes.fold(
+        (onFailure) => throw Exception(onFailure.parseMessage()),
+        (onSuccess) => event.camera = onSuccess.firstWhere((e) => e.camId == event.cameraId),
+      );
+    }
 
     List<(Widget, String, dynamic)> displayData = [];
     displayData.add((

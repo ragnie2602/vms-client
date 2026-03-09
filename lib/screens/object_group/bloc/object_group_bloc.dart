@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_t
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/check_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
@@ -21,6 +22,7 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
   final UpdateSubjectGroupUsecase _updateSubjectGroupUsecase;
   final DeleteSubjectGroupUsecase _deleteSubjectGroupUsecase;
   final SearchSubjectGroupUsecase _searchSubjectGroupUsecase;
+  final CheckSubjectGroupUsecase _checkSubjectGroupUsecase;
 
   ObjectGroupBloc(
     this._getObjectTypesUseCase,
@@ -30,6 +32,7 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     this._updateSubjectGroupUsecase,
     this._deleteSubjectGroupUsecase,
     this._searchSubjectGroupUsecase,
+    this._checkSubjectGroupUsecase,
   ) : super(const ObjectGroupState()) {
     // lấy list danh sách các object type để hiển thị tab bên trái
     on<LoadObjectTypes>(_onLoadObjectTypes);
@@ -43,6 +46,7 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     on<DeleteSubjectGroup>(_onDeleteSubjectGroup);
     on<SelectSubjectGroup>(_onSelectSubjectGroup);
     on<SearchSubjectGroup>(_onSearchSubjectGroup);
+    on<CheckSubjectGroupForDelete>(_onCheckSubjectGroupForDelete);
     on<ResetObjectGroupState>((event, emit) => emit(const ObjectGroupState()));
   }
 
@@ -304,6 +308,40 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
           status: ObjectGroupStatus.error,
         ),
       );
+    }
+  }
+
+  Future<void> _onCheckSubjectGroupForDelete(
+    CheckSubjectGroupForDelete event,
+    Emitter<ObjectGroupState> emit,
+  ) async {
+    emit(state.copyWith(status: ObjectGroupStatus.loading));
+    try {
+      final input = CheckSubjectGroupInput(id: event.subjectGroup.id ?? 0);
+      final result = await _checkSubjectGroupUsecase.execute(input);
+      result.data.fold(
+        (failure) {
+          emit(
+            state.copyWith(
+              errorMessage: failure.parseMessage(),
+              status: ObjectGroupStatus.error,
+            ),
+          );
+          event.onError?.call(failure.parseMessage());
+        },
+        (data) {
+          emit(state.copyWith(status: ObjectGroupStatus.loaded));
+          event.onSuccess?.call(data);
+        },
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          errorMessage: e.toString(),
+          status: ObjectGroupStatus.error,
+        ),
+      );
+      event.onError?.call(e.toString());
     }
   }
 

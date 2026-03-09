@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
@@ -26,7 +27,7 @@ class ObjectListTable extends StatelessWidget {
         }
 
         if (state.objects.isEmpty) {
-          return const Center(child: Text('Không có dữ liệu'));
+          return const Center(child: Text('Danh sách trống'));
         }
 
         // Dynamically resolve column keys from the first object's fieldValues
@@ -74,7 +75,7 @@ class ObjectListTable extends StatelessWidget {
             ),
 
             // Table Footer (Pagination)
-            _buildPagination(state),
+            _buildPagination(context, state),
           ],
         );
       },
@@ -301,7 +302,6 @@ class ObjectListTable extends StatelessWidget {
   ) async {
     if (state.selectedObjectType == null) return;
 
-    final messenger = ScaffoldMessenger.of(context);
     final repo = context.read<IObjectGroupRepository>();
     final bloc = context.read<ObjectGroupBloc>();
 
@@ -325,7 +325,9 @@ class ObjectListTable extends StatelessWidget {
         bloc.add(LoadObjects(objectTypeId: state.selectedObjectType!.id));
       }
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      if (context.mounted) {
+        ToastUtil.toastFail(context: context, title: Text('Lỗi: $e'));
+      }
     }
   }
 
@@ -348,15 +350,17 @@ class ObjectListTable extends StatelessWidget {
           try {
             await repo.deleteObject(data.id);
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Xóa đối tượng thành công')),
+              ToastUtil.toastSuccess(
+                context: context,
+                title: const Text('Xóa đối tượng thành công'),
               );
               bloc.add(LoadObjects(objectTypeId: state.selectedObjectType!.id));
             }
           } catch (e) {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Xóa đối tượng thất bại: $e')),
+              ToastUtil.toastFail(
+                context: context,
+                title: Text('Xóa đối tượng thất bại: $e'),
               );
             }
           }
@@ -365,18 +369,176 @@ class ObjectListTable extends StatelessWidget {
     );
   }
 
-  Widget _buildPagination(ObjectGroupState state) {
+  Widget _buildPagination(BuildContext context, ObjectGroupState state) {
+    final currentPage = state.currentObjectsPage;
+    final totalPages = state.totalPages;
+    final pageSize = 20;
+    final fromIndex = (currentPage - 1) * pageSize + 1;
+    final toIndex = ((currentPage - 1) * pageSize) + state.objects.length;
+
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Hiển thị từ ${(state.currentObjectsPage - 1) * 20 + 1} đến ${((state.currentObjectsPage - 1) * 20) + state.objects.length} trong số ${state.totalObjects} mục',
+            'Hiển thị từ $fromIndex đến $toIndex trong số ${state.totalObjects} mục',
             style: AppTypography.style(14, color: AppColors.grey64748B),
           ),
-          // Add pagination controls here if needed
+          if (totalPages > 1)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Previous button
+                _buildPageButton(
+                  context: context,
+                  icon: Icons.chevron_left,
+                  enabled: currentPage > 1,
+                  onTap: () => _goToPage(context, state, currentPage - 1),
+                ),
+                const SizedBox(width: 4),
+                // Page number buttons
+                ..._buildPageNumbers(context, state, currentPage, totalPages),
+                const SizedBox(width: 4),
+                // Next button
+                _buildPageButton(
+                  context: context,
+                  icon: Icons.chevron_right,
+                  enabled: currentPage < totalPages,
+                  onTap: () => _goToPage(context, state, currentPage + 1),
+                ),
+              ],
+            ),
         ],
+      ),
+    );
+  }
+
+  List<Widget> _buildPageNumbers(
+    BuildContext context,
+    ObjectGroupState state,
+    int currentPage,
+    int totalPages,
+  ) {
+    final pages = <Widget>[];
+    const maxVisible = 5;
+
+    int start = currentPage - (maxVisible ~/ 2);
+    if (start < 1) start = 1;
+    int end = start + maxVisible - 1;
+    if (end > totalPages) {
+      end = totalPages;
+      start = end - maxVisible + 1;
+      if (start < 1) start = 1;
+    }
+
+    if (start > 1) {
+      pages.add(_buildPageNumberButton(context, state, 1, currentPage));
+      if (start > 2) {
+        pages.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '...',
+              style: AppTypography.style(14, color: AppColors.grey64748B),
+            ),
+          ),
+        );
+      }
+    }
+
+    for (int i = start; i <= end; i++) {
+      pages.add(_buildPageNumberButton(context, state, i, currentPage));
+    }
+
+    if (end < totalPages) {
+      if (end < totalPages - 1) {
+        pages.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '...',
+              style: AppTypography.style(14, color: AppColors.grey64748B),
+            ),
+          ),
+        );
+      }
+      pages.add(
+        _buildPageNumberButton(context, state, totalPages, currentPage),
+      );
+    }
+
+    return pages;
+  }
+
+  Widget _buildPageNumberButton(
+    BuildContext context,
+    ObjectGroupState state,
+    int page,
+    int currentPage,
+  ) {
+    final isActive = page == currentPage;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: isActive ? null : () => _goToPage(context, state, page),
+        child: Container(
+          width: 32,
+          height: 32,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isActive ? AppColors.blue005AA9 : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+            border: isActive ? null : Border.all(color: AppColors.greyE2E8F0),
+          ),
+          child: Text(
+            '$page',
+            style: AppTypography.style(
+              13,
+              color: isActive ? Colors.white : AppColors.grey334155,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageButton({
+    required BuildContext context,
+    required IconData icon,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(4),
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 32,
+        height: 32,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: AppColors.greyE2E8F0),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: enabled ? AppColors.grey334155 : AppColors.greyE2E8F0,
+        ),
+      ),
+    );
+  }
+
+  void _goToPage(BuildContext context, ObjectGroupState state, int page) {
+    if (state.selectedObjectType == null) return;
+    context.read<ObjectGroupBloc>().add(
+      LoadObjects(
+        objectTypeId: state.selectedObjectType!.id,
+        page: page,
+        subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
+        search: state.searchQuery.isNotEmpty ? state.searchQuery : null,
       ),
     );
   }

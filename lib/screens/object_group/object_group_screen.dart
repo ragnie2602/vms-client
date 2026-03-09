@@ -5,14 +5,16 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
@@ -98,7 +100,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       final downloadsDir =
           await getDownloadsDirectory() ??
           await getApplicationDocumentsDirectory();
-      final fileName = 'template_${selectedType.name}.xlsx';
+      final dateStr = DateFormat('ddMMyyyy').format(DateTime.now());
+      final fileName = 'File mẫu_${selectedType.name}_$dateStr.xlsx';
       final savePath = '${downloadsDir.path}/$fileName';
 
       await File(tempPath).copy(savePath);
@@ -134,13 +137,38 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
     // Pick file
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.any,
+      type: FileType.custom,
+      allowedExtensions: ['xlsx'],
       allowMultiple: false,
     );
 
     if (result == null || result.files.isEmpty) return;
     final filePath = result.files.first.path;
     if (filePath == null) return;
+
+    // Validate file extension
+    final ext = p.extension(filePath).toLowerCase();
+    if (ext != '.xlsx') {
+      if (context.mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: const Text('File không đúng định dạng, vui lòng chọn lại.'),
+        );
+      }
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    final fileSize = await File(filePath).length();
+    if (fileSize > 5 * 1024 * 1024) {
+      if (context.mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: const Text('File vượt quá 5MB, vui lòng chọn lại.'),
+        );
+      }
+      return;
+    }
 
     try {
       final repo = context.read<IObjectGroupRepository>();
@@ -216,17 +244,21 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       );
       final repo = context.read<IObjectGroupRepository>();
       final subjectGroupId = state.selectedSubjectGroup?.id ?? 0;
+      final searchQuery = state.searchQuery;
       final tempPath = await repo.exportObjects(
         selectedType.id,
         subjectGroupId: subjectGroupId > 0 ? subjectGroupId : null,
+        search: searchQuery.isNotEmpty ? searchQuery : null,
       );
 
       // Copy to Downloads
       final downloadsDir =
           await getDownloadsDirectory() ??
           await getApplicationDocumentsDirectory();
+      final dateStr = DateFormat('ddMMyyyy').format(DateTime.now());
+      final groupName = state.selectedSubjectGroup?.name ?? 'Tất cả';
       final fileName =
-          'export_${selectedType.name}_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+          'Danhsach_${selectedType.name}_${groupName}_$dateStr.xlsx';
       final savePath = '${downloadsDir.path}/$fileName';
 
       await File(tempPath).copy(savePath);
@@ -361,7 +393,9 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                   if (c.mounted) {
                     ToastUtil.toastSuccess(
                       context: c,
-                      title: const Text('Xóa nhóm đối tượng thành công'),
+                      title: Text(
+                        'Xóa ${currentGroup.name ?? 'nhóm đối tượng'} thành công!',
+                      ),
                     );
                   }
                 },
@@ -563,13 +597,48 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                     );
                                     break;
                                   case GroupObjectAction.delete:
-                                    _onShowDialogRemoveGroupObject(
-                                      c: context,
-                                      currentGroup: node.data,
-                                      hasChildren:
-                                          node.children.isNotEmpty ||
-                                          state.objects.isNotEmpty,
-                                    );
+                                    bool hasObjects =
+                                        state.selectedSubjectGroup?.id ==
+                                            node.data?.id &&
+                                        state.objects.isNotEmpty;
+
+                                    if (node.data != null) {
+                                      context.read<ObjectGroupBloc>().add(
+                                        CheckSubjectGroupForDelete(
+                                          subjectGroup: node.data!,
+                                          onSuccess: (data) {
+                                            bool apiHasChildren =
+                                                data.hasChildren == true;
+                                            bool apiHasVmsObjects =
+                                                data.hasVmsObjects == true;
+
+                                            _onShowDialogRemoveGroupObject(
+                                              c: context,
+                                              currentGroup: node.data,
+                                              hasChildren:
+                                                  node.children.isNotEmpty ||
+                                                  hasObjects ||
+                                                  apiHasChildren ||
+                                                  apiHasVmsObjects,
+                                            );
+                                          },
+                                          onError: (error) {
+                                            ToastUtil.toastFail(
+                                              context: context,
+                                              title: Text(error),
+                                            );
+                                            // Fallback to old logic if api fails
+                                            _onShowDialogRemoveGroupObject(
+                                              c: context,
+                                              currentGroup: node.data,
+                                              hasChildren:
+                                                  node.children.isNotEmpty ||
+                                                  hasObjects,
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    }
                                     break;
                                 }
                               },

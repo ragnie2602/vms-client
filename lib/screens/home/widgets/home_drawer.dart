@@ -40,7 +40,11 @@ class HomeDrawer extends StatelessWidget {
                   _buildToggleSection(constraints.maxWidth >= maxWidth),
 
                   ...tabs.map(
-                    (tab) => DrawerTile(tab: tab, selectedTab: currentTab, maxWidth: maxWidth),
+                    (tab) => DrawerTile(
+                      tab: tab,
+                      selectedTab: currentTab,
+                      maxWidth: maxWidth,
+                    ),
                   ),
                 ],
               );
@@ -83,10 +87,15 @@ class HomeDrawer extends StatelessWidget {
               onTap: onToggleExpanded,
               borderRadius: BorderRadius.circular(16),
               child: SvgPicture.asset(
-                isExpanded ? AppAssets.icArrowSquareLeft : AppAssets.icArrowSquareRight,
+                isExpanded
+                    ? AppAssets.icArrowSquareLeft
+                    : AppAssets.icArrowSquareRight,
                 width: 16,
                 height: 16,
-                colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
+                colorFilter: ColorFilter.mode(
+                  AppColors.contentFg,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ],
@@ -141,7 +150,9 @@ class DrawerTile extends StatelessWidget {
       );
     }
 
-    context.read<HomeBloc>().add(ChangeTab(tab, route: _route, extra: _extra, force: _force));
+    context.read<HomeBloc>().add(
+      ChangeTab(tab, route: _route, extra: _extra, force: _force),
+    );
   }
 
   @override
@@ -188,7 +199,11 @@ class DrawerTile extends StatelessWidget {
                         )
                         .toList(),
                   ),
-                  header: _buildTitle(context, false, showTooltip: !isExpanded),
+                  header: _buildTitle(
+                    context,
+                    tab.nested.contains(selectedTab),
+                    showTooltip: !isExpanded,
+                  ),
                   showTrailing: constraints.maxWidth >= maxWidth,
                 );
         },
@@ -202,6 +217,9 @@ class DrawerTile extends StatelessWidget {
     VoidCallback? onTap,
     bool showTooltip = false,
   }) {
+    final isNested = level > 0;
+    final contentColor = isSelected ? AppColors.primary : AppColors.contentFg;
+
     return AnimatedContainer(
           duration: Durations.long2,
           height: 52,
@@ -210,34 +228,42 @@ class DrawerTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 17.5),
             child: Row(
               children: [
-                AnimatedContainer(
-                  duration: Durations.long2,
-                  height: 32,
-                  width: 3,
-                  decoration: isSelected
-                      ? BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.horizontal(right: Radius.circular(100)),
+                if (isNested) ...[
+                  SizedBox(width: 36),
+                  Text('■', style: TextStyle(fontSize: 8, color: contentColor)),
+                  const SizedBox(width: 12),
+                ] else ...[
+                  AnimatedContainer(
+                    duration: Durations.long2,
+                    height: 32,
+                    width: 3,
+                    decoration: isSelected
+                        ? BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.horizontal(
+                              right: Radius.circular(100),
+                            ),
+                          )
+                        : null,
+                  ),
+                  SizedBox(width: 20),
+                  tab.useMaterialIcon && tab.materialIcon != null
+                      ? Icon(
+                          _getMaterialIcon(tab.materialIcon!),
+                          color: contentColor,
+                          size: 20,
                         )
-                      : null,
-                ),
-                SizedBox(width: 20),
-                tab.useMaterialIcon && tab.materialIcon != null
-                    ? Icon(
-                        _getMaterialIcon(tab.materialIcon!),
-                        color: isSelected ? AppColors.primary : AppColors.contentFg,
-                        size: 20,
-                      )
-                    : SvgPicture.asset(
-                        tab.svg,
-                        colorFilter: ColorFilter.mode(
-                          isSelected ? AppColors.primary : AppColors.contentFg,
-                          BlendMode.srcIn,
+                      : SvgPicture.asset(
+                          tab.svg,
+                          colorFilter: ColorFilter.mode(
+                            contentColor,
+                            BlendMode.srcIn,
+                          ),
+                          width: 20,
+                          height: 20,
                         ),
-                        width: 20,
-                        height: 20,
-                      ),
-                SizedBox(width: 20),
+                  SizedBox(width: 20),
+                ],
                 Flexible(
                   child: Text(
                     tab.title,
@@ -269,7 +295,10 @@ class DrawerTile extends StatelessWidget {
                   child: it,
                 ),
         )
-        .let((child) => onTap != null ? InkWell(onTap: onTap, child: child) : child);
+        .let(
+          (child) =>
+              onTap != null ? InkWell(onTap: onTap, child: child) : child,
+        );
   }
 
   IconData _getMaterialIcon(String iconName) {
