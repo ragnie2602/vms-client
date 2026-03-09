@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
@@ -8,6 +9,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart
 import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/get_event_detail_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/event/search_event_input.dart';
@@ -21,14 +23,16 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   final ICameraRepository cameraRepository;
   final IEventRepository eventRepository;
 
-  final SearchEventUseCase searchEventUseCase;
   final ExportEventUseCase exportEventUseCase;
+  final GetEventDetailUseCase getEventDetailUseCase;
   final SaveImageUseCase saveImageUseCase;
   final SaveVideoUseCase saveVideoUseCase;
+  final SearchEventUseCase searchEventUseCase;
 
   EventBloc(
     this.cameraRepository,
     this.eventRepository,
+    this.getEventDetailUseCase,
     this.searchEventUseCase,
     this.exportEventUseCase,
     this.saveImageUseCase,
@@ -107,22 +111,13 @@ class EventBloc extends Bloc<EventEvent, EventState> {
   FutureOr<void> _onGetEventDetail(GetEventDetail event, Emitter<EventState> emit) async {
     emit(const GettingEventDetail());
 
-    EventEntity? et;
-    final eventRes = await eventRepository.getEventDetail(event.eventId);
-    eventRes.fold(
-      (onFailure) => emit(EventDetailFailure(onFailure.parseMessage())),
-      (onSuccess) => et = onSuccess,
-    );
+    try {
+      final res = await getEventDetailUseCase.execute(GetEventDetailInput(eventId: event.eventId));
 
-    if (et == null) return;
-
-    final cameraRes = await cameraRepository.getAllCamera(cameraId: et!.cameraId!.codeUnits);
-    cameraRes.fold(
-      (onFailure) => emit(EventDetailFailure(onFailure.parseMessage())),
-      (onSuccess) => et!.camera = onSuccess.firstWhere((e) => e.camId == et!.cameraId),
-    );
-
-    emit(EventDetailSuccess(et!));
+      emit(EventDetailSuccess(res.event, res.displayData));
+    } catch (e) {
+      emit(EventDetailFailure(e.toString()));
+    }
   }
 
   FutureOr<void> _onSaveImage(SaveImage event, Emitter<EventState> emit) async {

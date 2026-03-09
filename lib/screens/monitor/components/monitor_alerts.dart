@@ -17,8 +17,10 @@ import 'package:vms_flutter_client/screens/monitor/widgets/custom_tab_bar.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/event_item.dart';
 
 class MonitorAlerts extends StatefulWidget {
-  const MonitorAlerts({super.key, required this.maxWidth});
+  final SetupEventDisplayBloc sedBloc;
   final double maxWidth;
+
+  const MonitorAlerts({super.key, required this.maxWidth, required this.sedBloc});
 
   @override
   State<MonitorAlerts> createState() => _MonitorAlertsState();
@@ -160,7 +162,7 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
                   final event = events[index];
                   return EventLiveViewItem(
                     event: event,
-                    sedBloc: context.read<SetupEventDisplayBloc>(),
+                    sedBloc: widget.sedBloc,
                   );
                 },
                 itemCount: events.length,
