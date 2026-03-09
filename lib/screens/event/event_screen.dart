@@ -56,11 +56,13 @@ class _EventScreenState extends State<EventScreen> {
   void initState() {
     super.initState();
 
-    eventBloc = context.read<EventBloc>()..add(GetAllEventType());
-    monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
-      ..add(GetAllCamera());
-    context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
-    setupInfoFieldBloc = context.read<SetupEventDisplayBloc>();
+    if (mounted) {
+      eventBloc = context.read<EventBloc>()..add(GetAllEventType());
+      monitorBloc = MonitorBloc(context.read(), context.read(), context.read(), context.read())
+        ..add(GetAllCamera());
+      context.read<GroupCameraBloc>().add(GetAllGroupCameraEvent());
+      setupInfoFieldBloc = SetupEventDisplayBloc(context.read(), context.read(), context.read());
+    }
   }
 
   @override

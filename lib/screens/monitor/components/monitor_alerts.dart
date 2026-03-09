@@ -37,31 +37,6 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
   }
 
   @override
-  void dispose() {
-    tabController.removeListener(_onTabChanged);
-    tabController.dispose();
-    super.dispose();
-  }
-
-  void _onTabChanged() {
-    if (tabController.indexIsChanging) return;
-    _updateFilterWithCurrentCameras();
-  }
-
-  void _updateFilterWithCurrentCameras() {
-    final monitorState = context.read<MonitorBloc>().state;
-    List<List<int>>? viewingCameraIds;
-
-    if (tabController.index == 1 && monitorState is MonitorSuccess) {
-      viewingCameraIds = monitorState.paginatedCameras.map((c) => c.id).toList();
-    }
-
-    context.read<DetectBloc>().add(
-      UpdateTabIndex(tabController.index, viewingCameraIds: viewingCameraIds),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
     return BlocListener<MonitorBloc, MonitorState>(
       listenWhen: (previous, current) {
@@ -77,9 +52,7 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
       },
       listener: (context, state) {
         // Auto-update filter when page changes and on "Cam đang xem" tab
-        if (tabController.index == 1) {
-          _updateFilterWithCurrentCameras();
-        }
+        if (tabController.index == 1) _updateFilterWithCurrentCameras();
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -134,6 +107,14 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
     );
   }
 
+  @override
+  void dispose() {
+    tabController.removeListener(_onTabChanged);
+    tabController.dispose();
+    super.dispose();
+  }
+
+  // WIDGETS
   Widget _buildEventList() {
     return BlocSelector<DetectBloc, DetectState, (List<ReceiveEventEntity>, bool, bool)>(
       selector: (state) => (
@@ -157,15 +138,10 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
           children: [
             Expanded(
               child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemBuilder: (context, index) {
-                  final event = events[index];
-                  return EventLiveViewItem(
-                    event: event,
-                    sedBloc: widget.sedBloc,
-                  );
-                },
+                itemBuilder: (context, index) =>
+                    EventLiveViewItem(event: events[index], sedBloc: widget.sedBloc),
                 itemCount: events.length,
+                padding: EdgeInsets.zero,
               ),
             ),
             if (hasReachedMax) ...[
@@ -199,6 +175,29 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
           ],
         );
       },
+    );
+  }
+
+  // FUNCTIONS
+  void _onTabChanged() {
+    if (tabController.indexIsChanging) return;
+    _updateFilterWithCurrentCameras();
+  }
+
+  void _updateFilterWithCurrentCameras() {
+    final monitorState = context.read<MonitorBloc>().state;
+    List<List<int>>? viewingCameraIds;
+
+    if (monitorState is MonitorSuccess) {
+      if (tabController.index == 0) {
+        viewingCameraIds = monitorState.allCameras.map((c) => c.id).toList();
+      } else if (tabController.index == 1) {
+        viewingCameraIds = monitorState.paginatedCameras.map((c) => c.id).toList();
+      }
+    }
+
+    context.read<DetectBloc>().add(
+      UpdateTabIndex(tabController.index, viewingCameraIds: viewingCameraIds),
     );
   }
 }
