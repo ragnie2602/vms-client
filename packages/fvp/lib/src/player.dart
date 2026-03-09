@@ -10,6 +10,7 @@ import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
@@ -168,6 +169,8 @@ class Player {
     });
   }
 
+  bool get isDisposed => _isDisposed;
+
   /// Release resources
   Future<void> dispose({bool synchronized = true, Duration? delay}) async {
     Future<void> fn() async {
@@ -179,14 +182,29 @@ class Player {
         return;
       }
 
+      // Stop rendering first to freeze the decoder pipeline (bypass setter check)
+      _player.ref.setState.asFunction<void Function(Pointer<mdkPlayer>, int)>()(
+          _player.ref.object, PlaybackState.stopped.rawValue);
+
+      // Allow renderer pipeline to drain (e.g., Metal/DirectX frame completion)
+      // We wait for the next frame to finish rendering so the native player
+      // is no longer actively pushing buffers to the flutter texture.
+      if (WidgetsBinding.instance != null) {
+        await WidgetsBinding.instance.endOfFrame;
+      } else {
+        await Future.delayed(const Duration(milliseconds: 16));
+      }
+
       if (_creatingCompleter != null) {
         // Đợi đến khi tạo xong thì mới thực hiện dispose --> fix crash
         await _creatingCompleter!.future;
       }
 
       // await: ensure no player ref in fvp plugin before mdkPlayerAPI_delete() in dart
-      await updateTexture(width: -1, synchronized: false);
-      state = PlaybackState.stopped;
+      if ((textureId.value ?? -1) >= 0) {
+        await FvpPlatform.instance.releaseTexture(nativeHandle, textureId.value!);
+        textureId.value = null;
+      }
       Libfvp.unregisterPort(nativeHandle);
       onEvent(null);
       onStateChanged(null);
@@ -222,7 +240,10 @@ class Player {
     bool synchronized = false,
     Duration? timeout,
   }) async {
+    if (_isDisposed) return -1;
+    
     Future<int> fn() async {
+      if (_isDisposed) return -1;
       if (_creatingCompleter?.isCompleted == false) return textureId.value ?? -1;
 
       _creatingCompleter = Completer<void>();
@@ -234,6 +255,12 @@ class Player {
 
       final size =
           await _videoSize.future.timeout(timeout ?? Duration(seconds: 30), onTimeout: () => null);
+
+      if (_isDisposed) {
+        _creatingCompleter!.complete(null);
+        return -1;
+      }
+
       if (size == null) {
         _creatingCompleter!.complete(null);
         return -1;
@@ -277,6 +304,7 @@ class Player {
 
   /// Mute the audio or not
   set mute(bool value) {
+    if (_isDisposed) return;
     _mute = value;
     _player.ref.setMute.asFunction<void Function(Pointer<mdkPlayer>, bool)>(
         isLeaf: true)(_player.ref.object, value);
@@ -287,6 +315,7 @@ class Player {
 
   /// Set audio volume value. 1.0 is source value
   set volume(double value) {
+    if (_isDisposed) return;
     _volume = value;
     _player.ref.setVolume
             .asFunction<void Function(Pointer<mdkPlayer>, double)>()(
@@ -298,6 +327,7 @@ class Player {
 
   /// Set the audio renderer. Can be 'AudioTrack', 'OpenSL' on android.
   set audioBackends(List<String> value) {
+    if (_isDisposed) return;
     final u8p = value.toCZ();
     _player.ref.setAudioBackends.asFunction<
             void Function(Pointer<mdkPlayer>, Pointer<Pointer<Char>>)>()(
@@ -325,6 +355,7 @@ class Player {
   /// Current media.
   String get media => _media;
   String get nativeMedia {
+    if (_isDisposed) return '';
     final ptr = _player.ref.url
         .asFunction<Pointer<Char> Function(Pointer<mdkPlayer>)>()(_player.ref.object);
 
@@ -382,11 +413,15 @@ class Player {
   PlaybackState get state => _state;
 
   /// Current [MediaStatus] value
-  MediaStatus get mediaStatus => MediaStatus(_player.ref.mediaStatus
-      .asFunction<int Function(Pointer<mdkPlayer>)>()(_player.ref.object));
+  MediaStatus get mediaStatus {
+    if (_isDisposed) return const MediaStatus(MediaStatus.noMedia);
+    return MediaStatus(_player.ref.mediaStatus
+        .asFunction<int Function(Pointer<mdkPlayer>)>()(_player.ref.object));
+  }
 
   /// Set loop count. -1 is infinite loop. 0 is no loop.
   set loop(int value) {
+    if (_isDisposed) return;
     _loop = value;
     _player.ref.setLoop.asFunction<void Function(Pointer<mdkPlayer>, int)>()(
         _player.ref.object, value);
@@ -397,6 +432,7 @@ class Player {
 
   /// Preload the next media set by [setNext] immediately or when current playback is finished.
   set preloadImmediately(bool value) {
+    if (_isDisposed) return;
     _preloadImmediately = value;
     _player.ref.setPreloadImmediately
             .asFunction<void Function(Pointer<mdkPlayer>, bool)>()(
@@ -407,11 +443,15 @@ class Player {
 
   /// Get current playback position in milliseconds relative to media's first timestamp.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#int64_t-position-const
-  int get position => _player.ref.position
-      .asFunction<int Function(Pointer<mdkPlayer>)>()(_player.ref.object);
+  int get position {
+    if (_isDisposed) return 0;
+    return _player.ref.position
+        .asFunction<int Function(Pointer<mdkPlayer>)>()(_player.ref.object);
+  }
 
   /// Playback speed. 1.0 is original speed.
   set playbackRate(double value) {
+    if (_isDisposed) return;
     _playbackRate = value;
     _player.ref.setPlaybackRate
             .asFunction<void Function(Pointer<mdkPlayer>, double)>()(
@@ -426,6 +466,7 @@ class Player {
 
   /// Media information.
   MediaInfo get mediaInfo {
+    if (_isDisposed) return MediaInfo();
     _mediaInfoC = _player.ref.mediaInfo
             .asFunction<Pointer<mdkMediaInfo> Function(Pointer<mdkPlayer>)>()(
         _player.ref.object);
@@ -460,6 +501,7 @@ class Player {
   /// Set decoder priority.
   /// Detail: https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setdecodersmediatype-type-const-stdvectorstdstring-names
   void setDecoders(MediaType type, List<String> value) {
+    if (_isDisposed) return;
     switch (type) {
       case MediaType.audio:
         _adec = value;
@@ -478,6 +520,7 @@ class Player {
   /// Set active tracks of [type]. Other tracks of [type] will be disabled.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setactivetracksmediatype-type-const-stdsetint-tracks
   void setActiveTracks(MediaType type, List<int> value) {
+    if (_isDisposed) return;
     switch (type) {
       case MediaType.audio:
         _activeAT = value;
@@ -501,6 +544,7 @@ class Player {
   /// An external media can contains other [MediaType] tracks although they will not be used.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setmediaconst-char-url-mediatype-type
   void setMedia(String uri, MediaType type) {
+    if (_isDisposed) return;
     final cs = uri.toNativeUtf8();
     _player.ref.setMediaForType.asFunction<
             void Function(Pointer<mdkPlayer>, Pointer<Char>, int)>()(
@@ -521,6 +565,7 @@ class Player {
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setnextmediaconst-char-url-int64_t-startposition--0-seekflag-flags--seekflagfromstart
   void setNext(String uri,
       {int from = 0, SeekFlag seekFlag = const SeekFlag(SeekFlag.defaultFlags)}) {
+    if (_isDisposed) return;
     nextMedia = uri;
     final cs = uri.toNativeUtf8();
     _player.ref.setNextMedia
@@ -530,9 +575,12 @@ class Player {
   }
 
   /// Wait for [state] in current thread
-  bool waitFor(PlaybackState state, {int timeout = -1}) => _player.ref.waitFor
-          .asFunction<bool Function(Pointer<mdkPlayer>, int, int)>()(
-      _player.ref.object, state.rawValue, timeout);
+  bool waitFor(PlaybackState state, {int timeout = -1}) {
+    if (_isDisposed) return false;
+    return _player.ref.waitFor
+        .asFunction<bool Function(Pointer<mdkPlayer>, int, int)>()(
+        _player.ref.object, state.rawValue, timeout);
+  }
 
   /// Seek to [position] in milliseconds
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#bool-seekint64_t-pos-seekflag-flags-stdfunctionvoidint64_t-ret-cb--nullptr
@@ -551,6 +599,7 @@ class Player {
   }
 
   List<DurationRange> bufferedTimeRanges() {
+    if (_isDisposed) return [];
     const int n = 16;
     final cbytes = calloc<Int64>(2 * n);
     final count = _player.ref.bufferedTimeRanges.asFunction<
@@ -568,6 +617,7 @@ class Player {
   /// Return buffered duration in milliseconds.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#int64_t-bufferedint64_t-bytes--nullptr-const
   int buffered() {
+    if (_isDisposed) return 0;
     //var cbytes = calloc<Int64>();
     final ret = _player.ref.buffered
             .asFunction<int Function(Pointer<mdkPlayer>, Pointer<Int64>)>()(
@@ -588,14 +638,17 @@ class Player {
   /// [drop] = false: wait for buffered duration < max before pushing packets
   ///
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setbufferrangeint64_t-minms-int64_t-maxms-bool-drop--false
-  void setBufferRange({int min = -1, int max = -1, bool drop = false}) =>
-      _player.ref.setBufferRange
-              .asFunction<void Function(Pointer<mdkPlayer>, int, int, bool)>()(
-          _player.ref.object, min, max, drop);
+  void setBufferRange({int min = -1, int max = -1, bool drop = false}) {
+    if (_isDisposed) return;
+    _player.ref.setBufferRange
+            .asFunction<void Function(Pointer<mdkPlayer>, int, int, bool)>()(
+        _player.ref.object, min, max, drop);
+  }
 
   /// Start to record if [to] is not null. Stop recording if [to] is null.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-recordconst-char-url--nullptr-const-char-format--nullptr
   void record({String? to, String? format}) {
+    if (_isDisposed) return;
     final cto = to?.toNativeUtf8();
     final cfmt = format?.toNativeUtf8();
     _player.ref.record.asFunction<
@@ -615,6 +668,7 @@ class Player {
    * ╚═══════════════════════════════════════════╝
    */
   void setFps(double fps) {
+    if (_isDisposed) return;
     _player.ref.setFrameRate.asFunction<void Function(Pointer<mdkPlayer>, double)>()(
       _player.ref.object,
       fps,
@@ -626,13 +680,17 @@ class Player {
 
   /// Set position range in milliseconds. Can be used by A-B loop.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setrangeint64_t-a-int64_t-b--int64_max
-  void setRange({required int from, int to = -1}) => _player.ref.setRange
-          .asFunction<void Function(Pointer<mdkPlayer>, int, int)>()(
-      _player.ref.object, from, to);
+  void setRange({required int from, int to = -1}) {
+    if (_isDisposed) return;
+    _player.ref.setRange
+            .asFunction<void Function(Pointer<mdkPlayer>, int, int)>()(
+        _player.ref.object, from, to);
+  }
 
   /// Set additional properties.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setpropertyconst-stdstring-key-const-stdstring-value
   void setProperty(String name, String value) {
+    if (_isDisposed) return;
     final ck = name.toNativeUtf8();
     final cv = value.toNativeUtf8();
     _player.ref.setProperty.asFunction<
@@ -644,6 +702,7 @@ class Player {
 
   /// Get property value for [name]
   String? getProperty(String name) {
+    if (_isDisposed) return null;
     final ck = name.toNativeUtf8();
     final cv = _player.ref.getProperty.asFunction<
             Pointer<Char> Function(Pointer<mdkPlayer>, Pointer<Char>)>()(
@@ -660,49 +719,65 @@ class Player {
   /// Set video renderer size or destroy renderer.
   /// Usually NOT used in dart.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setvideosurfacesizeint-width-int-height-void-vo_opaque--nullptr
-  void setVideoSurfaceSize(int width, int height) =>
-      _player.ref.setVideoSurfaceSize.asFunction<
-              void Function(Pointer<mdkPlayer>, int, int, Pointer<Void>)>()(
-          _player.ref.object, width, height, _getVid());
+  void setVideoSurfaceSize(int width, int height) {
+    if (_isDisposed) return;
+    _player.ref.setVideoSurfaceSize.asFunction<
+            void Function(Pointer<mdkPlayer>, int, int, Pointer<Void>)>()(
+        _player.ref.object, width, height, _getVid());
+  }
 
-  void setVideoViewport(double x, double y, double width, double height) =>
-      _player.ref.setVideoViewport.asFunction<
-              void Function(Pointer<mdkPlayer>, double, double, double, double,
-                  Pointer<Void>)>()(
-          _player.ref.object, x, y, width, height, _getVid());
+  void setVideoViewport(double x, double y, double width, double height) {
+    if (_isDisposed) return;
+    _player.ref.setVideoViewport.asFunction<
+            void Function(Pointer<mdkPlayer>, double, double, double, double,
+                Pointer<Void>)>()(
+        _player.ref.object, x, y, width, height, _getVid());
+  }
 
   /// Set video content aspect ratio. No effect if texture width/height == original video frame width/height.
   /// [value] can be [ignoreAspectRatio], [keepAspectRatio], [keepAspectRatioCrop] and other desired ratio = width/height
   ///
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setaspectratiofloat-value-void-vo_opaque--nullptr
-  void setAspectRatio(double value) => _player.ref.setAspectRatio.asFunction<
-          void Function(Pointer<mdkPlayer>, double, Pointer<Void>)>()(
-      _player.ref.object, value, _getVid());
+  void setAspectRatio(double value) {
+    if (_isDisposed) return;
+    _player.ref.setAspectRatio.asFunction<
+            void Function(Pointer<mdkPlayer>, double, Pointer<Void>)>()(
+        _player.ref.object, value, _getVid());
+  }
 
   // TODO: mapPoint( List<double>)
 
   /// rotate video content around the center. [degree] can be 0, 90, 180, 270 in counterclockwise.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-rotateint-degree-void-vo_opaque--nullptr
-  void rotate(int degree) => _player.ref.rotate
-          .asFunction<void Function(Pointer<mdkPlayer>, int, Pointer<Void>)>()(
-      _player.ref.object, degree, _getVid());
+  void rotate(int degree) {
+    if (_isDisposed) return;
+    _player.ref.rotate
+            .asFunction<void Function(Pointer<mdkPlayer>, int, Pointer<Void>)>()(
+        _player.ref.object, degree, _getVid());
+  }
 
   /// scale video content. 1.0 is no scale.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-scalefloat-x-float-y-void-vo_opaque--nullptr
-  void scale(double x, double y) => _player.ref.scale.asFunction<
-          void Function(Pointer<mdkPlayer>, double, double, Pointer<Void>)>()(
-      _player.ref.object, x, y, _getVid());
+  void scale(double x, double y) {
+    if (_isDisposed) return;
+    _player.ref.scale.asFunction<
+            void Function(Pointer<mdkPlayer>, double, double, Pointer<Void>)>()(
+        _player.ref.object, x, y, _getVid());
+  }
 
   /// Set background color.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#void-setbackgroundcolorfloat-r-float-g-float-b-float-a-void-vo_opaque--nullptr
-  void setBackgroundColor(double r, double g, double b, double a) =>
-      _player.ref.setBackgroundColor.asFunction<
-          void Function(Pointer<mdkPlayer>, double, double, double, double,
-              Pointer<Void>)>()(_player.ref.object, r, g, b, a, _getVid());
+  void setBackgroundColor(double r, double g, double b, double a) {
+    if (_isDisposed) return;
+    _player.ref.setBackgroundColor.asFunction<
+        void Function(Pointer<mdkPlayer>, double, double, double, double,
+            Pointer<Void>)>()(_player.ref.object, r, g, b, a, _getVid());
+  }
 
   /// Set a built-in video effect.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#player-setvideoeffect-effect-const-float-values-void-vo_opaque--nullptr
   void setVideoEffect(VideoEffect effect, List<double> value) {
+    if (_isDisposed) return;
     final cv = calloc<Float>(value.length);
     for (int i = 0; i < value.length; ++i) {
       cv[i] = value[i];
@@ -717,15 +792,21 @@ class Player {
   /// Set target color space.
   /// Usually NOT used by dart because flutter only supports SDR output.
   /// https://github.com/wang-bin/mdk-sdk/wiki/Player-APIs#player-setcolorspace-value-void-vo_opaque--nullptr
-  void setColorSpace(ColorSpace value) => _player.ref.setColorSpace
-          .asFunction<void Function(Pointer<mdkPlayer>, int, Pointer<Void>)>()(
-      _player.ref.object, value.rawValue, _getVid());
+  void setColorSpace(ColorSpace value) {
+    if (_isDisposed) return;
+    _player.ref.setColorSpace
+            .asFunction<void Function(Pointer<mdkPlayer>, int, Pointer<Void>)>()(
+        _player.ref.object, value.rawValue, _getVid());
+  }
 
   /// Draw the current video frame and return frame timestamp in seconds.
   /// Usually NOT used in dart.
-  double renderVideo() => _player.ref.renderVideo
-          .asFunction<double Function(Pointer<mdkPlayer>, Pointer<Void>)>()(
-      _player.ref.object, _getVid());
+  double renderVideo() {
+    if (_isDisposed) return -1;
+    return _player.ref.renderVideo
+            .asFunction<double Function(Pointer<mdkPlayer>, Pointer<Void>)>()(
+        _player.ref.object, _getVid());
+  }
 
   /// Take a snapshot for current rendered frame.
   ///
