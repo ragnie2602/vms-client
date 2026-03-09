@@ -23,15 +23,22 @@ class MonitorFailure extends MonitorState {
 }
 
 class MonitorSuccess extends MonitorState {
+  final List<CameraEntity> allCameras;
   final List<CameraEntity> cameras;
   final ViewMode mode;
   final int page;
   final List<int>? groupId; // []: no grouped camera; null: all camera; other: grouped camera
 
-  const MonitorSuccess({required this.cameras, required this.mode, this.page = 1, this.groupId});
+  const MonitorSuccess({
+    required this.cameras,
+    required this.mode,
+    this.page = 1,
+    this.groupId,
+    required this.allCameras,
+  });
 
   @override
-  List<Object?> get props => [cameras, mode, page, groupId];
+  List<Object?> get props => [cameras, mode, page, groupId, allCameras];
   @override
   StateType get type => isEmpty ? StateType.empty : StateType.success;
   bool get isEmpty => cameras.isEmpty;
@@ -44,12 +51,14 @@ class MonitorSuccess extends MonitorState {
     List<CameraEntity>? cameras,
     int? page,
     List<int>? groupId,
+    List<CameraEntity>? allCameras,
   }) {
     return MonitorSuccess(
       cameras: cameras ?? this.cameras,
       mode: mode ?? this.mode,
       page: page ?? this.page,
       groupId: groupId ?? this.groupId,
+      allCameras: allCameras ?? this.allCameras,
     );
   }
 }

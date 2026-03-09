@@ -21,6 +21,7 @@ class CameraDetailScreenArgs extends BaseScreenArgs {
   final bool openCamerasPanelImmediately;
   final Key? key;
   final DateTime? rewind;
+  final bool showFullCamera;
 
   CameraDetailScreenArgs({
     required this.data,
@@ -31,6 +32,7 @@ class CameraDetailScreenArgs extends BaseScreenArgs {
     super.onBack,
     String? title,
     super.description,
+    this.showFullCamera = false,
   }) : super(title: title ?? data?.name);
 }
 
@@ -40,11 +42,13 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
       isPlayback = args.isPlayback,
       openCamerasPanelImmediately = args.openCamerasPanelImmediately,
       rewind = args.rewind,
+      showFullCamera = args.showFullCamera,
       super(key: args.key);
 
   final CameraEntity? data;
   final bool isPlayback;
   final bool openCamerasPanelImmediately;
+  final bool showFullCamera;
   final OSDPosition _position = OsdUtil.getOSDPositions();
   DateTime? rewind;
 
@@ -103,6 +107,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
                   ? _waitingPlayback(state, context)
                   : _buildLiveview(state, context),
               mode: state.mode,
+              showFullCamera: showFullCamera,
             ),
           );
         },

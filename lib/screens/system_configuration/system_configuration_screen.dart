@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/system_configuration/components/osd_view.dart';
+import 'package:vms_flutter_client/screens/system_configuration/components/setting_notification.dart';
 
 import 'components/storage_folder_view.dart';
 
@@ -13,6 +14,7 @@ class SystemConfigurationScreen extends StatelessWidget {
   static final _tabs = <_TabItem>[
     (title: 'Thư mục lưu trữ', content: StorageFolderView()),
     (title: 'Cài đặt OSD', content: OsdView()),
+    (title: 'Cài đặt thông báo', content: SettingNotificationView()),
     // (title: 'Video & Audio setting', content: Center(child: Text("Video & Audio setting"))),
     // (title: 'Network setting', content: Center(child: Text("Network setting"))),
     // (title: 'Thông báo', content: Center(child: Text("Thông báo"))),
@@ -40,14 +42,26 @@ class SystemConfigurationScreen extends StatelessWidget {
                 indicatorWeight: 2,
                 labelColor: AppColors.secondary,
                 unselectedLabelColor: AppColors.grey64748B,
-                labelStyle: AppTypography.style(14, fontWeight: FontWeight.w500),
-                unselectedLabelStyle: AppTypography.style(14, fontWeight: FontWeight.w500),
+                labelStyle: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                ),
+                unselectedLabelStyle: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w500,
+                ),
                 labelPadding: EdgeInsets.fromLTRB(25, 11.5, 25, 9.5),
                 tabAlignment: TabAlignment.center,
-                tabs: _tabs.map((tab) => Tab(text: tab.title, height: 17)).toList(),
+                tabs: _tabs
+                    .map((tab) => Tab(text: tab.title, height: 17))
+                    .toList(),
               ),
             ),
-            Expanded(child: TabBarView(children: _tabs.map((tab) => tab.content).toList())),
+            Expanded(
+              child: TabBarView(
+                children: _tabs.map((tab) => tab.content).toList(),
+              ),
+            ),
           ],
         ),
       ),

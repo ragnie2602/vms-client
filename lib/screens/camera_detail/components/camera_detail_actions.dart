@@ -21,11 +21,13 @@ class CameraDetailActions extends StatefulWidget {
     required this.rightController,
     required this.mode,
     this.openCamerasPanelImmediately = false,
+    this.showFullCamera = false,
   });
   final PanelController leftController;
   final PanelController rightController;
   final CameraDetailMode mode;
   final bool openCamerasPanelImmediately;
+  final bool showFullCamera;
 
   @override
   State<CameraDetailActions> createState() => _CameraDetailActionsState();
@@ -57,6 +59,7 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
             onTap: (camera) {
               context.read<CameraDetailBloc>().add(ChangeCamera(camera));
             },
+            showFullCamera: widget.showFullCamera,
           ),
           id: 1,
           onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
@@ -100,6 +103,7 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
                             ChangeCamera(camera),
                           );
                         },
+                        showFullCamera: widget.showFullCamera,
                       ),
                       id: 1,
                       onPanelIndexChanged: (index) =>

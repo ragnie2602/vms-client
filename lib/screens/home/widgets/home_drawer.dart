@@ -137,6 +137,7 @@ class DrawerTile extends StatelessWidget {
         isPlayback: true,
         title: 'Xem lại',
         key: UniqueKey(),
+        showFullCamera: true,
       );
     }
 
@@ -165,8 +166,14 @@ class DrawerTile extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final isExpanded = constraints.maxWidth >= maxWidth;
           return tab.nested.isEmpty
-              ? _buildTitle(context, isSelected, onTap: () => _handleTap(context))
+              ? _buildTitle(
+                  context,
+                  isSelected,
+                  onTap: () => _handleTap(context),
+                  showTooltip: !isExpanded,
+                )
               : TileExpansion(
                   body: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -181,7 +188,7 @@ class DrawerTile extends StatelessWidget {
                         )
                         .toList(),
                   ),
-                  header: _buildTitle(context, false),
+                  header: _buildTitle(context, false, showTooltip: !isExpanded),
                   showTrailing: constraints.maxWidth >= maxWidth,
                 );
         },
@@ -189,59 +196,80 @@ class DrawerTile extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(BuildContext context, bool isSelected, {VoidCallback? onTap}) {
+  Widget _buildTitle(
+    BuildContext context,
+    bool isSelected, {
+    VoidCallback? onTap,
+    bool showTooltip = false,
+  }) {
     return AnimatedContainer(
-      duration: Durations.long2,
-      height: 52,
-      width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 17.5),
-        child: Row(
-          children: [
-            AnimatedContainer(
-              duration: Durations.long2,
-              height: 32,
-              width: 3,
-              decoration: isSelected
-                  ? BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.horizontal(right: Radius.circular(100)),
-                    )
-                  : null,
-            ),
-            SizedBox(width: 20),
-            tab.useMaterialIcon && tab.materialIcon != null
-                ? Icon(
-                    _getMaterialIcon(tab.materialIcon!),
-                    color: isSelected ? AppColors.primary : AppColors.contentFg,
-                    size: 20,
-                  )
-                : SvgPicture.asset(
-                    tab.svg,
-                    colorFilter: ColorFilter.mode(
-                      isSelected ? AppColors.primary : AppColors.contentFg,
-                      BlendMode.srcIn,
-                    ),
-                    width: 20,
-                    height: 20,
-                  ),
-            SizedBox(width: 20),
-            Flexible(
-              child: Text(
-                tab.title,
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? AppColors.primary : null,
+          duration: Durations.long2,
+          height: 52,
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 17.5),
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: Durations.long2,
+                  height: 32,
+                  width: 3,
+                  decoration: isSelected
+                      ? BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.horizontal(right: Radius.circular(100)),
+                        )
+                      : null,
                 ),
-                overflow: TextOverflow.visible,
-                maxLines: 1,
-              ),
+                SizedBox(width: 20),
+                tab.useMaterialIcon && tab.materialIcon != null
+                    ? Icon(
+                        _getMaterialIcon(tab.materialIcon!),
+                        color: isSelected ? AppColors.primary : AppColors.contentFg,
+                        size: 20,
+                      )
+                    : SvgPicture.asset(
+                        tab.svg,
+                        colorFilter: ColorFilter.mode(
+                          isSelected ? AppColors.primary : AppColors.contentFg,
+                          BlendMode.srcIn,
+                        ),
+                        width: 20,
+                        height: 20,
+                      ),
+                SizedBox(width: 20),
+                Flexible(
+                  child: Text(
+                    tab.title,
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? AppColors.primary : null,
+                    ),
+                    overflow: TextOverflow.visible,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ).let((child) => onTap != null ? InkWell(onTap: onTap, child: child) : child);
+          ),
+        )
+        .let(
+          (it) => !showTooltip
+              ? it
+              : Tooltip(
+                  margin: EdgeInsets.only(left: 52.5),
+                  verticalOffset: -52 / 2 + 11 + 4,
+                  message: tab.title,
+                  textStyle: AppTypography.style(
+                    11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.white,
+                  ),
+                  child: it,
+                ),
+        )
+        .let((child) => onTap != null ? InkWell(onTap: onTap, child: child) : child);
   }
 
   IconData _getMaterialIcon(String iconName) {

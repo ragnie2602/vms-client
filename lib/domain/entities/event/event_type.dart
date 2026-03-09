@@ -20,6 +20,13 @@ class EventType {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "type": type,
+    "eventType": eventKey,
+  };
+
   @override
   String toString() => name;
 }
