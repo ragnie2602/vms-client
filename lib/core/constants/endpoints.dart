@@ -42,6 +42,9 @@ class EndPoints {
   static const String baseDetect = '/api/event-display-config';
   static const String getListTypeEventDetect = '/$baseDetect/event-types';
   static const String getAvailableFields = '/$baseDetect/available-fields';
+
+  // Notification
+  static const String notificationSetting = '/api/notification-settings';
   static String eventDisplayConfigByName(String typeName) =>
       '$baseDetect/$typeName';
 

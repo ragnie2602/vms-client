@@ -46,6 +46,7 @@ import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
 import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/notification/notification_setting_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/system_configuration_screen.dart';
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
@@ -321,6 +322,7 @@ class AppRouter {
               create: (context) =>
                   ChangeMyInfoBloc(context.read(), context.read()),
             ),
+            BlocProvider(create: (context) => NotificationBloc(context.read())),
             BlocProvider.value(
               value: context.read<AlarmSoundBloc>()
                 ..add(GetAlarmSounds(force: state.extra == 'isFreshLogin')),

@@ -145,28 +145,32 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                         borderRadius: 3,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Tên nhóm đối tượng không được để trống.';
+                            return 'Tên nhóm đối tượng không được để trống';
                           }
-                          // Validate trùng tên nhóm cùng cấp (cùng parentId)
-                          final trimmedName = value.trim();
-                          final parentId = _selectedParentGroup?.id ?? 0;
-                          final siblings = (widget.listGroupAvailable ?? [])
-                              .where((g) => (g.parentId ?? 0) == parentId)
-                              .where(
-                                (g) =>
-                                    widget.addEditType ==
-                                        AddEditGroupObjectType.edit
-                                    ? g.id != widget.currentGroup?.id
-                                    : true,
-                              )
-                              .toList();
-                          final isDuplicate = siblings.any(
-                            (g) =>
-                                (g.name ?? '').trim().toLowerCase() ==
-                                trimmedName.toLowerCase(),
-                          );
-                          if (isDuplicate) {
-                            return 'Tên nhóm đã tồn tại trong cùng cấp. Vui lòng nhập tên khác.';
+                          // Kiểm tra trùng tên với nhóm con của nhóm cha hiện tại
+                          if (widget.listGroupAvailable != null) {
+                            // Lấy danh sách các nhóm có cùng parentId với parentGroup được chọn
+                            final currentParentId =
+                                _selectedParentGroup?.id ?? 0;
+                            final siblings = widget.listGroupAvailable!
+                                .where((g) => g.parentId == currentParentId)
+                                .toList();
+                            // Nếu đang edit, loại trừ chính nhóm hiện tại ra khỏi danh sách kiểm tra
+                            if (widget.addEditType ==
+                                    AddEditGroupObjectType.edit &&
+                                widget.currentGroup != null) {
+                              siblings.removeWhere(
+                                (g) => g.id == widget.currentGroup!.id,
+                              );
+                            }
+
+                            final isDuplicate = siblings.any(
+                              (g) => g.name?.trim() == value.trim(),
+                            );
+
+                            if (isDuplicate) {
+                              return 'Tên nhóm đã tồn tại trong cùng cấp. Vui lòng nhập tên khác.';
+                            }
                           }
                           return null;
                         },

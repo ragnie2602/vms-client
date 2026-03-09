@@ -3,6 +3,7 @@ part of 'get_camera_use_case.dart';
 class GetCameraInput extends BaseInput {
   final List<int> groupId;
   final Set<TagEntity>? tags;
+  final bool includeAllCameras;
 
-  GetCameraInput({this.tags, required this.groupId});
+  GetCameraInput({this.tags, required this.groupId, this.includeAllCameras = false});
 }

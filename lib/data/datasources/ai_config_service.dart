@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/ai_alarm/ai_alarm_config.dart';
 import 'package:vms_flutter_client/domain/entities/ai_alarm/alarm_sound.dart';
 import 'package:vms_flutter_client/domain/entities/ai_alarm/camera_alarm_config.dart';
@@ -60,8 +64,34 @@ class AiConfigService {
   }
 
   Future<List<AlarmSound>> getAlarmSounds() async {
-    final raw = await httpClient.get(EndPoints.alarmSound);
-    final response = BaseResponse.fromJson(raw);
-    return (response.data as List).map<AlarmSound>((e) => AlarmSound.fromJson(e)).toList();
+    try {
+      final raw = await httpClient.get(EndPoints.alarmSound);
+      final response = BaseResponse.fromJson(raw);
+
+      // Có dữ liệu mới ==> cache
+      if (response.data is List && (response.data as List).isNotEmpty) {
+        AppData.instance.save<String>(AppKeys.SP_ALARM_SOUNDS, jsonEncode(response.data));
+      }
+
+      return (response.data as List).map<AlarmSound>((e) => AlarmSound.fromJson(e)).toList();
+    } catch (e) {
+      final cachedSounds = _getCachedAlarmSounds();
+      if (cachedSounds != null) return cachedSounds;
+
+      rethrow;
+    }
+  }
+
+  List<AlarmSound>? _getCachedAlarmSounds() {
+    try {
+      final cachedSounds = AppData.instance.read<String>(AppKeys.SP_ALARM_SOUNDS);
+      if (cachedSounds != null) {
+        return (jsonDecode(cachedSounds) as List)
+            .map<AlarmSound>((e) => AlarmSound.fromJson(e))
+            .toList();
+      }
+    } catch (_) {}
+
+    return null;
   }
 }

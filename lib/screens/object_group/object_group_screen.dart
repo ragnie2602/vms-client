@@ -597,12 +597,16 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                     );
                                     break;
                                   case GroupObjectAction.delete:
+                                    bool hasObjects =
+                                        state.selectedSubjectGroup?.id ==
+                                            node.data?.id &&
+                                        state.objects.isNotEmpty;
                                     _onShowDialogRemoveGroupObject(
                                       c: context,
                                       currentGroup: node.data,
                                       hasChildren:
                                           node.children.isNotEmpty ||
-                                          state.objects.isNotEmpty,
+                                          hasObjects,
                                     );
                                     break;
                                 }
