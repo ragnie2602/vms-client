@@ -231,33 +231,39 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                   ? CompressFormat.webp
                   : CompressFormat.jpeg);
 
-        var compressResult = await FlutterImageCompress.compressAndGetFile(
-          path,
-          targetPath,
-          quality: 70,
-          minWidth: 1024,
-          minHeight: 1024,
-          format: format,
-        );
-
-        // Loop to ensure size <= 5MB
-        int currentQuality = 70;
-        while (compressResult != null &&
-            await File(compressResult.path).length() > 5242880 &&
-            currentQuality > 10) {
-          currentQuality -= 20;
-          final newTargetPath = p.join(
-            tempDir.path,
-            '${DateTime.now().millisecondsSinceEpoch}_comp_q${currentQuality}$targetExt',
-          );
+        XFile? compressResult;
+        try {
           compressResult = await FlutterImageCompress.compressAndGetFile(
             path,
-            newTargetPath,
-            quality: currentQuality,
+            targetPath,
+            quality: 70,
             minWidth: 1024,
             minHeight: 1024,
             format: format,
           );
+
+          // Loop to ensure size <= 1MB
+          int currentQuality = 70;
+          while (compressResult != null &&
+              await File(compressResult.path).length() > 1048576 &&
+              currentQuality > 10) {
+            currentQuality -= 20;
+            final newTargetPath = p.join(
+              tempDir.path,
+              '${DateTime.now().millisecondsSinceEpoch}_comp_q${currentQuality}$targetExt',
+            );
+            compressResult = await FlutterImageCompress.compressAndGetFile(
+              path,
+              newTargetPath,
+              quality: currentQuality,
+              minWidth: 1024,
+              minHeight: 1024,
+              format: format,
+            );
+          }
+        } catch (e) {
+          debugPrint('Image compression error: $e');
+          compressResult = null; // fallback to original path
         }
 
         if (compressResult != null &&
@@ -998,33 +1004,39 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                   ? CompressFormat.webp
                   : CompressFormat.jpeg);
 
-        var compressResult = await FlutterImageCompress.compressAndGetFile(
-          path,
-          targetPath,
-          quality: 70,
-          minWidth: 1024,
-          minHeight: 1024,
-          format: format,
-        );
-
-        // Loop to ensure size <= 5MB
-        int currentQuality = 70;
-        while (compressResult != null &&
-            await File(compressResult.path).length() > 5242880 &&
-            currentQuality > 10) {
-          currentQuality -= 20;
-          final newTargetPath = p.join(
-            tempDir.path,
-            '${DateTime.now().millisecondsSinceEpoch}_comp_q$currentQuality$targetExt',
-          );
+        XFile? compressResult;
+        try {
           compressResult = await FlutterImageCompress.compressAndGetFile(
             path,
-            newTargetPath,
-            quality: currentQuality,
+            targetPath,
+            quality: 70,
             minWidth: 1024,
             minHeight: 1024,
             format: format,
           );
+
+          // Loop to ensure size <= 1MB
+          int currentQuality = 70;
+          while (compressResult != null &&
+              await File(compressResult.path).length() > 1048576 &&
+              currentQuality > 10) {
+            currentQuality -= 20;
+            final newTargetPath = p.join(
+              tempDir.path,
+              '${DateTime.now().millisecondsSinceEpoch}_comp_q$currentQuality$targetExt',
+            );
+            compressResult = await FlutterImageCompress.compressAndGetFile(
+              path,
+              newTargetPath,
+              quality: currentQuality,
+              minWidth: 1024,
+              minHeight: 1024,
+              format: format,
+            );
+          }
+        } catch (e) {
+          debugPrint('Image compression error: $e');
+          compressResult = null; // fallback to original path
         }
 
         if (compressResult != null &&
