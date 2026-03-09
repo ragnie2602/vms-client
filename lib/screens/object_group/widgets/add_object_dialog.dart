@@ -480,8 +480,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   @override
   Widget build(BuildContext context) {
     final title = widget.isEditMode
-        ? 'Sửa đối tượng [${widget.objectType.name}]'
-        : 'Thêm đối tượng [${widget.objectType.name}]';
+        ? 'Sửa ${widget.objectType.name}'
+        : 'Thêm ${widget.objectType.name}';
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

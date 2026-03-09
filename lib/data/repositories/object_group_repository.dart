@@ -9,9 +9,9 @@ import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/datasources/subject_group_service.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/data/repositories/base_repository.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 
 class ObjectGroupRepository extends BaseRepository
     implements IObjectGroupRepository {
@@ -275,10 +275,10 @@ class ObjectGroupRepository extends BaseRepository
     List<int> subjectGroupIds,
   ) async {
     final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
-    final queryParams = <String, dynamic>{'objectTypeId': objectTypeId};
-    if (subjectGroupIds.isNotEmpty) {
-      queryParams['subjectGroupIds'] = subjectGroupIds;
-    }
+    final queryParams = <String, dynamic>{
+      'objectTypeId': objectTypeId,
+      'subjectGroupIds': subjectGroupIds.isNotEmpty ? subjectGroupIds : [0],
+    };
 
     final formData = FormData.fromMap({
       'file': await MultipartFile.fromFile(filePath),
@@ -319,14 +319,23 @@ class ObjectGroupRepository extends BaseRepository
   }
 
   @override
-  Future<String> exportObjects(int objectTypeId, {int? subjectGroupId}) async {
+  Future<String> exportObjects(
+    int objectTypeId, {
+    int? subjectGroupId,
+    String? search,
+  }) async {
     final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
     final tempDir = await Directory.systemTemp.createTemp('export_');
     final savePath = '${tempDir.path}/export_$objectTypeId.xlsx';
 
-    final queryParams = <String, dynamic>{'objectTypeId': objectTypeId};
-    if (subjectGroupId != null && subjectGroupId > 0) {
-      queryParams['subjectGroupId'] = subjectGroupId;
+    final queryParams = <String, dynamic>{
+      'objectTypeId': objectTypeId,
+      'subjectGroupIds': (subjectGroupId != null && subjectGroupId > 0)
+          ? [subjectGroupId]
+          : [0],
+    };
+    if (search != null && search.isNotEmpty) {
+      queryParams['search'] = search;
     }
 
     await _apiClient.dio.download(
