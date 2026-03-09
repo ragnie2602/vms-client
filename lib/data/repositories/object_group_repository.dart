@@ -330,7 +330,7 @@ class ObjectGroupRepository extends BaseRepository
 
     final queryParams = <String, dynamic>{
       'objectTypeId': objectTypeId,
-      'subjectGroupIds': (subjectGroupId != null && subjectGroupId > 0)
+      'subjectGroupId': (subjectGroupId != null && subjectGroupId > 0)
           ? [subjectGroupId]
           : [0],
     };
