@@ -229,9 +229,23 @@ class DrawerTile extends StatelessWidget {
             child: Row(
               children: [
                 if (isNested) ...[
-                  SizedBox(width: 36),
-                  Text('■', style: TextStyle(fontSize: 8, color: contentColor)),
-                  const SizedBox(width: 12),
+                  if (!showTooltip) ...[
+                    SizedBox(width: 36),
+                    Text(
+                      '■',
+                      style: TextStyle(fontSize: 8, color: contentColor),
+                    ),
+                    const SizedBox(width: 20),
+                  ] else ...[
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          '■',
+                          style: TextStyle(fontSize: 8, color: contentColor),
+                        ),
+                      ),
+                    ),
+                  ],
                 ] else ...[
                   AnimatedContainer(
                     duration: Durations.long2,
@@ -264,18 +278,19 @@ class DrawerTile extends StatelessWidget {
                         ),
                   SizedBox(width: 20),
                 ],
-                Flexible(
-                  child: Text(
-                    tab.title,
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected ? AppColors.primary : null,
+                if (!(isNested && showTooltip))
+                  Flexible(
+                    child: Text(
+                      tab.title,
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w500,
+                        color: isSelected ? AppColors.primary : null,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                    overflow: TextOverflow.visible,
-                    maxLines: 1,
                   ),
-                ),
               ],
             ),
           ),

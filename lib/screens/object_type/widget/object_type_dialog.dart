@@ -151,17 +151,18 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     return field.id.startsWith('new_field_') || field.id.startsWith('default_');
   }
 
+  /// "Tên đối tượng" and "Ảnh nhận diện khuôn mặt" are mandatory and cannot be removed
+  bool _isProtectedField(ObjectTypeField field) {
+    return field.fieldName == 'Tên đối tượng' ||
+        field.fieldName == 'Ảnh nhận diện khuôn mặt';
+  }
+
   void _removeField(int index) {
     final field = _fields[index];
 
-    // SRS: Fixed default fields cannot be deleted
-    if (field.isDefault) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Trường bắt buộc không thể xóa'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+    // Cannot delete default fields (add mode) or protected fields (edit mode)
+    if (field.isDefault || (widget.isEditMode && _isProtectedField(field))) {
+      ToastUtil.toastWarning(message: 'Trường bắt buộc không thể xóa');
       return;
     }
 
@@ -172,7 +173,6 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     }
 
     // SRS: Saved fields → show confirmation popup
-    // For edit mode, determine the right message
     final displayLabel = field.displayName.isNotEmpty
         ? field.displayName
         : field.fieldName;
@@ -703,10 +703,12 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
               child: SvgPicture.asset(AppAssets.icDrag),
             ),
           ),
-          // Field name — read-only for default and recognition fields
+          // Field name
           Expanded(
             flex: 2,
-            child: (field.isDefault || _isRecognitionField(field))
+            child: (field.isDefault || _isProtectedField(field))
+                ? _buildReadOnlyLabel(field.fieldName)
+                : _isRecognitionField(field)
                 ? _buildSmallTextField(
                     initialValue: field.fieldName,
                     hintText: 'Tên dữ liệu',
@@ -746,13 +748,8 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           // Data type – SRS: disabled for recognition fields
           Expanded(
             flex: 1,
-            child: _isRecognitionField(field) || field.isDefault
-                ? AbsorbPointer(
-                    child: Opacity(
-                      opacity: 0.5,
-                      child: _buildDataTypeDropdown(index, field),
-                    ),
-                  )
+            child: field.isDefault || _isProtectedField(field)
+                ? _buildReadOnlyLabel(field.dataType.displayName)
                 : _buildDataTypeDropdown(index, field),
           ),
           const SizedBox(width: 8),
@@ -870,6 +867,19 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     );
   }
 
+  Widget _buildReadOnlyLabel(String text) {
+    return Container(
+      height: 36,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Text(
+        text,
+        style: AppTypography.style(12, color: AppColors.black),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
   Widget _buildSmallTextField({
     String? initialValue,
     required String hintText,
@@ -925,7 +935,11 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             .map(
               (type) => DropdownMenuItem(
                 value: type,
-                child: Text(type.displayName, style: AppTypography.style(12)),
+                child: Text(
+                  type.displayName,
+                  style: AppTypography.style(12),
+                  overflow: TextOverflow.visible,
+                ),
               ),
             )
             .toList(),
@@ -1010,7 +1024,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                     onTap: () {
                       _updateField(
                         index,
-                        field.copyWith(iconName: '${AppConfig.BASE_ICON_PATH}/$name', iconUrl: url),
+                        field.copyWith(
+                          iconName: '${AppConfig.BASE_ICON_PATH}/$name',
+                          iconUrl: url,
+                        ),
                       );
                       Navigator.pop(dialogContext);
                     },
