@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/authentication/authentication.dart';
 import 'package:vms_flutter_client/domain/entities/user/my_profile.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_notication_repostory.dart';
 
 import '../../i_repositories/i_auth_repository.dart';
 import '../future_use_case.dart';
@@ -11,8 +14,12 @@ import 'login_output.dart';
 
 class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
   final IAuthRepository authRepository;
+  final INotificationRepository notificationRepository;
 
-  const LoginUseCase({required this.authRepository});
+  const LoginUseCase({
+    required this.authRepository,
+    required this.notificationRepository,
+  });
 
   @override
   Future<LoginOutput> buildUseCase(LoginInput input) async {
@@ -52,6 +59,9 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
           userType: UserType.admin,
         );
 
+        // Lấy cấu hình thông báo và lưu vào SharedPreferences
+        await _fetchAndSaveNotificationSetting();
+
         return LoginOutput(account: input.username, isSuccess: true);
       } else {
         return LoginOutput(
@@ -67,5 +77,18 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
       }
       return LoginOutput(account: input.username, isSuccess: false, errorMessage: errorMessage);
     }
+  }
+
+  Future<void> _fetchAndSaveNotificationSetting() async {
+    try {
+      final result = await notificationRepository.getNotificationSetting();
+      result.fold((failure) {}, (notificationSetting) async {
+        final jsonString = json.encode(notificationSetting.toJson());
+        await AppData.instance.save<String>(
+          AppKeys.SP_NOTIFICATION_SETTING,
+          jsonString,
+        );
+      });
+    } catch (_) {}
   }
 }

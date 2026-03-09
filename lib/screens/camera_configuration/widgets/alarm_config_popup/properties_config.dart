@@ -114,11 +114,13 @@ class _PropertiesConfigState extends State<PropertiesConfig> with StateBuilderMi
   }
 
   void _initSelectedSound() {
-    if (widget.alarmConfig.soundId == null || _selectedSound != null) return;
+    if (_selectedSound != null) return;
 
     void _onLoaded(AlarmSoundLoaded state) {
       if (!mounted) return;
-      selectedSound = state.alarmSounds.firstWhereOrNull((e) => e.id == widget.alarmConfig.soundId);
+      selectedSound =
+          state.alarmSounds.firstWhereOrNull((e) => e.id == widget.alarmConfig.soundId) ??
+          state.alarmSounds.firstOrNull;
       Future.delayed(Duration.zero, () => mounted ? setState(() {}) : null);
     }
 

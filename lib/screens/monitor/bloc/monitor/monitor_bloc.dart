@@ -60,22 +60,37 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
     if (output.isSuccess) {
       final cameras = output.cameras ?? [];
       PlayerPoolManager.instance.updateMinPoolSize(cameras.length);
-      emit(MonitorSuccess(cameras: cameras, mode: lastState?.mode ?? ViewMode.v2x2));
+      emit(
+        MonitorSuccess(
+          cameras: cameras,
+          mode: lastState?.mode ?? ViewMode.v2x2,
+          allCameras: output.allCameras ?? cameras,
+        ),
+      );
     } else {
       emit(MonitorFailure(output.errMsg ?? ''));
     }
   }
 
   FutureOr<void> _onGetAllCameraInGroup(GetAllCameraInGroup event, Emitter<MonitorState> emit) async {
+    final MonitorSuccess? lastState = state is MonitorSuccess ? state as MonitorSuccess : null;
+
     TaskPool.instance.clean();
     emit(MonitorLoading());
 
-    final output = await getCameraUseCase.execute(GetCameraInput(groupId: event.groupId, tags: event.tags));
+    final output = await getCameraUseCase.execute(
+      GetCameraInput(
+        groupId: event.groupId,
+        tags: event.tags,
+        includeAllCameras: lastState == null, // Lần đầu call
+      ),
+    );
     if (output.isSuccess) {
       emit(
         MonitorSuccess(
           cameras: output.cameras ?? [],
           mode: ViewMode.fitWithLength(output.cameras!.length, min: ViewMode.v2x2),
+          allCameras: lastState?.allCameras ?? output.allCameras ?? output.cameras ?? [],
         ),
       );
     } else {
@@ -93,6 +108,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
         MonitorSuccess(
           cameras: output.cameras ?? [],
           mode: ViewMode.fitWithLength(output.cameras!.length, min: ViewMode.v2x2),
+          allCameras: output.allCameras ?? output.cameras ?? [],
         ),
       );
     } else {
@@ -105,7 +121,15 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
 
     if (state is MonitorSuccess) {
       final preState = state as MonitorSuccess;
-      emit(MonitorSuccess(cameras: preState.cameras, mode: preState.mode, page: event.page, groupId: preState.groupId));
+      emit(
+        MonitorSuccess(
+          cameras: preState.cameras,
+          mode: preState.mode,
+          page: event.page,
+          groupId: preState.groupId,
+          allCameras: preState.allCameras,
+        ),
+      );
       return;
     }
 
@@ -122,6 +146,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
             mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
             page: event.page,
             groupId: null,
+            allCameras: cameras,
           ),
         );
       },

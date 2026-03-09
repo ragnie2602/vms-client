@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/data/datasources/ai_config_service.dart';
 import 'package:vms_flutter_client/data/datasources/detect_service.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/event_service.dart';
+import 'package:vms_flutter_client/data/datasources/notification_service.dart';
 import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
@@ -15,6 +16,7 @@ import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
 import 'package:vms_flutter_client/data/repositories/ai_config_repository.dart';
 import 'package:vms_flutter_client/data/repositories/detect_repository.dart';
 import 'package:vms_flutter_client/data/repositories/event_repository.dart';
+import 'package:vms_flutter_client/data/repositories/notification_repository.dart';
 import 'package:vms_flutter_client/data/repositories/object_group_repository.dart';
 import 'package:vms_flutter_client/data/repositories/object_type_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
@@ -23,6 +25,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_object_group_reposito
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_notication_repostory.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
@@ -93,16 +96,14 @@ class DependencyInjection {
     Provider<UserService>(create: (context) => UserService(context.read(), context.read())),
     Provider<AiBoxService>(create: (context) => AiBoxService(context.read())),
     Provider<SubjectGroupService>(create: (context) => SubjectGroupService(context.read())),
-    Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
     Provider<EventService>(create: (context) => EventService(context.read())),
-    Provider<UserService>(create: (context) => UserService(context.read(), context.read())),
-    Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
-    Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
     Provider<DetectService>(create: (context) => DetectService(context.read(), context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
-    Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
     Provider<ObjectTypeService>(create: (context) => ObjectTypeService(context.read())),
+    Provider<NotificationService>(
+      create: (context) => NotificationService(context.read(), context.read()),
+    ),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -135,6 +136,10 @@ class DependencyInjection {
     Provider<ICustomLiveViewRepository>(
       create: (context) => CustomLiveViewRepository(context.read()),
     ),
+    Provider<INotificationRepository>(
+      create: (context) =>
+          NotificationRepository(notificationService: context.read()),
+    ),
 
     // Use Cases
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
@@ -144,7 +149,10 @@ class DependencyInjection {
     ),
 
     Provider<LoginUseCase>(
-      create: (context) => LoginUseCase(authRepository: context.read<IAuthRepository>()),
+      create: (context) => LoginUseCase(
+        authRepository: context.read<IAuthRepository>(),
+        notificationRepository: context.read<INotificationRepository>(),
+      ),
     ),
 
     Provider<RegisterUseCase>(
@@ -231,9 +239,16 @@ class DependencyInjection {
     // ),
 
     // Bloc
-    Provider<OsdBloc>(create: (context) => OsdBloc(context.read(), context.read())),
+    Provider<OsdBloc>(
+      create: (context) => OsdBloc(context.read(), context.read()),
+    ),
     Provider<AppBloc>(
-      create: (context) => AppBloc(context.read(), context.read(), context.read(), context.read()),
+      create: (context) => AppBloc(
+        context.read(),
+        context.read(),
+        context.read(),
+        context.read(),
+      ),
     ),
     Provider<AlarmSoundBloc>(
       create: (context) => AlarmSoundBloc(context.read(), context.read(), context.read()),

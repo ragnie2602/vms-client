@@ -17,25 +17,44 @@ class GetCameraUseCase extends FutureUseCase<GetCameraInput, GetCameraOutput> {
   @override
   Future<GetCameraOutput> buildUseCase(GetCameraInput input) async {
     List<CameraEntity>? cameras;
+    List<CameraEntity>? allCameras;
     String? errMsg;
 
     if (input.groupId.equals([-1])) {
-      (await cameraRepository.getAllCamera()).fold((error) => errMsg = error.toString(), (data) => cameras = data);
+      (await cameraRepository.getAllCamera()).fold((error) => errMsg = error.toString(), (data) {
+        cameras = data;
+        allCameras = data;
+      });
     } else if (input.groupId.equals([0])) {
-      (await cameraRepository.getAllCamera()).fold(
-        (error) => errMsg = error.toString(),
-        (data) => cameras = data.where((c) => (c.groupOwnerId ?? []).isEmpty).toList(),
-      );
+      (await cameraRepository.getAllCamera()).fold((error) => errMsg = error.toString(), (data) {
+        allCameras = data;
+        cameras = data.where((c) => (c.groupOwnerId ?? []).isEmpty).toList();
+      });
     } else {
-      (await cameraRepository.getAllCamerasInGroup(
-        groupId: input.groupId,
-      )).fold((error) => errMsg = error.toString(), (data) => cameras = data);
+      if (input.includeAllCameras) {
+        final res = await Future.wait([
+          cameraRepository.getAllCamerasInGroup(groupId: input.groupId),
+          cameraRepository.getAllCamera(),
+        ]);
+
+        res[0].fold((error) => errMsg = error.toString(), (data) => cameras = data);
+        res[1].fold((error) {}, (data) => allCameras = data);
+      } else {
+        (await cameraRepository.getAllCamerasInGroup(
+          groupId: input.groupId,
+        )).fold((error) => errMsg = error.toString(), (data) => cameras = data);
+      }
     }
 
     if (input.tags?.isNotEmpty == true) {
       cameras = cameras?.where((c) => c.tags.any((t) => input.tags!.contains(t))).toList();
     }
 
-    return GetCameraOutput(cameras: cameras, errMsg: errMsg, isSuccess: cameras != null);
+    return GetCameraOutput(
+      cameras: cameras,
+      errMsg: errMsg,
+      isSuccess: cameras != null,
+      allCameras: allCameras,
+    );
   }
 }
