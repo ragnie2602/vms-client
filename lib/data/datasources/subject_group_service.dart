@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/models/response/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/check_subject_group_model.dart';
 
 class SubjectGroupService {
   final HttpClient httpClient;
@@ -33,5 +37,19 @@ class SubjectGroupService {
       throw ApiException(response.message);
     }
     return response.data;
+  }
+
+  Future<CheckSubjectGroupModel> getCheckSubjectGroup(int id) async {
+    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
+    final response = await httpClient.dio.get(
+      EndPoints.checkSubjectGroup(id),
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+    if (response.statusCode == 200) {
+      return CheckSubjectGroupModel.fromJson(response.data);
+    }
+    throw ApiException(
+      response.statusMessage ?? 'Failed to check subject group',
+    );
   }
 }

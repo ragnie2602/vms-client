@@ -54,6 +54,7 @@ class EndPoints {
 
   // Subject Group
   static const String baseSubjectGroup = '/api/subject-groups';
+   static String checkSubjectGroup(int id) => '$baseSubjectGroup/$id/contains';
   // Subject
 
   // Subject types
