@@ -15,16 +15,15 @@ import 'package:vms_flutter_client/domain/usecases/group/search_group_use_case.d
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/account/mobile_account_screen.dart';
 import 'package:vms_flutter_client/screens/account/mobile_info_screen.dart';
-import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
 import 'package:vms_flutter_client/screens/ai_box/ai_box_screen.dart';
 import 'package:vms_flutter_client/screens/ai_box/bloc/ai_box_bloc.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/bloc/schedule/schedule_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/camera_detail/mobile_camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/control_camera_screen.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
-import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/event/event_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
@@ -117,7 +116,7 @@ enum Routes {
   objectGroups(
     name: 'objectGroups',
     path: '/objectGroups',
-    title: 'Quản lý nhóm đối tượng',
+    title: 'Quản lý đối tượng',
     description: 'Quản lý và cấu hình trường dữ liệu cho các đối tượng người dùng trên hệ thống',
   ),
   configuration(
@@ -257,6 +256,7 @@ class AppRouter {
                 context.read(),
                 context.read(),
                 context.read(),
+                context.read(),
               ),
             ),
             BlocProvider(
@@ -279,7 +279,6 @@ class AppRouter {
             ),
             BlocProvider(create: (context) => ChangeMyInfoBloc(context.read(), context.read())),
             BlocProvider(create: (context) => NotificationBloc(context.read())),
-            BlocProvider(create: (context) => ChangeMyInfoBloc(context.read(), context.read())),
             BlocProvider.value(
               value: context.read<AlarmSoundBloc>()
                 ..add(GetAlarmSounds(force: state.extra == 'isFreshLogin')),
