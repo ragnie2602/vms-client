@@ -142,15 +142,40 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                         controller: _nameGroupController,
                         borderRadius: 3,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Vui lòng nhập tên nhóm';
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Tên nhóm đối tượng không được để trống';
+                          }
+                          // Kiểm tra trùng tên với nhóm con của nhóm cha hiện tại
+                          if (widget.listGroupAvailable != null) {
+                            // Lấy danh sách các nhóm có cùng parentId với parentGroup được chọn
+                            final currentParentId =
+                                _selectedParentGroup?.id ?? 0;
+                            final siblings = widget.listGroupAvailable!
+                                .where((g) => g.parentId == currentParentId)
+                                .toList();
+                            // Nếu đang edit, loại trừ chính nhóm hiện tại ra khỏi danh sách kiểm tra
+                            if (widget.addEditType ==
+                                    AddEditGroupObjectType.edit &&
+                                widget.currentGroup != null) {
+                              siblings.removeWhere(
+                                (g) => g.id == widget.currentGroup!.id,
+                              );
+                            }
+
+                            final isDuplicate = siblings.any(
+                              (g) => g.name?.trim() == value.trim(),
+                            );
+
+                            if (isDuplicate) {
+                              return 'Tên nhóm đã tồn tại trong cùng cấp. Vui lòng nhập tên khác.';
+                            }
                           }
                           return null;
                         },
                         hintText: 'Nhập tên nhóm đối tượng',
                         label: 'Tên nhóm đối tượng',
                         requiredField: true,
-                        maxLength: 50,
+                        maxLength: 255,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -218,34 +243,35 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                   child: InkWell(
                     onTap: () async {
                       if (_isConfirming) return;
-                      if (_nameGroupController.text.trim().isEmpty) {
-                        formAddEditKey.currentState?.validate();
-                      } else {
-                        setState(() {
-                          _isConfirming = true;
-                        });
-                        bool isSuccess = true;
-                        try {
-                          final result = widget.onConfirm?.call(
-                            nameNewGroup: _nameGroupController.text.trim(),
-                            parentGroup: _selectedParentGroup,
-                            currentGroup: widget.currentGroup,
-                          );
-                          if (result is Future) {
-                            await result;
-                          }
-                        } catch (_) {
-                          isSuccess = false;
-                        } finally {
-                          if (mounted) {
-                            setState(() {
-                              _isConfirming = false;
-                            });
-                          }
+                      // Gọi validate() để kiểm tra tất cả các rules (hàm validator trong AppField)
+                      if (formAddEditKey.currentState?.validate() != true) {
+                        return; // Nếu validate lỗi thì dừng lại
+                      }
+
+                      setState(() {
+                        _isConfirming = true;
+                      });
+                      bool isSuccess = true;
+                      try {
+                        final result = widget.onConfirm?.call(
+                          nameNewGroup: _nameGroupController.text.trim(),
+                          parentGroup: _selectedParentGroup,
+                          currentGroup: widget.currentGroup,
+                        );
+                        if (result is Future) {
+                          await result;
                         }
-                        if (isSuccess && mounted) {
-                          Navigator.pop(context);
+                      } catch (_) {
+                        isSuccess = false;
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _isConfirming = false;
+                          });
                         }
+                      }
+                      if (isSuccess && mounted) {
+                        Navigator.pop(context);
                       }
                     },
                     child: Container(
