@@ -106,6 +106,7 @@ class EventItem extends StatelessWidget {
               ),
               padding: EdgeInsets.only(left: 10, right: 10, top: 15, bottom: 15),
               child: BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+                bloc: sedBloc,
                 buildWhen: (previous, current) =>
                     current is SEDGetEventDisplayConfigSuccess ||
                     current is SEDSavingConfigsSuccess,

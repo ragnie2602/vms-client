@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/data/repositories/base_repository.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/check_subject_group_model.dart';
 
 class ObjectGroupRepository extends BaseRepository
     implements IObjectGroupRepository {
@@ -249,6 +250,16 @@ class ObjectGroupRepository extends BaseRepository
         subjectGroupId: objectGroupId,
       );
       return Right(objectGroupId);
+    });
+  }
+
+  @override
+  Future<Either<Failure, CheckSubjectGroupModel>> checkSubjectGroup(
+    int id,
+  ) async {
+    return await catchError<CheckSubjectGroupModel>(() async {
+      final data = await _subjectGroupService.getCheckSubjectGroup(id);
+      return Right(data);
     });
   }
 

@@ -1,3 +1,4 @@
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/base_input.dart';
@@ -22,19 +23,29 @@ class GetEventDisplayConfigUsecase
     );
 
     return result.fold((failure) => throw Exception(failure), (config) {
+      List<Fields> newFields = [];
       for (var f in config.fields) {
         if (f.fieldKey == 'cameraId') {
-          f.fieldKey = 'cameraName';
-          f.fieldName = 'Tên camera';
+          newFields.add(f.copyWith(fieldKey: 'cameraName', fieldName: 'Tên camera'));
+        } else if (f.fieldKey != 'Ảnh nhận diện khuôn mặt') {
+          newFields.add(f);
         }
       }
+
       // FIX: Tạo list mới (Deep copy) để không ảnh hưởng đến cache
       var newSorting = List<String>.from(config.sorting);
 
       int i = newSorting.indexOf('cameraId');
       if (i != -1) newSorting[i] = 'cameraName';
 
-      return GetEventDisplayConfigOutput(config.copyWith(sorting: newSorting));
+      for (var i = newSorting.length - 1; i >= 0; i--) {
+        final f = newFields.firstWhereOrNull((f) => f.fieldKey == newSorting[i]);
+        if (f == null) newSorting.removeAt(i);
+      }
+
+      final newC = config.copyWith(fields: newFields, sorting: newSorting);
+
+      return GetEventDisplayConfigOutput(newC);
     });
   }
 }

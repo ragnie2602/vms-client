@@ -612,13 +612,44 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                         state.selectedSubjectGroup?.id ==
                                             node.data?.id &&
                                         state.objects.isNotEmpty;
-                                    _onShowDialogRemoveGroupObject(
-                                      c: context,
-                                      currentGroup: node.data,
-                                      hasChildren:
-                                          node.children.isNotEmpty ||
-                                          hasObjects,
-                                    );
+
+                                    if (node.data != null) {
+                                      context.read<ObjectGroupBloc>().add(
+                                        CheckSubjectGroupForDelete(
+                                          subjectGroup: node.data!,
+                                          onSuccess: (data) {
+                                            bool apiHasChildren =
+                                                data.hasChildren == true;
+                                            bool apiHasVmsObjects =
+                                                data.hasVmsObjects == true;
+
+                                            _onShowDialogRemoveGroupObject(
+                                              c: context,
+                                              currentGroup: node.data,
+                                              hasChildren:
+                                                  node.children.isNotEmpty ||
+                                                  hasObjects ||
+                                                  apiHasChildren ||
+                                                  apiHasVmsObjects,
+                                            );
+                                          },
+                                          onError: (error) {
+                                            ToastUtil.toastFail(
+                                              context: context,
+                                              title: Text(error),
+                                            );
+                                            // Fallback to old logic if api fails
+                                            _onShowDialogRemoveGroupObject(
+                                              c: context,
+                                              currentGroup: node.data,
+                                              hasChildren:
+                                                  node.children.isNotEmpty ||
+                                                  hasObjects,
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    }
                                     break;
                                 }
                               },
