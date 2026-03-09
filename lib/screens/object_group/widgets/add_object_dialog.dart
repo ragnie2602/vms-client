@@ -4,19 +4,20 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 import 'package:vms_flutter_client/screens/map/widgets/dash_border_widget.dart';
-import 'package:vms_flutter_client/core/utils/toast_util.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
+import 'package:vms_flutter_client/screens/object_group/widgets/image_upload_info_tooltip.dart';
 
 class AddObjectDialog extends StatefulWidget {
   final ObjectType objectType;
@@ -479,8 +480,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   @override
   Widget build(BuildContext context) {
     final title = widget.isEditMode
-        ? 'Sửa đối tượng [${widget.objectType.name}]'
-        : 'Thêm đối tượng [${widget.objectType.name}]';
+        ? 'Sửa ${widget.objectType.name}'
+        : 'Thêm ${widget.objectType.name}';
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -745,7 +746,13 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildLabel(field.displayName, isRequired: isRequired),
+            Row(
+              children: [
+                _buildLabel(field.displayName, isRequired: isRequired),
+                const SizedBox(width: 6),
+                const ImageUploadInfoTooltip(),
+              ],
+            ),
             const SizedBox(height: 8),
 
             if (totalImages > 0 || isUploading) ...[
@@ -849,36 +856,33 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                 ],
               ),
             ] else ...[
-              Tooltip(
-                message: 'Chỉ chấp nhận ảnh chụp rõ nét.',
-                child: CustomPaint(
-                  painter: DashedBorderPainter(
-                    isError: _errors[field.fieldName] != null,
-                  ),
-                  child: InkWell(
-                    onTap: () => _pickAndUploadFiles(field.fieldName),
-                    child: Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.add,
+              CustomPaint(
+                painter: DashedBorderPainter(
+                  isError: _errors[field.fieldName] != null,
+                ),
+                child: InkWell(
+                  onTap: () => _pickAndUploadFiles(field.fieldName),
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.add,
+                          color: AppColors.grey94A3B8,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Vui lòng chọn file có định dạng BMP, JPG, PNG',
+                          style: AppTypography.style(
+                            14,
                             color: AppColors.grey94A3B8,
-                            size: 24,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Vui lòng chọn file có định dạng BMP, JPG, PNG',
-                            style: AppTypography.style(
-                              14,
-                              color: AppColors.grey94A3B8,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
