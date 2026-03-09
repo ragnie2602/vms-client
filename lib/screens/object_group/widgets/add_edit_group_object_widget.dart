@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/screens/group/widget/drop_down_search_widget.dart';
 import 'package:vms_flutter_client/screens/home/components/app_field.dart';
@@ -179,17 +181,25 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // drop down search nhóm cha
+                    // drop down search nhóm cha (ẩn nhóm cấp 5)
                     AppDropdownSearch<SubjectGroup>(
                       label: 'Nhóm đối tượng cha',
                       borderRadius: 3,
-                      items: widget.listGroupAvailable ?? [],
+                      items: (widget.listGroupAvailable ?? []).where((g) {
+                        // Ẩn nhóm cấp 5 khỏi dropdown nhóm cha
+                        return (g.level ?? 0) <
+                            AppConfig.OBJECT_GROUP_MAX_LEVEL;
+                      }).toList(),
                       selectedItem: _selectedParentGroup,
                       onChanged: (value) {
                         if (_selectedParentGroup?.id == value?.id) {
                           return;
                         }
-                        _selectedParentGroup = value;
+                        setState(() {
+                          _selectedParentGroup = value;
+                        });
+                        // Re-validate to check duplicate name in new parent
+                        formAddEditKey.currentState?.validate();
                       },
                       hintTextSearch: 'Nhập tên nhóm',
                       itemAsString: (group) {
@@ -243,11 +253,24 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                   child: InkWell(
                     onTap: () async {
                       if (_isConfirming) return;
-                      // Gọi validate() để kiểm tra tất cả các rules (hàm validator trong AppField)
-                      if (formAddEditKey.currentState?.validate() != true) {
-                        return; // Nếu validate lỗi thì dừng lại
+                      // Validate form (trống + trùng tên)
+                      if (!(formAddEditKey.currentState?.validate() ?? false)) {
+                        return;
                       }
-
+                      // Validate cấp 5: chặn nếu nhóm cha đang ở cấp 5
+                      if (_selectedParentGroup != null &&
+                          (_selectedParentGroup!.level ?? 0) >=
+                              AppConfig.OBJECT_GROUP_MAX_LEVEL) {
+                        if (mounted) {
+                          ToastUtil.toastFail(
+                            context: context,
+                            title: const Text(
+                              'Nhóm đã đạt giới hạn tối đa 5 cấp. Không thể tạo thêm nhóm con.',
+                            ),
+                          );
+                        }
+                        return;
+                      }
                       setState(() {
                         _isConfirming = true;
                       });

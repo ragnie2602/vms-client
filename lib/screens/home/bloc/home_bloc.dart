@@ -41,18 +41,27 @@ class HomeTab {
     HomeTab(Routes.aiBox, title: 'Quản lý AI Box', svg: AppAssets.tabAIBox),
     HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
     HomeTab(
-      Routes.objectTypes,
+      null,
       title: 'Quản lý đối tượng',
       svg: AppAssets.tabUsers,
       useMaterialIcon: true,
       materialIcon: 'person',
-    ),
-    HomeTab(
-      Routes.objectGroups,
-      title: 'Quản lý nhóm đối tượng',
-      svg: AppAssets.tabUsers,
-      useMaterialIcon: true,
-      materialIcon: 'group',
+      nested: [
+        HomeTab(
+          Routes.objectTypes,
+          title: 'Loại đối tượng',
+          svg: AppAssets.tabUsers,
+          useMaterialIcon: true,
+          materialIcon: 'person',
+        ),
+        HomeTab(
+          Routes.objectGroups,
+          title: 'Hồ sơ đối tượng',
+          svg: AppAssets.tabUsers,
+          useMaterialIcon: true,
+          materialIcon: 'group',
+        ),
+      ],
     ),
     HomeTab(
       Routes.configuration,

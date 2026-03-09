@@ -55,5 +55,9 @@ abstract class IObjectGroupRepository {
   Future<Map<String, dynamic>> getImportStatus(int importId);
 
   /// Export objects to a file
-  Future<String> exportObjects(int objectTypeId, {int? subjectGroupId});
+  Future<String> exportObjects(
+    int objectTypeId, {
+    int? subjectGroupId,
+    String? search,
+  });
 }
