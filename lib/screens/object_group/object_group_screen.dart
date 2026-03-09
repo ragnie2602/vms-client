@@ -24,7 +24,6 @@ import 'package:vms_flutter_client/screens/object_group/widgets/add_object_dialo
 import 'package:vms_flutter_client/screens/object_group/widgets/confirm_remove_group_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_action.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/group_object_tree_widget.dart';
-import 'package:vms_flutter_client/screens/object_group/widgets/import_progress_dialog.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/object_list_table.dart';
 
 class ObjectGroupScreen extends StatefulWidget {
@@ -175,8 +174,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       final subjectGroupId = state.selectedSubjectGroup?.id ?? 0;
       final subjectGroupIds = subjectGroupId > 0 ? [subjectGroupId] : <int>[];
 
-      // Upload file and get import ID
-      final importId = await repo.importObjects(
+      // Upload file and get import result
+      final importResult = await repo.importObjects(
         selectedType.id,
         filePath,
         subjectGroupIds,
@@ -184,37 +183,49 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
       if (!context.mounted) return;
 
-      if (importId > 0) {
-        // Show progress dialog with polling
-        final success = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) =>
-              ImportProgressDialog(repository: repo, importId: importId),
-        );
+      final successfulRows = importResult['successfulRows'] ?? 0;
+      final failedRows = importResult['failedRows'] ?? 0;
+      final status = (importResult['status'] ?? '').toString().toUpperCase();
 
-        // Refresh objects list if import succeeded
-        if (success == true && context.mounted) {
-          context.read<ObjectGroupBloc>().add(
-            LoadObjects(
-              objectTypeId: selectedType.id,
-              subjectGroupId: subjectGroupId,
+      if (status == 'COMPLETED' || status == 'DONE' || status == 'SUCCESS') {
+        if (failedRows == 0 && successfulRows > 0) {
+          // Case 1: 100% success
+          ToastUtil.toastSuccess(
+            context: context,
+            title: Text('Tải lên thành công $successfulRows đối tượng.'),
+          );
+        } else if (successfulRows > 0 && failedRows > 0) {
+          // Case 2: Partial success
+          ToastUtil.toastWarning(
+            message:
+                'Tải thành công $successfulRows đối tượng. Bỏ qua $failedRows bản ghi không hợp lệ.',
+          );
+        } else {
+          // Case 3: All failed
+          ToastUtil.toastFail(
+            context: context,
+            title: const Text(
+              'Tải lên không thành công. Không có bản ghi nào hợp lệ.',
             ),
           );
         }
       } else {
-        // No importId returned — import may have completed immediately
-        ToastUtil.toastSuccess(
+        // Unexpected status — show generic message
+        ToastUtil.toastFail(
           context: context,
-          title: const Text('Import dữ liệu thành công'),
-        );
-        context.read<ObjectGroupBloc>().add(
-          LoadObjects(
-            objectTypeId: selectedType.id,
-            subjectGroupId: subjectGroupId,
+          title: Text(
+            'Import thất bại: ${importResult['message'] ?? 'Lỗi không xác định'}',
           ),
         );
       }
+
+      // Refresh objects list
+      context.read<ObjectGroupBloc>().add(
+        LoadObjects(
+          objectTypeId: selectedType.id,
+          subjectGroupId: subjectGroupId,
+        ),
+      );
     } catch (e) {
       if (context.mounted) {
         ToastUtil.toastFail(

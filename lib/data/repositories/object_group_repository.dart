@@ -269,7 +269,7 @@ class ObjectGroupRepository extends BaseRepository
   }
 
   @override
-  Future<int> importObjects(
+  Future<Map<String, dynamic>> importObjects(
     int objectTypeId,
     String filePath,
     List<int> subjectGroupIds,
@@ -299,9 +299,14 @@ class ObjectGroupRepository extends BaseRepository
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = response.data;
       if (data is Map<String, dynamic>) {
-        return data['importId'] ?? data['id'] ?? 0;
+        // Return the inner 'data' object if present, otherwise the whole response
+        final innerData = data['data'];
+        if (innerData is Map<String, dynamic>) {
+          return innerData;
+        }
+        return data;
       }
-      return 0;
+      return {};
     }
     throw Exception('Failed to import objects');
   }

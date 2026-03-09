@@ -41,7 +41,7 @@ abstract class IObjectGroupRepository {
   Future<String> downloadTemplate(int objectTypeId);
 
   /// Import objects from a file
-  Future<int> importObjects(
+  Future<Map<String, dynamic>> importObjects(
     int objectTypeId,
     String filePath,
     List<int> subjectGroupIds,
