@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_t
 import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 
@@ -68,7 +69,11 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     try {
       final input = GetObjectTypesInput(page: event.page, size: event.size);
       final result = await _getObjectTypesUseCase.execute(input);
-      final objectTypes = result.data['data'] as List<dynamic>;
+      final rawObjectTypes = result.data['data'] as List<dynamic>;
+      final objectTypes = rawObjectTypes
+          .cast<ObjectType>()
+          .where((e) => e.status == ObjectTypeStatus.active)
+          .toList();
 
       if (objectTypes.isNotEmpty) {
         emit(
