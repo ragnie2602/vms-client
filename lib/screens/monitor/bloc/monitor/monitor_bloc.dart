@@ -12,6 +12,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dar
 import 'package:vms_flutter_client/domain/usecases/app/subscribe_multi_window_event_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/control_camera/filter_no_group/filter_camera_no_group_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.dart';
+import 'package:vms_flutter_client/screens/shared/player/player_pool_manager.dart';
 
 part 'monitor_event.dart';
 part 'monitor_state.dart';
@@ -57,7 +58,9 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
 
     final output = await getCameraUseCase.execute(GetCameraInput(groupId: [-1], tags: event.tags));
     if (output.isSuccess) {
-      emit(MonitorSuccess(cameras: output.cameras ?? [], mode: lastState?.mode ?? ViewMode.v2x2));
+      final cameras = output.cameras ?? [];
+      PlayerPoolManager.instance.updateMinPoolSize(cameras.length);
+      emit(MonitorSuccess(cameras: cameras, mode: lastState?.mode ?? ViewMode.v2x2));
     } else {
       emit(MonitorFailure(output.errMsg ?? ''));
     }
