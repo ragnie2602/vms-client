@@ -143,26 +143,26 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
           // Nếu cả 2 đều tắt thì bỏ qua
           if (!popupEnabled && !soundEnabled) return;
 
-          // Play âm thanh nếu soundEnabled == true
-          if (soundEnabled &&
-              homeContext != null &&
-              homeContext.read<AlarmSoundBloc>().state is AlarmSoundLoaded) {
-            final alarmSounds =
-                (homeContext.read<AlarmSoundBloc>().state as AlarmSoundLoaded).alarmSounds;
-            if (alarmSounds.isNotEmpty) {
-              final alarmSound = alarmSounds.firstWhere(
-                (element) => element.id == event.eventData?['audio'],
-                orElse: () => alarmSounds.first,
-              );
-              audioPlayer.play(alarmSound.localFilePath ?? alarmSound.url);
-            }
-          }
-
           // Show popup nếu popupEnabled == true
           if (popupEnabled) {
             // Đóng dialog cũ trước khi hiện dialog mới
             if (_isDialogShowing && rootContext.mounted) {
               Navigator.of(rootContext, rootNavigator: true).pop();
+            }
+
+            // Play âm thanh nếu soundEnabled == true
+            if (soundEnabled &&
+                homeContext != null &&
+                homeContext.read<AlarmSoundBloc>().state is AlarmSoundLoaded) {
+              final alarmSounds =
+                  (homeContext.read<AlarmSoundBloc>().state as AlarmSoundLoaded).alarmSounds;
+              if (alarmSounds.isNotEmpty) {
+                final alarmSound = alarmSounds.firstWhere(
+                  (element) => element.id == event.eventData?['audio'],
+                  orElse: () => alarmSounds.first,
+                );
+                audioPlayer.play(alarmSound.localFilePath ?? alarmSound.url, loop: true);
+              }
             }
 
             _isDialogShowing = true;

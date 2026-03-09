@@ -120,7 +120,7 @@ class AudioPlayer {
   }
 
   /* ==================== Functions ==================== */
-  Future<void> play(String source, {bool autoPlay = true}) async {
+  Future<void> play(String source, {bool autoPlay = true, bool loop = false}) async {
     state.value = AudioPlayerState.initializing;
     _stopPositionTracker();
 
@@ -134,6 +134,7 @@ class AudioPlayer {
 
     _waitForFirstFrame = Completer<bool>();
     _player.media = source;
+    if (_player.loop != (loop ? -1 : 0)) _player.loop = loop ? -1 : 0;
     _player.state = PlaybackState.playing;
 
     final ret = await _waitForFirstFrame?.future.timeout(

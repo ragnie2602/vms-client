@@ -171,48 +171,58 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
 
           Row(
             children: [
-              SizedBox(
-                width: 60,
-                height: 40,
-                child: TextField(
-                  controller: _intervalController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  textAlign: TextAlign.center,
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.black,
+              IntrinsicWidth(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 60,
+                    maxWidth: 200,
+                    minHeight: 40,
+                    maxHeight: 40,
                   ),
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
+                  child: TextField(
+                    controller: _intervalController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      PositiveIntegerFormatter(),
+                    ],
+                    textAlign: TextAlign.center,
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.black,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(6),
-                        bottomLeft: Radius.circular(6),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
                       ),
-                      borderSide: const BorderSide(color: AppColors.greyE2E8F0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(6),
-                        bottomLeft: Radius.circular(6),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(6),
+                          bottomLeft: Radius.circular(6),
+                        ),
+                        borderSide: const BorderSide(color: AppColors.greyE2E8F0),
                       ),
-                      borderSide: const BorderSide(color: AppColors.greyE2E8F0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(6),
-                        bottomLeft: Radius.circular(6),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(6),
+                          bottomLeft: Radius.circular(6),
+                        ),
+                        borderSide: const BorderSide(color: AppColors.greyE2E8F0),
                       ),
-                      borderSide: const BorderSide(color: AppColors.secondary),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(6),
+                          bottomLeft: Radius.circular(6),
+                        ),
+                        borderSide: const BorderSide(color: AppColors.secondary),
+                      ),
                     ),
                   ),
                 ),
               ),
+
               // Unit dropdown
               Container(
                 height: 40,
@@ -349,9 +359,11 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
                           child: _buildCheckbox(
                             value: item.autoPopup,
                             onChanged: (val) {
-                              setState(
-                                () => _configItems[index].autoPopup = val,
-                              );
+                              setState(() {
+                                _configItems[index].autoPopup = val;
+                                // Nếu tắt cửa sổ tự động thì tắt âm thanh
+                                if (!val) _configItems[index].sound = val;
+                              });
                             },
                           ),
                         ),
@@ -361,6 +373,7 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
                         child: Center(
                           child: _buildCheckbox(
                             value: item.sound,
+                            disabled: _configItems[index].autoPopup == false,
                             onChanged: (val) {
                               setState(() => _configItems[index].sound = val);
                             },
@@ -383,10 +396,12 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
   Widget _buildCheckbox({
     required bool value,
     required ValueChanged<bool> onChanged,
+    bool disabled = false,
   }) {
     return InkWell(
-      onTap: () => onChanged(!value),
+      onTap: !disabled ? () => onChanged(!value) : null,
       borderRadius: BorderRadius.circular(4),
+      mouseCursor: disabled ? SystemMouseCursors.forbidden : null,
       child: Container(
         width: 20,
         height: 20,
@@ -394,7 +409,11 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
           color: value ? AppColors.secondary : Colors.white,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: value ? AppColors.secondary : AppColors.greyD1D5DB,
+            color: value
+                ? AppColors.secondary
+                : !disabled
+                ? AppColors.greyD1D5DB
+                : AppColors.greyEFEFEF,
             width: 1.5,
           ),
         ),
@@ -477,5 +496,34 @@ class _NotificationConfigItem {
       popupEnabled: autoPopup,
       soundEnabled: sound,
     );
+  }
+}
+
+class PositiveIntegerFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    // 1. Cho phép xóa rỗng Textfield
+    if (newValue.text.isEmpty) return newValue;
+
+    // 2. Chỉ can thiệp nếu chuỗi bắt đầu bằng '0' (Tối ưu hiệu năng, bỏ qua các phím gõ hợp lệ)
+    if (newValue.text.startsWith('0')) {
+      // Xóa tất cả các số 0 ở đầu
+      String newString = newValue.text.replaceFirst(RegExp(r'^0+'), '');
+
+      // Nếu xóa xong mà rỗng (nghĩa là người dùng vừa gõ phím '0' đầu tiên), thì chặn lại
+      if (newString.isEmpty) return oldValue;
+
+      // Tính toán lại vị trí con trỏ (lùi lại bằng đúng số lượng số 0 vừa bị xóa)
+      int zerosRemoved = newValue.text.length - newString.length;
+      int newSelectionOffset = newValue.selection.baseOffset - zerosRemoved;
+
+      return TextEditingValue(
+        text: newString,
+        selection: TextSelection.collapsed(offset: newSelectionOffset.clamp(0, newString.length)),
+      );
+    }
+
+    // 3. Nếu là số hợp lệ bình thường, cho qua và giữ nguyên vị trí con trỏ
+    return newValue;
   }
 }
