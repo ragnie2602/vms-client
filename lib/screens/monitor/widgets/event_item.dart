@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,6 +54,7 @@ class EventLiveViewItem extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+            bloc: sedBloc,
             buildWhen: (previous, current) =>
                 current is SEDGetEventDisplayConfigSuccess || current is SEDSavingConfigsSuccess,
             builder: (context, state) {
@@ -95,7 +98,9 @@ class EventLiveViewItem extends StatelessWidget {
     final titleKey = config.sorting.firstOrNull;
     final title = titleKey != null ? (eventData[titleKey]?.toString() ?? '_') : '_';
 
-    final detailFields = sortedFields.length > 1 ? sortedFields.sublist(1, 5) : <Fields>[];
+    final detailFields = sortedFields.length > 1
+        ? sortedFields.sublist(1, min(5, sortedFields.length))
+        : <Fields>[];
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,

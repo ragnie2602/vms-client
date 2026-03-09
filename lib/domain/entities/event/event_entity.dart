@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 
@@ -35,9 +34,7 @@ class EventEntity {
       timeEvent: DateTime.fromMillisecondsSinceEpoch(json['timeEvent'] * 1000),
       imageUrl: json['imageUrl'],
       description: json['description'],
-      payload: (json['payload'] != null && json['payload'].toString().isNotEmpty)
-          ? jsonDecode(json['payload'])
-          : null,
+      payload: json['payload'],
       subjectTypeId: json['subjectTypeId'],
     );
   }

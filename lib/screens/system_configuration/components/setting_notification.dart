@@ -7,7 +7,7 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/widgets/alarm_config_popup/alarm_config_popup.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/notification/notification_setting_bloc.dart';
@@ -64,22 +64,22 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
     if (typeEventsJson != null) {
       final List<dynamic> jsonList = json.decode(typeEventsJson);
       final typeEvents = jsonList
-          .map((e) => TypeEventDetectEntity.fromJson(e))
+          .map((e) => EventType.fromJson(e))
           .toList();
 
       setState(() {
         _configItems = typeEvents.map((typeEvent) {
           // Tìm cấu hình tương ứng trong notificationSetting
           final eventConfig = notificationSetting?.eventConfigs?.firstWhere(
-            (config) => config.eventType == typeEvent.typeName,
+            (config) => config.eventType == typeEvent.eventKey,
             orElse: () =>
                 EventConfigEntity(popupEnabled: false, soundEnabled: false),
           );
 
           return _NotificationConfigItem(
             id: eventConfig?.id,
-            label: typeEvent.name ?? typeEvent.typeName ?? '',
-            typeName: typeEvent.typeName,
+            label: typeEvent.name,
+            typeName: typeEvent.eventKey,
             autoPopup: eventConfig?.popupEnabled ?? false,
             sound: eventConfig?.soundEnabled ?? false,
           );

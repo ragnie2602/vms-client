@@ -21,6 +21,7 @@ import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
 import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
 import 'package:vms_flutter_client/screens/home/widgets/alert_detail_popup.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/monitor/stream_event_usecase.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
@@ -32,6 +33,8 @@ import 'async_delay_queue.dart';
 
 class DetectBloc extends Bloc<DetectEvent, DetectState> {
   final IDetectRepository detectRepository;
+  final IEventRepository eventRepository;
+
   final StreamEventUsecase streamEventUsecase;
 
   StreamSubscription? _subscription;
@@ -40,7 +43,8 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
   AsyncDelayQueue asyncDelayQueue = AsyncDelayQueue(delay: Duration(seconds: 10));
   AudioPlayer audioPlayer = AudioPlayer();
 
-  DetectBloc(this.detectRepository, this.streamEventUsecase) : super(const DetectState()) {
+  DetectBloc(this.detectRepository, this.eventRepository, this.streamEventUsecase)
+    : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
     on<DetectOnReceiveEvent>(_onDetectOnReceiveEvent);
     on<FilterEventsByViewingCameras>(_onFilterEventsByViewingCameras);
@@ -63,7 +67,17 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     emit(state.copyWith(status: DetectStatus.loading));
 
     // step1: Load danh sách loại sự kiện
-    final result = await detectRepository.getListTypeEventDetect();
+    // final result = await detectRepository.getListTypeEventDetect();
+    // result.fold(
+    //   (failure) {
+    //     emit(state.copyWith(status: DetectStatus.failure, errorMessage: failure.toString()));
+    //   },
+    //   (typeEvents) {
+    //     emit(state.copyWith(status: DetectStatus.success, typeEvents: typeEvents));
+    //   },
+    // );
+
+    final result = await eventRepository.getAllEventType();
     result.fold(
       (failure) {
         emit(
@@ -289,8 +303,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
         if (eventType == null) return false;
         final matchesType = state.typeEvents.any(
           (typeEvent) =>
-              state.selectedFilterTypes.contains(typeEvent.type) &&
-              typeEvent.typeName == eventType,
+              state.selectedFilterTypes.contains(typeEvent.type) && typeEvent.eventKey == eventType,
         );
         if (!matchesType) return false;
       }

@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/screens/home/components/components_src.dart';
@@ -231,9 +232,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     }
 
     if (fieldErrors.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(fieldErrors.first), backgroundColor: Colors.red),
-      );
+      ToastUtil.toastFail(title: Text(fieldErrors.first));
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text(fieldErrors.first), backgroundColor: Colors.red),
+      // );
       return;
     }
 

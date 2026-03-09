@@ -1,13 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/event_constants.dart';
-import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
@@ -50,10 +46,7 @@ class ActionItem extends StatelessWidget {
           children: [
             SvgPicture.asset(icon, width: 20, height: 20),
             SizedBox(width: 8),
-            Text(
-              title,
-              style: AppTypography.style(13, fontWeight: FontWeight.w400),
-            ),
+            Text(title, style: AppTypography.style(13, fontWeight: FontWeight.w400)),
 
             if (suffix != null) ...[SizedBox(width: 8), suffix!],
           ],
@@ -86,10 +79,14 @@ class AlertDetectLiveView extends StatefulWidget {
 }
 
 class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
+  late final SetupEventDisplayBloc sedBloc;
+
   @override
   void initState() {
-    context.read<DetectBloc>().add(DetectInitial());
     super.initState();
+
+    context.read<DetectBloc>().add(DetectInitial());
+    sedBloc = SetupEventDisplayBloc(context.read(), context.read(), context.read());
   }
 
   @override
@@ -98,121 +95,108 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
   }
 
   @override
-  Widget build(BuildContext context) => ActionItem(
-    isSelected: widget.isSelected,
-    title: 'Cảnh báo',
-    icon: AppAssets.icAlertTriangle,
-    onTap: () => widget.controller.togglePanel(
-      MonitorAlerts(
-        maxWidth: widget.maxWidth ?? widget.controller.expandedWidth,
-        key: ValueKey('monitor_alerts'),
+  Widget build(BuildContext context) => BlocProvider(
+    create: (context) => sedBloc,
+    child: ActionItem(
+      isSelected: widget.isSelected,
+      title: 'Cảnh báo',
+      icon: AppAssets.icAlertTriangle,
+      onTap: () => widget.controller.togglePanel(
+        MonitorAlerts(
+          key: ValueKey('monitor_alerts'),
+          maxWidth: widget.maxWidth ?? widget.controller.expandedWidth,
+          sedBloc: sedBloc,
+        ),
+        id: widget.id,
+        onPanelIndexChanged: widget.onPanelIndexChanged,
       ),
-      id: widget.id,
-      onPanelIndexChanged: widget.onPanelIndexChanged,
-    ),
-    suffix: Row(
-      children: [
-        if (widget.count != null)
-          Container(
-            decoration: BoxDecoration(
-              color: Color(0xFFFF0004),
-              borderRadius: BorderRadius.circular(3),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-            child: Text(
-              widget.count ?? '',
-              style: AppTypography.style(
-                9,
-                fontWeight: FontWeight.w600,
-                color: AppColors.blackOrWhiteReverse,
+      suffix: Row(
+        children: [
+          if (widget.count != null)
+            Container(
+              decoration: BoxDecoration(
+                color: Color(0xFFFF0004),
+                borderRadius: BorderRadius.circular(3),
               ),
-            ),
-          ),
-        if (widget.count != null) const SizedBox(width: 8),
-        Builder(
-          builder: (context) {
-            return IconButton(
-              constraints: const BoxConstraints(),
-              icon: SvgPicture.asset(AppAssets.icDots, width: 22, height: 22),
-              style: IconButton.styleFrom(
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+              child: Text(
+                widget.count ?? '',
+                style: AppTypography.style(
+                  9,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.blackOrWhiteReverse,
                 ),
               ),
-              onPressed: () {
-                final overlay = Overlay.of(context);
-                final RenderBox button =
-                    context.findRenderObject() as RenderBox;
-                final RenderBox overlayBox =
-                    overlay.context.findRenderObject() as RenderBox;
+            ),
+          if (widget.count != null) const SizedBox(width: 8),
+          Builder(
+            builder: (context) {
+              return IconButton(
+                constraints: const BoxConstraints(),
+                icon: SvgPicture.asset(AppAssets.icDots, width: 22, height: 22),
+                style: IconButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                ),
+                onPressed: () {
+                  final overlay = Overlay.of(context);
+                  final RenderBox button = context.findRenderObject() as RenderBox;
+                  final RenderBox overlayBox = overlay.context.findRenderObject() as RenderBox;
 
-                final Offset btnGlobalPos = button.localToGlobal(
-                  Offset.zero,
-                  ancestor: overlayBox,
-                );
-                final Size buttonSize = button.size;
+                  final Offset btnGlobalPos = button.localToGlobal(
+                    Offset.zero,
+                    ancestor: overlayBox,
+                  );
+                  final Size buttonSize = button.size;
 
-                late OverlayEntry entry;
-                entry = OverlayEntry(
-                  builder: (context) => Stack(
-                    children: [
-                      Positioned.fill(
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onTap: () => entry.remove(),
-                          child: const SizedBox.shrink(),
+                  late OverlayEntry entry;
+                  entry = OverlayEntry(
+                    builder: (context) => Stack(
+                      children: [
+                        Positioned.fill(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTap: () => entry.remove(),
+                            child: const SizedBox.shrink(),
+                          ),
                         ),
-                      ),
-                      Positioned(
-                        right: 4,
-                        top: btnGlobalPos.dy + buttonSize.height + 8,
-                        child: _AlertMenuBubble(
-                          label: 'Cấu hình',
-                          onTap: () {
-                            // check list type event detect
-                            final detectBloc = context.read<DetectBloc>();
-                            final detectState = detectBloc.state;
-                            if (detectState.status != DetectStatus.success) {
-                              return;
-                            }
-                            // Save type event detect to local storage
-                            final jsonString = json.encode(
-                              detectState.typeEvents
-                                  .map((e) => e.toJson())
-                                  .toList(),
-                            );
-                            AppData.instance.save<String>(
-                              AppKeys.SP_TYPE_EVENT_DETECT,
-                              jsonString,
-                            );
-                            showDialog(
-                              context: context,
-                              builder: (dialogContext) => MultiBlocProvider(
-                                providers: [
-                                  BlocProvider.value(value: context.read<EventBloc>()),
-                                  BlocProvider.value(value: context.read<SetupEventDisplayBloc>()),
-                                ],
-                                child: SetupInfoFieldDialog(
-                                  typeConfig: EventTypeConfig.LIVEVIEW,
-                                  typeEvents: detectState.typeEvents,
+                        Positioned(
+                          right: 4,
+                          top: btnGlobalPos.dy + buttonSize.height + 8,
+                          child: _AlertMenuBubble(
+                            label: 'Cấu hình',
+                            onTap: () {
+                              // check list type event detect
+                              final detectBloc = context.read<DetectBloc>();
+                              final detectState = detectBloc.state;
+                              if (detectState.status != DetectStatus.success) {
+                                return;
+                              }
+                              showDialog(
+                                context: context,
+                                builder: (dialogContext) => MultiBlocProvider(
+                                  providers: [
+                                    BlocProvider.value(value: context.read<EventBloc>()),
+                                    BlocProvider.value(value: sedBloc),
+                                  ],
+                                  child: SetupInfoFieldDialog(typeConfig: EventTypeConfig.LIVEVIEW),
                                 ),
-                              ),
-                            );
-                            entry.remove();
-                          },
+                              );
+                              entry.remove();
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
+                      ],
+                    ),
+                  );
 
-                overlay.insert(entry);
-              },
-            );
-          },
-        ),
-      ],
+                  overlay.insert(entry);
+                },
+              );
+            },
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -259,10 +243,7 @@ class _AlertMenuBubble extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(8),
-            child: Text(
-              label,
-              style: AppTypography.style(13, fontWeight: FontWeight.w500),
-            ),
+            child: Text(label, style: AppTypography.style(13, fontWeight: FontWeight.w500)),
           ),
         ),
       ],
@@ -291,6 +272,5 @@ class _UpTrianglePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_UpTrianglePainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(_UpTrianglePainter oldDelegate) => oldDelegate.color != color;
 }

@@ -141,7 +141,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
 
     // Pick files
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
+      type: FileType.custom,
+      allowedExtensions: ['bmp', 'jpg', 'png'],
       allowMultiple: remaining > 1,
     );
 
@@ -153,11 +154,32 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       }
     });
 
+    bool hasInvalidFormats = false;
+    final allowedExtensions = ['.bmp', '.jpg', '.png'];
     var newPaths = result.files
         .where((f) => f.path != null)
+        .where((f) {
+          final ext = p.extension(f.path!).toLowerCase();
+          if (!allowedExtensions.contains(ext)) {
+            hasInvalidFormats = true;
+            return false;
+          }
+          return true;
+        })
         .map((f) => f.path!)
         .toList();
-    if (newPaths.isEmpty) return;
+
+    if (newPaths.isEmpty) {
+      if (hasInvalidFormats && mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: const Text(
+            'Định dạng file không hỗ trợ. Chỉ hỗ trợ BMP, JPG, PNG.',
+          ),
+        );
+      }
+      return;
+    }
 
     // Truncate to remaining slots
     if (newPaths.length > remaining) {
@@ -166,10 +188,18 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
 
     // Process and compress images if needed
     final List<String> processedPaths = [];
+    bool hasSmallFiles = false;
+
     for (final path in newPaths) {
       final file = File(path);
       final length = await file.length();
-      if (length > 1000000) {
+
+      if (length < 2048) {
+        hasSmallFiles = true;
+        continue; // Skip files smaller than 2KB
+      }
+
+      if (length > 1048576) {
         // > 1MB
         final tempDir = await getTemporaryDirectory();
         final ext = p.extension(path);
@@ -177,8 +207,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         final targetExt =
             (ext.toLowerCase() == '.png' ||
                 ext.toLowerCase() == '.jpg' ||
-                ext.toLowerCase() == '.jpeg' ||
-                ext.toLowerCase() == '.webp')
+                ext.toLowerCase() == '.bmp')
             ? ext
             : '.jpg';
         final targetPath = p.join(
@@ -192,20 +221,63 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                   ? CompressFormat.webp
                   : CompressFormat.jpeg);
 
-        final result = await FlutterImageCompress.compressAndGetFile(
+        var compressResult = await FlutterImageCompress.compressAndGetFile(
           path,
           targetPath,
-          quality: 70, // Adjust quality as needed
+          quality: 70,
+          minWidth: 1024,
+          minHeight: 1024,
           format: format,
         );
-        if (result != null) {
-          processedPaths.add(result.path);
+
+        // Loop to ensure size <= 1MB
+        int currentQuality = 70;
+        while (compressResult != null &&
+            await File(compressResult.path).length() > 1048576 &&
+            currentQuality > 10) {
+          currentQuality -= 20;
+          final newTargetPath = p.join(
+            tempDir.path,
+            '${DateTime.now().millisecondsSinceEpoch}_comp_q${currentQuality}$targetExt',
+          );
+          compressResult = await FlutterImageCompress.compressAndGetFile(
+            path,
+            newTargetPath,
+            quality: currentQuality,
+            minWidth: 1024,
+            minHeight: 1024,
+            format: format,
+          );
+        }
+
+        if (compressResult != null &&
+            await File(compressResult.path).length() <= 1048576) {
+          processedPaths.add(compressResult.path);
+        } else if (compressResult != null) {
+          processedPaths.add(compressResult.path);
         } else {
           processedPaths.add(path); // Fallback to original
         }
       } else {
         processedPaths.add(path);
       }
+    }
+
+    if (processedPaths.isEmpty) {
+      if (hasSmallFiles && mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: const Text('Kích thước ảnh phải từ 2KB trở lên.'),
+        );
+      }
+      return;
+    }
+
+    if (hasSmallFiles && mounted) {
+      ToastUtil.toastFail(
+        context: context,
+        title: const Text('Đã bỏ qua các ảnh nhỏ hơn 2KB.'),
+      );
     }
 
     // Add local paths for preview immediately
@@ -837,16 +909,32 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     if (remaining <= 0) return;
 
     // Filter for image files only
-    final imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'];
+    final imageExtensions = ['.bmp', '.jpg', '.jpeg', '.png'];
+    bool hasInvalidFormats = false;
+
     var droppedPaths = details.files
         .where((f) {
-          final ext = f.path.toLowerCase();
-          return imageExtensions.any((e) => ext.endsWith(e));
+          final ext = p.extension(f.path).toLowerCase();
+          if (!imageExtensions.contains(ext)) {
+            hasInvalidFormats = true;
+            return false;
+          }
+          return true;
         })
         .map((f) => f.path)
         .toList();
 
-    if (droppedPaths.isEmpty) return;
+    if (droppedPaths.isEmpty) {
+      if (hasInvalidFormats && mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: const Text(
+            'Định dạng file không hỗ trợ. Chỉ hỗ trợ BMP, JPG, PNG.',
+          ),
+        );
+      }
+      return;
+    }
 
     // Truncate to remaining slots
     if (droppedPaths.length > remaining) {
@@ -855,10 +943,18 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
 
     // Process and compress images if needed
     final List<String> processedPaths = [];
+    bool hasSmallFiles = false;
+
     for (final path in droppedPaths) {
       final file = File(path);
       final length = await file.length();
-      if (length > 1000000) {
+
+      if (length < 2048) {
+        hasSmallFiles = true;
+        continue; // Skip files smaller than 2KB
+      }
+
+      if (length > 1048576) {
         // > 1MB
         final tempDir = await getTemporaryDirectory();
         final ext = p.extension(path);
@@ -880,20 +976,63 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                   ? CompressFormat.webp
                   : CompressFormat.jpeg);
 
-        final result = await FlutterImageCompress.compressAndGetFile(
+        var compressResult = await FlutterImageCompress.compressAndGetFile(
           path,
           targetPath,
           quality: 70,
+          minWidth: 1024,
+          minHeight: 1024,
           format: format,
         );
-        if (result != null) {
-          processedPaths.add(result.path);
+
+        // Loop to ensure size <= 1MB
+        int currentQuality = 70;
+        while (compressResult != null &&
+            await File(compressResult.path).length() > 1048576 &&
+            currentQuality > 10) {
+          currentQuality -= 20;
+          final newTargetPath = p.join(
+            tempDir.path,
+            '${DateTime.now().millisecondsSinceEpoch}_comp_q$currentQuality$targetExt',
+          );
+          compressResult = await FlutterImageCompress.compressAndGetFile(
+            path,
+            newTargetPath,
+            quality: currentQuality,
+            minWidth: 1024,
+            minHeight: 1024,
+            format: format,
+          );
+        }
+
+        if (compressResult != null &&
+            await File(compressResult.path).length() <= 1048576) {
+          processedPaths.add(compressResult.path);
+        } else if (compressResult != null) {
+          processedPaths.add(compressResult.path);
         } else {
           processedPaths.add(path); // Fallback to original
         }
       } else {
         processedPaths.add(path);
       }
+    }
+
+    if (processedPaths.isEmpty) {
+      if (hasSmallFiles && mounted) {
+        ToastUtil.toastFail(
+          context: context,
+          title: const Text('Kích thước ảnh phải từ 2KB trở lên.'),
+        );
+      }
+      return;
+    }
+
+    if (hasSmallFiles && mounted) {
+      ToastUtil.toastFail(
+        context: context,
+        title: const Text('Đã bỏ qua các ảnh nhỏ hơn 2KB.'),
+      );
     }
 
     // Add local paths for preview
@@ -1026,9 +1165,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         _buildLabel('Nhóm đối tượng', isRequired: true),
         const SizedBox(height: 8),
         _SubjectGroupMultiSelectDropdown(
-          groups: widget.subjectGroups
-              .where((g) => (g.level ?? 0) <= 3)
-              .toList(),
+          // hiển thị full list nhóm
+          groups: widget.subjectGroups.toList(),
           selectedIds: _selectedSubjectGroupIds,
           onChanged: (ids) {
             setState(() {
