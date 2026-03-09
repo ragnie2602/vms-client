@@ -260,10 +260,6 @@ class AppRouter {
               ),
             ),
             BlocProvider(
-              create: (context) =>
-                  SetupEventDisplayBloc(context.read(), context.read(), context.read()),
-            ),
-            BlocProvider(
               create: (context) => AiBoxBloc(
                 aiBoxRepository: context.read(),
                 filterAiBoxUseCase: context.read<FilterAiBoxUseCase>(),
@@ -281,10 +277,7 @@ class AppRouter {
                 searchUserUseCase: context.read<SearchUserUseCase>(),
               ),
             ),
-            BlocProvider(
-              create: (context) =>
-                  ChangeMyInfoBloc(context.read(), context.read()),
-            ),
+            BlocProvider(create: (context) => ChangeMyInfoBloc(context.read(), context.read())),
             BlocProvider(create: (context) => NotificationBloc(context.read())),
             BlocProvider(create: (context) => ChangeMyInfoBloc(context.read(), context.read())),
             BlocProvider.value(
