@@ -1,5 +1,6 @@
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/check_subject_group_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
 class ObjectGroupEvent extends BaseEvent {
@@ -115,6 +116,21 @@ class DeleteSubjectGroup extends ObjectGroupEvent {
 
   @override
   List<Object?> get props => [id, onSuccess, onError];
+}
+
+class CheckSubjectGroupForDelete extends ObjectGroupEvent {
+  final SubjectGroup subjectGroup;
+  final void Function(CheckSubjectGroupModel)? onSuccess;
+  final void Function(String)? onError;
+
+  const CheckSubjectGroupForDelete({
+    required this.subjectGroup,
+    this.onSuccess,
+    this.onError,
+  });
+
+  @override
+  List<Object?> get props => [subjectGroup, onSuccess, onError];
 }
 
 class SearchSubjectGroup extends ObjectGroupEvent {
