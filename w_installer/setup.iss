@@ -78,6 +78,9 @@ Filename: "{tmp}\VC_redist.x64.exe"; Parameters: "/install /quiet /norestart"; \
     StatusMsg: "Installing Microsoft Visual C++ Redistributable..."; \
     Check: NeedVCppRuntime
 
+; Tự động thêm rule tường lửa cho app --> Có thể gọi xuống native để lấy thumbnail từ luồng
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""VNPT Secure Vision"" dir=in action=allow program=""{app}\vnpt_secure_vision.exe"" enable=yes"; Flags: runhidden; StatusMsg: "Configuring Windows Firewall..."
+
 ; Option to launch app after install
 Filename: "{app}\vnpt_secure_vision.exe"; Description: "Launch VNPT Secure Vision Client"; \
     Flags: nowait postinstall skipifsilent
@@ -96,3 +99,7 @@ end;
 
 [UninstallDelete]
 Type: files; Name: "{userappdata}\Vivas\VNPT Secure Vision\shared_preferences.json"
+
+[UninstallRun]
+; Xóa rule Tường lửa khi gỡ cài đặt phần mềm
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""VNPT Secure Vision"" program=""{app}\vnpt_secure_vision.exe"""; Flags: runhidden
