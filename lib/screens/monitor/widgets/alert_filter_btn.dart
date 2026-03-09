@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
@@ -127,7 +129,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
     super.dispose();
   }
 
-  Widget _buildMenu(List<TypeEventDetectEntity> typeEvents) {
+  Widget _buildMenu(List<EventType> typeEvents) {
     return StatefulBuilder(
       builder: (context, menuSetState) {
         void _select(int type) {
@@ -153,20 +155,17 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
               spacing: 10,
               children: typeEvents.map((typeEvent) {
                 final type = typeEvent.type;
-                final name = typeEvent.name ?? '';
-                final isSelected = type != null && _selectedTypes.contains(type);
+                final name = typeEvent.name;
+                final isSelected = _selectedTypes.contains(type);
 
                 return InkWell(
-                  onTap: () => type != null ? _select(type) : null,
+                  onTap: () => _select(type),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        PrimaryCheckbox(
-                          onChanged: (v) => type != null ? _select(type) : null,
-                          value: isSelected,
-                        ),
+                        PrimaryCheckbox(onChanged: (v) => _select(type), value: isSelected),
                         const SizedBox(width: 8),
                         Text(
                           name,
@@ -188,13 +187,10 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
     );
   }
 
-  String _getLabel(List<TypeEventDetectEntity> typeEvents) {
+  String _getLabel(List<EventType> typeEvents) {
     if (_selectedTypes.length == 1) {
-      final selectedType = typeEvents.firstWhere(
-        (e) => e.type == _selectedTypes.first,
-        orElse: () => TypeEventDetectEntity(),
-      );
-      return selectedType.shortName ?? selectedType.name ?? 'Lọc';
+      final selectedType = typeEvents.firstWhereOrNull((e) => e.type == _selectedTypes.first);
+      return selectedType?.name ?? '';
     }
     if (_selectedTypes.length > 1) return '${_selectedTypes.length} loại';
     return 'Lọc';

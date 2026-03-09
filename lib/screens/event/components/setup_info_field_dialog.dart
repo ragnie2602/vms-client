@@ -15,9 +15,8 @@ import 'package:vms_flutter_client/screens/event/components/event_custom_button.
 
 class SetupInfoFieldDialog extends StatefulWidget {
   final int typeConfig;
-  final List<TypeEventDetectEntity>? typeEvents;
 
-  const SetupInfoFieldDialog({super.key, required this.typeConfig, this.typeEvents});
+  const SetupInfoFieldDialog({super.key, required this.typeConfig});
 
   @override
   State<SetupInfoFieldDialog> createState() => _SetupInfoFieldDialogState();
