@@ -75,7 +75,13 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
                             )
                           : widget.content,
                     ),
-                    Panel(expandedWidth: widget.rightPanelWidth, controller: _rightController),
+                    ResizablePanel(
+                      maxWidth: widget.rightPanelWidth + 160,
+                      minWidth: widget.rightPanelWidth,
+                      initialWidth: widget.rightPanelWidth,
+                      controller: _rightController,
+                      splitterSide: SplitterSide.left,
+                    ),
                   ],
                 ),
               ),

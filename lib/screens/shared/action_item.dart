@@ -102,9 +102,9 @@ class _AlertDetectLiveViewState extends State<AlertDetectLiveView> {
       title: 'Cảnh báo',
       icon: AppAssets.icAlertTriangle,
       onTap: () => widget.controller.togglePanel(
-        MonitorAlerts(
+        (maxWidth) => MonitorAlerts(
           key: ValueKey('monitor_alerts'),
-          maxWidth: widget.maxWidth ?? widget.controller.expandedWidth,
+          maxWidth: maxWidth,
           sedBloc: sedBloc,
         ),
         id: widget.id,
