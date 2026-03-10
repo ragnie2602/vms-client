@@ -116,20 +116,6 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     });
   }
 
-  void _addFaceRecognitionField() {
-    setState(() {
-      _fields.add(
-        ObjectTypeField(
-          id: 'new_field_${_nextFieldId++}',
-          fieldName: 'Ảnh nhận diện khuôn mặt',
-          displayName: 'Ảnh nhận diện',
-          dataType: FieldDataType.file,
-          isDefault: false,
-        ),
-      );
-    });
-  }
-
   void _addLicensePlateField() {
     setState(() {
       _fields.add(
@@ -216,6 +202,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     _nameErrors.clear();
     _displayErrors.clear();
     final displayNames = <String>{};
+    final fieldNames = <String>{};
     bool hasFieldError = false;
 
     for (int i = 0; i < _fields.length; i++) {
@@ -227,6 +214,15 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       if (f.displayName.trim().isEmpty) {
         _displayErrors[i] = 'Không được để trống';
         hasFieldError = true;
+      }
+      // Validate duplicate fieldName
+      final fn = f.fieldName.trim().toLowerCase();
+      if (fn.isNotEmpty) {
+        if (fieldNames.contains(fn)) {
+          _nameErrors[i] = 'Tên mã dữ liệu bị trùng';
+          hasFieldError = true;
+        }
+        fieldNames.add(fn);
       }
       // SRS: Validate duplicate displayName
       final dn = f.displayName.trim().toLowerCase();
@@ -502,17 +498,6 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                 SubmenuButton(
                   menuChildren: [
                     MenuItemButton(
-                      onPressed: () => _addFaceRecognitionField(),
-                      child: Text(
-                        'Ảnh nhận diện khuôn mặt',
-                        style: AppTypography.style(
-                          14,
-                          color: AppColors.grey334155,
-                          lineHeight: 1.2,
-                        ),
-                      ),
-                    ),
-                    MenuItemButton(
                       onPressed: () => _addLicensePlateField(),
                       child: Text(
                         'Biển số xe',
@@ -725,13 +710,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             child: (field.isDefault || _isProtectedField(field))
                 ? _buildReadOnlyLabel(field.fieldName)
                 : _isRecognitionField(field)
-                ? _buildSmallTextField(
-                    initialValue: field.fieldName,
-                    hintText: 'Tên dữ liệu',
-                    maxLength: 50,
-                    readOnly: true,
-                    onChanged: (_) {},
-                  )
+                ? _buildReadOnlyLabel(field.fieldName)
                 : _buildSmallTextField(
                     initialValue: field.fieldName,
                     hintText: 'Tên dữ liệu',
@@ -944,6 +923,14 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
           borderSide: const BorderSide(color: AppColors.secondary),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4),
+          borderSide: const BorderSide(color: AppColors.redFF0004),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4),
+          borderSide: const BorderSide(color: AppColors.redFF0004),
         ),
       ),
       style: AppTypography.style(

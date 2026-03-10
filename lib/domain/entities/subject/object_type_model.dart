@@ -103,7 +103,7 @@ class ObjectTypeField {
           : '${EndPoints.baseUrl}$iconPath';
     }
     return ObjectTypeField(
-      id: json['fieldName'] as String? ?? '',
+      id: 'field_${json['sortOrder'] ?? 0}_${json['fieldName'] ?? ''}',
       fieldName: json['fieldName'] as String? ?? '',
       iconName: iconPath,
       iconUrl: fullIconUrl,
