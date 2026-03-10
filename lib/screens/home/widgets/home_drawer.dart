@@ -87,20 +87,29 @@ class HomeDrawer extends StatelessWidget {
               onTap: onToggleExpanded,
               borderRadius: BorderRadius.circular(16),
               child: SvgPicture.asset(
-                isExpanded
-                    ? AppAssets.icArrowSquareLeft
-                    : AppAssets.icArrowSquareRight,
+                isExpanded ? AppAssets.icArrowSquareLeft : AppAssets.icArrowSquareRight,
                 width: 16,
                 height: 16,
-                colorFilter: ColorFilter.mode(
-                  AppColors.contentFg,
-                  BlendMode.srcIn,
-                ),
+                colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
               ),
             ),
           ],
         ),
       ),
+    ).let(
+      (child) => isExpanded
+          ? child
+          : Tooltip(
+              margin: EdgeInsets.only(left: 52.5),
+              verticalOffset: -52 / 2 + 11 + 4,
+              message: 'Mở rộng',
+              textStyle: AppTypography.style(
+                11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.white,
+              ),
+              child: child,
+            ),
     );
   }
 }
