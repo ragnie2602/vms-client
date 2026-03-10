@@ -419,7 +419,7 @@ class _EventScreenState extends State<EventScreen> {
                         } else if (state is ExportEventSuccess) {
                           ToastUtil.toastSuccess(
                             context: context,
-                            title: Text('Xuất file thành công: ${state.filePath}'),
+                            title: Text('Xuất file thành công!'),
                           );
                         } else if (state is ExportEventFailure) {
                           ToastUtil.toastFail(context: context, title: Text(state.message));
