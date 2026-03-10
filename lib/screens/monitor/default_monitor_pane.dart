@@ -36,6 +36,13 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
       builder: (context, blocState) => stateBuilder<MonitorSuccess>(
         blocState,
         onReload: () => context.read<MonitorBloc>().add(GetAllCamera()),
+        emptyBuilder: () {
+          String message = 'Không có camera nào';
+          if (blocState is MonitorSuccess && blocState.groupId != null) {
+            message = 'Không có camera trong nhóm';
+          }
+          return buildEmpty(message);
+        },
         child: (state) => BlocSelector<AppBloc, AppState, bool>(
           selector: (state) => state.displayFullScreenLiveView,
           builder: (context, isFullScreen) {
