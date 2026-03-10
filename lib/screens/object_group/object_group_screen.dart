@@ -724,7 +724,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
               buildWhen: (previous, current) =>
                   previous.status != current.status ||
                   previous.objectTypes != current.objectTypes ||
-                  previous.selectedObjectType != current.selectedObjectType,
+                  previous.selectedObjectType != current.selectedObjectType ||
+                  previous.subjectGroups != current.subjectGroups,
               builder: (context, state) {
                 if (state.status == ObjectGroupStatus.loading &&
                     state.objectTypes.isEmpty) {
@@ -838,6 +839,9 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
   }
 
   Widget _buildActionBar() {
+    final state = context.read<ObjectGroupBloc>().state;
+    final hasSubjectGroups = state.subjectGroups.isNotEmpty;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -971,28 +975,29 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 ),
               ),
               const Spacer(),
-              EventCustomButton(
-                backgroundColor: AppColors.white,
-                borderColor: AppColors.blue005AA9,
-                borderRadius: 3,
-                label: 'Thêm đối tượng',
-                onPressed: () => _onShowDialogAddObject(context),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
+              if (hasSubjectGroups)
+                EventCustomButton(
+                  backgroundColor: AppColors.white,
+                  borderColor: AppColors.blue005AA9,
+                  borderRadius: 3,
+                  label: 'Thêm đối tượng',
+                  onPressed: () => _onShowDialogAddObject(context),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  prefix: const Icon(
+                    Icons.add,
+                    color: AppColors.blue005AA9,
+                    size: 16,
+                  ),
+                  prefixGap: 8,
+                  textStyle: AppTypography.style(
+                    14,
+                    color: AppColors.blue005AA9,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                prefix: const Icon(
-                  Icons.add,
-                  color: AppColors.blue005AA9,
-                  size: 16,
-                ),
-                prefixGap: 8,
-                textStyle: AppTypography.style(
-                  14,
-                  color: AppColors.blue005AA9,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
             ],
           ),
         ],

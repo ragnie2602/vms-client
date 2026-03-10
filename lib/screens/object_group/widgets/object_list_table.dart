@@ -27,7 +27,13 @@ class ObjectListTable extends StatelessWidget {
         }
 
         if (state.objects.isEmpty) {
-          return const Center(child: Text('Danh sách trống'));
+          return Center(
+            child: Text(
+              state.subjectGroups.isEmpty
+                  ? 'Bạn chưa có nhóm nào. Vui lòng tạo nhóm để bắt đầu thêm đối tượng.'
+                  : 'Danh sách trống',
+            ),
+          );
         }
 
         // Dynamically resolve column keys from the first object's fieldValues
