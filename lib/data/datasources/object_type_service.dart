@@ -19,7 +19,7 @@ class ObjectTypeService {
   }) async {
     final queryParams = <String, dynamic>{'page': page, 'size': size};
     if (keyword != null && keyword.isNotEmpty) {
-      queryParams['keyword'] = keyword;
+      queryParams['search'] = keyword;
     }
     if (status != null && status.isNotEmpty) {
       queryParams['status'] = status;
