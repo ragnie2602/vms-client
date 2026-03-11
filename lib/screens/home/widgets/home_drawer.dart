@@ -87,20 +87,29 @@ class HomeDrawer extends StatelessWidget {
               onTap: onToggleExpanded,
               borderRadius: BorderRadius.circular(16),
               child: SvgPicture.asset(
-                isExpanded
-                    ? AppAssets.icArrowSquareLeft
-                    : AppAssets.icArrowSquareRight,
+                isExpanded ? AppAssets.icArrowSquareLeft : AppAssets.icArrowSquareRight,
                 width: 16,
                 height: 16,
-                colorFilter: ColorFilter.mode(
-                  AppColors.contentFg,
-                  BlendMode.srcIn,
-                ),
+                colorFilter: ColorFilter.mode(AppColors.contentFg, BlendMode.srcIn),
               ),
             ),
           ],
         ),
       ),
+    ).let(
+      (child) => isExpanded
+          ? child
+          : Tooltip(
+              margin: EdgeInsets.only(left: 52.5),
+              verticalOffset: -52 / 2 + 11 + 4,
+              message: 'Mở rộng',
+              textStyle: AppTypography.style(
+                11,
+                fontWeight: FontWeight.w500,
+                color: AppColors.white,
+              ),
+              child: child,
+            ),
     );
   }
 }
@@ -229,9 +238,23 @@ class DrawerTile extends StatelessWidget {
             child: Row(
               children: [
                 if (isNested) ...[
-                  SizedBox(width: 36),
-                  Text('■', style: TextStyle(fontSize: 8, color: contentColor)),
-                  const SizedBox(width: 12),
+                  if (!showTooltip) ...[
+                    SizedBox(width: 36),
+                    Text(
+                      '■',
+                      style: TextStyle(fontSize: 8, color: contentColor),
+                    ),
+                    const SizedBox(width: 20),
+                  ] else ...[
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          '■',
+                          style: TextStyle(fontSize: 8, color: contentColor),
+                        ),
+                      ),
+                    ),
+                  ],
                 ] else ...[
                   AnimatedContainer(
                     duration: Durations.long2,
@@ -264,18 +287,19 @@ class DrawerTile extends StatelessWidget {
                         ),
                   SizedBox(width: 20),
                 ],
-                Flexible(
-                  child: Text(
-                    tab.title,
-                    style: AppTypography.style(
-                      14,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected ? AppColors.primary : null,
+                if (!(isNested && showTooltip))
+                  Flexible(
+                    child: Text(
+                      tab.title,
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w500,
+                        color: isSelected ? AppColors.primary : null,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                    overflow: TextOverflow.visible,
-                    maxLines: 1,
                   ),
-                ),
               ],
             ),
           ),

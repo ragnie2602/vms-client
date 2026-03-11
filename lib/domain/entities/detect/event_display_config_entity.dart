@@ -81,4 +81,12 @@ class Fields {
     fieldName = json['fieldName'];
     icon = json['icon'];
   }
+
+  Fields copyWith({String? fieldKey, String? fieldName, String? icon}) {
+    return Fields(
+      fieldKey: fieldKey ?? this.fieldKey,
+      fieldName: fieldName ?? this.fieldName,
+      icon: icon ?? this.icon,
+    );
+  }
 }

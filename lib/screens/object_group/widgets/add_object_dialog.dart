@@ -140,10 +140,15 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     final remaining = maxImages - currentExisting - currentLocal;
     if (remaining <= 0) return;
 
+    final isRecognitionImage = fieldName == 'Ảnh nhận diện khuôn mặt';
+    final pickerExtensions = isRecognitionImage
+        ? ['bmp', 'jpg', 'png']
+        : ['jpg', 'jpeg', 'png'];
+
     // Pick files
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['bmp', 'jpg', 'png'],
+      allowedExtensions: pickerExtensions,
       allowMultiple: remaining > 1,
     );
 
@@ -156,7 +161,9 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     });
 
     bool hasInvalidFormats = false;
-    final allowedExtensions = ['.bmp', '.jpg', '.png'];
+    final allowedExtensions = isRecognitionImage
+        ? ['.bmp', '.jpg', '.png']
+        : ['.jpg', '.jpeg', '.png'];
     var newPaths = result.files
         .where((f) => f.path != null)
         .where((f) {
@@ -174,8 +181,10 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       if (hasInvalidFormats && mounted) {
         ToastUtil.toastFail(
           context: context,
-          title: const Text(
-            'Định dạng file không hỗ trợ. Chỉ hỗ trợ BMP, JPG, PNG.',
+          title: Text(
+            isRecognitionImage
+                ? 'Định dạng file không hỗ trợ. Chỉ hỗ trợ BMP, JPG, PNG.'
+                : 'Định dạng file không hỗ trợ. Chỉ hỗ trợ JPG, JPEG, PNG.',
           ),
         );
       }
@@ -200,8 +209,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         continue; // Skip files smaller than 2KB
       }
 
-      if (length > 1048576) {
-        // > 1MB
+      if (length > 5242880) {
+        // > 5MB
         final tempDir = await getTemporaryDirectory();
         final ext = p.extension(path);
         // Use jpeg if extension is unsupported by compressor
@@ -222,37 +231,43 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                   ? CompressFormat.webp
                   : CompressFormat.jpeg);
 
-        var compressResult = await FlutterImageCompress.compressAndGetFile(
-          path,
-          targetPath,
-          quality: 70,
-          minWidth: 1024,
-          minHeight: 1024,
-          format: format,
-        );
-
-        // Loop to ensure size <= 1MB
-        int currentQuality = 70;
-        while (compressResult != null &&
-            await File(compressResult.path).length() > 1048576 &&
-            currentQuality > 10) {
-          currentQuality -= 20;
-          final newTargetPath = p.join(
-            tempDir.path,
-            '${DateTime.now().millisecondsSinceEpoch}_comp_q${currentQuality}$targetExt',
-          );
+        XFile? compressResult;
+        try {
           compressResult = await FlutterImageCompress.compressAndGetFile(
             path,
-            newTargetPath,
-            quality: currentQuality,
+            targetPath,
+            quality: 70,
             minWidth: 1024,
             minHeight: 1024,
             format: format,
           );
+
+          // Loop to ensure size <= 1MB
+          int currentQuality = 70;
+          while (compressResult != null &&
+              await File(compressResult.path).length() > 1048576 &&
+              currentQuality > 10) {
+            currentQuality -= 20;
+            final newTargetPath = p.join(
+              tempDir.path,
+              '${DateTime.now().millisecondsSinceEpoch}_comp_q${currentQuality}$targetExt',
+            );
+            compressResult = await FlutterImageCompress.compressAndGetFile(
+              path,
+              newTargetPath,
+              quality: currentQuality,
+              minWidth: 1024,
+              minHeight: 1024,
+              format: format,
+            );
+          }
+        } catch (e) {
+          debugPrint('Image compression error: $e');
+          compressResult = null; // fallback to original path
         }
 
         if (compressResult != null &&
-            await File(compressResult.path).length() <= 1048576) {
+            await File(compressResult.path).length() <= 5242880) {
           processedPaths.add(compressResult.path);
         } else if (compressResult != null) {
           processedPaths.add(compressResult.path);
@@ -628,8 +643,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       case FieldDataType.file:
         return _buildImagePicker(field);
       case FieldDataType.text:
-      case FieldDataType.number:
-      case FieldDataType.date:
+        // case FieldDataType.number:
+        // case FieldDataType.date:
         return _buildTextField(field);
     }
   }
@@ -749,8 +764,10 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
             Row(
               children: [
                 _buildLabel(field.displayName, isRequired: isRequired),
-                const SizedBox(width: 6),
-                const ImageUploadInfoTooltip(),
+                if (isImageField) ...[
+                  const SizedBox(width: 6),
+                  const ImageUploadInfoTooltip(),
+                ],
               ],
             ),
             const SizedBox(height: 8),
@@ -876,7 +893,9 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Vui lòng chọn file có định dạng BMP, JPG, PNG',
+                          isImageField
+                              ? 'Vui lòng chọn file có định dạng BMP, JPG, PNG'
+                              : 'Vui lòng chọn file có định dạng JPG, JPEG, PNG',
                           style: AppTypography.style(
                             14,
                             color: AppColors.grey94A3B8,
@@ -913,7 +932,10 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     if (remaining <= 0) return;
 
     // Filter for image files only
-    final imageExtensions = ['.bmp', '.jpg', '.jpeg', '.png'];
+    final isRecognitionImage = fieldName == 'Ảnh nhận diện khuôn mặt';
+    final imageExtensions = isRecognitionImage
+        ? ['.bmp', '.jpg', '.jpeg', '.png']
+        : ['.jpg', '.jpeg', '.png'];
     bool hasInvalidFormats = false;
 
     var droppedPaths = details.files
@@ -932,8 +954,10 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       if (hasInvalidFormats && mounted) {
         ToastUtil.toastFail(
           context: context,
-          title: const Text(
-            'Định dạng file không hỗ trợ. Chỉ hỗ trợ BMP, JPG, PNG.',
+          title: Text(
+            isRecognitionImage
+                ? 'Định dạng file không hỗ trợ. Chỉ hỗ trợ BMP, JPG, PNG.'
+                : 'Định dạng file không hỗ trợ. Chỉ hỗ trợ JPG, JPEG, PNG.',
           ),
         );
       }
@@ -958,8 +982,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         continue; // Skip files smaller than 2KB
       }
 
-      if (length > 1048576) {
-        // > 1MB
+      if (length > 5242880) {
+        // > 5MB
         final tempDir = await getTemporaryDirectory();
         final ext = p.extension(path);
         final targetExt =
@@ -980,37 +1004,43 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                   ? CompressFormat.webp
                   : CompressFormat.jpeg);
 
-        var compressResult = await FlutterImageCompress.compressAndGetFile(
-          path,
-          targetPath,
-          quality: 70,
-          minWidth: 1024,
-          minHeight: 1024,
-          format: format,
-        );
-
-        // Loop to ensure size <= 1MB
-        int currentQuality = 70;
-        while (compressResult != null &&
-            await File(compressResult.path).length() > 1048576 &&
-            currentQuality > 10) {
-          currentQuality -= 20;
-          final newTargetPath = p.join(
-            tempDir.path,
-            '${DateTime.now().millisecondsSinceEpoch}_comp_q$currentQuality$targetExt',
-          );
+        XFile? compressResult;
+        try {
           compressResult = await FlutterImageCompress.compressAndGetFile(
             path,
-            newTargetPath,
-            quality: currentQuality,
+            targetPath,
+            quality: 70,
             minWidth: 1024,
             minHeight: 1024,
             format: format,
           );
+
+          // Loop to ensure size <= 1MB
+          int currentQuality = 70;
+          while (compressResult != null &&
+              await File(compressResult.path).length() > 1048576 &&
+              currentQuality > 10) {
+            currentQuality -= 20;
+            final newTargetPath = p.join(
+              tempDir.path,
+              '${DateTime.now().millisecondsSinceEpoch}_comp_q$currentQuality$targetExt',
+            );
+            compressResult = await FlutterImageCompress.compressAndGetFile(
+              path,
+              newTargetPath,
+              quality: currentQuality,
+              minWidth: 1024,
+              minHeight: 1024,
+              format: format,
+            );
+          }
+        } catch (e) {
+          debugPrint('Image compression error: $e');
+          compressResult = null; // fallback to original path
         }
 
         if (compressResult != null &&
-            await File(compressResult.path).length() <= 1048576) {
+            await File(compressResult.path).length() <= 5242880) {
           processedPaths.add(compressResult.path);
         } else if (compressResult != null) {
           processedPaths.add(compressResult.path);
@@ -1172,6 +1202,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
           // hiển thị full list nhóm
           groups: widget.subjectGroups.toList(),
           selectedIds: _selectedSubjectGroupIds,
+          hasError: _errors['subjectGroup'] != null,
           onChanged: (ids) {
             setState(() {
               if (_errors['subjectGroup'] != null) {
@@ -1202,11 +1233,13 @@ class _SubjectGroupMultiSelectDropdown extends StatefulWidget {
   final List<SubjectGroup> groups;
   final Set<int> selectedIds;
   final ValueChanged<Set<int>> onChanged;
+  final bool hasError;
 
   const _SubjectGroupMultiSelectDropdown({
     required this.groups,
     required this.selectedIds,
     required this.onChanged,
+    this.hasError = false,
   });
 
   @override
@@ -1268,6 +1301,21 @@ class _SubjectGroupMultiSelectDropdownState
   void _openDropdown() {
     final renderBox = context.findRenderObject() as RenderBox;
     final size = renderBox.size;
+    final position = renderBox.localToGlobal(Offset.zero);
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Calculate available space below and above the trigger
+    final spaceBelow = screenHeight - position.dy - size.height - 8;
+    final spaceAbove = position.dy - 8;
+
+    // Decide whether to open downward or upward
+    final openAbove = spaceBelow < 150 && spaceAbove > spaceBelow;
+    final availableHeight = openAbove ? spaceAbove : spaceBelow;
+    final dropdownMaxHeight = availableHeight.clamp(100.0, 280.0);
+
+    final offset = openAbove
+        ? Offset(0, -dropdownMaxHeight - 4)
+        : Offset(0, size.height + 4);
 
     _overlayEntry = OverlayEntry(
       builder: (context) => GestureDetector(
@@ -1278,14 +1326,14 @@ class _SubjectGroupMultiSelectDropdownState
             CompositedTransformFollower(
               link: _layerLink,
               showWhenUnlinked: false,
-              offset: Offset(0, size.height + 4),
+              offset: offset,
               child: Material(
                 elevation: 4,
                 borderRadius: BorderRadius.circular(4),
                 color: Colors.white,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: 280,
+                    maxHeight: dropdownMaxHeight,
                     maxWidth: size.width,
                     minWidth: size.width,
                   ),
@@ -1449,7 +1497,11 @@ class _SubjectGroupMultiSelectDropdownState
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _isOpen ? AppColors.primary : AppColors.greyE2E8F0,
+                  color: widget.hasError
+                      ? AppColors.redFF0004
+                      : _isOpen
+                      ? AppColors.primary
+                      : AppColors.greyE2E8F0,
                 ),
                 borderRadius: BorderRadius.circular(4),
               ),

@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/widgets/alarm_config_popup/alarm_config_popup.dart';
@@ -132,24 +133,40 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
           // ── Buttons ──
           SizedBox(
             width: 700,
-            child: Row(
-              spacing: 12,
-              children: <Widget>[
-                _buildButton(
-                  title: "Hủy",
-                  borderColor: AppColors.greyE2E8F0,
-                  bgColor: AppColors.white,
-                  textColor: AppColors.black,
-                  onPressed: _onCancel,
-                ),
-                _buildButton(
-                  title: "Lưu",
-                  borderColor: AppColors.secondary,
-                  bgColor: AppColors.secondary,
-                  textColor: AppColors.white,
-                  onPressed: _onSave,
-                ),
-              ],
+            child: BlocConsumer<NotificationBloc, NotificationSettingState>(
+              listener: (context, state) {
+                if (state is NotificationSettingLoadFailed) {
+                  ToastUtil.toastFail(context: context, message: state.message);
+                } else if (state is NotificationSettingLoaded) {
+                  ToastUtil.toastSuccess(
+                    context: context,
+                    message: 'Cấu hình thông báo thành công!',
+                  );
+                }
+              },
+              builder: (context, state) {
+                return Row(
+                  spacing: 12,
+                  children: <Widget>[
+                    _buildButton(
+                      title: "Hủy",
+                      borderColor: AppColors.greyE2E8F0,
+                      bgColor: AppColors.white,
+                      textColor: AppColors.black,
+                      onPressed: _onCancel,
+                      isDisabled: state is NotificationSettingLoading,
+                    ),
+                    _buildButton(
+                      title: "Lưu",
+                      borderColor: AppColors.secondary,
+                      bgColor: AppColors.secondary,
+                      textColor: AppColors.white,
+                      onPressed: _onSave,
+                      isLoading: state is NotificationSettingLoading,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -430,22 +447,29 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
     required Color textColor,
     required Color borderColor,
     required VoidCallback onPressed,
+    bool isLoading = false,
+    bool isDisabled = false,
   }) {
     return Expanded(
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           elevation: 0,
+          disabledMouseCursor: SystemMouseCursors.forbidden,
           backgroundColor: bgColor,
+          disabledBackgroundColor: bgColor,
           foregroundColor: textColor,
+          disabledForegroundColor: textColor,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
           side: BorderSide(color: borderColor, width: 1),
           textStyle: AppTypography.style(14, fontWeight: FontWeight.w700),
           alignment: Alignment.center,
         ),
-        onPressed: onPressed,
+        onPressed: isLoading || isDisabled ? null : onPressed,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          child: Text(title),
+          child: isLoading
+              ? Center(child: SizedBox.square(dimension: 14, child: CircularProgressIndicator()))
+              : Text(title),
         ),
       ),
     );

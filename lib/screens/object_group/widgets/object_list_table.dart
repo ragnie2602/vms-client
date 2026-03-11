@@ -200,6 +200,43 @@ class ObjectListTable extends StatelessWidget {
           SizedBox(width: 12),
           ...fieldKeys.map((key) {
             final value = data.fieldValues[key] ?? '';
+            // If value is a list of URLs (file field), show first image
+            if (value is List && value.isNotEmpty) {
+              final firstUrl = value.first.toString();
+              return Expanded(
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: CachedNetworkImage(
+                        width: 50,
+                        height: 50,
+                        imageUrl: firstUrl,
+                        fit: BoxFit.fitHeight,
+                        placeholder: (context, url) => Container(
+                          width: 48,
+                          height: 48,
+                          color: AppColors.greyE2E8F0,
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 48,
+                          height: 48,
+                          color: AppColors.greyE2E8F0,
+                          child: const Icon(
+                            Icons.broken_image,
+                            size: 20,
+                            color: AppColors.grey6F767E,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
             return Expanded(
               flex: 3,
               child: Padding(
