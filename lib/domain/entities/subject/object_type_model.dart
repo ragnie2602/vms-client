@@ -42,9 +42,9 @@ enum ObjectTypeStatus {
 
 enum FieldDataType {
   text('Văn bản'),
-  file('Tệp tin'),
-  date('Ngày tháng'),
-  number('Số');
+  file('Tệp ảnh');
+  // date('Ngày tháng'),
+  // number('Số');
 
   const FieldDataType(this.displayName);
   final String displayName;
@@ -55,10 +55,10 @@ enum FieldDataType {
         return FieldDataType.text;
       case 'file':
         return FieldDataType.file;
-      case 'date':
-        return FieldDataType.date;
-      case 'number':
-        return FieldDataType.number;
+      // case 'date':
+      //   return FieldDataType.date;
+      // case 'number':
+      //   return FieldDataType.number;
       default:
         return FieldDataType.text;
     }
@@ -98,7 +98,9 @@ class ObjectTypeField {
     final iconPath = json['icon'] as String?;
     String? fullIconUrl;
     if (iconPath != null && iconPath.isNotEmpty) {
-      fullIconUrl = iconPath.startsWith('http') ? iconPath : '${EndPoints.baseUrl}$iconPath';
+      fullIconUrl = iconPath.startsWith('http')
+          ? iconPath
+          : '${EndPoints.baseUrl}$iconPath';
     }
     return ObjectTypeField(
       id: json['fieldName'] as String? ?? '',
@@ -180,7 +182,11 @@ class ObjectType {
       'status': status.name.toUpperCase(),
       'aiFeature': aiFeature.name.toUpperCase(),
       'description': description,
-      'dataFields': fields.asMap().entries.map((e) => e.value.toJson(e.key)).toList(),
+      'dataFields': fields
+          .asMap()
+          .entries
+          .map((e) => e.value.toJson(e.key))
+          .toList(),
     };
   }
 
@@ -196,7 +202,9 @@ class ObjectType {
       description: json['description'] as String? ?? '',
       aiFeature: AIFeature.fromString(json['aiFeature'] as String? ?? 'FACE'),
       aiFeatureDisplayName: json['aiFeatureDisplayName'] as String?,
-      status: ObjectTypeStatus.fromString(json['status'] as String? ?? 'ACTIVE'),
+      status: ObjectTypeStatus.fromString(
+        json['status'] as String? ?? 'ACTIVE',
+      ),
       statusDisplayName: json['statusDisplayName'] as String?,
       fields: dataFields,
       objectCount: json['objectCount'] as int? ?? 0,
