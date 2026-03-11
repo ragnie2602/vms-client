@@ -24,22 +24,23 @@ class NotificationBloc
     Emitter<NotificationSettingState> emit,
   ) async {
     emit(const NotificationSettingLoading());
+
     try {
-      final result = await _notificationSettingRepository
-          .updateNotificationSetting(event.notificationSetting);
-      result.fold(
-        (failure) {
-          emit(NotificationSettingLoadFailed(message: failure.toString()));
-        },
-        (notificationSetting) async {
-          //save notification setting
-          final jsonString = json.encode(notificationSetting.toJson());
-          await AppData.instance.save<String>(
-            AppKeys.SP_NOTIFICATION_SETTING,
-            jsonString,
-          );
-        },
+      final result = await _notificationSettingRepository.updateNotificationSetting(
+        event.notificationSetting,
       );
+
+      if (result.isLeft) {
+        emit(NotificationSettingLoadFailed(message: result.left.toString()));
+      } else {
+        final notificationSetting = result.right!;
+
+        // save notification setting
+        final jsonString = json.encode(notificationSetting.toJson());
+        await AppData.instance.save<String>(AppKeys.SP_NOTIFICATION_SETTING, jsonString);
+
+        emit(NotificationSettingLoaded(notificationSetting: notificationSetting));
+      }
     } catch (e) {
       emit(NotificationSettingLoadFailed(message: e.toString()));
     }
