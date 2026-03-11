@@ -67,7 +67,7 @@ class ObjectListTable extends StatelessWidget {
               child: ListView.separated(
                 itemCount: state.objects.length,
                 separatorBuilder: (context, index) =>
-                    const Divider(height: 1, color: AppColors.greyE2E8F0),
+                    const Divider(height: 1, color: AppColors.greyF1F3FA),
                 itemBuilder: (context, index) {
                   return _buildRow(
                     context,
@@ -154,7 +154,7 @@ class ObjectListTable extends StatelessWidget {
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: index % 2 == 1 ? AppColors.greyF8F9FE : Colors.white,
+      // color: index % 2 == 1 ? AppColors.greyF8F9FE : Colors.white,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -265,11 +265,13 @@ class ObjectListTable extends StatelessWidget {
             flex: 1,
             child: Center(
               child: PopupMenuButton<String>(
+                tooltip: '',
                 icon: const Icon(
                   Icons.more_horiz,
                   color: AppColors.grey6F767E,
                   size: 20,
                 ),
+                menuPadding: EdgeInsets.zero,
                 splashRadius: 16,
                 offset: const Offset(0, 36),
                 shape: RoundedRectangleBorder(
@@ -288,43 +290,43 @@ class ObjectListTable extends StatelessWidget {
                     value: 'edit',
                     child: Row(
                       children: [
-                        SvgPicture.asset(
-                          AppAssets.icEdit,
+                        Container(
                           width: 16,
                           height: 16,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.blue005AA9,
-                            BlendMode.srcIn,
-                          ),
+                          margin: EdgeInsets.only(right: 8),
+                          child: SvgPicture.asset(AppAssets.icEdit),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Sửa',
                           style: AppTypography.style(
-                            14,
-                            color: AppColors.grey334155,
+                            13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  PopupMenuDivider(height: 1, color: AppColors.greyF2F4FA),
                   PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        SvgPicture.asset(
-                          AppAssets.icDelete,
+                        Container(
                           width: 16,
                           height: 16,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.red,
-                            BlendMode.srcIn,
-                          ),
+                          margin: EdgeInsets.only(right: 8),
+                          child: SvgPicture.asset(AppAssets.icDelete),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Xóa',
-                          style: AppTypography.style(14, color: Colors.red),
+                          style: AppTypography.style(
+                            13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
                         ),
                       ],
                     ),
