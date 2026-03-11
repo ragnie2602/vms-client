@@ -52,7 +52,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
   final ScrollController _controlsScrollController = ScrollController();
   final ValueNotifier<double?> _downloadProgress = ValueNotifier(null);
-  int _errorCause = 0;
+  final ValueNotifier<int> _errorCause = ValueNotifier(0);
   final ValueNotifier<PlayerStatus> _playerStatus = ValueNotifier(PlayerStatus.playing);
   final ValueNotifier<double> _speed = ValueNotifier(1.0);
   final ValueNotifier<double> _volume = ValueNotifier(1.0);
@@ -83,9 +83,9 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     internetSubscription = InternetConnectionChecker.instance.onStatusChange.listen((status) {
       if (!mounted) return;
       if (status == InternetConnectionStatus.connected) {
-        setState(() => _errorCause = _errorCause & ~1);
+        setState(() => _errorCause.value = _errorCause.value & ~1);
       } else {
-        setState(() => _errorCause = _errorCause | 1);
+        setState(() => _errorCause.value = _errorCause.value | 1);
       }
     });
   }
@@ -176,9 +176,43 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                           setState(() => _showControls = true);
                                         }
                                       },
-                                      child: TabBarView(
-                                        controller: tabController,
-                                        children: [_imageTab(event), _videoTab(event)],
+                                      child: BlocListener<PlaybackBloc, PlaybackState>(
+                                        listenWhen: (pre, cur) {
+                                          if (pre is PlaybackSuccess && cur is PlaybackSuccess) {
+                                            return pre.playbacks != cur.playbacks ||
+                                                pre.initialIndex != cur.initialIndex;
+                                          }
+                                          return true;
+                                        },
+                                        listener: (context, state) {
+                                          if (state is! PlaybackSuccess) return;
+
+                                          if (rewindTime != null) {
+                                            final rewindTimeCopy = rewindTime!;
+                                            final idx = state.playbacks.indexWhere(
+                                              (e) =>
+                                                  e.startTime.isBefore(rewindTimeCopy) &&
+                                                  e.endTime.isAfter(rewindTimeCopy),
+                                            );
+                                            if (idx != -1) {
+                                              context.read<PlaybackBloc>().add(ChangePlayback(idx));
+
+                                              playerController.waitForAttached.future.then((_) {
+                                                playerController.jumpToDate?.call(
+                                                  rewindTimeCopy,
+                                                  dateIndex: idx,
+                                                );
+                                              });
+                                            } else {
+                                              _errorCause.value = _errorCause.value | 2;
+                                            }
+                                            rewindTime = null;
+                                          }
+                                        },
+                                        child: TabBarView(
+                                          controller: tabController,
+                                          children: [_imageTab(event), _videoTab(event)],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -237,22 +271,23 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
                                         return ValueListenableBuilder(
                                           valueListenable: _tabIdx,
-                                          builder: (context, value, child) {
-                                            return _functionBtn(
+                                          builder: (context, tabIdx, child) => ValueListenableBuilder(
+                                            valueListenable: _errorCause,
+                                            builder: (context, errIdx, child) => _functionBtn(
                                               icon: SvgPicture.asset(
                                                 AppAssets.icDownloadImage,
                                                 height: 12,
                                               ),
-                                              label: 'Tải ${value == 0 ? 'ảnh' : 'video'}',
-                                              onTap: () {
-                                                if (value == 0) {
-                                                  _downloadImage(event);
-                                                } else {
-                                                  _downloadVideo(event);
-                                                }
-                                              },
-                                            );
-                                          },
+                                              enabled: tabIdx == 0 || errIdx == 0,
+                                              tooltip: errIdx != 0
+                                                  ? 'Không thể tải video do ${_errorTranslator()}'
+                                                  : '',
+                                              label: tabIdx == 0 ? 'Tải ảnh' : 'Tải video',
+                                              onTap: () => tabIdx == 0
+                                                  ? _downloadImage(event)
+                                                  : _downloadVideo(event),
+                                            ),
+                                          ),
                                         );
                                       },
                                     ),
@@ -261,10 +296,17 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                       label: 'Xem trực tiếp',
                                       onTap: _live,
                                     ),
-                                    _functionBtn(
-                                      icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
-                                      label: 'Xem playback',
-                                      onTap: _playback,
+                                    ValueListenableBuilder(
+                                      valueListenable: _errorCause,
+                                      builder: (context, errIdx, child) => _functionBtn(
+                                        icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
+                                        label: 'Xem playback',
+                                        onTap: _playback,
+                                        enabled: errIdx == 0,
+                                        tooltip: errIdx == 0
+                                            ? ''
+                                            : 'Không thể xem playback do ${_errorTranslator()}',
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -635,28 +677,37 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     );
   }
 
-  Widget _functionBtn({Widget? icon, String? label, Function()? onTap}) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.white,
-        elevation: 2,
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-        shadowColor: Colors.black.withOpacity(0.05),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-        side: BorderSide(color: AppColors.greyE5E7EB, width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: 8,
-        children: [
-          if (icon != null) icon,
-          if (label != null)
-            Text(
-              label,
-              style: AppTypography.style(14, fontWeight: FontWeight.w500, lineHeight: 20 / 14),
-            ),
-        ],
+  Widget _functionBtn({
+    Widget? icon,
+    String? label,
+    Function()? onTap,
+    bool enabled = true,
+    String? tooltip,
+  }) {
+    return Tooltip(
+      message: enabled ? '' : tooltip,
+      child: ElevatedButton(
+        onPressed: enabled != false ? onTap : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: enabled != false ? AppColors.white : AppColors.greyE2E8F0,
+          elevation: 2,
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+          shadowColor: Colors.black.withOpacity(0.05),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+          side: BorderSide(color: AppColors.greyE5E7EB, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
+          children: [
+            if (icon != null) icon,
+            if (label != null)
+              Text(
+                label,
+                style: AppTypography.style(14, fontWeight: FontWeight.w500, lineHeight: 20 / 14),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -716,29 +767,13 @@ class _EventDetailDialogState extends State<EventDetailDialog>
         return true;
       },
       builder: (context, state) {
-        if (state is! PlaybackSuccess) return SizedBox.shrink();
-
-        if (rewindTime != null) {
-          final rewindTimeCopy = rewindTime!;
-          final idx = state.playbacks.indexWhere(
-            (e) => e.startTime.isBefore(rewindTimeCopy) && e.endTime.isAfter(rewindTimeCopy),
-          );
-          if (idx != -1) {
-            context.read<PlaybackBloc>().add(ChangePlayback(idx));
-
-            playerController.waitForAttached.future.then((_) {
-              playerController.jumpToDate?.call(rewindTimeCopy, dateIndex: idx);
-            });
-          } else {
-            _errorCause = _errorCause | 2;
-          }
-          rewindTime = null;
+        if (state is! PlaybackSuccess) {
+          return Center(child: CircularProgressIndicator());
         }
-
         return Container(
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Colors.black),
           clipBehavior: Clip.antiAlias,
-          child: _errorCause != 0
+          child: _errorCause.value != 0
               ? Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -747,6 +782,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                       const SizedBox(height: 5),
                       Text(
                         'Dữ liệu video không khả dụng do ${_errorTranslator()}',
+                        overflow: TextOverflow.visible,
                         style: AppTypography.style(14, color: Colors.white.withAlpha(182)),
                       ),
                     ],
@@ -767,6 +803,9 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                   },
                   controlsBuilder: (fullscreen, playerState) =>
                       fullscreen ? Container() : _buildVideoControls(fullscreen, playerState),
+                  onError: () {
+                    _errorCause.value = 4;
+                  },
                 ),
         );
       },
@@ -982,13 +1021,13 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   }
 
   String _errorTranslator() {
-    if (_errorCause & 1 == 1) {
+    if (_errorCause.value & 1 == 1) {
       return 'mất kết nối đến máy chủ lưu trữ';
-    }
-    if (_errorCause & 2 == 2) {
+    } else if (_errorCause.value & 2 == 2) {
       return 'không tìm thấy video playback';
+    } else {
+      return 'lỗi không xác định';
     }
-    return 'lỗi không xác định';
   }
 
   void _handleTimeChanged(DateTime currentTime, [bool isUserSeeking = false]) {
