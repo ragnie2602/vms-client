@@ -202,6 +202,7 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                         formAddEditKey.currentState?.validate();
                       },
                       hintTextSearch: 'Nhập tên nhóm',
+                      hintTextDropdown: 'Lựa chọn nhóm đối tượng',
                       itemAsString: (group) {
                         return group.name ?? '';
                       },
