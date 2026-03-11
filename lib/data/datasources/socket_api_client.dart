@@ -22,8 +22,7 @@ class SocketApiClient extends BaseApiClient {
   // Streams
   late StreamController<Map<String, dynamic>> _messageController;
   late StreamController<SocketConnectionState> _stateController;
-  Stream<SocketConnectionState> get stateStream =>
-      _stateController.stream.distinct();
+  Stream<SocketConnectionState> get stateStream => _stateController.stream.distinct();
 
   // State
   SocketConnectionState _state = SocketConnectionState.connecting;
@@ -81,7 +80,11 @@ class SocketApiClient extends BaseApiClient {
       _socket.messages.listen(_handleMessages);
       _socket.connection.listen((_state) {
         // Case Reconnected --> Cần đăng nhập lại
-        if (_state is Reconnected) return _relogin();
+        if (_state is Reconnected) {
+          _lastMessageTime =
+              DateTime.now(); // Reset để tránh force-reconnect ngay sau khi vừa reconnect xong
+          return _relogin();
+        }
 
         state = SocketConnectionState.fromConnectionState(_state);
       });
@@ -130,8 +133,28 @@ class SocketApiClient extends BaseApiClient {
     );
   }
 
+  // Timestamp lần cuối nhận được bất kỳ message nào từ server
+  DateTime _lastMessageTime = DateTime.now();
+
+  // Nếu không nhận được message nào trong khoảng thời gian này,
+  // coi như kết nối đã chết (half-open TCP sau sleep) và force reconnect
+  static const Duration _connectionDeadThreshold = Duration(minutes: 2);
+
   void _sendKeepAlive([Timer? _]) {
     if (!isConnected) return;
+
+    // Kiểm tra half-open TCP: nếu đã quá lâu không nhận message từ server
+    // (trong khi chúng ta vẫn nghĩ là connected), force close để trigger reconnect
+    final timeSinceLastMessage = DateTime.now().difference(_lastMessageTime);
+    if (timeSinceLastMessage > _connectionDeadThreshold) {
+      Logger.log(
+        "No message received for ${timeSinceLastMessage.inSeconds}s, forcing reconnect",
+        tag: 'SOCKET',
+        writeLog: true,
+      );
+      _socket.close(); // web_socket_client sẽ tự động reconnect
+      return;
+    }
 
     _socket.send(
       Packet(
@@ -143,6 +166,8 @@ class SocketApiClient extends BaseApiClient {
   }
 
   void _handleMessages(dynamic message) {
+    _lastMessageTime = DateTime.now();
+
     // Parse packet từ buffer
     final packet = Packet.fromBuffer(Uint8List.fromList(message));
 
