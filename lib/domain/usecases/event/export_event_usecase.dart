@@ -55,11 +55,11 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
         headerCell.cellStyle = CellStyle(
           backgroundColorHex: ExcelColor.fromHexString("FF5384ED"),
           bold: true,
-          bottomBorder: Border(borderColorHex: ExcelColor.black),
+          bottomBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
           fontColorHex: ExcelColor.white,
-          leftBorder: Border(borderColorHex: ExcelColor.black),
-          rightBorder: Border(borderColorHex: ExcelColor.black),
-          topBorder: Border(borderColorHex: ExcelColor.black),
+          leftBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+          rightBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+          topBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
         );
       }
 
@@ -86,7 +86,13 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
             CellIndex.indexByColumnRow(columnIndex: col, rowIndex: dataStartRow + i),
           );
           cell.value = row[col];
-          cell.cellStyle = CellStyle(bold: false);
+          cell.cellStyle = CellStyle(
+            bold: false,
+            leftBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+            rightBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+            topBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+            bottomBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+          );
         }
       }
 
