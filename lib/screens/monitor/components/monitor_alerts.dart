@@ -17,6 +17,8 @@ import 'package:vms_flutter_client/screens/monitor/widgets/custom_tab_bar.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/event_item.dart';
 
 class MonitorAlerts extends StatefulWidget {
+  static int initialIndex = 0;
+
   final SetupEventDisplayBloc sedBloc;
   final double maxWidth;
 
@@ -27,13 +29,14 @@ class MonitorAlerts extends StatefulWidget {
 }
 
 class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateMixin {
-  late final TabController tabController;
+  late TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 2, vsync: this);
+    tabController = TabController(length: 2, vsync: this, initialIndex: MonitorAlerts.initialIndex);
     tabController.addListener(_onTabChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateFilterWithCurrentCameras());
   }
 
   @override
@@ -45,6 +48,7 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
 
   void _onTabChanged() {
     if (tabController.indexIsChanging) return;
+    MonitorAlerts.initialIndex = tabController.index;
     _updateFilterWithCurrentCameras();
   }
 
@@ -160,10 +164,7 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
                 padding: EdgeInsets.zero,
                 itemBuilder: (context, index) {
                   final event = events[index];
-                  return EventLiveViewItem(
-                    event: event,
-                    sedBloc: widget.sedBloc,
-                  );
+                  return EventLiveViewItem(event: event, sedBloc: widget.sedBloc);
                 },
                 itemCount: events.length,
               ),
