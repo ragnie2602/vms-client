@@ -58,6 +58,7 @@ class EventBloc extends Bloc<EventEvent, EventState> {
         endTime: event.endTime,
         eventTypes: event.eventTypes,
         startTime: event.startTime,
+        subjectName: event.subjectName,
       ),
     );
 

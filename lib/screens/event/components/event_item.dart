@@ -22,9 +22,7 @@ class EventItem extends StatelessWidget {
   final SetupEventDisplayBloc sedBloc;
 
   EventItem(this.event, {super.key, required this.sedBloc}) {
-    sedBloc.add(
-      GetEventDisplayConfig(event.eventType ?? '', 2, subjectTypeId: event.subjectTypeId),
-    );
+    sedBloc.add(GetEventDisplayConfig(event.eventType ?? '', 2, subjectTypeId: event.subTypeId));
   }
 
   @override
@@ -111,7 +109,7 @@ class EventItem extends StatelessWidget {
                     current is SEDGetEventDisplayConfigSuccess ||
                     current is SEDSavingConfigsSuccess,
                 builder: (context, state) {
-                  final config = sedBloc.configs[(event.eventType ?? '', event.subjectTypeId)];
+                  final config = sedBloc.configs[(event.eventType ?? '', event.subTypeId)];
 
                   if (config == null) {
                     return const SizedBox(

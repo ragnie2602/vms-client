@@ -27,7 +27,7 @@ class GetEventDisplayConfigUsecase
       for (var f in config.fields) {
         if (f.fieldKey == 'cameraId') {
           newFields.add(f.copyWith(fieldKey: 'cameraName', fieldName: 'Tên camera'));
-        } else if (f.fieldKey != 'Ảnh nhận diện khuôn mặt') {
+        } else {
           newFields.add(f);
         }
       }

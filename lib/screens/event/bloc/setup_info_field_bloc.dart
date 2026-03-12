@@ -58,6 +58,7 @@ class SetupEventDisplayBloc extends Bloc<SetupEventDisplayEvent, SetupEventDispl
       GetEventDisplayConfigInput(event.eventType, event.typeConfig, event.subjectTypeId),
     );
     configs[(result.config.eventType, result.config.subjectTypeId)] = result.config;
+    // _changes[(result.config.eventType, result.config.subjectTypeId)] = result.config;
 
     emit(SEDGetEventDisplayConfigSuccess(result.config));
   }

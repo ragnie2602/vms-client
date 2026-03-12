@@ -367,6 +367,7 @@ class _EventScreenState extends State<EventScreen> {
                                 endTime: endTime,
                                 eventTypes: eventType,
                                 startTime: startTime,
+                                subjectName: searchController.text,
                               ),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),

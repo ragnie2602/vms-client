@@ -86,7 +86,8 @@ class EventLiveViewItem extends StatelessWidget {
 
   // GETTERS
   int? get eventId => event.eventData?['eventId'];
-  int? get subjectTypeId => event.eventData?['subjectTypeId'];
+  int? get subjectTypeId =>
+      event.eventType == "face_detection" ? (event.eventData?['subjectTypeId']) : null;
 
   Widget _buildContent(Map<String, dynamic> eventData, EventDisplayConfig config) {
     final sortedFields = config.sortedFields();

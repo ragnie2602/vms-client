@@ -40,17 +40,21 @@ class EventEntity {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'eventType': eventType,
-      'eventName': eventName,
-      'cameraId': cameraId,
-      'timeEvent': timeEvent.format("HH:mm dd/MM/yyyy"),
-      'imageUrl': imageUrl,
-      'description': description,
-      'payload': payload,
-      'cameraName': camera?.name,
-      'subjectTypeId': subjectTypeId,
-    };
+    final Map<String, dynamic> res = Map.from(payload ?? {});
+
+    res['id'] = id;
+    if (eventType != null) res['eventType'] = eventType;
+    if (eventName != null) res['eventName'] = eventName;
+    if (cameraId != null) res['cameraId'] = cameraId;
+    res['timeEvent'] = timeEvent.format("HH:mm dd/MM/yyyy");
+    if (imageUrl != null) res['imageUrl'] = imageUrl;
+    if (description != null) res['description'] = description;
+    if (subjectTypeId != null) res['subjectTypeId'] = subjectTypeId;
+    res['cameraName'] = camera?.name;
+
+    return res;
   }
+
+  int? get subTypeId =>
+      eventType == "face_detection" ? (subjectTypeId ?? payload?['subjectTypeId']) : null;
 }
