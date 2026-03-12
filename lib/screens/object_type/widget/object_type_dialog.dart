@@ -171,7 +171,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       builder: (context) => ConfirmDeleteDialog(
         title: 'Xóa trường dữ liệu',
         content:
-            'Bạn có chắc chắn muốn xóa trường dữ liệu $displayLabel không?',
+            'Trường dữ liệu $displayLabel đang chứa dữ liệu đối tượng. Bạn có chắc chắn muốn xóa?',
         onConfirm: () {
           setState(() => _fields.removeAt(index));
         },
@@ -327,6 +327,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                           hintText: 'Nhập mô tả',
                           label: 'Mô tả',
                           borderRadius: 3,
+                          maxLength: 250,
                         ),
                       ),
                       SizedBox(width: 16),
@@ -1008,7 +1009,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
               if (snapshot.hasError) {
                 return Center(
                   child: Text(
-                    'Lỗi tải icon: ${snapshot.error}',
+                    'Có vấn đề xảy ra',
                     style: AppTypography.style(14, color: Colors.red),
                   ),
                 );
