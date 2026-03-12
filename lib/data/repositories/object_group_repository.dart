@@ -193,17 +193,17 @@ class ObjectGroupRepository extends BaseRepository
   }
 
   @override
-  Future<void> createSubjectGroup(String name, int parentId) async {
-    final response = await _apiClient.post(
-      url: '${EndPoints.baseUrl}${EndPoints.baseSubjectGroup}',
-      data: {'name': name, 'parentId': parentId},
-    );
-
-    // API may return the created object or a success response
-    if (response != null) {
-      return;
-    }
-    throw Exception('Failed to create subject group');
+  Future<Either<Failure, SubjectGroup>> createSubjectGroup({
+    required String name,
+    int? parentId,
+  }) async {
+    return await catchError<SubjectGroup>(() async {
+      final data = await _subjectGroupService.postSubjectGroup(
+        name: name,
+        parentId: parentId,
+      );
+      return Right(data);
+    });
   }
 
   @override

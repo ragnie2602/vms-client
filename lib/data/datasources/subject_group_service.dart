@@ -24,13 +24,28 @@ class SubjectGroupService {
         .toList();
   }
 
+  Future<SubjectGroup> postSubjectGroup({
+    required String name,
+    int? parentId,
+  }) async {
+    final raw = await httpClient.post(
+      url: EndPoints.baseSubjectGroup,
+      data: {'name': name, 'parentId': parentId},
+    );
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+    return SubjectGroup.fromJson(response.data);
+  }
+
   Future<SubjectGroup> putEditSubjectGroup({
     required int subjectGroupId,
     required SubjectGroup request,
   }) async {
     final raw = await httpClient.put(
       url: '${EndPoints.baseSubjectGroup}/$subjectGroupId',
-      data: request.toJson(),
+      data: request.toJsonEdit(),
     );
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) {

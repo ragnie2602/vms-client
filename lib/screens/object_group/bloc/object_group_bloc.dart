@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
@@ -5,12 +7,10 @@ import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dar
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/check_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 
@@ -18,8 +18,6 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
   final GetObjectTypesUsecase _getObjectTypesUseCase;
   final GetObjectsByTypeUsecase _getObjectsByTypeUsecase;
   final IObjectGroupRepository objectGroupRepository;
-  final CreateSubjectGroupUsecase _createSubjectGroupUsecase;
-  final UpdateSubjectGroupUsecase _updateSubjectGroupUsecase;
   final DeleteSubjectGroupUsecase _deleteSubjectGroupUsecase;
   final SearchSubjectGroupUsecase _searchSubjectGroupUsecase;
   final CheckSubjectGroupUsecase _checkSubjectGroupUsecase;
@@ -28,8 +26,6 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     this._getObjectTypesUseCase,
     this._getObjectsByTypeUsecase,
     this.objectGroupRepository,
-    this._createSubjectGroupUsecase,
-    this._updateSubjectGroupUsecase,
     this._deleteSubjectGroupUsecase,
     this._searchSubjectGroupUsecase,
     this._checkSubjectGroupUsecase,
@@ -166,7 +162,9 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     LoadSubjectGroups event,
     Emitter<ObjectGroupState> emit,
   ) async {
-    emit(state.copyWith(isTreeLoading: true));
+    emit(
+      state.copyWith(status: ObjectGroupStatus.loading, isTreeLoading: true),
+    );
     final result = await objectGroupRepository.getSubjectGroups();
     result.fold(
       (failure) {
@@ -199,52 +197,62 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     );
   }
 
-  Future<void> _onCreateSubjectGroup(
+  FutureOr<void> _onCreateSubjectGroup(
     CreateSubjectGroup event,
     Emitter<ObjectGroupState> emit,
   ) async {
-    try {
-      final input = CreateSubjectGroupInput(
-        name: event.name,
-        parentId: event.parentId,
-      );
-      await _createSubjectGroupUsecase.execute(input);
-
-      // Reload subject groups to refresh the tree
-      add(const LoadSubjectGroups());
-      event.onSuccess?.call();
-    } catch (e) {
-      event.onError?.call(e.toString());
-      emit(
-        state.copyWith(
-          errorMessage: e.toString(),
-          status: ObjectGroupStatus.error,
-        ),
-      );
-    }
+    final currentState = state;
+    final result = await objectGroupRepository.createSubjectGroup(
+      name: event.name,
+      parentId: event.parentId,
+    );
+    result.fold(
+      (failure) {
+        event.completer?.complete();
+        emit(
+          currentState.copyWith(
+            errorMessage: failure.toString(),
+            status: ObjectGroupStatus.createGroupFailure,
+          ),
+        );
+      },
+      (success) {
+        event.completer?.complete();
+        emit(
+          currentState.copyWith(status: ObjectGroupStatus.createGroupSuccess),
+        );
+        add(const LoadSubjectGroups());
+      },
+    );
   }
 
-  Future<void> _onUpdateSubjectGroup(
+  FutureOr<void> _onUpdateSubjectGroup(
     UpdateSubjectGroup event,
     Emitter<ObjectGroupState> emit,
   ) async {
-    try {
-      final input = UpdateSubjectGroupInput(
-        id: event.id,
-        request: event.subjectGroup!,
-      );
-      await _updateSubjectGroupUsecase.execute(input);
-      add(const LoadSubjectGroups());
-      event.onSuccess?.call();
-    } catch (e) {
-      event.onError?.call(e.toString());
-      emit(
-        state.copyWith(
-          errorMessage: e.toString(),
-          status: ObjectGroupStatus.error,
-        ),
-      );
-    }
+    final currentState = state;
+    final result = await objectGroupRepository.editObjectGroup(
+      objectGroupId: event.id,
+      request: event.subjectGroup!,
+    );
+    result.fold(
+      (failure) {
+        event.completer?.complete();
+        emit(
+          currentState.copyWith(
+            errorMessage: failure.toString(),
+            status: ObjectGroupStatus.updateGroupFailure,
+          ),
+        );
+      },
+      (success) {
+        event.completer?.complete();
+        emit(
+          currentState.copyWith(status: ObjectGroupStatus.updateGroupSuccess),
+        );
+        add(const LoadSubjectGroups());
+      },
+    );
   }
 
   /// Convert flat list of SubjectGroup to TreeNode<SubjectGroup> hierarchy.
@@ -304,15 +312,14 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     try {
       final input = DeleteSubjectGroupInput(id: event.id);
       await _deleteSubjectGroupUsecase.execute(input);
+      emit(state.copyWith(status: ObjectGroupStatus.deleteGroupSuccess));
       add(const SelectSubjectGroup(null));
       add(const LoadSubjectGroups());
-      event.onSuccess?.call();
     } catch (e) {
-      event.onError?.call(e.toString());
       emit(
         state.copyWith(
           errorMessage: e.toString(),
-          status: ObjectGroupStatus.error,
+          status: ObjectGroupStatus.deleteGroupFailure,
         ),
       );
     }
@@ -334,11 +341,14 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
               status: ObjectGroupStatus.error,
             ),
           );
-          event.onError?.call(failure.parseMessage());
         },
         (data) {
-          emit(state.copyWith(status: ObjectGroupStatus.loaded));
-          event.onSuccess?.call(data);
+          emit(
+            state.copyWith(
+              status: ObjectGroupStatus.checkGroupForDeleteSuccess,
+              checkSubjectGroupModel: data,
+            ),
+          );
         },
       );
     } catch (e) {
@@ -348,7 +358,6 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
           status: ObjectGroupStatus.error,
         ),
       );
-      event.onError?.call(e.toString());
     }
   }
 

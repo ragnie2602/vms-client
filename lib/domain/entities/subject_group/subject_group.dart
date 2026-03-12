@@ -41,6 +41,10 @@ class SubjectGroup extends Equatable {
     };
   }
 
+  Map<String, dynamic> toJsonEdit() {
+    return {'name': name, 'parentId': parentId};
+  }
+
   @override
   List<Object?> get props => [id, name, parentId, level, createdAt, updatedAt];
 }

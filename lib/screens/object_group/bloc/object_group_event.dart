@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
-import 'package:vms_flutter_client/domain/entities/subject_group/check_subject_group_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
 class ObjectGroupEvent extends BaseEvent {
@@ -76,61 +77,49 @@ class LoadSubjectGroups extends ObjectGroupEvent {
 class CreateSubjectGroup extends ObjectGroupEvent {
   final String name;
   final int parentId;
-  final void Function()? onSuccess;
-  final void Function(String)? onError;
+  final Completer<void>? completer;
 
   const CreateSubjectGroup({
     required this.name,
     required this.parentId,
-    this.onSuccess,
-    this.onError,
+    this.completer,
   });
 
   @override
-  List<Object?> get props => [name, parentId, onSuccess, onError];
+  List<Object?> get props => [name, parentId];
 }
 
 class UpdateSubjectGroup extends ObjectGroupEvent {
   final int id;
   final SubjectGroup? subjectGroup;
-  final void Function()? onSuccess;
-  final void Function(String)? onError;
+  final Completer<void>? completer;
 
   const UpdateSubjectGroup({
     required this.id,
     this.subjectGroup,
-    this.onSuccess,
-    this.onError,
+    this.completer,
   });
 
   @override
-  List<Object?> get props => [id, subjectGroup, onSuccess, onError];
+  List<Object?> get props => [id, subjectGroup];
 }
 
 class DeleteSubjectGroup extends ObjectGroupEvent {
   final int id;
-  final void Function()? onSuccess;
-  final void Function(String)? onError;
 
-  const DeleteSubjectGroup({required this.id, this.onSuccess, this.onError});
+  const DeleteSubjectGroup({required this.id});
 
   @override
-  List<Object?> get props => [id, onSuccess, onError];
+  List<Object?> get props => [id];
 }
 
 class CheckSubjectGroupForDelete extends ObjectGroupEvent {
   final SubjectGroup subjectGroup;
-  final void Function(CheckSubjectGroupModel)? onSuccess;
-  final void Function(String)? onError;
 
-  const CheckSubjectGroupForDelete({
-    required this.subjectGroup,
-    this.onSuccess,
-    this.onError,
-  });
+  const CheckSubjectGroupForDelete({required this.subjectGroup});
 
   @override
-  List<Object?> get props => [subjectGroup, onSuccess, onError];
+  List<Object?> get props => [subjectGroup];
 }
 
 class SearchSubjectGroup extends ObjectGroupEvent {

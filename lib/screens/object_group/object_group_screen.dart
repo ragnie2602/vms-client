@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:animated_tree_view/animated_tree_view.dart';
@@ -315,20 +316,15 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           }) async {
             final bloc = c.read<ObjectGroupBloc>();
             if (nameNewGroup != null) {
+              final completer = Completer<void>();
               bloc.add(
                 CreateSubjectGroup(
                   name: nameNewGroup,
                   parentId: parentGroup?.id ?? 0,
-                  onSuccess: () {
-                    if (c.mounted) {
-                      ToastUtil.toastSuccess(
-                        context: c,
-                        title: const Text('Thêm mới nhóm đối tượng thành công'),
-                      );
-                    }
-                  },
+                  completer: completer,
                 ),
               );
+              await completer.future;
             }
           },
     );
@@ -360,6 +356,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           }) async {
             final bloc = c.read<ObjectGroupBloc>();
             if (nameNewGroup != null) {
+              final completer = Completer<void>();
               bloc.add(
                 UpdateSubjectGroup(
                   id: currentGroup?.id ?? 0,
@@ -368,16 +365,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     parentId:
                         parentGroup?.id ?? 0, // ko có group cha -> truyền 0
                   ),
-                  onSuccess: () {
-                    if (c.mounted) {
-                      ToastUtil.toastSuccess(
-                        context: c,
-                        title: const Text('Sửa nhóm đối tượng thành công'),
-                      );
-                    }
-                  },
+                  completer: completer,
                 ),
               );
+              await completer.future;
             }
           },
     );
@@ -397,21 +388,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           groupName: currentGroup.name,
           onConfirm: () {
             final bloc = c.read<ObjectGroupBloc>();
-            bloc.add(
-              DeleteSubjectGroup(
-                id: currentGroup.id ?? 0,
-                onSuccess: () {
-                  if (c.mounted) {
-                    ToastUtil.toastSuccess(
-                      context: c,
-                      title: Text(
-                        'Xóa ${currentGroup.name ?? 'nhóm đối tượng'} thành công!',
-                      ),
-                    );
-                  }
-                },
-              ),
-            );
+            bloc.add(DeleteSubjectGroup(id: currentGroup.id ?? 0));
           },
         );
       },
@@ -613,45 +590,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                     );
                                     break;
                                   case GroupObjectAction.delete:
-                                    bool hasObjects =
-                                        state.selectedSubjectGroup?.id ==
-                                            node.data?.id &&
-                                        state.objects.isNotEmpty;
-
                                     if (node.data != null) {
                                       context.read<ObjectGroupBloc>().add(
                                         CheckSubjectGroupForDelete(
                                           subjectGroup: node.data!,
-                                          onSuccess: (data) {
-                                            bool apiHasChildren =
-                                                data.hasChildren == true;
-                                            bool apiHasVmsObjects =
-                                                data.hasVmsObjects == true;
-
-                                            _onShowDialogRemoveGroupObject(
-                                              c: context,
-                                              currentGroup: node.data,
-                                              hasChildren:
-                                                  node.children.isNotEmpty ||
-                                                  hasObjects ||
-                                                  apiHasChildren ||
-                                                  apiHasVmsObjects,
-                                            );
-                                          },
-                                          onError: (error) {
-                                            ToastUtil.toastFail(
-                                              context: context,
-                                              title: Text(error),
-                                            );
-                                            // Fallback to old logic if api fails
-                                            _onShowDialogRemoveGroupObject(
-                                              c: context,
-                                              currentGroup: node.data,
-                                              hasChildren:
-                                                  node.children.isNotEmpty ||
-                                                  hasObjects,
-                                            );
-                                          },
                                         ),
                                       );
                                     }
@@ -718,12 +660,54 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           // Main Content Area
           Expanded(
             child: BlocConsumer<ObjectGroupBloc, ObjectGroupState>(
+              listenWhen: (previous, current) =>
+                  previous.status != current.status,
               listener: (context, state) {
-                if (state.status == ObjectGroupStatus.error) {
-                  ToastUtil.toastFail(
-                    context: context,
-                    title: Text(state.errorMessage ?? 'Đã xảy ra lỗi'),
-                  );
+                switch (state.status) {
+                  case ObjectGroupStatus.createGroupSuccess:
+                    ToastUtil.toastSuccess(
+                      context: context,
+                      title: const Text('Thêm mới nhóm đối tượng thành công'),
+                    );
+                    break;
+                  case ObjectGroupStatus.updateGroupSuccess:
+                    ToastUtil.toastSuccess(
+                      context: context,
+                      title: const Text('Sửa nhóm đối tượng thành công'),
+                    );
+                    break;
+                  case ObjectGroupStatus.deleteGroupSuccess:
+                    ToastUtil.toastSuccess(
+                      context: context,
+                      title: const Text('Xóa nhóm đối tượng thành công!'),
+                    );
+                    break;
+                  case ObjectGroupStatus.checkGroupForDeleteSuccess:
+                    if (state.checkSubjectGroupModel != null &&
+                        state.selectedSubjectGroup != null) {
+                      final data = state.checkSubjectGroupModel!;
+                      final currentGroup = state.selectedSubjectGroup!;
+                      bool apiHasChildren = data.hasChildren == true;
+                      bool apiHasVmsObjects = data.hasVmsObjects == true;
+
+                      _onShowDialogRemoveGroupObject(
+                        c: context,
+                        currentGroup: currentGroup,
+                        hasChildren: apiHasChildren || apiHasVmsObjects,
+                      );
+                    }
+                    break;
+                  case ObjectGroupStatus.error:
+                  case ObjectGroupStatus.createGroupFailure:
+                  case ObjectGroupStatus.updateGroupFailure:
+                  case ObjectGroupStatus.deleteGroupFailure:
+                    ToastUtil.toastFail(
+                      context: context,
+                      title: Text(state.errorMessage ?? 'Đã xảy ra lỗi'),
+                    );
+                    break;
+                  default:
+                    break;
                 }
               },
               buildWhen: (previous, current) =>

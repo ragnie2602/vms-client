@@ -3,9 +3,22 @@ import 'package:equatable/equatable.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/check_subject_group_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
-enum ObjectGroupStatus { initial, loading, loaded, error }
+enum ObjectGroupStatus {
+  initial,
+  loading,
+  loaded,
+  error,
+  createGroupSuccess,
+  createGroupFailure,
+  deleteGroupSuccess,
+  deleteGroupFailure,
+  updateGroupSuccess,
+  updateGroupFailure,
+  checkGroupForDeleteSuccess,
+}
 
 class ObjectGroupState extends BaseState with EquatableMixin {
   final ObjectGroupStatus status;
@@ -24,6 +37,7 @@ class ObjectGroupState extends BaseState with EquatableMixin {
   final String searchQuery;
   final SubjectGroup? selectedSubjectGroup;
   final bool isTreeLoading;
+  final CheckSubjectGroupModel? checkSubjectGroupModel;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -42,6 +56,7 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     this.searchQuery = '',
     this.selectedSubjectGroup,
     this.isTreeLoading = false,
+    this.checkSubjectGroupModel,
   });
 
   ObjectGroupState copyWith({
@@ -62,6 +77,7 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     SubjectGroup? selectedSubjectGroup,
     bool clearSelectedSubjectGroup = false,
     bool? isTreeLoading,
+    CheckSubjectGroupModel? checkSubjectGroupModel,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,
@@ -84,6 +100,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
           ? null
           : (selectedSubjectGroup ?? this.selectedSubjectGroup),
       isTreeLoading: isTreeLoading ?? this.isTreeLoading,
+      checkSubjectGroupModel:
+          checkSubjectGroupModel ?? this.checkSubjectGroupModel,
     );
   }
 
@@ -105,5 +123,6 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     searchQuery,
     selectedSubjectGroup,
     isTreeLoading,
+    checkSubjectGroupModel,
   ];
 }
