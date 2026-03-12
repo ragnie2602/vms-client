@@ -7,7 +7,6 @@ import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dar
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/check_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
@@ -18,7 +17,6 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
   final GetObjectTypesUsecase _getObjectTypesUseCase;
   final GetObjectsByTypeUsecase _getObjectsByTypeUsecase;
   final IObjectGroupRepository objectGroupRepository;
-  final DeleteSubjectGroupUsecase _deleteSubjectGroupUsecase;
   final SearchSubjectGroupUsecase _searchSubjectGroupUsecase;
   final CheckSubjectGroupUsecase _checkSubjectGroupUsecase;
 
@@ -26,7 +24,6 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     this._getObjectTypesUseCase,
     this._getObjectsByTypeUsecase,
     this.objectGroupRepository,
-    this._deleteSubjectGroupUsecase,
     this._searchSubjectGroupUsecase,
     this._checkSubjectGroupUsecase,
   ) : super(const ObjectGroupState()) {
@@ -309,20 +306,22 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     Emitter<ObjectGroupState> emit,
   ) async {
     emit(state.copyWith(status: ObjectGroupStatus.loading));
-    try {
-      final input = DeleteSubjectGroupInput(id: event.id);
-      await _deleteSubjectGroupUsecase.execute(input);
-      emit(state.copyWith(status: ObjectGroupStatus.deleteGroupSuccess));
-      add(const SelectSubjectGroup(null));
-      add(const LoadSubjectGroups());
-    } catch (e) {
-      emit(
-        state.copyWith(
-          errorMessage: e.toString(),
-          status: ObjectGroupStatus.deleteGroupFailure,
-        ),
-      );
-    }
+    final result = await objectGroupRepository.deleteSubjectGroup(objectGroupId: event.id);
+    result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            errorMessage: failure.toString(),
+            status: ObjectGroupStatus.deleteGroupFailure,
+          ),
+        );
+      },
+      (success) {
+        emit(state.copyWith(status: ObjectGroupStatus.deleteGroupSuccess));
+        add(const SelectSubjectGroup(null));
+        add(const LoadSubjectGroups());
+      },
+    );
   }
 
   Future<void> _onCheckSubjectGroupForDelete(

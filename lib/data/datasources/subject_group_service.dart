@@ -54,15 +54,15 @@ class SubjectGroupService {
     return SubjectGroup.fromJson(response.data);
   }
 
-  Future<void> deleteSubjectGroup({required int subjectGroupId}) async {
+  Future<bool> deleteSubjectGroup({required int subjectGroupId}) async {
     final raw = await httpClient.delete(
       url: '${EndPoints.baseSubjectGroup}/$subjectGroupId',
     );
     final response = BaseResponse.fromJson(raw);
-    if (response.code != 204) {
+    if (response.code != 200) {
       throw ApiException(response.message);
     }
-    return response.data;
+    return true;
   }
 
   Future<CheckSubjectGroupModel> getCheckSubjectGroup(int id) async {

@@ -39,7 +39,7 @@ abstract class IObjectGroupRepository {
     required int objectGroupId,
     required SubjectGroup request,
   });
-  Future<Either<Failure, int>> deleteSubjectGroup({required int objectGroupId});
+  Future<Either<Failure, bool>> deleteSubjectGroup({required int objectGroupId});
 
   /// Check if subject group has children or objects
   Future<Either<Failure, CheckSubjectGroupModel>> checkSubjectGroup(int id);

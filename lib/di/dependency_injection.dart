@@ -59,7 +59,6 @@ import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_
 import 'package:vms_flutter_client/domain/usecases/object_group/check_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
@@ -198,9 +197,6 @@ class DependencyInjection {
     ),
     Provider<CheckSubjectGroupUsecase>(
       create: (context) => CheckSubjectGroupUsecase(context.read()),
-    ),
-    Provider<DeleteSubjectGroupUsecase>(
-      create: (context) => DeleteSubjectGroupUsecase(context.read()),
     ),
     Provider<SearchSubjectGroupUsecase>(create: (context) => const SearchSubjectGroupUsecase()),
 
