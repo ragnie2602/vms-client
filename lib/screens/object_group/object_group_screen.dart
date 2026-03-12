@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -715,7 +716,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                   previous.status != current.status ||
                   previous.objectTypes != current.objectTypes ||
                   previous.selectedObjectType != current.selectedObjectType ||
-                  previous.subjectGroups != current.subjectGroups,
+                  previous.subjectGroups != current.subjectGroups ||
+                  previous.objectTypesPage != current.objectTypesPage ||
+                  previous.objectTypesTotalPages !=
+                      current.objectTypesTotalPages,
               builder: (context, state) {
                 if (state.status == ObjectGroupStatus.loading &&
                     state.objectTypes.isEmpty) {
@@ -774,31 +778,75 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Tabs Header – no left padding
+                    // Tabs Header with pagination buttons
                     Container(
                       color: Colors.white,
-                      child: TabBar(
-                        controller: _tabController,
-                        isScrollable: true,
-                        indicatorColor: AppColors.primary,
-                        labelColor: AppColors.primary,
-                        unselectedLabelColor: AppColors.grey64748B,
-                        labelStyle: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        unselectedLabelStyle: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        tabAlignment: TabAlignment.start,
-                        padding: EdgeInsets.zero,
-                        labelPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                        ),
-                        tabs: state.objectTypes
-                            .map((type) => Tab(text: type.name))
-                            .toList(),
+                      child: Row(
+                        children: [
+                          // Prev button
+                          if (state.objectTypesTotalPages > 1)
+                            _buildTabPageButton(
+                              icon: Icons.chevron_left,
+                              enabled: state.objectTypesPage > 1,
+                              onTap: () {
+                                context.read<ObjectGroupBloc>().add(
+                                  ChangeObjectTypesPage(
+                                    page: state.objectTypesPage - 1,
+                                  ),
+                                );
+                              },
+                            ),
+                          // TabBar
+                          Expanded(
+                            child: ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(context)
+                                  .copyWith(
+                                    dragDevices: {
+                                      PointerDeviceKind.touch,
+                                      PointerDeviceKind.mouse,
+                                    },
+                                  ),
+                              child: TabBar(
+                                controller: _tabController,
+                                isScrollable: true,
+                                indicatorColor: AppColors.primary,
+                                labelColor: AppColors.primary,
+                                unselectedLabelColor: AppColors.grey64748B,
+                                labelStyle: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                unselectedLabelStyle: AppTypography.style(
+                                  14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                tabAlignment: TabAlignment.start,
+                                padding: EdgeInsets.zero,
+                                labelPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                tabs: state.objectTypes
+                                    .map((type) => Tab(text: type.name))
+                                    .toList(),
+                              ),
+                            ),
+                          ),
+                          // Next button
+                          if (state.objectTypesTotalPages > 1)
+                            _buildTabPageButton(
+                              icon: Icons.chevron_right,
+                              enabled:
+                                  state.objectTypesPage <
+                                  state.objectTypesTotalPages,
+                              onTap: () {
+                                context.read<ObjectGroupBloc>().add(
+                                  ChangeObjectTypesPage(
+                                    page: state.objectTypesPage + 1,
+                                  ),
+                                );
+                              },
+                            ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -824,6 +872,25 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTabPageButton({
+    required IconData icon,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        child: Icon(
+          icon,
+          size: 22,
+          color: enabled ? AppColors.primary : AppColors.grey64748B,
+        ),
       ),
     );
   }

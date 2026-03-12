@@ -29,6 +29,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
   final int totalObjects;
   final String? errorMessage;
   final int totalPages;
+  final int objectTypesPage;
+  final int objectTypesTotalPages;
   final List<SubjectGroup> subjectGroups;
   final TreeNode<SubjectGroup>? subjectGroupTree;
   final List<SubjectGroup> filteredSubjectGroups;
@@ -48,6 +50,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     this.totalObjects = 0,
     this.errorMessage,
     this.totalPages = 1,
+    this.objectTypesPage = 1,
+    this.objectTypesTotalPages = 1,
     this.subjectGroups = const [],
     this.subjectGroupTree,
     this.filteredSubjectGroups = const [],
@@ -68,6 +72,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     int? totalObjects,
     String? errorMessage,
     int? totalPages,
+    int? objectTypesPage,
+    int? objectTypesTotalPages,
     List<SubjectGroup>? subjectGroups,
     TreeNode<SubjectGroup>? subjectGroupTree,
     List<SubjectGroup>? filteredSubjectGroups,
@@ -88,6 +94,9 @@ class ObjectGroupState extends BaseState with EquatableMixin {
       totalObjects: totalObjects ?? this.totalObjects,
       errorMessage: errorMessage ?? this.errorMessage,
       totalPages: totalPages ?? this.totalPages,
+      objectTypesPage: objectTypesPage ?? this.objectTypesPage,
+      objectTypesTotalPages:
+          objectTypesTotalPages ?? this.objectTypesTotalPages,
       subjectGroups: subjectGroups ?? this.subjectGroups,
       subjectGroupTree: subjectGroupTree ?? this.subjectGroupTree,
       filteredSubjectGroups:
@@ -115,6 +124,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     totalObjects,
     errorMessage,
     totalPages,
+    objectTypesPage,
+    objectTypesTotalPages,
     subjectGroups,
     subjectGroupTree,
     filteredSubjectGroups,

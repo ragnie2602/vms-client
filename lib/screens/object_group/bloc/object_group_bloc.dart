@@ -29,6 +29,8 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
   ) : super(const ObjectGroupState()) {
     // lấy list danh sách các object type để hiển thị tab bên trái
     on<LoadObjectTypes>(_onLoadObjectTypes);
+    // case object type tab phân trang
+    on<ChangeObjectTypesPage>(_onChangeObjectTypesPage);
     // thay đổi tab kiểu đối tượng => load lại dữ liệu đối tượng
     on<SelectObjectType>(_onSelectObjectType);
     on<LoadObjects>(_onLoadObjects);
@@ -66,6 +68,7 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     try {
       final input = GetObjectTypesInput(page: event.page, size: event.size);
       final result = await _getObjectTypesUseCase.execute(input);
+      final totalPages = result.data['totalPages'] as int? ?? 1;
       final rawObjectTypes = result.data['data'] as List<dynamic>;
       final objectTypes = rawObjectTypes
           .cast<ObjectType>()
@@ -78,6 +81,8 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
             status: ObjectGroupStatus.loaded,
             objectTypes: List.from(objectTypes),
             selectedObjectType: objectTypes.first,
+            objectTypesPage: event.page,
+            objectTypesTotalPages: totalPages,
           ),
         );
         add(SelectObjectType(objectTypes.first));
@@ -87,6 +92,8 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
             status: ObjectGroupStatus.loaded,
             objectTypes: [],
             selectedObjectType: null,
+            objectTypesPage: event.page,
+            objectTypesTotalPages: totalPages,
           ),
         );
       }
@@ -119,6 +126,13 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
         size: event.size,
       ),
     );
+  }
+
+  Future<void> _onChangeObjectTypesPage(
+    ChangeObjectTypesPage event,
+    Emitter<ObjectGroupState> emit,
+  ) async {
+    add(LoadObjectTypes(page: event.page));
   }
 
   Future<void> _onLoadObjects(

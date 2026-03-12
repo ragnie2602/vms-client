@@ -35,6 +35,14 @@ class LoadObjectTypes extends ObjectGroupEvent {
   List<Object> get props => [page, size];
 }
 
+class ChangeObjectTypesPage extends ObjectGroupEvent {
+  final int page;
+  const ChangeObjectTypesPage({required this.page});
+
+  @override
+  List<Object> get props => [page];
+}
+
 class SelectObjectType extends ObjectGroupEvent {
   final ObjectType objectType;
   final int page;
