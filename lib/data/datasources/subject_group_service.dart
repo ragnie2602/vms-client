@@ -13,6 +13,17 @@ class SubjectGroupService {
 
   SubjectGroupService(this.httpClient);
 
+  Future<List<SubjectGroup>> getSubjectGroups() async {
+    final raw = await httpClient.get(EndPoints.baseSubjectGroup);
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+    return (response.data as List)
+        .map((json) => SubjectGroup.fromJson(json))
+        .toList();
+  }
+
   Future<SubjectGroup> putEditSubjectGroup({
     required int subjectGroupId,
     required SubjectGroup request,

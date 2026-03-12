@@ -30,7 +30,7 @@ abstract class IObjectGroupRepository {
     List<int>? fileIds,
   });
   Future<void> deleteObject(int objectId);
-  Future<List<SubjectGroup>> getSubjectGroups();
+  Future<Either<Failure, List<SubjectGroup>>> getSubjectGroups();
   Future<void> createSubjectGroup(String name, int parentId);
   Future<Either<Failure, SubjectGroup>> editObjectGroup({
     required int objectGroupId,

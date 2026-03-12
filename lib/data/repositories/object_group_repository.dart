@@ -184,33 +184,12 @@ class ObjectGroupRepository extends BaseRepository
     }
     throw Exception(response?['message'] ?? 'Failed to delete object');
   }
-
   @override
-  Future<List<SubjectGroup>> getSubjectGroups() async {
-    final response = await _apiClient.get(
-      '${EndPoints.baseUrl}${EndPoints.baseSubjectGroup}',
-    );
-
-    // Handle both response formats:
-    // 1. Raw JSON array: [{ ... }, { ... }]
-    // 2. Wrapped response: { code: 200, data: [{ ... }] }
-    List<dynamic> items;
-    if (response is List) {
-      items = response;
-    } else if (response is Map<String, dynamic>) {
-      final data = response['data'];
-      if (data is List) {
-        items = data;
-      } else {
-        items = [];
-      }
-    } else {
-      throw Exception('Failed to load subject groups');
-    }
-
-    return items
-        .map((item) => SubjectGroup.fromJson(item as Map<String, dynamic>))
-        .toList();
+  Future<Either<Failure, List<SubjectGroup>>> getSubjectGroups() async {
+    return await catchError<List<SubjectGroup>>(() async {
+      final data = await _subjectGroupService.getSubjectGroups();
+      return Right(data);
+    });
   }
 
   @override

@@ -1,23 +1,23 @@
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
+import 'package:vms_flutter_client/domain/usecases/object_group/check_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/check_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.dart';
 
 class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
   final GetObjectTypesUsecase _getObjectTypesUseCase;
   final GetObjectsByTypeUsecase _getObjectsByTypeUsecase;
-  final GetSubjectGroupsUsecase _getSubjectGroupsUsecase;
+  final IObjectGroupRepository objectGroupRepository;
   final CreateSubjectGroupUsecase _createSubjectGroupUsecase;
   final UpdateSubjectGroupUsecase _updateSubjectGroupUsecase;
   final DeleteSubjectGroupUsecase _deleteSubjectGroupUsecase;
@@ -27,7 +27,7 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
   ObjectGroupBloc(
     this._getObjectTypesUseCase,
     this._getObjectsByTypeUsecase,
-    this._getSubjectGroupsUsecase,
+    this.objectGroupRepository,
     this._createSubjectGroupUsecase,
     this._updateSubjectGroupUsecase,
     this._deleteSubjectGroupUsecase,
@@ -166,30 +166,38 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     LoadSubjectGroups event,
     Emitter<ObjectGroupState> emit,
   ) async {
-    try {
-      final input = GetSubjectGroupsInput();
-      final result = await _getSubjectGroupsUsecase.execute(input);
-      final groups = result.data;
-
-      // Build tree from flat list
-      final tree = _buildTreeFromFlatList(groups);
-
-      emit(
-        state.copyWith(
-          subjectGroups: groups,
-          subjectGroupTree: tree,
-          filteredSubjectGroups: groups,
-          filteredSubjectGroupTree: tree,
-          treeKey: DateTime.now().millisecondsSinceEpoch.toString(),
-          searchQuery: '',
-          selectedSubjectGroup:
-              state.selectedSubjectGroup ??
-              SubjectGroup(id: 0, name: 'Danh sách đối tượng', parentId: 0),
-        ),
-      );
-    } catch (e) {
-      emit(state.copyWith(errorMessage: e.toString()));
-    }
+    final currentState = state;
+    final result = await objectGroupRepository.getSubjectGroups();
+    result.fold(
+      (failure) {
+        emit(
+          state.copyWith(
+            errorMessage: failure.toString(),
+            status: ObjectGroupStatus.error,
+          ),
+        );
+        // if (currentState is ObjectGroupLoadedState) {
+        //   emit(currentState);
+        // }
+      },
+      (groups) {
+        final tree = _buildTreeFromFlatList(groups);
+        emit(
+          state.copyWith(
+            subjectGroups: groups,
+            subjectGroupTree: tree,
+            filteredSubjectGroups: groups,
+            filteredSubjectGroupTree: tree,
+            treeKey: DateTime.now().millisecondsSinceEpoch.toString(),
+            searchQuery: '',
+            selectedSubjectGroup:
+                state.selectedSubjectGroup ??
+                SubjectGroup(id: 0, name: 'Danh sách đối tượng', parentId: 0),
+            status: ObjectGroupStatus.loaded,
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _onCreateSubjectGroup(
