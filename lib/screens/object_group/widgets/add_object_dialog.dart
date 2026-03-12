@@ -119,7 +119,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         setState(() => _isLoadingDetail = false);
         ToastUtil.toastFail(
           context: context,
-          title: Text('Lỗi tải dữ liệu: $e'),
+          title: Text('$e'),
         );
       }
     }

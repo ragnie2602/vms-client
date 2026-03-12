@@ -73,10 +73,7 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
             );
             _loadData();
           } else if (state is ObjectTypeCreateError) {
-            ToastUtil.toastFail(
-              context: context,
-              message: 'Có lỗi xảy ra, vui lòng thử lại',
-            );
+            ToastUtil.toastFail(context: context, message: state.message);
           } else if (state is ObjectTypeUpdated) {
             ToastUtil.toastSuccess(
               context: context,
@@ -84,21 +81,16 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
             );
             _loadData();
           } else if (state is ObjectTypeUpdateError) {
-            ToastUtil.toastFail(
-              context: context,
-              message: 'Có lỗi xảy ra, vui lòng thử lại',
-            );
+            ToastUtil.toastFail(context: context, message: state.message);
           } else if (state is ObjectTypeDeleted) {
             ToastUtil.toastSuccess(
               context: context,
-              message: 'Xóa ${_lastDeletedName ?? 'loại đối tượng'} thành công!',
+              message:
+                  'Xóa ${_lastDeletedName ?? 'loại đối tượng'} thành công!',
             );
             _loadData();
           } else if (state is ObjectTypeDeleteError) {
-            ToastUtil.toastFail(
-              context: context,
-              message: 'Có lỗi xảy ra, vui lòng thử lại',
-            );
+            ToastUtil.toastFail(context: context, message: state.message);
           }
         },
         child: Column(

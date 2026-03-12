@@ -19,6 +19,13 @@ abstract class BaseRepository {
     }
   }
 
+  /// Convert DioException to ApiException and throw.
+  /// Use in repositories that throw directly instead of returning Either.
+  Never throwDioError(DioException e) {
+    final failure = _parseDioException(e);
+    throw ApiException(failure.message, code: failure.code);
+  }
+
   DioFailure _parseDioException(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
