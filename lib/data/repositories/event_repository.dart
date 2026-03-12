@@ -19,6 +19,7 @@ class EventRepository extends BaseRepository implements IEventRepository {
     int? endTime,
     List<String>? eventType,
     List<String>? cameraIds,
+    String? subjectName,
   ) async {
     return await catchError<List<EventEntity>>(() async {
       final data = await eventService.exportEvent(
@@ -26,6 +27,7 @@ class EventRepository extends BaseRepository implements IEventRepository {
         endTime: endTime,
         eventType: eventType,
         cameraIds: cameraIds,
+        subjectName: subjectName,
       );
 
       return Right(data.map<EventEntity>((e) => EventEntity.fromJson(e)).toList());

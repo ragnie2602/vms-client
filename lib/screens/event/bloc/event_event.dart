@@ -58,6 +58,7 @@ class ExportEventList extends EventEvent {
   final DateTime? endTime;
   final List<String>? eventTypes;
   final DateTime? startTime;
+  final String? subjectName;
 
   const ExportEventList({
     required this.cameraGroupName,
@@ -66,6 +67,7 @@ class ExportEventList extends EventEvent {
     this.endTime,
     this.eventTypes,
     this.cameraIds,
+    this.subjectName,
   });
 
   @override

@@ -12,6 +12,7 @@ class EventService {
     int? endTime,
     List<String>? eventType,
     List<String>? cameraIds,
+    String? subjectName,
   }) async {
     final raw = await httpClient.post(
       url: EndPoints.exportEvent,
@@ -20,6 +21,7 @@ class EventService {
         if (endTime != null) 'endTime': endTime,
         if (eventType != null) 'eventTypes': eventType,
         if (cameraIds != null) 'cameraIds': cameraIds,
+        if (subjectName?.trim().isNotEmpty == true) 'subjectName': subjectName,
       },
     );
 
