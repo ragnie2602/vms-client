@@ -683,12 +683,13 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     );
                     break;
                   case ObjectGroupStatus.checkGroupForDeleteSuccess:
+                    // check trước khi xóa nhóm
                     if (state.checkSubjectGroupModel != null &&
                         state.selectedSubjectGroup != null) {
-                      final data = state.checkSubjectGroupModel!;
-                      final currentGroup = state.selectedSubjectGroup!;
-                      bool apiHasChildren = data.hasChildren == true;
-                      bool apiHasVmsObjects = data.hasVmsObjects == true;
+                      final data = state.checkSubjectGroupModel;
+                      final currentGroup = state.selectedSubjectGroup;
+                      bool apiHasChildren = data?.hasChildren ?? false;
+                      bool apiHasVmsObjects = data?.hasVmsObjects ?? false;
 
                       _onShowDialogRemoveGroupObject(
                         c: context,

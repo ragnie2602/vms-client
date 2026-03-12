@@ -66,16 +66,11 @@ class SubjectGroupService {
   }
 
   Future<CheckSubjectGroupModel> getCheckSubjectGroup(int id) async {
-    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
-    final response = await httpClient.dio.get(
-      EndPoints.checkSubjectGroup(id),
-      options: Options(headers: {'Authorization': 'Bearer $token'}),
-    );
-    if (response.statusCode == 200) {
-      return CheckSubjectGroupModel.fromJson(response.data);
+    final raw = await httpClient.get(EndPoints.checkSubjectGroup(id));
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
     }
-    throw ApiException(
-      response.statusMessage ?? 'Failed to check subject group',
-    );
+    return CheckSubjectGroupModel.fromJson(response.data);
   }
 }
