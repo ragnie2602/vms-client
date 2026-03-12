@@ -166,7 +166,7 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     LoadSubjectGroups event,
     Emitter<ObjectGroupState> emit,
   ) async {
-    final currentState = state;
+    emit(state.copyWith(isTreeLoading: true));
     final result = await objectGroupRepository.getSubjectGroups();
     result.fold(
       (failure) {
@@ -174,11 +174,9 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
           state.copyWith(
             errorMessage: failure.toString(),
             status: ObjectGroupStatus.error,
+            isTreeLoading: false,
           ),
         );
-        // if (currentState is ObjectGroupLoadedState) {
-        //   emit(currentState);
-        // }
       },
       (groups) {
         final tree = _buildTreeFromFlatList(groups);
@@ -194,6 +192,7 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
                 state.selectedSubjectGroup ??
                 SubjectGroup(id: 0, name: 'Danh sách đối tượng', parentId: 0),
             status: ObjectGroupStatus.loaded,
+            isTreeLoading: false,
           ),
         );
       },

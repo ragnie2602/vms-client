@@ -23,6 +23,7 @@ class ObjectGroupState extends BaseState with EquatableMixin {
   final String treeKey;
   final String searchQuery;
   final SubjectGroup? selectedSubjectGroup;
+  final bool isTreeLoading;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -40,6 +41,7 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     this.treeKey = '',
     this.searchQuery = '',
     this.selectedSubjectGroup,
+    this.isTreeLoading = false,
   });
 
   ObjectGroupState copyWith({
@@ -59,6 +61,7 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     String? searchQuery,
     SubjectGroup? selectedSubjectGroup,
     bool clearSelectedSubjectGroup = false,
+    bool? isTreeLoading,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,
@@ -80,6 +83,7 @@ class ObjectGroupState extends BaseState with EquatableMixin {
       selectedSubjectGroup: clearSelectedSubjectGroup
           ? null
           : (selectedSubjectGroup ?? this.selectedSubjectGroup),
+      isTreeLoading: isTreeLoading ?? this.isTreeLoading,
     );
   }
 
@@ -100,5 +104,6 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     treeKey,
     searchQuery,
     selectedSubjectGroup,
+    isTreeLoading,
   ];
 }

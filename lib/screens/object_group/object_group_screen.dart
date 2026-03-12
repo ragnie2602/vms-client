@@ -525,8 +525,13 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     buildWhen: (previous, current) =>
                         previous.treeKey != current.treeKey ||
                         previous.filteredSubjectGroupTree !=
-                            current.filteredSubjectGroupTree,
+                            current.filteredSubjectGroupTree ||
+                        previous.isTreeLoading != current.isTreeLoading,
                     builder: (context, state) {
+                      if (state.isTreeLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
                       // Tree to display (filtered by bloc via SearchSubjectGroupUsecase)
                       final displayTree =
                           state.filteredSubjectGroupTree ??
