@@ -24,7 +24,7 @@ class FilterEventsByViewingCameras extends DetectEvent {
 }
 
 class UpdateFilterTypes extends DetectEvent {
-  final List<int> selectedTypes;
+  final List<String> selectedTypes;
   const UpdateFilterTypes(this.selectedTypes);
   @override
   List<Object?> get props => [selectedTypes];
