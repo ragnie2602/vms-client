@@ -367,7 +367,7 @@ class ObjectListTable extends StatelessWidget {
       );
 
       if (result == true) {
-        bloc.add(LoadObjects(objectTypeId: state.selectedObjectType!.id));
+        bloc.add(LoadObjects(objectTypeId: state.selectedObjectType!.id, subjectGroupId: state.selectedSubjectGroup?.id ??0));
       }
     } catch (e) {
       if (context.mounted) {
@@ -399,7 +399,7 @@ class ObjectListTable extends StatelessWidget {
                 context: context,
                 title: const Text('Xóa đối tượng thành công'),
               );
-              bloc.add(LoadObjects(objectTypeId: state.selectedObjectType!.id));
+              bloc.add(LoadObjects(objectTypeId: state.selectedObjectType!.id, subjectGroupId: state.selectedSubjectGroup?.id ?? 0));
             }
           } catch (e) {
             if (context.mounted) {
