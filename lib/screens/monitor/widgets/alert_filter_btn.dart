@@ -5,7 +5,6 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
@@ -23,7 +22,7 @@ class AlertFilterBtn extends StatefulWidget {
 class _AlertFilterBtnState extends State<AlertFilterBtn> {
   late final CustomPopupMenuController _controller = CustomPopupMenuController();
 
-  final List<int> _selectedTypes = [];
+  final List<String> _selectedTypes = [];
 
   @override
   Widget build(BuildContext context) {
@@ -132,12 +131,12 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
   Widget _buildMenu(List<EventType> typeEvents) {
     return StatefulBuilder(
       builder: (context, menuSetState) {
-        void _select(int type) {
+        void _select(String et) {
           setState(() {
-            if (_selectedTypes.contains(type)) {
-              _selectedTypes.remove(type);
+            if (_selectedTypes.contains(et)) {
+              _selectedTypes.remove(et);
             } else {
-              _selectedTypes.add(type);
+              _selectedTypes.add(et);
             }
           });
           menuSetState(() {});
@@ -154,18 +153,18 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
               mainAxisSize: MainAxisSize.min,
               spacing: 10,
               children: typeEvents.map((typeEvent) {
-                final type = typeEvent.type;
+                final et = typeEvent.eventKey;
                 final name = typeEvent.name;
-                final isSelected = _selectedTypes.contains(type);
+                final isSelected = _selectedTypes.contains(et);
 
                 return InkWell(
-                  onTap: () => _select(type),
+                  onTap: () => _select(et),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        PrimaryCheckbox(onChanged: (v) => _select(type), value: isSelected),
+                        PrimaryCheckbox(onChanged: (v) => _select(et), value: isSelected),
                         const SizedBox(width: 8),
                         Text(
                           name,
@@ -189,7 +188,7 @@ class _AlertFilterBtnState extends State<AlertFilterBtn> {
 
   String _getLabel(List<EventType> typeEvents) {
     if (_selectedTypes.length == 1) {
-      final selectedType = typeEvents.firstWhereOrNull((e) => e.type == _selectedTypes.first);
+      final selectedType = typeEvents.firstWhereOrNull((e) => e.eventKey == _selectedTypes.first);
       return selectedType?.name ?? '';
     }
     if (_selectedTypes.length > 1) return '${_selectedTypes.length} loại';
