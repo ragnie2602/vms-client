@@ -775,98 +775,105 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                   }
                 }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Tabs Header with pagination buttons
-                    Container(
-                      color: Colors.white,
-                      child: Row(
-                        children: [
-                          // Prev button
-                          if (state.objectTypesTotalPages > 1)
-                            _buildTabPageButton(
-                              icon: Icons.chevron_left,
-                              enabled: state.objectTypesPage > 1,
-                              onTap: () {
-                                context.read<ObjectGroupBloc>().add(
-                                  ChangeObjectTypesPage(
-                                    page: state.objectTypesPage - 1,
+                return ColoredBox(
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Tabs Header with pagination buttons
+                      Container(
+                        color: Colors.white,
+                        child: IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Prev button
+                              if (state.objectTypesTotalPages > 1)
+                                _buildTabPageButton(
+                                  icon: Icons.chevron_left,
+                                  enabled: state.objectTypesPage > 1,
+                                  onTap: () {
+                                    context.read<ObjectGroupBloc>().add(
+                                      ChangeObjectTypesPage(
+                                        page: state.objectTypesPage - 1,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              // TabBar
+                              Expanded(
+                                child: ScrollConfiguration(
+                                  behavior: ScrollConfiguration.of(context)
+                                      .copyWith(
+                                        dragDevices: {
+                                          PointerDeviceKind.touch,
+                                          PointerDeviceKind.mouse,
+                                        },
+                                      ),
+                                  child: TabBar(
+                                    dividerColor: AppColors.greyF2F4FA,
+                                    controller: _tabController,
+                                    isScrollable: true,
+                                    indicatorColor: AppColors.secondary,
+                                    labelColor: AppColors.secondary,
+                                    unselectedLabelColor: AppColors.grey64748B,
+                                    labelStyle: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    unselectedLabelStyle: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    tabAlignment: TabAlignment.start,
+                                    padding: EdgeInsets.zero,
+                                    labelPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    tabs: state.objectTypes
+                                        .map((type) => Tab(text: type.name))
+                                        .toList(),
                                   ),
-                                );
-                              },
-                            ),
-                          // TabBar
-                          Expanded(
-                            child: ScrollConfiguration(
-                              behavior: ScrollConfiguration.of(context)
-                                  .copyWith(
-                                    dragDevices: {
-                                      PointerDeviceKind.touch,
-                                      PointerDeviceKind.mouse,
-                                    },
-                                  ),
-                              child: TabBar(
-                                controller: _tabController,
-                                isScrollable: true,
-                                indicatorColor: AppColors.primary,
-                                labelColor: AppColors.primary,
-                                unselectedLabelColor: AppColors.grey64748B,
-                                labelStyle: AppTypography.style(
-                                  14,
-                                  fontWeight: FontWeight.w600,
                                 ),
-                                unselectedLabelStyle: AppTypography.style(
-                                  14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                tabAlignment: TabAlignment.start,
-                                padding: EdgeInsets.zero,
-                                labelPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                tabs: state.objectTypes
-                                    .map((type) => Tab(text: type.name))
-                                    .toList(),
                               ),
-                            ),
+                              // Next button
+                              if (state.objectTypesTotalPages > 1)
+                                _buildTabPageButton(
+                                  icon: Icons.chevron_right,
+                                  enabled:
+                                      state.objectTypesPage <
+                                      state.objectTypesTotalPages,
+                                  onTap: () {
+                                    context.read<ObjectGroupBloc>().add(
+                                      ChangeObjectTypesPage(
+                                        page: state.objectTypesPage + 1,
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
                           ),
-                          // Next button
-                          if (state.objectTypesTotalPages > 1)
-                            _buildTabPageButton(
-                              icon: Icons.chevron_right,
-                              enabled:
-                                  state.objectTypesPage <
-                                  state.objectTypesTotalPages,
-                              onTap: () {
-                                context.read<ObjectGroupBloc>().add(
-                                  ChangeObjectTypesPage(
-                                    page: state.objectTypesPage + 1,
-                                  ),
-                                );
-                              },
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Search and Action Bar
-                    _buildActionBar(),
-                    const SizedBox(height: 8),
-
-                    // Data Table Area
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5),
                         ),
-                        margin: const EdgeInsets.only(bottom: 10, right: 10),
-                        child: const ObjectListTable(),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+
+                      // Search and Action Bar
+                      _buildActionBar(),
+                      const SizedBox(height: 8),
+
+                      // Data Table Area
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          margin: const EdgeInsets.only(bottom: 10, right: 10),
+                          child: const ObjectListTable(),
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -884,12 +891,20 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     return InkWell(
       onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(4),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.greyE2E8F0.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            bottomLeft: Radius.circular(4),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 3),
         child: Icon(
           icon,
           size: 22,
-          color: enabled ? AppColors.primary : AppColors.grey64748B,
+          color: enabled ? AppColors.secondary : AppColors.grey64748B,
         ),
       ),
     );
