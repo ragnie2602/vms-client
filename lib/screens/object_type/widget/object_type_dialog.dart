@@ -303,7 +303,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                           hintText: 'Nhập tên loại đối tượng',
                           label: 'Tên loại đối tượng',
                           requiredField: true,
-                          maxLength: 50,
+                          maxLength: 30,
                           borderRadius: 3,
                           paddingBottomLabel: 3,
                           validator: (v) => v!.trim().isEmpty
