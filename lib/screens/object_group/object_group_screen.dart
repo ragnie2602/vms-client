@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -315,20 +317,15 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           }) async {
             final bloc = c.read<ObjectGroupBloc>();
             if (nameNewGroup != null) {
+              final completer = Completer<void>();
               bloc.add(
                 CreateSubjectGroup(
                   name: nameNewGroup,
                   parentId: parentGroup?.id ?? 0,
-                  onSuccess: () {
-                    if (c.mounted) {
-                      ToastUtil.toastSuccess(
-                        context: c,
-                        title: const Text('Thêm mới nhóm đối tượng thành công'),
-                      );
-                    }
-                  },
+                  completer: completer,
                 ),
               );
+              await completer.future;
             }
           },
     );
@@ -360,6 +357,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           }) async {
             final bloc = c.read<ObjectGroupBloc>();
             if (nameNewGroup != null) {
+              final completer = Completer<void>();
               bloc.add(
                 UpdateSubjectGroup(
                   id: currentGroup?.id ?? 0,
@@ -368,16 +366,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     parentId:
                         parentGroup?.id ?? 0, // ko có group cha -> truyền 0
                   ),
-                  onSuccess: () {
-                    if (c.mounted) {
-                      ToastUtil.toastSuccess(
-                        context: c,
-                        title: const Text('Sửa nhóm đối tượng thành công'),
-                      );
-                    }
-                  },
+                  completer: completer,
                 ),
               );
+              await completer.future;
             }
           },
     );
@@ -397,21 +389,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           groupName: currentGroup.name,
           onConfirm: () {
             final bloc = c.read<ObjectGroupBloc>();
-            bloc.add(
-              DeleteSubjectGroup(
-                id: currentGroup.id ?? 0,
-                onSuccess: () {
-                  if (c.mounted) {
-                    ToastUtil.toastSuccess(
-                      context: c,
-                      title: Text(
-                        'Xóa ${currentGroup.name ?? 'nhóm đối tượng'} thành công!',
-                      ),
-                    );
-                  }
-                },
-              ),
-            );
+            bloc.add(DeleteSubjectGroup(id: currentGroup.id ?? 0));
           },
         );
       },
@@ -525,8 +503,13 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                     buildWhen: (previous, current) =>
                         previous.treeKey != current.treeKey ||
                         previous.filteredSubjectGroupTree !=
-                            current.filteredSubjectGroupTree,
+                            current.filteredSubjectGroupTree ||
+                        previous.isTreeLoading != current.isTreeLoading,
                     builder: (context, state) {
+                      if (state.isTreeLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
                       // Tree to display (filtered by bloc via SearchSubjectGroupUsecase)
                       final displayTree =
                           state.filteredSubjectGroupTree ??
@@ -608,45 +591,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                                     );
                                     break;
                                   case GroupObjectAction.delete:
-                                    bool hasObjects =
-                                        state.selectedSubjectGroup?.id ==
-                                            node.data?.id &&
-                                        state.objects.isNotEmpty;
-
                                     if (node.data != null) {
                                       context.read<ObjectGroupBloc>().add(
                                         CheckSubjectGroupForDelete(
                                           subjectGroup: node.data!,
-                                          onSuccess: (data) {
-                                            bool apiHasChildren =
-                                                data.hasChildren == true;
-                                            bool apiHasVmsObjects =
-                                                data.hasVmsObjects == true;
-
-                                            _onShowDialogRemoveGroupObject(
-                                              c: context,
-                                              currentGroup: node.data,
-                                              hasChildren:
-                                                  node.children.isNotEmpty ||
-                                                  hasObjects ||
-                                                  apiHasChildren ||
-                                                  apiHasVmsObjects,
-                                            );
-                                          },
-                                          onError: (error) {
-                                            ToastUtil.toastFail(
-                                              context: context,
-                                              title: Text(error),
-                                            );
-                                            // Fallback to old logic if api fails
-                                            _onShowDialogRemoveGroupObject(
-                                              c: context,
-                                              currentGroup: node.data,
-                                              hasChildren:
-                                                  node.children.isNotEmpty ||
-                                                  hasObjects,
-                                            );
-                                          },
                                         ),
                                       );
                                     }
@@ -713,18 +661,65 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           // Main Content Area
           Expanded(
             child: BlocConsumer<ObjectGroupBloc, ObjectGroupState>(
+              listenWhen: (previous, current) =>
+                  previous.status != current.status,
               listener: (context, state) {
-                if (state.status == ObjectGroupStatus.error) {
-                  ToastUtil.toastFail(
-                    context: context,
-                    title: Text(state.errorMessage ?? 'Đã xảy ra lỗi'),
-                  );
+                switch (state.status) {
+                  case ObjectGroupStatus.createGroupSuccess:
+                    ToastUtil.toastSuccess(
+                      context: context,
+                      title: const Text('Thêm mới nhóm đối tượng thành công'),
+                    );
+                    break;
+                  case ObjectGroupStatus.updateGroupSuccess:
+                    ToastUtil.toastSuccess(
+                      context: context,
+                      title: const Text('Sửa nhóm đối tượng thành công'),
+                    );
+                    break;
+                  case ObjectGroupStatus.deleteGroupSuccess:
+                    ToastUtil.toastSuccess(
+                      context: context,
+                      title: const Text('Xóa nhóm đối tượng thành công!'),
+                    );
+                    break;
+                  case ObjectGroupStatus.checkGroupForDeleteSuccess:
+                    // check trước khi xóa nhóm
+                    if (state.checkSubjectGroupModel != null &&
+                        state.selectedSubjectGroup != null) {
+                      final data = state.checkSubjectGroupModel;
+                      final currentGroup = state.selectedSubjectGroup;
+                      bool apiHasChildren = data?.hasChildren ?? false;
+                      bool apiHasVmsObjects = data?.hasVmsObjects ?? false;
+
+                      _onShowDialogRemoveGroupObject(
+                        c: context,
+                        currentGroup: currentGroup,
+                        hasChildren: apiHasChildren || apiHasVmsObjects,
+                      );
+                    }
+                    break;
+                  case ObjectGroupStatus.error:
+                  case ObjectGroupStatus.createGroupFailure:
+                  case ObjectGroupStatus.updateGroupFailure:
+                  case ObjectGroupStatus.deleteGroupFailure:
+                    ToastUtil.toastFail(
+                      context: context,
+                      title: Text(state.errorMessage ?? 'Đã xảy ra lỗi'),
+                    );
+                    break;
+                  default:
+                    break;
                 }
               },
               buildWhen: (previous, current) =>
                   previous.status != current.status ||
                   previous.objectTypes != current.objectTypes ||
-                  previous.selectedObjectType != current.selectedObjectType,
+                  previous.selectedObjectType != current.selectedObjectType ||
+                  previous.subjectGroups != current.subjectGroups ||
+                  previous.objectTypesPage != current.objectTypesPage ||
+                  previous.objectTypesTotalPages !=
+                      current.objectTypesTotalPages,
               builder: (context, state) {
                 if (state.status == ObjectGroupStatus.loading &&
                     state.objectTypes.isEmpty) {
@@ -780,54 +775,105 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                   }
                 }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Tabs Header – no left padding
-                    Container(
-                      color: Colors.white,
-                      child: TabBar(
-                        controller: _tabController,
-                        isScrollable: true,
-                        indicatorColor: AppColors.primary,
-                        labelColor: AppColors.primary,
-                        unselectedLabelColor: AppColors.grey64748B,
-                        labelStyle: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w600,
+                return ColoredBox(
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Tabs Header with pagination buttons
+                      Container(
+                        color: Colors.white,
+                        child: IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Prev button
+                              if (state.objectTypesTotalPages > 1)
+                                _buildTabPageButton(
+                                  icon: Icons.chevron_left,
+                                  enabled: state.objectTypesPage > 1,
+                                  onTap: () {
+                                    context.read<ObjectGroupBloc>().add(
+                                      ChangeObjectTypesPage(
+                                        page: state.objectTypesPage - 1,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              // TabBar
+                              Expanded(
+                                child: ScrollConfiguration(
+                                  behavior: ScrollConfiguration.of(context)
+                                      .copyWith(
+                                        dragDevices: {
+                                          PointerDeviceKind.touch,
+                                          PointerDeviceKind.mouse,
+                                        },
+                                      ),
+                                  child: TabBar(
+                                    dividerColor: AppColors.greyF2F4FA,
+                                    controller: _tabController,
+                                    isScrollable: true,
+                                    indicatorColor: AppColors.secondary,
+                                    labelColor: AppColors.secondary,
+                                    unselectedLabelColor: AppColors.grey64748B,
+                                    labelStyle: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    unselectedLabelStyle: AppTypography.style(
+                                      14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    tabAlignment: TabAlignment.start,
+                                    padding: EdgeInsets.zero,
+                                    labelPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    tabs: state.objectTypes
+                                        .map((type) => Tab(text: type.name))
+                                        .toList(),
+                                  ),
+                                ),
+                              ),
+                              // Next button
+                              if (state.objectTypesTotalPages > 1)
+                                _buildTabPageButton(
+                                  icon: Icons.chevron_right,
+                                  enabled:
+                                      state.objectTypesPage <
+                                      state.objectTypesTotalPages,
+                                  onTap: () {
+                                    context.read<ObjectGroupBloc>().add(
+                                      ChangeObjectTypesPage(
+                                        page: state.objectTypesPage + 1,
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
+                          ),
                         ),
-                        unselectedLabelStyle: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        tabAlignment: TabAlignment.start,
-                        padding: EdgeInsets.zero,
-                        labelPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                        ),
-                        tabs: state.objectTypes
-                            .map((type) => Tab(text: type.name))
-                            .toList(),
                       ),
-                    ),
-                    const SizedBox(height: 8),
+                      const SizedBox(height: 8),
 
-                    // Search and Action Bar
-                    _buildActionBar(),
-                    const SizedBox(height: 8),
+                      // Search and Action Bar
+                      _buildActionBar(),
+                      const SizedBox(height: 8),
 
-                    // Data Table Area
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5),
+                      // Data Table Area
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          margin: const EdgeInsets.only(bottom: 10, right: 10),
+                          child: const ObjectListTable(),
                         ),
-                        margin: const EdgeInsets.only(bottom: 10, right: 10),
-                        child: const ObjectListTable(),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
             ),
@@ -837,7 +883,37 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
     );
   }
 
+  Widget _buildTabPageButton({
+    required IconData icon,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.greyE2E8F0.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            bottomLeft: Radius.circular(4),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        child: Icon(
+          icon,
+          size: 22,
+          color: enabled ? AppColors.secondary : AppColors.grey64748B,
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionBar() {
+    final state = context.read<ObjectGroupBloc>().state;
+    final hasSubjectGroups = state.subjectGroups.isNotEmpty;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -971,28 +1047,29 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 ),
               ),
               const Spacer(),
-              EventCustomButton(
-                backgroundColor: AppColors.white,
-                borderColor: AppColors.blue005AA9,
-                borderRadius: 3,
-                label: 'Thêm đối tượng',
-                onPressed: () => _onShowDialogAddObject(context),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
+              if (hasSubjectGroups)
+                EventCustomButton(
+                  backgroundColor: AppColors.white,
+                  borderColor: AppColors.blue005AA9,
+                  borderRadius: 3,
+                  label: 'Thêm đối tượng',
+                  onPressed: () => _onShowDialogAddObject(context),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  prefix: const Icon(
+                    Icons.add,
+                    color: AppColors.blue005AA9,
+                    size: 16,
+                  ),
+                  prefixGap: 8,
+                  textStyle: AppTypography.style(
+                    14,
+                    color: AppColors.blue005AA9,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                prefix: const Icon(
-                  Icons.add,
-                  color: AppColors.blue005AA9,
-                  size: 16,
-                ),
-                prefixGap: 8,
-                textStyle: AppTypography.style(
-                  14,
-                  color: AppColors.blue005AA9,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
             ],
           ),
         ],

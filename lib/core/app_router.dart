@@ -254,9 +254,6 @@ class AppRouter {
                 context.read(),
                 context.read(),
                 context.read(),
-                context.read(),
-                context.read(),
-                context.read(),
               ),
             ),
             BlocProvider(

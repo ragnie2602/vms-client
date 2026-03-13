@@ -62,9 +62,10 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
     if (oldWidget.treeKey == widget.treeKey) {
       final controller = _treeController;
       final tree = widget.tree;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 100), () {
         if (!mounted) return;
         if (_treeController != controller) return; // stale callback
+        if (widget.tree.length == 0) return;
         _resetTreeExpansion(tree);
         controller?.expandAllChildren(tree);
       });
@@ -247,13 +248,17 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
                             _treeController = treeViewController;
                             final controller = treeViewController;
                             final tree = widget.tree;
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (!mounted) return;
-                              if (_treeController != controller)
-                                return; // stale callback
-                              _resetTreeExpansion(tree);
-                              controller.expandAllChildren(tree);
-                            });
+                            Future.delayed(
+                              const Duration(milliseconds: 100),
+                              () {
+                                if (!mounted) return;
+                                if (_treeController != controller)
+                                  return; // stale callback
+                                if (widget.tree.length == 0) return;
+                                _resetTreeExpansion(tree);
+                                controller.expandAllChildren(tree);
+                              },
+                            );
                           },
                         ),
                 );

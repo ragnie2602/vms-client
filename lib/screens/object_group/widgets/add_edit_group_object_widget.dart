@@ -13,7 +13,7 @@ enum AddEditGroupObjectType { add, edit }
 
 Future<T?> showDialogAddEditGroupObject<T>(
   BuildContext context, {
-  Function({
+  Future<void> Function({
     String? nameNewGroup,
     SubjectGroup? parentGroup,
     SubjectGroup? currentGroup, // case edit
@@ -49,7 +49,7 @@ class AddEditGroupObjectWidget extends StatefulWidget {
 
   final List<SubjectGroup>? listGroupAvailable;
   final SubjectGroup? parentGroup;
-  final Function({
+  final Future<void> Function({
     String? nameNewGroup,
     SubjectGroup? parentGroup,
     SubjectGroup? currentGroup,
@@ -202,6 +202,7 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                         formAddEditKey.currentState?.validate();
                       },
                       hintTextSearch: 'Nhập tên nhóm',
+                      hintTextDropdown: 'Lựa chọn nhóm đối tượng',
                       itemAsString: (group) {
                         return group.name ?? '';
                       },
@@ -274,26 +275,15 @@ class _AddEditGroupObjectWidgetState extends State<AddEditGroupObjectWidget> {
                       setState(() {
                         _isConfirming = true;
                       });
-                      bool isSuccess = true;
-                      try {
-                        final result = widget.onConfirm?.call(
-                          nameNewGroup: _nameGroupController.text.trim(),
-                          parentGroup: _selectedParentGroup,
-                          currentGroup: widget.currentGroup,
-                        );
-                        if (result is Future) {
-                          await result;
-                        }
-                      } catch (_) {
-                        isSuccess = false;
-                      } finally {
-                        if (mounted) {
-                          setState(() {
-                            _isConfirming = false;
-                          });
-                        }
-                      }
-                      if (isSuccess && mounted) {
+                      await widget.onConfirm?.call(
+                        nameNewGroup: _nameGroupController.text.trim(),
+                        parentGroup: _selectedParentGroup,
+                        currentGroup: widget.currentGroup,
+                      );
+                      if (mounted) {
+                        setState(() {
+                          _isConfirming = false;
+                        });
                         Navigator.pop(context);
                       }
                     },

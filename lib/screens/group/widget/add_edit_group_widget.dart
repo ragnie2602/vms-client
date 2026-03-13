@@ -175,6 +175,7 @@ class _AddGroupWidgetState extends State<AddGroupWidget> {
                         _selectedParentGroup = value;
                       },
                       hintTextSearch: 'Nhập tên nhóm',
+                      hintTextDropdown: 'Lựa chọn nhóm đối tượng',
                       itemAsString: (group) {
                         return group.name;
                       },

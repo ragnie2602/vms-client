@@ -35,6 +35,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   List<ObjectTypeField> _fields = [];
   bool _isLoadingFields = false;
 
+  // Lưu lỗi dạng ErrorText cho từng Field Name hoặc Display Name
+  final Map<int, String> _nameErrors = {};
+  final Map<int, String> _displayErrors = {};
+
   int _nextFieldId = 1;
 
   @override
@@ -112,20 +116,6 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     });
   }
 
-  void _addFaceRecognitionField() {
-    setState(() {
-      _fields.add(
-        ObjectTypeField(
-          id: 'new_field_${_nextFieldId++}',
-          fieldName: 'Ảnh nhận diện khuôn mặt',
-          displayName: 'Ảnh nhận diện',
-          dataType: FieldDataType.file,
-          isDefault: false,
-        ),
-      );
-    });
-  }
-
   void _addLicensePlateField() {
     setState(() {
       _fields.add(
@@ -162,7 +152,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
 
     // Cannot delete default fields (add mode) or protected fields (edit mode)
     if (field.isDefault || (widget.isEditMode && _isProtectedField(field))) {
-      ToastUtil.toastWarning(message: 'Trường bắt buộc không thể xóa');
+      ToastUtil.toastFail(message: 'Trường bắt buộc không thể xóa');
       return;
     }
 
@@ -181,7 +171,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       builder: (context) => ConfirmDeleteDialog(
         title: 'Xóa trường dữ liệu',
         content:
-            'Bạn có chắc chắn muốn xóa trường dữ liệu $displayLabel không?',
+            'Trường dữ liệu $displayLabel đang chứa dữ liệu đối tượng. Bạn có chắc chắn muốn xóa?',
         onConfirm: () {
           setState(() => _fields.removeAt(index));
         },
@@ -206,36 +196,47 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   }
 
   void _handleSubmit() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    bool hasBasicError = !(_formKey.currentState?.validate() ?? false);
 
-    // SRS: Validate all field rows
-    final fieldErrors = <String>[];
+    // SRS: Validate all field rows inline
+    _nameErrors.clear();
+    _displayErrors.clear();
     final displayNames = <String>{};
+    final fieldNames = <String>{};
+    bool hasFieldError = false;
+
     for (int i = 0; i < _fields.length; i++) {
       final f = _fields[i];
       if (f.fieldName.trim().isEmpty) {
-        fieldErrors.add(
-          'Dòng ${i + 1}: Tên trường dữ liệu không được để trống',
-        );
+        _nameErrors[i] = 'Không được để trống';
+        hasFieldError = true;
       }
       if (f.displayName.trim().isEmpty) {
-        fieldErrors.add('Dòng ${i + 1}: Tên hiển thị không được để trống');
+        _displayErrors[i] = 'Không được để trống';
+        hasFieldError = true;
+      }
+      // Validate duplicate fieldName
+      final fn = f.fieldName.trim().toLowerCase();
+      if (fn.isNotEmpty) {
+        if (fieldNames.contains(fn)) {
+          _nameErrors[i] = 'Tên mã dữ liệu bị trùng';
+          hasFieldError = true;
+        }
+        fieldNames.add(fn);
       }
       // SRS: Validate duplicate displayName
       final dn = f.displayName.trim().toLowerCase();
       if (dn.isNotEmpty) {
         if (displayNames.contains(dn)) {
-          fieldErrors.add('Dòng ${i + 1}: Tên hiển thị bị trùng');
+          _displayErrors[i] = 'Tên hiển thị bị trùng';
+          hasFieldError = true;
         }
         displayNames.add(dn);
       }
     }
 
-    if (fieldErrors.isNotEmpty) {
-      ToastUtil.toastFail(title: Text(fieldErrors.first));
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text(fieldErrors.first), backgroundColor: Colors.red),
-      // );
+    if (hasFieldError || hasBasicError) {
+      setState(() {});
       return;
     }
 
@@ -281,7 +282,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         ],
       ),
       content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.5,
+        width: MediaQuery.of(context).size.width * 0.8,
         height: MediaQuery.of(context).size.height * 0.7,
         child: SingleChildScrollView(
           child: Padding(
@@ -302,6 +303,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                           hintText: 'Nhập tên loại đối tượng',
                           label: 'Tên loại đối tượng',
                           requiredField: true,
+                          maxLength: 30,
                           borderRadius: 3,
                           paddingBottomLabel: 3,
                           validator: (v) => v!.trim().isEmpty
@@ -325,6 +327,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                           hintText: 'Nhập mô tả',
                           label: 'Mô tả',
                           borderRadius: 3,
+                          maxLength: 250,
                         ),
                       ),
                       SizedBox(width: 16),
@@ -496,36 +499,35 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                 SubmenuButton(
                   menuChildren: [
                     MenuItemButton(
-                      onPressed: () => _addFaceRecognitionField(),
-                      child: Text(
-                        'Ảnh nhận diện khuôn mặt',
-                        style: AppTypography.style(
-                          14,
-                          color: AppColors.grey334155,
-                        ),
-                      ),
-                    ),
-                    MenuItemButton(
                       onPressed: () => _addLicensePlateField(),
                       child: Text(
                         'Biển số xe',
                         style: AppTypography.style(
                           14,
                           color: AppColors.grey334155,
+                          lineHeight: 1.2,
                         ),
                       ),
                     ),
                   ],
                   child: Text(
                     'Thêm thông tin nhận diện',
-                    style: AppTypography.style(14, color: AppColors.grey334155),
+                    style: AppTypography.style(
+                      14,
+                      color: AppColors.grey334155,
+                      lineHeight: 1.2,
+                    ),
                   ),
                 ),
                 MenuItemButton(
                   onPressed: () => _addObjectInfoField(),
                   child: Text(
                     'Thêm thông tin đối tượng',
-                    style: AppTypography.style(14, color: AppColors.grey334155),
+                    style: AppTypography.style(
+                      14,
+                      color: AppColors.grey334155,
+                      lineHeight: 1.2,
+                    ),
                   ),
                 ),
               ],
@@ -612,7 +614,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           Expanded(
             flex: 2,
             child: Text(
-              'Tên trường dữ liệu',
+              'Tên mã dữ liệu',
               style: AppTypography.style(
                 13,
                 fontWeight: FontWeight.w500,
@@ -648,7 +650,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            flex: 1,
+            flex: 2,
             child: Text(
               'Kiểu dữ liệu',
               style: AppTypography.style(
@@ -709,19 +711,17 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             child: (field.isDefault || _isProtectedField(field))
                 ? _buildReadOnlyLabel(field.fieldName)
                 : _isRecognitionField(field)
-                ? _buildSmallTextField(
-                    initialValue: field.fieldName,
-                    hintText: 'Tên dữ liệu',
-                    maxLength: 50,
-                    readOnly: true,
-                    onChanged: (_) {},
-                  )
+                ? _buildReadOnlyLabel(field.fieldName)
                 : _buildSmallTextField(
                     initialValue: field.fieldName,
                     hintText: 'Tên dữ liệu',
                     maxLength: 50,
+                    errorText: _nameErrors[index],
                     onChanged: (value) {
                       _updateField(index, field.copyWith(fieldName: value));
+                      if (_nameErrors[index] != null) {
+                        setState(() => _nameErrors.remove(index));
+                      }
                     },
                   ),
           ),
@@ -739,15 +739,19 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
               initialValue: field.displayName,
               hintText: 'Tên hiển thị',
               maxLength: 50,
+              errorText: _displayErrors[index],
               onChanged: (value) {
                 _updateField(index, field.copyWith(displayName: value));
+                if (_displayErrors[index] != null) {
+                  setState(() => _displayErrors.remove(index));
+                }
               },
             ),
           ),
           const SizedBox(width: 8),
           // Data type – SRS: disabled for recognition fields
           Expanded(
-            flex: 1,
+            flex: 2,
             child: field.isDefault || _isProtectedField(field)
                 ? _buildReadOnlyLabel(field.dataType.displayName)
                 : _buildDataTypeDropdown(index, field),
@@ -884,6 +888,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     String? initialValue,
     required String hintText,
     int? maxLength,
+    String? errorText,
     required ValueChanged<String> onChanged,
     bool readOnly = false,
   }) {
@@ -895,6 +900,8 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: AppTypography.style(12, color: AppColors.grey64748B),
+        errorText: errorText,
+        errorStyle: AppTypography.style(12, color: AppColors.redFF0004),
         counterText: '', // Hide default counter below
         suffixText: maxLength != null
             ? '${initialValue?.length ?? 0}/$maxLength'
@@ -917,6 +924,14 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
           borderSide: const BorderSide(color: AppColors.secondary),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4),
+          borderSide: const BorderSide(color: AppColors.redFF0004),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(4),
+          borderSide: const BorderSide(color: AppColors.redFF0004),
         ),
       ),
       style: AppTypography.style(
@@ -994,7 +1009,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
               if (snapshot.hasError) {
                 return Center(
                   child: Text(
-                    'Lỗi tải icon: ${snapshot.error}',
+                    'Có vấn đề xảy ra',
                     style: AppTypography.style(14, color: Colors.red),
                   ),
                 );

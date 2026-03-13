@@ -97,6 +97,32 @@ class AppDropdownSearch<T> extends StatelessWidget {
               ),
             ),
             popupProps: PopupProps.menu(
+              itemBuilder: (context, item, isSelected, isDisabled) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Text(
+                    itemAsString?.call(item) ?? item.toString(),
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+                  ),
+                );
+              },
+              emptyBuilder: (context, searchEntry) => Center(
+                child: Text(
+                  'Không có dữ liệu phù hợp',
+                  style: AppTypography.style(
+                    14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.grey92929D,
+                  ),
+                ),
+              ),
               showSearchBox: true,
               searchFieldProps: TextFieldProps(
                 decoration: InputDecoration(

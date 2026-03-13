@@ -119,7 +119,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         setState(() => _isLoadingDetail = false);
         ToastUtil.toastFail(
           context: context,
-          title: Text('Lỗi tải dữ liệu: $e'),
+          title: Text('$e'),
         );
       }
     }
@@ -880,25 +880,25 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                 child: InkWell(
                   onTap: () => _pickAndUploadFiles(field.fieldName),
                   child: Container(
-                    height: 48,
+                    height: 56,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     alignment: Alignment.center,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.add,
-                          color: AppColors.grey94A3B8,
-                          size: 24,
-                        ),
+                        const Icon(Icons.add, color: AppColors.grey94A3B8),
                         const SizedBox(width: 8),
-                        Text(
-                          isImageField
-                              ? 'Vui lòng chọn file có định dạng BMP, JPG, PNG'
-                              : 'Vui lòng chọn file có định dạng JPG, JPEG, PNG',
-                          style: AppTypography.style(
-                            14,
-                            color: AppColors.grey94A3B8,
+                        Flexible(
+                          child: Text(
+                            isImageField
+                                ? 'Vui lòng kéo thả hoặc chọn file có định\ndạng .BMP, .PNG, .JPEG'
+                                : 'Vui lòng kéo thả hoặc chọn file có định\ndạng .JPG, .JPEG, .PNG',
+                            textAlign: TextAlign.center,
+                            style: AppTypography.style(
+                              14,
+                              color: AppColors.grey94A3B8,
+                            ),
                           ),
                         ),
                       ],

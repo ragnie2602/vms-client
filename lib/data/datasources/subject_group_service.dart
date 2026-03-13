@@ -13,13 +13,24 @@ class SubjectGroupService {
 
   SubjectGroupService(this.httpClient);
 
-  Future<SubjectGroup> putEditSubjectGroup({
-    required int subjectGroupId,
-    required SubjectGroup request,
+  Future<List<SubjectGroup>> getSubjectGroups() async {
+    final raw = await httpClient.get(EndPoints.baseSubjectGroup);
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+    return (response.data as List)
+        .map((json) => SubjectGroup.fromJson(json))
+        .toList();
+  }
+
+  Future<SubjectGroup> postSubjectGroup({
+    required String name,
+    int? parentId,
   }) async {
-    final raw = await httpClient.put(
-      url: '${EndPoints.baseSubjectGroup}/$subjectGroupId',
-      data: request.toJson(),
+    final raw = await httpClient.post(
+      url: EndPoints.baseSubjectGroup,
+      data: {'name': name, 'parentId': parentId},
     );
     final response = BaseResponse.fromJson(raw);
     if (response.code != 200) {
@@ -28,28 +39,38 @@ class SubjectGroupService {
     return SubjectGroup.fromJson(response.data);
   }
 
-  Future<void> deleteSubjectGroup({required int subjectGroupId}) async {
+  Future<SubjectGroup> putEditSubjectGroup({
+    required int subjectGroupId,
+    required SubjectGroup request,
+  }) async {
+    final raw = await httpClient.put(
+      url: '${EndPoints.baseSubjectGroup}/$subjectGroupId',
+      data: request.toJsonEdit(),
+    );
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+    return SubjectGroup.fromJson(response.data);
+  }
+
+  Future<bool> deleteSubjectGroup({required int subjectGroupId}) async {
     final raw = await httpClient.delete(
       url: '${EndPoints.baseSubjectGroup}/$subjectGroupId',
     );
     final response = BaseResponse.fromJson(raw);
-    if (response.code != 204) {
+    if (response.code != 200) {
       throw ApiException(response.message);
     }
-    return response.data;
+    return true;
   }
 
   Future<CheckSubjectGroupModel> getCheckSubjectGroup(int id) async {
-    final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
-    final response = await httpClient.dio.get(
-      EndPoints.checkSubjectGroup(id),
-      options: Options(headers: {'Authorization': 'Bearer $token'}),
-    );
-    if (response.statusCode == 200) {
-      return CheckSubjectGroupModel.fromJson(response.data);
+    final raw = await httpClient.get(EndPoints.checkSubjectGroup(id));
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
     }
-    throw ApiException(
-      response.statusMessage ?? 'Failed to check subject group',
-    );
+    return CheckSubjectGroupModel.fromJson(response.data);
   }
 }

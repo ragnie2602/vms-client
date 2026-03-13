@@ -3,9 +3,22 @@ import 'package:equatable/equatable.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/data/models/object_data.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
+import 'package:vms_flutter_client/domain/entities/subject_group/check_subject_group_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 
-enum ObjectGroupStatus { initial, loading, loaded, error }
+enum ObjectGroupStatus {
+  initial,
+  loading,
+  loaded,
+  error,
+  createGroupSuccess,
+  createGroupFailure,
+  deleteGroupSuccess,
+  deleteGroupFailure,
+  updateGroupSuccess,
+  updateGroupFailure,
+  checkGroupForDeleteSuccess,
+}
 
 class ObjectGroupState extends BaseState with EquatableMixin {
   final ObjectGroupStatus status;
@@ -16,6 +29,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
   final int totalObjects;
   final String? errorMessage;
   final int totalPages;
+  final int objectTypesPage;
+  final int objectTypesTotalPages;
   final List<SubjectGroup> subjectGroups;
   final TreeNode<SubjectGroup>? subjectGroupTree;
   final List<SubjectGroup> filteredSubjectGroups;
@@ -23,6 +38,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
   final String treeKey;
   final String searchQuery;
   final SubjectGroup? selectedSubjectGroup;
+  final bool isTreeLoading;
+  final CheckSubjectGroupModel? checkSubjectGroupModel;
 
   const ObjectGroupState({
     this.status = ObjectGroupStatus.initial,
@@ -33,6 +50,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     this.totalObjects = 0,
     this.errorMessage,
     this.totalPages = 1,
+    this.objectTypesPage = 1,
+    this.objectTypesTotalPages = 1,
     this.subjectGroups = const [],
     this.subjectGroupTree,
     this.filteredSubjectGroups = const [],
@@ -40,6 +59,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     this.treeKey = '',
     this.searchQuery = '',
     this.selectedSubjectGroup,
+    this.isTreeLoading = false,
+    this.checkSubjectGroupModel,
   });
 
   ObjectGroupState copyWith({
@@ -51,6 +72,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     int? totalObjects,
     String? errorMessage,
     int? totalPages,
+    int? objectTypesPage,
+    int? objectTypesTotalPages,
     List<SubjectGroup>? subjectGroups,
     TreeNode<SubjectGroup>? subjectGroupTree,
     List<SubjectGroup>? filteredSubjectGroups,
@@ -59,6 +82,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     String? searchQuery,
     SubjectGroup? selectedSubjectGroup,
     bool clearSelectedSubjectGroup = false,
+    bool? isTreeLoading,
+    CheckSubjectGroupModel? checkSubjectGroupModel,
   }) {
     return ObjectGroupState(
       status: status ?? this.status,
@@ -69,6 +94,9 @@ class ObjectGroupState extends BaseState with EquatableMixin {
       totalObjects: totalObjects ?? this.totalObjects,
       errorMessage: errorMessage ?? this.errorMessage,
       totalPages: totalPages ?? this.totalPages,
+      objectTypesPage: objectTypesPage ?? this.objectTypesPage,
+      objectTypesTotalPages:
+          objectTypesTotalPages ?? this.objectTypesTotalPages,
       subjectGroups: subjectGroups ?? this.subjectGroups,
       subjectGroupTree: subjectGroupTree ?? this.subjectGroupTree,
       filteredSubjectGroups:
@@ -80,6 +108,9 @@ class ObjectGroupState extends BaseState with EquatableMixin {
       selectedSubjectGroup: clearSelectedSubjectGroup
           ? null
           : (selectedSubjectGroup ?? this.selectedSubjectGroup),
+      isTreeLoading: isTreeLoading ?? this.isTreeLoading,
+      checkSubjectGroupModel:
+          checkSubjectGroupModel ?? this.checkSubjectGroupModel,
     );
   }
 
@@ -93,6 +124,8 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     totalObjects,
     errorMessage,
     totalPages,
+    objectTypesPage,
+    objectTypesTotalPages,
     subjectGroups,
     subjectGroupTree,
     filteredSubjectGroups,
@@ -100,5 +133,7 @@ class ObjectGroupState extends BaseState with EquatableMixin {
     treeKey,
     searchQuery,
     selectedSubjectGroup,
+    isTreeLoading,
+    checkSubjectGroupModel,
   ];
 }

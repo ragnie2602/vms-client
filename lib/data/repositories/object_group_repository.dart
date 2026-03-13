@@ -23,22 +23,26 @@ class ObjectGroupRepository extends BaseRepository
 
   @override
   Future<Map<String, dynamic>> getObjectTypes(int page, int size) async {
-    final response = await _apiClient.get(
-      '${EndPoints.baseUrl}/api/object-types?page=$page&size=$size',
-    );
+    try {
+      final response = await _apiClient.get(
+        '${EndPoints.baseUrl}/api/object-types?page=$page&size=$size',
+      );
 
-    if (response['code'] == 200 || response['code'] == 0) {
-      final data = response['data'];
-      final list = (data['data'] as List)
-          .map((item) => ObjectType.fromJson(item as Map<String, dynamic>))
-          .toList();
-      return {
-        'data': list,
-        'totalElements': data['totalElements'] ?? 0,
-        'totalPages': data['totalPages'] ?? 0,
-      };
+      if (response['code'] == 200 || response['code'] == 0) {
+        final data = response['data'];
+        final list = (data['data'] as List)
+            .map((item) => ObjectType.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return {
+          'data': list,
+          'totalElements': data['totalElements'] ?? 0,
+          'totalPages': data['totalPages'] ?? 0,
+        };
+      }
+      throw ApiException(response['message'] ?? 'Có lỗi xảy ra.');
+    } on DioException catch (e) {
+      throwDioError(e);
     }
-    throw Exception(response['message'] ?? 'Failed to load object types');
   }
 
   @override
@@ -49,50 +53,62 @@ class ObjectGroupRepository extends BaseRepository
     int size, {
     String? search,
   }) async {
-    var url =
-        '${EndPoints.baseUrl}/api/objects?objectTypeId=$objectTypeId&page=$page&size=$size&subjectGroupId=$subjectGroupId';
-    if (search != null && search.isNotEmpty) {
-      url += '&search=${Uri.encodeComponent(search)}';
-    }
-    final response = await _apiClient.get(url);
+    try {
+      var url =
+          '${EndPoints.baseUrl}/api/objects?objectTypeId=$objectTypeId&page=$page&size=$size&subjectGroupId=$subjectGroupId';
+      if (search != null && search.isNotEmpty) {
+        url += '&search=${Uri.encodeComponent(search)}';
+      }
+      final response = await _apiClient.get(url);
 
-    if (response['code'] == 200 || response['code'] == 0) {
-      final data = response['data'];
-      final list = (data['data'] as List)
-          .map((item) => ObjectData.fromJson(item as Map<String, dynamic>))
-          .toList();
-      return {
-        'data': list,
-        'totalElements': data['totalElements'] ?? 0,
-        'totalPages': data['totalPages'] ?? 0,
-      };
+      if (response['code'] == 200 || response['code'] == 0) {
+        final data = response['data'];
+        final list = (data['data'] as List)
+            .map((item) => ObjectData.fromJson(item as Map<String, dynamic>))
+            .toList();
+        return {
+          'data': list,
+          'totalElements': data['totalElements'] ?? 0,
+          'totalPages': data['totalPages'] ?? 0,
+        };
+      }
+      throw ApiException(response['message'] ?? 'Có lỗi xảy ra.');
+    } on DioException catch (e) {
+      throwDioError(e);
     }
-    throw Exception(response['message'] ?? 'Failed to load objects');
   }
 
   @override
   Future<ObjectType> getObjectTypeDetail(int id) async {
-    final response = await _apiClient.get(
-      '${EndPoints.baseUrl}/api/object-types/$id',
-    );
+    try {
+      final response = await _apiClient.get(
+        '${EndPoints.baseUrl}/api/object-types/$id',
+      );
 
-    if (response['code'] == 200 || response['code'] == 0) {
-      return ObjectType.fromJson(response['data'] as Map<String, dynamic>);
+      if (response['code'] == 200 || response['code'] == 0) {
+        return ObjectType.fromJson(response['data'] as Map<String, dynamic>);
+      }
+      throw ApiException(response['message'] ?? 'Có lỗi xảy ra.');
+    } on DioException catch (e) {
+      throwDioError(e);
     }
-    throw Exception(response['message'] ?? 'Failed to load object type detail');
   }
 
   @override
   Future<int> uploadFile(String filePath) async {
-    final response = await _apiClient.postMultipart(
-      url: '${EndPoints.baseUrl}/api/files/upload?imageOnly=false',
-      data: {'file': await MultipartFile.fromFile(filePath)},
-    );
+    try {
+      final response = await _apiClient.postMultipart(
+        url: '${EndPoints.baseUrl}/api/files/upload?imageOnly=false',
+        data: {'file': await MultipartFile.fromFile(filePath)},
+      );
 
-    if (response != null && response['fileId'] != null) {
-      return response['fileId'] as int;
+      if (response != null && response['fileId'] != null) {
+        return response['fileId'] as int;
+      }
+      throw ApiException(response?['message'] ?? 'Có lỗi xảy ra.');
+    } on DioException catch (e) {
+      throwDioError(e);
     }
-    throw Exception('Failed to upload file');
   }
 
   @override
@@ -102,40 +118,48 @@ class ObjectGroupRepository extends BaseRepository
     List<int>? subjectGroupIds,
     List<int>? fileIds,
   }) async {
-    final data = <String, dynamic>{
-      'objectTypeId': objectTypeId,
-      'fieldValues': fieldValues,
-    };
-    if (subjectGroupIds != null && subjectGroupIds.isNotEmpty) {
-      data['subjectGroupIds'] = subjectGroupIds;
-    }
-    if (fileIds != null && fileIds.isNotEmpty) {
-      data['fileIds'] = fileIds;
-    }
-    final response = await _apiClient.post(
-      url: '${EndPoints.baseUrl}/api/objects',
-      data: data,
-    );
+    try {
+      final data = <String, dynamic>{
+        'objectTypeId': objectTypeId,
+        'fieldValues': fieldValues,
+      };
+      if (subjectGroupIds != null && subjectGroupIds.isNotEmpty) {
+        data['subjectGroupIds'] = subjectGroupIds;
+      }
+      if (fileIds != null && fileIds.isNotEmpty) {
+        data['fileIds'] = fileIds;
+      }
+      final response = await _apiClient.post(
+        url: '${EndPoints.baseUrl}/api/objects',
+        data: data,
+      );
 
-    if (response != null &&
-        (response['code'] == 200 ||
-            response['code'] == 0 ||
-            response['code'] == 201)) {
-      return;
+      if (response != null &&
+          (response['code'] == 200 ||
+              response['code'] == 0 ||
+              response['code'] == 201)) {
+        return;
+      }
+      throw ApiException(response?['message'] ?? 'Có lỗi xảy ra.');
+    } on DioException catch (e) {
+      throwDioError(e);
     }
-    throw Exception(response?['message'] ?? 'Failed to create object');
   }
 
   @override
   Future<ObjectData> getObjectDetail(int objectId) async {
-    final response = await _apiClient.get(
-      '${EndPoints.baseUrl}/api/objects/$objectId',
-    );
+    try {
+      final response = await _apiClient.get(
+        '${EndPoints.baseUrl}/api/objects/$objectId',
+      );
 
-    if (response['code'] == 200 || response['code'] == 0) {
-      return ObjectData.fromJson(response['data'] as Map<String, dynamic>);
+      if (response['code'] == 200 || response['code'] == 0) {
+        return ObjectData.fromJson(response['data'] as Map<String, dynamic>);
+      }
+      throw ApiException(response['message'] ?? 'Có lỗi xảy ra.');
+    } on DioException catch (e) {
+      throwDioError(e);
     }
-    throw Exception(response['message'] ?? 'Failed to load object detail');
   }
 
   @override
@@ -146,85 +170,72 @@ class ObjectGroupRepository extends BaseRepository
     List<int>? subjectGroupIds,
     List<int>? fileIds,
   }) async {
-    final data = <String, dynamic>{
-      'objectTypeId': objectTypeId,
-      'fieldValues': fieldValues,
-    };
-    if (subjectGroupIds != null && subjectGroupIds.isNotEmpty) {
-      data['subjectGroupIds'] = subjectGroupIds;
-    }
-    if (fileIds != null && fileIds.isNotEmpty) {
-      data['fileIds'] = fileIds;
-    }
-    final response = await _apiClient.put(
-      url: '${EndPoints.baseUrl}/api/objects/$objectId',
-      data: data,
-    );
+    try {
+      final data = <String, dynamic>{
+        'objectTypeId': objectTypeId,
+        'fieldValues': fieldValues,
+      };
+      if (subjectGroupIds != null && subjectGroupIds.isNotEmpty) {
+        data['subjectGroupIds'] = subjectGroupIds;
+      }
+      if (fileIds != null && fileIds.isNotEmpty) {
+        data['fileIds'] = fileIds;
+      }
+      final response = await _apiClient.put(
+        url: '${EndPoints.baseUrl}/api/objects/$objectId',
+        data: data,
+      );
 
-    if (response != null &&
-        (response['code'] == 200 ||
-            response['code'] == 0 ||
-            response['code'] == 201)) {
-      return;
+      if (response != null &&
+          (response['code'] == 200 ||
+              response['code'] == 0 ||
+              response['code'] == 201)) {
+        return;
+      }
+      throw ApiException(response?['message'] ?? 'Có lỗi xảy ra.');
+    } on DioException catch (e) {
+      throwDioError(e);
     }
-    throw Exception(response?['message'] ?? 'Failed to update object');
   }
 
   @override
   Future<void> deleteObject(int objectId) async {
-    final response = await _apiClient.delete(
-      url: '${EndPoints.baseUrl}/api/objects/$objectId',
-    );
+    try {
+      final response = await _apiClient.delete(
+        url: '${EndPoints.baseUrl}/api/objects/$objectId',
+      );
 
-    if (response != null &&
-        (response['code'] == 200 ||
-            response['code'] == 0 ||
-            response['code'] == 204)) {
-      return;
-    }
-    throw Exception(response?['message'] ?? 'Failed to delete object');
-  }
-
-  @override
-  Future<List<SubjectGroup>> getSubjectGroups() async {
-    final response = await _apiClient.get(
-      '${EndPoints.baseUrl}${EndPoints.baseSubjectGroup}',
-    );
-
-    // Handle both response formats:
-    // 1. Raw JSON array: [{ ... }, { ... }]
-    // 2. Wrapped response: { code: 200, data: [{ ... }] }
-    List<dynamic> items;
-    if (response is List) {
-      items = response;
-    } else if (response is Map<String, dynamic>) {
-      final data = response['data'];
-      if (data is List) {
-        items = data;
-      } else {
-        items = [];
+      if (response != null &&
+          (response['code'] == 200 ||
+              response['code'] == 0 ||
+              response['code'] == 204)) {
+        return;
       }
-    } else {
-      throw Exception('Failed to load subject groups');
+      throw ApiException(response?['message'] ?? 'Có lỗi xảy ra.');
+    } on DioException catch (e) {
+      throwDioError(e);
     }
-
-    return items
-        .map((item) => SubjectGroup.fromJson(item as Map<String, dynamic>))
-        .toList();
+  }
+  @override
+  Future<Either<Failure, List<SubjectGroup>>> getSubjectGroups() async {
+    return await catchError<List<SubjectGroup>>(() async {
+      final data = await _subjectGroupService.getSubjectGroups();
+      return Right(data);
+    });
   }
 
   @override
-  Future<void> createSubjectGroup(String name, int parentId) async {
-    final response = await _apiClient.post(
-      url: '${EndPoints.baseUrl}${EndPoints.baseSubjectGroup}',
-      data: {'name': name, 'parentId': parentId},
-    );
-
-    // API may return the created object or a success response
-    if (response != null) {
-      return;
-    }
-    throw Exception('Failed to create subject group');
+  Future<Either<Failure, SubjectGroup>> createSubjectGroup({
+    required String name,
+    int? parentId,
+  }) async {
+    return await catchError<SubjectGroup>(() async {
+      final data = await _subjectGroupService.postSubjectGroup(
+        name: name,
+        parentId: parentId,
+      );
+      return Right(data);
+    });
   }
 
   @override
@@ -242,14 +253,14 @@ class ObjectGroupRepository extends BaseRepository
   }
 
   @override
-  Future<Either<Failure, int>> deleteSubjectGroup({
+  Future<Either<Failure, bool>> deleteSubjectGroup({
     required int objectGroupId,
   }) async {
-    return await catchError<int>(() async {
+    return await catchError<bool>(() async {
       await _subjectGroupService.deleteSubjectGroup(
         subjectGroupId: objectGroupId,
       );
-      return Right(objectGroupId);
+      return Right(true);
     });
   }
 

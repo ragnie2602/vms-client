@@ -56,7 +56,7 @@ class HomeTab {
         ),
         HomeTab(
           Routes.objectGroups,
-          title: 'Hồ sơ đối tượng',
+          title: 'Đối tượng',
           svg: AppAssets.tabUsers,
           useMaterialIcon: true,
           materialIcon: 'group',

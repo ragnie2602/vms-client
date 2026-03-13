@@ -57,12 +57,8 @@ import 'package:vms_flutter_client/domain/usecases/monitor/get_camera_use_case.d
 import 'package:vms_flutter_client/domain/usecases/monitor/stream_event_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/my_profile/update_my_profile_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/check_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/create_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/get_subject_groups_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/update_subject_group_usecase.dart';
-import 'package:vms_flutter_client/domain/usecases/object_group/delete_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
@@ -199,20 +195,8 @@ class DependencyInjection {
     Provider<GetObjectsByTypeUsecase>(
       create: (context) => GetObjectsByTypeUsecase(context.read()),
     ),
-    Provider<GetSubjectGroupsUsecase>(
-      create: (context) => GetSubjectGroupsUsecase(context.read()),
-    ),
     Provider<CheckSubjectGroupUsecase>(
       create: (context) => CheckSubjectGroupUsecase(context.read()),
-    ),
-    Provider<CreateSubjectGroupUsecase>(
-      create: (context) => CreateSubjectGroupUsecase(context.read()),
-    ),
-    Provider<UpdateSubjectGroupUsecase>(
-      create: (context) => UpdateSubjectGroupUsecase(context.read()),
-    ),
-    Provider<DeleteSubjectGroupUsecase>(
-      create: (context) => DeleteSubjectGroupUsecase(context.read()),
     ),
     Provider<SearchSubjectGroupUsecase>(create: (context) => const SearchSubjectGroupUsecase()),
 
