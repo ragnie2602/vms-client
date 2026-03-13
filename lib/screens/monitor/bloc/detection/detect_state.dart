@@ -10,7 +10,7 @@ class DetectState extends Equatable {
   final List<EventType> typeEvents;
   final List<ReceiveEventEntity> receiveEvents;
   final List<ReceiveEventEntity> selectedEvents;
-  final List<int> selectedFilterTypes;
+  final List<String> selectedFilterTypes;
   final int currentTabIndex;
   final List<List<int>> viewingCameraIds;
   final bool hasReachedMaxEvents;
@@ -37,7 +37,7 @@ class DetectState extends Equatable {
     List<EventType>? typeEvents,
     List<ReceiveEventEntity>? receiveEvents,
     List<ReceiveEventEntity>? selectedEvents,
-    List<int>? selectedFilterTypes,
+    List<String>? selectedFilterTypes,
     int? currentTabIndex,
     List<List<int>>? viewingCameraIds,
     bool? hasReachedMaxEvents,

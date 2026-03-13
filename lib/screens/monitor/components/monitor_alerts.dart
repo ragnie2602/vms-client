@@ -154,9 +154,7 @@ class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateM
                   final eventsTab = HomeTab.tabs.firstWhereOrNull(
                     (tab) => tab.route == Routes.events,
                   );
-                  if (eventsTab == null) {
-                    return;
-                  }
+                  if (eventsTab == null) return;
                   // chuyển tab
                   context.read<HomeBloc>().add(ChangeTab(eventsTab));
                 },

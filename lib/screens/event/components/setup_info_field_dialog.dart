@@ -6,8 +6,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
-import 'package:vms_flutter_client/domain/entities/detect/type_event_detect_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
 import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
@@ -209,8 +209,12 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                 ),
               );
             },
-            listener: (context, state) =>
-                state is SEDSavingConfigsSuccess ? Navigator.pop(context) : null,
+            listener: (context, state) {
+              if (state is SEDSavingConfigsSuccess) {
+                ToastUtil.toastSuccess(title: Text('Lưu cấu hình thành công'));
+                Navigator.pop(context);
+              }
+            },
           ),
         ],
       ),
