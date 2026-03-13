@@ -4,6 +4,7 @@ import 'package:excel/excel.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:intl/intl.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/base_output.dart';
 import 'package:vms_flutter_client/domain/usecases/future_use_case.dart';
@@ -21,12 +22,25 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
 
   @override
   Future<ExportEventOutput> buildUseCase(ExportEventInput input) async {
+    List<EventType> eventTypes = [];
+    final etRes = await eventRepository.getAllEventType();
+    etRes.fold((onFailure) {}, (onSuccess) => eventTypes.addAll(onSuccess));
+
+    final subjectName = input.subjectName?.isNotEmpty == true ? input.subjectName : null;
+    List<String>? et = [];
+    if (subjectName?.trim().isEmpty == false) {
+      et = ['face_detection'];
+    } else {
+      et = input.eventTypes;
+    }
+
     final List<EventEntity> events = [];
     (await eventRepository.exportEvent(
       input.startTime != null ? input.startTime!.millisecondsSinceEpoch ~/ 1000 : null,
       input.endTime != null ? input.endTime!.millisecondsSinceEpoch ~/ 1000 : null,
-      input.eventTypes,
+      et,
       input.cameraIds,
+      input.subjectName,
     )).fold(
       (onFailure) => ExportEventOutput('', errorMsg: onFailure.parseMessage()),
       (onSuccess) => events.addAll(onSuccess),
@@ -55,11 +69,11 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
         headerCell.cellStyle = CellStyle(
           backgroundColorHex: ExcelColor.fromHexString("FF5384ED"),
           bold: true,
-          bottomBorder: Border(borderColorHex: ExcelColor.black),
+          bottomBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
           fontColorHex: ExcelColor.white,
-          leftBorder: Border(borderColorHex: ExcelColor.black),
-          rightBorder: Border(borderColorHex: ExcelColor.black),
-          topBorder: Border(borderColorHex: ExcelColor.black),
+          leftBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+          rightBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+          topBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
         );
       }
 
@@ -86,7 +100,13 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
             CellIndex.indexByColumnRow(columnIndex: col, rowIndex: dataStartRow + i),
           );
           cell.value = row[col];
-          cell.cellStyle = CellStyle(bold: false);
+          cell.cellStyle = CellStyle(
+            bold: false,
+            leftBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+            rightBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+            topBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+            bottomBorder: Border(borderColorHex: ExcelColor.black, borderStyle: BorderStyle.Thin),
+          );
         }
       }
 

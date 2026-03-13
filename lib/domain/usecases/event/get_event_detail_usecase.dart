@@ -49,14 +49,16 @@ class GetEventDetailUseCase extends FutureUseCase<GetEventDetailInput, GetEventD
       event.camera?.name ?? '',
     ));
 
-    if (event.subjectTypeId != null) {
-      final res = await objectTypeRepository.getObjectTypeDetail(event.subjectTypeId!);
+    final subTypeId = event.subjectTypeId ?? event.payload?['subjectTypeId'];
+    if (event.eventType == "face_detection" && subTypeId != null) {
+      final res = await objectTypeRepository.getObjectTypeDetail(subTypeId);
       final objType = res.fold(
         (onFailure) => throw Exception(onFailure.parseMessage()),
         (onSuccess) => onSuccess,
       );
 
       for (var f in objType.fields) {
+        if (f.fieldName == 'Ảnh nhận diện khuôn mặt') continue;
         final v = event.payload?[f.fieldName];
         if (v != null) {
           displayData.add((SvgPicture.network(f.iconUrl ?? '', height: 20), f.displayName, v));

@@ -7,6 +7,7 @@ class ExportEventInput extends BaseInput {
   final List<String>? cameraIds;
   final String cameraGroupName;
   final List<CameraEntity> cameras;
+  final String? subjectName;
 
   const ExportEventInput({
     required this.cameraGroupName,
@@ -15,5 +16,6 @@ class ExportEventInput extends BaseInput {
     this.endTime,
     this.eventTypes,
     this.startTime,
+    this.subjectName,
   });
 }

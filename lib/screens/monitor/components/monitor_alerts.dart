@@ -17,6 +17,8 @@ import 'package:vms_flutter_client/screens/monitor/widgets/custom_tab_bar.dart';
 import 'package:vms_flutter_client/screens/monitor/widgets/event_item.dart';
 
 class MonitorAlerts extends StatefulWidget {
+  static int initialIndex = 0;
+
   final SetupEventDisplayBloc sedBloc;
   final double maxWidth;
 
@@ -27,13 +29,14 @@ class MonitorAlerts extends StatefulWidget {
 }
 
 class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateMixin {
-  late final TabController tabController;
+  late TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 2, vsync: this);
+    tabController = TabController(length: 2, vsync: this, initialIndex: MonitorAlerts.initialIndex);
     tabController.addListener(_onTabChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateFilterWithCurrentCameras());
   }
 
   @override

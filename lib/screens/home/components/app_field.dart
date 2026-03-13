@@ -24,6 +24,9 @@ class AppField extends StatefulWidget {
     this.borderRadius,
     this.isFilled,
     this.fillColor,
+    this.focusNode,
+    this.textInputAction,
+    this.onFieldSubmitted,
   });
 
   final TextEditingController controller;
@@ -43,6 +46,9 @@ class AppField extends StatefulWidget {
   final double? borderRadius;
   final bool? isFilled;
   final Color? fillColor;
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final Function(String)? onFieldSubmitted;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -127,6 +133,9 @@ class _AppFieldState extends State<AppField> {
                     // Chỉ set height cố định khi maxLines = 1, còn lại để tự động
                     // height: widget.maxLines == 1 ? 41 : null,
                     child: TextFormField(
+                      onFieldSubmitted: widget.onFieldSubmitted,
+                      textInputAction: widget.textInputAction,
+                      focusNode: widget.focusNode,
                       controller: widget.controller,
                       obscureText: widget.obscureText,
                       keyboardType: widget.keyboardType,

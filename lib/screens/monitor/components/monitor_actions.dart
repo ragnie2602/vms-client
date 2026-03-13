@@ -79,10 +79,7 @@ class _MonitorActionsState extends State<MonitorActions> {
                       },
                     ),
                     onTap: () => widget.leftController.togglePanel(
-                      MonitorMode(
-                        maxWidth: widget.leftController.expandedWidth,
-                        key: ValueKey('monitor_mode'),
-                      ),
+                      (maxWidth) => MonitorMode(maxWidth: maxWidth, key: ValueKey('monitor_mode')),
                       id: 1,
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
@@ -92,8 +89,8 @@ class _MonitorActionsState extends State<MonitorActions> {
                     title: 'Danh sách camera',
                     icon: AppAssets.icListCamera,
                     onTap: () => widget.leftController.togglePanel(
-                      MonitorCameras(
-                        maxWidth: widget.leftController.expandedWidth,
+                      (maxWidth) => MonitorCameras(
+                        maxWidth: maxWidth,
                         key: ValueKey('monitor_cameras'),
                         onTap: (data) {
                           context.goNamed(
@@ -132,7 +129,7 @@ class _MonitorActionsState extends State<MonitorActions> {
                   AlertDetectLiveView(
                     controller: widget.rightController,
                     id: 0,
-                    isSelected: false,
+                    isSelected: _rightPanelIndex.value == 0,
                     onPanelIndexChanged: (index) =>
                         _rightPanelIndex.value = index,
                   ),

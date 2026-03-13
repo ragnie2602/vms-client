@@ -18,7 +18,19 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
   Future<SearchEventOutput> buildUseCase(SearchEventInput input) async {
     List<String> cameraIds = input.cameraIds ?? input.cameras.map((e) => e.camId).toList();
 
+    List<EventType> eventTypes = [];
+
+    final etRes = await eventRepository.getAllEventType();
+    etRes.fold((onFailure) {}, (onSuccess) => eventTypes.addAll(onSuccess));
+
     final subjectName = input.subjectName?.isNotEmpty == true ? input.subjectName : null;
+
+    List<String>? et = [];
+    if (subjectName?.trim().isEmpty == false) {
+      et = ['face_detection'];
+    } else {
+      et = input.eventTypes;
+    }
 
     // Minus 25200 because of converting GMT+7 -> GMT+0
     final res = await eventRepository.searchEvent(
@@ -29,15 +41,10 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
       endTime: input.endTime != null
           ? (input.endTime!.millisecondsSinceEpoch ~/ 1000 + 61199)
           : null,
-      eventType: input.eventTypes,
+      eventType: et,
       cameraIds: cameraIds,
       subjectName: subjectName,
     );
-
-    List<EventType> eventTypes = [];
-
-    final etRes = await eventRepository.getAllEventType();
-    etRes.fold((onFailure) {}, (onSuccess) => eventTypes.addAll(onSuccess));
 
     return res.fold(
       (onFailure) => SearchEventOutput(Pageable.empty(), 0, errorMsg: onFailure.parseMessage()),

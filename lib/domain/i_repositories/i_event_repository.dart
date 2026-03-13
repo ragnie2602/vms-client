@@ -11,6 +11,7 @@ abstract class IEventRepository {
     int? endTime,
     List<String>? eventType,
     List<String>? cameraIds,
+    String? subjectName,
   );
 
   Future<Either<Failure, List<EventType>>> getAllEventType();

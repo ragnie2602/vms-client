@@ -33,16 +33,6 @@ Future<int> initialMultiWindowConfig(List<String> args) async {
   } else {
     final controller = WindowController.main();
 
-    await windowManager.waitUntilReadyToShow(WindowOptions(center: true), () async {
-      await windowManager.show();
-      await windowManager.focus();
-
-      await windowManager.maximize();
-
-      final maxSize = await windowManager.getSize();
-      await windowManager.setMinimumSize(maxSize * 2 / 3);
-    });
-
     return controller.windowId; // Main window ID is always 0
   }
 }
@@ -122,6 +112,27 @@ class _MyAppState extends State<MyApp> with WindowListener {
     if (!Platform.isAndroid && !Platform.isIOS) {
       windowManager.addListener(this);
       windowManager.setPreventClose(true);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (widget.bWindowID == 0) {
+          await windowManager.waitUntilReadyToShow(
+            const WindowOptions(
+              center: true,
+              skipTaskbar: false,
+              titleBarStyle: TitleBarStyle.normal,
+            ),
+            () async {
+              await windowManager.maximize();
+
+              final currentSize = await windowManager.getSize();
+              await windowManager.setMinimumSize(currentSize * 2 / 3);
+
+              await windowManager.show();
+              await windowManager.focus();
+            },
+          );
+        }
+      });
     }
   }
 

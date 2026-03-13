@@ -65,6 +65,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
           cameras: cameras,
           mode: lastState?.mode ?? ViewMode.v2x2,
           allCameras: output.allCameras ?? cameras,
+          groupId: null, // Tất cả camera --> null
         ),
       );
     } else {
@@ -91,6 +92,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
           cameras: output.cameras ?? [],
           mode: ViewMode.fitWithLength(output.cameras!.length, min: ViewMode.v2x2),
           allCameras: lastState?.allCameras ?? output.allCameras ?? output.cameras ?? [],
+          groupId: event.groupId, // Tại 1 nhóm --> groupId
         ),
       );
     } else {
@@ -109,6 +111,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
           cameras: output.cameras ?? [],
           mode: ViewMode.fitWithLength(output.cameras!.length, min: ViewMode.v2x2),
           allCameras: output.allCameras ?? output.cameras ?? [],
+          groupId: [], // Chưa gán nhóm --> []
         ),
       );
     } else {
@@ -145,7 +148,7 @@ class MonitorBloc extends BaseBloc<MonitorEvent, MonitorState> {
             cameras: cameras,
             mode: ViewMode.fitWithLength(cameras.length, min: ViewMode.v2x2),
             page: event.page,
-            groupId: null,
+            groupId: null, // Tất cả camera --> null
             allCameras: cameras,
           ),
         );

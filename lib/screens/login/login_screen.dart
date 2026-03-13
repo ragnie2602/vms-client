@@ -142,89 +142,100 @@ class _LoginScreenState extends State<LoginScreen> {
                               flex: 727,
                               child: Form(
                                 key: formKey,
-                                child: Column(
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.topLeft,
-                                      child: Text(
-                                        'Đăng nhập',
-                                        style: AppTypography.style(30, fontWeight: FontWeight.w700),
-                                      ),
-                                    ),
-                                    SizedBox(height: MediaQuery.heightOf(context) * 44 / 1024),
-                                    AppField(
-                                      controller: serverController,
-                                      label: 'Địa chỉ máy chủ',
-                                      hintText: 'Nhập địa chỉ máy chủ',
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return 'Địa chỉ máy chủ không được để trống.';
-                                        }
-                                        return null;
-                                      },
-                                      paddingBottomLabel: MediaQuery.heightOf(context) * 16 / 1024,
-                                    ),
-                                    SizedBox(height: MediaQuery.heightOf(context) * 24 / 1024),
-                                    AppField(
-                                      controller: usernameController,
-                                      label: 'Tên đăng nhập',
-                                      hintText: 'Nhập tên đăng nhập',
-                                      validator: (value) {
-                                        if (value == null || value.trim().isEmpty) {
-                                          return 'Tên đăng nhập không được để trống.';
-                                        }
-                                        return null;
-                                      },
-                                      paddingBottomLabel: MediaQuery.heightOf(context) * 16 / 1024,
-                                    ),
-                                    SizedBox(height: MediaQuery.heightOf(context) * 24 / 1024),
-                                    StatefulBuilder(
-                                      builder: (context, setState) => AppField(
-                                        controller: passwordController,
-                                        label: 'Mật khẩu',
-                                        hintText: 'Nhập mật khẩu',
-                                        obscureText: obscure,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                                        ],
-                                        suffix: IconButton(
-                                          onPressed: () => setState(() => obscure = !obscure),
-                                          icon: Icon(
-                                            obscure ? Icons.visibility : Icons.visibility_off,
-                                            color: AppColors.black,
-                                          ),
-                                          iconSize: 20,
+                                child: FocusTraversalGroup(
+                                  child: Column(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Text(
+                                          'Đăng nhập',
+                                          style: AppTypography.style(30, fontWeight: FontWeight.w700),
                                         ),
+                                      ),
+                                      SizedBox(height: MediaQuery.heightOf(context) * 44 / 1024),
+                                      AppField(
+                                        focusNode: serverFN,
+                                        textInputAction: TextInputAction.next,
+                                        controller: serverController,
+                                        onFieldSubmitted: (value) => usernameFN.requestFocus(),
+                                        label: 'Địa chỉ máy chủ',
+                                        hintText: 'Nhập địa chỉ máy chủ',
                                         validator: (value) {
                                           if (value == null || value.isEmpty) {
-                                            return 'Mật khẩu không được để trống.';
-                                          }
-                                          if (value.length < 3) {
-                                            return 'Mật khẩu phải có ít nhất 3 ký tự';
+                                            return 'Địa chỉ máy chủ không được để trống.';
                                           }
                                           return null;
                                         },
-                                        paddingBottomLabel:
-                                            MediaQuery.heightOf(context) * 16 / 1024,
+                                        paddingBottomLabel: MediaQuery.heightOf(context) * 16 / 1024,
                                       ),
-                                    ),
-                                    SizedBox(height: MediaQuery.heightOf(context) * 44 / 1024),
-                                    BlocBuilder<LoginBloc, LoginState>(
-                                      builder: (context, state) {
-                                        if (state.isLoading) {
-                                          return const Center(
-                                            child: CircularProgressIndicator.adaptive(),
+                                      SizedBox(height: MediaQuery.heightOf(context) * 24 / 1024),
+                                      AppField(
+                                        focusNode: usernameFN,
+                                        textInputAction: TextInputAction.next,
+                                        controller: usernameController,
+                                        onFieldSubmitted: (value) => passwordFN.requestFocus(),
+                                        label: 'Tên đăng nhập',
+                                        hintText: 'Nhập tên đăng nhập',
+                                        validator: (value) {
+                                          if (value == null || value.trim().isEmpty) {
+                                            return 'Tên đăng nhập không được để trống.';
+                                          }
+                                          return null;
+                                        },
+                                        paddingBottomLabel: MediaQuery.heightOf(context) * 16 / 1024,
+                                      ),
+                                      SizedBox(height: MediaQuery.heightOf(context) * 24 / 1024),
+                                      StatefulBuilder(
+                                        builder: (context, setState) => AppField(
+                                          focusNode: passwordFN,
+                                          textInputAction: TextInputAction.done,
+                                          controller: passwordController,
+                                          onFieldSubmitted: (value) => _login(),
+                                          label: 'Mật khẩu',
+                                          hintText: 'Nhập mật khẩu',
+                                          obscureText: obscure,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                                          ],
+                                          suffix: IconButton(
+                                            onPressed: () => setState(() => obscure = !obscure),
+                                            icon: Icon(
+                                              obscure ? Icons.visibility : Icons.visibility_off,
+                                              color: AppColors.black,
+                                            ),
+                                            iconSize: 20,
+                                          ),
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Mật khẩu không được để trống.';
+                                            }
+                                            if (value.length < 3) {
+                                              return 'Mật khẩu phải có ít nhất 3 ký tự';
+                                            }
+                                            return null;
+                                          },
+                                          paddingBottomLabel:
+                                              MediaQuery.heightOf(context) * 16 / 1024,
+                                        ),
+                                      ),
+                                      SizedBox(height: MediaQuery.heightOf(context) * 44 / 1024),
+                                      BlocBuilder<LoginBloc, LoginState>(
+                                        builder: (context, state) {
+                                          if (state.isLoading) {
+                                            return const Center(
+                                              child: CircularProgressIndicator.adaptive(),
+                                            );
+                                          }
+                                          return AppButton.filled(
+                                            label: 'Đăng Nhập',
+                                            onPressed: () => _login(),
+                                            fullWidth: true,
                                           );
-                                        }
-                                        return AppButton.filled(
-                                          label: 'Đăng Nhập',
-                                          onPressed: () => _login(),
-                                          fullWidth: true,
-                                        );
-                                      },
-                                    ),
-                                    Spacer(),
-                                  ],
+                                        },
+                                      ),
+                                      Spacer(),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

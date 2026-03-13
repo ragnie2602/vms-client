@@ -43,6 +43,7 @@ class PlaybackPlayer extends StatefulWidget {
     this.resumeUponEnteringForegroundMode = true,
     this.wakelock = true,
     this.initialVolume,
+    this.onError,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -61,6 +62,7 @@ class PlaybackPlayer extends StatefulWidget {
   final bool resumeUponEnteringForegroundMode;
   final bool wakelock;
   final double? initialVolume;
+  final Function()? onError;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
@@ -940,6 +942,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   }
 
   Widget _buildError() {
+    widget.onError?.call();
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
