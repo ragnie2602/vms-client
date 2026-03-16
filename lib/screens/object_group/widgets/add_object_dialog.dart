@@ -16,6 +16,7 @@ import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dar
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
+import 'package:vms_flutter_client/screens/home/components/app_field.dart';
 import 'package:vms_flutter_client/screens/map/widgets/dash_border_widget.dart';
 import 'package:vms_flutter_client/screens/object_group/widgets/image_upload_info_tooltip.dart';
 
@@ -60,6 +61,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
   final Map<String, bool> _isDragging = {};
   // Validation errors
   final Map<String, String?> _errors = {};
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -117,10 +119,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingDetail = false);
-        ToastUtil.toastFail(
-          context: context,
-          title: Text('$e'),
-        );
+        ToastUtil.toastFail(context: context, title: Text('$e'));
       }
     }
   }
@@ -389,14 +388,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         final isImageField = field.fieldName == 'Ảnh nhận diện khuôn mặt';
         final isRequired = field.isRequired || isNameField || isImageField;
 
-        if (field.dataType != FieldDataType.file) {
-          final text = _textControllers[field.fieldName]?.text.trim() ?? '';
-          if (isRequired && text.isEmpty) {
-            _errors[field.fieldName] =
-                '${field.displayName} không được để trống';
-            hasError = true;
-          }
-        } else {
+        if (field.dataType == FieldDataType.file) {
           final localPaths = _localFilePaths[field.fieldName] ?? [];
           final existingUrls = _existingImageUrls[field.fieldName] ?? [];
           if (isRequired && localPaths.isEmpty && existingUrls.isEmpty) {
@@ -413,6 +405,12 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         hasError = true;
       }
     });
+
+    // Validate text fields via Form
+    final formValid = _formKey.currentState?.validate() ?? false;
+    if (!formValid) {
+      hasError = true;
+    }
 
     if (hasError) return;
 
@@ -440,11 +438,15 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
 
           if (allIds.isNotEmpty) {
             fieldValues[field.fieldName] = allIds;
+          } else {
+            fieldValues[field.fieldName] = null;
           }
         } else {
           final text = _textControllers[field.fieldName]?.text ?? '';
           if (text.isNotEmpty) {
             fieldValues[field.fieldName] = text;
+          } else {
+            fieldValues[field.fieldName] = null;
           }
         }
       }
@@ -544,33 +546,42 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                       padding: EdgeInsets.all(48),
                       child: Center(child: CircularProgressIndicator()),
                     )
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 24,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ...widget.objectType.fields.asMap().entries.map((
-                            entry,
-                          ) {
-                            final index = entry.key;
-                            final field = entry.value;
-                            final fieldWidget = _buildFieldWidget(field);
-                            if (index < widget.objectType.fields.length - 1) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: fieldWidget,
-                              );
-                            }
-                            return fieldWidget;
-                          }),
-                          if (widget.subjectGroups.isNotEmpty) ...[
-                            const SizedBox(height: 16),
-                            _buildSubjectGroupMultiSelect(),
-                          ],
-                        ],
+                  : ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(
+                        context,
+                      ).copyWith(scrollbars: false),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 24,
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...widget.objectType.fields.asMap().entries.map((
+                                entry,
+                              ) {
+                                final index = entry.key;
+                                final field = entry.value;
+                                final fieldWidget = _buildFieldWidget(field);
+                                if (index <
+                                    widget.objectType.fields.length - 1) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: fieldWidget,
+                                  );
+                                }
+                                return fieldWidget;
+                              }),
+                              if (widget.subjectGroups.isNotEmpty) ...[
+                                const SizedBox(height: 16),
+                                _buildSubjectGroupMultiSelect(),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     ),
             ),
@@ -679,46 +690,20 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         field.fieldName == 'name' || field.fieldName == 'Tên đối tượng';
     final isRequired = field.isRequired || isNameField;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildLabel(field.displayName, isRequired: isRequired),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: _errors[field.fieldName] != null ? 60 : 40,
-          child: TextField(
-            controller: _textControllers[field.fieldName],
-            style: AppTypography.style(14, color: AppColors.black),
-            onChanged: (val) {
-              if (_errors[field.fieldName] != null) {
-                setState(() => _errors[field.fieldName] = null);
-              }
-            },
-            decoration: InputDecoration(
-              hintText: 'Nhập ${field.displayName.toLowerCase()}',
-              hintStyle: AppTypography.style(14, color: AppColors.grey94A3B8),
-              errorText: _errors[field.fieldName],
-              errorStyle: AppTypography.style(12, color: AppColors.redFF0004),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.greyE2E8F0),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.greyE2E8F0),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4),
-                borderSide: const BorderSide(color: AppColors.primary),
-              ),
-            ),
-          ),
-        ),
-      ],
+    return AppField(
+      controller: _textControllers[field.fieldName]!,
+      hintText: 'Nhập ${field.displayName.toLowerCase()}',
+      label: field.displayName,
+      requiredField: isRequired,
+      maxLength: 50,
+      borderRadius: 4,
+      paddingBottomLabel: 8,
+      validator: (v) {
+        if (isRequired && (v == null || v.trim().isEmpty)) {
+          return '${field.displayName} không được để trống';
+        }
+        return null;
+      },
     );
   }
 
@@ -728,7 +713,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     final isUploading = _uploadingFields[field.fieldName] == true;
     final totalImages = existingUrls.length + localPaths.length;
     const maxImages = 6;
-    final canAddMore = totalImages < maxImages && !isUploading;
+    final canAddMore = totalImages < maxImages;
     final isImageField = field.fieldName == 'Ảnh nhận diện khuôn mặt';
     final isRequired = field.isRequired || isImageField;
 
@@ -835,41 +820,42 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                       onRemove: () => _removeLocalFile(field.fieldName, index),
                     );
                   }),
-                  // "+" add button (inline in grid)
+                  // Single slot: either "+" button or uploading spinner
                   if (canAddMore)
-                    InkWell(
-                      onTap: () => _pickAndUploadFiles(field.fieldName),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.greyE2E8F0),
-                          borderRadius: BorderRadius.circular(4),
-                          color: AppColors.greyF2F4FA,
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.add,
-                            size: 32,
-                            color: AppColors.grey94A3B8,
+                    isUploading
+                        ? Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppColors.greyE2E8F0),
+                              borderRadius: BorderRadius.circular(4),
+                              color: AppColors.greyF2F4FA,
+                            ),
+                            child: const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          )
+                        : InkWell(
+                            onTap: () => _pickAndUploadFiles(field.fieldName),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.greyE2E8F0),
+                                borderRadius: BorderRadius.circular(4),
+                                color: AppColors.greyF2F4FA,
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.add,
+                                  size: 32,
+                                  color: AppColors.grey94A3B8,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                  // Uploading indicator
-                  if (isUploading)
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.greyE2E8F0),
-                        borderRadius: BorderRadius.circular(4),
-                        color: AppColors.greyF2F4FA,
-                      ),
-                      child: const Center(
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ] else ...[
@@ -892,8 +878,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                         Flexible(
                           child: Text(
                             isImageField
-                                ? 'Vui lòng kéo thả hoặc chọn file có định\ndạng .BMP, .PNG, .JPEG'
-                                : 'Vui lòng kéo thả hoặc chọn file có định\ndạng .JPG, .JPEG, .PNG',
+                                ? 'Vui lòng kéo thả hoặc chọn file có định\ndạng BMP, JPG, PNG'
+                                : 'Vui lòng kéo thả hoặc chọn file có định\ndạng BMP, JPG, PNG',
                             textAlign: TextAlign.center,
                             style: AppTypography.style(
                               14,
@@ -1313,9 +1299,7 @@ class _SubjectGroupMultiSelectDropdownState
     final availableHeight = openAbove ? spaceAbove : spaceBelow;
     final dropdownMaxHeight = availableHeight.clamp(100.0, 280.0);
 
-    final offset = openAbove
-        ? Offset(0, -dropdownMaxHeight - 4)
-        : Offset(0, size.height + 4);
+    final offset = openAbove ? const Offset(0, -4) : Offset(0, size.height + 4);
 
     _overlayEntry = OverlayEntry(
       builder: (context) => GestureDetector(
@@ -1326,6 +1310,10 @@ class _SubjectGroupMultiSelectDropdownState
             CompositedTransformFollower(
               link: _layerLink,
               showWhenUnlinked: false,
+              targetAnchor: Alignment.topLeft,
+              followerAnchor: openAbove
+                  ? Alignment.bottomLeft
+                  : Alignment.topLeft,
               offset: offset,
               child: Material(
                 elevation: 4,
@@ -1517,50 +1505,60 @@ class _SubjectGroupMultiSelectDropdownState
                             ),
                           )
                         : ConstrainedBox(
-                            constraints: const BoxConstraints(maxHeight: 64),
-                            child: SingleChildScrollView(
-                              child: Wrap(
-                                spacing: 6,
-                                runSpacing: 4,
-                                children: selectedGroups.map((g) {
-                                  return Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.greyF2F4FA,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          g.name ?? '',
-                                          style: AppTypography.style(
-                                            12,
-                                            color: AppColors.grey334155,
+                            constraints: const BoxConstraints(maxHeight: 100),
+                            child: ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(
+                                context,
+                              ).copyWith(scrollbars: false),
+                              child: SingleChildScrollView(
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  children: selectedGroups.map((g) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.greyF2F4FA,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              g.name ?? '',
+                                              maxLines: 1,
+                                              style: AppTypography.style(
+                                                12,
+                                                color: AppColors.grey334155,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        InkWell(
-                                          onTap: () {
-                                            final newIds = Set<int>.from(
-                                              widget.selectedIds,
-                                            );
-                                            newIds.remove(g.id);
-                                            widget.onChanged(newIds);
-                                          },
-                                          child: const Icon(
-                                            Icons.close,
-                                            size: 14,
-                                            color: AppColors.grey64748B,
+                                          const SizedBox(width: 4),
+                                          InkWell(
+                                            onTap: () {
+                                              final newIds = Set<int>.from(
+                                                widget.selectedIds,
+                                              );
+                                              newIds.remove(g.id);
+                                              widget.onChanged(newIds);
+                                            },
+                                            child: const Icon(
+                                              Icons.close,
+                                              size: 14,
+                                              color: AppColors.grey64748B,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             ),
                           ),

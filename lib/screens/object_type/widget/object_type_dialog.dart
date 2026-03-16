@@ -208,11 +208,11 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     for (int i = 0; i < _fields.length; i++) {
       final f = _fields[i];
       if (f.fieldName.trim().isEmpty) {
-        _nameErrors[i] = 'Không được để trống';
+        _nameErrors[i] = 'Tên mã dữ liệu không được để trống';
         hasFieldError = true;
       }
       if (f.displayName.trim().isEmpty) {
-        _displayErrors[i] = 'Không được để trống';
+        _displayErrors[i] = 'Tên hiển thị không được để trống';
         hasFieldError = true;
       }
       // Validate duplicate fieldName
@@ -695,14 +695,17 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Drag handle
           SizedBox(
             width: 32,
-            child: ReorderableDragStartListener(
-              index: index,
-              child: SvgPicture.asset(AppAssets.icDrag),
+            height: 44,
+            child: Center(
+              child: ReorderableDragStartListener(
+                index: index,
+                child: SvgPicture.asset(AppAssets.icDrag),
+              ),
             ),
           ),
           // Field name
@@ -714,7 +717,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                 ? _buildReadOnlyLabel(field.fieldName)
                 : _buildSmallTextField(
                     initialValue: field.fieldName,
-                    hintText: 'Tên dữ liệu',
+                    hintText: 'Tên mã dữ liệu',
                     maxLength: 50,
                     errorText: _nameErrors[index],
                     onChanged: (value) {
@@ -729,7 +732,11 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           // Icon
           Expanded(
             flex: 1,
-            child: Center(child: _buildIconPicker(index, field)),
+            child: Container(
+              height: 44,
+              alignment: Alignment.center,
+              child: _buildIconPicker(index, field),
+            ),
           ),
           const SizedBox(width: 8),
           // Display name
@@ -752,14 +759,19 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           // Data type – SRS: disabled for recognition fields
           Expanded(
             flex: 2,
-            child: field.isDefault || _isProtectedField(field)
-                ? _buildReadOnlyLabel(field.dataType.displayName)
-                : _buildDataTypeDropdown(index, field),
+            child: Container(
+              height: 44,
+              alignment: Alignment.centerLeft,
+              child: field.isDefault || _isProtectedField(field)
+                  ? _buildReadOnlyLabel(field.dataType.displayName)
+                  : _buildDataTypeDropdown(index, field),
+            ),
           ),
           const SizedBox(width: 8),
           // Actions
           SizedBox(
             width: 60,
+            height: 44,
             child: Center(
               child: PopupMenuButton<String>(
                 icon: const Icon(
@@ -873,7 +885,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
 
   Widget _buildReadOnlyLabel(String text) {
     return Container(
-      height: 36,
+      height: 44,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Text(
@@ -892,52 +904,14 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     required ValueChanged<String> onChanged,
     bool readOnly = false,
   }) {
-    return TextFormField(
+    return AppField(
       initialValue: initialValue,
+      hintText: hintText,
+      maxLength: maxLength,
+      errorText: errorText,
       onChanged: readOnly ? null : onChanged,
       readOnly: readOnly,
-      maxLength: maxLength,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: AppTypography.style(12, color: AppColors.grey64748B),
-        errorText: errorText,
-        errorStyle: AppTypography.style(12, color: AppColors.redFF0004),
-        counterText: '', // Hide default counter below
-        suffixText: maxLength != null
-            ? '${initialValue?.length ?? 0}/$maxLength'
-            : null,
-        suffixStyle: AppTypography.style(11, color: AppColors.grey64748B),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-        isDense: true,
-        filled: readOnly,
-        fillColor: readOnly
-            ? AppColors.greyE2E8F0.withValues(alpha: 0.3)
-            : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: AppColors.greyE2E8F0),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: AppColors.greyE2E8F0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: AppColors.secondary),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: AppColors.redFF0004),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: AppColors.redFF0004),
-        ),
-      ),
-      style: AppTypography.style(
-        12,
-        color: readOnly ? AppColors.grey64748B : AppColors.black,
-      ),
+      borderRadius: 4,
     );
   }
 
@@ -964,7 +938,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           }
         },
         buttonStyleData: ButtonStyleData(
-          height: 36,
+          height: 44,
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.greyE2E8F0),
             borderRadius: BorderRadius.circular(4),
