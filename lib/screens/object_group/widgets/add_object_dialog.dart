@@ -438,11 +438,15 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
 
           if (allIds.isNotEmpty) {
             fieldValues[field.fieldName] = allIds;
+          } else {
+            fieldValues[field.fieldName] = null;
           }
         } else {
           final text = _textControllers[field.fieldName]?.text ?? '';
           if (text.isNotEmpty) {
             fieldValues[field.fieldName] = text;
+          } else {
+            fieldValues[field.fieldName] = null;
           }
         }
       }
