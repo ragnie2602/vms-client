@@ -1306,10 +1306,10 @@ class _SubjectGroupMultiSelectDropdownState
             CompositedTransformFollower(
               link: _layerLink,
               showWhenUnlinked: false,
-              // targetAnchor: Alignment.topLeft,
-              // followerAnchor: openAbove
-              //     ? Alignment.bottomLeft
-              //     : Alignment.topLeft,
+              targetAnchor: Alignment.topLeft,
+              followerAnchor: openAbove
+                  ? Alignment.bottomLeft
+                  : Alignment.topLeft,
               offset: offset,
               child: Material(
                 elevation: 4,
