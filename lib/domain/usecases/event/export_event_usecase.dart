@@ -57,6 +57,8 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
         'Loại sự kiện',
         'Nhóm Camera',
         'Tên Cam',
+        'Tên đối tượng',
+        'Nhóm đối tượng',
         'Ghi chú',
       ];
 
@@ -92,6 +94,8 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
           TextCellValue(event.eventName ?? ''),
           TextCellValue(input.cameraGroupName),
           TextCellValue(cameraName),
+          TextCellValue(event.payload?['Tên đối tượng'] ?? ''),
+          TextCellValue(event.payload?['groupName'] ?? ''),
           TextCellValue(event.description ?? ''),
         ];
 
