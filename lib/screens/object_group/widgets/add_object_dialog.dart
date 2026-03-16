@@ -878,8 +878,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                         Flexible(
                           child: Text(
                             isImageField
-                                ? 'Vui lòng kéo thả hoặc chọn file có định\ndạng .BMP, .PNG, .JPEG'
-                                : 'Vui lòng kéo thả hoặc chọn file có định\ndạng .JPG, .JPEG, .PNG',
+                                ? 'Vui lòng kéo thả hoặc chọn file có định\ndạng BMP, JPG, PNG'
+                                : 'Vui lòng kéo thả hoặc chọn file có định\ndạng BMP, JPG, PNG',
                             textAlign: TextAlign.center,
                             style: AppTypography.style(
                               14,
