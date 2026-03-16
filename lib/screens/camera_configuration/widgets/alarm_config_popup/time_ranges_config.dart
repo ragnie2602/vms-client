@@ -22,9 +22,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
   @override
   void initState() {
     if (widget.alarmConfig.times.isEmpty) {
-      widget.alarmConfig.times.add(
-        TimesConfig(days: _weekdays.keys.toList(), startTime: '00:00', endTime: '23:59'),
-      );
+      widget.alarmConfig.times.add(TimesConfig.empty());
     }
 
     super.initState();
