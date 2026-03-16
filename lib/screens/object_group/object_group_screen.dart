@@ -257,7 +257,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       );
       final repo = context.read<IObjectGroupRepository>();
       final subjectGroupId = state.selectedSubjectGroup?.id ?? 0;
-      final searchQuery = state.searchQuery;
+      final searchQuery = _searchController.text;
       final tempPath = await repo.exportObjects(
         selectedType.id,
         subjectGroupId: subjectGroupId > 0 ? subjectGroupId : null,
