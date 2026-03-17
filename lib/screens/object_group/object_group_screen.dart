@@ -755,19 +755,26 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
                   _tabController!.addListener(() {
                     if (!_tabController!.indexIsChanging) {
-                      final selectedType =
-                          state.objectTypes[_tabController!.index];
-                      context.read<ObjectGroupBloc>().add(
-                        SelectObjectType(selectedType),
-                      );
+                      if (!context.mounted) return;
+                      // update objectSelected khi đổi tab
+                      final bloc = context.read<ObjectGroupBloc>();
+                      final currentTypes = bloc.state.objectTypes;
+                      final currentIndex = _tabController!.index;
+                      
+                      if (currentIndex >= 0 && currentIndex < currentTypes.length) {
+                        final selectedType = currentTypes[currentIndex];
+                        if (bloc.state.selectedObjectType?.id != selectedType.id) {
+                          bloc.add(SelectObjectType(selectedType));
+                        }
+                      }
                     }
                   });
                 }
 
                 // Sync selected tab index
                 if (state.selectedObjectType != null) {
-                  final selectedIndex = state.objectTypes.indexOf(
-                    state.selectedObjectType!,
+                  final selectedIndex = state.objectTypes.indexWhere(
+                    (t) => t.id == state.selectedObjectType!.id,
                   );
                   if (selectedIndex >= 0 &&
                       _tabController!.index != selectedIndex) {
