@@ -422,10 +422,11 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         ),
       );
       if (result == true && context.mounted) {
-        context.read<ObjectGroupBloc>().add(
+        final bloc = context.read<ObjectGroupBloc>();
+        bloc.add(
           LoadObjects(
             objectTypeId: selectedType.id,
-            subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
+            subjectGroupId: bloc.state.selectedSubjectGroup?.id ?? 0,
           ),
         );
       }
