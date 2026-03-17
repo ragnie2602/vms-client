@@ -7,7 +7,10 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 class AppField extends StatefulWidget {
   const AppField({
     super.key,
-    required this.controller,
+    this.controller,
+    this.initialValue,
+    this.onChanged,
+    this.errorText,
     this.hintText,
     this.obscureText = false,
     this.suffix,
@@ -29,7 +32,10 @@ class AppField extends StatefulWidget {
     this.onFieldSubmitted,
   });
 
-  final TextEditingController controller;
+  final TextEditingController? controller;
+  final String? initialValue;
+  final ValueChanged<String>? onChanged;
+  final String? errorText;
   final String? hintText;
   final bool obscureText;
   final Widget? suffix;
@@ -56,9 +62,39 @@ class AppField extends StatefulWidget {
 
 class _AppFieldState extends State<AppField> {
   String? _errorText;
+  late TextEditingController _internalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _internalController = widget.controller ?? TextEditingController(text: widget.initialValue);
+    _errorText = widget.errorText;
+  }
+
+  @override
+  void didUpdateWidget(AppField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      if (widget.controller != null) {
+        _internalController = widget.controller!;
+      }
+    }
+    if (widget.errorText != oldWidget.errorText) {
+      _errorText = widget.errorText;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller == null) {
+      _internalController.dispose();
+    }
+    super.dispose();
+  }
 
   String? _customValidator(String? value) {
-    final error = widget.validator?.call(value);
+    if (widget.validator == null) return null;
+    final error = widget.validator!.call(value);
     setState(() {
       _errorText = error;
     });
@@ -97,7 +133,7 @@ class _AppFieldState extends State<AppField> {
           );
 
     return ValueListenableBuilder<TextEditingValue>(
-      valueListenable: widget.controller,
+      valueListenable: _internalController,
       builder: (context, value, _) {
         final List<Widget> suffixChildren = [];
         if (widget.suffix != null) suffixChildren.add(widget.suffix!);
@@ -136,7 +172,7 @@ class _AppFieldState extends State<AppField> {
                       onFieldSubmitted: widget.onFieldSubmitted,
                       textInputAction: widget.textInputAction,
                       focusNode: widget.focusNode,
-                      controller: widget.controller,
+                      controller: _internalController,
                       obscureText: widget.obscureText,
                       keyboardType: widget.keyboardType,
                       maxLines: widget.maxLines,
@@ -147,6 +183,7 @@ class _AppFieldState extends State<AppField> {
                         setState(() {
                           _errorText = null;
                         });
+                        widget.onChanged?.call(value);
                       },
                       readOnly: widget.readOnly ?? false,
                       inputFormatters: widget.inputFormatters,
@@ -238,6 +275,7 @@ class _AppFieldState extends State<AppField> {
             ),
             // Custom error message với icon
             if (_errorText != null) ...[
+              const SizedBox(height: 4),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

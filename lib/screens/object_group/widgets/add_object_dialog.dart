@@ -438,11 +438,15 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
 
           if (allIds.isNotEmpty) {
             fieldValues[field.fieldName] = allIds;
+          } else {
+            fieldValues[field.fieldName] = null;
           }
         } else {
           final text = _textControllers[field.fieldName]?.text ?? '';
           if (text.isNotEmpty) {
             fieldValues[field.fieldName] = text;
+          } else {
+            fieldValues[field.fieldName] = null;
           }
         }
       }
@@ -542,35 +546,41 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                       padding: EdgeInsets.all(48),
                       child: Center(child: CircularProgressIndicator()),
                     )
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 24,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ...widget.objectType.fields.asMap().entries.map((
-                            entry,
-                          ) {
-                            final index = entry.key;
-                            final field = entry.value;
-                            final fieldWidget = _buildFieldWidget(field);
-                            if (index < widget.objectType.fields.length - 1) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: fieldWidget,
-                              );
-                            }
-                            return fieldWidget;
-                          }),
-                          if (widget.subjectGroups.isNotEmpty) ...[
-                            const SizedBox(height: 16),
-                            _buildSubjectGroupMultiSelect(),
-                          ],
-                        ],
+                  : ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(
+                        context,
+                      ).copyWith(scrollbars: false),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 24,
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...widget.objectType.fields.asMap().entries.map((
+                                entry,
+                              ) {
+                                final index = entry.key;
+                                final field = entry.value;
+                                final fieldWidget = _buildFieldWidget(field);
+                                if (index <
+                                    widget.objectType.fields.length - 1) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: fieldWidget,
+                                  );
+                                }
+                                return fieldWidget;
+                              }),
+                              if (widget.subjectGroups.isNotEmpty) ...[
+                                const SizedBox(height: 16),
+                                _buildSubjectGroupMultiSelect(),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -823,7 +833,9 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                               child: SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                             ),
                           )
@@ -866,8 +878,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
                         Flexible(
                           child: Text(
                             isImageField
-                                ? 'Vui lòng kéo thả hoặc chọn file có định\ndạng .BMP, .PNG, .JPEG'
-                                : 'Vui lòng kéo thả hoặc chọn file có định\ndạng .JPG, .JPEG, .PNG',
+                                ? 'Vui lòng kéo thả hoặc chọn file có định\ndạng BMP, JPG, PNG'
+                                : 'Vui lòng kéo thả hoặc chọn file có định\ndạng BMP, JPG, PNG',
                             textAlign: TextAlign.center,
                             style: AppTypography.style(
                               14,
@@ -1287,9 +1299,7 @@ class _SubjectGroupMultiSelectDropdownState
     final availableHeight = openAbove ? spaceAbove : spaceBelow;
     final dropdownMaxHeight = availableHeight.clamp(100.0, 280.0);
 
-    final offset = openAbove
-        ? Offset(0, -dropdownMaxHeight - 4)
-        : Offset(0, size.height + 4);
+    final offset = openAbove ? const Offset(0, -4) : Offset(0, size.height + 4);
 
     _overlayEntry = OverlayEntry(
       builder: (context) => GestureDetector(
@@ -1300,6 +1310,10 @@ class _SubjectGroupMultiSelectDropdownState
             CompositedTransformFollower(
               link: _layerLink,
               showWhenUnlinked: false,
+              targetAnchor: Alignment.topLeft,
+              followerAnchor: openAbove
+                  ? Alignment.bottomLeft
+                  : Alignment.topLeft,
               offset: offset,
               child: Material(
                 elevation: 4,
@@ -1491,50 +1505,60 @@ class _SubjectGroupMultiSelectDropdownState
                             ),
                           )
                         : ConstrainedBox(
-                            constraints: const BoxConstraints(maxHeight: 64),
-                            child: SingleChildScrollView(
-                              child: Wrap(
-                                spacing: 6,
-                                runSpacing: 4,
-                                children: selectedGroups.map((g) {
-                                  return Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.greyF2F4FA,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          g.name ?? '',
-                                          style: AppTypography.style(
-                                            12,
-                                            color: AppColors.grey334155,
+                            constraints: const BoxConstraints(maxHeight: 100),
+                            child: ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(
+                                context,
+                              ).copyWith(scrollbars: false),
+                              child: SingleChildScrollView(
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  children: selectedGroups.map((g) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.greyF2F4FA,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              g.name ?? '',
+                                              maxLines: 1,
+                                              style: AppTypography.style(
+                                                12,
+                                                color: AppColors.grey334155,
+                                                textOverflow:
+                                                    TextOverflow.ellipsis,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        InkWell(
-                                          onTap: () {
-                                            final newIds = Set<int>.from(
-                                              widget.selectedIds,
-                                            );
-                                            newIds.remove(g.id);
-                                            widget.onChanged(newIds);
-                                          },
-                                          child: const Icon(
-                                            Icons.close,
-                                            size: 14,
-                                            color: AppColors.grey64748B,
+                                          const SizedBox(width: 4),
+                                          InkWell(
+                                            onTap: () {
+                                              final newIds = Set<int>.from(
+                                                widget.selectedIds,
+                                              );
+                                              newIds.remove(g.id);
+                                              widget.onChanged(newIds);
+                                            },
+                                            child: const Icon(
+                                              Icons.close,
+                                              size: 14,
+                                              color: AppColors.grey64748B,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             ),
                           ),
