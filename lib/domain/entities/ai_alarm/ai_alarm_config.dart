@@ -82,6 +82,21 @@ class TimesConfig {
   factory TimesConfig.empty() {
     return TimesConfig(days: [], startTime: null, endTime: null);
   }
+  factory TimesConfig.full() {
+    return TimesConfig(
+      days: [
+        DateTime.monday,
+        DateTime.tuesday,
+        DateTime.wednesday,
+        DateTime.thursday,
+        DateTime.friday,
+        DateTime.saturday,
+        DateTime.sunday,
+      ],
+      startTime: '00:00',
+      endTime: '23:59',
+    );
+  }
 
   bool isEmpty() => days.isEmpty && startTime == null && endTime == null;
   bool isValid() =>
@@ -133,7 +148,7 @@ class AIAlarmConfig {
           : <ROIConfig>[],
       times: json['times'] != null
           ? (json['times'] as List).map<TimesConfig>((e) => TimesConfig.fromJson(e)).toList()
-          : <TimesConfig>[],
+          : [TimesConfig.full()],
       nonHitAlarm: type == AIAlarmType.faceDetection ? (json['nonHitAlarm'] ?? 0) : null,
     );
   }
