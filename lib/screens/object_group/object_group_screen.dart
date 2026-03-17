@@ -127,6 +127,13 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
   // === Import data ===
   Future<void> _onImportData(BuildContext context) async {
     final state = context.read<ObjectGroupBloc>().state;
+    if (state.selectedSubjectGroup == null || state.selectedSubjectGroup?.id == 0) {
+      ToastUtil.toastFail(
+        context: context,
+        title: const Text('Vui lòng chọn nhóm đối tượng trước khi import dữ liệu!'),
+      );
+      return;
+    }
     final selectedType = state.selectedObjectType;
     if (selectedType == null) {
       ToastUtil.toastFail(
