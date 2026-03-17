@@ -187,11 +187,18 @@ class DrawerTile extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isExpanded = constraints.maxWidth >= maxWidth;
-          return tab.nested.isEmpty
+          return tab.nested.isEmpty || !isExpanded
               ? _buildTitle(
                   context,
-                  isSelected,
-                  onTap: () => _handleTap(context),
+                  isSelected || tab.nested.contains(selectedTab),
+                  onTap: () {
+                    if (tab.nested.isNotEmpty && !isExpanded) {
+                      // Mở sidebar khi click vào icon parent trong trạng thái collapsed
+                      context.read<HomeBloc>().add(ToggleSidebar());
+                      return;
+                    }
+                    _handleTap(context);
+                  },
                   showTooltip: !isExpanded,
                 )
               : TileExpansion(
