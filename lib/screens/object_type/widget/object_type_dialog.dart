@@ -188,8 +188,18 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         ),
       );
     } else {
-      // Field has no data → delete immediately
-      setState(() => _fields.removeAt(index));
+      // Field has no data → show lighter confirmation popup
+      showDialog(
+        context: context,
+        builder: (context) => ConfirmDeleteDialog(
+          title: 'Xóa trường dữ liệu',
+          content:
+              'Bạn có chắc chắn muốn xóa trường dữ liệu $displayLabel không?',
+          onConfirm: () {
+            setState(() => _fields.removeAt(index));
+          },
+        ),
+      );
     }
   }
 
