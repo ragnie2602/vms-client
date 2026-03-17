@@ -49,7 +49,14 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     SelectSubjectGroup event,
     Emitter<ObjectGroupState> emit,
   ) async {
-    emit(state.copyWith(selectedSubjectGroup: event.subjectGroup));
+    // select group = null -> auto select node đầu
+    emit(
+      state.copyWith(
+        selectedSubjectGroup:
+            event.subjectGroup ??
+            SubjectGroup(id: 0, name: 'Danh sách đối tượng', parentId: 0),
+      ),
+    );
     final selectedType = state.selectedObjectType;
     if (selectedType == null) return;
     add(
@@ -320,7 +327,9 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     Emitter<ObjectGroupState> emit,
   ) async {
     emit(state.copyWith(status: ObjectGroupStatus.loading));
-    final result = await objectGroupRepository.deleteSubjectGroup(objectGroupId: event.id);
+    final result = await objectGroupRepository.deleteSubjectGroup(
+      objectGroupId: event.id,
+    );
     result.fold(
       (failure) {
         emit(

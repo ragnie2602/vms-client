@@ -798,6 +798,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             height: 44,
             child: Center(
               child: PopupMenuButton<String>(
+                tooltip: '',
                 icon: const Icon(
                   Icons.more_horiz,
                   color: AppColors.grey6F767E,
