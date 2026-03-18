@@ -137,7 +137,7 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
         );
         await excelFile.saveTo(result.path);
 
-        return ExportEventOutput(result.path);
+        return ExportEventOutput(fileName);
       } else {
         return const ExportEventOutput('', errorMsg: 'Lỗi khi tạo nội dung file Excel');
       }

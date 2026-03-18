@@ -1,4 +1,5 @@
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
@@ -16,16 +17,16 @@ class StreamEventUsecase extends StreamUseCase<StreamEventInput, StreamEventOutp
   StreamEventUsecase(this.cameraRepository, this.detectRepository);
 
   @override
-  Stream<StreamEventOutput> buildUseCase(StreamEventInput input) async* {
-    final response = await cameraRepository.getAllCamera();
-    final cameras = response.fold((failure) => throw failure, (success) => success);
+  Stream<StreamEventOutput> buildUseCase(StreamEventInput input) {
+    final cameras = input.cameras;
 
-    yield* detectRepository.receiveEventStream.asyncMap((event) async {
+    return detectRepository.receiveEventStream.map((event) {
       final String camId = event.eventData?['cameraId'] ?? '';
       if (camId.isNotEmpty) {
         final camera = cameras.firstWhereOrNull((e) => e.camId == camId);
         if (camera != null) event.eventData?['cameraName'] = camera.name;
       }
+
       return StreamEventOutput(event);
     });
   }
