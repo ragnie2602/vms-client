@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/common_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
@@ -174,7 +175,8 @@ class _MapViewState extends State<MapView> {
     return BlocBuilder<MonitorBloc, MonitorState>(
       builder: (context, state) {
         if (state is MonitorSuccess) {
-          final camera = state.cameras.firstWhere((c) => c.id.equals(cammap.cameraId));
+          final camera = state.cameras.firstWhereOrNull((c) => c.id.equals(cammap.cameraId));
+          if (camera == null) return const SizedBox();
 
           final basePosition = Offset(cammap.xRatio * w, cammap.yRatio * h);
           final position = _dragPositions[itemId] ?? basePosition;
