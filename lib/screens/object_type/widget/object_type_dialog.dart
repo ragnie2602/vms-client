@@ -34,6 +34,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   ObjectTypeStatus _selectedStatus = ObjectTypeStatus.active;
   List<ObjectTypeField> _fields = [];
   bool _isLoadingFields = false;
+  Map<String, bool> _fieldValuesExistData = {};
 
   // Lưu lỗi dạng ErrorText cho từng Field Name hoặc Display Name
   final Map<int, String> _nameErrors = {};
@@ -87,6 +88,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         _selectedAIFeature = detail.aiFeature;
         _selectedStatus = detail.status;
         _fields = List.from(detail.fields);
+        _fieldValuesExistData = detail.fieldValuesExistData ?? {};
         _isLoadingFields = false;
       });
     } catch (e) {
@@ -162,21 +164,43 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       return;
     }
 
-    // SRS: Saved fields → show confirmation popup
     final displayLabel = field.displayName.isNotEmpty
         ? field.displayName
         : field.fieldName;
-    showDialog(
-      context: context,
-      builder: (context) => ConfirmDeleteDialog(
-        title: 'Xóa trường dữ liệu',
-        content:
-            'Trường dữ liệu $displayLabel đang chứa dữ liệu đối tượng. Bạn có chắc chắn muốn xóa?',
-        onConfirm: () {
-          setState(() => _fields.removeAt(index));
-        },
-      ),
-    );
+
+    // Check if field has existing data via fieldValuesExistData
+    // Try matching by displayName first, then by fieldName
+    final hasExistingData =
+        _fieldValuesExistData[field.displayName] == true ||
+        _fieldValuesExistData[field.fieldName] == true;
+
+    if (hasExistingData) {
+      // Field has data → show confirmation popup
+      showDialog(
+        context: context,
+        builder: (context) => ConfirmDeleteDialog(
+          title: 'Xóa trường dữ liệu',
+          content:
+              'Trường dữ liệu $displayLabel đang chứa dữ liệu đối tượng. Bạn có chắc chắn muốn xóa?',
+          onConfirm: () {
+            setState(() => _fields.removeAt(index));
+          },
+        ),
+      );
+    } else {
+      // Field has no data → show lighter confirmation popup
+      showDialog(
+        context: context,
+        builder: (context) => ConfirmDeleteDialog(
+          title: 'Xóa trường dữ liệu',
+          content:
+              'Bạn có chắc chắn muốn xóa trường dữ liệu $displayLabel không?',
+          onConfirm: () {
+            setState(() => _fields.removeAt(index));
+          },
+        ),
+      );
+    }
   }
 
   void _updateField(int index, ObjectTypeField field) {
@@ -774,6 +798,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
             height: 44,
             child: Center(
               child: PopupMenuButton<String>(
+                tooltip: '',
                 icon: const Icon(
                   Icons.more_horiz,
                   color: AppColors.grey6F767E,

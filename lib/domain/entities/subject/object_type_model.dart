@@ -159,6 +159,7 @@ class ObjectType {
   final String? statusDisplayName;
   final int objectCount;
   final List<ObjectTypeField> fields;
+  final Map<String, bool>? fieldValuesExistData;
   final String? createdAt;
   final String? updatedAt;
 
@@ -171,6 +172,7 @@ class ObjectType {
     required this.status,
     this.statusDisplayName,
     required this.fields,
+    this.fieldValuesExistData,
     required this.objectCount,
     this.createdAt,
     this.updatedAt,
@@ -196,6 +198,12 @@ class ObjectType {
             ?.map((e) => ObjectTypeField.fromJson(e as Map<String, dynamic>))
             .toList() ??
         [];
+    // Parse fieldValuesExistData map
+    Map<String, bool>? fieldValuesExist;
+    if (json['fieldValuesExistData'] is Map) {
+      fieldValuesExist = (json['fieldValuesExistData'] as Map<String, dynamic>)
+          .map((key, value) => MapEntry(key, value as bool? ?? false));
+    }
     return ObjectType(
       id: json['id'] as int,
       name: json['name'] as String? ?? '',
@@ -207,6 +215,7 @@ class ObjectType {
       ),
       statusDisplayName: json['statusDisplayName'] as String?,
       fields: dataFields,
+      fieldValuesExistData: fieldValuesExist,
       objectCount: json['objectCount'] as int? ?? 0,
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
@@ -222,6 +231,7 @@ class ObjectType {
     ObjectTypeStatus? status,
     String? statusDisplayName,
     List<ObjectTypeField>? fields,
+    Map<String, bool>? fieldValuesExistData,
     int? objectCount,
     String? createdAt,
     String? updatedAt,
@@ -235,6 +245,7 @@ class ObjectType {
       status: status ?? this.status,
       statusDisplayName: statusDisplayName ?? this.statusDisplayName,
       fields: fields ?? this.fields,
+      fieldValuesExistData: fieldValuesExistData ?? this.fieldValuesExistData,
       objectCount: objectCount ?? this.objectCount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

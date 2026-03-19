@@ -51,7 +51,7 @@ class _ObjectTypeScreenState extends State<ObjectTypeScreen> {
   }
 
   void _onSearch() {
-    _currentPage = 1;
+    setState(() => _currentPage = 1); // reset UI về page 1 sau khi search
     _loadData();
   }
 

@@ -444,7 +444,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
         } else {
           final text = _textControllers[field.fieldName]?.text ?? '';
           if (text.isNotEmpty) {
-            fieldValues[field.fieldName] = text;
+            fieldValues[field.fieldName] = text.trim();
           } else {
             fieldValues[field.fieldName] = null;
           }

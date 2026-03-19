@@ -127,6 +127,13 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
   // === Import data ===
   Future<void> _onImportData(BuildContext context) async {
     final state = context.read<ObjectGroupBloc>().state;
+    if (state.selectedSubjectGroup == null || state.selectedSubjectGroup?.id == 0) {
+      ToastUtil.toastFail(
+        context: context,
+        title: const Text('Vui lòng chọn nhóm đối tượng trước khi import dữ liệu!'),
+      );
+      return;
+    }
     final selectedType = state.selectedObjectType;
     if (selectedType == null) {
       ToastUtil.toastFail(
@@ -422,10 +429,11 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         ),
       );
       if (result == true && context.mounted) {
-        context.read<ObjectGroupBloc>().add(
+        final bloc = context.read<ObjectGroupBloc>();
+        bloc.add(
           LoadObjects(
             objectTypeId: selectedType.id,
-            subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
+            subjectGroupId: bloc.state.selectedSubjectGroup?.id ?? 0,
           ),
         );
       }
@@ -755,19 +763,26 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
                   _tabController!.addListener(() {
                     if (!_tabController!.indexIsChanging) {
-                      final selectedType =
-                          state.objectTypes[_tabController!.index];
-                      context.read<ObjectGroupBloc>().add(
-                        SelectObjectType(selectedType),
-                      );
+                      if (!context.mounted) return;
+                      // update objectSelected khi đổi tab
+                      final bloc = context.read<ObjectGroupBloc>();
+                      final currentTypes = bloc.state.objectTypes;
+                      final currentIndex = _tabController!.index;
+                      
+                      if (currentIndex >= 0 && currentIndex < currentTypes.length) {
+                        final selectedType = currentTypes[currentIndex];
+                        if (bloc.state.selectedObjectType?.id != selectedType.id) {
+                          bloc.add(SelectObjectType(selectedType));
+                        }
+                      }
                     }
                   });
                 }
 
                 // Sync selected tab index
                 if (state.selectedObjectType != null) {
-                  final selectedIndex = state.objectTypes.indexOf(
-                    state.selectedObjectType!,
+                  final selectedIndex = state.objectTypes.indexWhere(
+                    (t) => t.id == state.selectedObjectType!.id,
                   );
                   if (selectedIndex >= 0 &&
                       _tabController!.index != selectedIndex) {
