@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_alert_entity.dart';
@@ -444,6 +446,22 @@ class AlertDetailPopup extends StatelessWidget {
           icon: const Icon(Icons.person_search, color: Colors.white, size: 22),
           title: 'Nhận diện đối tượng',
           subtitle: 'Phát hiện đối tượng trong khuôn viên',
+        );
+      case AlertType.intrusionWarning:
+        return _AlertHeaderConfig(
+          bgColor: const Color(0xFFFF8C00),
+          icon:
+          SvgPicture.asset(AppAssets.icAlertIntrusionWarning,
+          width: 22, height: 22),
+          title: 'Cảnh báo người lạ',
+          subtitle: 'Phát hiện người lạ trong khuôn viên',
+        );
+      default:
+        return _AlertHeaderConfig(
+          bgColor: const Color(0xFFEF4444),
+          icon: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 22),
+          title: 'Cảnh báo không xác định',
+          subtitle: 'Phát hiện sự kiện không xác định trong khuôn viên',
         );
     }
   }

@@ -99,6 +99,7 @@ class AppAssets {
   static const icTimeCircle = '$_svgPath/time_circle.svg';
   static const icLocation2 = '$_svgPath/location.svg';
   static const icAlertIntrution = '$_svgPath/alert_intrution.svg';
+  static const icAlertIntrusionWarning = '$_svgPath/alert_intrusion_warning.svg';
   static const icCalendar = '$_svgPath/calendar.svg';
   // map
   static const icMarkerMap = '$_svgPath/ic_marker_map.svg';

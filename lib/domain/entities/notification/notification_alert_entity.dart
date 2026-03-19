@@ -8,6 +8,8 @@ enum AlertType {
   smoking, // Hút thuốc
   fire, // Cháy
   objectDetection, // Nhận diện đối tượng
+  intrusionWarning, // Phát hiện người lạ
+  unknown,
   ;
 
   factory AlertType.fromAIAlarmType(AIAlarmType type) {
@@ -18,7 +20,8 @@ enum AlertType {
       AIAlarmType.smoking => AlertType.smoking,
       AIAlarmType.fireAlarm => AlertType.fire,
       AIAlarmType.faceDetection => AlertType.objectDetection,
-      AIAlarmType.unknown => throw Exception('Unknown AI alarm type: $type'),
+      AIAlarmType.intrusionWarning => AlertType.intrusionWarning,
+      AIAlarmType.unknown => AlertType.unknown,
     };
   }
 }

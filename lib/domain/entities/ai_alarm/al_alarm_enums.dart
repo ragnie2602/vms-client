@@ -5,6 +5,7 @@ enum AIAlarmType {
   fireAlarm('fire_alarm'), // Cảnh báo cháy
   crowdGathering('crowd_gathering'), // Cảnh báo tụ tập
   faceDetection('face_detection'), // Phát hiện khuôn mặt
+  intrusionWarning('intrusion_warning'), //
   unknown('unknown');
 
   final String key;

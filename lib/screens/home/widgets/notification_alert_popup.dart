@@ -335,6 +335,42 @@ class _NotificationAlertItem extends StatelessWidget {
             ],
           ),
         );
+      case AlertType.intrusionWarning:
+        return RichText(
+          text: TextSpan(
+            style: AppTypography.style(13, fontWeight: FontWeight.w400, color: AppColors.black),
+            children: [
+              TextSpan(text: '${alert.message} '),
+              TextSpan(
+                text: alert.cameraName ?? '',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const TextSpan(text: ' thuộc nhóm '),
+              TextSpan(
+                text: alert.cameraGroupName ?? '',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        );
+      default:
+        return RichText(
+          text: TextSpan(
+            style: AppTypography.style(13, fontWeight: FontWeight.w400, color: AppColors.black),
+            children: [
+              TextSpan(text: '${alert.message} '),
+              TextSpan(
+                text: alert.cameraName ?? '',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const TextSpan(text: ' thuộc nhóm '),
+              TextSpan(
+                text: alert.cameraGroupName ?? '',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+        );
     }
   }
 
@@ -390,6 +426,16 @@ class _NotificationAlertItem extends StatelessWidget {
         return _AlertIconConfig(
           bgColor: const Color(0xFFECFDF5),
           icon: Icon(Icons.person_search, size: 20, color: Color(0xFF059669)),
+        );
+      case AlertType.intrusionWarning:
+        return _AlertIconConfig(
+          bgColor: const Color(0xFFFFF2E2),
+          icon: SvgPicture.asset(AppAssets.icAlertIntrution, width: 20, height: 20),
+        );
+      default:
+        return _AlertIconConfig(
+          bgColor: const Color(0xFFEF4444),
+          icon: Icon(Icons.warning_amber_rounded, size: 20, color: Color(0xFFEF4444)),
         );
     }
   }
