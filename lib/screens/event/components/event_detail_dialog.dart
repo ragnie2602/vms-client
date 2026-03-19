@@ -127,10 +127,12 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                   current is GettingEventDetail,
               builder: (context, state) {
                 if (state is GettingEventDetail) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Expanded(child: const Center(child: CircularProgressIndicator()));
+                } else if (state is EventDetailFailure) {
+                  return Expanded(child: Center(child: Text(state.message)));
+                } else if (state is! EventDetailSuccess) {
+                  return SizedBox.shrink();
                 }
-                if (state is EventDetailFailure) return Center(child: Text(state.message));
-                if (state is! EventDetailSuccess) return SizedBox.shrink();
 
                 final event = state.event;
                 final displayData = state.displayData;
@@ -465,6 +467,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                 spreadRadius: -1,
                               ),
                             ],
+                            enabled: state is EventDetailSuccess,
                             label: 'Lưu',
                             onPressed: () => _save(),
                             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
