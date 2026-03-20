@@ -188,6 +188,14 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
                     AIAlarmType.fromKey(event.eventType ?? ''),
                   );
                   String? cameraName = evenData['cameraName'];
+                  String? formattedTime = evenData['timeEvent'];
+                  if (formattedTime != null) {
+                    try {
+                      formattedTime = DateFormat(
+                        'HH:mm dd/MM/yyyy',
+                      ).format(DateTime.parse(formattedTime));
+                    } catch (_) {}
+                  }
 
                   await AlertDetailPopup.show(
                     rootContext,
@@ -197,11 +205,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
                       categoryLabel: eventName,
                       message: 'Phát hiện sự kiện: $eventName',
                       alertType: alertType,
-                      time: evenData['timeEvent'] != null
-                          ? DateFormat(
-                              'HH:mm dd/MM/yyyy',
-                            ).format(DateTime.parse(evenData['timeEvent']))
-                          : '---',
+                      time: formattedTime ?? '---',
                       id: eventId.toString(),
                     ),
                     snapshotUrl: evenData['imageUrl'],
