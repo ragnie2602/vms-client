@@ -188,7 +188,10 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
       insetPadding: const EdgeInsets.all(12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 520, maxHeight: 520),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.widthOf(context) * 520 / 1600,
+          // maxHeight: MediaQuery.heightOf(context) * 520 / 900,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -306,19 +309,13 @@ class _EventRangePickerDialogState extends State<_EventRangePickerDialog> {
           fontWeight: FontWeight.w400,
           color: AppColors.grey94A3B8,
         ),
-        rangeEndDecoration: const BoxDecoration(
-          color: AppColors.secondary,
-          shape: BoxShape.circle,
-        ),
+        rangeEndDecoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle),
         rangeHighlightColor: AppColors.blueE7F3FF,
         rangeStartDecoration: const BoxDecoration(
           color: AppColors.secondary,
           shape: BoxShape.circle,
         ),
-        selectedDecoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.secondary,
-        ),
+        selectedDecoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.secondary),
         selectedTextStyle: AppTypography.style(
           12,
           fontWeight: FontWeight.w600,

@@ -9,7 +9,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
@@ -97,13 +96,19 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       final repo = context.read<IObjectGroupRepository>();
       final tempPath = await repo.downloadTemplate(selectedType.id);
 
-      // Copy to Downloads or let user choose save location
-      final downloadsDir =
-          await getDownloadsDirectory() ??
-          await getApplicationDocumentsDirectory();
       final dateStr = DateFormat('ddMMyyyy').format(DateTime.now());
       final fileName = 'File mẫu_${selectedType.name}_$dateStr.xlsx';
-      final savePath = '${downloadsDir.path}/$fileName';
+
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Chọn thư mục lưu file',
+      );
+
+      if (selectedDirectory == null) {
+        await File(tempPath).delete();
+        return;
+      }
+
+      final savePath = p.join(selectedDirectory, fileName);
 
       await File(tempPath).copy(savePath);
       await File(tempPath).delete();
@@ -271,15 +276,21 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         search: searchQuery.isNotEmpty ? searchQuery : null,
       );
 
-      // Copy to Downloads
-      final downloadsDir =
-          await getDownloadsDirectory() ??
-          await getApplicationDocumentsDirectory();
       final dateStr = DateFormat('ddMMyyyy').format(DateTime.now());
       final groupName = state.selectedSubjectGroup?.name ?? 'Tất cả';
       final fileName =
           'Danhsach_${selectedType.name}_${groupName}_$dateStr.xlsx';
-      final savePath = '${downloadsDir.path}/$fileName';
+
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Chọn thư mục lưu file',
+      );
+
+      if (selectedDirectory == null) {
+        await File(tempPath).delete();
+        return;
+      }
+
+      final savePath = p.join(selectedDirectory, fileName);
 
       await File(tempPath).copy(savePath);
       await File(tempPath).delete();
@@ -396,7 +407,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           groupName: currentGroup.name,
           onConfirm: () {
             final bloc = c.read<ObjectGroupBloc>();
-            bloc.add(DeleteSubjectGroup(id: currentGroup.id ?? 0));
+            bloc.add(DeleteSubjectGroup(subjectGroup: currentGroup));
           },
         );
       },

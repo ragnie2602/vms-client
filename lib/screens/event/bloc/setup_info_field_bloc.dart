@@ -34,6 +34,8 @@ class SetupEventDisplayBloc extends Bloc<SetupEventDisplayEvent, SetupEventDispl
 
   void _onChangeConfig(ChangeConfig event, Emitter<SetupEventDisplayState> emit) {
     _changes[(event.config.eventType, event.config.subjectTypeId)] = event.config;
+    print(_changes.values.map((e) => e.toJson()));
+    print(configs.values.map((e) => e.toJson()));
   }
 
   Future<void> _onGetEventDisplayConfig(
@@ -50,7 +52,8 @@ class SetupEventDisplayBloc extends Bloc<SetupEventDisplayEvent, SetupEventDispl
 
     final config = configs[(event.eventType, event.subjectTypeId)];
     if (config != null) {
-      emit(SEDGetEventDisplayConfigSuccess(config));
+      final c = _changes[(event.eventType, event.subjectTypeId)] = config.copyWith();
+      emit(SEDGetEventDisplayConfigSuccess(c));
       return;
     }
 

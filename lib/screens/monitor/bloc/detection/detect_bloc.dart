@@ -11,9 +11,11 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/ai_alarm/al_alarm_enums.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_alert_entity.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_camera_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
 import 'package:vms_flutter_client/screens/camera_detail/bloc/playback/playback_bloc.dart';
@@ -32,6 +34,7 @@ import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_fol
 import 'async_delay_queue.dart';
 
 class DetectBloc extends Bloc<DetectEvent, DetectState> {
+  final ICameraRepository cameraRepository;
   final IDetectRepository detectRepository;
   final IEventRepository eventRepository;
 
@@ -39,12 +42,18 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
 
   StreamSubscription? _subscription;
   Timer? _reconnectTimer;
+  bool _isInitializing = false;
 
   bool _isDialogShowing = false;
   AsyncDelayQueue asyncDelayQueue = AsyncDelayQueue(delay: Duration(seconds: 10));
   AudioPlayer audioPlayer = AudioPlayer();
 
-  DetectBloc(this.detectRepository, this.eventRepository, this.streamEventUsecase)
+  DetectBloc(
+    this.cameraRepository,
+    this.detectRepository,
+    this.eventRepository,
+    this.streamEventUsecase,
+  )
     : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
     on<DetectOnReceiveEvent>(_onDetectOnReceiveEvent);
@@ -89,18 +98,30 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
       },
     );
 
+    final cameras = (await cameraRepository.getAllCamera()).fold<List<CameraEntity>>(
+      (f) => [],
+      (cams) => cams,
+    );
+
     // step 2: Lắng nghe sự kiện từ stream
-    _startListening();
+    _startListening(cameras);
   }
 
-  void _startListening() {
+  void _startListening(List<CameraEntity> cameras) {
+    // Nếu đang trong giai đoạn setup (await getAllCamera), không cho phép gọi lại.
+    // Dart async* generator bị cancel silently khi subscription bị cancel trong lúc await,
+    // nên cần guard này để tránh _subscription?.cancel() gián đoạn generator đang khởi động.
+    if (_isInitializing) return;
+    _isInitializing = true;
+
     _reconnectTimer?.cancel();
     _subscription?.cancel();
 
     _subscription = streamEventUsecase
-        .execute(StreamEventInput())
+        .execute(StreamEventInput(cameras))
         .listen(
           (ev) {
+            _isInitializing = false;
             final event = ev.liveEvent;
             add(DetectOnReceiveEvent(event));
 
@@ -217,18 +238,22 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
             });
           },
           onError: (e, stack) {
+            _isInitializing = false;
             // Stream lỗi (vd: socket bị lỗi đột ngột) → thử lại sau 3s
             if (!isClosed) {
-              _reconnectTimer = Timer(Duration(seconds: 3), _startListening);
+              _reconnectTimer = Timer(Duration(seconds: 3), () => _startListening(cameras));
             }
           },
           onDone: () {
+            _isInitializing = false;
             // Stream kết thúc (vd: _messageController bị close khi reconnect) → thử lại sau 3s
             if (!isClosed) {
-              _reconnectTimer = Timer(Duration(seconds: 3), _startListening);
+              _reconnectTimer = Timer(Duration(seconds: 3), () => _startListening(cameras));
             }
           },
         );
+
+    print(_subscription);
   }
 
   FutureOr<void> _onDetectOnReceiveEvent(DetectOnReceiveEvent event, Emitter<DetectState> emit) {

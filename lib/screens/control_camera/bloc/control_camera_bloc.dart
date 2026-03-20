@@ -401,17 +401,6 @@ class ControlCameraBloc extends BaseBloc<ControlCameraEvent, ControlCameraState>
     );
   }
 
-  void _onFilterTagCamera(FilterCameraEvent event, Emitter<ControlCameraState> emit) {
-    final FilterCameraInput input = FilterCameraInput(
-      isOnline: event.isOnline,
-      nameCamera: event.cameraName,
-      tagName: event.tagName,
-      listCameraOrigin: listCamera,
-    );
-    //  final FilterTagCameraOutput output = filterTagCameraUseCase.execute(input);
-    //  emit(ListCameraSuccessState(cameras: output.listCamera ?? []));
-  }
-
   FutureOr<void> _onCreateTag(CreateTagEvent event, Emitter<ControlCameraState> emit) async {
     emit(CreateTagLoadingState());
     final res = await controlGroupRepository.createTag(tag: event.tag);

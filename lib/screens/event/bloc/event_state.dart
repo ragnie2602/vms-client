@@ -12,12 +12,12 @@ class ExportEventLoading extends EventState {
 }
 
 class ExportEventSuccess extends EventState {
-  final String filePath;
+  final String fileName;
 
-  const ExportEventSuccess(this.filePath);
+  const ExportEventSuccess(this.fileName);
 
   @override
-  List<Object?> get props => [filePath];
+  List<Object?> get props => [fileName];
 }
 
 class ExportEventFailure extends EventState {

@@ -244,7 +244,8 @@ class AppRouter {
               ),
             ),
             BlocProvider(
-              create: (context) => DetectBloc(context.read(), context.read(), context.read()),
+              create: (context) =>
+                  DetectBloc(context.read(), context.read(), context.read(), context.read()),
             ),
             BlocProvider(create: (context) => ObjectTypeBloc(context.read())),
             BlocProvider(

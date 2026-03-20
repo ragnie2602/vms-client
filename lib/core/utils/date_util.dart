@@ -3,6 +3,7 @@ import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 
 extension DateUtilExtension on DateTime {
   DateTime get startOfDay => DateTime(year, month, day);
+  DateTime get startOfHour => DateTime(year, month, day, hour);
   DateTime get startOfNextDay => DateTime(year, month, day + 1);
   DateTime get endOfDay => DateTime(year, month, day, 23, 59, 59, 999, 999);
   bool get isToday =>

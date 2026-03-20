@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/subject/object_type_model.dart';
 import 'package:vms_flutter_client/domain/entities/subject_group/subject_group.dart';
@@ -326,18 +327,35 @@ class ObjectGroupBloc extends BaseBloc<ObjectGroupEvent, ObjectGroupState> {
     DeleteSubjectGroup event,
     Emitter<ObjectGroupState> emit,
   ) async {
+    if (event.subjectGroup.id == null) {
+      emit(
+        state.copyWith(
+          errorMessage: 'Nhóm đối tượng không hợp lệ',
+          status: ObjectGroupStatus.deleteGroupFailure,
+        ),
+      );
+      return;
+    }
     emit(state.copyWith(status: ObjectGroupStatus.loading));
     final result = await objectGroupRepository.deleteSubjectGroup(
-      objectGroupId: event.id,
+      objectGroupId: event.subjectGroup.id ?? 0,
     );
     result.fold(
       (failure) {
         emit(
           state.copyWith(
-            errorMessage: failure.toString(),
+            errorMessage:
+                failure.code == AppConfig.OBJECT_GROUP_DELETE_FAILURE_CODE
+                ? 'Nhóm đối tượng ${event.subjectGroup.name} bạn chọn không tồn tại'
+                : failure.toString(),
             status: ObjectGroupStatus.deleteGroupFailure,
           ),
         );
+        // case lỗi 40451: nhóm đối tượng đã bị xóa trước đó hoặc không tồn tại, tự động reload lại cây nhóm đối tượng
+        if (failure.code == AppConfig.OBJECT_GROUP_DELETE_FAILURE_CODE) {
+          add(const SelectSubjectGroup(null));
+          add(const LoadSubjectGroups());
+        }
       },
       (success) {
         emit(state.copyWith(status: ObjectGroupStatus.deleteGroupSuccess));
