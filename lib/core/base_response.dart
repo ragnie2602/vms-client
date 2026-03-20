@@ -69,6 +69,17 @@ sealed class Failure {
 
   @override
   String toString() => parseMessage();
+
+  int? get code {
+    switch (this) {
+      case MessageFailure():
+        return null;
+      case DioFailure(:final code):
+        return code;
+      case CodeFailure(:final code):
+        return code;
+    }
+  }
 }
 
 class MessageFailure extends Failure {

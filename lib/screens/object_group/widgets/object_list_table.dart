@@ -14,8 +14,21 @@ import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.
 import 'package:vms_flutter_client/screens/object_group/widgets/add_object_dialog.dart';
 import 'package:vms_flutter_client/screens/object_type/widget/confirm_delete_dialog.dart';
 
-class ObjectListTable extends StatelessWidget {
+class ObjectListTable extends StatefulWidget {
   const ObjectListTable({super.key});
+
+  @override
+  State<ObjectListTable> createState() => _ObjectListTableState();
+}
+
+class _ObjectListTableState extends State<ObjectListTable> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +78,7 @@ class ObjectListTable extends StatelessWidget {
             // Table Body
             Expanded(
               child: ListView.separated(
+                controller: _scrollController,
                 itemCount: state.objects.length,
                 separatorBuilder: (context, index) =>
                     const Divider(height: 1, color: AppColors.greyF1F3FA),
@@ -161,7 +175,7 @@ class ObjectListTable extends StatelessWidget {
           Expanded(
             flex: 1,
             child: Text(
-              '${index + 1}',
+              '${(state.currentObjectsPage > 0 ? (state.currentObjectsPage - 1) * 20 : 0) + index + 1}',
               style: AppTypography.style(14, color: AppColors.grey334155),
             ),
           ),
@@ -578,6 +592,15 @@ class ObjectListTable extends StatelessWidget {
 
   void _goToPage(BuildContext context, ObjectGroupState state, int page) {
     if (state.selectedObjectType == null) return;
+    
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+    
     context.read<ObjectGroupBloc>().add(
       LoadObjects(
         objectTypeId: state.selectedObjectType!.id,
