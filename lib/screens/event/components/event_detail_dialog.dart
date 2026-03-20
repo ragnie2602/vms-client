@@ -46,7 +46,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
   late TabController tabController;
   final ValueNotifier<int> _tabIdx = ValueNotifier(0);
 
-  DateTime? endTime;
+  DateTime? endTime, startTime;
   bool imageMode = true;
   DateTime? rewindTime;
 
@@ -127,10 +127,12 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                   current is GettingEventDetail,
               builder: (context, state) {
                 if (state is GettingEventDetail) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Expanded(child: const Center(child: CircularProgressIndicator()));
+                } else if (state is EventDetailFailure) {
+                  return Expanded(child: Center(child: Text(state.message)));
+                } else if (state is! EventDetailSuccess) {
+                  return SizedBox.shrink();
                 }
-                if (state is EventDetailFailure) return Center(child: Text(state.message));
-                if (state is! EventDetailSuccess) return SizedBox.shrink();
 
                 final event = state.event;
                 final displayData = state.displayData;
@@ -410,6 +412,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                   final eventTime = event!.timeEvent;
                   currentTime = rewindTime = eventTime.subtract(Duration(seconds: 10));
                   endTime = eventTime.add(Duration(seconds: 10));
+                  startTime = eventTime.subtract(Duration(seconds: 10));
 
                   if (event!.cameraId != null) {
                     playbackBloc.add(GetVideoPlaybacks(event!.cameraId!.codeUnits, rewindTime!));
@@ -465,6 +468,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                 spreadRadius: -1,
                               ),
                             ],
+                            enabled: state is EventDetailSuccess,
                             label: 'Lưu',
                             onPressed: () => _save(),
                             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
@@ -596,7 +600,13 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                     _buildVolumeControl(),
                     _buildControlButton(
                       icon: AppAssets.icFastBackward,
-                      onTap: () => playerController.seek?.call(Duration(seconds: -3)),
+                      onTap: () {
+                        Duration duration = Duration(seconds: 3);
+                        if (currentTime?.subtract(duration).isBefore(startTime!) ?? true) {
+                          duration = startTime!.difference(currentTime!);
+                        }
+                        playerController.seek?.call(duration);
+                      },
                     ),
                     _buildControlButton(
                       icon: status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
@@ -608,8 +618,11 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                     _buildControlButton(
                       icon: AppAssets.icFastForward,
                       onTap: () {
-                        if (reachEnd) return;
-                        playerController.seek?.call(Duration(seconds: 3));
+                        Duration duration = Duration(seconds: 3);
+                        if (currentTime?.add(duration).isAfter(endTime!) ?? true) {
+                          duration = endTime!.difference(currentTime!);
+                        }
+                        playerController.seek?.call(duration);
                       },
                     ),
                     _buildSpeedControl(),
@@ -966,6 +979,7 @@ class _EventDetailDialogState extends State<EventDetailDialog>
 
   /// Video functions
   bool get reachEnd => currentTime?.isAfter(endTime!) ?? false;
+  bool get reachStart => currentTime?.isBefore(rewindTime!) ?? false;
 
   void _downloadImage(EventEntity event) async {
     final imageUrl = event.imageUrl;

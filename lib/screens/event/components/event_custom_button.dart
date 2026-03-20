@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:vms_flutter_client/core/constants/colors.dart';
 
 class EventCustomButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? borderColor;
   final List<BoxShadow>? boxShadow;
   final double? borderRadius;
+  final bool enabled;
   final String label;
   final VoidCallback onPressed;
   final EdgeInsetsGeometry? padding;
@@ -20,6 +22,7 @@ class EventCustomButton extends StatelessWidget {
     this.borderColor,
     this.boxShadow,
     this.borderRadius,
+    this.enabled = true,
     required this.label,
     required this.onPressed,
     this.padding,
@@ -36,12 +39,12 @@ class EventCustomButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: borderRadius != null ? BorderRadius.circular(borderRadius!) : null,
-        boxShadow: boxShadow,
+        boxShadow: enabled ? boxShadow : [],
       ),
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: enabled ? onPressed : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
+          backgroundColor: enabled ? backgroundColor : AppColors.grey64748B,
           elevation: 0,
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(borderRadius ?? 0)),

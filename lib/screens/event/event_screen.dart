@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/event_constants.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
@@ -205,7 +206,7 @@ class _EventScreenState extends State<EventScreen> {
                         style: AppTypography.style(
                           14,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.black,
+                          color: AppColors.grey64748B,
                         ),
                       ),
                       items: state is GetAllGroupCameraSuccessState
@@ -305,10 +306,13 @@ class _EventScreenState extends State<EventScreen> {
                 children: [
                   StatefulBuilder(
                     builder: (context, setState) {
-                      void changePresetHour(int hour) {
+                      void changePresetHour(int hour, {bool inHour = true}) {
+                        startTime = DateTime.now().subtract(Duration(hours: hour));
+                        if (inHour) startTime = startTime.startOfHour;
+
                         dateRangeKey.currentState?.changeDateRange(
                           DateTimeRange(
-                            start: DateTime.now().subtract(Duration(hours: hour)),
+                            start: startTime,
                             end: DateTime.now(),
                           ),
                         );
@@ -318,9 +322,9 @@ class _EventScreenState extends State<EventScreen> {
 
                       return Row(
                         children: [
-                          presetTimeBtn(changePresetHour, 1, '1 giờ trước'),
+                          presetTimeBtn(changePresetHour, 1, '1 giờ trước', inHour: false),
                           const SizedBox(width: 10),
-                          presetTimeBtn(changePresetHour, 24, 'Hôm nay'),
+                          presetTimeBtn(changePresetHour, DateTime.now().hour, 'Hôm nay'),
                           const SizedBox(width: 10),
                           presetTimeBtn(changePresetHour, 168, '7 ngày trước'),
                           const SizedBox(width: 10),
@@ -422,7 +426,7 @@ class _EventScreenState extends State<EventScreen> {
                         } else if (state is ExportEventSuccess) {
                           ToastUtil.toastSuccess(
                             context: context,
-                            title: Text('Xuất file thành công!'),
+                            title: Text('Xuất file thành công ${state.fileName}'),
                           );
                         } else if (state is ExportEventFailure) {
                           ToastUtil.toastFail(context: context, title: Text(state.message));
@@ -538,13 +542,18 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
-  Widget presetTimeBtn(Function(int) onPressed, int hour, String label) {
+  Widget presetTimeBtn(
+    Function(int, {bool inHour}) onPressed,
+    int hour,
+    String label, {
+    bool inHour = true,
+  }) {
     return EventCustomButton(
       backgroundColor: presetHour == hour ? AppColors.blue005AA9 : AppColors.white,
       borderColor: AppColors.blue005AA9,
       borderRadius: 3,
       label: label,
-      onPressed: () => onPressed(hour),
+      onPressed: () => onPressed(hour, inHour: inHour),
       padding: const EdgeInsets.all(8),
       textStyle: AppTypography.style(
         14,

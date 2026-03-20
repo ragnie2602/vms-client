@@ -36,10 +36,10 @@ class SearchEventUseCase extends FutureUseCase<SearchEventInput, SearchEventOutp
     final res = await eventRepository.searchEvent(
       page: input.page,
       startTime: input.startTime != null
-          ? input.startTime!.millisecondsSinceEpoch ~/ 1000 - 25200
+          ? input.startTime!.millisecondsSinceEpoch ~/ 1000
           : null,
       endTime: input.endTime != null
-          ? (input.endTime!.millisecondsSinceEpoch ~/ 1000 + 61199)
+          ? (input.endTime!.millisecondsSinceEpoch ~/ 1000)
           : null,
       eventType: et,
       cameraIds: cameraIds,
