@@ -151,8 +151,8 @@ class _EventScreenState extends State<EventScreen> {
                     ),
                     onChanged: (dateRange) => setState(() {
                       if (dateRange != null) {
-                        startTime = dateRange.start;
-                        endTime = dateRange.end;
+                        startTime = dateRange.start.startOfDay;
+                        endTime = dateRange.end.endOfDay;
 
                         presetHour = null;
                       }
@@ -529,6 +529,11 @@ class _EventScreenState extends State<EventScreen> {
   );
 
   void _onFilter({int page = 1}) {
+    if (presetHour == 1) {
+      endTime = DateTime.now();
+      startTime = endTime.subtract(Duration(hours: 1));
+    }
+
     eventBloc.add(
       SearchEvent(
         page: page,
