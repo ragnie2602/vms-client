@@ -1,5 +1,3 @@
-import 'package:intl/intl.dart';
-
 import 'al_alarm_enums.dart';
 export 'al_alarm_enums.dart';
 
@@ -100,11 +98,7 @@ class TimesConfig {
 
   bool isEmpty() => days.isEmpty && startTime == null && endTime == null;
   bool isValid() =>
-      isEmpty() ||
-      (days.isNotEmpty &&
-          startTime != null &&
-          endTime != null &&
-          DateFormat("HH:mm").parse(endTime!).compareTo(DateFormat("HH:mm").parse(startTime!)) > 0);
+      days.isNotEmpty && startTime != null && endTime != null && endTime!.compareTo(startTime!) > 0;
 }
 
 class AIAlarmConfig {
@@ -148,7 +142,7 @@ class AIAlarmConfig {
           : <ROIConfig>[],
       times: json['times'] != null
           ? (json['times'] as List).map<TimesConfig>((e) => TimesConfig.fromJson(e)).toList()
-          : [TimesConfig.full()],
+          : <TimesConfig>[],
       nonHitAlarm: type == AIAlarmType.faceDetection ? (json['nonHitAlarm'] ?? 0) : null,
     );
   }
@@ -180,7 +174,17 @@ class AIAlarmConfig {
     if (soundId == null) return false; // Sound
 
     // Times
-    if (times.isNotEmpty && times.any((data) => !data.isValid())) return false;
+    if (times.isNotEmpty) {
+      bool atLeastOneValid = false;
+      for (var time in times) {
+        bool isDataValid = time.isValid(); // empty => isDataValid = false
+        if (isDataValid) atLeastOneValid = true;
+        if (!isDataValid && !time.isEmpty()) return false;
+      }
+
+      // All empty
+      if (!atLeastOneValid) return false;
+    }
 
     // conditions
     if (!alarmConditions.isValid(type)) return false;

@@ -22,7 +22,7 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
   @override
   void initState() {
     if (widget.alarmConfig.times.isEmpty) {
-      widget.alarmConfig.times.add(TimesConfig.empty());
+      widget.alarmConfig.times.add(TimesConfig.full());
     }
 
     super.initState();
@@ -56,6 +56,8 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
 
   @override
   Widget build(BuildContext context) {
+    bool isAllEmpty = widget.alarmConfig.times.every((time) => time.isEmpty() || !time.isValid());
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -83,73 +85,94 @@ class _TimeRangesConfigState extends State<TimeRangesConfig> {
               bool needValidate =
                   time.startTime != null || time.endTime != null || time.days.isNotEmpty;
 
-              return Container(
-                padding: EdgeInsets.only(top: index == 0 ? 0 : 16),
-                decoration: index > 0
-                    ? BoxDecoration(
-                        border: Border(top: BorderSide(color: AppColors.greyE2E8F0)),
-                      )
-                    : null,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 15,
-                  children: <Widget>[
-                    _columnTime(
-                      'Thời gian bắt đầu',
-                      time.startTime,
-                      (selectedTime) => setState(() {
-                        widget.alarmConfig.times[index].startTime = selectedTime;
-                        _triggerValidate();
-                      }),
-                      maximumTime: time.endTime,
-                      // minimumTime: time.startTime,
-                      validator: () {
-                        if (!needValidate) return null;
-                        if (time.startTime == null) return 'Vui lòng chọn thời gian bắt đầu';
-                        return null;
-                      },
-                    ),
-                    _columnTime(
-                      'Thời gian kết thúc',
-                      time.endTime,
-                      (selectedTime) => setState(() {
-                        widget.alarmConfig.times[index].endTime = selectedTime;
-                        _triggerValidate();
-                      }),
-                      // maximumTime: time.endTime,
-                      minimumTime: time.startTime,
-                      validator: () {
-                        if (!needValidate) return null;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(top: index == 0 ? 0 : 16),
+                    decoration: index > 0
+                        ? BoxDecoration(
+                            border: Border(top: BorderSide(color: AppColors.greyE2E8F0)),
+                          )
+                        : null,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: 15,
+                      children: <Widget>[
+                        _columnTime(
+                          'Thời gian bắt đầu',
+                          time.startTime,
+                          (selectedTime) => setState(() {
+                            widget.alarmConfig.times[index].startTime = selectedTime;
+                            _triggerValidate();
+                          }),
+                          maximumTime: time.endTime,
+                          // minimumTime: time.startTime,
+                          validator: () {
+                            if (!needValidate) return null;
+                            if (time.startTime == null) return 'Vui lòng chọn thời gian bắt đầu';
+                            return null;
+                          },
+                        ),
+                        _columnTime(
+                          'Thời gian kết thúc',
+                          time.endTime,
+                          (selectedTime) => setState(() {
+                            widget.alarmConfig.times[index].endTime = selectedTime;
+                            _triggerValidate();
+                          }),
+                          // maximumTime: time.endTime,
+                          minimumTime: time.startTime,
+                          validator: () {
+                            if (!needValidate) return null;
 
-                        if (time.endTime == null) return 'Vui lòng chọn thời gian kết thúc';
-                        if (time.endTime != null &&
-                            time.startTime != null &&
-                            DateFormat("HH:mm")
-                                    .parse(time.endTime!)
-                                    .compareTo(DateFormat("HH:mm").parse(time.startTime!)) <=
-                                0) {
-                          return 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu';
-                        }
+                            if (time.endTime == null) return 'Vui lòng chọn thời gian kết thúc';
+                            if (time.endTime != null &&
+                                time.startTime != null &&
+                                DateFormat("HH:mm")
+                                        .parse(time.endTime!)
+                                        .compareTo(DateFormat("HH:mm").parse(time.startTime!)) <=
+                                    0) {
+                              return 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu';
+                            }
 
-                        return null;
-                      },
+                            return null;
+                          },
+                        ),
+                        Flexible(
+                          child: _columnWeekday(widget.alarmConfig.times[index].days, (days) {
+                            setState(() {
+                              widget.alarmConfig.times[index].days = days;
+                              _triggerValidate();
+                            });
+                          }, needValidate),
+                        ),
+                        _handleButtons(
+                          index,
+                          showDelete:
+                              widget.alarmConfig.times.length > 1 ||
+                              widget.alarmConfig.times.firstOrNull?.isEmpty() == false,
+                        ),
+                      ],
                     ),
-                    Flexible(
-                      child: _columnWeekday(widget.alarmConfig.times[index].days, (days) {
-                        setState(() {
-                          widget.alarmConfig.times[index].days = days;
-                          _triggerValidate();
-                        });
-                      }, needValidate),
+                  ),
+
+                  if (isAllEmpty && !needValidate)
+                    Padding(
+                      padding: EdgeInsets.only(left: 10, bottom: 10),
+                      child: Text(
+                        'Vui lòng thiết lập ít nhất một khoảng thời gian',
+                        maxLines: 3,
+                        style: AppTypography.style(
+                          11,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.redFF0004,
+                          lineHeight: 14 / 11,
+                        ),
+                      ),
                     ),
-                    _handleButtons(
-                      index,
-                      showDelete:
-                          widget.alarmConfig.times.length > 1 ||
-                          widget.alarmConfig.times.firstOrNull?.isEmpty() == false,
-                    ),
-                  ],
-                ),
+                ],
               );
             },
           ),
