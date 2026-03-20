@@ -160,7 +160,7 @@ class EventItem extends StatelessWidget {
                       height: 20,
                       errorBuilder: (context, error, stackTrace) => SizedBox(width: 20),
                     ),
-                    Text(obj[f.fieldKey].toString()),
+                    Text((obj[f.fieldKey] ?? '-').toString()),
                   ],
                 )
                 .toList(),
