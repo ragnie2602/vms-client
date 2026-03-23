@@ -341,7 +341,13 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                     data: CustomTableData(
                                       columnFlexes: [0, 1, 1],
                                       data: displayData
-                                          .map((d) => [d.$1, Text(d.$2), Text(d.$3.toString())])
+                                          .map(
+                                            (d) => [
+                                              d.$1,
+                                              Text(d.$2),
+                                              Text(d.$3.toString(), textAlign: TextAlign.end),
+                                            ],
+                                          )
                                           .toList(),
                                     ),
                                     defaultVerticalAlignment: CrossAxisAlignment.start,
