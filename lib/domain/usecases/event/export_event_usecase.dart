@@ -88,14 +88,23 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
         final cameraName =
             input.cameras.firstWhereOrNull((c) => c.camId == event.cameraId)?.name ?? '';
 
+        String subjectName =
+            (event.eventType == 'face_detection' && event.payload?['Tên đối tượng'] != null)
+            ? event.payload!['Tên đối tượng']
+            : '';
+        final groupName =
+            (event.eventType == 'face_detection' && event.payload?['groupName'] != null)
+            ? event.payload!['groupName']
+            : '';
+
         List<CellValue> row = [
           IntCellValue(i + 1),
           TextCellValue(time),
           TextCellValue(event.eventName ?? ''),
           TextCellValue(input.cameraGroupName),
           TextCellValue(cameraName),
-          TextCellValue(event.payload?['Tên đối tượng'] ?? ''),
-          TextCellValue(event.payload?['groupName'] ?? ''),
+          TextCellValue(subjectName),
+          TextCellValue(groupName),
           TextCellValue(event.description ?? ''),
         ];
 
