@@ -59,10 +59,17 @@ class GetEventDetailUseCase extends FutureUseCase<GetEventDetailInput, GetEventD
 
       for (var f in objType.fields) {
         if (f.fieldName == 'Ảnh nhận diện khuôn mặt') continue;
+
         final v = event.payload?[f.fieldName];
-        if (v != null) {
-          displayData.add((SvgPicture.network(f.iconUrl ?? '', height: 20), f.displayName, v));
-        }
+        displayData.add((
+          SvgPicture.network(
+            f.iconUrl ?? '',
+            errorBuilder: (context, error, stackTrace) => SizedBox(width: 20),
+            height: 20,
+          ),
+          f.displayName,
+          v ?? '_',
+        ));
       }
     }
 
