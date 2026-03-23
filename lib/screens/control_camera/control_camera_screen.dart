@@ -10,11 +10,14 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/data/datasources/share_camera_role_enum.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_map.dart';
 import 'package:vms_flutter_client/domain/entities/camera/camera_status.dart';
 import 'package:vms_flutter_client/domain/entities/camera/import_camera_cell.dart';
+import 'package:vms_flutter_client/domain/entities/share/invite_message_entity.dart';
 import 'package:vms_flutter_client/domain/entities/tag/tag_entity.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/config_dialog.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_event.dart';
 import 'package:vms_flutter_client/screens/control_camera/bloc/control_camera_state.dart';
@@ -27,7 +30,6 @@ import 'package:vms_flutter_client/screens/control_camera/widget/remove_camera_w
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
-import 'package:vms_flutter_client/screens/schedule_recording/config_dialog.dart';
 
 class ControlCameraScreen extends StatefulWidget {
   const ControlCameraScreen({super.key});
@@ -209,6 +211,42 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
       if (!mounted) return;
       context.read<ControlCameraBloc>().add(ReplaceCameraEvent(newCamera: res));
     }
+  }
+
+  Future<void> _onShowDialogShareCamera({
+    required BuildContext c,
+    required CameraEntity camera,
+  }) async {
+    List<InviteMessageEntity>? invites;
+    invites = await c.read<ControlCameraBloc>().getListShareCamera(camId: camera.id);
+    if (!c.mounted) return;
+
+    showShareGroupCameraDialog(
+      c,
+      shareType: ShareType.camera,
+      currentCamera: camera,
+      onReloadData: () async {
+        return await c.read<ControlCameraBloc>().getListShareCamera(camId: camera.id);
+      },
+      onDeleteShareCamera: (_inviteId, _accName) {
+        return context.read<ControlCameraBloc>().deleteShareCamera(
+          camId: camera.id,
+          accountB: _accName,
+          shareId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(context: c, title: Text(messageFail ?? 'Thất bại'));
+          },
+        );
+      },
+      onShareCamera: (_accountNameInvite) {
+        return context.read<ControlCameraBloc>().shareCamera(
+          camId: camera.id,
+          role: ShareCameraRoleExtension.getShareCameraRoleValue(ShareCameraRole.VIEW),
+          accountInvite: _accountNameInvite,
+        );
+      },
+      sharedUsers: invites, // list data,
+    );
   }
 
   @override

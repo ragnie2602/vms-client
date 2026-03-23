@@ -24,30 +24,39 @@ class AppColors {
   static Color get contentFg => isDarkMode ? contentFgDark : contentFgLight;
 
   static const black = Color(0xFF000000);
+  static const black111827 = Color(0xFF111827);
   static const black171725 = Color(0xFF171725);
   static const black262C38 = Color(0xFF262C38);
   static const black4A4A4A = Color(0xFF4A4A4A);
   static const black0D0D0D = Color(0xFF0D0D0D);
 
+  static const grey334155 = Color(0xFF334155);
+  static const grey9CA3AF = Color(0xFF9CA3AF);
   static const greyC3D3D9 = Color(0xFFC3D3D9);
+  static const greyDFE4EA = Color(0xFFDFE4EA);
   static const greyE4E4E4 = Color(0xFFE4E4E4);
   static const greyE4E7EC = Color(0xFFE4E7EC);
   static const greyF1F5F9 = Color(0xFFF1F5F9);
-  static const grey334155 = Color(0xFF334155);
+  static const greyF7F9FD = Color(0xFFF7F9FD);
+  static const grey1E293B = Color(0xFF1E293B);
+  static const grey34404b = Color(0xFF34404B);
+  static const greyF1F3FA = Color(0xFFF1F3FA);
 
   static const secondary = Color(0xFF005AA9);
   static const blue005AA9 = Color(0xFF005AA9);
   static const blue005BAA = Color(0xFF005BAA);
+  static const blue005EB8 = Color(0xFF005EB8);
   static const blue085DA8 = Color(0xFF085DA8);
+  static const blue374151 = Color(0xFF374151);
+  static const blue3B82F6 = Color(0xFF3B82F6);
+  static const blue64748B = Color(0xFF64748B);
   static const blueD7F1FF = Color(0xFFD7F1FF);
   static const blue15ABFF = Color(0xFF15ABFF);
   static const blue3182CE = Color(0xFF3182CE);
   static const blueE7F3FF = Color(0xFFE7F3FF);
   static const blueDAE3FF = Color(0xFFDAE3FF);
   static const blueD7E5F1 = Color(0xFFD7E5F1);
-
-  static const green03BF00 = Color(0xFF03BF00);
-  static const greenECFFD7 = Color(0xFFECFFD7);
+  static const blueEFF6FF = Color(0xFFEFF6FF);
 
   static const grey4A4A4A = Color(0xFF4A4A4A);
   static const greyDFDFDF = Color(0xFFDFDFDF);
@@ -58,11 +67,13 @@ class AppColors {
   static const greyFBFBFB = Color(0xFFFBFBFB);
   static const grey92929D = Color(0xFF92929D);
   static const grey0F172A = Color(0xFF0F172A);
+  static const grey4B5563 = Color(0xFF4B5563);
   static const grey6F767E = Color(0xFF6F767E);
   static const grey6F6F6F = Color(0xFF6F6F6F);
   static const greyF2F4FA = Color(0xFFF2F4FA);
   static const greyF2F2F2 = Color(0xFFF2F2F2);
-  static const greyF8F9FE = Color(0xFFF8F9FE);
+  static const greyF2F4F6 = Color(0xFFF2F4F6);
+  static const greyAthens = Color(0xFFF3F4F6);
   static const grey64748B = Color(0xFF64748B);
   static const grey94A3B8 = Color(0xFF94A3B8);
   static const grey93989A = Color(0xFF93989A);
@@ -71,7 +82,9 @@ class AppColors {
   static const greyD1D5DB = Color(0xFFD1D5DB);
   static const grey666666 = Color(0xFF666666);
   static const greyE5E5E5 = Color(0xFFE5E5E5);
+  static const greyE5E7EB = Color(0xFFE5E7EB);
   static const greyF5F5F5 = Color(0xFFF5F5F5);
+  static const greyF9FAFB = Color(0xFFF9FAFB);
   static const greyCACACA = Color(0xFFCACACA);
 
   static const green21CCC3 = Color(0xFF21CCC3);
@@ -84,6 +97,13 @@ class AppColors {
   static const redFF2F2F = Color(0xFFFF2F2F);
 
   static const white = Colors.white;
+
+  // Object Type Management colors
+  static const orangeFF8C00 = Color(0xFFFF8C00); // AI feature text
+  static const orangeFFF2E2 = Color(0xFFFFF2E2); // AI feature background
+  static const green03BF00 = Color(0xFF03BF00); // Active status text
+  static const greenECFFD7 = Color(0xFFECFFD7); // Active status background
+  static const greyF8F9FE = Color(0xFFF8F9FE); // Paused status background
 
   static const yellowFFFBEB = Color(0xFFFFFBEB);
 }

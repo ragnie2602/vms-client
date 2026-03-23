@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/screens/camera_configuration/config_dialog.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/storage_folder/storage_folder_bloc.dart';
 
 import '../../shared/player/sources.dart';
@@ -65,11 +66,22 @@ class PlayerControls extends StatelessWidget {
         builder: (context, status) {
           final isRecording = status > 0;
 
-          return Row(
-            children: <Widget>[
-              Expanded(
-                child: Material(
-                  color: Colors.transparent,
+          return Material(
+            color: Colors.transparent,
+            child: Row(
+              children: <Widget>[
+                SizedBox(width: 20),
+                _controlItem(
+                  AppAssets.icConfig,
+                  () => showDialogConfig(
+                    context,
+                    camera: context.read<CameraDetailBloc>().state.camera!,
+                  ),
+                  disabled: isRecording,
+                  tooltip: 'Cấu hình',
+                ),
+
+                Expanded(
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -78,7 +90,11 @@ class PlayerControls extends StatelessWidget {
                       if (mode.isLive)
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: ControlSource(disabled: isRecording),
+                          child: _buildTooltip(
+                            'Đổi luồng phát',
+                            ControlSource(disabled: isRecording),
+                            isRecording,
+                          ),
                         ),
 
                       /* Volumne */
@@ -88,7 +104,7 @@ class PlayerControls extends StatelessWidget {
                       if (mode.isPlayback)
                         _controlItem(disabled: isRecording, AppAssets.icFastBackward, () {
                           context.read<CameraDetailBloc>().add(SeekPlayer(Duration(seconds: -30)));
-                        }),
+                        }, tooltip: 'Lùi 30s'),
 
                       /* Pause/Play */
                       BlocSelector<CameraDetailBloc, CameraDetailState, PlayerStatus>(
@@ -97,6 +113,7 @@ class PlayerControls extends StatelessWidget {
                           disabled: isRecording,
                           status == PlayerStatus.playing ? AppAssets.icPause : AppAssets.icPlay,
                           () => playerController(context)?.togglePlay?.call(),
+                          tooltip: status == PlayerStatus.playing ? 'Tạm dừng' : 'Tiếp tục',
                         ),
                       ),
 
@@ -104,23 +121,33 @@ class PlayerControls extends StatelessWidget {
                       if (mode.isPlayback)
                         _controlItem(disabled: isRecording, AppAssets.icFastForward, () {
                           context.read<CameraDetailBloc>().add(SeekPlayer(Duration(seconds: 30)));
-                        }),
+                        }, tooltip: 'Tua 30s'),
 
                       /* Record */
-                      if (mode.isLive) ControlRecord(recordingStatus: status),
+                      if (mode.isLive)
+                        _buildTooltip(
+                          status > 0 ? 'Dừng ghi hình' : 'Ghi hình',
+                          ControlRecord(recordingStatus: status),
+                          isRecording,
+                        ),
 
                       /* Camera */
                       _controlItem(
                         disabled: isRecording,
                         AppAssets.icCamera,
                         () => takeSnapshot(context),
+                        tooltip: 'Chụp ảnh màn hình',
                       ),
 
                       /* Speed */
                       if (mode.isPlayback)
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: ControlSpeedBox(disabled: isRecording),
+                          child: _buildTooltip(
+                            'Tốc độ phát',
+                            ControlSpeedBox(disabled: isRecording),
+                            isRecording,
+                          ),
                         ),
 
                       /* Zoom */
@@ -128,11 +155,13 @@ class PlayerControls extends StatelessWidget {
                         disabled: isRecording,
                         AppAssets.icZoomIn,
                         () => playerController(context)?.zoom?.call(1),
+                        tooltip: 'Phóng to',
                       ),
                       _controlItem(
                         disabled: isRecording,
                         AppAssets.icZoomOut,
                         () => playerController(context)?.zoom?.call(-1),
+                        tooltip: 'Thu nhỏ',
                       ),
 
                       /* Fullscreen */
@@ -140,39 +169,55 @@ class PlayerControls extends StatelessWidget {
                         disabled: isRecording,
                         AppAssets.icFullscreen,
                         () => playerController(context)?.toggleFullscreen?.call(),
+                        tooltip: 'Xem toàn màn hình',
                       ),
                     ],
                   ),
                 ),
-              ),
 
-              /*  */
-              _buildLiveViewMode(
-                disabled: isRecording,
-                mode.isPlayback ? 1 : 0,
-                (index) => context.read<CameraDetailBloc>().add(
-                  ChangeViewMode(index == 0 ? CameraDetailMode.live : CameraDetailMode.playback),
+                /*  */
+                _buildTooltip(
+                  'Thay đổi chế độ xem',
+                  _buildLiveViewMode(
+                    disabled: isRecording,
+                    mode.isPlayback ? 1 : 0,
+                    (index) => context.read<CameraDetailBloc>().add(ChangeViewMode(index == 0 ? CameraDetailMode.live : CameraDetailMode.playback)),
+                  ),
+                  isRecording,
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _controlItem(String icon, VoidCallback onTap, {bool disabled = false}) {
-    return InkWell(
-      onTap: disabled ? null : onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SvgPicture.asset(
-          icon,
-          width: 28,
-          height: 28,
-          colorFilter: disabled ? ColorFilter.mode(AppColors.grey64748B, BlendMode.srcIn) : null,
+  Widget _controlItem(String icon, VoidCallback onTap, {bool disabled = false, String? tooltip}) {
+    return _buildTooltip(
+      tooltip ?? '',
+      InkWell(
+        onTap: disabled ? null : onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SvgPicture.asset(
+            icon,
+            width: 28,
+            height: 28,
+            colorFilter: disabled ? ColorFilter.mode(AppColors.grey64748B, BlendMode.srcIn) : null,
+          ),
         ),
       ),
+      disabled || tooltip == null,
+    );
+  }
+
+  Widget _buildTooltip(String tooltip, Widget child, [bool disabled = false]) {
+    if (disabled) return child;
+    return Tooltip(
+      textStyle: AppTypography.style(12, fontWeight: FontWeight.w500, color: AppColors.white),
+      message: tooltip,
+      child: child,
     );
   }
 

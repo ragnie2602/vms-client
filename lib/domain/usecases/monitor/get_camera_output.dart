@@ -4,6 +4,7 @@ class GetCameraOutput extends BaseOutput {
   final bool isSuccess;
   final String? errMsg;
   final List<CameraEntity>? cameras;
+  final List<CameraEntity>? allCameras;
 
-  const GetCameraOutput({required this.isSuccess, this.cameras, this.errMsg});
+  const GetCameraOutput({required this.isSuccess, this.cameras, this.errMsg, this.allCameras});
 }

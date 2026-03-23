@@ -1,11 +1,15 @@
 PODS:
   - connectivity_plus (0.0.1):
     - FlutterMacOS
+  - desktop_drop (0.0.1):
+    - FlutterMacOS
   - desktop_multi_window (0.0.1):
     - FlutterMacOS
   - file_picker (0.0.1):
     - FlutterMacOS
   - file_selector_macos (0.0.1):
+    - FlutterMacOS
+  - flutter_image_compress_macos (1.0.0):
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
   - fvp (0.35.0):
@@ -35,6 +39,9 @@ PODS:
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
   - video_player_avfoundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -47,9 +54,11 @@ PODS:
 
 DEPENDENCIES:
   - connectivity_plus (from `Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos`)
+  - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
   - desktop_multi_window (from `Flutter/ephemeral/.symlinks/plugins/desktop_multi_window/macos`)
   - file_picker (from `Flutter/ephemeral/.symlinks/plugins/file_picker/macos`)
   - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
+  - flutter_image_compress_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_image_compress_macos/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - fvp (from `Flutter/ephemeral/.symlinks/plugins/fvp/darwin`)
   - gal (from `Flutter/ephemeral/.symlinks/plugins/gal/darwin`)
@@ -60,6 +69,7 @@ DEPENDENCIES:
   - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
   - sentry_flutter (from `Flutter/ephemeral/.symlinks/plugins/sentry_flutter/macos`)
   - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - sqflite_darwin (from `Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin`)
   - video_player_avfoundation (from `Flutter/ephemeral/.symlinks/plugins/video_player_avfoundation/darwin`)
   - volume_controller (from `Flutter/ephemeral/.symlinks/plugins/volume_controller/macos`)
   - wakelock_plus (from `Flutter/ephemeral/.symlinks/plugins/wakelock_plus/macos`)
@@ -73,12 +83,16 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   connectivity_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos
+  desktop_drop:
+    :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos
   desktop_multi_window:
     :path: Flutter/ephemeral/.symlinks/plugins/desktop_multi_window/macos
   file_picker:
     :path: Flutter/ephemeral/.symlinks/plugins/file_picker/macos
   file_selector_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
+  flutter_image_compress_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_image_compress_macos/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   fvp:
@@ -99,6 +113,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/sentry_flutter/macos
   shared_preferences_foundation:
     :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
+  sqflite_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin
   video_player_avfoundation:
     :path: Flutter/ephemeral/.symlinks/plugins/video_player_avfoundation/darwin
   volume_controller:
@@ -110,9 +126,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   connectivity_plus: 4adf20a405e25b42b9c9f87feff8f4b6fde18a4e
+  desktop_drop: 10a3e6a7fa9dbe350541f2574092fecfa345a07b
   desktop_multi_window: 93667594ccc4b88d91a97972fd3b1b89667fa80a
   file_picker: 7584aae6fa07a041af2b36a2655122d42f578c1a
   file_selector_macos: 9e9e068e90ebee155097d00e89ae91edb2374db7
+  flutter_image_compress_macos: e68daf54bb4bf2144c580fd4d151c949cbf492f0
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   fvp: ecee65308dd86ae46e3c6d5d42cd2aad48095ef5
   gal: baecd024ebfd13c441269ca7404792a7152fde89
@@ -125,6 +143,7 @@ SPEC CHECKSUMS:
   Sentry: da60d980b197a46db0b35ea12cb8f39af48d8854
   sentry_flutter: 27892878729f42701297c628eb90e7c6529f3684
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   video_player_avfoundation: dd410b52df6d2466a42d28550e33e4146928280a
   volume_controller: 5c068e6d085c80dadd33fc2c918d2114b775b3dd
   wakelock_plus: 917609be14d812ddd9e9528876538b2263aaa03b

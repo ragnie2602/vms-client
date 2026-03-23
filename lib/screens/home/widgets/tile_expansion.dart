@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 
 class TileExpansion extends StatefulWidget {
   const TileExpansion({
@@ -27,7 +29,8 @@ class _TileExpansionState extends State<TileExpansion> {
   Widget build(BuildContext context) {
     return Expansible(
       headerBuilder: (context, animation) => InkWell(
-        onTap: () => controller.isExpanded ? controller.collapse() : controller.expand(),
+        onTap: () =>
+            controller.isExpanded ? controller.collapse() : controller.expand(),
         child: _buildHeader(),
       ),
       bodyBuilder: (context, animation) => widget.body,
@@ -53,7 +56,11 @@ class _TileExpansionState extends State<TileExpansion> {
                 child: child,
               );
             },
-            child: Icon(Icons.arrow_drop_up),
+            child: SvgPicture.asset(
+              AppAssets.icDropdown,
+              width: 24,
+              height: 24,
+            ),
           ),
           SizedBox(width: 6),
         ],

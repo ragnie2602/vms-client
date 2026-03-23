@@ -1,282 +1,204 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:vms_flutter_client/core/constants/assets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/event/components/event_detail_dialog.dart';
-import 'package:vms_flutter_client/screens/shared/custom_table.dart';
+import 'package:vms_flutter_client/domain/entities/detect/receive_event_entity.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
+import 'package:vms_flutter_client/screens/home/bloc/home_bloc.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_event.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/detection/detect_state.dart';
+import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
+import 'package:vms_flutter_client/screens/monitor/widgets/alert_filter_btn.dart';
+import 'package:vms_flutter_client/screens/monitor/widgets/custom_tab_bar.dart';
+import 'package:vms_flutter_client/screens/monitor/widgets/event_item.dart';
 
 class MonitorAlerts extends StatefulWidget {
-  const MonitorAlerts({super.key, required this.maxWidth});
+  static int initialIndex = 0;
+
+  final SetupEventDisplayBloc sedBloc;
   final double maxWidth;
+
+  const MonitorAlerts({super.key, required this.maxWidth, required this.sedBloc});
 
   @override
   State<MonitorAlerts> createState() => _MonitorAlertsState();
 }
 
 class _MonitorAlertsState extends State<MonitorAlerts> with TickerProviderStateMixin {
-  late final TabController tabController;
+  late TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 2, vsync: this);
+    tabController = TabController(length: 2, vsync: this, initialIndex: MonitorAlerts.initialIndex);
+    tabController.addListener(_onTabChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateFilterWithCurrentCameras());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.greyFBFBFB,
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: AppColors.greyDFDFDF)),
-            ),
-            child: _CustomTabBar(controller: tabController),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemBuilder: (context, index) => _EventItem(tmp: index % 2 == 0),
-              itemCount: 10,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EventItem extends StatefulWidget {
-  final bool tmp;
-
-  const _EventItem({this.tmp = false});
-
-  @override
-  State<_EventItem> createState() => _EventItemState();
-}
-
-class _EventItemState extends State<_EventItem> {
-  bool hasRead = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: hasRead ? AppColors.white : AppColors.greyF2F4FA.withOpacity(0.5),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => showDetailDialog(context),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 63,
-                  child: Stack(
-                    children: [
-                      AspectRatio(
-                        aspectRatio: 1,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: Image.network(
-                            'https://static.wikia.nocookie.net/p__/images/7/71/Sherma.png/revision/latest?cb=20250924113412&path-prefix=protagonist',
-                            fit: BoxFit.cover,
+    return BlocListener<MonitorBloc, MonitorState>(
+      listenWhen: (previous, current) {
+        // Listen when page changes or cameras list changes
+        if (previous is MonitorSuccess && current is MonitorSuccess) {
+          return previous.page != current.page ||
+              !listEquals(
+                previous.paginatedCameras.map((c) => c.id).toList(),
+                current.paginatedCameras.map((c) => c.id).toList(),
+              );
+        }
+        return false;
+      },
+      listener: (context, state) {
+        // Auto-update filter when page changes and on "Cam đang xem" tab
+        if (tabController.index == 1) _updateFilterWithCurrentCameras();
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ClipRect(
+            child: OverflowBox(
+              alignment: Alignment.topLeft,
+              minWidth: widget.maxWidth - 20,
+              maxWidth: widget.maxWidth - 20,
+              minHeight: constraints.maxHeight,
+              maxHeight: constraints.maxHeight,
+              child: Container(
+                width: widget.maxWidth - 20,
+                height: constraints.maxHeight,
+                color: AppColors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Danh sách Cảnh báo',
+                              style: AppTypography.style(14, fontWeight: FontWeight.w700),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 4,
-                        left: 4,
-                        child: SvgPicture.asset(AppAssets.icAlertIntrution, height: 19),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 11),
-                Expanded(
-                  flex: 198,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Phát hiện xâm nhập',
-                        style: AppTypography.style(12, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 5),
-                      CustomTable(
-                        columnSpacing: 10,
-                        data: CustomTableData(
-                          columnFlexes: [0, 1],
-                          data: [
-                            [
-                              Tooltip(
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                message: 'Thời gian',
-                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                preferBelow: false,
-                                textStyle: AppTypography.style(
-                                  11,
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                verticalOffset: 8,
-                                child: SvgPicture.asset(AppAssets.icTimeCircle, height: 18),
-                              ),
-                              Text(
-                                '20:30 20/12/2025',
-                                style: AppTypography.style(12, fontWeight: FontWeight.w500),
-                              ),
-                            ],
-                            [
-                              SvgPicture.asset(AppAssets.icVideoOn, height: 18),
-                              Text(
-                                'Camera cổng 1',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.style(12, fontWeight: FontWeight.w500),
-                              ),
-                            ],
-                            if (widget.tmp)
-                              [
-                                SvgPicture.asset(AppAssets.icId, height: 18),
-                                Text(
-                                  'ID102939',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTypography.style(12, fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            if (widget.tmp)
-                              [
-                                SvgPicture.asset(AppAssets.icDirection, height: 18),
-                                Text(
-                                  'A -> B',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTypography.style(12, fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                          ],
-                        ),
-                        rowSpacing: 2,
-                        verticalAlignments: [
-                          CrossAxisAlignment.center,
-                          CrossAxisAlignment.center,
-                          CrossAxisAlignment.center,
-                          CrossAxisAlignment.center,
+                          const SizedBox(width: 8),
+                          const AlertFilterBtn(),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.greyAthens,
+                      ),
+                      margin: EdgeInsets.all(5),
+                      padding: EdgeInsets.all(4),
+                      child: CustomTabBar(controller: tabController),
+                    ),
+                    SizedBox(height: 1, child: const Divider(color: AppColors.greyDFDFDF)),
+                    Expanded(child: _buildEventList()),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  showDetailDialog(BuildContext context) {
-    setState(() => hasRead = true);
-    showDialog(context: context, builder: (context) => EventDetailDialog());
-  }
-}
-
-class _CustomTabBar extends StatefulWidget {
-  final TabController controller;
-
-  const _CustomTabBar({required this.controller});
-
   @override
-  State<_CustomTabBar> createState() => _CustomTabBarState();
-}
-
-class _CustomTabBarState extends State<_CustomTabBar> {
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(() => setState(() {}));
+  void dispose() {
+    tabController.removeListener(_onTabChanged);
+    tabController.dispose();
+    super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Ink(
-          child: InkWell(
-            onTap: () => widget.controller.animateTo(0),
-            hoverColor: widget.controller.index == 0
-                ? AppColors.secondary.withOpacity(0.9)
-                : AppColors.greyF2F4FA.withOpacity(0.5),
-            splashColor: widget.controller.index == 0
-                ? Colors.white.withOpacity(0.2)
-                : AppColors.grey64748B.withOpacity(0.1),
-            child: Container(
-              decoration: BoxDecoration(
-                border: widget.controller.index == 0
-                    ? Border(bottom: BorderSide(color: AppColors.secondary, width: 2))
-                    : null,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Tất cả',
-                    style: AppTypography.style(
-                      14,
-                      color: widget.controller.index == 0
-                          ? AppColors.secondary
-                          : AppColors.grey64748B,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+  // WIDGETS
+  Widget _buildEventList() {
+    return BlocSelector<DetectBloc, DetectState, (List<ReceiveEventEntity>, bool, bool)>(
+      selector: (state) => (
+        state.shouldShowSelectedEvents ? state.selectedEvents : state.receiveEvents,
+        state.shouldShowSelectedEvents,
+        state.hasReachedMaxEvents,
+      ),
+      builder: (context, data) {
+        final events = data.$1;
+        final hasReachedMax = data.$3;
+
+        if (events.isEmpty) {
+          return Center(
+            child: Text(
+              'Chưa có dữ liệu phù hợp',
+              style: AppTypography.style(14, color: AppColors.black, fontWeight: FontWeight.w500),
+            ),
+          );
+        }
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemBuilder: (context, index) =>
+                    EventLiveViewItem(event: events[index], sedBloc: widget.sedBloc),
+                itemCount: events.length,
+                padding: EdgeInsets.zero,
               ),
             ),
-          ),
-        ),
-        Ink(
-          child: InkWell(
-            onTap: () => widget.controller.animateTo(1),
-            hoverColor: widget.controller.index == 1
-                ? AppColors.secondary.withOpacity(0.9)
-                : AppColors.greyF2F4FA.withOpacity(0.5),
-            splashColor: widget.controller.index == 1
-                ? Colors.white.withOpacity(0.2)
-                : AppColors.grey64748B.withOpacity(0.1),
-            child: Container(
-              decoration: BoxDecoration(
-                border: widget.controller.index == 1
-                    ? Border(bottom: BorderSide(color: AppColors.secondary, width: 2))
-                    : null,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Cam đang xem',
-                    style: AppTypography.style(
-                      14,
-                      color: widget.controller.index == 1
-                          ? AppColors.secondary
-                          : AppColors.grey64748B,
-                      fontWeight: FontWeight.w500,
+            if (hasReachedMax) ...[
+              const Divider(height: 1, color: AppColors.greyF2F2F2),
+              InkWell(
+                onTap: () {
+                  final eventsTab = HomeTab.tabs.firstWhereOrNull(
+                    (tab) => tab.route == Routes.events,
+                  );
+                  if (eventsTab == null) return;
+                  // chuyển tab
+                  context.read<HomeBloc>().add(ChangeTab(eventsTab));
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  child: Center(
+                    child: Text(
+                      'Xem tất cả',
+                      style: AppTypography.style(
+                        14,
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
-      ],
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  // FUNCTIONS
+  void _onTabChanged() {
+    if (tabController.indexIsChanging) return;
+    _updateFilterWithCurrentCameras();
+  }
+
+  void _updateFilterWithCurrentCameras() {
+    final monitorState = context.read<MonitorBloc>().state;
+    List<List<int>>? viewingCameraIds;
+
+    if (monitorState is MonitorSuccess) {
+      if (tabController.index == 0) {
+        viewingCameraIds = monitorState.allCameras.map((c) => c.id).toList();
+      } else if (tabController.index == 1) {
+        viewingCameraIds = monitorState.paginatedCameras.map((c) => c.id).toList();
+      }
+    }
+
+    context.read<DetectBloc>().add(
+      UpdateTabIndex(tabController.index, viewingCameraIds: viewingCameraIds),
     );
   }
 }

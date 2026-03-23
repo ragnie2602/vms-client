@@ -43,6 +43,7 @@ class PlaybackPlayer extends StatefulWidget {
     this.resumeUponEnteringForegroundMode = true,
     this.wakelock = true,
     this.initialVolume,
+    this.onError,
   }) : super(key: controller.ref);
 
   final List<PlaybackVideo> playlist;
@@ -61,6 +62,7 @@ class PlaybackPlayer extends StatefulWidget {
   final bool resumeUponEnteringForegroundMode;
   final bool wakelock;
   final double? initialVolume;
+  final Function()? onError;
 
   @override
   State<PlaybackPlayer> createState() => PlaybackPlayerState();
@@ -103,7 +105,9 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   late Map<String, int> _playlistMapper;
   int get initialIndex => widget.initialIndex;
   int get currentIndex => _playlistIndex.value;
-  PlaybackVideo? get currentPlayback => currentIndex < 0 ? null : widget.playlist[currentIndex];
+  PlaybackVideo? get currentPlayback => (currentIndex < 0 || currentIndex >= widget.playlist.length)
+      ? null
+      : widget.playlist[currentIndex];
   PlaybackVideo? get nextPlayback =>
       currentIndex < widget.playlist.length - 1 ? widget.playlist[currentIndex + 1] : null;
 
@@ -127,6 +131,10 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     }
     super.didChangeAppLifecycleState(state);
   }
+
+  /// Nếu lần vẽ cuối cùng đó xảy ra sau khi _player.dispose() bắt đầu chạy nhưng trước khi nó hoàn tất
+  /// Widget Texture(textureId: id) sẽ cố gắng vẽ một Texture ID đã bị hủy (invalid) --> Crash App.
+  bool _isDisposing = false;
 
   @override
   void initState() {
@@ -187,6 +195,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
     WidgetsBinding.instance.removeObserver(this);
     if (widget.syncSystemVolume) VolumeController.instance.removeListener();
     _wakelock.disable();
+    _isDisposing = true;
+
     _accumulatingSeekQueue.dispose();
     _volumeQueue.dispose();
     _playlistIndex.dispose();
@@ -891,7 +901,7 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
                       child: ValueListenableBuilder(
                         valueListenable: _player.textureId,
                         builder: (context, id, _) {
-                          final player = id == null
+                          final player = (id == null || _isDisposing)
                               ? const SizedBox.shrink()
                               : Texture(textureId: id);
 
@@ -932,6 +942,8 @@ class PlaybackPlayerState extends State<PlaybackPlayer>
   }
 
   Widget _buildError() {
+    widget.onError?.call();
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,

@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
-import 'package:vms_flutter_client/core/env_service.dart';
-import 'package:vms_flutter_client/core/utils/pretty_dio_logger.dart';
+import 'package:vms_flutter_client/core/utils/api_logger.dart';
 
 class HttpClient {
   late final Dio _dio;
@@ -12,27 +12,22 @@ class HttpClient {
   HttpClient() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: EnvService.apiBaseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        baseUrl: EndPoints.baseUrl,
+        connectTimeout: const Duration(seconds: 40),
+        receiveTimeout: const Duration(seconds: 60),
         headers: {'Content-Type': 'application/json'},
       ),
     );
 
     // Add interceptors for logging
     if (kDebugMode) {
-      _dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          responseBody: true,
-          responseHeader: false,
-          error: true,
-          compact: true,
-          maxWidth: 90,
-        ),
-      );
+      _dio.interceptors.add(ApiLogInterceptor(maxWidth: 90));
     }
+  }
+
+  void updateBaseUrl(String newBaseUrl) {
+    _dio.options.baseUrl = newBaseUrl;
+    EndPoints.baseUrl = newBaseUrl;
   }
 
   delete({required String url, dynamic data}) async {
@@ -131,6 +126,30 @@ class HttpClient {
 
     if ([200, 201].contains(response.statusCode) && response.data != null) {
       return response.data;
+    }
+  }
+
+  Future<bool> download(
+    String url,
+    String savedPath, {
+    void Function(int, int)? onReceiveProgress,
+    Options? options,
+  }) async {
+    try {
+      final downloadOptions =
+          options?.copyWith(extra: {...options.extra ?? {}, 'savedPath': savedPath}) ??
+          Options(extra: {'savedPath': savedPath});
+
+      final res = await _dio.download(
+        url,
+        savedPath,
+        onReceiveProgress: onReceiveProgress,
+        options: downloadOptions,
+      );
+
+      return res.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 }

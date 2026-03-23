@@ -22,6 +22,7 @@ class AppAssets {
   static const tabRoles = '$_svgPath/tab_roles.svg';
   static const tabEvents = '$_svgPath/tab_events.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
+  static const tabAIBox = '$_svgPath/tab_ai_box.svg';
   static const tabSystemConfig = '$_svgPath/tab_setting.svg';
 
   static const icCamera = '$_svgPath/camera.svg';
@@ -46,6 +47,7 @@ class AppAssets {
   static const icArrowCircleUp = '$_svgPath/arrow_circle_up.svg';
   static const icArrowLeft = '$_svgPath/arrow_left.svg';
   static const icBell = '$_svgPath/bell.svg';
+  static const icBell2 = '$_svgPath/bell_2.svg';
   static const icSearch = '$_svgPath/search.svg';
   static const icSearchMobile = '$_svgPath/ic_search_mobile.svg';
   static const icDarkMode = '$_svgPath/dark_mode.svg';
@@ -59,7 +61,9 @@ class AppAssets {
   static const icDotHorizontal = '$_svgPath/dot_horizontal.svg';
   static const icAction = '$_svgPath/ic_action.svg';
   static const icEdit = '$_svgPath/ic_edit.svg';
+  static const icEdit2 = '$_svgPath/ic_edit_2.svg';
   static const icConfig = '$_svgPath/ic_config.svg';
+  static const icClock = '$_svgPath/ic_clock.svg';
   static const icReset = '$_svgPath/ic_reset.svg';
   static const icDelete = '$_svgPath/ic_delete.svg';
   static const icDeleteLight = '$_svgPath/ic_delete_light.svg';
@@ -83,6 +87,7 @@ class AppAssets {
   static const icFastBackward = '$_svgPath/fast_backward.svg';
   static const icFastForward = '$_svgPath/fast_forward.svg';
   static const icPlay = '$_svgPath/play.svg';
+  static const icPlayCircle = '$_svgPath/play_circle.svg';
   static const icPause = '$_svgPath/pause.svg';
   static const icArrowChevronDown = '$_svgPath/arrow_chevron_down.svg';
   static const icArrowChevronUp = '$_svgPath/arrow_chevron_up.svg';
@@ -95,6 +100,7 @@ class AppAssets {
   static const icTimeCircle = '$_svgPath/time_circle.svg';
   static const icLocation2 = '$_svgPath/location.svg';
   static const icAlertIntrution = '$_svgPath/alert_intrution.svg';
+  static const icAlertIntrusionWarning = '$_svgPath/alert_intrusion_warning.svg';
   static const icCalendar = '$_svgPath/calendar.svg';
   // map
   static const icMarkerMap = '$_svgPath/ic_marker_map.svg';
@@ -119,6 +125,8 @@ class AppAssets {
   static const icLocation = '$_svgPath/ic_location.svg';
   static const icAllCamera = '$_svgPath/ic_all_camera.svg';
   static const icAddGroupCamera = '$_svgPath/ic_add_group_camera.svg';
+  // ai box
+  static const icRemoveAiBox = '$_svgPath/icon_question_remove.svg';
   // multi playback
   static const icAddCam = '$_svgPath/icon_add_cam.svg';
   static const icCameraRecord = '$_svgPath/ic_camera_record.svg';
@@ -181,4 +189,19 @@ class AppAssets {
   static const icFile = '$_svgPath/ic_file.svg';
   static const icError = '$_svgPath/ic_error.svg';
   static const icCloseFilled = '$_svgPath/ic_close.svg';
+
+  // Event
+  static const icConfigure = '$_svgPath/configure.svg';
+  static const icDots = '$_svgPath/dots.svg';
+  static const icDownloadImage = '$_svgPath/download_image.svg';
+  static const icDrawable = '$_svgPath/drawable.svg';
+  static const icDownload2 = '$_svgPath/download2.svg';
+  static const icEventType = '$_svgPath/event_type.svg';
+  static const icObjectName = '$_svgPath/object_name.svg';
+  static const icObjectType = '$_svgPath/object_type.svg';
+  static const icPlaybackError = '$_svgPath/playback_error.svg';
+  static const icRefresh = '$_svgPath/refresh.svg';
+
+  static const icDrag = '$_svgPath/drag_icon.svg';
+  static const icUpload2 = '$_svgPath/ic_upload2.svg';
 }

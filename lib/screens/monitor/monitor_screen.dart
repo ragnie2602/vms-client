@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
+import 'package:vms_flutter_client/domain/usecases/event/get_all_subject_type_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/get_event_display_config_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_event_display_config_usecase.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/mobile_monitor_list.dart';
 import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
 
@@ -33,14 +37,21 @@ class _MonitorScreenState extends State<MonitorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: PlatformBuilder.builder(
-        onDesktop: (context) => MonitorDesktopLayout(
-          content: widget.child,
-          rightPanelWidth: MediaQuery.widthOf(context) * 280 / 1600,
+    return BlocProvider(
+      create: (context) => SetupEventDisplayBloc(
+        context.read<GetAllSubjectTypesUsecase>(),
+        context.read<GetEventDisplayConfigUsecase>(),
+        context.read<SaveEventDisplayConfigUsecase>(),
+      ),
+      child: Container(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: PlatformBuilder.builder(
+          onDesktop: (context) => MonitorDesktopLayout(
+            content: widget.child,
+            rightPanelWidth: MediaQuery.widthOf(context) * 280 / 1600,
+          ),
+          onMobile: (context) => MobileMonitorList(),
         ),
-        onMobile: (context) => MobileMonitorList(),
       ),
     );
   }

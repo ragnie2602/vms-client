@@ -7,13 +7,12 @@ import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
-import 'package:vms_flutter_client/core/constants/osd.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/osd_util.dart';
 import 'package:vms_flutter_client/screens/camera_detail/camera_detail_screen.dart';
 import 'package:vms_flutter_client/screens/home/components/table_paginator.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 import 'package:vms_flutter_client/screens/shared/state_builder_mixin.dart';
+import 'package:vms_flutter_client/screens/system_configuration/bloc/osd/osd_bloc.dart';
 
 import '../shared/player/sources.dart';
 
@@ -25,8 +24,6 @@ class DefaultMonitorPane extends StatefulWidget {
 }
 
 class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuilderMixin {
-  final OSDPosition _position = OsdUtil.getOSDPositions();
-
   double get spacing => AppConfig.MONITOR_GRID_SPACING;
 
   void onChangePage(BuildContext context, int page) {
@@ -39,6 +36,13 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
       builder: (context, blocState) => stateBuilder<MonitorSuccess>(
         blocState,
         onReload: () => context.read<MonitorBloc>().add(GetAllCamera()),
+        emptyBuilder: () {
+          String message = 'Không có camera nào';
+          if (blocState is MonitorSuccess && blocState.groupId != null) {
+            message = 'Không có camera trong nhóm';
+          }
+          return buildEmpty(message);
+        },
         child: (state) => BlocSelector<AppBloc, AppState, bool>(
           selector: (state) => state.displayFullScreenLiveView,
           builder: (context, isFullScreen) {
@@ -108,7 +112,7 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
                           }),
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Visibility(
                         visible: !isFullScreen,
                         child: SizedBox(
@@ -178,35 +182,41 @@ class _DefaultMonitorPaneState extends State<DefaultMonitorPane> with StateBuild
   }
 
   Widget _buildLabel(String label, Size size) {
-    if (_position.value == -1) return SizedBox.shrink();
-    return Positioned(
-      bottom: (_position.value & 1) == 1 ? 10 : null,
-      left: (_position.value & 2) == 0 ? 10 : null,
-      right: (_position.value & 2) == 2 ? 10 : null,
-      top: (_position.value & 1) == 0 ? 10 : null,
-      child: Container(
-        constraints: BoxConstraints(maxWidth: size.width - 10),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
-        padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
-            SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                style: AppTypography.style(
-                  color: Colors.black,
-                  9,
-                  fontWeight: FontWeight.w600,
-                  textOverflow: TextOverflow.ellipsis,
+    return BlocBuilder<OsdBloc, OsdState>(
+      bloc: context.read<OsdBloc>(),
+      builder: (context, state) {
+        final _position = state.position;
+
+        return Positioned(
+          bottom: (_position.value & 1) == 1 ? 10 : null,
+          left: (_position.value & 2) == 0 ? 10 : null,
+          right: (_position.value & 2) == 2 ? 10 : null,
+          top: (_position.value & 1) == 0 ? 10 : null,
+          child: Container(
+            constraints: BoxConstraints(maxWidth: size.width - 10),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
+            padding: const EdgeInsets.fromLTRB(8, 2, 8, 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(AppAssets.icVideoOn, width: 16, height: 16),
+                SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: AppTypography.style(
+                      color: Colors.black,
+                      9,
+                      fontWeight: FontWeight.w600,
+                      textOverflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

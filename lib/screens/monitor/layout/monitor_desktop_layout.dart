@@ -59,8 +59,11 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Panel(expandedWidth: widget.leftPanelWidth, controller: _leftController),
-
+                    Panel(
+                      expandedWidth: widget.leftPanelWidth,
+                      controller: _leftController,
+                      icCloseOnContent: false,
+                    ),
                     Expanded(
                       child: !shouldDisplayFullScreen
                           ? Container(
@@ -72,10 +75,12 @@ class _MonitorDesktopLayoutState extends State<MonitorDesktopLayout> {
                             )
                           : widget.content,
                     ),
-                    Panel(
-                      expandedWidth: widget.rightPanelWidth,
+                    ResizablePanel(
+                      maxWidth: widget.rightPanelWidth + 160,
+                      minWidth: widget.rightPanelWidth,
+                      initialWidth: widget.rightPanelWidth,
                       controller: _rightController,
-                      icCloseOnContent: true,
+                      splitterSide: SplitterSide.left,
                     ),
                   ],
                 ),

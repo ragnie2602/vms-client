@@ -30,6 +30,7 @@ class _MonitorActionsState extends State<MonitorActions> {
   @override
   void dispose() {
     _leftPanelIndex.dispose();
+    _rightPanelIndex.dispose();
     super.dispose();
   }
 
@@ -78,10 +79,7 @@ class _MonitorActionsState extends State<MonitorActions> {
                       },
                     ),
                     onTap: () => widget.leftController.togglePanel(
-                      MonitorMode(
-                        maxWidth: widget.leftController.expandedWidth,
-                        key: ValueKey('monitor_mode'),
-                      ),
+                      (maxWidth) => MonitorMode(maxWidth: maxWidth, key: ValueKey('monitor_mode')),
                       id: 1,
                       onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
                     ),
@@ -91,8 +89,8 @@ class _MonitorActionsState extends State<MonitorActions> {
                     title: 'Danh sách camera',
                     icon: AppAssets.icListCamera,
                     onTap: () => widget.leftController.togglePanel(
-                      MonitorCameras(
-                        maxWidth: widget.leftController.expandedWidth,
+                      (maxWidth) => MonitorCameras(
+                        maxWidth: maxWidth,
                         key: ValueKey('monitor_cameras'),
                         onTap: (data) {
                           context.goNamed(
@@ -128,12 +126,12 @@ class _MonitorActionsState extends State<MonitorActions> {
               builder: (context, value, child) => Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ActionItem.alert(
-                    isSelected: value == 0,
-                    id: 0,
+                  AlertDetectLiveView(
                     controller: widget.rightController,
-                    onPanelIndexChanged: (index) => _rightPanelIndex.value = index,
-                    count: '09',
+                    id: 0,
+                    isSelected: _rightPanelIndex.value == 0,
+                    onPanelIndexChanged: (index) =>
+                        _rightPanelIndex.value = index,
                   ),
                 ],
               ),

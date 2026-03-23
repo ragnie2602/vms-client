@@ -1,0 +1,162 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vms_flutter_client/domain/entities/camera/camera_entity.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
+
+import 'package:vms_flutter_client/domain/entities/event/event_entity.dart';
+import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/usecases/event/export_event_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/get_event_detail_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_image_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/save_video_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/event/search_event_input.dart';
+import 'package:vms_flutter_client/domain/usecases/event/search_event_usecase.dart';
+import '../../../domain/entities/event/event_type.dart';
+
+part 'event_event.dart';
+part 'event_state.dart';
+
+class EventBloc extends Bloc<EventEvent, EventState> {
+  final ICameraRepository cameraRepository;
+  final IEventRepository eventRepository;
+
+  final ExportEventUseCase exportEventUseCase;
+  final GetEventDetailUseCase getEventDetailUseCase;
+  final SaveImageUseCase saveImageUseCase;
+  final SaveVideoUseCase saveVideoUseCase;
+  final SearchEventUseCase searchEventUseCase;
+
+  EventBloc(
+    this.cameraRepository,
+    this.eventRepository,
+    this.getEventDetailUseCase,
+    this.searchEventUseCase,
+    this.exportEventUseCase,
+    this.saveImageUseCase,
+    this.saveVideoUseCase,
+  ) : super(const EventState()) {
+    on<ExportEventList>(_onExportEventList);
+    on<GetAllEventType>(_onGetAllEventType);
+    on<GetEventDetail>(_onGetEventDetail);
+    on<SaveImage>(_onSaveImage);
+    on<SaveVideo>(_onSaveVideo);
+    on<SearchEvent>(_onSearch);
+    on<UpdateEvent>(_onUpdateEvent);
+  }
+
+  FutureOr<void> _onExportEventList(ExportEventList event, Emitter<EventState> emit) async {
+    emit(const ExportEventLoading());
+
+    final res = await exportEventUseCase.execute(
+      ExportEventInput(
+        cameraIds: event.cameraIds,
+        cameraGroupName: event.cameraGroupName,
+        cameras: event.cameras,
+        endTime: event.endTime,
+        eventTypes: event.eventTypes,
+        startTime: event.startTime,
+        subjectName: event.subjectName,
+      ),
+    );
+
+    if (res.errorMsg == null) {
+      emit(ExportEventSuccess(res.filePath));
+    } else {
+      emit(ExportEventFailure(res.errorMsg!));
+    }
+  }
+
+  FutureOr<void> _onSearch(SearchEvent event, Emitter<EventState> emit) async {
+    emit(const SearchingEvent());
+
+    final res = await searchEventUseCase.execute(
+      SearchEventInput(
+        page: event.page,
+        pageSize: event.pageSize,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        cameraIds: event.cameraIds,
+        eventTypes: event.eventTypes,
+        cameras: event.cameras,
+        subjectName: event.subjectName,
+      ),
+    );
+
+    if (res.errorMsg == null) {
+      emit(
+        SearchEventSuccess(
+          events: res.events.content,
+          totalCount: res.events.totalElements,
+          page: event.page,
+          pageSize: res.events.pageSize,
+        ),
+      );
+    } else {
+      emit(SearchEventFailure(res.errorMsg!));
+    }
+  }
+
+  FutureOr<void> _onGetAllEventType(GetAllEventType event, Emitter<EventState> emit) async {
+    emit(const GettingAllEventType());
+
+    final res = await eventRepository.getAllEventType();
+    res.fold(
+      (onFailure) => emit(GetAllEventTypeFailure(onFailure.parseMessage())),
+      (onSuccess) => emit(GetAllEventTypeSuccess(onSuccess)),
+    );
+  }
+
+  FutureOr<void> _onGetEventDetail(GetEventDetail event, Emitter<EventState> emit) async {
+    emit(const GettingEventDetail());
+
+    try {
+      final res = await getEventDetailUseCase.execute(GetEventDetailInput(eventId: event.eventId));
+
+      emit(EventDetailSuccess(res.event, res.displayData));
+    } catch (e) {
+      String msg = e.toString();
+      while (msg.startsWith("Exception:")) {
+        msg = msg.substring("Exception:".length).trim();
+      }
+      emit(EventDetailFailure(msg));
+    }
+  }
+
+  FutureOr<void> _onSaveImage(SaveImage event, Emitter<EventState> emit) async {
+    emit(const SavingImage());
+
+    final res = await saveImageUseCase.execute(SaveImageInput(event.event, event.savePath));
+
+    if (res.errorMsg == null) {
+      emit(const SavingImageSuccess());
+    } else {
+      emit(SavingImageFailure(res.errorMsg!));
+    }
+  }
+
+  FutureOr<void> _onSaveVideo(SaveVideo event, Emitter<EventState> emit) async {
+    emit(const SavingVideo());
+
+    final res = await saveVideoUseCase.execute(SaveVideoInput(event.url, event.savePath));
+
+    if (res.errorMsg == null) {
+      emit(const SavingVideoSuccess());
+    } else {
+      emit(SavingVideoFailure(res.errorMsg!));
+    }
+  }
+
+  FutureOr<void> _onUpdateEvent(UpdateEvent event, Emitter<EventState> emit) async {
+    emit(const UpdatingEvent());
+
+    final res = await eventRepository.updateEvent(event.eventId, event.description);
+    res.fold(
+      (onFailure) => emit(UpdateEventFailure(onFailure.parseMessage())),
+      (onSuccess) => emit(UpdateEventSuccess(onSuccess)),
+    );
+  }
+}

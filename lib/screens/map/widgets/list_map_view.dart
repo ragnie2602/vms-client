@@ -155,8 +155,7 @@ class _ListMapViewState extends State<ListMapView> {
                   if (_emaps.isEmpty) return Center(child: Text('Không có dữ liệu'));
                 }
 
-                return ListView.separated(
-                  itemCount: _emaps.length,
+                return ListView.builder(
                   itemBuilder: (context, index) {
                     final item = _emaps[index];
                     return InkWell(
@@ -166,6 +165,7 @@ class _ListMapViewState extends State<ListMapView> {
                           borderRadius: BorderRadius.circular(5),
                           color: item.id == _selectedId ? AppColors.greyF2F4FA : Colors.transparent,
                         ),
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                         child: Row(
                           children: [
                             SvgPicture.asset(AppAssets.icMarkerMap),
@@ -248,7 +248,7 @@ class _ListMapViewState extends State<ListMapView> {
                       ),
                     );
                   },
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemCount: _emaps.length,
                 );
               },
             ),

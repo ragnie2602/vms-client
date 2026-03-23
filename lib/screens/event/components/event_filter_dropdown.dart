@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/utils/date_util.dart';
 
 class EventFilterDropdown<T> extends StatefulWidget {
   final String? hint;
@@ -14,10 +13,10 @@ class EventFilterDropdown<T> extends StatefulWidget {
   final List<T> items;
   final T? initialValue;
   final String? label;
-  final void Function(dynamic) onChanged;
+  final TextStyle? labelStyle;
+  final void Function(T?) onChanged;
   final EdgeInsetsGeometry? padding;
   final TextStyle? style;
-  final EventFilterDropdownType type;
 
   const EventFilterDropdown({
     super.key,
@@ -28,10 +27,10 @@ class EventFilterDropdown<T> extends StatefulWidget {
     required this.items,
     this.initialValue,
     this.label,
+    this.labelStyle,
     required this.onChanged,
     this.padding,
     this.style,
-    this.type = EventFilterDropdownType.normal,
   });
 
   @override
@@ -40,14 +39,11 @@ class EventFilterDropdown<T> extends StatefulWidget {
 
 class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
   T? _selectedValue;
-  TextEditingController? _dateController;
 
   @override
   void initState() {
     super.initState();
     _selectedValue = widget.initialValue;
-
-    if (widget.type == EventFilterDropdownType.date) _dateController = TextEditingController();
   }
 
   @override
@@ -55,252 +51,91 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.label != null) Text(widget.label!),
+        if (widget.label != null) Text(widget.label!, style: widget.labelStyle),
         const SizedBox(height: 8),
-        widget.type == EventFilterDropdownType.date ? _dateDropdown() : _normalDropdown(),
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.greyE2E8F0, width: 1),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: DropdownButton2<T>(
+            buttonStyleData: ButtonStyleData(
+              height:
+                  (widget.padding?.vertical ?? 0) +
+                  (widget.isDense ? widget.style?.fontSize ?? 13 : 13) +
+                  1,
+              padding: widget.padding ?? EdgeInsets.zero,
+            ),
+            dropdownStyleData: DropdownStyleData(
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
+              offset: const Offset(0, -4),
+            ),
+            hint: Text(
+              widget.hint ?? '',
+              style: AppTypography.style(
+                14,
+                fontWeight: FontWeight.w400,
+                color: AppColors.grey64748B,
+              ),
+            ),
+            iconStyleData: IconStyleData(icon: SvgPicture.asset(AppAssets.icDropdown)),
+            isDense: widget.isDense,
+            isExpanded: widget.isExpanded,
+            items: widget.items
+                .map(
+                  (item) => DropdownMenuItem<T>(
+                    value: item,
+                    child: widget.itemBuilder?.call(item) ?? Text(item.toString()),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              setState(() => _selectedValue = value);
+              widget.onChanged(value);
+            },
+            selectedItemBuilder: (context) => widget.items
+                .map(
+                  (item) => Align(
+                    alignment: Alignment.centerLeft,
+                    child:
+                        widget.itemBuilder?.call(item) ??
+                        Text(
+                          item.toString(),
+                          style:
+                              widget.style ??
+                              AppTypography.style(
+                                14,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.black,
+                              ),
+                        ),
+                  ),
+                )
+                .toList(),
+            style:
+                widget.style ??
+                AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
+            underline: const SizedBox.shrink(),
+            value: _selectedValue,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _dateDropdown() {
-    return TextField(
-      controller: _dateController,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(3),
-          borderSide: BorderSide(color: AppColors.greyE2E8F0),
-        ),
-        constraints: BoxConstraints(minHeight: 0, minWidth: 0),
-        contentPadding: widget.padding ?? EdgeInsets.symmetric(horizontal: 12, vertical: 13),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(3),
-          borderSide: BorderSide(color: AppColors.greyE2E8F0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(3),
-          borderSide: BorderSide(color: AppColors.greyE2E8F0),
-        ),
-        hintText: widget.hint ?? 'dd/mm/yyyy',
-        hintStyle: AppTypography.style(
-          14,
-          fontWeight: FontWeight.w400,
-          color: AppColors.grey64748B,
-        ),
-        isDense: true,
-        suffixIcon: Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: SvgPicture.asset(AppAssets.icCalendar, height: 16, width: 16),
-        ),
-        suffixIconConstraints: const BoxConstraints(
-          minWidth: 16 + 12, // width icon + padding right
-          minHeight: 16,
-        ),
-      ),
-      keyboardType: TextInputType.none,
-      onTap: () async => await _showDatePicker(),
-    );
-  }
-
-  Widget _normalDropdown() {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.greyE2E8F0, width: 1),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: DropdownButton2<T>(
-        buttonStyleData: ButtonStyleData(
-          height:
-              (widget.padding?.vertical ?? 0) +
-              (widget.isDense ? widget.style?.fontSize ?? 13 : 13) +
-              1,
-          padding: widget.padding ?? EdgeInsets.zero,
-        ),
-        dropdownStyleData: DropdownStyleData(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
-          offset: const Offset(0, -4),
-        ),
-        hint: Text(
-          widget.hint ?? '',
-          style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.grey64748B),
-        ),
-        iconStyleData: IconStyleData(icon: SvgPicture.asset(AppAssets.icDropdown)),
-        isDense: widget.isDense,
-        isExpanded: widget.isExpanded,
-        items: widget.items
-            .map(
-              (item) => DropdownMenuItem<T>(
-                value: item,
-                child: widget.itemBuilder?.call(item) ?? Text(item.toString()),
-              ),
-            )
-            .toList(),
-        onChanged: (value) {
-          setState(() => _selectedValue = value);
-          widget.onChanged(value);
-        },
-        selectedItemBuilder: (context) => widget.items
-            .map(
-              (item) => Align(
-                alignment: Alignment.centerLeft,
-                child:
-                    widget.itemBuilder?.call(item) ??
-                    Text(
-                      item.toString(),
-                      style:
-                          widget.style ??
-                          AppTypography.style(
-                            14,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.black,
-                          ),
-                    ),
-              ),
-            )
-            .toList(),
-        style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
-        underline: const SizedBox.shrink(),
-        value: _selectedValue,
-      ),
-    );
-  }
-
-  _showDatePicker() async {
-    final result = await showDatePicker(
-      context: context,
-      calendarDelegate: _EventFilterCalendarDelegate(),
-      firstDate: DateTime.fromMillisecondsSinceEpoch(0),
-      initialDate: DateTime.now(),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              onPrimary: Colors.white,
-              onSecondary: AppColors.black,
-              onSurface: AppColors.black,
-              primary: AppColors.secondary,
-              surface: Colors.white,
-            ),
-            datePickerTheme: DatePickerThemeData(
-              backgroundColor: Colors.white,
-              cancelButtonStyle: TextButton.styleFrom(
-                foregroundColor: AppColors.secondary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                textStyle: AppTypography.style(14, fontWeight: FontWeight.w500),
-              ),
-              confirmButtonStyle: TextButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                textStyle: AppTypography.style(14, fontWeight: FontWeight.w500),
-              ),
-              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return AppColors.secondary;
-                if (states.contains(WidgetState.hovered)) return AppColors.blueE7F3FF;
-                return Colors.transparent;
-              }),
-              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.white;
-                if (states.contains(WidgetState.disabled)) return AppColors.greyD1D5DB;
-                return AppColors.black;
-              }),
-              dayStyle: AppTypography.style(
-                14,
-                color: AppColors.black,
-                fontWeight: FontWeight.w400,
-              ),
-              dividerColor: AppColors.greyE2E8F0,
-              headerBackgroundColor: Colors.white,
-              headerForegroundColor: AppColors.black,
-              headerHeadlineStyle: AppTypography.style(
-                18,
-                color: AppColors.black,
-                fontWeight: FontWeight.w600,
-              ),
-              headerHelpStyle: AppTypography.style(
-                12,
-                color: AppColors.grey64748B,
-                fontWeight: FontWeight.w400,
-              ),
-              inputDecorationTheme: InputDecorationTheme(
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.secondary),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.secondary),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                hintStyle: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.grey64748B,
-                ),
-                labelStyle: AppTypography.style(
-                  16,
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-              todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return AppColors.secondary;
-                return Colors.transparent;
-              }),
-              todayForegroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.white;
-                return AppColors.secondary;
-              }),
-              weekdayStyle: AppTypography.style(
-                12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.grey64748B,
-              ),
-            ),
-            dividerTheme: DividerThemeData(color: AppColors.greyE2E8F0, thickness: 1),
-            dialogTheme: DialogThemeData(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-            ),
-            textTheme: TextTheme(
-              bodyLarge: AppTypography.style(
-                14,
-                color: AppColors.black,
-                fontWeight: FontWeight.w400,
-              ),
-              headlineSmall: AppTypography.style(
-                16,
-                color: AppColors.black,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (result != null) _dateController?.text = result.format('dd/MM/yyyy');
-
-    widget.onChanged(result);
-  }
-}
-
-enum EventFilterDropdownType { date, normal }
-
-class _EventFilterCalendarDelegate extends GregorianCalendarDelegate {
-  final _mapDayOfWeek = {
-    DateTime.sunday: 'CN',
-    DateTime.monday: 'Thứ 2',
-    DateTime.tuesday: 'Thứ 3',
-    DateTime.wednesday: 'Thứ 4',
-    DateTime.thursday: 'Thứ 5',
-    DateTime.friday: 'Thứ 6',
-    DateTime.saturday: 'Thứ 7',
-  };
-
   @override
-  String formatMediumDate(DateTime date, MaterialLocalizations localizations) =>
-      date.format("'${_mapDayOfWeek[date.weekday]}', d/MM/yyyy", locale: 'vi');
+  void didUpdateWidget(covariant EventFilterDropdown<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (_selectedValue != null && !widget.items.contains(_selectedValue)) {
+      setState(() => _selectedValue = null);
+    }
+
+    final nextInitial = widget.initialValue;
+    if (nextInitial != null &&
+        widget.items.contains(nextInitial) &&
+        nextInitial != _selectedValue) {
+      setState(() => _selectedValue = nextInitial);
+    }
+  }
 }

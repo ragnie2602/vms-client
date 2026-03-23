@@ -7,7 +7,10 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 class AppField extends StatefulWidget {
   const AppField({
     super.key,
-    required this.controller,
+    this.controller,
+    this.initialValue,
+    this.onChanged,
+    this.errorText,
     this.hintText,
     this.obscureText = false,
     this.suffix,
@@ -25,9 +28,15 @@ class AppField extends StatefulWidget {
     this.borderRadius,
     this.isFilled,
     this.fillColor,
+    this.focusNode,
+    this.textInputAction,
+    this.onFieldSubmitted,
   });
 
-  final TextEditingController controller;
+  final TextEditingController? controller;
+  final String? initialValue;
+  final ValueChanged<String>? onChanged;
+  final String? errorText;
   final String? hintText;
   final bool obscureText;
   final Widget? suffix;
@@ -45,6 +54,9 @@ class AppField extends StatefulWidget {
   final double? borderRadius;
   final bool? isFilled;
   final Color? fillColor;
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final Function(String)? onFieldSubmitted;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -52,9 +64,39 @@ class AppField extends StatefulWidget {
 
 class _AppFieldState extends State<AppField> {
   String? _errorText;
+  late TextEditingController _internalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _internalController = widget.controller ?? TextEditingController(text: widget.initialValue);
+    _errorText = widget.errorText;
+  }
+
+  @override
+  void didUpdateWidget(AppField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      if (widget.controller != null) {
+        _internalController = widget.controller!;
+      }
+    }
+    if (widget.errorText != oldWidget.errorText) {
+      _errorText = widget.errorText;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller == null) {
+      _internalController.dispose();
+    }
+    super.dispose();
+  }
 
   String? _customValidator(String? value) {
-    final error = widget.validator?.call(value);
+    if (widget.validator == null) return null;
+    final error = widget.validator!.call(value);
     setState(() {
       _errorText = error;
     });
@@ -77,7 +119,7 @@ class _AppFieldState extends State<AppField> {
                         TextSpan(
                           text: ' *',
                           style: AppTypography.style(
-                            20,
+                            14,
                             fontWeight: FontWeight.w500,
                             color: AppColors.redFF0004,
                           ),
@@ -89,9 +131,8 @@ class _AppFieldState extends State<AppField> {
           );
 
     return ValueListenableBuilder<TextEditingValue>(
-      valueListenable: widget.controller,
+      valueListenable: _internalController,
       builder: (context, value, _) {
-        final bool isMultiline = (widget.minLines ?? 1) > 1 || widget.maxLines > 1;
         final List<Widget> suffixChildren = [];
         if (widget.suffix != null) suffixChildren.add(widget.suffix!);
         if (widget.maxLength != null) {
@@ -122,10 +163,80 @@ class _AppFieldState extends State<AppField> {
             Row(
               children: [
                 Expanded(
-                  child: _buildField(
-                    theme: theme,
-                    suffixChildren: suffixChildren,
-                    isMultiline: isMultiline,
+                  child: SizedBox(
+                    // Chỉ set height cố định khi maxLines = 1, còn lại để tự động
+                    // height: widget.maxLines == 1 ? 41 : null,
+                    child: TextFormField(
+                      onFieldSubmitted: widget.onFieldSubmitted,
+                      textInputAction: widget.textInputAction,
+                      focusNode: widget.focusNode,
+                      controller: _internalController,
+                      obscureText: widget.obscureText,
+                      keyboardType: widget.keyboardType,
+                      maxLines: widget.maxLines,
+                      minLines: widget.maxLines > 1 ? widget.maxLines : null,
+                      maxLength: widget.maxLength,
+                      validator: _customValidator,
+                      onChanged: (value) {
+                        setState(() {
+                          _errorText = null;
+                        });
+                        widget.onChanged?.call(value);
+                      },
+                      readOnly: widget.readOnly ?? false,
+                      inputFormatters: widget.inputFormatters,
+                      decoration: InputDecoration(
+                        hintText: widget.hintText,
+                        filled: widget.isFilled ?? widget.readOnly ?? false,
+                        fillColor:
+                            widget.fillColor ??
+                            (widget.readOnly ?? false ? AppColors.greyF2F4FA : null),
+                        hintStyle: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.grey92929D,
+                        ),
+                        // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
+                        counterText: '',
+                        errorMaxLines: 1,
+                        errorStyle: AppTypography.style(0, lineHeight: 0),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                            color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
+                            width: 1,
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+                          borderSide: BorderSide(
+                            color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
+                            width: 1,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+                          borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
+                        ),
+                        suffixIcon: suffixChildren.isEmpty
+                            ? null
+                            : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
+                      ),
+                      style: AppTypography.style(
+                        14,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.black,
+                      ),
+                    ),
                   ),
                 ),
                 if (widget.trailingButton != null) widget.trailingButton!,
@@ -133,6 +244,7 @@ class _AppFieldState extends State<AppField> {
             ),
             // Custom error message với icon
             if (_errorText != null) ...[
+              const SizedBox(height: 4),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -157,77 +269,5 @@ class _AppFieldState extends State<AppField> {
         );
       },
     );
-  }
-
-  Widget _buildField({
-    required ThemeData theme,
-    required List<Widget> suffixChildren,
-    required bool isMultiline,
-  }) {
-    final field = TextFormField(
-      controller: widget.controller,
-      obscureText: widget.obscureText,
-      keyboardType: widget.keyboardType ?? (isMultiline ? TextInputType.multiline : null),
-      minLines: widget.minLines,
-      maxLines: widget.maxLines,
-      maxLength: widget.maxLength,
-      validator: _customValidator,
-      onChanged: (value) {
-        setState(() {
-          _errorText = null;
-        });
-      },
-      readOnly: widget.readOnly ?? false,
-      inputFormatters: widget.inputFormatters,
-      decoration: InputDecoration(
-        hintText: widget.hintText,
-        filled: widget.isFilled ?? widget.readOnly ?? false,
-        fillColor: widget.fillColor ?? (widget.readOnly ?? false ? AppColors.greyF2F4FA : null),
-        hintStyle: AppTypography.style(
-          14,
-          fontWeight: FontWeight.w400,
-          color: AppColors.grey92929D,
-        ),
-        // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
-        counterText: '',
-        errorMaxLines: 1,
-        errorStyle: AppTypography.style(0, lineHeight: 0),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(1),
-          borderSide: BorderSide(
-            color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
-            width: 1,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? 1),
-          borderSide: BorderSide(
-            color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
-            width: 1,
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? 1),
-          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? 1),
-          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(widget.borderRadius ?? 1),
-          borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
-        ),
-        suffixIcon: suffixChildren.isEmpty
-            ? null
-            : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
-      ),
-      style: AppTypography.style(14, fontWeight: FontWeight.w400, color: AppColors.black),
-    );
-
-    // Giữ chiều cao cũ cho input 1 dòng; multiline sẽ tự nở theo minLines/maxLines.
-    if (!isMultiline) return SizedBox(height: 41, child: field);
-    return field;
   }
 }

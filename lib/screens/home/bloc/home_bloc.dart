@@ -12,8 +12,17 @@ class HomeTab {
   final String title;
   final String svg;
   final List<HomeTab> nested;
+  final bool useMaterialIcon;
+  final String? materialIcon;
 
-  const HomeTab(this.route, {required this.title, required this.svg, this.nested = const []});
+  const HomeTab(
+    this.route, {
+    required this.title,
+    required this.svg,
+    this.nested = const [],
+    this.useMaterialIcon = false,
+    this.materialIcon,
+  });
 
   static const tabs = [
     HomeTab(Routes.monitoring, title: 'Xem trực tiếp', svg: AppAssets.tabMonitor),
@@ -23,6 +32,31 @@ class HomeTab {
     HomeTab(Routes.roles, title: 'Quản lý phân quyền', svg: AppAssets.tabRoles),
     HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
     HomeTab(Routes.events, title: 'Quản lý sự kiện', svg: AppAssets.tabEvents),
+    HomeTab(Routes.aiBox, title: 'Quản lý AI Box', svg: AppAssets.tabAIBox),
+    HomeTab(Routes.users, title: 'Quản lý tài khoản', svg: AppAssets.tabUsers),
+    HomeTab(
+      null,
+      title: 'Quản lý đối tượng',
+      svg: AppAssets.tabUsers,
+      useMaterialIcon: true,
+      materialIcon: 'person',
+      nested: [
+        HomeTab(
+          Routes.objectTypes,
+          title: 'Loại đối tượng',
+          svg: AppAssets.tabUsers,
+          useMaterialIcon: true,
+          materialIcon: 'person',
+        ),
+        HomeTab(
+          Routes.objectGroups,
+          title: 'Đối tượng',
+          svg: AppAssets.tabUsers,
+          useMaterialIcon: true,
+          materialIcon: 'group',
+        ),
+      ],
+    ),
     HomeTab(Routes.configuration, title: 'Cấu hình hệ thống', svg: AppAssets.tabSystemConfig),
     HomeTab(Routes.about, title: 'Thông tin ứng dụng', svg: AppAssets.tabInfo),
   ];
@@ -94,6 +128,7 @@ class ChangeTab extends HomeEvent {
   final Routes? route;
   final Object? extra;
   final bool force;
+
   const ChangeTab(this.tab, {this.route, this.extra, this.force = false});
 }
 

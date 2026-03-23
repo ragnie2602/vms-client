@@ -1,288 +1,492 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/screens/home/components/app_button.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/domain/entities/detect/event_display_config_entity.dart';
+import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
+import 'package:vms_flutter_client/screens/event/bloc/event_bloc.dart';
+import 'package:vms_flutter_client/screens/event/bloc/setup_info_field_bloc.dart';
+import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
 
 class SetupInfoFieldDialog extends StatefulWidget {
-  const SetupInfoFieldDialog({super.key});
+  final int typeConfig;
+
+  const SetupInfoFieldDialog({super.key, required this.typeConfig});
 
   @override
   State<SetupInfoFieldDialog> createState() => _SetupInfoFieldDialogState();
 }
 
-class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> with TickerProviderStateMixin {
-  final ValueNotifier<int> selectedTabIndex = ValueNotifier(0);
-  final PageController pageController = PageController();
+class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
+  late final EventBloc eventBloc;
+  late final SetupEventDisplayBloc bloc;
+
+  String _selectedEventType = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    bloc = context.read();
+    eventBloc = context.read()..add(GetAllEventType());
+  }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.white),
-        height: MediaQuery.heightOf(context) * 552 / 900,
-        width: MediaQuery.widthOf(context) * 613 / 1600,
+        height: max(479, MediaQuery.heightOf(context) * 479 / 900),
+        width: max(613, MediaQuery.widthOf(context) * 613 / 1600),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.greyF2F4FA, width: 1)),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Cài đặt nội dung cảnh báo',
-                    style: AppTypography.style(20, fontWeight: FontWeight.w600),
-                  ),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: Icon(Icons.close)),
-                ],
-              ),
-            ),
+            _buildHeader(context),
             Expanded(
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 224,
-                    child: Container(
-                      color: AppColors.greyF2F4FA,
-                      child: Column(
-                        children: [
-                          _buildVerticalTab('Phát hiện chuyển động', 0),
-                          _buildVerticalTab('Phát hiện xâm nhập', 1),
-                          _buildVerticalTab('Phân biệt đối tượng', 2),
-                          _buildVerticalTab('Phát hiện vượt hàng rào ảo', 3),
-                          _buildVerticalTab('Phát hiện vật bị bỏ quên', 4),
-                          _buildVerticalTab('Phát hiện vật nguy hiểm', 5),
-                        ],
+              child: BlocConsumer<EventBloc, EventState>(
+                buildWhen: (previous, current) =>
+                    current is GettingAllEventType ||
+                    current is GetAllEventTypeSuccess ||
+                    current is GetAllEventTypeFailure,
+                builder: (context, state) {
+                  if (state is GettingAllEventType) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is! GetAllEventTypeSuccess) {
+                    return const Center(child: Text('Có lỗi xảy ra'));
+                  }
+
+                  if (state.eventTypes.isEmpty) return Center(child: Text('Không có dữ liệu'));
+
+                  return Row(
+                    children: [
+                      Expanded(
+                        flex: 200,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) => Container(
+                            color: AppColors.greyF9FAFB,
+                            height: constraints.maxHeight,
+                            padding: const EdgeInsets.all(8),
+                            child: SingleChildScrollView(
+                              child: StatefulBuilder(
+                                builder: (context, setState) => Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  spacing: 4,
+                                  children: state.eventTypes.map((et) {
+                                    return _buildVerticalTab(
+                                      context,
+                                      et,
+                                      onSelected: () => _changeTab(et),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 756,
-                    child: PageView(
-                      controller: pageController,
-                      scrollDirection: Axis.vertical,
-                      children: [
-                        _buildTabContent(0),
-                        _buildTabContent(1),
-                        _buildTabContent(2),
-                        _buildTabContent(3),
-                        _buildTabContent(4),
-                        _buildTabContent(5),
-                      ],
-                    ),
-                  ),
-                ],
+                      Expanded(
+                        flex: 413,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) => Container(
+                            height: constraints.maxHeight,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                            child: _buildTabContent(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                listener: (context, state) {
+                  if (state is GetAllEventTypeSuccess) _changeTab(state.eventTypes.first);
+                },
               ),
             ),
+            _buildFooter(context),
           ],
         ),
       ),
     );
   }
 
-  @override
-  void dispose() {
-    pageController.dispose();
-    selectedTabIndex.dispose();
-    super.dispose();
-  }
-
-  Widget _buildTabContent(int index) {
-    return Padding(
+  // WIDGETS
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.greyF2F4FA, width: 1)),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          CustomReorderableListView(type: index),
-          const SizedBox(height: 16),
-
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                flex: 125,
-                child: AppButton.outline(label: 'Hủy', onPressed: () => Navigator.pop(context)),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 125,
-                child: AppButton.filled(label: 'Lưu', onPressed: () => Navigator.pop(context)),
-              ),
-              const Spacer(flex: 99),
-            ],
+          Text(
+            'Cài đặt hiển thị cảnh báo',
+            style: AppTypography.style(20, fontWeight: FontWeight.w600),
+          ),
+          IconButton(
+            onPressed: () {
+              bloc.add(const CancelChangeConfigs());
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.close),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildVerticalTab(String text, int index) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          selectedTabIndex.value = index;
-          pageController.jumpToPage(index);
-        },
-        child: ValueListenableBuilder(
-          valueListenable: selectedTabIndex,
-          builder: (context, value, child) {
-            return Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  left: value == index
-                      ? BorderSide(color: AppColors.secondary, width: 2)
-                      : BorderSide.none,
-                ),
-                color: value == index ? AppColors.white : null,
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 17, vertical: 14),
-              width: double.infinity,
-              child: Text(
-                text,
-                maxLines: 3,
-                style: AppTypography.style(
+  Widget _buildFooter(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: AppColors.greyF2F4FA, width: 1)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          EventCustomButton(
+            backgroundColor: AppColors.white,
+            borderColor: AppColors.greyD1D5DB,
+            borderRadius: 5,
+            label: 'Huỷ',
+            onPressed: () {
+              bloc.add(const CancelChangeConfigs());
+              Navigator.pop(context);
+            },
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+            textStyle: AppTypography.style(
+              14,
+              color: const Color(0xFF374151),
+              lineHeight: 20 / 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 17),
+          BlocConsumer<SetupEventDisplayBloc, SetupEventDisplayState>(
+            builder: (context, state) {
+              final isLoading = state is SEDSavingConfigs;
+
+              return EventCustomButton(
+                backgroundColor: AppColors.secondary,
+                borderColor: AppColors.secondary,
+                borderRadius: 5,
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 4,
+                    color: AppColors.blue3B82F6.withAlpha(51),
+                    offset: Offset(0, 2),
+                    spreadRadius: -2,
+                  ),
+                  BoxShadow(
+                    blurRadius: 6,
+                    color: AppColors.blue3B82F6.withAlpha(51),
+                    offset: Offset(0, 4),
+                    spreadRadius: -1,
+                  ),
+                ],
+                label: isLoading ? '' : 'Lưu',
+                prefix: isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : null,
+                prefixGap: isLoading ? 8 : null,
+                onPressed: isLoading ? () {} : () => bloc.add(const SaveConfigs()),
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                textStyle: AppTypography.style(
                   14,
-                  color: AppColors.grey64748B,
+                  color: AppColors.white,
+                  lineHeight: 20 / 14,
                   fontWeight: FontWeight.w600,
                 ),
-              ),
-            );
+              );
+            },
+            listener: (context, state) {
+              if (state is SEDSavingConfigsSuccess) {
+                ToastUtil.toastSuccess(title: Text('Lưu cấu hình thành công'));
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabContent(BuildContext context) {
+    if (_selectedEventType != 'face_detection') {
+      return BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+        key: ValueKey(_selectedEventType),
+        buildWhen: (previous, current) =>
+            current is SEDGetEventDisplayConfigSuccess ||
+            current is SEDGettingEventDisplayConfig ||
+            current is SEDGetEventDisplayConfigFailure,
+        builder: (context, state) {
+          if (state is SEDGetEventDisplayConfigSuccess) {
+            return CustomReorderableListView(state.config);
+          } else if (state is SEDGetEventDisplayConfigFailure) {
+            return Center(child: Text('Không có dữ liệu'));
+          }
+          return Center(child: CircularProgressIndicator());
+        },
+      );
+    }
+
+    Widget _reorderedListView({int? subjectTypeId}) =>
+        BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+          key: ValueKey(subjectTypeId),
+          buildWhen: (previous, current) {
+            if (current is SEDGetEventDisplayConfigSuccess) {
+              return current.config.subjectTypeId == subjectTypeId;
+            } else if (current is SEDGetEventDisplayConfigFailure) {
+              return current.subjectTypeId == subjectTypeId;
+            } else if (current is SEDGettingEventDisplayConfig) {
+              return current.subjectTypeId == subjectTypeId;
+            }
+
+            return false;
           },
+          builder: (context, state) {
+            if (state is SEDGetEventDisplayConfigSuccess) {
+              return CustomReorderableListView(state.config, subjectTypeId: subjectTypeId);
+            } else if (state is SEDGetEventDisplayConfigFailure) {
+              return Center(child: Text('Không có dữ liệu'));
+            }
+            return Center(child: CircularProgressIndicator());
+          },
+        );
+
+    return BlocBuilder<SetupEventDisplayBloc, SetupEventDisplayState>(
+      buildWhen: (previous, current) =>
+          current is SEDGetAllSubjectTypesSuccess ||
+          current is SEDGetAllSubjectTypesFailure ||
+          current is SEDGettingAllSubjectTypes,
+      builder: (context, state) {
+        if (state is SEDGetAllSubjectTypesSuccess) {
+          final st = state.subjectTypes;
+
+          return ListView.builder(
+            itemBuilder: (context, index) => Container(
+              margin: const EdgeInsets.only(bottom: 4),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.greyF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ListTileTheme(
+                dense: true,
+                child: ExpansionTileTheme(
+                  data: ExpansionTileThemeData(
+                    childrenPadding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+                    collapsedIconColor: AppColors.grey94A3B8,
+                    iconColor: AppColors.grey94A3B8,
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    shape: const RoundedRectangleBorder(side: BorderSide.none),
+                  ),
+                  child: ExpansionTile(
+                    minTileHeight: 40,
+                    onExpansionChanged: (value) {
+                      if (value) {
+                        bloc.add(
+                          GetEventDisplayConfig(
+                            _selectedEventType,
+                            widget.typeConfig,
+                            subjectTypeId: st[index].id,
+                          ),
+                        );
+                      }
+                    },
+                    title: Text(
+                      'Dữ liệu ${st[index].name}',
+                      style: AppTypography.style(14, fontWeight: FontWeight.w500),
+                    ),
+                    children: [_reorderedListView(subjectTypeId: st[index].id)],
+                  ),
+                ),
+              ),
+            ),
+            itemCount: st.length,
+          );
+        } else if (state is SEDGetAllSubjectTypesFailure) {
+          return Center(child: Text('Có lỗi khi lấy danh sách đối tượng'));
+        }
+        return Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  Widget _buildVerticalTab(
+    BuildContext context,
+    EventType typeEvent, {
+    required Function() onSelected,
+  }) {
+    final isSelected = typeEvent.eventKey == _selectedEventType;
+
+    return StatefulBuilder(
+      builder: (context, setState) => Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(6),
+          onTap: onSelected,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              color: isSelected ? AppColors.blueEFF6FF : null,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            width: double.infinity,
+            child: Text(
+              typeEvent.name,
+              maxLines: 3,
+              style: AppTypography.style(
+                14,
+                color: isSelected ? AppColors.blue005EB8 : AppColors.grey64748B,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
+
+  // FUNCTIONS
+  void _changeTab(EventType et) {
+    if (et.eventKey != 'face_detection') {
+      bloc.add(GetEventDisplayConfig(et.eventKey, widget.typeConfig));
+    } else {
+      bloc.add(GetAllSubjectTypes());
+    }
+    setState(() => _selectedEventType = et.eventKey);
+  }
 }
 
 class CustomReorderableListView extends StatefulWidget {
-  final int type;
+  final EventDisplayConfig config;
+  final int? subjectTypeId;
 
-  const CustomReorderableListView({super.key, required this.type});
+  const CustomReorderableListView(this.config, {super.key, this.subjectTypeId});
 
   @override
   State<CustomReorderableListView> createState() => _CustomReorderableListViewState();
 }
 
 class _CustomReorderableListViewState extends State<CustomReorderableListView> {
+  late final SetupEventDisplayBloc bloc;
+
   final GlobalKey _listKey = GlobalKey();
-
-  final List<String> _items = ["Loại sự kiện", "Thời gian"];
-  late final List<String> _allOptions;
-
   OverlayEntry? _popupEntry;
-  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-
-    switch (widget.type) {
-      case 0:
-        _allOptions = ["Loại sự kiện", "Thời gian", "ID camera", "Tên camera", "Vị trí camera"];
-        break;
-      case 1:
-      case 2:
-      case 4:
-      case 5:
-        _allOptions = [
-          "Loại sự kiện",
-          "Thời gian",
-          "ID camera",
-          "Tên camera",
-          "Vị trí camera",
-          "Đối tượng xâm nhập",
-          "Tên đối tượng",
-        ];
-        break;
-      case 3:
-        _allOptions = [
-          "Loại sự kiện",
-          "Thời gian",
-          "ID camera",
-          "Tên camera",
-          "Vị trí camera",
-          "Đối tượng xâm nhập",
-          "ID hàng rào ảo",
-          "Hướng xâm nhập",
-        ];
-        break;
-      default:
-        _allOptions = [];
-    }
+    if (mounted) bloc = context.read();
   }
 
   @override
   Widget build(BuildContext context) {
+    final sf = sortedFields();
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: forSubjectType ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 10),
-        ReorderableListView(
-          key: _listKey,
-          buildDefaultDragHandles: false,
-          onReorder: (int oldIndex, int newIndex) => setState(() {
-            if (oldIndex < newIndex) newIndex -= 1;
-            final String item = _items.removeAt(oldIndex);
-            _items.insert(newIndex, item);
-          }),
-          shrinkWrap: true,
-          children: List.generate(
-            _items.length,
-            (index) => Container(
-              key: UniqueKey(),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.greyE2E8F0),
-                borderRadius: BorderRadius.circular(3),
-                color: AppColors.white,
-              ),
-              margin: EdgeInsets.only(bottom: 5),
-              child: Row(
-                children: [
-                  Container(
-                    color: AppColors.greyE2E8F0,
-                    height: 40,
-                    child: ReorderableDragStartListener(
+        if (!forSubjectType) ...[
+          Text('Trường dữ liệu', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 10),
+        ],
+        DragBoundary(
+          child: ReorderableListView(
+            key: _listKey,
+            buildDefaultDragHandles: false,
+            dragBoundaryProvider: (context) => DragBoundary.forRectOf(context),
+            onReorder: (int oldIndex, int newIndex) {
+              if (oldIndex < newIndex) newIndex -= 1;
+              setState(() {
+                final k = widget.config.sorting.removeAt(oldIndex);
+                widget.config.sorting.insert(newIndex, k);
+              });
+              bloc.add(ChangeConfig(widget.config));
+            },
+            shrinkWrap: true,
+            children: List.generate(sf.length, (index) {
+              final f = sf[index];
+
+              return Container(
+                key: ValueKey(f.fieldKey),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.greyE2E8F0),
+                  borderRadius: BorderRadius.circular(3),
+                  color: AppColors.white,
+                ),
+                margin: const EdgeInsets.only(bottom: 2.5, top: 2.5),
+                child: Row(
+                  children: [
+                    ReorderableDragStartListener(
                       index: index,
-                      child: Icon(Icons.drag_indicator, color: AppColors.grey64748B),
+                      child: Container(
+                        color: AppColors.greyE2E8F0,
+                        height: 40,
+                        width: 23,
+                        child: Center(child: SvgPicture.asset(AppAssets.icDrawable)),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      _items[index],
-                      style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Row(
+                        spacing: 8,
+                        children: [
+                          SizedBox(width: 24, height: 24, child: _getIconForField(f.icon)),
+                          Text(
+                            f.fieldName,
+                            style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    icon: SvgPicture.asset(AppAssets.icCloseFilled),
-                    onPressed: () => setState(() => _items.removeAt(index)),
-                  ),
-                ],
-              ),
-            ),
+                    const SizedBox(width: 10),
+                    IconButton(
+                      icon: SvgPicture.asset(AppAssets.icClose, height: 20, width: 20),
+                      onPressed: () {
+                        setState(() => widget.config.sorting.remove(f.fieldKey));
+                        bloc.add(ChangeConfig(widget.config));
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }),
           ),
         ),
         const SizedBox(height: 10),
-        InkWell(
-          onTap: showAddDataPopup,
+        ElevatedButton(
+          onPressed: canAppend ? () => showAddDataPopup(context) : () {},
+          style: ElevatedButton.styleFrom(
+            backgroundColor: btnBgColor(),
+            elevation: 0,
+            minimumSize: Size.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            spacing: 5,
             children: [
-              Icon(Icons.add, color: AppColors.secondary, size: 18),
+              Icon(Icons.add, color: btnFgColor(), size: forSubjectType ? 13 : 18),
               Text(
-                'Thêm',
+                forSubjectType ? 'Thêm trường dữ liệu' : 'Thêm trường thông tin',
                 style: AppTypography.style(
-                  14,
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
+                  forSubjectType ? 12 : 13,
+                  color: btnFgColor(),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -295,15 +499,77 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   @override
   void dispose() {
     _removePopup();
-    _searchController.dispose();
+    bloc.add(const CancelChangeConfigs());
     super.dispose();
   }
 
-  void showAddDataPopup() {
-    if (_popupEntry != null) {
-      _removePopup();
-      return;
+  bool get canAppend => widget.config.fields.length > widget.config.sorting.length;
+  bool get forSubjectType => widget.subjectTypeId != null;
+
+  Color btnBgColor() {
+    if (forSubjectType) {
+      if (canAppend) return AppColors.secondary;
+      return AppColors.grey64748B;
+    } else {
+      return Colors.white;
     }
+  }
+
+  Color btnFgColor() {
+    if (!forSubjectType) {
+      if (canAppend) return AppColors.secondary;
+      return AppColors.grey64748B;
+    } else {
+      return Colors.white;
+    }
+  }
+
+  List<Fields> get availableFields =>
+      widget.config.fields.where((f) => !widget.config.sorting.contains(f.fieldKey)).toList();
+
+  List<Fields> sortedFields() {
+    final Map<String, Fields> fieldsByKey = {for (final f in widget.config.fields) f.fieldKey: f};
+
+    return [
+      for (final key in widget.config.sorting)
+        if (fieldsByKey.containsKey(key)) fieldsByKey[key]!,
+    ];
+  }
+
+  Widget _getIconForField(String? url) {
+    if (url == null || url.isEmpty) return SizedBox(height: 24, width: 24);
+
+    final isSvg = url.toLowerCase().endsWith('.svg');
+    if (isSvg) {
+      return SvgPicture.network(
+        url,
+        width: 20,
+        height: 20,
+        placeholderBuilder: (context) => const SizedBox(
+          width: 20,
+          height: 20,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 1)),
+        ),
+        fit: BoxFit.contain,
+      );
+    } else {
+      return Image.network(
+        url,
+        width: 24,
+        height: 24,
+        errorBuilder: (context, error, stackTrace) =>
+            SvgPicture.asset(AppAssets.icEventType, height: 24, width: 24),
+      );
+    }
+  }
+
+  void _removePopup() {
+    _popupEntry?.remove();
+    _popupEntry = null;
+  }
+
+  void showAddDataPopup(BuildContext context) {
+    final _fieldsToShow = availableFields;
 
     final listContext = _listKey.currentContext;
     if (listContext == null) return;
@@ -317,10 +583,8 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
       ancestor: overlayBox,
     );
 
-    _searchController.clear();
-
     _popupEntry = OverlayEntry(
-      builder: (context) => Stack(
+      builder: (ctx) => Stack(
         children: [
           Positioned.fill(
             child: GestureDetector(
@@ -337,48 +601,38 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(6),
-                  boxShadow: [BoxShadow(blurRadius: 60, color: AppColors.grey93989A.withAlpha(52))],
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 60,
+                      color: AppColors.grey93989A.withAlpha(51),
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                   color: AppColors.white,
                 ),
                 padding: const EdgeInsets.all(8.0),
-                child: StatefulBuilder(
-                  builder: (context, setStatePopup) {
-                    final keyword = _searchController.text.trim().toLowerCase();
-                    final availableOptions = _allOptions
-                        .where((o) => !_items.contains(o))
-                        .where((o) => keyword.isEmpty || o.toLowerCase().contains(keyword))
-                        .toList();
-
-                    return ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 220),
-                      child: availableOptions.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'Không có kết quả phù hợp',
-                                style: AppTypography.style(12, color: AppColors.grey64748B),
-                              ),
-                            )
-                          : ListView.separated(
-                              itemBuilder: (context, index) => TextButton(
-                                onPressed: () {
-                                  setState(() => _items.add(availableOptions[index]));
-                                  _removePopup();
-                                },
-                                style: TextButton.styleFrom(alignment: Alignment.centerLeft),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 4),
-                                  child: Text(
-                                    availableOptions[index],
-                                    style: AppTypography.style(14, fontWeight: FontWeight.w400),
-                                  ),
-                                ),
-                              ),
-                              itemCount: availableOptions.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 4),
-                            ),
-                    );
-                  },
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  child: ListView.separated(
+                    itemBuilder: (context, index) => TextButton(
+                      onPressed: () {
+                        setState(() => widget.config.sorting.add(_fieldsToShow[index].fieldKey));
+                        bloc.add(ChangeConfig(widget.config));
+                        _removePopup();
+                      },
+                      style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          _fieldsToShow[index].fieldName,
+                          style: AppTypography.style(14, fontWeight: FontWeight.w400),
+                        ),
+                      ),
+                    ),
+                    itemCount: _fieldsToShow.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 4),
+                    shrinkWrap: true,
+                  ),
                 ),
               ),
             ),
@@ -388,10 +642,5 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
     );
 
     overlayState.insert(_popupEntry!);
-  }
-
-  void _removePopup() {
-    _popupEntry?.remove();
-    _popupEntry = null;
   }
 }

@@ -22,11 +22,13 @@ class MonitorCameras extends StatefulWidget {
     this.onTap,
     this.selectedCamera,
     this.highlightSelected = false,
+    this.showFullCamera = false,
   });
   final double maxWidth;
   final Function(CameraEntity)? onTap;
   final CameraEntity? selectedCamera;
   final bool highlightSelected;
+  final bool showFullCamera;
 
   @override
   State<MonitorCameras> createState() => _MonitorCamerasState();
@@ -155,80 +157,81 @@ class _MonitorCamerasState extends State<MonitorCameras>
               ),
             ),
             SizedBox(height: 14),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: CompositedTransformTarget(
-                link: layerLink,
-                child: Align(
-                  alignment: AlignmentGeometry.centerRight,
-                  child: Builder(
-                    builder: (buttonContext) => InkWell(
-                      onTap: () {
-                        _showAddCameraDropdownTag(context, buttonContext, []);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        constraints: BoxConstraints(
-                          maxWidth: widget.maxWidth - 48,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _selectedTags.isEmpty
-                              ? AppColors.greyEFEFEF
-                              : AppColors.blueE7F3FF,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth < widget.maxWidth - 48) return const SizedBox.shrink();
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: CompositedTransformTarget(
+                    link: layerLink,
+                    child: Align(
+                      alignment: AlignmentGeometry.centerRight,
+                      child: Builder(
+                        builder: (buttonContext) => InkWell(
+                          onTap: () {
+                            _showAddCameraDropdownTag(context, buttonContext, []);
+                          },
                           borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              fit: FlexFit.loose,
-                              child: Text(
-                                _selectedTags.isEmpty
-                                    ? "Thẻ Tags"
-                                    : _selectedTags.length == 1
-                                    ? _selectedTags.first.name
-                                    : "${_selectedTags.length} thẻ",
-                                style: AppTypography.style(
-                                  13,
-                                  fontWeight: FontWeight.w400,
-                                  color: _selectedTags.isEmpty
-                                      ? AppColors.black
-                                      : AppColors.blue005AA9,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                          child: Container(
+                            constraints: BoxConstraints(maxWidth: widget.maxWidth - 48),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: _selectedTags.isEmpty
+                                  ? AppColors.greyEFEFEF
+                                  : AppColors.blueE7F3FF,
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                            if (_selectedTags.isNotEmpty) ...[
-                              const SizedBox(width: 4),
-                              InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedTags.clear();
-                                  });
-                                },
-                                child: Icon(
-                                  Icons.cancel,
-                                  size: 16,
-                                  color: AppColors.blue005AA9,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  fit: FlexFit.loose,
+                                  child: Text(
+                                    _selectedTags.isEmpty
+                                        ? "Thẻ Tags"
+                                        : _selectedTags.length == 1
+                                        ? _selectedTags.first.name
+                                        : "${_selectedTags.length} thẻ",
+                                    style: AppTypography.style(
+                                      13,
+                                      fontWeight: FontWeight.w400,
+                                      color: _selectedTags.isEmpty
+                                          ? AppColors.black
+                                          : AppColors.blue005AA9,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
-                            if (_selectedTags.isEmpty) ...[
-                              const SizedBox(width: 4),
-                              SvgPicture.asset(AppAssets.icArrowdown),
-                            ],
-                          ],
+                                if (_selectedTags.isNotEmpty) ...[
+                                  const SizedBox(width: 4),
+                                  InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedTags.clear();
+                                      });
+                                    },
+                                    child: Icon(
+                                      Icons.cancel,
+                                      size: 16,
+                                      color: AppColors.blue005AA9,
+                                    ),
+                                  ),
+                                ],
+                                if (_selectedTags.isEmpty) ...[
+                                  const SizedBox(width: 4),
+                                  SvgPicture.asset(AppAssets.icArrowdown),
+                                ],
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
             SizedBox(height: 20 - 6),
             Expanded(
@@ -238,7 +241,9 @@ class _MonitorCamerasState extends State<MonitorCameras>
                   child: ValueListenableBuilder(
                     valueListenable: _searchController,
                     builder: (context, value, child) {
-                      final cameras = state.cameras.where(_filterFunc).toList();
+                      final cameras = (widget.showFullCamera ? state.allCameras : state.cameras)
+                          .where(_filterFunc)
+                          .toList();
 
                       if (cameras.isEmpty &&
                           (value.text.isNotEmpty || _selectedTags.isNotEmpty)) {

@@ -135,6 +135,27 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
               regExp: r'^[0-9]{10,}$',
             ),
             const SizedBox(height: 44),
+            ElevatedButton(
+              onPressed: _showDeleteAccountConfirmation,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                minimumSize: Size(double.infinity, 48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5),
+                  side: BorderSide(color: AppColors.redFF0000),
+                ),
+              ),
+              child: Text(
+                'Xóa tài khoản',
+                style: AppTypography.style(
+                  14,
+                  color: AppColors.redFF0000,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -210,6 +231,81 @@ class _MobileInfoScreenState extends State<MobileInfoScreen> {
           email: emailController.text,
           tel: phoneController.text,
         ),
+      ),
+    );
+  }
+
+  void _showDeleteAccountConfirmation() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titlePadding: const EdgeInsets.only(top: 20, left: 24, right: 24, bottom: 0),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Xác nhận xóa tài khoản',
+                style: AppTypography.style(16, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn có chắc muốn xóa tài khoản này không ? Tất cả dữ liệu camera được tạo từ tài khoản cũng sẽ bị xóa !',
+          style: const TextStyle(fontSize: 14, color: Color(0xFF000000)),
+        ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.white,
+                    foregroundColor: AppColors.blackOrWhite,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                      side: BorderSide(color: AppColors.greyE2E8F0),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    elevation: 0,
+                  ),
+                  child: Text('Đóng', style: AppTypography.style(14, fontWeight: FontWeight.w600)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                    // TODO: remove account
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Xác nhận',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

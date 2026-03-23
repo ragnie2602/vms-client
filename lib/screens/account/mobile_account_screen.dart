@@ -10,6 +10,7 @@ import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
 import 'package:vms_flutter_client/core/utils/file_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
@@ -166,7 +167,7 @@ class _MobileAccountScreenState extends State<MobileAccountScreen> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          'v1.1.2 build 1',
+                          'v${EnvService.appVersion} build ${EnvService.buildNumber}',
                           style: AppTypography.style(
                             14,
                             fontWeight: FontWeight.w400,

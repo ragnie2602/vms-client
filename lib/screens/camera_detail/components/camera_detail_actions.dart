@@ -21,11 +21,13 @@ class CameraDetailActions extends StatefulWidget {
     required this.rightController,
     required this.mode,
     this.openCamerasPanelImmediately = false,
+    this.showFullCamera = false,
   });
   final PanelController leftController;
   final PanelController rightController;
   final CameraDetailMode mode;
   final bool openCamerasPanelImmediately;
+  final bool showFullCamera;
 
   @override
   State<CameraDetailActions> createState() => _CameraDetailActionsState();
@@ -49,14 +51,15 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (widget.openCamerasPanelImmediately) {
         widget.leftController.togglePanel(
-          MonitorCameras(
+          (maxWidth) => MonitorCameras(
             highlightSelected: true,
-            maxWidth: widget.leftController.expandedWidth,
+            maxWidth: maxWidth,
             key: ValueKey('live_view_cameras'),
             selectedCamera: context.read<CameraDetailBloc>().state.camera,
             onTap: (camera) {
               context.read<CameraDetailBloc>().add(ChangeCamera(camera));
             },
+            showFullCamera: widget.showFullCamera,
           ),
           id: 1,
           onPanelIndexChanged: (index) => _leftPanelIndex.value = index,
@@ -87,9 +90,9 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
                     title: 'Danh sách camera',
                     icon: AppAssets.icListCamera,
                     onTap: () => widget.leftController.togglePanel(
-                      MonitorCameras(
+                      (maxWidth) => MonitorCameras(
                         highlightSelected: true,
-                        maxWidth: widget.leftController.expandedWidth,
+                        maxWidth: maxWidth,
                         key: ValueKey('live_view_cameras'),
                         selectedCamera: context
                             .read<CameraDetailBloc>()
@@ -100,6 +103,7 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
                             ChangeCamera(camera),
                           );
                         },
+                        showFullCamera: widget.showFullCamera,
                       ),
                       id: 1,
                       onPanelIndexChanged: (index) =>
@@ -113,8 +117,8 @@ class _CameraDetailActionsState extends State<CameraDetailActions> {
                       icon: AppAssets.icMenu,
                       isSelected: index == 2,
                       onTap: () => widget.leftController.togglePanel(
-                        PanelListPlaybacks(
-                          maxWidth: widget.leftController.expandedWidth,
+                        (maxWidth) => PanelListPlaybacks(
+                          maxWidth: maxWidth,
                           key: ValueKey('live_view_playbacks'),
                         ),
                         id: 2,

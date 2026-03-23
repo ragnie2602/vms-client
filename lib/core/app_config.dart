@@ -69,12 +69,19 @@ class AppConfig {
   static const PLAYER_DISCONNECTION_THRESHOLD = Duration(seconds: 45);
   static const SOCKET_CONNECTION_TIMEOUT = 60;
 
+  static const double PLAYER_MAX_VOLUME_PERCENT = 300;
+
   static const RECORDING_MAX_DURATION = Duration(minutes: 5);
 
   /* Monitoring view */
   static const double MONITOR_GRID_SPACING = 4.0;
   static const int? OVERRIDE_MONITOR_GRID_ROWS = null; // = null;
   static const int? OVERRIDE_MONITOR_GRID_COLUMNS = null; // = null;
+
+  // object group
+  static const int OBJECT_GROUP_MAX_LEVEL = 5;
+  static const String BASE_ICON_PATH = 'icons';
+  static const int OBJECT_GROUP_DELETE_FAILURE_CODE = 40451;
 }
 
 enum LiveviewDetailAudioSource {

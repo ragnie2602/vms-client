@@ -147,6 +147,7 @@ enum PacketType {
   editCameraToPackage(312),
 
   // Receive
+  receiveEvent(2007),
   receiveAddCustomLiveView(86),
   receiveUpdateCustomLiveView(87),
   receiveDeleteCustomLiveView(88),
@@ -195,6 +196,7 @@ enum PacketType {
   editUser(259),
   deleteUser(260),
   resetPassword(270),
+  removeAccount(119),
 
   // HomeVision
   homeVisionFormatSdCard(276),

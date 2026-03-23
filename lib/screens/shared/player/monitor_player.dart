@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fvp/mdk.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -21,6 +22,8 @@ import 'package:vms_flutter_client/core/utils/ffmpeg_process.dart';
 import 'package:vms_flutter_client/core/utils/logger.dart';
 import 'package:vms_flutter_client/core/utils/resolution.dart';
 import 'package:vms_flutter_client/core/utils/task_pool.dart';
+import 'package:vms_flutter_client/app_bloc.dart';
+import 'package:vms_flutter_client/screens/shared/player/player_pool_manager.dart';
 import 'package:volume_controller/volume_controller.dart';
 
 import 'components/dual_task_queue.dart';
@@ -84,7 +87,8 @@ class MonitorPlayerState extends State<MonitorPlayer>
   AnimationController? _zoomAnimationController;
   Animation<double>? _zoomAnimation;
 
-  late Player _player;
+  late PlayerWrapper _playerWrapper;
+  Player get _player => _playerWrapper.player;
   Completer<bool>? _waitForFirstFrame;
   Completer<void> _waitForUnloadedOldMedia = Completer<void>()..safeComplete();
 
@@ -97,6 +101,10 @@ class MonitorPlayerState extends State<MonitorPlayer>
   bool _shouldSyncPlayerTime = true;
 
   late final DualTaskQueue _dualQueue = DualTaskQueue();
+
+  /// Nếu lần vẽ cuối cùng đó xảy ra sau khi _player.dispose() bắt đầu chạy nhưng trước khi nó hoàn tất
+  /// Widget Texture(textureId: id) sẽ cố gắng vẽ một Texture ID đã bị hủy (invalid) --> Crash App.
+  bool _isDisposing = false;
 
   LiveviewDetailAudioSource get audioSourceMode => AppConfig.LIVEVIEW_DETAIL_AUDIO_SOURCE;
 
@@ -119,7 +127,7 @@ class MonitorPlayerState extends State<MonitorPlayer>
           togglePlay();
           if (_shouldReconnectOnResume) {
             _shouldReconnectOnResume = false;
-            _connecting();
+            _connecting(isReconnecting: true);
           }
         }
       }
@@ -170,16 +178,19 @@ class MonitorPlayerState extends State<MonitorPlayer>
   }
 
   Future<void> _init() async {
+    final windowId = context.read<AppBloc>().windowId;
+    final isHighQuality = widget.mode == MonitorMode.liveview;
+
     if (widget.mode == MonitorMode.monitoring) {
       TaskPool.instance.add(() async {
-        await _initPlayer();
+        await _initPlayer(windowId, isHighQuality);
         await _connecting();
         await Future.delayed(const Duration(milliseconds: 100));
 
         if (!mounted) _tryDisposePlayer();
       });
     } else {
-      await _initPlayer();
+      await _initPlayer(windowId, isHighQuality);
       await _connecting();
     }
   }
@@ -202,6 +213,8 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   @override
   void dispose() {
+    _isDisposing = true;
+
     _realignTimer?.cancel();
     widget.controller?.detach();
     try {
@@ -259,19 +272,25 @@ class MonitorPlayerState extends State<MonitorPlayer>
 
   Future<void> _tryDisposePlayer() async {
     try {
-      await _player.dispose(
-        delay: const Duration(milliseconds: 100),
-        synchronized: widget.mode == MonitorMode.monitoring,
-      );
+      if (_state.value == PlayerState.error || _state.value == PlayerState.error_again) {
+        _playerWrapper.isCorrupted = true;
+      }
+      PlayerPoolManager.instance.release(_playerWrapper);
     } catch (_) {}
   }
 
   /* =============================== CONNECTION FUNCTIONS =============================== */
-  Future<void> _initPlayer() async {
+  Future<void> _initPlayer(int windowId, bool isHighQuality) async {
     if (!mounted) return;
 
-    _player = Player();
-    _player.onMediaStatus((pre, cur) {
+    _playerWrapper = await PlayerPoolManager.instance.acquire(
+      windowId,
+      isHighQuality: isHighQuality,
+      mediaUrl: widget.source,
+      cameraName: widget.name,
+    );
+
+    _playerWrapper.setUiStatusCallback((pre, cur) {
       if (_waitForFirstFrame != null && !_waitForFirstFrame!.isCompleted) {
         if (cur.test(MediaStatus.invalid)) _waitForFirstFrame!.complete(false);
         if (pre.test(MediaStatus.buffering) && cur.test(MediaStatus.buffered)) {
@@ -302,9 +321,8 @@ class MonitorPlayerState extends State<MonitorPlayer>
     _player.setProperty('avformat.allowed_segment_extensions', 'ALL');
     _player.videoDecoders = AppConfig.MDK_DECODERS;
 
-    _player.setProperty("avcodec.skip_frame", "1");
-    _player.setProperty("avcodec.threads", "1");
-    _player.setProperty("avcodec.skip_loop_filter", "all"); // Tắt lọc nhiễu
+    // Nhảy khung hình tới mới nhất --> Gây giật/lag
+    // _player.setProperty("avcodec.skip_frame", "1");
     // Cho phép decoder bỏ qua một số quy chuẩn khắt khe để giải mã nhanh hơn, tốn ít CPU hơn.
     _player.setProperty("avcodec.flags2", "+fast");
     // Xóa frame khi dừng
@@ -313,14 +331,25 @@ class MonitorPlayerState extends State<MonitorPlayer>
     // Reduce latency:
     _player.setProperty('avformat.fflags', '+nobuffer');
     _player.setProperty('avformat.fpsprobesize', '0');
-    _player.setProperty("avformat.probesize", "32");
-    _player.setProperty("avformat.formatprobesize", "0");
-    // Không cần phân tích thời lượng vì là live stream
-    _player.setProperty('avformat.analyzeduration', '0');
+    _player.setProperty("avformat.probesize", "32768");
+    _player.setProperty("avformat.formatprobesize", "32768");
+    // Không cần phân tích thời lượng/nhỏ vì là live stream
+    _player.setProperty('avformat.analyzeduration', '1000');
 
-    // No cache
-    _player.setBufferRange(min: 0, max: 1, drop: true);
-    _player.setFps(20);
+    if (widget.mode == MonitorMode.monitoring) {
+      // _player.setFps(20);
+      _player.setProperty("avcodec.threads", "1");
+      // Tắt lọc nhiễu (nhiều/nhỏ nên khó phân biệt)
+      _player.setProperty("avcodec.skip_loop_filter", "all");
+      // Buffer: Cần độ ổn định cao nhất, chấp nhận delay chút
+      _player.setBufferRange(min: 100, max: 3000, drop: true);
+    } else {
+      // _player.setFps(20);
+      _player.setProperty("avcodec.threads", "auto");
+      // Hình ảnh: Bật khử nhiễu để hình mịn đẹp
+      _player.setProperty("avcodec.skip_loop_filter", "default");
+      _player.setBufferRange(min: 0, max: 2000, drop: true);
+    }
 
     if (widget.mode == MonitorMode.monitoring || audioSourceMode.isOff) {
       _player.activeAudioTracks = [];
@@ -337,16 +366,61 @@ class MonitorPlayerState extends State<MonitorPlayer>
       if (!mounted) return timer.cancel();
 
       _reconnectingTimer?.cancel();
-      await _connecting(showLoading: false);
+      await _connecting(showLoading: false, isReconnecting: true);
     });
   }
 
-  Future<void> _connecting({bool showLoading = true, bool shortDelay = false}) async {
+  Future<void> _connecting({bool showLoading = true, bool shortDelay = false, bool isReconnecting = false}) async {
     if (!mounted) return;
 
     _timer?.cancel();
     _debounce?.cancel();
     _reconnectingTimer?.cancel();
+
+    // ═══════════════ FAST-PATH: Cache Hit ═══════════════
+    // Player was warm-paused by sanitize() with the same media URL still loaded.
+    // Show the last rendered frame INSTANTLY, then resume + seek in background.
+    if (_playerWrapper.isCacheHit && !isReconnecting && !_player.isDisposed) {
+      // Validate texture is still alive before taking fast-path
+      int cachedTextureId = -1;
+      try {
+        cachedTextureId = _player.textureId.value ?? -1;
+      } catch (_) {}
+
+      if (cachedTextureId >= 0) {
+        Logger.log('Player [${_playerWrapper.id}]: Fast-path resume from cache');
+
+        // 1. Restore aspect ratio from previous session (synchronous, no await)
+        final videoData = _player.mediaInfo.video?.firstOrNull;
+        if (videoData != null && videoData.codec.height > 0) {
+          _aspectRatio = videoData.codec.width / videoData.codec.height;
+        }
+
+        // 2. Show last frame IMMEDIATELY — no loading spinner
+        _state.value = PlayerState.initialized;
+
+        // 2. Resume playback (player was paused by sanitize)
+        _player.state = PlaybackState.playing;
+
+        // 3. Skip stale buffer to jump to realtime (fire-and-forget, non-blocking)
+        final buffered = _player.buffered();
+        if (buffered > 0) {
+          _player.seek(
+            position: buffered,
+            flags: const SeekFlag(SeekFlag.fromNow | SeekFlag.keyFrame),
+          );
+        }
+
+        // 4. Start connection monitoring timer (inlined from _onInitialized)
+        if (!mounted) return;
+        _startConnectionMonitorTimer();
+        return;
+      }
+      // textureId invalid → fall through to normal path
+      Logger.warn('Player [${_playerWrapper.id}]: Cache hit but texture invalid, falling back to normal path');
+    }
+
+    // ═══════════════ NORMAL PATH: Full reconnection ═══════════════
     _state.value = showLoading ? PlayerState.initializing : PlayerState.error_again;
 
     // Nếu kết nối lại sau khi bị disconnect --> set rỗng --> set lại source cũ
@@ -407,20 +481,39 @@ class MonitorPlayerState extends State<MonitorPlayer>
     _aspectRatio = (size?.width ?? 1920) / (size?.height ?? 1080);
     _state.value = PlayerState.initialized;
 
+    _startConnectionMonitorTimer();
+  }
+
+  void _startConnectionMonitorTimer() {
     _timer?.cancel();
     _debounce?.cancel();
     _reconnectingTimer?.cancel();
     _lastPosition = -1;
+    int frozenTicks = 0;
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return _timer?.cancel();
 
       _player.position.let((pos) {
         if (_lastPosition != pos) {
+          frozenTicks = 0; // Position is advancing normally
+          
           // Case đang dừng --> tự động play bởi thư viện --> update _status
           if (_status.value != PlayerStatus.playing && _shouldSyncPlayerTime) {
             _status.value = PlayerStatus.playing;
           }
           _debounceConnectionLost();
+        } else {
+          // FRAME WATCHDOG: Detect stuck player when it's supposed to be playing
+          if (_status.value == PlayerStatus.playing) {
+            frozenTicks++;
+            // If frozen for 4 consecutive ticks (4 seconds), trigger media reset
+            if (frozenTicks >= 4) {
+              Logger.warn("Player [${_playerWrapper.id}]: Frame Watchdog triggered! Player stuck for 4s (dirty). Resetting media...");
+              frozenTicks = 0;
+              _connecting(showLoading: false, isReconnecting: true);
+            }
+          }
         }
         _lastPosition = pos;
       });
@@ -460,6 +553,8 @@ class MonitorPlayerState extends State<MonitorPlayer>
       }
 
       widget.onVolumeChanged?.call(_player.volume);
+      final clamped = volume.clamp(0, AppConfig.PLAYER_MAX_VOLUME_PERCENT).toDouble();
+      _player.volume = clamped / 100;
       await Future.delayed(Duration(milliseconds: 100));
     });
   }
@@ -471,6 +566,16 @@ class MonitorPlayerState extends State<MonitorPlayer>
       _status.value = PlayerStatus.paused;
     } else {
       _shouldSyncPlayerTime = true;
+
+      // Clear accumulated buffer to avoid speed-up/lag on resume
+      final buffered = _player.buffered();
+      if (buffered > 0) {
+        await _player.seek(
+          position: buffered,
+          flags: const SeekFlag(SeekFlag.fromNow | SeekFlag.keyFrame),
+        );
+      }
+
       _player.play();
       _status.value = PlayerStatus.playing;
     }
@@ -637,26 +742,28 @@ class MonitorPlayerState extends State<MonitorPlayer>
                     child: Center(
                       child: AspectRatio(
                         aspectRatio: _aspectRatio,
-                        child: ValueListenableBuilder(
-                          valueListenable: _player.textureId,
-                          builder: (context, id, _) {
-                            final player = id == null
-                                ? const SizedBox.shrink()
-                                : widget.borderRadius != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadiusGeometry.circular(
-                                      widget.borderRadius!,
-                                    ),
-                                    child: Texture(textureId: id),
-                                  )
-                                : Texture(textureId: id);
+                        child: _player.isDisposed
+                            ? const SizedBox.shrink()
+                            : ValueListenableBuilder(
+                                valueListenable: _player.textureId,
+                                builder: (context, id, _) {
+                                  final player = id == null
+                                      ? const SizedBox.shrink()
+                                      : widget.borderRadius != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadiusGeometry.circular(
+                                            widget.borderRadius!,
+                                          ),
+                                          child: Texture(textureId: id),
+                                        )
+                                      : Texture(textureId: id);
 
-                            return RepaintBoundary(
-                              key: isFullscreen ? null : _captureKey,
-                              child: player,
-                            );
-                          },
-                        ),
+                                  return RepaintBoundary(
+                                    key: isFullscreen ? null : _captureKey,
+                                    child: player,
+                                  );
+                                },
+                              ),
                       ),
                     ),
                   ),

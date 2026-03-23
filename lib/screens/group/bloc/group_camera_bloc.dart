@@ -86,9 +86,7 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     RemoveGroupCameraEvent event,
     Emitter<GroupCameraState> emit,
   ) async {
-    final groups = await groupCameraRepository.removeGroupCamera(
-      groupId: event.groupId,
-    );
+    final groups = await groupCameraRepository.removeGroupCamera(groupId: event.groupId);
     groups.fold(
       (onFailure) {
         emit(RemoveGroupCameraFailState(groups.left.toString()));
@@ -124,24 +122,15 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
     );
   }
 
-  Future<List<CameraEntity>> getAvailableCamerasForGroup({
-    List<int>? groupId,
-  }) async {
+  Future<List<CameraEntity>> getAvailableCamerasForGroup({List<int>? groupId}) async {
     final input = FilterCameraNotInGroupInput(groupId: groupId);
     final output = await filterCameraNotInGroupUsecase.execute(input);
     return output.listCamera ?? [];
   }
 
-  Future<List<InviteMessageEntity>> getListSharedGroup({
-    List<int>? groupId,
-  }) async {
-    final res = await groupCameraRepository.listShareInviteGroup(
-      groupId: groupId ?? [],
-    );
-    return res.fold(
-      (onFailure) => <InviteMessageEntity>[],
-      (onSuccess) => onSuccess,
-    );
+  Future<List<InviteMessageEntity>> getListSharedGroup({List<int>? groupId}) async {
+    final res = await groupCameraRepository.listShareInviteGroup(groupId: groupId ?? []);
+    return res.fold((onFailure) => <InviteMessageEntity>[], (onSuccess) => onSuccess);
   }
 
   Future<List<int>> deleteShareGroup({
@@ -169,9 +158,6 @@ class GroupCameraBloc extends BaseBloc<GroupCameraEvent, GroupCameraState> {
       role: role,
       accountInviteId: accoungtInviteId,
     );
-    return res.fold(
-      (onFailure) => <int>[],
-      (onSuccess) => onSuccess ?? <int>[],
-    );
+    return res.fold((onFailure) => <int>[], (onSuccess) => onSuccess ?? <int>[]);
   }
 }

@@ -22,7 +22,6 @@ import 'core/utils/chunked_downloader.dart';
 import 'di/dependency_injection.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:media_kit/media_kit.dart';
-import 'package:vms_flutter_client/core/utils/ios_network_helper.dart';
 
 Future<int> initialMultiWindowConfig(List<String> args) async {
   if (Platform.isAndroid || Platform.isIOS) return 0;
@@ -109,10 +108,31 @@ class _MyAppState extends State<MyApp> with WindowListener {
   @override
   void initState() {
     super.initState();
-    IosNetworkHelper.triggerPermission();
+    // IosNetworkHelper.triggerPermission();
     if (!Platform.isAndroid && !Platform.isIOS) {
       windowManager.addListener(this);
       windowManager.setPreventClose(true);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (widget.bWindowID == 0) {
+          await windowManager.waitUntilReadyToShow(
+            const WindowOptions(
+              center: true,
+              skipTaskbar: false,
+              titleBarStyle: TitleBarStyle.normal,
+            ),
+            () async {
+              await windowManager.maximize();
+
+              final currentSize = await windowManager.getSize();
+              await windowManager.setMinimumSize(currentSize * 2 / 3);
+
+              await windowManager.show();
+              await windowManager.focus();
+            },
+          );
+        }
+      });
     }
   }
 

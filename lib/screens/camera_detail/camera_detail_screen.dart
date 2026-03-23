@@ -20,15 +20,19 @@ class CameraDetailScreenArgs extends BaseScreenArgs {
   final bool isPlayback;
   final bool openCamerasPanelImmediately;
   final Key? key;
+  final DateTime? rewind;
+  final bool showFullCamera;
 
   CameraDetailScreenArgs({
     required this.data,
     this.isPlayback = false,
     this.openCamerasPanelImmediately = false,
     this.key,
+    this.rewind,
     super.onBack,
     String? title,
     super.description,
+    this.showFullCamera = false,
   }) : super(title: title ?? data?.name);
 }
 
@@ -37,12 +41,16 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
     : data = args.data,
       isPlayback = args.isPlayback,
       openCamerasPanelImmediately = args.openCamerasPanelImmediately,
+      rewind = args.rewind,
+      showFullCamera = args.showFullCamera,
       super(key: args.key);
 
   final CameraEntity? data;
   final bool isPlayback;
   final bool openCamerasPanelImmediately;
+  final bool showFullCamera;
   final OSDPosition _position = OsdUtil.getOSDPositions();
+  DateTime? rewind;
 
   void _handlePageInfo(BuildContext context, CameraDetailState pre, CameraDetailState cur) {
     if ((pre.mode != cur.mode || pre.camera != cur.camera) && cur.camera != null) {
@@ -66,7 +74,12 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           ),
           lazy: false,
         ),
-        BlocProvider(create: (_) => PlaybackBloc(context.read(), context.read())),
+        BlocProvider(
+          create: (_) => rewind != null
+              ? (PlaybackBloc(context.read(), context.read())
+                  ..add(GetVideoPlaybacks(data!.id, rewind!)))
+              : PlaybackBloc(context.read(), context.read()),
+        ),
       ],
       child: BlocConsumer<CameraDetailBloc, CameraDetailState>(
         listenWhen: (previous, current) {
@@ -94,6 +107,7 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
                   ? _waitingPlayback(state, context)
                   : _buildLiveview(state, context),
               mode: state.mode,
+              showFullCamera: showFullCamera,
             ),
           );
         },
@@ -102,10 +116,9 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
   }
 
   Widget _waitingPlayback(CameraDetailState data, BuildContext context) {
-    return BlocBuilder<PlaybackBloc, PlaybackState>(
+    return BlocConsumer<PlaybackBloc, PlaybackState>(
       buildWhen: (pre, cur) {
         if (pre is PlaybackSuccess && cur is PlaybackSuccess) {
-          // So sánh tham chiếu 2 list
           return pre.playbacks != cur.playbacks || pre.initialIndex != cur.initialIndex;
         }
         return true;
@@ -130,6 +143,21 @@ class CameraDetailScreen extends StatelessWidget with StateBuilderMixin {
           },
         ),
       ),
+      listener: (context, state) {
+        if (rewind != null && state is PlaybackSuccess) {
+          final rewindTime = rewind!;
+          final index = state.playbacks.indexWhere(
+            (e) => e.startTime.isBefore(rewindTime) && e.endTime.isAfter(rewindTime),
+          );
+          if (index != -1) {
+            context.read<PlaybackBloc>().add(ChangePlayback(index));
+            data.playerController.waitForAttached.future.then((_) {
+              data.playerController.jumpToDate?.call(rewindTime, dateIndex: index);
+            });
+          }
+          rewind = null;
+        }
+      },
     );
   }
 

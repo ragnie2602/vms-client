@@ -1,4 +1,49 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+
+extension IntExtensions on int {
+  String get readableBytes {
+    // 1. Xử lý trường hợp <= 0
+    if (this <= 0) return '0 B';
+
+    // 2. Định nghĩa các đơn vị
+    const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+
+    // 3. Tính toán index của đơn vị dựa trên logarit cơ số 1024
+    // Thay vì dùng vòng lặp while, dùng logarit sẽ nhanh và toán học hơn
+    int digitGroups = (log(this) / log(1024)).floor();
+
+    // Đảm bảo không vượt quá mảng units (phòng trường hợp số quá lớn)
+    if (digitGroups >= units.length) {
+      digitGroups = units.length - 1;
+    }
+
+    // 4. Tính giá trị rút gọn
+    final double value = this / pow(1024, digitGroups);
+
+    // 5. Format chuỗi
+    // Nếu là Bytes (digitGroups == 0) thì không lấy số thập phân
+    if (digitGroups == 0) {
+      return '${value.toInt()} ${units[digitGroups]}';
+    }
+
+    // Các đơn vị khác: Lấy 2 số thập phân, nhưng xoá .00 hoặc số 0 thừa ở cuối
+    // toStringAsFixed(2) -> "1.50" -> xoá số 0 cuối -> "1.5"
+    String result = value.toStringAsFixed(2);
+
+    // Logic xoá số 0 thừa:
+    // Nếu kết thúc bằng ".00" -> bỏ hết ".00"
+    // Nếu kết thúc bằng "0" (như 1.50) -> bỏ số "0" cuối
+    if (result.endsWith('.00')) {
+      result = result.substring(0, result.length - 3);
+    } else if (result.endsWith('0') && result.contains('.')) {
+      result = result.substring(0, result.length - 1);
+    }
+
+    return '$result ${units[digitGroups]}';
+  }
+}
 
 extension IterableExt<T> on Iterable<T> {
   Iterable<R> mapIndexed<R>(R Function(int index, T element) convert) sync* {

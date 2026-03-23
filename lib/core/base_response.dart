@@ -40,12 +40,19 @@ sealed class Failure {
   factory Failure.code(int code) => CodeFailure(code);
   factory Failure.message(String message) => MessageFailure(message);
 
-  MessageFailure toMessageFailure<T extends ProtobufEnum>([T? Function(int)? valueOf, int? packetType]) =>
-      MessageFailure(parseMessage(valueOf, packetType));
+  MessageFailure toMessageFailure<T extends ProtobufEnum>([
+    T? Function(int)? valueOf,
+    int? packetType,
+  ]) => MessageFailure(parseMessage(valueOf, packetType));
 
-  String parseMessage<T extends ProtobufEnum>([T? Function(int)? valueOf, int? packetType]) {
+  String parseMessage<T extends ProtobufEnum>([
+    T? Function(int)? valueOf,
+    int? packetType,
+  ]) {
     switch (this) {
       case MessageFailure(:final message):
+        return message;
+      case DioFailure(:final message):
         return message;
       case CodeFailure(:final code):
         try {
@@ -62,6 +69,17 @@ sealed class Failure {
 
   @override
   String toString() => parseMessage();
+
+  int? get code {
+    switch (this) {
+      case MessageFailure():
+        return null;
+      case DioFailure(:final code):
+        return code;
+      case CodeFailure(:final code):
+        return code;
+    }
+  }
 }
 
 class MessageFailure extends Failure {
@@ -72,4 +90,23 @@ class MessageFailure extends Failure {
 class CodeFailure extends Failure {
   final int code;
   const CodeFailure(this.code) : super._();
+}
+
+class DioFailure extends Failure {
+  final String message;
+  final int? code;
+  final int statusCode;
+  final dynamic data;
+  const DioFailure({required this.message, this.code, required this.statusCode, this.data})
+    : super._();
+}
+
+class ApiException implements Exception {
+  final String message;
+  final int? code;
+
+  const ApiException(this.message, {this.code});
+
+  @override
+  String toString() => message;
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_config.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/scope_functions.dart';
+import 'package:vms_flutter_client/core/constants/typography.dart';
 
 import '../bloc/camera_detail/camera_detail_bloc.dart';
 
@@ -40,6 +43,7 @@ class _ControlVolumeState extends State<ControlVolume> {
             return Row(
               children: <Widget>[
                 InkWell(
+                  borderRadius: BorderRadius.circular(100),
                   onTap: widget.disabled
                       ? null
                       : () => _wrapper(() {
@@ -50,7 +54,7 @@ class _ControlVolumeState extends State<ControlVolume> {
                           );
                         }),
                   child: SvgPicture.asset(
-                    volume == 1
+                    volume == AppConfig.PLAYER_MAX_VOLUME_PERCENT
                         ? AppAssets.icVolumeFull
                         : volume == 0
                         ? AppAssets.icVolumeMuted
@@ -62,6 +66,18 @@ class _ControlVolumeState extends State<ControlVolume> {
                       BlendMode.srcIn,
                     ),
                   ),
+                ).let(
+                  (it) => widget.disabled
+                      ? it
+                      : Tooltip(
+                          textStyle: AppTypography.style(
+                            12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.white,
+                          ),
+                          message: isMuted ? 'Bật tiếng' : 'Tắt tiếng',
+                          child: it,
+                        ),
                 ),
 
                 if (showSlider) SizedBox(width: 8),
@@ -75,11 +91,15 @@ class _ControlVolumeState extends State<ControlVolume> {
                           child: SliderTheme(
                             data: SliderTheme.of(context).copyWith(
                               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                              showValueIndicator: ShowValueIndicator.onDrag,
+                              valueIndicatorShape: PaddleSliderValueIndicatorShape(),
                             ),
                             child: Slider(
+                              allowedInteraction: SliderInteraction.tapAndSlide,
+                              label: volume.toInt().toString(),
                               padding: EdgeInsets.zero,
                               min: 0,
-                              max: 1,
+                              max: AppConfig.PLAYER_MAX_VOLUME_PERCENT,
                               activeColor: Colors.black,
                               inactiveColor: Colors.grey,
                               value: volume,

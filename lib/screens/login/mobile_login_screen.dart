@@ -7,9 +7,9 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/endpoints.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_bloc.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_event.dart';
 import 'package:vms_flutter_client/screens/login/bloc/login_state.dart';
@@ -39,7 +39,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
     serverController = TextEditingController(
       text:
           AppData.instance.read<String>(AppKeys.SP_SERVER_KEY) ??
-          EnvService.apiBaseUrl,
+          EndPoints.baseUrl,
     );
     usernameController = TextEditingController(
       text: AppData.instance.read<String>(AppKeys.SP_USERNAME_KEY),
@@ -105,7 +105,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
                       child: BlocConsumer<LoginBloc, LoginState>(
                         listener: (context, state) {
                           if (state.isSuccess) {
-                            context.goNamed(Routes.monitoring.name);
+                            context.goNamed(Routes.monitoring.name, extra: 'isFreshLogin');
                           } else if (state.errorMessage?.isNotEmpty == true) {
                             showAppMessageDialog(
                               context,
@@ -136,7 +136,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
                       ),
                     ),
                   ),
-                  if (Platform.isIOS) ...[
+                  if (Platform.isIOS || Platform.isAndroid) ...[
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

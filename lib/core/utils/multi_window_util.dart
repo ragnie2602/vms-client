@@ -97,6 +97,8 @@ class MultiWindowUtil {
     bool? isDefaultMode,
     List<int>? id,
   }) async {
+    if (_windowBounds.isEmpty) return;
+
     _windowBounds[windowId] = _windowBounds[windowId]?.copyWith(
       id: id,
       isDefaultMode: isDefaultMode,
