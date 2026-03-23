@@ -29,6 +29,7 @@ import 'package:vms_flutter_client/screens/control_camera/widget/item_camera_wid
 import 'package:vms_flutter_client/screens/control_camera/widget/remove_camera_widget.dart';
 import 'package:vms_flutter_client/screens/control_camera/widget/title_widget.dart';
 import 'package:vms_flutter_client/screens/group/group_camera_view.dart';
+import 'package:vms_flutter_client/screens/group/widget/share_group_camera_widget.dart';
 import 'package:vms_flutter_client/screens/monitor/bloc/monitor/monitor_bloc.dart';
 
 class ControlCameraScreen extends StatefulWidget {
@@ -758,6 +759,12 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                                         cameraId: cameras[index].id,
                                         cameraName: cameras[index].name,
                                       ),
+                                      onShare: () async {
+                                        await _onShowDialogShareCamera(
+                                          c: context,
+                                          camera: cameras[index],
+                                        );
+                                      },
                                       onRemoveFromGroup: () {
                                         _showDialogRemoveCameraFromGroup(
                                           c: context,

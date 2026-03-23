@@ -101,7 +101,7 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> {
                           ),
                           items: RoleStatus.values,
                           label: 'Trạng thái',
-                          onChanged: (status) => _status = status,
+                          onChanged: (status) => _status = status ?? RoleStatus.active,
                           padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
                         ),
                         const SizedBox(height: 10),

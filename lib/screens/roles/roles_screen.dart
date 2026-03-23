@@ -90,7 +90,7 @@ class _RolesScreenState extends State<RolesScreen> {
                   onPressed: () => addRole(),
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   prefix: Icon(Icons.add, color: AppColors.blue005AA9, size: 20),
-                  prefixSpacing: 8,
+                  prefixGap: 8,
                   textStyle: AppTypography.style(
                     14,
                     color: AppColors.blue005AA9,
@@ -121,20 +121,20 @@ class _RolesScreenState extends State<RolesScreen> {
                       data: List.generate(_roles.length, (i) => _roleRow(i, _roles[i])),
                       headers: ['STT', 'Tên nhóm quyền', 'Mô tả', 'Trạng thái', 'Thao tác'],
                     ),
-                    headerBuilder: (index, header) => Container(
+                    headerBuilder: (header) => Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.only(
-                          bottomLeft: index == 0 ? Radius.circular(3) : Radius.zero,
-                          topLeft: index == 0 ? Radius.circular(3) : Radius.zero,
-                          bottomRight: index == 4 ? Radius.circular(3) : Radius.zero,
-                          topRight: index == 4 ? Radius.circular(3) : Radius.zero,
+                          bottomLeft: Radius.circular(3),
+                          topLeft: Radius.circular(3),
+                          bottomRight: Radius.circular(3),
+                          topRight: Radius.circular(3),
                         ),
                         color: AppColors.greyF2F4FA,
                       ),
                       height: 48,
                       margin: EdgeInsets.only(bottom: 20),
                       child: Align(
-                        alignment: [1, 2].contains(index) ? Alignment.centerLeft : Alignment.center,
+                        alignment: Alignment.center,
                         child: Text(
                           header,
                           style: AppTypography.style(

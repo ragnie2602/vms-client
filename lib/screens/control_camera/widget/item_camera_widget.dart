@@ -15,6 +15,7 @@ class ItemCameraWidget extends StatelessWidget {
     this.onEdit,
     this.onConfig,
     this.onDelete,
+    this.onShare,
     this.onRemoveFromGroup,
   });
 
@@ -24,6 +25,7 @@ class ItemCameraWidget extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onConfig;
   final VoidCallback? onDelete;
+  final VoidCallback? onShare;
   final VoidCallback? onRemoveFromGroup;
 
   @override
@@ -132,6 +134,9 @@ class ItemCameraWidget extends StatelessWidget {
       case 'delete':
         onDelete?.call();
         break;
+      case 'share':
+        onShare?.call();
+        break;
       case 'remove_from_group':
         onRemoveFromGroup?.call();
         break;
@@ -151,6 +156,7 @@ class ItemCameraWidget extends StatelessWidget {
       _buildDivider(),
       _buildConfigMenuItem(),
       _buildDivider(),
+      _buildShareMenuItem(),
       _buildDivider(),
       if (isHaveGroupOwner) ...[_buildRemoveFromGroupMenuItem(), _buildDivider()],
       _buildDeleteMenuItem(),
@@ -195,6 +201,15 @@ class ItemCameraWidget extends StatelessWidget {
       value: 'config',
       icon: AppAssets.icConfig,
       label: 'Cấu hình',
+      textColor: AppColors.black,
+    );
+  }
+
+  PopupMenuItem<String> _buildShareMenuItem() {
+    return _buildMenuItem(
+      value: 'share',
+      icon: AppAssets.iconShare,
+      label: 'Chia sẻ',
       textColor: AppColors.black,
     );
   }
