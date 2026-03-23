@@ -79,6 +79,7 @@ class ObjectTypeField {
   final FieldDataType dataType;
   final bool isDefault;
   final bool isRequired;
+  final bool readOnly;
 
   const ObjectTypeField({
     required this.id,
@@ -90,6 +91,7 @@ class ObjectTypeField {
     this.isDefault = false,
     this.sortOrder,
     this.isRequired = false,
+    this.readOnly = false,
   });
 
   final int? sortOrder;
@@ -123,6 +125,7 @@ class ObjectTypeField {
     FieldDataType? dataType,
     bool? isDefault,
     bool? isRequired,
+    bool? readOnly,
   }) {
     return ObjectTypeField(
       id: id ?? this.id,
@@ -133,6 +136,7 @@ class ObjectTypeField {
       dataType: dataType ?? this.dataType,
       isDefault: isDefault ?? this.isDefault,
       isRequired: isRequired ?? this.isRequired,
+      readOnly: readOnly ?? this.readOnly,
     );
   }
 
