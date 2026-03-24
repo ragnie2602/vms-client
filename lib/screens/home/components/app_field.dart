@@ -30,6 +30,7 @@ class AppField extends StatefulWidget {
     this.focusNode,
     this.textInputAction,
     this.onFieldSubmitted,
+    this.textStyle,
   });
 
   final TextEditingController? controller;
@@ -55,6 +56,7 @@ class AppField extends StatefulWidget {
   final FocusNode? focusNode;
   final TextInputAction? textInputAction;
   final Function(String)? onFieldSubmitted;
+  final TextStyle? textStyle;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -143,14 +145,14 @@ class _AppFieldState extends State<AppField> {
               padding: const EdgeInsets.only(right: 8),
               child: Text(
                 '${value.text.length}/${widget.maxLength}',
-                style: AppTypography.style(
+                style: widget.textStyle ?? AppTypography.style(
                   14,
                   fontWeight: FontWeight.w400,
                   color: AppColors.grey92929D,
                 ),
               ),
             ),
-          );
+          );  
         }
 
         return Column(
@@ -195,7 +197,7 @@ class _AppFieldState extends State<AppField> {
                             (widget.readOnly ?? false
                                 ? AppColors.greyF2F4FA
                                 : null),
-                        hintStyle: AppTypography.style(
+                        hintStyle: widget.textStyle ?? AppTypography.style(
                           14,
                           fontWeight: FontWeight.w400,
                           color: AppColors.grey92929D,
@@ -262,7 +264,7 @@ class _AppFieldState extends State<AppField> {
                                 children: suffixChildren,
                               ),
                       ),
-                      style: AppTypography.style(
+                      style: widget.textStyle ?? AppTypography.style(
                         14,
                         fontWeight: FontWeight.w400,
                         color: AppColors.black,

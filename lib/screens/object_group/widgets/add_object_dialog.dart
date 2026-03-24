@@ -385,8 +385,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       for (final field in widget.objectType.fields) {
         final isNameField =
             field.fieldName == 'name' || field.fieldName == 'Tên đối tượng';
-        final isImageField = field.fieldName == 'Ảnh nhận diện khuôn mặt';
-        final isRequired = field.isRequired || isNameField || isImageField;
+        final isRequired = field.isRequired || isNameField;
 
         if (field.dataType == FieldDataType.file) {
           final localPaths = _localFilePaths[field.fieldName] ?? [];
@@ -715,7 +714,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     const maxImages = 6;
     final canAddMore = totalImages < maxImages;
     final isImageField = field.fieldName == 'Ảnh nhận diện khuôn mặt';
-    final isRequired = field.isRequired || isImageField;
+    final isRequired = field.isRequired;
 
     return DropTarget(
       onDragEntered: (_) => setState(() => _isDragging[field.fieldName] = true),
