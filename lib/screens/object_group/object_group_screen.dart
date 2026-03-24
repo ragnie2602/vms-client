@@ -40,6 +40,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
   final TextEditingController _groupSearchController = TextEditingController();
   TabController? _tabController;
 
+  bool _isDownloadingTemplate = false;
+  bool _isImportingData = false;
+  bool _isExportingData = false;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +82,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
   // === Template download ===
   Future<void> _onDownloadTemplate(BuildContext context) async {
+    if (_isDownloadingTemplate) return;
     final state = context.read<ObjectGroupBloc>().state;
     final selectedType = state.selectedObjectType;
     if (selectedType == null) {
@@ -88,6 +93,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       return;
     }
 
+    setState(() {
+      _isDownloadingTemplate = true;
+    });
+
     try {
       ToastUtil.toastSuccess(
         context: context,
@@ -97,7 +106,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       final tempPath = await repo.downloadTemplate(selectedType.id);
 
       final dateStr = DateFormat('ddMMyyyy').format(DateTime.now());
-      final fileName = 'File mẫu_${selectedType.name}_$dateStr.xlsx';
+      final fileNameWithoutExtension = 'File mẫu_${selectedType.name}_$dateStr';
+      String fileName = '$fileNameWithoutExtension.xlsx';
 
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
         dialogTitle: 'Chọn thư mục lưu file',
@@ -108,7 +118,14 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         return;
       }
 
-      final savePath = p.join(selectedDirectory, fileName);
+      String savePath = p.join(selectedDirectory, fileName);
+      int counter = 1;
+      // Tự động nối (1) (2) (3) ... nếu file đã tồn tại
+      while (File(savePath).existsSync()) {
+        fileName = '$fileNameWithoutExtension ($counter).xlsx';
+        savePath = p.join(selectedDirectory, fileName);
+        counter++;
+      }
 
       await File(tempPath).copy(savePath);
       await File(tempPath).delete();
@@ -125,6 +142,12 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           context: context,
           title: Text('Tải file mẫu thất bại: $e'),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDownloadingTemplate = false;
+        });
       }
     }
   }
@@ -182,6 +205,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       }
       return;
     }
+
+    setState(() {
+      _isImportingData = true;
+    });
 
     try {
       final repo = context.read<IObjectGroupRepository>();
@@ -247,11 +274,18 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           title: Text('Import thất bại: $e'),
         );
       }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isImportingData = false;
+        });
+      }
     }
   }
 
   // === Export data ===
   Future<void> _onExportData(BuildContext context) async {
+    if (_isExportingData) return;
     final state = context.read<ObjectGroupBloc>().state;
     final selectedType = state.selectedObjectType;
     if (selectedType == null) {
@@ -261,6 +295,10 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       );
       return;
     }
+
+    setState(() {
+      _isExportingData = true;
+    });
 
     try {
       ToastUtil.toastSuccess(
@@ -278,8 +316,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
       final dateStr = DateFormat('ddMMyyyy').format(DateTime.now());
       final groupName = state.selectedSubjectGroup?.name ?? 'Tất cả';
-      final fileName =
-          'Danhsach_${selectedType.name}_${groupName}_$dateStr.xlsx';
+      final fileNameWithoutExtension = 'Danhsach_${selectedType.name}_${groupName}_$dateStr';
+      String fileName = '$fileNameWithoutExtension.xlsx';
 
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
         dialogTitle: 'Chọn thư mục lưu file',
@@ -290,7 +328,14 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         return;
       }
 
-      final savePath = p.join(selectedDirectory, fileName);
+      String savePath = p.join(selectedDirectory, fileName);
+      int counter = 1;
+      // Tự động nối (1) (2) (3) ... nếu file đã tồn tại
+      while (File(savePath).existsSync()) {
+        fileName = '$fileNameWithoutExtension ($counter).xlsx';
+        savePath = p.join(selectedDirectory, fileName);
+        counter++;
+      }
 
       await File(tempPath).copy(savePath);
       await File(tempPath).delete();
@@ -307,6 +352,12 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
           context: context,
           title: Text('Xuất file thất bại: $e'),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isExportingData = false;
+        });
       }
     }
   }
@@ -779,7 +830,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                       final bloc = context.read<ObjectGroupBloc>();
                       final currentTypes = bloc.state.objectTypes;
                       final currentIndex = _tabController!.index;
-                      
+
                       if (currentIndex >= 0 && currentIndex < currentTypes.length) {
                         final selectedType = currentTypes[currentIndex];
                         if (bloc.state.selectedObjectType?.id != selectedType.id) {
@@ -999,78 +1050,75 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                 borderColor: AppColors.secondary,
                 borderRadius: 3,
                 label: 'Tải file mẫu',
-                onPressed: () => _onDownloadTemplate(context),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                prefix: SvgPicture.asset(
-                  AppAssets.icFile,
-                  height: 16,
-                  width: 16,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.secondary,
-                    BlendMode.srcIn,
-                  ),
-                ),
+                onPressed: _isDownloadingTemplate ? () {} : () => _onDownloadTemplate(context),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                prefix: _isDownloadingTemplate
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.secondary,
+                        ),
+                      )
+                    : SvgPicture.asset(
+                        AppAssets.icFile,
+                        height: 16,
+                        width: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.secondary, BlendMode.srcIn),
+                      ),
                 prefixGap: 8,
-                textStyle: AppTypography.style(
-                  14,
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
-                ),
+                textStyle: AppTypography.style(14, color: AppColors.secondary, fontWeight: FontWeight.w500),
               ),
               const SizedBox(width: 12),
               EventCustomButton(
                 borderColor: AppColors.secondary,
                 borderRadius: 3,
                 label: 'Import dữ liệu',
-                onPressed: () => _onImportData(context),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                prefix: SvgPicture.asset(
-                  AppAssets.icUpload2,
-                  height: 16,
-                  width: 16,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.secondary,
-                    BlendMode.srcIn,
-                  ),
-                ),
+                onPressed: _isImportingData ? () {} : () => _onImportData(context),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                prefix: _isImportingData
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.secondary,
+                        ),
+                      )
+                    : SvgPicture.asset(
+                        AppAssets.icUpload2,
+                        height: 16,
+                        width: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.secondary, BlendMode.srcIn),
+                      ),
                 prefixGap: 8,
-                textStyle: AppTypography.style(
-                  14,
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
-                ),
+                textStyle: AppTypography.style(14, color: AppColors.secondary, fontWeight: FontWeight.w500),
               ),
               const SizedBox(width: 12),
               EventCustomButton(
                 borderColor: AppColors.secondary,
                 borderRadius: 3,
                 label: 'Xuất file',
-                onPressed: () => _onExportData(context),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                prefix: SvgPicture.asset(
-                  AppAssets.icDownloadFile,
-                  height: 16,
-                  width: 16,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.secondary,
-                    BlendMode.srcIn,
-                  ),
-                ),
+                onPressed: _isExportingData ? () {} : () => _onExportData(context),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                prefix: _isExportingData
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.secondary,
+                        ),
+                      )
+                    : SvgPicture.asset(
+                        AppAssets.icDownloadFile,
+                        height: 16,
+                        width: 16,
+                        colorFilter: const ColorFilter.mode(AppColors.secondary, BlendMode.srcIn),
+                      ),
                 prefixGap: 8,
-                textStyle: AppTypography.style(
-                  14,
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
-                ),
+                textStyle: AppTypography.style(14, color: AppColors.secondary, fontWeight: FontWeight.w500),
               ),
               const Spacer(),
               if (hasSubjectGroups)

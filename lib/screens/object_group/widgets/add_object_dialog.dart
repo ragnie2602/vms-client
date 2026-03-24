@@ -335,7 +335,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       if (failedPaths.length == processedPaths.length) {
         ToastUtil.toastFail(
           context: context,
-          title: const Text('Ảnh không đạt tiêu chuẩn. Vui lòng thử lại.'),
+          title: const Text('Thêm ảnh thất bại, vui lòng thử lại.'),
         );
       } else if (failedPaths.isNotEmpty) {
         ToastUtil.toastSuccess(
@@ -385,8 +385,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       for (final field in widget.objectType.fields) {
         final isNameField =
             field.fieldName == 'name' || field.fieldName == 'Tên đối tượng';
-        final isImageField = field.fieldName == 'Ảnh nhận diện khuôn mặt';
-        final isRequired = field.isRequired || isNameField || isImageField;
+        final isRequired = field.isRequired || isNameField;
 
         if (field.dataType == FieldDataType.file) {
           final localPaths = _localFilePaths[field.fieldName] ?? [];
@@ -486,8 +485,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
           context: context,
           title: Text(
             widget.isEditMode
-                ? 'Sửa đối tượng thất bại: $e'
-                : 'Thêm đối tượng thất bại: $e',
+                ? 'Sửa đối tượng thất bại'
+                : 'Thêm đối tượng thất bại',
           ),
         );
       }
@@ -665,18 +664,18 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       text: TextSpan(
         text: label,
         style: AppTypography.style(
-          12,
-          color: AppColors.grey334155,
-          fontWeight: FontWeight.w600,
+          14,
+          color: AppColors.black,
+          fontWeight: FontWeight.w500,
         ),
         children: isRequired
             ? [
                 TextSpan(
                   text: ' *',
                   style: AppTypography.style(
-                    12,
+                    14,
                     color: AppColors.redFF0004,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ]
@@ -695,7 +694,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       hintText: 'Nhập ${field.displayName.toLowerCase()}',
       label: field.displayName,
       requiredField: isRequired,
-      maxLength: 50,
+      maxLength: (field.fieldName == 'Tên đối tượng') ? 20 : 50, // case Tên đối tượng BE chặn 20 kí tự còn lại chặn 50 kí tự
       borderRadius: 4,
       paddingBottomLabel: 8,
       validator: (v) {
@@ -715,7 +714,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
     const maxImages = 6;
     final canAddMore = totalImages < maxImages;
     final isImageField = field.fieldName == 'Ảnh nhận diện khuôn mặt';
-    final isRequired = field.isRequired || isImageField;
+    final isRequired = field.isRequired;
 
     return DropTarget(
       onDragEntered: (_) => setState(() => _isDragging[field.fieldName] = true),
@@ -1094,7 +1093,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       if (failedPaths.length == processedPaths.length) {
         ToastUtil.toastFail(
           context: context,
-          title: const Text('Ảnh không đạt tiêu chuẩn. Vui lòng thử lại.'),
+          title: const Text('Thêm ảnh thất bại, vui lòng thử lại sau.'),
         );
       } else if (failedPaths.isNotEmpty) {
         ToastUtil.toastSuccess(

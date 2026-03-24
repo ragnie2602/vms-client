@@ -8,6 +8,7 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
+import 'package:vms_flutter_client/domain/entities/ai_alarm/al_alarm_enums.dart';
 import 'package:vms_flutter_client/domain/entities/event/event_type.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/widgets/alarm_config_popup/alarm_config_popup.dart';
@@ -77,11 +78,19 @@ class _SettingNotificationViewState extends State<SettingNotificationView> {
                 EventConfigEntity(popupEnabled: false, soundEnabled: false),
           );
 
+          // null <=> tài khoản mới
+          // Mặc định bật: Cảnh báo cháy, cảnh báo xâm nhập, cảnh báo người lạ
           return _NotificationConfigItem(
             id: eventConfig?.id,
             label: typeEvent.name,
             typeName: typeEvent.eventKey,
-            autoPopup: eventConfig?.popupEnabled ?? false,
+            autoPopup:
+                eventConfig?.popupEnabled ??
+                [
+                  AIAlarmType.fireAlarm.key,
+                  AIAlarmType.zoneIntrusion.key,
+                  AIAlarmType.intrusionWarning.key,
+                ].contains(typeEvent.eventKey),
             sound: eventConfig?.soundEnabled ?? false,
           );
         }).toList();
