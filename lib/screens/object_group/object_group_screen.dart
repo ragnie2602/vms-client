@@ -286,8 +286,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
 
       final dateStr = DateFormat('ddMMyyyy').format(DateTime.now());
       final groupName = state.selectedSubjectGroup?.name ?? 'Tất cả';
-      final fileName =
-          'Danhsach_${selectedType.name}_${groupName}_$dateStr.xlsx';
+      final fileNameWithoutExtension = 'Danhsach_${selectedType.name}_${groupName}_$dateStr';
+      String fileName = '$fileNameWithoutExtension.xlsx';
 
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
         dialogTitle: 'Chọn thư mục lưu file',
@@ -298,7 +298,14 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         return;
       }
 
-      final savePath = p.join(selectedDirectory, fileName);
+      String savePath = p.join(selectedDirectory, fileName);
+      int counter = 1;
+      // Tự động nối (1) (2) (3) ... nếu file đã tồn tại
+      while (File(savePath).existsSync()) {
+        fileName = '$fileNameWithoutExtension ($counter).xlsx';
+        savePath = p.join(selectedDirectory, fileName);
+        counter++;
+      }
 
       await File(tempPath).copy(savePath);
       await File(tempPath).delete();
