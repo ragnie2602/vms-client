@@ -695,7 +695,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       hintText: 'Nhập ${field.displayName.toLowerCase()}',
       label: field.displayName,
       requiredField: isRequired,
-      maxLength: 50,
+      maxLength: (field.fieldName == 'Tên đối tượng') ? 20 : 50, // case Tên đối tượng BE chặn 20 kí tự còn lại chặn 50 kí tự
       borderRadius: 4,
       paddingBottomLabel: 8,
       validator: (v) {
