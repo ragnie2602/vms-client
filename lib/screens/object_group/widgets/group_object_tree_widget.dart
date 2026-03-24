@@ -59,17 +59,6 @@ class _GroupObjectTreeWidgetState extends State<GroupObjectTreeWidget> {
         oldWidget.treeKey != widget.treeKey) {
       _syncSelectedNodeFromProp();
     }
-    if (oldWidget.treeKey == widget.treeKey) {
-      final controller = _treeController;
-      final tree = widget.tree;
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (!mounted) return;
-        if (_treeController != controller) return; // stale callback
-        if (widget.tree.length == 0) return;
-        _resetTreeExpansion(tree);
-        controller?.expandAllChildren(tree);
-      });
-    }
   }
 
   /// Reset expansion notifiers so expandAllChildren works on reused TreeNode objects.
