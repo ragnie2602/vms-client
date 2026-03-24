@@ -41,7 +41,7 @@ class GetEventDetailUseCase extends FutureUseCase<GetEventDetailInput, GetEventD
     displayData.add((
       SvgPicture.asset(AppAssets.icTimeCircle, height: 20),
       'Thời gian',
-      DateFormat('HH:mm dd/MM/yyyy').format(event.timeEvent),
+      DateFormat('HH:mm:ss dd/MM/yyyy').format(event.timeEvent),
     ));
     displayData.add((
       SvgPicture.asset(AppAssets.icVideoOn, height: 20),
