@@ -127,16 +127,17 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           displayName: 'Biển số xe',
           dataType: FieldDataType.text,
           isDefault: false,
+          readOnly: true,
         ),
       );
     });
   }
 
   /// Whether this field is a recognition field (Ảnh nhận diện / Biển số xe)
-  bool _isRecognitionField(ObjectTypeField field) {
-    return field.fieldName == 'Ảnh nhận diện khuôn mặt' ||
-        field.fieldName == 'Biển số xe';
-  }
+  // bool _isRecognitionField(ObjectTypeField field) {
+  //   return field.fieldName == 'Ảnh nhận diện khuôn mặt' ||
+  //       field.fieldName == 'Biển số xe';
+  // }
 
   /// Whether this is a draft field (not yet saved to server)
   bool _isDraftField(ObjectTypeField field) {
@@ -145,8 +146,8 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
 
   /// "Tên đối tượng" and "Ảnh nhận diện khuôn mặt" are mandatory and cannot be removed
   bool _isProtectedField(ObjectTypeField field) {
-    return field.fieldName == 'Tên đối tượng' ||
-        field.fieldName == 'Ảnh nhận diện khuôn mặt';
+    return (field.fieldName == 'Tên đối tượng' ||
+        field.fieldName == 'Ảnh nhận diện khuôn mặt') && field.isDefault;
   }
 
   void _removeField(int index) {
@@ -160,6 +161,8 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
 
     // SRS: Draft fields (newly added, not yet saved) → delete instantly
     if (_isDraftField(field)) {
+      _nameErrors.remove(index);
+      _displayErrors.remove(index);
       setState(() => _fields.removeAt(index));
       return;
     }
@@ -735,9 +738,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           // Field name
           Expanded(
             flex: 2,
-            child: (field.isDefault || _isProtectedField(field))
-                ? _buildReadOnlyLabel(field.fieldName)
-                : _isRecognitionField(field)
+            child: (field.isDefault || _isProtectedField(field) || field.readOnly)
                 ? _buildReadOnlyLabel(field.fieldName)
                 : _buildSmallTextField(
                     initialValue: field.fieldName,

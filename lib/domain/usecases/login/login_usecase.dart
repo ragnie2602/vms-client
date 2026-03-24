@@ -81,6 +81,9 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
 
   Future<void> _fetchAndSaveNotificationSetting() async {
     try {
+      // Xóa data cũ đi (case tài khoản mới không có data j thì vẫn còn config của thằng trc đấy)
+      await AppData.instance.clear(AppKeys.SP_NOTIFICATION_SETTING);
+
       final result = await notificationRepository.getNotificationSetting();
       result.fold((failure) {}, (notificationSetting) async {
         final jsonString = json.encode(notificationSetting.toJson());

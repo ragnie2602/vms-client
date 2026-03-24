@@ -486,8 +486,8 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
           context: context,
           title: Text(
             widget.isEditMode
-                ? 'Sửa đối tượng thất bại: $e'
-                : 'Thêm đối tượng thất bại: $e',
+                ? 'Sửa đối tượng thất bại'
+                : 'Thêm đối tượng thất bại',
           ),
         );
       }

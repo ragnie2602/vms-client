@@ -97,7 +97,8 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
       final tempPath = await repo.downloadTemplate(selectedType.id);
 
       final dateStr = DateFormat('ddMMyyyy').format(DateTime.now());
-      final fileName = 'File mẫu_${selectedType.name}_$dateStr.xlsx';
+      final fileNameWithoutExtension = 'File mẫu_${selectedType.name}_$dateStr';
+      String fileName = '$fileNameWithoutExtension.xlsx';
 
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
         dialogTitle: 'Chọn thư mục lưu file',
@@ -108,7 +109,14 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
         return;
       }
 
-      final savePath = p.join(selectedDirectory, fileName);
+      String savePath = p.join(selectedDirectory, fileName);
+      int counter = 1;
+      // Tự động nối (1) (2) (3) ... nếu file đã tồn tại
+      while (File(savePath).existsSync()) {
+        fileName = '$fileNameWithoutExtension ($counter).xlsx';
+        savePath = p.join(selectedDirectory, fileName);
+        counter++;
+      }
 
       await File(tempPath).copy(savePath);
       await File(tempPath).delete();
@@ -779,7 +787,7 @@ class _ObjectGroupScreenState extends State<ObjectGroupScreen>
                       final bloc = context.read<ObjectGroupBloc>();
                       final currentTypes = bloc.state.objectTypes;
                       final currentIndex = _tabController!.index;
-                      
+
                       if (currentIndex >= 0 && currentIndex < currentTypes.length) {
                         final selectedType = currentTypes[currentIndex];
                         if (bloc.state.selectedObjectType?.id != selectedType.id) {

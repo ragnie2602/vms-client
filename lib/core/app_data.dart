@@ -43,4 +43,8 @@ class AppData {
       _ => throw Exception("Unsupported type ${T.runtimeType}"),
     };
   }
+
+  Future<bool> clear(String key) {
+    return _prefs.remove(key);
+  }
 }
