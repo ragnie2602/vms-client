@@ -664,18 +664,18 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       text: TextSpan(
         text: label,
         style: AppTypography.style(
-          12,
-          color: AppColors.grey334155,
-          fontWeight: FontWeight.w600,
+          14,
+          color: AppColors.black,
+          fontWeight: FontWeight.w500,
         ),
         children: isRequired
             ? [
                 TextSpan(
                   text: ' *',
                   style: AppTypography.style(
-                    12,
+                    14,
                     color: AppColors.redFF0004,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ]
