@@ -335,7 +335,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       if (failedPaths.length == processedPaths.length) {
         ToastUtil.toastFail(
           context: context,
-          title: const Text('Ảnh không đạt tiêu chuẩn. Vui lòng thử lại.'),
+          title: const Text('Thêm ảnh thất bại, vui lòng thử lại.'),
         );
       } else if (failedPaths.isNotEmpty) {
         ToastUtil.toastSuccess(
@@ -1094,7 +1094,7 @@ class _AddObjectDialogState extends State<AddObjectDialog> {
       if (failedPaths.length == processedPaths.length) {
         ToastUtil.toastFail(
           context: context,
-          title: const Text('Ảnh không đạt tiêu chuẩn. Vui lòng thử lại.'),
+          title: const Text('Thêm ảnh thất bại, vui lòng thử lại sau.'),
         );
       } else if (failedPaths.isNotEmpty) {
         ToastUtil.toastSuccess(
