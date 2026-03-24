@@ -341,7 +341,13 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                     data: CustomTableData(
                                       columnFlexes: [0, 1, 1],
                                       data: displayData
-                                          .map((d) => [d.$1, Text(d.$2), Text(d.$3.toString())])
+                                          .map(
+                                            (d) => [
+                                              d.$1,
+                                              Text(d.$2),
+                                              Text(d.$3.toString(), textAlign: TextAlign.end),
+                                            ],
+                                          )
                                           .toList(),
                                     ),
                                     defaultVerticalAlignment: CrossAxisAlignment.start,
@@ -601,11 +607,10 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                     _buildControlButton(
                       icon: AppAssets.icFastBackward,
                       onTap: () {
-                        Duration duration = Duration(seconds: 3);
-                        if (currentTime?.subtract(duration).isBefore(startTime!) ?? true) {
-                          duration = startTime!.difference(currentTime!);
+                        Duration duration = Duration(seconds: -3);
+                        if (currentTime?.subtract(duration).isAfter(startTime!) ?? false) {
+                          playerController.seek?.call(duration);
                         }
-                        playerController.seek?.call(duration);
                       },
                     ),
                     _buildControlButton(
@@ -619,10 +624,9 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                       icon: AppAssets.icFastForward,
                       onTap: () {
                         Duration duration = Duration(seconds: 3);
-                        if (currentTime?.add(duration).isAfter(endTime!) ?? true) {
-                          duration = endTime!.difference(currentTime!);
+                        if (currentTime?.add(duration).isBefore(endTime!) ?? false) {
+                          playerController.seek?.call(duration);
                         }
-                        playerController.seek?.call(duration);
                       },
                     ),
                     _buildSpeedControl(),
@@ -1048,6 +1052,10 @@ class _EventDetailDialogState extends State<EventDetailDialog>
     this.currentTime = currentTime;
     if (endTime != null && currentTime.isAfter(endTime!)) {
       playerController.pause?.call();
+      playerController.seek?.call(endTime!.difference(currentTime));
+    } else if (startTime != null && currentTime.isBefore(startTime!)) {
+      playerController.pause?.call();
+      playerController.seek?.call(startTime!.difference(currentTime));
     }
   }
 

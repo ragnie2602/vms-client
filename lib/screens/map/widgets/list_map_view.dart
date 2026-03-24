@@ -120,6 +120,8 @@ class _ListMapViewState extends State<ListMapView> {
                     context: context,
                     title: Text('Thêm bản đồ camera thành công!'),
                   );
+
+                  _onChangeSelectEmap(newMap: state.emap);
                 } else if (state is EditEmapSuccessState) {
                   _updateEmap(state.emap);
 

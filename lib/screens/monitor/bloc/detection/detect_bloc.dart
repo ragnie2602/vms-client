@@ -53,8 +53,7 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
     this.detectRepository,
     this.eventRepository,
     this.streamEventUsecase,
-  )
-    : super(const DetectState()) {
+  ) : super(const DetectState()) {
     on<DetectInitial>(_onDetectInitial);
     on<DetectOnReceiveEvent>(_onDetectOnReceiveEvent);
     on<FilterEventsByViewingCameras>(_onFilterEventsByViewingCameras);
@@ -252,8 +251,6 @@ class DetectBloc extends Bloc<DetectEvent, DetectState> {
             }
           },
         );
-
-    print(_subscription);
   }
 
   FutureOr<void> _onDetectOnReceiveEvent(DetectOnReceiveEvent event, Emitter<DetectState> emit) {
