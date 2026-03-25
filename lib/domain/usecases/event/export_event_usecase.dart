@@ -22,6 +22,8 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
 
   @override
   Future<ExportEventOutput> buildUseCase(ExportEventInput input) async {
+    List<String> cameraIds = input.cameraIds ?? input.cameras.map((e) => e.camId).toList();
+
     List<EventType> eventTypes = [];
     final etRes = await eventRepository.getAllEventType();
     etRes.fold((onFailure) {}, (onSuccess) => eventTypes.addAll(onSuccess));
@@ -39,7 +41,7 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
       input.startTime != null ? input.startTime!.millisecondsSinceEpoch ~/ 1000 : null,
       input.endTime != null ? input.endTime!.millisecondsSinceEpoch ~/ 1000 : null,
       et,
-      input.cameraIds,
+      cameraIds,
       input.subjectName,
     )).fold(
       (onFailure) => ExportEventOutput('', errorMsg: onFailure.parseMessage()),
