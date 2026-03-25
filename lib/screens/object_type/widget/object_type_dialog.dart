@@ -129,7 +129,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       _fields.add(
         ObjectTypeField(
           id: 'new_field_${_nextFieldId++}',
-          fieldName: 'Ảnh nhận diện',
+          fieldName: 'Ảnh nhận diện khuôn mặt',
           displayName: 'Ảnh nhận diện',
           dataType: FieldDataType.file,
           isDefault: false,
@@ -168,7 +168,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   /// "Tên đối tượng" and "Ảnh nhận diện khuôn mặt" are mandatory and cannot be removed
   bool _isProtectedField(ObjectTypeField field) {
     return (field.fieldName == 'Tên đối tượng' ||
-            field.fieldName == 'Ảnh nhận diện') &&
+            field.fieldName == 'Ảnh nhận diện khuôn mặt') &&
         field.isDefault;
   }
 
