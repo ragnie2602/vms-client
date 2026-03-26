@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlatformBuilder.builder(
-      onDesktop: (context) => HomeDesktopLayout(content: body),
+      onDesktop: (context) => HomeDesktopLayout(content: body, currentPath: currentPath),
       onMobile: (context) => HomeMobileLayout(key: ValueKey(currentPath), content: body, currentPath: currentPath),
     );
   }

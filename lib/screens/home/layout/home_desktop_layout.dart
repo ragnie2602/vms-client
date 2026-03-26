@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'package:vms_flutter_client/core/app_router.dart';
+
 import '../components/header.dart';
 import '../components/sidebar.dart';
 
 class HomeDesktopLayout extends StatelessWidget {
   final Widget content;
+  final String currentPath;
 
-  const HomeDesktopLayout({super.key, required this.content});
+  const HomeDesktopLayout({super.key, required this.content, required this.currentPath});
 
   @override
   Widget build(BuildContext context) {
@@ -15,13 +18,13 @@ class HomeDesktopLayout extends StatelessWidget {
         child: Row(
           children: <Widget>[
             // Sidebar
-            const Sidebar(),
+            if (currentPath != Routes.onboarding.path) Sidebar(currentPath: currentPath),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   // Header
-                  const Header(),
+                  Header(currentPath: currentPath),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(left: 1, top: 1),

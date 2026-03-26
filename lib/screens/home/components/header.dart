@@ -14,7 +14,8 @@ import '../bloc/home_bloc.dart';
 import '../widgets/user_profile.dart';
 
 class Header extends StatefulWidget {
-  const Header({super.key});
+  final String? currentPath;
+  const Header({super.key, this.currentPath});
 
   @override
   State<Header> createState() => _HeaderState();
@@ -73,6 +74,10 @@ class _HeaderState extends State<Header> {
             color: Colors.transparent,
             child: Row(
               children: <Widget>[
+                if (widget.currentPath == Routes.onboarding.path) ...[
+                  SvgPicture.asset(AppAssets.logoFull, height: 32), // Adjust height if needed
+                  const SizedBox(width: 24),
+                ],
                 Expanded(
                   child: BlocBuilder<HomeBloc, HomeState>(
                     buildWhen: (pre, cur) =>

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
@@ -18,12 +19,14 @@ class Sidebar extends StatefulWidget {
     this.maxWidth = 255,
     this.initialWidth = 255,
     this.dividerWidth = 6,
+    this.currentPath,
   });
 
   final double minWidth;
   final double maxWidth;
   final double initialWidth;
   final double dividerWidth;
+  final String? currentPath;
 
   @override
   State<Sidebar> createState() => _SidebarState();
@@ -95,11 +98,13 @@ class _SidebarState extends State<Sidebar> {
                   ),
                   Divider(height: 1, color: AppColors.scaffoldBg),
                   Expanded(
-                    child: HomeDrawer(
-                      maxWidth: maxWidth,
-                      onToggleExpanded: () => context.read<HomeBloc>().add(ToggleSidebar()),
-                      tabs: tabs,
-                    ),
+                    child: widget.currentPath != Routes.onboarding.path
+                        ? HomeDrawer(
+                            maxWidth: maxWidth,
+                            onToggleExpanded: () => context.read<HomeBloc>().add(ToggleSidebar()),
+                            tabs: tabs,
+                          )
+                        : SizedBox.shrink(),
                   ),
 
                   /*  */

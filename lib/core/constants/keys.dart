@@ -11,4 +11,5 @@ class AppKeys {
   static const String SP_NOTIFICATION_SETTING = "notificationSetting";
   static const String SP_TYPE_EVENT_DETECT = "typeEventDetect";
   static const String SP_ALARM_SOUNDS = "alarmSounds";
+  static const String SP_IS_FIRST_LOGIN = "isFirstLogin";
 }

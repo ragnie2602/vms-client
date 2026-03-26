@@ -58,6 +58,7 @@ import '../screens/home/bloc/home_bloc.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/login/bloc/login_bloc.dart';
 import '../screens/login/login_screen.dart';
+import '../screens/onboarding_profile/onboarding_screen.dart';
 import '../screens/register/bloc/register_bloc.dart';
 import '../screens/register/mobile_register_screen.dart';
 
@@ -126,6 +127,7 @@ enum Routes {
     description: 'Cho phép quản trị viên cấu hình hệ thống quản lý camera',
   ),
   about(name: 'about', path: '/about'),
+  onboarding(name: 'onboarding', path: '/onboarding'),
   account(name: 'account', path: '/account'),
   info(name: 'info', path: '/info');
 
@@ -310,6 +312,13 @@ class AppRouter {
             ],
           ),
 
+          GoRoute(
+            path: Routes.onboarding.path,
+            name: Routes.onboarding.name,
+            pageBuilder: (context, state) =>
+                fadeTransition(context: context, state: state, child: OnboardingScreen()),
+          ),
+          
           GoRoute(
             path: Routes.account.path,
             name: Routes.account.name,
