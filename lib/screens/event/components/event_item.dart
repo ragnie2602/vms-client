@@ -140,7 +140,7 @@ class EventItem extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: Text(
-            obj[c.sorting.first].toString(),
+            (obj[c.sorting.first] ?? '').toString(),
             overflow: TextOverflow.visible,
             style: AppTypography.style(14, fontWeight: FontWeight.w600),
           ),
