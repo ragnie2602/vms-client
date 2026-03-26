@@ -6,6 +6,7 @@ import 'package:vms_flutter_client/core/constants/typography.dart';
 
 showConfirmRemoveDialog(
   BuildContext context, {
+  String? title,
   Widget? contentWidget,
   final Function()? onClickRemove,
 }) {
@@ -28,7 +29,7 @@ showConfirmRemoveDialog(
                 ),
                 const SizedBox(height: 28),
                 Text(
-                  'Bạn chắc chắn muốn xoá',
+                  title ?? 'Bạn chắc chắn muốn xoá',
                   style: AppTypography.style(
                     14,
                     color: AppColors.blackOrWhite,

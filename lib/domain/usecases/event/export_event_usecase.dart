@@ -22,6 +22,8 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
 
   @override
   Future<ExportEventOutput> buildUseCase(ExportEventInput input) async {
+    List<String> cameraIds = input.cameraIds ?? input.cameras.map((e) => e.camId).toList();
+
     List<EventType> eventTypes = [];
     final etRes = await eventRepository.getAllEventType();
     etRes.fold((onFailure) {}, (onSuccess) => eventTypes.addAll(onSuccess));
@@ -39,7 +41,7 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
       input.startTime != null ? input.startTime!.millisecondsSinceEpoch ~/ 1000 : null,
       input.endTime != null ? input.endTime!.millisecondsSinceEpoch ~/ 1000 : null,
       et,
-      input.cameraIds,
+      cameraIds,
       input.subjectName,
     )).fold(
       (onFailure) => ExportEventOutput('', errorMsg: onFailure.parseMessage()),
@@ -88,14 +90,23 @@ class ExportEventUseCase extends FutureUseCase<ExportEventInput, ExportEventOutp
         final cameraName =
             input.cameras.firstWhereOrNull((c) => c.camId == event.cameraId)?.name ?? '';
 
+        String subjectName =
+            (event.eventType == 'face_detection' && event.payload?['Tên đối tượng'] != null)
+            ? event.payload!['Tên đối tượng']
+            : '';
+        final groupName =
+            (event.eventType == 'face_detection' && event.payload?['groupName'] != null)
+            ? event.payload!['groupName']
+            : '';
+
         List<CellValue> row = [
           IntCellValue(i + 1),
           TextCellValue(time),
           TextCellValue(event.eventName ?? ''),
           TextCellValue(input.cameraGroupName),
           TextCellValue(cameraName),
-          TextCellValue(event.payload?['Tên đối tượng'] ?? ''),
-          TextCellValue(event.payload?['groupName'] ?? ''),
+          TextCellValue(subjectName),
+          TextCellValue(groupName),
           TextCellValue(event.description ?? ''),
         ];
 

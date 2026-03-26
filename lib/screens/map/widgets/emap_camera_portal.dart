@@ -154,7 +154,8 @@ class _EmapCameraPortalState extends State<EmapCameraPortal> {
             onTap: () {
               showConfirmRemoveDialog(
                 context,
-                contentWidget: Text('camera này?'),
+                title: 'Bạn chắc chắn muốn bỏ',
+                contentWidget: Text('camera này khỏi bản đồ?'),
                 onClickRemove: () {
                   widget.onDelete.call();
                   Navigator.of(context, rootNavigator: true).pop();

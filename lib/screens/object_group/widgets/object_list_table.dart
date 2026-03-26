@@ -22,11 +22,41 @@ class ObjectListTable extends StatefulWidget {
 }
 
 class _ObjectListTableState extends State<ObjectListTable> {
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _mainVerticalController = ScrollController();
+  final ScrollController _actionVerticalController = ScrollController();
+  bool _isSyncingScroll = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _mainVerticalController.addListener(() {
+      if (_isSyncingScroll) return;
+      if (_actionVerticalController.hasClients && _mainVerticalController.hasClients) {
+        if (_actionVerticalController.offset != _mainVerticalController.offset) {
+          _isSyncingScroll = true;
+          _actionVerticalController.jumpTo(_mainVerticalController.offset);
+          _isSyncingScroll = false;
+        }
+      }
+    });
+    _actionVerticalController.addListener(() {
+      if (_isSyncingScroll) return;
+      if (_actionVerticalController.hasClients && _mainVerticalController.hasClients) {
+        if (_mainVerticalController.offset != _actionVerticalController.offset) {
+          _isSyncingScroll = true;
+          _mainVerticalController.jumpTo(_actionVerticalController.offset);
+          _isSyncingScroll = false;
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _horizontalScrollController.dispose();
+    _mainVerticalController.dispose();
+    _actionVerticalController.dispose();
     super.dispose();
   }
 
@@ -54,41 +84,145 @@ class _ObjectListTableState extends State<ObjectListTable> {
 
         return Column(
           children: [
-            // Table Header
-            Container(
-              color: AppColors.greyF8F9FE,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  _buildHeaderCell('STT', flex: 1),
-                  _buildHeaderCell('Ảnh đại diện', flex: 2),
-                  SizedBox(width: 12),
-                  ...fieldKeys.map(
-                    (key) => _buildHeaderCell(_formatHeader(key), flex: 3),
-                  ),
-                  _buildHeaderCell(
-                    'Thao tác',
-                    flex: 1,
-                    align: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-
-            // Table Body
             Expanded(
-              child: ListView.separated(
-                controller: _scrollController,
-                itemCount: state.objects.length,
-                separatorBuilder: (context, index) =>
-                    const Divider(height: 1, color: AppColors.greyF1F3FA),
-                itemBuilder: (context, index) {
-                  return _buildRow(
-                    context,
-                    state,
-                    state.objects[index],
-                    index,
-                    fieldKeys,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final sttBaseWidth = 50.0;
+                  final imgBaseWidth = 100.0; 
+                  final actionWidth = 80.0;
+                  final spacingWidth = 40.0; // 16(L padding) + 12(gap) + 12(R padding)
+                  final fixedColsWidthLeft = sttBaseWidth + imgBaseWidth + spacingWidth;
+                  
+                  final fieldBaseWidth = 200.0; 
+                  final minNeededLeftWidth = fixedColsWidthLeft + (fieldBaseWidth * fieldKeys.length);
+                  
+                  final leftTableConstraintsWidth = constraints.maxWidth - actionWidth;
+                  final hasHorizontalScroll = minNeededLeftWidth > leftTableConstraintsWidth;
+                  final leftTableWidth = hasHorizontalScroll 
+                       ? minNeededLeftWidth 
+                       : leftTableConstraintsWidth;
+                       
+                  final availableFieldsWidth = leftTableWidth - fixedColsWidthLeft;
+                  final fieldWidth = fieldKeys.isEmpty 
+                       ? 0.0 
+                       : availableFieldsWidth / fieldKeys.length;
+
+                  final sttWidth = sttBaseWidth;
+                  final imgWidth = imgBaseWidth;
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Scrollable Left part
+                      Expanded(
+                        child: Scrollbar(
+                          controller: _horizontalScrollController,
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            controller: _horizontalScrollController,
+                            scrollDirection: Axis.horizontal,
+                            child: SizedBox(
+                              width: leftTableWidth,
+                              child: Column(
+                                children: [
+                                  // Header Left
+                                  Container(
+                                    height: 44, // Fixed height for header matching Right side
+                                    color: AppColors.greyF8F9FE,
+                                    padding: const EdgeInsets.only(left: 16, top: 12, bottom: 12, right: 12),
+                                    child: Row(
+                                      children: [
+                                        _buildHeaderCell('STT', width: sttWidth),
+                                        _buildHeaderCell('Ảnh đại diện', width: imgWidth),
+                                        const SizedBox(width: 12),
+                                        ...fieldKeys.map(
+                                          (key) => _buildHeaderCell(_formatHeader(key), width: fieldWidth),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Body Left
+                                  Expanded(
+                                    child: Scrollbar(
+                                      controller: _mainVerticalController,
+                                      thumbVisibility: true,
+                                      child: ListView.separated(
+                                        controller: _mainVerticalController,
+                                        itemCount: state.objects.length,
+                                        separatorBuilder: (context, index) =>
+                                            const Divider(height: 1, color: AppColors.greyF1F3FA),
+                                        itemBuilder: (context, index) {
+                                          return _buildLeftRow(
+                                            context,
+                                            state,
+                                            state.objects[index],
+                                            index,
+                                            fieldKeys,
+                                            sttWidth,
+                                            imgWidth,
+                                            fieldWidth,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      // Fixed Right Action Part
+                      Container(
+                        width: actionWidth,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: hasHorizontalScroll 
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 4,
+                                    offset: const Offset(-2, 0),
+                                  )
+                                ]
+                              : null,
+                        ),
+                        child: Column(
+                          children: [
+                            // Header Right
+                            Container(
+                              height: 44,
+                              color: AppColors.greyF8F9FE,
+                              alignment: Alignment.center,
+                              child: _buildHeaderCell('Thao tác', width: actionWidth, align: TextAlign.center),
+                            ),
+                            // Body Right
+                            Expanded(
+                              child: ScrollConfiguration(
+                                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                                child: ListView.separated(
+                                  controller: _actionVerticalController,
+                                  physics: const ClampingScrollPhysics(),
+                                  itemCount: state.objects.length,
+                                  separatorBuilder: (context, index) =>
+                                      const Divider(height: 1, color: AppColors.greyF1F3FA),
+                                  itemBuilder: (context, index) {
+                                    return _buildRightRow(
+                                      context,
+                                      state,
+                                      state.objects[index],
+                                      actionWidth,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
@@ -142,11 +276,11 @@ class _ObjectListTableState extends State<ObjectListTable> {
 
   Widget _buildHeaderCell(
     String text, {
-    int flex = 1,
+    required double width,
     TextAlign align = TextAlign.left,
   }) {
-    return Expanded(
-      flex: flex,
+    return SizedBox(
+      width: width,
       child: Text(
         text,
         style: AppTypography.style(
@@ -159,197 +293,211 @@ class _ObjectListTableState extends State<ObjectListTable> {
     );
   }
 
-  Widget _buildRow(
+  Widget _buildLeftRow(
     BuildContext context,
     ObjectGroupState state,
     ObjectData data,
     int index,
     List<String> fieldKeys,
+    double sttWidth,
+    double imgWidth,
+    double fieldWidth,
   ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      // color: index % 2 == 1 ? AppColors.greyF8F9FE : Colors.white,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 1,
-            child: Text(
-              '${(state.currentObjectsPage > 0 ? (state.currentObjectsPage - 1) * 20 : 0) + index + 1}',
-              style: AppTypography.style(14, color: AppColors.grey334155),
+    return SizedBox(
+      height: 66,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8, right: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: sttWidth,
+              child: Text(
+                '${(state.currentObjectsPage > 0 ? (state.currentObjectsPage - 1) * 20 : 0) + index + 1}',
+                style: AppTypography.style(14, color: AppColors.grey334155),
+              ),
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Builder(
-              builder: (context) {
-                final imageUrl = _getImageUrl(data);
-                if (imageUrl != null && imageUrl.isNotEmpty) {
-                  return Align(
-                    alignment: Alignment.centerLeft,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: CachedNetworkImage(
-                        width: 50,
-                        height: 50,
-                        imageUrl: imageUrl,
-                        fit: BoxFit.fitHeight,
-                        placeholder: (context, url) => Container(
-                          width: 48,
-                          height: 48,
-                          color: AppColors.greyE2E8F0,
+            SizedBox(
+              width: imgWidth,
+              child: Builder(
+                builder: (context) {
+                  final imageUrl = _getImageUrl(data);
+                  if (imageUrl != null && imageUrl.isNotEmpty) {
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: CachedNetworkImage(
+                          width: 50,
+                          height: 50,
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            width: 50,
+                            height: 50,
+                            color: AppColors.greyE2E8F0,
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            width: 50,
+                            height: 50,
+                            color: AppColors.greyE2E8F0,
+                            child: const Icon(
+                              Icons.broken_image,
+                              size: 20,
+                              color: AppColors.grey6F767E,
+                            ),
+                          ),
                         ),
-                        errorWidget: (context, url, error) => Container(
-                          width: 48,
-                          height: 48,
-                          color: AppColors.greyE2E8F0,
-                          child: const Icon(
-                            Icons.broken_image,
-                            size: 20,
-                            color: AppColors.grey6F767E,
+                      ),
+                    );
+                  }
+                  return const SizedBox(width: 50, height: 50);
+                },
+              ),
+            ),
+            SizedBox(width: 12),
+            ...fieldKeys.map((key) {
+              final value = data.fieldValues[key] ?? '';
+              if (value is List && value.isNotEmpty) {
+                final firstUrl = value.first.toString();
+                return SizedBox(
+                  width: fieldWidth,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: CachedNetworkImage(
+                          width: 50,
+                          height: 50,
+                          imageUrl: firstUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            width: 50,
+                            height: 50,
+                            color: AppColors.greyE2E8F0,
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            width: 50,
+                            height: 50,
+                            color: AppColors.greyE2E8F0,
+                            child: const Icon(
+                              Icons.broken_image,
+                              size: 20,
+                              color: AppColors.grey6F767E,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  );
-                }
-                return const SizedBox(width: 48, height: 48);
-              },
-            ),
-          ),
-          SizedBox(width: 12),
-          ...fieldKeys.map((key) {
-            final value = data.fieldValues[key] ?? '';
-            // If value is a list of URLs (file field), show first image
-            if (value is List && value.isNotEmpty) {
-              final firstUrl = value.first.toString();
-              return Expanded(
-                flex: 3,
+                  ),
+                );
+              }
+              return SizedBox(
+                width: fieldWidth,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: CachedNetworkImage(
-                        width: 50,
-                        height: 50,
-                        imageUrl: firstUrl,
-                        fit: BoxFit.fitHeight,
-                        placeholder: (context, url) => Container(
-                          width: 48,
-                          height: 48,
-                          color: AppColors.greyE2E8F0,
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          width: 48,
-                          height: 48,
-                          color: AppColors.greyE2E8F0,
-                          child: const Icon(
-                            Icons.broken_image,
-                            size: 20,
-                            color: AppColors.grey6F767E,
-                          ),
-                        ),
-                      ),
+                  child: Text(
+                    value.toString(),
+                    style: AppTypography.style(
+                      14,
+                      color: AppColors.grey334155,
+                      fontWeight: FontWeight.w500,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
               );
-            }
-            return Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(
-                  value.toString(),
-                  style: AppTypography.style(
-                    14,
-                    color: AppColors.grey334155,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-            );
-          }),
-          // Actions - PopupMenuButton with Sửa/Xóa
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: PopupMenuButton<String>(
-                tooltip: '',
-                icon: const Icon(
-                  Icons.more_horiz,
-                  color: AppColors.grey6F767E,
-                  size: 20,
-                ),
-                menuPadding: EdgeInsets.zero,
-                splashRadius: 16,
-                offset: const Offset(0, 36),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                color: Colors.white,
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    _onEditObject(context, state, data);
-                  } else if (value == 'delete') {
-                    _onDeleteObject(context, state, data);
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          margin: EdgeInsets.only(right: 8),
-                          child: SvgPicture.asset(AppAssets.icEdit),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Sửa',
-                          style: AppTypography.style(
-                            13,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuDivider(height: 1, color: AppColors.greyF2F4FA),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          margin: EdgeInsets.only(right: 8),
-                          child: SvgPicture.asset(AppAssets.icDelete),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Xóa',
-                          style: AppTypography.style(
-                            13,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRightRow(
+    BuildContext context,
+    ObjectGroupState state,
+    ObjectData data,
+    double actionWidth,
+  ) {
+    return SizedBox(
+      height: 66,
+      child: Center(
+        child: SizedBox(
+          width: actionWidth,
+          child: PopupMenuButton<String>(
+            tooltip: '',
+            icon: const Icon(
+              Icons.more_horiz,
+              color: AppColors.grey6F767E,
+              size: 20,
             ),
+            menuPadding: EdgeInsets.zero,
+            splashRadius: 16,
+            offset: const Offset(0, 36),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            color: Colors.white,
+            onSelected: (value) {
+              if (value == 'edit') {
+                _onEditObject(context, state, data);
+              } else if (value == 'delete') {
+                _onDeleteObject(context, state, data);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      margin: EdgeInsets.only(right: 8),
+                      child: SvgPicture.asset(AppAssets.icEdit),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Sửa',
+                      style: AppTypography.style(
+                        13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuDivider(height: 1, color: AppColors.greyF2F4FA),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      margin: EdgeInsets.only(right: 8),
+                      child: SvgPicture.asset(AppAssets.icDelete),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Xóa',
+                      style: AppTypography.style(
+                        13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -381,7 +529,12 @@ class _ObjectListTableState extends State<ObjectListTable> {
       );
 
       if (result == true) {
-        bloc.add(LoadObjects(objectTypeId: state.selectedObjectType!.id, subjectGroupId: state.selectedSubjectGroup?.id ??0));
+        bloc.add(
+          LoadObjects(
+            objectTypeId: state.selectedObjectType!.id,
+            subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
+          ),
+        );
       }
     } catch (e) {
       if (context.mounted) {
@@ -413,7 +566,12 @@ class _ObjectListTableState extends State<ObjectListTable> {
                 context: context,
                 title: const Text('Xóa đối tượng thành công'),
               );
-              bloc.add(LoadObjects(objectTypeId: state.selectedObjectType!.id, subjectGroupId: state.selectedSubjectGroup?.id ?? 0));
+              bloc.add(
+                LoadObjects(
+                  objectTypeId: state.selectedObjectType!.id,
+                  subjectGroupId: state.selectedSubjectGroup?.id ?? 0,
+                ),
+              );
             }
           } catch (e) {
             if (context.mounted) {
@@ -592,15 +750,18 @@ class _ObjectListTableState extends State<ObjectListTable> {
 
   void _goToPage(BuildContext context, ObjectGroupState state, int page) {
     if (state.selectedObjectType == null) return;
-    
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
+
+    if (_mainVerticalController.hasClients) {
+      _mainVerticalController.animateTo(
         0,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
     }
-    
+    if (_horizontalScrollController.hasClients) {
+      _horizontalScrollController.jumpTo(0);
+    }
+
     context.read<ObjectGroupBloc>().add(
       LoadObjects(
         objectTypeId: state.selectedObjectType!.id,

@@ -311,10 +311,7 @@ class _EventScreenState extends State<EventScreen> {
                         if (inHour) startTime = startTime.startOfHour;
 
                         dateRangeKey.currentState?.changeDateRange(
-                          DateTimeRange(
-                            start: startTime,
-                            end: DateTime.now(),
-                          ),
+                          DateTimeRange(start: startTime, end: DateTime.now()),
                         );
                         setState(() => presetHour = hour);
                         _onFilter(page: 1);

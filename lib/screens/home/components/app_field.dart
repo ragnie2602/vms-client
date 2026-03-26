@@ -31,6 +31,7 @@ class AppField extends StatefulWidget {
     this.focusNode,
     this.textInputAction,
     this.onFieldSubmitted,
+    this.textStyle,
   });
 
   final TextEditingController? controller;
@@ -57,6 +58,7 @@ class AppField extends StatefulWidget {
   final FocusNode? focusNode;
   final TextInputAction? textInputAction;
   final Function(String)? onFieldSubmitted;
+  final TextStyle? textStyle;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -141,11 +143,13 @@ class _AppFieldState extends State<AppField> {
               padding: const EdgeInsets.only(right: 8),
               child: Text(
                 '${value.text.length}/${widget.maxLength}',
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.grey92929D,
-                ),
+                style:
+                    widget.textStyle ??
+                    AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.grey92929D,
+                    ),
               ),
             ),
           );
@@ -191,11 +195,13 @@ class _AppFieldState extends State<AppField> {
                         fillColor:
                             widget.fillColor ??
                             (widget.readOnly ?? false ? AppColors.greyF2F4FA : null),
-                        hintStyle: AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.grey92929D,
-                        ),
+                        hintStyle:
+                            widget.textStyle ??
+                            AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.grey92929D,
+                            ),
                         // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
                         counterText: '',
                         errorMaxLines: 1,
@@ -231,11 +237,13 @@ class _AppFieldState extends State<AppField> {
                             ? null
                             : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
                       ),
-                      style: AppTypography.style(
-                        14,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.black,
-                      ),
+                      style:
+                          widget.textStyle ??
+                          AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.black,
+                          ),
                     ),
                   ),
                 ),

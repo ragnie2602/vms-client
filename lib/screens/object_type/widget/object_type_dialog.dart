@@ -33,6 +33,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
   AIFeature _selectedAIFeature = AIFeature.face;
   ObjectTypeStatus _selectedStatus = ObjectTypeStatus.active;
   List<ObjectTypeField> _fields = [];
+  List<int> _defaultFieldIndex = [];
   bool _isLoadingFields = false;
   Map<String, bool> _fieldValuesExistData = {};
 
@@ -53,10 +54,11 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       _selectedStatus = obj.status;
       // Start with fields from list data (may be empty)
       _fields = List.from(obj.fields);
+      _updateDefaultFieldIndex();
       // Fetch detail to get full dataFields
       _fetchDetail(obj.id);
     } else {
-      // Default fields for new object type - SRS: must include "Tên đối tượng" and "Ảnh nhận diện khuôn mặt"
+      // Default fields for new object type - SRS: must include "Tên đối tượng"
       _fields = [
         const ObjectTypeField(
           id: 'default_name',
@@ -65,14 +67,17 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           dataType: FieldDataType.text,
           isDefault: true,
         ),
-        const ObjectTypeField(
-          id: 'default_face',
-          fieldName: 'Ảnh nhận diện khuôn mặt',
-          displayName: 'Ảnh nhận diện',
-          dataType: FieldDataType.file,
-          isDefault: true,
-        ),
       ];
+      _defaultFieldIndex = [0];
+    }
+  }
+
+  void _updateDefaultFieldIndex() {
+    _defaultFieldIndex.clear();
+    for (int i = 0; i < _fields.length; i++) {
+      if (_fields[i].isDefault) {
+        _defaultFieldIndex.add(i);
+      }
     }
   }
 
@@ -88,6 +93,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         _selectedAIFeature = detail.aiFeature;
         _selectedStatus = detail.status;
         _fields = List.from(detail.fields);
+        _updateDefaultFieldIndex();
         _fieldValuesExistData = detail.fieldValuesExistData ?? {};
         _isLoadingFields = false;
       });
@@ -118,6 +124,21 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     });
   }
 
+  void _addFaceRecognitionField() {
+    setState(() {
+      _fields.add(
+        ObjectTypeField(
+          id: 'new_field_${_nextFieldId++}',
+          fieldName: 'Ảnh nhận diện khuôn mặt',
+          displayName: 'Ảnh nhận diện',
+          dataType: FieldDataType.file,
+          isDefault: false,
+          readOnly: true,
+        ),
+      );
+    });
+  }
+
   void _addLicensePlateField() {
     setState(() {
       _fields.add(
@@ -127,16 +148,17 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           displayName: 'Biển số xe',
           dataType: FieldDataType.text,
           isDefault: false,
+          readOnly: true,
         ),
       );
     });
   }
 
   /// Whether this field is a recognition field (Ảnh nhận diện / Biển số xe)
-  bool _isRecognitionField(ObjectTypeField field) {
-    return field.fieldName == 'Ảnh nhận diện khuôn mặt' ||
-        field.fieldName == 'Biển số xe';
-  }
+  // bool _isRecognitionField(ObjectTypeField field) {
+  //   return field.fieldName == 'Ảnh nhận diện khuôn mặt' ||
+  //       field.fieldName == 'Biển số xe';
+  // }
 
   /// Whether this is a draft field (not yet saved to server)
   bool _isDraftField(ObjectTypeField field) {
@@ -145,8 +167,9 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
 
   /// "Tên đối tượng" and "Ảnh nhận diện khuôn mặt" are mandatory and cannot be removed
   bool _isProtectedField(ObjectTypeField field) {
-    return field.fieldName == 'Tên đối tượng' ||
-        field.fieldName == 'Ảnh nhận diện khuôn mặt';
+    return (field.fieldName == 'Tên đối tượng' ||
+            field.fieldName == 'Ảnh nhận diện khuôn mặt') &&
+        field.isDefault;
   }
 
   void _removeField(int index) {
@@ -160,7 +183,12 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
 
     // SRS: Draft fields (newly added, not yet saved) → delete instantly
     if (_isDraftField(field)) {
-      setState(() => _fields.removeAt(index));
+      _nameErrors.remove(index);
+      _displayErrors.remove(index);
+      setState(() {
+        _fields.removeAt(index);
+        _updateDefaultFieldIndex();
+      });
       return;
     }
 
@@ -183,7 +211,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           content:
               'Trường dữ liệu $displayLabel đang chứa dữ liệu đối tượng. Bạn có chắc chắn muốn xóa?',
           onConfirm: () {
-            setState(() => _fields.removeAt(index));
+            setState(() {
+              _fields.removeAt(index);
+              _updateDefaultFieldIndex();
+            });
           },
         ),
       );
@@ -196,7 +227,10 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           content:
               'Bạn có chắc chắn muốn xóa trường dữ liệu $displayLabel không?',
           onConfirm: () {
-            setState(() => _fields.removeAt(index));
+            setState(() {
+              _fields.removeAt(index);
+              _updateDefaultFieldIndex();
+            });
           },
         ),
       );
@@ -216,6 +250,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       }
       final item = _fields.removeAt(oldIndex);
       _fields.insert(newIndex, item);
+      _updateDefaultFieldIndex();
     });
   }
 
@@ -225,12 +260,24 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     // SRS: Validate all field rows inline
     _nameErrors.clear();
     _displayErrors.clear();
-    final displayNames = <String>{};
-    final fieldNames = <String>{};
+
+    final defaultFieldNames = <String>{};
+    final defaultDisplayNames = <String>{};
+    for (int i in _defaultFieldIndex) {
+      if (i < _fields.length) {
+        defaultFieldNames.add(_fields[i].fieldName.trim().toLowerCase());
+        defaultDisplayNames.add(_fields[i].displayName.trim().toLowerCase());
+      }
+    }
+
+    final seenFieldNames = <String>{};
+    final seenDisplayNames = <String>{};
     bool hasFieldError = false;
 
     for (int i = 0; i < _fields.length; i++) {
       final f = _fields[i];
+      final isDefault = _defaultFieldIndex.contains(i);
+
       if (f.fieldName.trim().isEmpty) {
         _nameErrors[i] = 'Tên mã dữ liệu không được để trống';
         hasFieldError = true;
@@ -239,23 +286,47 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         _displayErrors[i] = 'Tên hiển thị không được để trống';
         hasFieldError = true;
       }
+
       // Validate duplicate fieldName
       final fn = f.fieldName.trim().toLowerCase();
       if (fn.isNotEmpty) {
-        if (fieldNames.contains(fn)) {
+        if (!isDefault &&
+            (seenFieldNames.contains(fn) || defaultFieldNames.contains(fn))) {
           _nameErrors[i] = 'Tên mã dữ liệu bị trùng';
           hasFieldError = true;
+        } else if (isDefault && seenFieldNames.contains(fn)) {
+          // If a custom field preceding this default field duplicated its name
+          // Find the preceding custom field and mark it if we didn't already
+          for (int prev = 0; prev < i; prev++) {
+            if (!_defaultFieldIndex.contains(prev) &&
+                _fields[prev].fieldName.trim().toLowerCase() == fn) {
+              _nameErrors[prev] = 'Tên mã dữ liệu bị trùng';
+              hasFieldError = true;
+            }
+          }
         }
-        fieldNames.add(fn);
+        seenFieldNames.add(fn);
       }
+
       // SRS: Validate duplicate displayName
       final dn = f.displayName.trim().toLowerCase();
       if (dn.isNotEmpty) {
-        if (displayNames.contains(dn)) {
+        if (!isDefault &&
+            (seenDisplayNames.contains(dn) ||
+                defaultDisplayNames.contains(dn))) {
           _displayErrors[i] = 'Tên hiển thị bị trùng';
           hasFieldError = true;
+        } else if (isDefault && seenDisplayNames.contains(dn)) {
+          // Same logic if a custom field preceded the default field
+          for (int prev = 0; prev < i; prev++) {
+            if (!_defaultFieldIndex.contains(prev) &&
+                _fields[prev].displayName.trim().toLowerCase() == dn) {
+              _displayErrors[prev] = 'Tên hiển thị bị trùng';
+              hasFieldError = true;
+            }
+          }
         }
-        displayNames.add(dn);
+        seenDisplayNames.add(dn);
       }
     }
 
@@ -523,6 +594,17 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
                 SubmenuButton(
                   menuChildren: [
                     MenuItemButton(
+                      onPressed: () => _addFaceRecognitionField(),
+                      child: Text(
+                        'Ảnh nhận diện',
+                        style: AppTypography.style(
+                          14,
+                          color: AppColors.grey334155,
+                          lineHeight: 1.2,
+                        ),
+                      ),
+                    ),
+                    MenuItemButton(
                       onPressed: () => _addLicensePlateField(),
                       child: Text(
                         'Biển số xe',
@@ -735,15 +817,20 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
           // Field name
           Expanded(
             flex: 2,
-            child: (field.isDefault || _isProtectedField(field))
-                ? _buildReadOnlyLabel(field.fieldName)
-                : _isRecognitionField(field)
-                ? _buildReadOnlyLabel(field.fieldName)
+            child:
+                (field.isDefault || _isProtectedField(field) || field.readOnly)
+                ? _buildReadOnlyLabel(
+                    field.fieldName,
+                    errorText: (field.isDefault || _isProtectedField(field))
+                        ? null
+                        : _nameErrors[index],
+                  )
                 : _buildSmallTextField(
                     initialValue: field.fieldName,
                     hintText: 'Tên mã dữ liệu',
                     maxLength: 50,
                     errorText: _nameErrors[index],
+                    readOnly: field.readOnly,
                     onChanged: (value) {
                       _updateField(index, field.copyWith(fieldName: value));
                       if (_nameErrors[index] != null) {
@@ -908,8 +995,8 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
     );
   }
 
-  Widget _buildReadOnlyLabel(String text) {
-    return Container(
+  Widget _buildReadOnlyLabel(String text, {String? errorText}) {
+    final labelWidget = Container(
       height: 44,
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -918,6 +1005,38 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
         style: AppTypography.style(12, color: AppColors.black),
         overflow: TextOverflow.ellipsis,
       ),
+    );
+
+    if (errorText == null) return labelWidget;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        labelWidget,
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 16),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  errorText,
+                  style: AppTypography.style(
+                    12,
+                    lineHeight: 1.2,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.redFF0004,
+                    textOverflow: TextOverflow.visible,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -937,6 +1056,7 @@ class _ObjectTypeDialogState extends State<ObjectTypeDialog> {
       onChanged: readOnly ? null : onChanged,
       readOnly: readOnly,
       borderRadius: 4,
+      textStyle: AppTypography.style(12, color: AppColors.black),
     );
   }
 

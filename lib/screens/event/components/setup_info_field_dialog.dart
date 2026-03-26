@@ -115,6 +115,12 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
     );
   }
 
+  @override
+  void dispose() {
+    bloc.add(const CancelChangeConfigs());
+    super.dispose();
+  }
+
   // WIDGETS
   Widget _buildHeader(BuildContext context) {
     return Container(
@@ -191,6 +197,8 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                   ),
                 ],
                 label: isLoading ? '' : 'Lưu',
+                onPressed: isLoading ? () {} : () => bloc.add(const SaveConfigs()),
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                 prefix: isLoading
                     ? const SizedBox(
                         width: 16,
@@ -199,8 +207,6 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
                       )
                     : null,
                 prefixGap: isLoading ? 8 : null,
-                onPressed: isLoading ? () {} : () => bloc.add(const SaveConfigs()),
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
                 textStyle: AppTypography.style(
                   14,
                   color: AppColors.white,
@@ -213,6 +219,8 @@ class _SetupInfoFieldDialogState extends State<SetupInfoFieldDialog> {
               if (state is SEDSavingConfigsSuccess) {
                 ToastUtil.toastSuccess(title: Text('Lưu cấu hình thành công'));
                 Navigator.pop(context);
+              } else if (state is SEDSavingConfigsFailure) {
+                ToastUtil.toastFail(title: Text(state.message));
               }
             },
           ),
@@ -499,7 +507,6 @@ class _CustomReorderableListViewState extends State<CustomReorderableListView> {
   @override
   void dispose() {
     _removePopup();
-    bloc.add(const CancelChangeConfigs());
     super.dispose();
   }
 

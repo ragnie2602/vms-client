@@ -46,7 +46,7 @@ class EventEntity {
     if (eventType != null) res['eventType'] = eventType;
     if (eventName != null) res['eventName'] = eventName;
     if (cameraId != null) res['cameraId'] = cameraId;
-    res['timeEvent'] = timeEvent.format("HH:mm dd/MM/yyyy");
+    res['timeEvent'] = timeEvent.format("HH:mm:ss dd/MM/yyyy");
     if (imageUrl != null) res['imageUrl'] = imageUrl;
     if (description != null) res['description'] = description;
     if (subjectTypeId != null) res['subjectTypeId'] = subjectTypeId;
