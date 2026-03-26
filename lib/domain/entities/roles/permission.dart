@@ -1,56 +1,21 @@
-class Permissions {
-  int id;
-  String name;
-  String description;
-  String type;
+class Permission {
+  final String code;
+  final String name;
 
-  Permissions({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.type,
-  });
+  Permission({required this.code, required this.name});
 
-  Permissions copyWith({int? id, String? name, String? description, String? type}) {
-    return Permissions(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      type: type ?? this.type,
-    );
+  @override
+  String toString() => '''Permission(code: $code, name: $name)''';
+
+  Permission copyWith({String? code, String? name}) {
+    return Permission(code: code ?? this.code, name: name ?? this.name);
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'description': description, 'type': type};
+    return {'code': code, 'name': name};
   }
 
-  factory Permissions.fromJson(Map<String, dynamic> json) {
-    return Permissions(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      type: json['type'],
-    );
-  }
-
-  @override
-  String toString() {
-    return description;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is Permissions &&
-        other.id == id &&
-        other.name == name &&
-        other.description == description &&
-        other.type == type;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^ name.hashCode ^ description.hashCode ^ type.hashCode;
+  factory Permission.fromJson(Map<String, dynamic> json) {
+    return Permission(code: json['code'], name: json['name']);
   }
 }

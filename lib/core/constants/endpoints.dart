@@ -21,7 +21,9 @@ class EndPoints {
 
   // Role
   static const String basePermission = '/api/permissions';
+  static const String permissionTree = '$basePermission/tree';
   static const String baseRole = '/api/roles';
+
   // Event
   static const String baseEvent = '/api/ai-events';
   static const String configEventDisplay = '$baseEvent/config';

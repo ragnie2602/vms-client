@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/core/base_response.dart';
-import 'package:vms_flutter_client/domain/entities/roles/permission.dart';
+import 'package:vms_flutter_client/domain/entities/roles/permission_tree.dart';
 import 'package:vms_flutter_client/domain/entities/roles/role.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_role_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/roles/search_roles_input.dart';
@@ -43,11 +43,11 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
 
   FutureOr<void> _onGetPermissions(GetPermissions event, Emitter<RoleState> emit) async {
     emit(GetAllPermissionsLoading());
-    final result = await repository.getAllPermissions();
+    final result = await repository.getPermissionTree();
 
     result.fold(
       (failure) => emit(GetAllPermissionsFailure(failure: failure)),
-      (permissions) => emit(GetAllPermissionsSuccess(permissions: permissions)),
+      (tree) => emit(GetAllPermissionsSuccess(tree)),
     );
   }
 }

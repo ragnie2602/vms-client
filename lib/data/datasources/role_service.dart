@@ -7,13 +7,13 @@ class RoleService {
 
   const RoleService(this.httpClient);
 
-  Future getAllPermissions() async {
-    final List raw = await httpClient.get(EndPoints.basePermission);
-    // final response = BaseResponse.fromJson(raw as Map<String, dynamic>);
+  Future getPermissionTree() async {
+    final Map<String, dynamic> raw = await httpClient.get(EndPoints.permissionTree);
+    final response = BaseResponse.fromJson(raw);
 
-    // if (response.code != 200) throw Exception(response.message);
-
-    return raw;
+    if (response.code != 200) throw Exception(response.message);
+    
+    return response.data;
   }
 
   Future getAllRoles() async {

@@ -6,6 +6,8 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
 class EventFilterDropdown<T> extends StatefulWidget {
+  final Color? borderColor;
+  final Color? fillColor;
   final String? hint;
   final bool isDense;
   final bool isExpanded;
@@ -20,6 +22,8 @@ class EventFilterDropdown<T> extends StatefulWidget {
 
   const EventFilterDropdown({
     super.key,
+    this.borderColor,
+    this.fillColor,
     this.hint,
     this.isDense = false,
     this.isExpanded = true,
@@ -55,8 +59,9 @@ class _EventFilterDropdownState<T> extends State<EventFilterDropdown<T>> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.greyE2E8F0, width: 1),
+            border: Border.all(color: widget.borderColor ?? AppColors.greyE2E8F0, width: 1),
             borderRadius: BorderRadius.circular(3),
+            color: widget.fillColor,
           ),
           child: DropdownButton2<T>(
             buttonStyleData: ButtonStyleData(

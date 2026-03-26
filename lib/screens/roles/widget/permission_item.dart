@@ -7,7 +7,7 @@ import 'package:vms_flutter_client/domain/entities/roles/permission.dart';
 
 class PermissionItem extends StatefulWidget {
   final String title;
-  final List<Permissions> permissions;
+  final List<Permission> permissions;
   final int depth;
   final bool isLast;
   final List<bool> ancestorHasNext;
@@ -28,7 +28,7 @@ class PermissionItem extends StatefulWidget {
 }
 
 class _PermissionItemState extends State<PermissionItem> {
-  final Map<String, List<Permissions>> _pTree = {};
+  final Map<String, List<Permission>> _pTree = {};
 
   bool _isExpanded = false;
 
@@ -40,7 +40,7 @@ class _PermissionItemState extends State<PermissionItem> {
 
       final key = p.name.split('.').first;
       final _permission = p.copyWith(
-        name: key.length < p.name.length ? p.name.substring(key.length + 1) : '',
+        name: key.length < p.name.length ? p.name.substring(key.length + 1) : p.name,
       );
 
       if (_pTree.containsKey(key)) {
@@ -115,16 +115,16 @@ class _PermissionItemState extends State<PermissionItem> {
 
   bool _isSelected(Set<int> value) {
     if (widget.permissions.length == 1) {
-      return value.contains(widget.permissions.first.id);
+      return value.contains(widget.permissions.first.code);
     } else {
-      return widget.permissions.every((p) => value.contains(p.id));
+      return widget.permissions.every((p) => value.contains(p.code ?? ''));
     }
   }
 
   Widget _title({required double indent}) {
     String _title = widget.title;
     if (_pTree.isEmpty && widget.permissions.isNotEmpty) {
-      _title = widget.permissions.first.description;
+      _title = widget.permissions.first.name ?? '';
     }
 
     return Row(
@@ -140,7 +140,8 @@ class _PermissionItemState extends State<PermissionItem> {
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 onChanged: (value) {
                   final next = Set<int>.of(widget.selectedIds.value);
-                  final ids = widget.permissions.map((e) => e.id);
+                  // final ids = widget.permissions.map((e) => e.id);
+                  final ids = <int>[];
 
                   if (value == true) {
                     next.addAll(ids);

@@ -8,12 +8,12 @@ class RoleState extends Equatable {
 }
 
 class GetAllPermissionsSuccess extends RoleState {
-  final List<Permissions> permissions;
+  final PermissionTree tree;
 
-  const GetAllPermissionsSuccess({required this.permissions});
+  const GetAllPermissionsSuccess(this.tree);
 
   @override
-  List<Object?> get props => [permissions];
+  List<Object?> get props => [tree];
 }
 
 class GetAllPermissionsFailure extends RoleState {

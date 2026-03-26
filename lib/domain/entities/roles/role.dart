@@ -9,7 +9,7 @@ class Role {
   String? description;
   RoleStatus? status;
   int? tenantId;
-  List<Permissions>? permissions;
+  List<Permission>? permissions;
 
   Role({this.id, this.name, this.description, this.status, this.tenantId, this.permissions});
 
@@ -19,7 +19,7 @@ class Role {
     String? description,
     RoleStatus? status,
     int? tenantId,
-    List<Permissions>? permissions,
+    List<Permission>? permissions,
   }) {
     return Role(
       id: id ?? this.id,
@@ -38,7 +38,7 @@ class Role {
       description: json['description'],
       status: RoleStatus.values.firstWhere((x) => x.name == json['status']),
       tenantId: json['tenantId'],
-      permissions: List<Permissions>.from(json['permissions']?.map((x) => Permissions.fromJson(x))),
+      permissions: List<Permission>.from(json['permissions']?.map((x) => Permission.fromJson(x))),
     );
   }
 
@@ -55,9 +55,7 @@ class Role {
 
 enum RoleStatus {
   active('Hoạt động', AppColors.greenECFFD7, AppColors.green03BF00),
-  inactive('Ngừng hoạt động', AppColors.greyF8F9FE, AppColors.grey6F767E),
-  suspended('Tạm dừng', AppColors.greyF8F9FE, AppColors.grey6F767E),
-  locked('Khóa', AppColors.greyF8F9FE, AppColors.grey6F767E);
+  suspended('Tạm dừng', AppColors.greyF8F9FE, AppColors.grey6F767E);
 
   final String label;
   final Color bgColor;

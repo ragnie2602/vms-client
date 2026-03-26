@@ -6,8 +6,14 @@ import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/roles/role.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
+import 'package:vms_flutter_client/screens/event/components/event_filter_dropdown.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
+import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
+import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
+import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
 import 'package:vms_flutter_client/screens/roles/bloc/role_bloc.dart';
 import 'package:vms_flutter_client/screens/roles/widget/add_edit_role_dialog.dart';
+import 'package:vms_flutter_client/screens/roles/widget/role_text_field.dart';
 import 'package:vms_flutter_client/screens/shared/custom_table.dart';
 
 class RolesScreen extends StatefulWidget {
@@ -19,6 +25,8 @@ class RolesScreen extends StatefulWidget {
 
 class _RolesScreenState extends State<RolesScreen> {
   late final RoleBloc roleBloc;
+  late final GroupCameraBloc groupCameraBloc;
+  late final ObjectGroupBloc objectGroupBloc;
 
   List<Role> roles = [];
   final TextEditingController searchController = TextEditingController();
@@ -28,6 +36,18 @@ class _RolesScreenState extends State<RolesScreen> {
     super.initState();
 
     roleBloc = context.read()..add(GetRoles());
+    groupCameraBloc = GroupCameraBloc(
+      groupCameraRepository: context.read(),
+      searchGroupUseCase: context.read(),
+      filterCameraNotInGroupUsecase: context.read(),
+    )..add(GetAllGroupCameraEvent());
+    objectGroupBloc = ObjectGroupBloc(
+      context.read(),
+      context.read(),
+      context.read(),
+      context.read(),
+      context.read(),
+    )..add(const LoadSubjectGroups());
   }
 
   @override
@@ -42,46 +62,47 @@ class _RolesScreenState extends State<RolesScreen> {
             child: Row(
               children: [
                 Expanded(
-                  flex: 380,
-                  child: TextField(
+                  flex: 650,
+                  child: RoleTextField(
+                    hintText: 'Tìm kiếm theo tên nhóm quyền, mô tả',
+                    label: 'Tìm kiếm',
                     onChanged: (value) => roleBloc.add(SearchRoles(keyword: value, roles: roles)),
                     controller: searchController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                      ),
-                      constraints: BoxConstraints(minHeight: 0, minWidth: 0),
-                      contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
-                      ),
-                      hintStyle: AppTypography.style(
+                    prefixIcon: SvgPicture.asset(AppAssets.icSearch),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 235,
+                  child: EventFilterDropdown<RoleStatus?>(
+                    isDense: true,
+                    itemBuilder: (item) => Text(
+                      item?.label ?? 'Tất cả',
+                      style: AppTypography.style(
                         14,
-                        color: AppColors.grey64748B,
                         fontWeight: FontWeight.w400,
+                        color: AppColors.grey64748B,
                       ),
-                      hintText: 'Nhập thông tin tìm kiếm',
-                      isDense: true,
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: SvgPicture.asset(AppAssets.icSearch),
-                      ),
-                      prefixIconConstraints: BoxConstraints(maxHeight: 40, maxWidth: 40),
                     ),
-                    style: AppTypography.style(
-                      14,
+                    items: [null, ...RoleStatus.values],
+                    label: 'Trạng thái',
+                    labelStyle: AppTypography.style(
+                      13,
                       fontWeight: FontWeight.w400,
                       color: AppColors.black,
                     ),
+                    onChanged: (value) {
+                      roleBloc.add(GetRolesById());
+                    },
+                    padding: EdgeInsets.only(bottom: 12, left: 0, right: 12, top: 12),
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.grey64748B,
+                    ),
                   ),
                 ),
-                const Spacer(flex: 751),
+                const Spacer(flex: 231),
                 EventCustomButton(
                   backgroundColor: AppColors.white,
                   borderColor: AppColors.blue005AA9,
@@ -261,8 +282,15 @@ class _RolesScreenState extends State<RolesScreen> {
   addRole() {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        child: BlocProvider.value(value: roleBloc, child: AddEditRoleDialog()),
+      builder: (ctx) => Dialog(
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: groupCameraBloc),
+            BlocProvider.value(value: objectGroupBloc),
+            BlocProvider.value(value: roleBloc),
+          ],
+          child: AddEditRoleDialog(),
+        ),
       ),
     );
   }
