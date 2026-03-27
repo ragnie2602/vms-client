@@ -78,26 +78,45 @@ class _Step3InitializationState extends State<Step3Initialization> {
                 shape: BoxShape.circle,
                 color: Color(0xFF4F46E5), // Indigo
               ),
-              child: const Icon(Icons.rocket_launch, color: Colors.white, size: 28),
+              child: const Icon(
+                Icons.rocket_launch,
+                color: Colors.white,
+                size: 28,
+              ),
             ),
           ),
         ),
         const SizedBox(height: 24),
         Text(
           'Đang khởi tạo hệ thống...',
-          style: AppTypography.style(24, fontWeight: FontWeight.w700, color: AppColors.blackOrWhite),
+          style: AppTypography.style(
+            24,
+            fontWeight: FontWeight.w700,
+            color: AppColors.blackOrWhite,
+          ),
         ),
         const SizedBox(height: 8),
         Text.rich(
           TextSpan(
             children: [
-              TextSpan(text: 'Vui lòng đợi trong giây lát, hệ thống đang được cài đặt theo mô hình ', style: AppTypography.style(14, color: const Color(0xFF6B7280))),
-              TextSpan(text: '[${template.title}]', style: AppTypography.style(14, fontWeight: FontWeight.w600, color: const Color(0xFF3B82F6))),
+              TextSpan(
+                text:
+                    'Vui lòng đợi trong giây lát, hệ thống đang được cài đặt theo mô hình ',
+                style: AppTypography.style(14, color: const Color(0xFF6B7280)),
+              ),
+              TextSpan(
+                text: '[${template.title}]',
+                style: AppTypography.style(
+                  14,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF3B82F6),
+                ),
+              ),
             ],
           ),
           textAlign: TextAlign.center,
         ),
-        
+
         const SizedBox(height: 48),
 
         // Progress Bar
@@ -110,13 +129,34 @@ class _Step3InitializationState extends State<Step3Initialization> {
                 children: [
                   Row(
                     children: [
-                      Text('Đang xử lý', style: AppTypography.style(14, fontWeight: FontWeight.w600, color: AppColors.blackOrWhite)),
+                      Text(
+                        'Đang xử lý',
+                        style: AppTypography.style(
+                          14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.blackOrWhite,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       // Dot
-                      Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF3B82F6))),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.blue137FE,
+                        ),
+                      ),
                     ],
                   ),
-                  Text('$_progress%', style: AppTypography.style(16, fontWeight: FontWeight.w700, color: const Color(0xFF4F46E5))),
+                  Text(
+                    '$_progress%',
+                    style: AppTypography.style(
+                      16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.blue137FE,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -126,16 +166,26 @@ class _Step3InitializationState extends State<Step3Initialization> {
                   value: _progress / 100,
                   minHeight: 8,
                   backgroundColor: const Color(0xFFE5E7EB),
-                  color: const Color(0xFF4F46E5),
+                  color: AppColors.blue137FE,
                 ),
               ),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.info_outline, size: 14, color: Color(0xFF9CA3AF)),
+                  const Icon(
+                    Icons.info_outline,
+                    size: 14,
+                    color: Color(0xFF9CA3AF),
+                  ),
                   const SizedBox(width: 6),
-                  Text('Vui lòng không đóng trình duyệt hoặc tải lại trang', style: AppTypography.style(12, color: const Color(0xFF9CA3AF))),
+                  Text(
+                    'Vui lòng không đóng trình duyệt hoặc tải lại trang',
+                    style: AppTypography.style(
+                      12,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -158,7 +208,11 @@ class _Step3InitializationState extends State<Step3Initialization> {
             children: [
               Text(
                 'TRẠNG THÁI CẤU HÌNH',
-                style: AppTypography.style(12, fontWeight: FontWeight.w600, color: const Color(0xFF9CA3AF)),
+                style: AppTypography.style(
+                  12,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF9CA3AF),
+                ),
               ),
               const SizedBox(height: 16),
               _buildStatusItem(
@@ -168,7 +222,8 @@ class _Step3InitializationState extends State<Step3Initialization> {
               ),
               const SizedBox(height: 16),
               _buildStatusItem(
-                title: 'Đang tạo các trường dữ liệu động cho các loại đối tượng...',
+                title:
+                    'Đang tạo các trường dữ liệu động cho các loại đối tượng...',
                 isCompleted: _progress >= 66,
                 isActive: _progress >= 33 && _progress < 66,
               ),
@@ -185,25 +240,42 @@ class _Step3InitializationState extends State<Step3Initialization> {
     );
   }
 
-  Widget _buildStatusItem({required String title, required bool isCompleted, required bool isActive}) {
+  Widget _buildStatusItem({
+    required String title,
+    required bool isCompleted,
+    required bool isActive,
+  }) {
     Widget icon;
     if (isCompleted) {
       icon = Container(
         padding: const EdgeInsets.all(2),
-        decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFDCFCE7)), // Green bg
-        child: const Icon(Icons.check, size: 14, color: Color(0xFF16A34A)), // Green check
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Color(0xFFDCFCE7),
+        ), // Green bg
+        child: const Icon(
+          Icons.check,
+          size: 14,
+          color: Color(0xFF16A34A),
+        ), // Green check
       );
     } else if (isActive) {
       icon = const SizedBox(
         width: 18,
         height: 18,
-        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3B82F6)),
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Color(0xFF3B82F6),
+        ),
       );
     } else {
       icon = Container(
         width: 18,
         height: 18,
-        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xFFD1D5DB), width: 1.5)),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFFD1D5DB), width: 1.5),
+        ),
       );
     }
 
@@ -214,7 +286,13 @@ class _Step3InitializationState extends State<Step3Initialization> {
         Expanded(
           child: Text(
             title,
-            style: AppTypography.style(14, fontWeight: isActive ? FontWeight.w600 : FontWeight.w500, color: isCompleted || isActive ? AppColors.blackOrWhite : const Color(0xFF9CA3AF)),
+            style: AppTypography.style(
+              14,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+              color: isCompleted || isActive
+                  ? AppColors.blackOrWhite
+                  : const Color(0xFF9CA3AF),
+            ),
           ),
         ),
       ],

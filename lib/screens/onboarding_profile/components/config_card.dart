@@ -17,7 +17,7 @@ class ConfigCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = const Color(0xFF4F46E5);
+    final activeColor = AppColors.blue2563EB;
 
     return GestureDetector(
       onTap: onTap,

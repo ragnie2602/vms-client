@@ -20,52 +20,66 @@ class AppStepper extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: List.generate(listStepName.length, (index) {
         final isLast = index == listStepName.length - 1;
-        final isActive = index <= currentStepIndex;
+        final isActive = index == currentStepIndex;
+        final isDone = index < currentStepIndex;
 
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStep(index + 1, listStepName[index], isActive),
-            if (!isLast) _buildDivider(),
-          ],
-        );
-      }),
+        return [
+          _buildStep(index + 1, listStepName[index], isActive, isDone),
+          if (!isLast) _buildDivider(),
+        ];
+      }).expand((e) => e).toList(),
     );
   }
 
-  Widget _buildStep(int stepNumber, String title, bool isActive) {
+  Widget _buildStep(int stepNumber, String title, bool isActive, bool isDone) {
     final activeColor = AppColors.blue005EB8; // Indigo blue
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CustomPaint(
-          painter: isActive ? DashedCirclePainter(
-            color: activeColor,
-            strokeWidth: 2.0,
-            dashWidth: 6.0,
-            dashSpace: 4.0,
-          ) : null,
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isActive ? activeColor : AppColors.greyC6C6C6,
-              ),
-              child: Center(
-                child: Text(
-                  stepNumber.toString(),
-                  style: AppTypography.style(
-                    16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.white,
+        SizedBox(
+          width: 56,
+          height: 56,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (isActive)
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: DashedCirclePainter(
+                      color: activeColor,
+                      strokeWidth: 2.0,
+                      dashWidth: 6.0,
+                      dashSpace: 4.0,
+                    ),
                   ),
                 ),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (isActive || isDone)
+                      ? activeColor
+                      : AppColors.greyC6C6C6,
+                ),
+                child: Center(
+                  child: isDone
+                      ? const Icon(
+                          Icons.check,
+                          color: AppColors.white,
+                          size: 20,
+                        )
+                      : Text(
+                          stepNumber.toString(),
+                          style: AppTypography.style(
+                            16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.white,
+                          ),
+                        ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
         const SizedBox(height: 12),
@@ -85,7 +99,7 @@ class AppStepper extends StatelessWidget {
     return Container(
       width: 120,
       height: 2,
-      margin: const EdgeInsets.only(top: 21, left: 16, right: 16),
+      margin: const EdgeInsets.only(top: 28),
       color: const Color(0xFFD1D5DB),
     );
   }
@@ -112,18 +126,14 @@ class DashedCirclePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final path = Path()
-      ..addOval(Rect.fromLTWH(0, 0, size.width, size.height));
+    final path = Path()..addOval(Rect.fromLTWH(0, 0, size.width, size.height));
 
     final ui.PathMetrics pathMetrics = path.computeMetrics();
     for (ui.PathMetric pathMetric in pathMetrics) {
       double distance = 0.0;
       while (distance < pathMetric.length) {
         final length = distance + dashWidth;
-        canvas.drawPath(
-          pathMetric.extractPath(distance, length),
-          paint,
-        );
+        canvas.drawPath(pathMetric.extractPath(distance, length), paint);
         distance = length + dashSpace;
       }
     }

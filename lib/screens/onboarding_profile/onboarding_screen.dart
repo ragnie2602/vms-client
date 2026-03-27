@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:vms_flutter_client/core/app_data.dart';
-import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
-import 'package:vms_flutter_client/core/constants/keys.dart';
-import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_stepper.dart';
+import 'package:vms_flutter_client/screens/onboarding_profile/components/enum_step_onboard.dart';
 
 import 'steps/step1_config_selection.dart';
 import 'steps/step2_confirmation.dart';
@@ -26,7 +22,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedConfigId = 'public';
+    _selectedConfigId = 'blank'; // Mặc định chọn cấu hình "Tự thiết lập"
   }
 
   void _finishOnboarding() {
@@ -65,10 +61,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           onSelected: (id) => setState(() => _selectedConfigId = id),
         );
       case 1:
-        return Step2Confirmation(configId: _selectedConfigId ?? 'public');
+        return Step2Confirmation(configId: _selectedConfigId ?? 'blank');
       case 2:
         return Step3Initialization(
-          configId: _selectedConfigId ?? 'public',
+          configId: _selectedConfigId ?? 'blank',
           onComplete: _finishOnboarding,
         );
       default:
@@ -91,7 +87,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: Column(
                     children: [
                       AppStepper(
-                        listStepName: const ['Chọn cấu hình', 'Xác nhận', 'Khởi tạo'],
+                        listStepName: StepOnboard.values
+                            .map((e) => e.getName)
+                            .toList(),
                         currentStepIndex: _currentStepIndex,
                       ),
                       const SizedBox(height: 48),
@@ -148,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onPressed: null,
                     ),
                   ),
-                ]
+                ],
               ],
             ),
           ),
