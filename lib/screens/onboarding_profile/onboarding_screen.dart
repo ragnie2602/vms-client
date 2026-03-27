@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_stepper.dart';
 import 'package:vms_flutter_client/screens/onboarding_profile/components/enum_step_onboard.dart';
@@ -28,11 +31,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _finishOnboarding() {
     // AppData.instance.save(AppKeys.SP_IS_FIRST_LOGIN, false);
 
-    // final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(suggestWindowID: 0);
-    // context.goNamed(
-    //   setting.isDefaultMode ? Routes.monitoring.name : Routes.custom_live_view.name,
-    //   extra: 'isFreshLogin',
-    // );
+    final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(
+      suggestWindowID: 0,
+    );
+    context.goNamed(
+      setting.isDefaultMode
+          ? Routes.monitoring.name
+          : Routes.custom_live_view.name,
+      extra: 'isFreshLogin',
+    );
   }
 
   void _nextStep() {
@@ -110,7 +117,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (_currentStepIndex == 1) ...[
+                if (_currentStepIndex == StepOnboard.confirm.getIndex) ...[
                   SizedBox(
                     width: 140,
                     height: 40,
@@ -128,7 +135,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onPressed: _nextStep,
                     ),
                   ),
-                ] else if (_currentStepIndex == 0) ...[
+                ] else if (_currentStepIndex ==
+                    StepOnboard.chooseConfig.getIndex) ...[
                   SizedBox(
                     width: 140,
                     height: 40,
@@ -137,7 +145,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onPressed: _selectedConfigId != null ? _nextStep : null,
                     ),
                   ),
-                ] else if (_currentStepIndex == 2) ...[
+                ] else if (_currentStepIndex ==
+                    StepOnboard.initialize.getIndex) ...[
                   SizedBox(
                     width: 200,
                     height: 40,

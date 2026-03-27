@@ -144,7 +144,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
                         height: 6,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.blue137FE,
+                          color: AppColors.blue137FEC,
                         ),
                       ),
                     ],
@@ -154,7 +154,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
                     style: AppTypography.style(
                       16,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.blue137FE,
+                      color: AppColors.blue137FEC,
                     ),
                   ),
                 ],
@@ -166,7 +166,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
                   value: _progress / 100,
                   minHeight: 8,
                   backgroundColor: const Color(0xFFE5E7EB),
-                  color: AppColors.blue137FE,
+                  color: AppColors.blue137FEC,
                 ),
               ),
               const SizedBox(height: 12),

@@ -22,6 +22,8 @@ class AppAssets {
   static const tabEvents = '$_svgPath/tab_events.svg';
   static const tabUsers = '$_svgPath/tab_users.svg';
   static const tabAIBox = '$_svgPath/tab_ai_box.svg';
+  static const tabLicense = '$_svgPath/tab_license.svg';
+  static const iconWarningCodeLicense = '$_svgPath/ic_warning_code_license.svg';
   static const tabSystemConfig = '$_svgPath/tab_setting.svg';
 
   static const icCamera = '$_svgPath/camera.svg';
@@ -126,6 +128,9 @@ class AppAssets {
   static const icAddGroupCamera = '$_svgPath/ic_add_group_camera.svg';
   // ai box
   static const icRemoveAiBox = '$_svgPath/icon_question_remove.svg';
+  // license
+  static const icSuccessLicense = '$_svgPath/ic_success_license.svg';
+  static const icLogoVNPT = '$_svgPath/ic_logo_vnpt.svg';
   // multi playback
   static const icAddCam = '$_svgPath/icon_add_cam.svg';
   static const icCameraRecord = '$_svgPath/ic_camera_record.svg';

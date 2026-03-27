@@ -28,6 +28,7 @@ import 'package:vms_flutter_client/screens/event/event_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/home/bloc/change_my_info_bloc.dart';
+import 'package:vms_flutter_client/screens/license/license_screen.dart';
 import 'package:vms_flutter_client/screens/login/mobile_login_screen.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/emap_screen.dart';
@@ -119,6 +120,12 @@ enum Routes {
     path: '/objectGroups',
     title: 'Quản lý đối tượng',
     description: 'Quản lý và cấu hình trường dữ liệu cho các đối tượng người dùng trên hệ thống',
+  ),
+  license(
+    name: 'license',
+    path: '/license',
+    title: 'Quản lý gói dịch vụ',
+    description: 'Quản lý và theo dõi lịch sử kích hoạt gói dịch vụ',
   ),
   configuration(
     name: 'system_configuration',
@@ -448,7 +455,13 @@ class AppRouter {
               return fadeTransition(context: context, state: state, child: AiBoxScreen());
             },
           ),
-
+          GoRoute(
+            path: Routes.license.path,
+            name: Routes.license.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: LicenseScreen());
+            },
+          ),
           GoRoute(
             path: Routes.users.path,
             name: Routes.users.name,

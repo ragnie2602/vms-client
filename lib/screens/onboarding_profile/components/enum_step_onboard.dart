@@ -4,7 +4,7 @@ enum StepOnboard {
   initialize,
 }
 extension StepOnboardExtension on StepOnboard {
-  int get index {
+  int get getIndex {
     switch (this) {
       case StepOnboard.chooseConfig:
         return 0;

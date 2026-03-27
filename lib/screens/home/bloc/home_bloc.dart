@@ -63,6 +63,7 @@ class HomeTab {
         ),
       ],
     ),
+    HomeTab(Routes.license, title: 'Quản lý gói dịch vụ', svg: AppAssets.tabLicense),
     HomeTab(
       Routes.configuration,
       title: 'Cấu hình hệ thống',

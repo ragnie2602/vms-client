@@ -44,8 +44,11 @@ class AppColors {
 
   static const secondary = Color(0xFF005AA9);
   static const blue005AA9 = Color(0xFF005AA9);
-  static const blue2563EB= Color(0xFF2563EB);
-  static const blue137FE = Color(0xFF137FEC);
+  static const blue2563EB = Color(0xFF2563EB);
+  static const blue006DDB = Color(0xFF006DDB);
+  static const blueE7F2FD = Color(0xFFE7F2FD);
+  static const blueDBEAFE = Color(0xFFDBEAFE);
+  static const blue137FEC = Color(0xFF137FEC);
   static const blue005BAA = Color(0xFF005BAA);
   static const blue005EB8 = Color(0xFF005EB8);
   static const blue085DA8 = Color(0xFF085DA8);
@@ -61,6 +64,7 @@ class AppColors {
   static const blueEFF6FF = Color(0xFFEFF6FF);
 
   static const greyDFDFDF = Color(0xFFDFDFDF);
+  static const greyF9F9F9 = Color(0xFFF9F9F9);
   static const greyE2E8F0 = Color(0xFFE2E8F0);
   static const greyEFEFEF = Color(0xFFEFEFEF);
   static const greyE9E9E9 = Color(0xFFE9E9E9);
@@ -95,6 +99,10 @@ class AppColors {
   static const redFF0000 = Color(0xFFFF0000);
   static const redFF0909 = Color(0xFFFF0909);
   static const redFF2F2F = Color(0xFFFF2F2F);
+
+  static const purple9333EA = Color(0xFF9333EA);
+  static const purpleFAF5FF = Color(0xFFFAF5FF);
+  static const purpleF3E8FF = Color(0xFFF3E8FF);
 
   static const white = Colors.white;
 
