@@ -6,17 +6,19 @@ class RoleTextField extends StatefulWidget {
   final Color? borderColor;
   final Color? fillColor;
   final String hintText;
+  final bool isRequired;
   final String label;
+  final int? maxLength;
   final Function(String) onChanged;
   final TextEditingController controller;
   final Widget? prefixIcon;
-  final int? maxLength;
 
   const RoleTextField({
     super.key,
     this.borderColor,
     this.fillColor,
     required this.hintText,
+    this.isRequired = false,
     required this.label,
     required this.onChanged,
     required this.controller,
@@ -35,9 +37,23 @@ class _RoleTextFieldState extends State<RoleTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 8,
       children: [
-        Text(
-          widget.label,
-          style: AppTypography.style(13, fontWeight: FontWeight.w400, color: AppColors.black),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.label,
+              style: AppTypography.style(13, fontWeight: FontWeight.w400, color: AppColors.black),
+            ),
+            if (widget.isRequired)
+              Text(
+                ' *',
+                style: AppTypography.style(
+                  13,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.redFF0004,
+                ),
+              ),
+          ],
         ),
         TextField(
           onChanged: widget.onChanged,

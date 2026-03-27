@@ -11,6 +11,44 @@ class RoleRepository extends BaseRepository implements IRoleRepository {
   RoleRepository(this.service);
 
   @override
+  Future<Either<Failure, Role>> addRole(Role role) {
+    return catchError(() async {
+      final request = role.toJson();
+      request['systemActionCodes'] = role.systemPermissions?.actions;
+      request['subjectActionCodes'] = role.subjectPermissions?.actions;
+      request['cameraActionCodes'] = role.cameraPermissions?.actions;
+      request['allowedCameraGroupUuids'] = role.cameraPermissions?.allowedCameraGroupUuids;
+      request['allowedSubjectGroupIds'] = role.subjectPermissions?.allowedSubjectGroupIds;
+
+      final data = await service.addRole(request);
+      return Right(Role.fromJson(data));
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteRole(int roleId) {
+    return catchError(() async {
+      await service.deleteRole(roleId);
+      return const Right(null);
+    });
+  }
+
+  @override
+  Future<Either<Failure, Role>> editRole(Role role) {
+    return catchError(() async {
+      final request = role.toJson();
+      request['systemActionCodes'] = role.systemPermissions?.actions;
+      request['subjectActionCodes'] = role.subjectPermissions?.actions;
+      request['cameraActionCodes'] = role.cameraPermissions?.actions;
+      request['allowedCameraGroupUuids'] = role.cameraPermissions?.allowedCameraGroupUuids;
+      request['allowedSubjectGroupIds'] = role.subjectPermissions?.allowedSubjectGroupIds;
+
+      final data = await service.editRole(role.id!, request);
+      return Right(Role.fromJson(data));
+    });
+  }
+
+  @override
   Future<Either<Failure, PermissionTree>> getPermissionTree() {
     return catchError(() async {
       final tree = await service.getPermissionTree();

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/role_status.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/roles/role.dart';
 import 'package:vms_flutter_client/screens/event/components/event_custom_button.dart';
@@ -11,6 +12,7 @@ import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_bloc.dart';
 import 'package:vms_flutter_client/screens/object_group/bloc/object_group_event.dart';
+import 'package:vms_flutter_client/screens/object_type/widget/confirm_delete_dialog.dart';
 import 'package:vms_flutter_client/screens/roles/bloc/role_bloc.dart';
 import 'package:vms_flutter_client/screens/roles/widget/add_edit_role_dialog.dart';
 import 'package:vms_flutter_client/screens/roles/widget/role_text_field.dart';
@@ -128,7 +130,15 @@ class _RolesScreenState extends State<RolesScreen> {
               padding: EdgeInsets.all(10),
               child: BlocConsumer<RoleBloc, RoleState>(
                 listener: (context, state) {
-                  if (state is GetAllRolesSuccess) roles = state.roles;
+                  if (state is GetAllRolesSuccess) {
+                    roles = state.roles;
+                  } else if (state is AddRoleSuccess) {
+                    roles.add(state.role);
+                  } else if (state is DeleteRoleSuccess) {
+                    roles.removeWhere((element) => element.id == state.roleId);
+                  } else if (state is EditRoleSuccess) {
+                    roles[roles.indexWhere((element) => element.id == state.role.id)] = state.role;
+                  }
                 },
                 builder: (context, state) {
                   if (state is GetAllRolesLoading) return CircularProgressIndicator();
@@ -224,9 +234,7 @@ class _RolesScreenState extends State<RolesScreen> {
                 editRole(role);
                 break;
               case 'delete':
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Chức năng xóa nhóm quyền đang phát triển')),
-                );
+                deleteRole(role);
                 break;
             }
           },
@@ -295,10 +303,30 @@ class _RolesScreenState extends State<RolesScreen> {
     );
   }
 
+  deleteRole(Role role) {
+    showDialog(
+      context: context,
+      builder: (ctx) => ConfirmDeleteDialog(
+        title: 'Xóa nhóm quyền',
+        content: 'Bạn có chắc chắn muốn xóa nhóm quyền ${role.name}?',
+        onConfirm: () => roleBloc.add(DeleteRole(roleId: role.id!)),
+      ),
+    );
+  }
+
   editRole(Role role) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(child: AddEditRoleDialog(role: role)),
+      builder: (ctx) => Dialog(
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: groupCameraBloc),
+            BlocProvider.value(value: objectGroupBloc),
+            BlocProvider.value(value: roleBloc),
+          ],
+          child: AddEditRoleDialog(role: role),
+        ),
+      ),
     );
   }
 }

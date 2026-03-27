@@ -3,8 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/role_status.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import 'package:vms_flutter_client/domain/entities/roles/permission_tree.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/roles/role.dart';
 import 'package:vms_flutter_client/screens/event/components/event_filter_dropdown.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
@@ -32,8 +33,10 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
   late final TabController _tabController;
 
   final ValueNotifier<Set<String>> _selectedCameraGroupIds = ValueNotifier(<String>{});
-  final ValueNotifier<Set<String>> _selectedCodes = ValueNotifier(<String>{});
-  final ValueNotifier<Set<String>> _selectedSubjectGroupIds = ValueNotifier(<String>{});
+  final ValueNotifier<Set<int>> _selectedSubjectGroupIds = ValueNotifier(<int>{});
+  final ValueNotifier<Set<String>> _selectedSystemPermissions = ValueNotifier(<String>{});
+  final ValueNotifier<Set<String>> _selectedSubjectPermissions = ValueNotifier(<String>{});
+  final ValueNotifier<Set<String>> _selectedCameraPermissions = ValueNotifier(<String>{});
 
   @override
   void initState() {
@@ -41,13 +44,23 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
     roleBloc = context.read<RoleBloc>();
     roleBloc.add(GetPermissions());
 
-    _tabController = TabController(length: 3, vsync: this);
-  }
+    if (widget.role != null) {
+      _nameController.text = widget.role!.name ?? '';
+      _descriptionController.text = widget.role!.description ?? '';
+      _status = widget.role!.status ?? RoleStatus.active;
+      _selectedSystemPermissions.value =
+          widget.role!.systemPermissions?.actions?.map((e) => e).toSet() ?? {};
+      _selectedSubjectPermissions.value =
+          widget.role!.subjectPermissions?.actions?.map((e) => e).toSet() ?? {};
+      _selectedCameraPermissions.value =
+          widget.role!.cameraPermissions?.actions?.map((e) => e).toSet() ?? {};
+      _selectedCameraGroupIds.value =
+          widget.role!.cameraPermissions?.allowedCameraGroupUuids?.map((e) => e).toSet() ?? {};
+      _selectedSubjectGroupIds.value =
+          widget.role!.subjectPermissions?.allowedSubjectGroupIds?.map((e) => e).toSet() ?? {};
+    }
 
-  @override
-  void dispose() {
-    _selectedCodes.dispose();
-    super.dispose();
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -88,8 +101,10 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
                                 controller: _nameController,
                                 fillColor: AppColors.white,
                                 hintText: 'Nhập tên nhóm quyền',
+                                isRequired: true,
                                 label: 'Tên nhóm quyền',
-                                onChanged: (value) => _nameController.text = value,
+                                maxLength: 255,
+                                onChanged: (value) {},
                               ),
                             ),
                             Expanded(
@@ -106,7 +121,7 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
                                     color: AppColors.grey64748B,
                                   ),
                                 ),
-                                items: [null, ...RoleStatus.values],
+                                items: RoleStatus.values,
                                 label: 'Trạng thái',
                                 labelStyle: AppTypography.style(
                                   13,
@@ -131,7 +146,7 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
                           hintText: 'Nhập mô tả',
                           label: 'Mô tả',
                           maxLength: 200,
-                          onChanged: (value) => _descriptionController.text = value,
+                          onChanged: (value) {},
                         ),
                       ],
                     ),
@@ -181,25 +196,25 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
                           if (state is! GetAllPermissionsSuccess) {
                             return Center(child: CircularProgressIndicator());
                           }
-                          
+
                           final tree = state.tree;
                           return TabBarView(
                             controller: _tabController,
                             children: [
                               PermissionList(
                                 tree.systemPermissions ?? [],
-                                selectedCodes: _selectedCodes,
+                                selectedCodes: _selectedSystemPermissions,
                               ),
                               PermissionList(
                                 tree.subjectPermissions ?? [],
-                                selectedCodes: _selectedCodes,
+                                selectedCodes: _selectedSubjectPermissions,
                                 subTree: SubjectGroupTree(
                                   selectedGroupIds: _selectedSubjectGroupIds,
                                 ),
                               ),
                               PermissionList(
                                 tree.cameraPermissions ?? [],
-                                selectedCodes: _selectedCodes,
+                                selectedCodes: _selectedCameraPermissions,
                                 subTree: CameraGroupTree(selectedGroupIds: _selectedCameraGroupIds),
                               ),
                             ],
@@ -216,6 +231,16 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _selectedCameraGroupIds.dispose();
+    _selectedSubjectGroupIds.dispose();
+    _selectedSystemPermissions.dispose();
+    _selectedSubjectPermissions.dispose();
+    _selectedCameraPermissions.dispose();
+    super.dispose();
   }
 
   // WIDGETS
@@ -257,10 +282,24 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
           const SizedBox(width: 16),
           Expanded(
             flex: 328,
-            child: AppButton.filled(
-              label: 'Xác nhận',
-              onPressed: () {
-                print(_selectedCodes.value);
+            child: BlocConsumer<RoleBloc, RoleState>(
+              builder: (context, state) {
+                if (state is AddingRole || state is EditingRole) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                return AppButton.filled(
+                  label: 'Xác nhận',
+                  onPressed: widget.role == null ? _addRole : _editRole,
+                );
+              },
+              listener: (context, state) {
+                if (state is AddRoleSuccess || state is EditRoleSuccess) Navigator.pop(context);
+                if (state is AddRoleFailure) {
+                  ToastUtil.toastFail(title: Text(state.message ?? 'Có lỗi khi tạo quyền'));
+                } else if (state is EditRoleFailure) {
+                  ToastUtil.toastFail(title: Text(state.message ?? 'Có lỗi khi sửa quyền'));
+                }
               },
             ),
           ),
@@ -268,5 +307,55 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
         ],
       ),
     );
+  }
+
+  // FUNCTIONS
+  _addRole() {
+    if (_nameController.text.isEmpty) {
+      ToastUtil.toastFail(title: Text('Vui lòng nhập tên nhóm quyền'));
+      return;
+    }
+
+    Role role = Role(
+      name: _nameController.text,
+      description: _descriptionController.text,
+      status: _status,
+      systemPermissions: SystemPermissions(actions: _selectedSystemPermissions.value.toList()),
+      subjectPermissions: SubjectPermissions(
+        actions: _selectedSubjectPermissions.value.toList(),
+        allowedSubjectGroupIds: _selectedSubjectGroupIds.value.toList(),
+      ),
+      cameraPermissions: CameraPermissions(
+        actions: _selectedCameraPermissions.value.toList(),
+        allowedCameraGroupUuids: _selectedCameraGroupIds.value.toList(),
+      ),
+    );
+
+    roleBloc.add(AddRole(role: role));
+  }
+
+  _editRole() {
+    if (_nameController.text.isEmpty) {
+      ToastUtil.toastFail(title: Text('Vui lòng nhập tên nhóm quyền'));
+      return;
+    }
+
+    Role role = Role(
+      id: widget.role?.id,
+      name: _nameController.text,
+      description: _descriptionController.text,
+      status: _status,
+      systemPermissions: SystemPermissions(actions: _selectedSystemPermissions.value.toList()),
+      subjectPermissions: SubjectPermissions(
+        actions: _selectedSubjectPermissions.value.toList(),
+        allowedSubjectGroupIds: _selectedSubjectGroupIds.value.toList(),
+      ),
+      cameraPermissions: CameraPermissions(
+        actions: _selectedCameraPermissions.value.toList(),
+        allowedCameraGroupUuids: _selectedCameraGroupIds.value.toList(),
+      ),
+    );
+
+    roleBloc.add(EditRole(role: role));
   }
 }

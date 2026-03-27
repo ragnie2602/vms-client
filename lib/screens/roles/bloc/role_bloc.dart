@@ -18,10 +18,23 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
   final SearchRolesUseCase searchRolesUseCase;
 
   RoleBloc(this.repository, this.searchRolesUseCase) : super(RoleState()) {
+    on<AddRole>(_onAddRole);
+    on<DeleteRole>(_onDeleteRole);
+    on<EditRole>(_onEditRole);
     on<GetRoles>(_onGetRoles);
     on<SearchRoles>(_onSearchRoles);
 
     on<GetPermissions>(_onGetPermissions);
+  }
+
+  FutureOr<void> _onAddRole(AddRole event, Emitter<RoleState> emit) async {
+    emit(AddingRole());
+    final result = await repository.addRole(event.role);
+
+    result.fold(
+      (failure) => emit(AddRoleFailure(message: failure.toString())),
+      (role) => emit(AddRoleSuccess(role: role)),
+    );
   }
 
   FutureOr<void> _onGetRoles(GetRoles event, Emitter<RoleState> emit) async {
@@ -48,6 +61,27 @@ class RoleBloc extends Bloc<RoleEvent, RoleState> {
     result.fold(
       (failure) => emit(GetAllPermissionsFailure(failure: failure)),
       (tree) => emit(GetAllPermissionsSuccess(tree)),
+    );
+  }
+
+
+  FutureOr<void> _onEditRole(EditRole event, Emitter<RoleState> emit) async {
+    emit(EditingRole());
+    final result = await repository.editRole(event.role);
+
+    result.fold(
+      (failure) => emit(EditRoleFailure(message: failure.toString())),
+      (role) => emit(EditRoleSuccess(role: role)),
+    );
+  }
+
+  FutureOr<void> _onDeleteRole(DeleteRole event, Emitter<RoleState> emit) async {
+    emit(DeletingRole());
+    final result = await repository.deleteRole(event.roleId);
+
+    result.fold(
+      (failure) => emit(DeleteRoleFailure(message: failure.toString())),
+      (_) => emit(DeleteRoleSuccess(roleId: event.roleId)),
     );
   }
 }

@@ -10,13 +10,13 @@ import 'package:vms_flutter_client/screens/object_group/bloc/object_group_state.
 
 class _SubjectGroupNodeData {
   final String title;
-  final Set<String> allIds;
+  final Set<int> allIds;
 
   const _SubjectGroupNodeData({required this.title, required this.allIds});
 }
 
 class SubjectGroupTree extends StatefulWidget {
-  final ValueNotifier<Set<String>> selectedGroupIds;
+  final ValueNotifier<Set<int>> selectedGroupIds;
   final String rootTitle;
 
   const SubjectGroupTree({
@@ -41,11 +41,11 @@ class _SubjectGroupTreeState extends State<SubjectGroupTree> {
   // --- Tree building ---
 
   /// Thu thập tất cả id (string) của node + toàn bộ con cháu
-  Set<String> _collectSourceIds(TreeNode<SubjectGroup> source) {
-    final ids = <String>{};
+  Set<int> _collectSourceIds(TreeNode<SubjectGroup> source) {
+    final ids = <int>{};
     final id = source.data?.id;
     // Bỏ qua node giả "Danh sách đối tượng" (id == 0)
-    if (id != null && id != 0) ids.add(id.toString());
+    if (id != null && id != 0) ids.add(id);
     for (final child in source.children.values.cast<TreeNode<SubjectGroup>>()) {
       ids.addAll(_collectSourceIds(child));
     }
@@ -67,7 +67,7 @@ class _SubjectGroupTreeState extends State<SubjectGroupTree> {
 
   /// Build cây với root "Tất cả" — bỏ qua node giả id==0
   TreeNode<_SubjectGroupNodeData> _buildTree(TreeNode<SubjectGroup> sourceTree) {
-    final allIds = <String>{};
+    final allIds = <int>{};
 
     final realNodes = <TreeNode<SubjectGroup>>[];
     for (final child in sourceTree.children.values.cast<TreeNode<SubjectGroup>>()) {
@@ -90,7 +90,7 @@ class _SubjectGroupTreeState extends State<SubjectGroupTree> {
 
   // --- Checkbox logic ---
 
-  bool? _triState(Set<String> selected, Set<String> ids) {
+  bool? _triState(Set<int> selected, Set<int> ids) {
     if (ids.isEmpty) return false;
     final hits = ids.where(selected.contains).length;
     if (hits == 0) return false;
@@ -98,8 +98,8 @@ class _SubjectGroupTreeState extends State<SubjectGroupTree> {
     return null;
   }
 
-  void _toggle(bool? checked, Set<String> ids) {
-    final next = Set<String>.of(widget.selectedGroupIds.value);
+  void _toggle(bool? checked, Set<int> ids) {
+    final next = Set<int>.of(widget.selectedGroupIds.value);
     if (checked == true) {
       next.addAll(ids);
     } else {
@@ -152,7 +152,7 @@ class _SubjectGroupTreeState extends State<SubjectGroupTree> {
               final data = node.data;
               if (data == null) return const SizedBox.shrink();
 
-              return ValueListenableBuilder<Set<String>>(
+              return ValueListenableBuilder<Set<int>>(
                 valueListenable: widget.selectedGroupIds,
                 builder: (context, selected, _) {
                   final checkboxValue = _triState(selected, data.allIds);
