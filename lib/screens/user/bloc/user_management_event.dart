@@ -6,31 +6,27 @@ class UserManagementEvent extends BaseEvent {
 
 class GetListUserEvent extends UserManagementEvent {}
 
-class AddUserEvent extends UserManagementEvent {
+class AddUser extends UserManagementEvent {
   final String account;
   final String? email;
   final String? fullName;
   final String? tel;
-  final String? address;
-  final bool isAdmin;
   final String? desc;
   final String password;
-  final bool changePassDenied;
-  final bool addCamDenied;
-  final int dataType; // 0=Tất cả dữ liệu, 1=Chỉ dữ liệu của tài khoản, 2=Dữ liệu được chia sẻ
-  const AddUserEvent({
+  final int? roleId;
+
+  const AddUser({
     required this.account,
     this.email,
     this.tel,
-    this.address,
-    required this.isAdmin,
     this.desc,
-    required this.password,
-    required this.changePassDenied,
-    required this.addCamDenied,
     this.fullName,
-    required this.dataType,
+    required this.password,
+    this.roleId,
   });
+
+  @override
+  List<Object?> get props => [account, email, fullName, tel, desc, password, roleId];
 }
 
 class DeleteUserEvent extends UserManagementEvent {
@@ -49,30 +45,25 @@ class ResetPassWordEvent extends UserManagementEvent {
   List<Object> get props => [userId, newPassword];
 }
 
-class EditUserEvent extends UserManagementEvent {
+class EditUser extends UserManagementEvent {
   final int userId;
-  final String account;
   final String? email;
   final String? tel;
-  final String? address;
-  final bool isAdmin;
   final String? desc;
-  final bool changePassDenied;
-  final bool addCamDenied;
   final String? fullName;
+  final int roleId;
 
-  const EditUserEvent({
+  const EditUser({
     required this.userId,
-    required this.account,
     this.email,
     this.tel,
-    this.address,
-    required this.isAdmin,
-    this.desc,
-    required this.changePassDenied,
-    required this.addCamDenied,
     this.fullName,
+    this.desc,
+    required this.roleId,
   });
+
+  @override
+  List<Object?> get props => [userId, email, tel, desc, fullName];
 }
 
 class SearchUserEvent extends UserManagementEvent {

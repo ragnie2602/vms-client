@@ -23,30 +23,21 @@ class UserService {
   Future<UserEntity> addUser({
     required String account,
     required String password,
-    String? tel,
-    String? email,
-    String? address,
-    String? desc,
     String? fullName,
-    bool? isAdmin,
-    bool? changePassDenied,
-    bool? addCamDenied,
-    int? dataType,
+    String? email,
+    String? tel,
+    String? description,
+    int? roleId,
   }) async {
     final requestData = {
       "username": account,
       "password": password,
+      "description": description,
       "email": email,
-      "phone": tel,
       "fullname": fullName,
-      "tenantId": 1,
-      "dataType": dataType ?? 0,
+      "phone": tel,
+      "roleId": roleId,
     };
-    if (isAdmin == true) {
-      requestData['roleId'] = 1;
-    } else {
-      requestData["roleId"] = 4;
-    }
 
     final BaseResponse response = BaseResponse.fromJson(
       await httpClient.post(url: EndPoints.baseUser, data: requestData),
@@ -82,31 +73,19 @@ class UserService {
 
   Future<UserEntity> editUser({
     required int userId,
-    required String account,
     String? tel,
     String? email,
-    String? address,
     String? desc,
     String? fullName,
-    bool? isAdmin,
-    bool? changePassDenied,
-    bool? addCamDenied,
+    required int roleId,
   }) async {
     final Map<String, dynamic> requestData = {
-      "username": account,
       "email": email,
       "phone": tel,
       "fullname": fullName,
+      "description": desc,
+      "roleId": roleId,
     };
-    if (isAdmin == true) {
-      requestData["isAdmin"] = true;
-    } else {
-      List<String> _permissions = [];
-      if (changePassDenied != true) _permissions.add("auth.change-password");
-      if (addCamDenied != true) _permissions.add("camera.create");
-
-      requestData["permissions"] = _permissions;
-    }
 
     final BaseResponse response = BaseResponse.fromJson(
       await httpClient.put(url: '${EndPoints.baseUser}/$userId', data: requestData),

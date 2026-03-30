@@ -24,27 +24,19 @@ class UserManagementRepository extends BaseRepository implements IUserManagement
     required String password,
     String? tel,
     String? email,
-    String? address,
-    String? desc,
+    String? description,
     String? fullName,
-    bool? isAmin,
-    bool? changePassDenied,
-    bool? addCamDenied,
-    int? dataType,
+    int? roleId,
   }) async {
     return await catchError<UserEntity>(() async {
       final user = await service.addUser(
         account: account,
         password: password,
         tel: tel,
-        address: address,
         email: email,
-        desc: desc,
+        description: description,
         fullName: fullName,
-        isAdmin: isAmin,
-        changePassDenied: changePassDenied,
-        addCamDenied: addCamDenied,
-        dataType: dataType,
+        roleId: roleId,
       );
 
       return Right(user);
@@ -73,28 +65,20 @@ class UserManagementRepository extends BaseRepository implements IUserManagement
   @override
   Future<Either<Failure, UserEntity>> editUser({
     required int userId,
-    required String account,
     String? tel,
     String? email,
-    String? address,
     String? desc,
     String? fullName,
-    bool? isAmin,
-    bool? changePassDenied,
-    bool? addCamDenied,
+    required int roleId,
   }) async {
     return await catchError<UserEntity>(() async {
       final user = await service.editUser(
         userId: userId,
-        account: account,
         tel: tel,
-        address: address,
         email: email,
         desc: desc,
         fullName: fullName,
-        isAdmin: isAmin,
-        changePassDenied: changePassDenied,
-        addCamDenied: addCamDenied,
+        roleId: roleId,
       );
       return Right(user);
     });

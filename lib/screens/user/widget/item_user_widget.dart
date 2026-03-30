@@ -4,7 +4,6 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/domain/entities/user/user_entity.dart';
-import 'package:vms_flutter_client/domain/entities/user/user_type.dart';
 
 class ItemUserWidget extends StatefulWidget {
   const ItemUserWidget({
@@ -60,7 +59,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    widget.itemUser.username,
+                    widget.itemUser.username ?? '',
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
@@ -74,7 +73,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    widget.itemUser.fullname,
+                    widget.itemUser.fullname ?? '',
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,
@@ -118,9 +117,7 @@ class _ItemUserWidgetState extends State<ItemUserWidget> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Text(
-                    widget.itemUser.roleName?.toLowerCase() == UserType.admin.name
-                        ? 'Tài khoản admin'
-                        : 'Tài khoản thường',
+                    widget.itemUser.roleName ?? '',
                     style: AppTypography.style(
                       14,
                       fontWeight: FontWeight.w500,

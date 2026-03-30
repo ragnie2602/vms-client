@@ -152,7 +152,7 @@ class _RolesScreenState extends State<RolesScreen> {
                       data: List.generate(_roles.length, (i) => _roleRow(i, _roles[i])),
                       headers: ['STT', 'Tên nhóm quyền', 'Mô tả', 'Trạng thái', 'Thao tác'],
                     ),
-                    headerBuilder: (header) => Container(
+                    headerBuilder: (i, header) => Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.only(
                           bottomLeft: Radius.circular(3),
@@ -165,7 +165,7 @@ class _RolesScreenState extends State<RolesScreen> {
                       height: 48,
                       margin: EdgeInsets.only(bottom: 20),
                       child: Align(
-                        alignment: Alignment.center,
+                        alignment: [1, 2].contains(i) ? Alignment.centerLeft : Alignment.center,
                         child: Text(
                           header,
                           style: AppTypography.style(

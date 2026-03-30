@@ -45,6 +45,7 @@ class Role {
     data['id'] = id;
     data['name'] = name;
     data['type'] = (status ?? RoleStatus.active).name.toUpperCase();
+    data['description'] = description;
     return data;
   }
 }

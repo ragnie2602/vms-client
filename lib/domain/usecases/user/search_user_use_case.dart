@@ -19,9 +19,9 @@ class SearchUserUseCase extends SyncUseCase<SearchUserInput, SearchUserOutput> {
         .where(
           (e) =>
               // Tìm kiếm theo tài khoản
-              e.username.toLowerCase().trim().contains(searchQuery) ||
+              (e.username?.toLowerCase().trim().contains(searchQuery) ?? false) ||
               // Tìm kiếm theo họ tên
-              e.fullname.toLowerCase().trim().contains(searchQuery) ||
+              (e.fullname?.toLowerCase().trim().contains(searchQuery) ?? false) ||
               // Tìm kiếm theo số điện thoại
               (e.phone != null && e.phone!.toLowerCase().trim().contains(searchQuery)) ||
               // Tìm kiếm theo email
