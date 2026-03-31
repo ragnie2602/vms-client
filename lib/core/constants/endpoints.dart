@@ -62,4 +62,5 @@ class EndPoints {
 
   // Profiles
   static const String baseProfiles = '/api/profiles';
+  static  String setupProfile(int id) => '$baseProfiles/setup/$id';
 }

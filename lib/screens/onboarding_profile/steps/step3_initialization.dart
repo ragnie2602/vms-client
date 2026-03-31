@@ -6,12 +6,10 @@ import 'package:vms_flutter_client/domain/entities/onboard_profile/onboard_profi
 
 class Step3Initialization extends StatefulWidget {
   final Profile? selectedProfile;
-  final VoidCallback onComplete;
 
   const Step3Initialization({
     super.key,
     required this.selectedProfile,
-    required this.onComplete,
   });
 
   @override
@@ -38,14 +36,10 @@ class _Step3InitializationState extends State<Step3Initialization> {
     _timer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
       if (!mounted) return;
       setState(() {
-        if (_progress < 100) {
-          _progress += 3;
-          if (_progress > 100) _progress = 100;
+        if (_progress < 95) {
+          _progress += 2;
         } else {
-          timer.cancel();
-          Future.delayed(const Duration(milliseconds: 800), () {
-            if (mounted) widget.onComplete();
-          });
+          _progress = 90;
         }
       });
     });

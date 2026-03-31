@@ -15,4 +15,12 @@ class ProfileRepository extends BaseRepository implements IProfileRepository {
       return Right(data);
     });
   }
+
+  @override
+  Future<Either<Failure, void>> setupProfile(int profileId) async {
+    return await catchError<void>(() async {
+      await service.setupProfile(profileId);
+      return const Right(null);
+    });
+  }
 }

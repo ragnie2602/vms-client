@@ -3,4 +3,5 @@ import 'package:vms_flutter_client/domain/entities/onboard_profile/onboard_profi
 
 abstract class IProfileRepository {
   Future<Either<Failure, OnboardProfileResponse>> getProfiles();
+  Future<Either<Failure, void>> setupProfile(int profileId);
 }

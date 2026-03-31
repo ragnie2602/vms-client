@@ -16,3 +16,11 @@ class SelectProfileEvent extends ProfileEvent {
   @override
   List<Object?> get props => [profile];
 }
+
+class SetupProfileEvent extends ProfileEvent {
+  final int profileId;
+  const SetupProfileEvent(this.profileId);
+
+  @override
+  List<Object?> get props => [profileId];
+}

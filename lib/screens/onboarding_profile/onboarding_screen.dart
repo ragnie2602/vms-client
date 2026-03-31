@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/domain/entities/onboard_profile/onboard_profile_response.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_stepper.dart';
@@ -25,6 +26,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentStepIndex = 0;
+  Profile? _confirmedProfile;
 
   @override
   void initState() {
@@ -46,12 +48,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  void _nextStep() {
-    if (_currentStepIndex < 2) {
-      setState(() => _currentStepIndex++);
-    } else {
-      _finishOnboarding();
-    }
+  void _onConfirmSetup(Profile? selectedProfile) {
+    // Fire API, then advance to step 3 to show loading UI
+    final profileId = selectedProfile?.id ?? 0;
+    _confirmedProfile = selectedProfile;
+    setState(() => _currentStepIndex = StepOnboard.initialize.getIndex);
+    context.read<ProfileBloc>().add(SetupProfileEvent(profileId));
   }
 
   void _prevStep() {
@@ -76,8 +78,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return Step2Confirmation(selectedProfile: selectedProfile);
       case 2:
         return Step3Initialization(
-          selectedProfile: selectedProfile,
-          onComplete: _finishOnboarding,
+          selectedProfile: _confirmedProfile ?? selectedProfile,
         );
       default:
         return const SizedBox();
@@ -86,107 +87,127 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProfileBloc, ProfileState>(
-      builder: (context, profileState) {
-        final profiles = profileState is ProfileLoadedState
-            ? (profileState.profileResponse.profiles ?? [])
-            : <Profile>[];
-        final selectedProfile = profileState is ProfileLoadedState
-            ? profileState.selectedProfile
-            : null;
+    return BlocListener<ProfileBloc, ProfileState>(
+      listener: (context, state) {
+        if (state is SetupProfileSuccessState) {
+          _finishOnboarding();
+        } else if (state is SetupProfileErrorState) {
+          ToastUtil.toastFail(context: context,
+        title: const Text('Thiết lập thất bại vui lòng thử lại'),);
+          // Go back to step 2 so user can retry
+          setState(() => _currentStepIndex = StepOnboard.confirm.getIndex);
+        }
+      },
+      child: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, profileState) {
+          final isSetupLoading = profileState is SetupProfileLoadingState;
 
-        return Scaffold(
-          backgroundColor: const Color(0xFFF9FAFB),
-          body: profileState is ProfileLoadingState
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 40),
-                        child: Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 1000),
-                            child: Column(
-                              children: [
-                                AppStepper(
-                                  listStepName: StepOnboard.values
-                                      .map((e) => e.getName)
-                                      .toList(),
-                                  currentStepIndex: _currentStepIndex,
-                                ),
-                                const SizedBox(height: 48),
-                                _buildCurrentStep(
-                                  profiles: profiles,
-                                  selectedProfile: selectedProfile,
-                                ),
-                              ],
+          final profiles = profileState is ProfileLoadedState
+              ? (profileState.profileResponse.profiles ?? [])
+              : <Profile>[];
+          final selectedProfile = profileState is ProfileLoadedState
+              ? profileState.selectedProfile
+              : null;
+
+          return Scaffold(
+            backgroundColor: const Color(0xFFF9FAFB),
+            body: profileState is ProfileLoadingState
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 40),
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints:
+                                  const BoxConstraints(maxWidth: 1000),
+                              child: Column(
+                                children: [
+                                  AppStepper(
+                                    listStepName: StepOnboard.values
+                                        .map((e) => e.getName)
+                                        .toList(),
+                                    currentStepIndex: _currentStepIndex,
+                                  ),
+                                  const SizedBox(height: 48),
+                                  _buildCurrentStep(
+                                    profiles: profiles,
+                                    selectedProfile: selectedProfile,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 20),
-                      decoration: const BoxDecoration(
-                        color: AppColors.white,
-                        border:
-                            Border(top: BorderSide(color: Color(0xFFE5E7EB))),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (_currentStepIndex ==
-                              StepOnboard.confirm.getIndex) ...[
-                            SizedBox(
-                              width: 140,
-                              height: 40,
-                              child: AppButton.outline(
-                                label: 'Quay lại',
-                                onPressed: _prevStep,
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 20),
+                        decoration: const BoxDecoration(
+                          color: AppColors.white,
+                          border: Border(
+                              top: BorderSide(color: Color(0xFFE5E7EB))),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (_currentStepIndex ==
+                                StepOnboard.confirm.getIndex) ...[
+                              SizedBox(
+                                width: 140,
+                                height: 40,
+                                child: AppButton.outline(
+                                  label: 'Quay lại',
+                                  onPressed: _prevStep,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            SizedBox(
-                              width: 160,
-                              height: 40,
-                              child: AppButton.filled(
-                                label: 'Đồng ý khởi tạo',
-                                onPressed: _nextStep,
+                              const SizedBox(width: 16),
+                              SizedBox(
+                                width: 160,
+                                height: 40,
+                                child: AppButton.filled(
+                                  label: 'Đồng ý khởi tạo',
+                                  onPressed: () =>
+                                      _onConfirmSetup(selectedProfile),
+                                ),
                               ),
-                            ),
-                          ] else if (_currentStepIndex ==
-                              StepOnboard.chooseConfig.getIndex) ...[
-                            SizedBox(
-                              width: 140,
-                              height: 40,
-                              child: AppButton.filled(
-                                label: 'Tiếp theo',
-                                onPressed:
-                                    selectedProfile != null ? _nextStep : null,
+                            ] else if (_currentStepIndex ==
+                                StepOnboard.chooseConfig.getIndex) ...[
+                              SizedBox(
+                                width: 140,
+                                height: 40,
+                                child: AppButton.filled(
+                                  label: 'Tiếp theo',
+                                  onPressed: selectedProfile != null
+                                      ? () => setState(
+                                          () => _currentStepIndex++)
+                                      : null,
+                                ),
                               ),
-                            ),
-                          ] else if (_currentStepIndex ==
-                              StepOnboard.initialize.getIndex) ...[
-                            SizedBox(
-                              width: 200,
-                              height: 40,
-                              child: AppButton.filled(
-                                label: 'Đang xử lý thiết lập...',
-                                onPressed: null,
+                            ] else if (_currentStepIndex ==
+                                StepOnboard.initialize.getIndex) ...[
+                              SizedBox(
+                                width: 200,
+                                height: 40,
+                                child: AppButton.filled(
+                                  label: isSetupLoading
+                                      ? 'Đang xử lý thiết lập...'
+                                      : 'Đang xử lý thiết lập...',
+                                  onPressed: null,
+                                ),
                               ),
-                            ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-        );
-      },
+                    ],
+                  ),
+          );
+        },
+      ),
     );
   }
 }

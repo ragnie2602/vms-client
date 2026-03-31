@@ -17,4 +17,14 @@ class ProfileService {
     }
     return OnboardProfileResponse.fromJson(response.data);
   }
+  Future<void> setupProfile(int profileId) async {
+    final raw = await httpClient.post(
+      url: EndPoints.setupProfile(profileId),
+      data: {},
+    );
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+  }
 }

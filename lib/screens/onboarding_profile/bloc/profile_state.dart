@@ -48,3 +48,39 @@ class ProfileErrorState extends ProfileState {
   @override
   List<Object?> get props => [errorMessage];
 }
+
+class SetupProfileLoadingState extends ProfileLoadedState {
+  const SetupProfileLoadingState({
+    required super.profileResponse,
+    super.selectedProfile,
+  });
+
+  @override
+  StateType get type => StateType.loading;
+}
+
+class SetupProfileSuccessState extends ProfileLoadedState {
+  const SetupProfileSuccessState({
+    required super.profileResponse,
+    super.selectedProfile,
+  });
+
+  @override
+  StateType get type => StateType.success;
+}
+
+class SetupProfileErrorState extends ProfileLoadedState {
+  final String errorMessage;
+  
+  SetupProfileErrorState({
+    required this.errorMessage,
+    required super.profileResponse,
+    super.selectedProfile,
+  });
+
+  @override
+  StateType get type => StateType.failure;
+
+  @override
+  List<Object?> get props => [profileResponse, selectedProfile, errorMessage];
+}
