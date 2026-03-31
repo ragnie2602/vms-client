@@ -20,13 +20,21 @@ class Step1ConfigSelection extends StatelessWidget {
       children: [
         Text(
           'Chào mừng bạn đến với VNPT Secure Vision',
-          style: AppTypography.style(28, fontWeight: FontWeight.w700, color: AppColors.blackOrWhite),
+          style: AppTypography.style(
+            30,
+            fontWeight: FontWeight.w700,
+            color: AppColors.grey0F172A,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           'Bắt đầu trải nghiệm bằng cách chọn một cấu hình khởi tạo phù hợp nhất với nhu cầu của bạn.',
-          style: AppTypography.style(16, color: const Color(0xFF6B7280)),
+          style: AppTypography.style(
+            16,
+            fontWeight: FontWeight.w500,
+            color: AppColors.grey334155,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 48),
@@ -35,7 +43,7 @@ class Step1ConfigSelection extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
-            childAspectRatio: 0.95,
+            childAspectRatio: 330 / 280,
             crossAxisSpacing: 24,
             mainAxisSpacing: 24,
           ),
@@ -48,7 +56,7 @@ class Step1ConfigSelection extends StatelessWidget {
               onTap: () => onSelected(template.id),
             );
           },
-        )
+        ),
       ],
     );
   }

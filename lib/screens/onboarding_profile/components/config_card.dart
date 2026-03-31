@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import '../models/config_template.dart';
@@ -22,7 +24,7 @@ class ConfigCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
@@ -32,7 +34,7 @@ class ConfigCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -52,17 +54,26 @@ class ConfigCard extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               template.title,
-              style: AppTypography.style(16, fontWeight: FontWeight.w700),
+              style: AppTypography.style(
+                16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.grey0F172A,
+              ),
             ),
             const SizedBox(height: 12),
             Expanded(
               child: Text(
                 template.description,
-                style: AppTypography.style(14, color: const Color(0xFF6B7280)),
+                style: AppTypography.style(
+                  15,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.grey64748B,
+                  lineHeight: 1.56,
+                ),
                 maxLines: 3,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -88,13 +99,19 @@ class ConfigCard extends StatelessWidget {
                       width: 1.5,
                     ),
                   ),
-                  child: Icon(
-                    isSelected ? Icons.check : Icons.arrow_forward_ios,
-                    color: isSelected
-                        ? AppColors.white
-                        : const Color(0xFF9CA3AF),
-                    size: 14,
-                  ),
+                  child: isSelected
+                      ? Icon(
+                          Icons.check,
+                          color: isSelected
+                              ? AppColors.white
+                              : const Color(0xFF9CA3AF),
+                          size: 14,
+                        )
+                      : SvgPicture.asset(
+                          AppAssets.icArrowRight,
+                          width: 14,
+                          height: 14,
+                        ),
                 ),
               ],
             ),

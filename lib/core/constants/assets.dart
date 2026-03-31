@@ -131,6 +131,8 @@ class AppAssets {
   // license
   static const icSuccessLicense = '$_svgPath/ic_success_license.svg';
   static const icLogoVNPT = '$_svgPath/ic_logo_vnpt.svg';
+  // onboard
+  static const icArrowRight = '$_svgPath/ic_arrow_right.svg';
   // multi playback
   static const icAddCam = '$_svgPath/icon_add_cam.svg';
   static const icCameraRecord = '$_svgPath/ic_camera_record.svg';
