@@ -156,7 +156,6 @@ class ItemCameraWidget extends StatelessWidget {
       _buildDivider(),
       _buildConfigMenuItem(),
       _buildDivider(),
-      _buildShareMenuItem(),
       _buildDivider(),
       if (isHaveGroupOwner) ...[_buildRemoveFromGroupMenuItem(), _buildDivider()],
       _buildDeleteMenuItem(),
@@ -205,14 +204,14 @@ class ItemCameraWidget extends StatelessWidget {
     );
   }
 
-  PopupMenuItem<String> _buildShareMenuItem() {
-    return _buildMenuItem(
-      value: 'share',
-      icon: AppAssets.iconShare,
-      label: 'Chia sẻ',
-      textColor: AppColors.black,
-    );
-  }
+  // PopupMenuItem<String> _buildShareMenuItem() {
+  //   return _buildMenuItem(
+  //     value: 'share',
+  //     icon: AppAssets.iconShare,
+  //     label: 'Chia sẻ',
+  //     textColor: AppColors.black,
+  //   );
+  // }
 
   PopupMenuItem<String> _buildRemoveFromGroupMenuItem() {
     return _buildMenuItem(
