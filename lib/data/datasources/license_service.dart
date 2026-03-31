@@ -4,6 +4,8 @@ import 'package:vms_flutter_client/data/datasources/http_client.dart';
 import 'package:vms_flutter_client/data/models/response/base_response.dart';
 import 'package:vms_flutter_client/domain/entities/license/current_license_data.dart';
 
+import 'package:vms_flutter_client/domain/entities/license/license_preview_data.dart';
+
 class LicenseService {
   final HttpClient httpClient;
 
@@ -16,5 +18,17 @@ class LicenseService {
       throw ApiException(response.message);
     }
     return CurrentLicenseData.fromJson(response.data);
+  }
+
+  Future<LicensePreviewData> previewLicense(String licenseKey) async {
+    final raw = await httpClient.post(
+      url: EndPoints.previewLicense,
+      data: {'licenseKey': licenseKey},
+    );
+    final response = BaseResponse.fromJson(raw);
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+    return LicensePreviewData.fromJson(response.data);
   }
 }

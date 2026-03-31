@@ -63,6 +63,8 @@ class EndPoints {
   // License
   static const String baseLicense = '/api/licenses';
   static const String checkCurrentLicense = '/api/licenses/current';
+  static const String previewLicense = '/api/licenses/preview';
+  static const String checkPreviewLicenseKey = '/api/licenses/preview';
 
   // Profiles
   static const String baseProfiles = '/api/profiles';

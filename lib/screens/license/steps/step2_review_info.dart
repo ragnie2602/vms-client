@@ -9,19 +9,37 @@ import 'package:vms_flutter_client/screens/license/widgets/license_info_row.dart
 import 'package:vms_flutter_client/screens/license/widgets/license_remaining_days_badge.dart';
 import 'package:vms_flutter_client/screens/license/widgets/license_section_header.dart';
 import 'package:vms_flutter_client/screens/license/widgets/license_status_badge.dart';
+import 'package:vms_flutter_client/domain/entities/license/current_license_data.dart';
+import 'package:vms_flutter_client/domain/entities/license/license_preview_data.dart';
 
 class Step2ReviewInfo extends StatelessWidget {
   final bool isDetailMode;
   final VoidCallback? onUpdatePackage;
+  final LicensePreviewData? previewData;
+  final CurrentLicenseData? currentLicense;
 
   const Step2ReviewInfo({
     super.key,
     this.isDetailMode = false,
     this.onUpdatePackage,
+    this.previewData,
+    this.currentLicense,
   });
 
   @override
   Widget build(BuildContext context) {
+    final payload = isDetailMode ? currentLicense?.license : previewData?.license;
+    final status = isDetailMode ? currentLicense?.status : previewData?.previewStatus;
+
+    // Tính remaining days nếu có expiryDate
+    int? remainingDays;
+    if (payload?.expiryDate != null) {
+      final expiry = DateTime.tryParse(payload!.expiryDate!);
+      if (expiry != null) {
+        remainingDays = expiry.difference(DateTime.now()).inDays;
+      }
+    }
+
     return Column(
       children: [
         if (!isDetailMode) ...[
@@ -66,7 +84,7 @@ class Step2ReviewInfo extends StatelessWidget {
                 ),
               LicenseInfoRow(
                 'Gói dịch vụ',
-                'Gói VMS Enterprise - Phân hệ Trường học',
+                payload?.packageName ?? '---',
                 isBoldValue: true,
                 actionWidget: isDetailMode
                     ? SizedBox(
@@ -84,20 +102,20 @@ class Step2ReviewInfo extends StatelessWidget {
                 LicenseInfoRow(
                   'Trạng thái',
                   '',
-                  badgeWidget: const LicenseStatusBadge(),
+                  badgeWidget: LicenseStatusBadge(status: status),
                 ),
-                const LicenseInfoRow(
+                LicenseInfoRow(
                   'Mã khách hàng',
-                  'KH-001',
+                  payload?.customerId ?? '---',
                   isBoldValue: true,
                 ),
               ],
-              const LicenseInfoRow('Ngày kích hoạt', '01/01/2025'),
+              LicenseInfoRow('Ngày kích hoạt', payload?.issueDate ?? '---'),
               LicenseInfoRow(
                 'Ngày hết hạn',
-                '31/12/2025',
-                badgeWidget: isDetailMode
-                    ? const LicenseRemainingDaysBadge()
+                payload?.expiryDate ?? '---',
+                badgeWidget: isDetailMode && remainingDays != null && remainingDays > 0
+                    ? LicenseRemainingDaysBadge(text: 'CÒN $remainingDays NGÀY')
                     : null,
               ),
 
@@ -105,15 +123,15 @@ class Step2ReviewInfo extends StatelessWidget {
                 icon: Icons.devices_outlined,
                 title: 'GIỚI HẠN THIẾT BỊ',
               ),
-              const LicenseInfoRow(
+              LicenseInfoRow(
                 'Số lượng Camera',
-                '10 Thiết bị',
-                valueHighlight: '10',
+                '${payload?.maxCameras ?? 0} Thiết bị',
+                valueHighlight: '${payload?.maxCameras ?? 0}',
               ),
-              const LicenseInfoRow(
+              LicenseInfoRow(
                 'Số lượng AI Box',
-                '05 Thiết bị',
-                valueHighlight: '05',
+                '${payload?.maxAiBoxes ?? 0} Thiết bị',
+                valueHighlight: '${payload?.maxAiBoxes ?? 0}',
               ),
 
               const LicenseSectionHeader(
@@ -133,14 +151,7 @@ class Step2ReviewInfo extends StatelessWidget {
                       badgeTextColor: AppColors.blue2563EB,
                       badgeBorderColor: AppColors.blueDBEAFE,
                       isDetailMode: isDetailMode,
-                      features: const [
-                        'Xem trực tiếp (Liveview)',
-                        'Xem lại (Playback)',
-                        'Quản lý thiết bị',
-                        'Bản đồ camera',
-                        'Quản lý đối tượng',
-                        'Tài khoản & Phân quyền',
-                      ],
+                      features: payload?.systemFeatures.map((f) => f.featureName ?? '').toList() ?? const [],
                     ),
                     const SizedBox(height: 32),
                     LicenseFeatureGroup(
@@ -150,29 +161,11 @@ class Step2ReviewInfo extends StatelessWidget {
                       badgeTextColor: AppColors.purple9333EA,
                       badgeBorderColor: AppColors.purpleF3E8FF,
                       isDetailMode: isDetailMode,
-                      features: [
-                        isDetailMode
-                            ? 'Nhận diện khuôn mặt (Tối đa 5 cam)'
-                            : 'Nhận diện khuôn mặt (Max 20 cam)',
-                        isDetailMode
-                            ? 'Cảnh báo người lạ (Tối đa 5 cam)'
-                            : 'Cảnh báo người lạ (Max 10 cam)',
-                        isDetailMode
-                            ? 'Cảnh báo xâm nhập (Tối đa 5 cam)'
-                            : 'Cảnh báo xâm nhập (Max 50 cam)',
-                        isDetailMode
-                            ? 'Hành vi hút thuốc (Tối đa 5 cam)'
-                            : 'Hành vi hút thuốc (Max 15 cam)',
-                        isDetailMode
-                            ? 'Cảnh báo tụ tập đông người (Tối đa 5 cam)'
-                            : 'Cảnh báo tụ tập đông người (Max 10 cam)',
-                        isDetailMode
-                            ? 'Cảnh báo cháy & Khói (Tối đa 5 cam)'
-                            : 'Cảnh báo cháy & Khói (Max 20 cam)',
-                        isDetailMode
-                            ? 'Cảnh báo sử dụng điện thoại (Tối đa 5 cam)'
-                            : 'Cảnh báo sử dụng điện thoại (Max 20 cam)',
-                      ],
+                      features: payload?.aiFeatures.map((f) {
+                        return isDetailMode 
+                            ? '${f.featureName} (Tối đa ${f.allowedCameras} cam)'
+                            : '${f.featureName} (Max ${f.allowedCameras} cam)';
+                      }).toList() ?? const [],
                     ),
                   ],
                 ),

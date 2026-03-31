@@ -3,12 +3,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/core/utils/toast_util.dart';
 import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_stepper.dart';
 import 'package:vms_flutter_client/screens/license/components/enum_step_license.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vms_flutter_client/screens/license/bloc/license_bloc.dart';
 import 'package:vms_flutter_client/screens/license/bloc/license_state.dart';
+import 'package:vms_flutter_client/screens/license/bloc/license_event.dart';
 import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:vms_flutter_client/domain/entities/license/current_license_data.dart';
 
@@ -44,11 +46,14 @@ class _LicenseScreenState extends State<LicenseScreen> {
     }
   }
 
-  Widget _buildCurrentStep() {
+  Widget _buildCurrentStep(LicenseState state) {
     switch (_currentStepIndex) {
       case 0:
         return Step1InputCode(
-          onCallPreview: _nextStep,
+          isLoading: state.isPreviewLoading,
+          onCallPreview: (code) {
+            context.read<LicenseBloc>().add(PreviewLicenseEvent(code));
+          },
           onCancel: _isUpdating
               ? () {
                   setState(() {
@@ -59,7 +64,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
               : null,
         );
       case 1:
-        return const Step2ReviewInfo();
+        return Step2ReviewInfo(previewData: state.previewData);
       case 2:
         return const Step3Complete();
       default:
@@ -72,7 +77,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
     return BlocConsumer<LicenseBloc, LicenseState>(
       listener: (context, state) {
         if (state.type == StateType.failure) {
-          // Show error or handle failure if needed
+          ToastUtil.toastFail(context: context, message: state.errorMsg);
         } else if (state.type == StateType.success) {
           final status = state.currentLicense?.status;
           if (status == LicenseStatus.active ||
@@ -86,6 +91,21 @@ class _LicenseScreenState extends State<LicenseScreen> {
               _currentStepIndex = 0;
             });
           }
+        }
+
+        if (state.previewErrorMessage != null &&
+            state.previewErrorMessage!.isNotEmpty) {
+          ToastUtil.toastFail(
+            context: context,
+            message: state.previewErrorMessage!,
+          );
+        } else if (!state.isPreviewLoading &&
+            state.previewData != null &&
+            _currentStepIndex == 0) {
+          setState(() {
+            _currentStepIndex = 1;
+            _isDetailMode = false;
+          });
         }
       },
       builder: (context, state) {
@@ -111,6 +131,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
                         constraints: const BoxConstraints(maxWidth: 1000),
                         child: Step2ReviewInfo(
                           isDetailMode: true,
+                          currentLicense: state.currentLicense,
                           onUpdatePackage: () {
                             setState(() {
                               _isDetailMode = false;
@@ -202,7 +223,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
                             currentStepIndex: _currentStepIndex,
                           ),
                           const SizedBox(height: 48),
-                          _buildCurrentStep(),
+                          _buildCurrentStep(state),
                         ],
                       ),
                     ),

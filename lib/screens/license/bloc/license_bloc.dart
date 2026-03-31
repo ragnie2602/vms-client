@@ -9,6 +9,7 @@ class LicenseBloc extends BaseBloc<LicenseEvent, LicenseState> {
 
   LicenseBloc({required this.repository}) : super(const LicenseState()) {
     on<CheckCurrentLicenseEvent>(_onCheckCurrentLicense);
+    on<PreviewLicenseEvent>(_onPreviewLicense);
   }
 
   Future<void> _onCheckCurrentLicense(
@@ -29,6 +30,32 @@ class LicenseBloc extends BaseBloc<LicenseEvent, LicenseState> {
         emit(state.copyWith(
           stateType: StateType.success,
           currentLicense: data,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onPreviewLicense(
+    PreviewLicenseEvent event,
+    Emitter<LicenseState> emit,
+  ) async {
+    emit(state.copyWith(
+      isPreviewLoading: true, 
+      clearPreviewError: true,
+    ));
+    
+    final result = await repository.previewLicense(event.licenseKey);
+    result.fold(
+      (failure) {
+        emit(state.copyWith(
+          isPreviewLoading: false,
+          previewErrorMessage: failure.toString(),
+        ));
+      },
+      (data) {
+        emit(state.copyWith(
+          isPreviewLoading: false,
+          previewData: data,
         ));
       },
     );
