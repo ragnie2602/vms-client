@@ -59,4 +59,7 @@ class EndPoints {
 
   // Subject types
   static const String baseSubjectType = '/api/object-types';
+
+  // Profiles
+  static const String baseProfiles = '/api/profiles';
 }

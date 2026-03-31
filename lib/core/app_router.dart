@@ -52,6 +52,7 @@ import 'package:vms_flutter_client/screens/system_configuration/system_configura
 import 'package:vms_flutter_client/screens/user/bloc/user_management_bloc.dart';
 import 'package:vms_flutter_client/screens/user/user_management_screen.dart';
 
+import '../domain/i_repositories/i_profile_repository.dart';
 import '../domain/usecases/login/login_usecase.dart';
 import '../domain/usecases/register/register_usecase.dart';
 import '../screens/about/about_screen.dart';
@@ -173,7 +174,10 @@ class AppRouter {
         path: Routes.login.path,
         name: Routes.login.name,
         builder: (context, state) => BlocProvider(
-          create: (context) => LoginBloc(loginUseCase: context.read<LoginUseCase>()),
+          create: (context) => LoginBloc(
+            loginUseCase: context.read<LoginUseCase>(),
+            profileRepository: context.read<IProfileRepository>(),
+          ),
           child: PlatformBuilder.builder(
             onDesktop: (_) => LoginScreen(),
             onMobile: (_) => MobileLoginScreen(),

@@ -105,20 +105,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   final (_, setting) = MultiWindowUtil.getSuitableWindowSetting(
                     suggestWindowID: 0,
                   );
-                  // final isFirstLogin = AppData.instance.read<bool>(AppKeys.SP_IS_FIRST_LOGIN) ?? true;
-                  // alway open onboarding
-                  context.goNamed(
-                    Routes.onboarding.name,
-                    extra: 'isFreshLogin',
-                  );
-                  // if (isFirstLogin) {
-                  //    context.goNamed(Routes.onboarding.name, extra: 'isFreshLogin');
-                  // } else {
-                  //    context.goNamed(
-                  //     setting.isDefaultMode ? Routes.monitoring.name : Routes.custom_live_view.name,
-                  //     extra: 'isFreshLogin',
-                  //   );
-                  // }
+
+                  if (state.needsOnboarding) {
+                    // Chưa có profile nào đang dùng -> mở màn onboard
+                    context.goNamed(
+                      Routes.onboarding.name,
+                      extra: 'isFreshLogin',
+                    );
+                  } else {
+                    // Đã có profile -> vào liveview như bình thường
+                    context.goNamed(
+                      setting.isDefaultMode
+                          ? Routes.monitoring.name
+                          : Routes.custom_live_view.name,
+                      extra: 'isFreshLogin',
+                    );
+                  }
                 } else if (state.isLoading == false &&
                     state.errorMessage != null) {
                   showAppMessageDialog(

@@ -7,6 +7,7 @@ import 'package:vms_flutter_client/data/datasources/detect_service.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
 import 'package:vms_flutter_client/data/datasources/event_service.dart';
 import 'package:vms_flutter_client/data/datasources/notification_service.dart';
+import 'package:vms_flutter_client/data/datasources/profile_service.dart';
 import 'package:vms_flutter_client/data/datasources/object_type_service.dart';
 import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart';
 import 'package:vms_flutter_client/data/datasources/sources.dart';
@@ -17,6 +18,7 @@ import 'package:vms_flutter_client/data/repositories/ai_config_repository.dart';
 import 'package:vms_flutter_client/data/repositories/detect_repository.dart';
 import 'package:vms_flutter_client/data/repositories/event_repository.dart';
 import 'package:vms_flutter_client/data/repositories/notification_repository.dart';
+import 'package:vms_flutter_client/data/repositories/profile_repository.dart';
 import 'package:vms_flutter_client/data/repositories/object_group_repository.dart';
 import 'package:vms_flutter_client/data/repositories/object_type_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
@@ -26,6 +28,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dar
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_notication_repostory.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_profile_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
@@ -101,6 +104,7 @@ class DependencyInjection {
     Provider<NotificationService>(
       create: (context) => NotificationService(context.read(), context.read()),
     ),
+    Provider<ProfileService>(create: (context) => ProfileService(context.read())),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -136,6 +140,9 @@ class DependencyInjection {
     Provider<INotificationRepository>(
       create: (context) =>
           NotificationRepository(notificationService: context.read()),
+    ),
+    Provider<IProfileRepository>(
+      create: (context) => ProfileRepository(service: context.read()),
     ),
 
     // Use Cases
