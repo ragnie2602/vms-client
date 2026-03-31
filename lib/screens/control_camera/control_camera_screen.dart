@@ -45,211 +45,6 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   final ScrollController _cameraListController = ScrollController();
   TagEntity? tagSelected;
 
-  void _onClearSearch() {
-    cameraNameController.clear();
-    cameraStatus = null;
-    tagSelected = null;
-  }
-
-  void _onGetListCamera({List<int>? cameraId, int? status, int? ivaType, required BuildContext c}) {
-    c.read<ControlCameraBloc>().add(
-      GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType),
-    );
-  }
-
-  void _onGetListCameraNoGroup({required BuildContext c}) {
-    c.read<ControlCameraBloc>().add(GetListCameraNoGroupEvent());
-  }
-
-  void _onGetCameraInGroup({required List<int> groupId, required BuildContext context}) {
-    context.read<ControlCameraBloc>().add(GetListCameraInGroupEvent(groupId: groupId));
-  }
-
-  void _onGetAllTags({required BuildContext context}) {
-    context.read<ControlCameraBloc>().add(GetAllTagsEvent());
-  }
-
-  void _onCheckOnvif({
-    required String xaddrs,
-    required String userName,
-    required String password,
-    List<int>? boxId,
-  }) {
-    context.read<ControlCameraBloc>().add(
-      CheckOnvifEvent(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId),
-    );
-  }
-
-  void _onSearch() {
-    context.read<ControlCameraBloc>().add(
-      FilterCameraEvent(
-        cameraName: cameraNameController.text,
-        isOnline: cameraStatus?.getValue,
-        tagName: tagSelected?.name,
-      ),
-    );
-  }
-
-  void _onImportCamera({required List<ImportCameraCell> cameras}) {
-    context.read<ControlCameraBloc>().add(ImportCameraEvent(cameras: cameras));
-  }
-
-  void _onAddCameraRTSP({
-    required String name,
-    required String username,
-    required String password,
-    required String rtspUrl,
-    required CameraMap location,
-    required List<int> boxId,
-    required List<int> groupId,
-    required List<String> subStreamUrls,
-    required Set<TagEntity> tags,
-  }) {
-    context.read<ControlCameraBloc>().add(
-      AddCameraRTSPEvent(
-        name: name,
-        username: username,
-        password: password,
-        rtspUrl: rtspUrl,
-        location: location,
-        boxId: boxId,
-        groupId: groupId,
-        subStreamUrls: subStreamUrls,
-        tags: tags,
-      ),
-    );
-  }
-
-  void _onAddCameraOnvif({
-    required String name,
-    required String username,
-    required String password,
-    required String onvifDeviceIp,
-    required String rtspUrl,
-    required String serialNumber,
-    required CameraMap location,
-    required List<int> boxId,
-    required List<int> groupId,
-    required String urn,
-    required List<String> subStreamUrls,
-    required Set<TagEntity> tags,
-  }) {
-    context.read<ControlCameraBloc>().add(
-      AddCameraOnvifEvent(
-        name: name,
-        username: username,
-        password: password,
-        onvifDeviceIp: onvifDeviceIp,
-        rtspUrl: rtspUrl,
-        serialNumber: serialNumber,
-        location: location,
-        boxId: boxId,
-        groupId: groupId,
-        urn: urn,
-        subStreamUrls: subStreamUrls,
-        tags: tags,
-      ),
-    );
-  }
-
-  void _onUpdateCamera({
-    required List<int> cameraId,
-    required String name,
-    required String rtspUrl,
-    required String userName,
-    required String password,
-    CameraMap? location,
-    required List<String> subStreamUrls,
-    required String xaddr,
-    required Set<TagEntity> tags,
-  }) {
-    context.read<ControlCameraBloc>().add(
-      UpdateCameraEvent(
-        cameraId: cameraId,
-        name: name,
-        rtspUrl: rtspUrl,
-        userName: userName,
-        password: password,
-        location: location,
-        subStreamUrls: subStreamUrls,
-        xaddr: xaddr,
-        tags: tags,
-      ),
-    );
-  }
-
-  void _onDeleteCamera({required List<int> cameraId, required String cameraName}) {
-    showDialogRemoveCameraFromGroup(
-      context,
-      title: 'camera này khỏi hệ thống?',
-      onConfirm: () {
-        context.read<ControlCameraBloc>().add(DeleteCameraEvent(cameraId: cameraId));
-      },
-    );
-  }
-
-  void _showDialogRemoveCameraFromGroup({
-    required BuildContext c,
-    required List<int> cameraId,
-    required List<int> groupOwnerId,
-  }) {
-    showDialogRemoveCameraFromGroup(
-      c,
-      onConfirm: () {
-        context.read<ControlCameraBloc>().add(
-          RemoveCameraFromGroupEvent(cameraId: cameraId, groupId: groupOwnerId),
-        );
-      },
-    );
-  }
-
-  Future<void> _onShowDialogConfigCamera({
-    required BuildContext configContext,
-    required CameraEntity camera,
-  }) async {
-    final res = await showDialogConfig(configContext, camera: camera);
-    if (res != null && res is CameraEntity) {
-      if (!mounted) return;
-      context.read<ControlCameraBloc>().add(ReplaceCameraEvent(newCamera: res));
-    }
-  }
-
-  Future<void> _onShowDialogShareCamera({
-    required BuildContext c,
-    required CameraEntity camera,
-  }) async {
-    List<InviteMessageEntity>? invites;
-    invites = await c.read<ControlCameraBloc>().getListShareCamera(camId: camera.id);
-    if (!c.mounted) return;
-
-    showShareGroupCameraDialog(
-      c,
-      shareType: ShareType.camera,
-      currentCamera: camera,
-      onReloadData: () async {
-        return await c.read<ControlCameraBloc>().getListShareCamera(camId: camera.id);
-      },
-      onDeleteShareCamera: (_inviteId, _accName) {
-        return context.read<ControlCameraBloc>().deleteShareCamera(
-          camId: camera.id,
-          accountB: _accName,
-          shareId: _inviteId,
-          onToastFail: ({messageFail}) {
-            ToastUtil.toastFail(context: c, title: Text(messageFail ?? 'Thất bại'));
-          },
-        );
-      },
-      onShareCamera: (_accountNameInvite) {
-        return context.read<ControlCameraBloc>().shareCamera(
-          camId: camera.id,
-          role: ShareCameraRoleExtension.getShareCameraRoleValue(ShareCameraRole.VIEW),
-          accountInvite: _accountNameInvite,
-        );
-      },
-      sharedUsers: invites, // list data,
-    );
-  }
-
   @override
   void initState() {
     _onGetAllTags(context: context);
@@ -258,21 +53,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
   }
 
   @override
-  void dispose() {
-    _cameraListController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return BlocListener<ControlCameraBloc, ControlCameraState>(
-      // listenWhen: (prev, curr) =>
-      //     curr is DeleteCameraSuccessState ||
-      //     curr is ListCameraSuccessState ||
-      //     curr is RemoveCameraFromGroupFailState ||
-      //     curr is RemoveCameraFromGroupSuccessState ||
-      //     curr is ListShareCameraSuccessState ||
-      //     curr is UpdateCameraSuccessState,
       listener: (context, state) {
         // Thêm/Sửa/Xóa thành công --> set flag để load lại danh sách camera khi mở lại tab giám sát/xem lại
         if (state is DeleteCameraSuccessState ||
@@ -280,14 +62,8 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
             state is UpdateCameraSuccessState) {
           context.read<MonitorBloc>().shouldRefreshAllCameras = true;
         }
-
         if (state is RemoveCameraFromGroupFailState) {
           ToastUtil.toastFail(context: context, title: Text(state.errorMsg));
-          // showAppMessageDialog(
-          //   context,
-          //   message: state.errorMsg,
-          //   type: AppMessageType.error,
-          // );
         }
         if (state is RemoveCameraFromGroupSuccessState) {
           ToastUtil.toastSuccess(context: context, title: Text('Xóa thành công'));
@@ -303,35 +79,38 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Flexible(
-            flex: 2,
-            child: GroupCameraView(
-              enableAddGroup: true,
-              enableNodeAction: true,
-              onGetAllGroupCamera: (c) {
-                _onClearSearch();
-                _onGetListCamera(c: c);
-              },
-              onGetNoGroupCamera: (c) {
-                _onClearSearch();
-                _onGetListCameraNoGroup(c: c);
-              },
-              onGetCamerasInGroup: (c, groupId) {
-                _onClearSearch();
-                _onGetCameraInGroup(groupId: groupId, context: c);
-              },
-              onClearGroupSelected: (c) {
-                c.read<ControlCameraBloc>().currentGroupId.clear();
-                _onGetListCamera(c: c);
-              },
-              onAddCameraToGroup: ({required c, required cameraIds, required currentGroupId}) {
-                context.read<ControlCameraBloc>().add(
-                  AddCameraToGroupEvent(cameraIds: cameraIds, groupId: currentGroupId),
-                );
-              },
-            ),
-          ),
-          Flexible(
+          AppData.instance.can('camera-group.view')
+              ? Flexible(
+                  flex: 2,
+                  child: GroupCameraView(
+                    enableAddGroup: true,
+                    enableNodeAction: true,
+                    onGetAllGroupCamera: (c) {
+                      _onClearSearch();
+                      _onGetListCamera(c: c);
+                    },
+                    onGetNoGroupCamera: (c) {
+                      _onClearSearch();
+                      _onGetListCameraNoGroup(c: c);
+                    },
+                    onGetCamerasInGroup: (c, groupId) {
+                      _onClearSearch();
+                      _onGetCameraInGroup(groupId: groupId, context: c);
+                    },
+                    onClearGroupSelected: (c) {
+                      c.read<ControlCameraBloc>().currentGroupId.clear();
+                      _onGetListCamera(c: c);
+                    },
+                    onAddCameraToGroup:
+                        ({required c, required cameraIds, required currentGroupId}) {
+                          context.read<ControlCameraBloc>().add(
+                            AddCameraToGroupEvent(cameraIds: cameraIds, groupId: currentGroupId),
+                          );
+                        },
+                  ),
+                )
+              : const SizedBox(),
+          Expanded(
             flex: 7,
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
@@ -496,7 +275,7 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
                         const SizedBox(width: 25),
                         InkWell(
                           onTap: () {
-                            if (!(AppData.instance.profile?.canAddCamera ?? true)) {
+                            if (!(AppData.instance.profile?.can('camera.create') ?? true)) {
                               ToastUtil.toastFail(
                                 context: context,
                                 title: Text(
@@ -794,6 +573,217 @@ class _ControlCameraScreenState extends State<ControlCameraScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _cameraListController.dispose();
+    super.dispose();
+  }
+
+  void _onClearSearch() {
+    cameraNameController.clear();
+    cameraStatus = null;
+    tagSelected = null;
+  }
+
+  void _onGetListCamera({List<int>? cameraId, int? status, int? ivaType, required BuildContext c}) {
+    c.read<ControlCameraBloc>().add(
+      GetListCameraEvent(cameraId: cameraId, status: status, ivaType: ivaType),
+    );
+  }
+
+  void _onGetListCameraNoGroup({required BuildContext c}) {
+    c.read<ControlCameraBloc>().add(GetListCameraNoGroupEvent());
+  }
+
+  void _onGetCameraInGroup({required List<int> groupId, required BuildContext context}) {
+    context.read<ControlCameraBloc>().add(GetListCameraInGroupEvent(groupId: groupId));
+  }
+
+  void _onGetAllTags({required BuildContext context}) {
+    context.read<ControlCameraBloc>().add(GetAllTagsEvent());
+  }
+
+  void _onCheckOnvif({
+    required String xaddrs,
+    required String userName,
+    required String password,
+    List<int>? boxId,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      CheckOnvifEvent(xaddrs: xaddrs, userName: userName, password: password, boxId: boxId),
+    );
+  }
+
+  void _onSearch() {
+    context.read<ControlCameraBloc>().add(
+      FilterCameraEvent(
+        cameraName: cameraNameController.text,
+        isOnline: cameraStatus?.getValue,
+        tagName: tagSelected?.name,
+      ),
+    );
+  }
+
+  void _onImportCamera({required List<ImportCameraCell> cameras}) {
+    context.read<ControlCameraBloc>().add(ImportCameraEvent(cameras: cameras));
+  }
+
+  void _onAddCameraRTSP({
+    required String name,
+    required String username,
+    required String password,
+    required String rtspUrl,
+    required CameraMap location,
+    required List<int> boxId,
+    required List<int> groupId,
+    required List<String> subStreamUrls,
+    required Set<TagEntity> tags,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      AddCameraRTSPEvent(
+        name: name,
+        username: username,
+        password: password,
+        rtspUrl: rtspUrl,
+        location: location,
+        boxId: boxId,
+        groupId: groupId,
+        subStreamUrls: subStreamUrls,
+        tags: tags,
+      ),
+    );
+  }
+
+  void _onAddCameraOnvif({
+    required String name,
+    required String username,
+    required String password,
+    required String onvifDeviceIp,
+    required String rtspUrl,
+    required String serialNumber,
+    required CameraMap location,
+    required List<int> boxId,
+    required List<int> groupId,
+    required String urn,
+    required List<String> subStreamUrls,
+    required Set<TagEntity> tags,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      AddCameraOnvifEvent(
+        name: name,
+        username: username,
+        password: password,
+        onvifDeviceIp: onvifDeviceIp,
+        rtspUrl: rtspUrl,
+        serialNumber: serialNumber,
+        location: location,
+        boxId: boxId,
+        groupId: groupId,
+        urn: urn,
+        subStreamUrls: subStreamUrls,
+        tags: tags,
+      ),
+    );
+  }
+
+  void _onUpdateCamera({
+    required List<int> cameraId,
+    required String name,
+    required String rtspUrl,
+    required String userName,
+    required String password,
+    CameraMap? location,
+    required List<String> subStreamUrls,
+    required String xaddr,
+    required Set<TagEntity> tags,
+  }) {
+    context.read<ControlCameraBloc>().add(
+      UpdateCameraEvent(
+        cameraId: cameraId,
+        name: name,
+        rtspUrl: rtspUrl,
+        userName: userName,
+        password: password,
+        location: location,
+        subStreamUrls: subStreamUrls,
+        xaddr: xaddr,
+        tags: tags,
+      ),
+    );
+  }
+
+  void _onDeleteCamera({required List<int> cameraId, required String cameraName}) {
+    showDialogRemoveCameraFromGroup(
+      context,
+      title: 'camera này khỏi hệ thống?',
+      onConfirm: () {
+        context.read<ControlCameraBloc>().add(DeleteCameraEvent(cameraId: cameraId));
+      },
+    );
+  }
+
+  void _showDialogRemoveCameraFromGroup({
+    required BuildContext c,
+    required List<int> cameraId,
+    required List<int> groupOwnerId,
+  }) {
+    showDialogRemoveCameraFromGroup(
+      c,
+      onConfirm: () {
+        context.read<ControlCameraBloc>().add(
+          RemoveCameraFromGroupEvent(cameraId: cameraId, groupId: groupOwnerId),
+        );
+      },
+    );
+  }
+
+  Future<void> _onShowDialogConfigCamera({
+    required BuildContext configContext,
+    required CameraEntity camera,
+  }) async {
+    final res = await showDialogConfig(configContext, camera: camera);
+    if (res != null && res is CameraEntity) {
+      if (!mounted) return;
+      context.read<ControlCameraBloc>().add(ReplaceCameraEvent(newCamera: res));
+    }
+  }
+
+  Future<void> _onShowDialogShareCamera({
+    required BuildContext c,
+    required CameraEntity camera,
+  }) async {
+    List<InviteMessageEntity>? invites;
+    invites = await c.read<ControlCameraBloc>().getListShareCamera(camId: camera.id);
+    if (!c.mounted) return;
+
+    showShareGroupCameraDialog(
+      c,
+      shareType: ShareType.camera,
+      currentCamera: camera,
+      onReloadData: () async {
+        return await c.read<ControlCameraBloc>().getListShareCamera(camId: camera.id);
+      },
+      onDeleteShareCamera: (_inviteId, _accName) {
+        return context.read<ControlCameraBloc>().deleteShareCamera(
+          camId: camera.id,
+          accountB: _accName,
+          shareId: _inviteId,
+          onToastFail: ({messageFail}) {
+            ToastUtil.toastFail(context: c, title: Text(messageFail ?? 'Thất bại'));
+          },
+        );
+      },
+      onShareCamera: (_accountNameInvite) {
+        return context.read<ControlCameraBloc>().shareCamera(
+          camId: camera.id,
+          role: ShareCameraRoleExtension.getShareCameraRoleValue(ShareCameraRole.VIEW),
+          accountInvite: _accountNameInvite,
+        );
+      },
+      sharedUsers: invites, // list data,
     );
   }
 }

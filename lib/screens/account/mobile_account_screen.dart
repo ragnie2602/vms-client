@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/permission_code.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/env_service.dart';
 import 'package:vms_flutter_client/core/error_service.dart';
@@ -92,7 +93,7 @@ class _MobileAccountScreenState extends State<MobileAccountScreen> {
                   ),
                   AccountItem(
                     onTap: () {
-                      if (AppData.instance.profile?.canChangePassword ?? true) {
+                      if (!AppData.instance.can(PermissionCode.changePassword)) {
                         ToastUtil.toastFail(
                           context: context,
                           title: Text(

@@ -105,8 +105,7 @@ class MyProfile {
     return displayName.substring(0, contentMax) + ellipsis;
   }
 
-  bool get canAddCamera => permissions.contains('camera.create');
-  bool get canChangePassword => permissions.contains('auth.change-password');
+  bool can(String permission) => permissions.contains(permission);
 
   String get displayNamePreview => displayNameLimited(maxChars: 50);
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
@@ -124,7 +125,7 @@ class PlayerControls extends StatelessWidget {
                         }, tooltip: 'Tua 30s'),
 
                       /* Record */
-                      if (mode.isLive)
+                      if (mode.isLive && AppData.instance.can('live.record'))
                         _buildTooltip(
                           status > 0 ? 'Dừng ghi hình' : 'Ghi hình',
                           ControlRecord(recordingStatus: status),
@@ -132,12 +133,13 @@ class PlayerControls extends StatelessWidget {
                         ),
 
                       /* Camera */
-                      _controlItem(
-                        disabled: isRecording,
-                        AppAssets.icCamera,
-                        () => takeSnapshot(context),
-                        tooltip: 'Chụp ảnh màn hình',
-                      ),
+                      if (AppData.instance.can('live.snapshot'))
+                        _controlItem(
+                          disabled: isRecording,
+                          AppAssets.icCamera,
+                          () => takeSnapshot(context),
+                          tooltip: 'Chụp ảnh màn hình',
+                        ),
 
                       /* Speed */
                       if (mode.isPlayback)
@@ -176,15 +178,20 @@ class PlayerControls extends StatelessWidget {
                 ),
 
                 /*  */
-                _buildTooltip(
-                  'Thay đổi chế độ xem',
-                  _buildLiveViewMode(
-                    disabled: isRecording,
-                    mode.isPlayback ? 1 : 0,
-                    (index) => context.read<CameraDetailBloc>().add(ChangeViewMode(index == 0 ? CameraDetailMode.live : CameraDetailMode.playback)),
+                if (AppData.instance.can('playback.view'))
+                  _buildTooltip(
+                    'Thay đổi chế độ xem',
+                    _buildLiveViewMode(
+                      disabled: isRecording,
+                      mode.isPlayback ? 1 : 0,
+                      (index) => context.read<CameraDetailBloc>().add(
+                        ChangeViewMode(
+                          index == 0 ? CameraDetailMode.live : CameraDetailMode.playback,
+                        ),
+                      ),
+                    ),
+                    isRecording,
                   ),
-                  isRecording,
-                ),
               ],
             ),
           );

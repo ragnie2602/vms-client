@@ -24,6 +24,22 @@ class HomeTab {
     this.materialIcon,
   });
 
+  HomeTab copyWith({
+    Routes? route,
+    String? title,
+    String? svg,
+    List<HomeTab>? nested,
+    bool? useMaterialIcon,
+    String? materialIcon,
+  }) => HomeTab(
+    route ?? this.route,
+    title: title ?? this.title,
+    svg: svg ?? this.svg,
+    nested: nested ?? this.nested,
+    useMaterialIcon: useMaterialIcon ?? this.useMaterialIcon,
+    materialIcon: materialIcon ?? this.materialIcon,
+  );
+
   static const tabs = [
     HomeTab(Routes.monitoring, title: 'Xem trực tiếp', svg: AppAssets.tabMonitor),
     HomeTab(Routes.playback, title: 'Xem lại', svg: AppAssets.tabPlayback),
