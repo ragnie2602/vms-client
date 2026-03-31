@@ -2,15 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import '../models/config_template.dart';
+import 'package:vms_flutter_client/domain/entities/onboard_profile/onboard_profile_response.dart';
 
 class Step3Initialization extends StatefulWidget {
-  final String configId;
+  final Profile? selectedProfile;
   final VoidCallback onComplete;
 
   const Step3Initialization({
     super.key,
-    required this.configId,
+    required this.selectedProfile,
     required this.onComplete,
   });
 
@@ -35,7 +35,6 @@ class _Step3InitializationState extends State<Step3Initialization> {
   }
 
   void _startSimulatedProgress() {
-    // Simulate loading to 100% over ~4-5 seconds
     _timer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
       if (!mounted) return;
       setState(() {
@@ -44,7 +43,6 @@ class _Step3InitializationState extends State<Step3Initialization> {
           if (_progress > 100) _progress = 100;
         } else {
           timer.cancel();
-          // Wait briefly then complete
           Future.delayed(const Duration(milliseconds: 800), () {
             if (mounted) widget.onComplete();
           });
@@ -55,10 +53,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
 
   @override
   Widget build(BuildContext context) {
-    final template = ConfigTemplate.defaultTemplates.firstWhere(
-      (t) => t.id == widget.configId,
-      orElse: () => ConfigTemplate.defaultTemplates.first,
-    );
+    final name = widget.selectedProfile?.name ?? '';
 
     return Column(
       children: [
@@ -68,7 +63,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
           height: 80,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: Color(0xFFEEF2FF), // Very light indigo
+            color: Color(0xFFEEF2FF),
           ),
           child: Center(
             child: Container(
@@ -76,7 +71,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
               height: 56,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFF4F46E5), // Indigo
+                color: Color(0xFF4F46E5),
               ),
               child: const Icon(
                 Icons.rocket_launch,
@@ -100,12 +95,11 @@ class _Step3InitializationState extends State<Step3Initialization> {
           TextSpan(
             children: [
               TextSpan(
-                text:
-                    'Vui lòng đợi trong giây lát, hệ thống đang được cài đặt theo mô hình ',
+                text: 'Vui lòng đợi trong giây lát, hệ thống đang được cài đặt theo mô hình ',
                 style: AppTypography.style(14, color: const Color(0xFF6B7280)),
               ),
               TextSpan(
-                text: '[${template.title}]',
+                text: '[$name]',
                 style: AppTypography.style(
                   14,
                   fontWeight: FontWeight.w600,
@@ -121,7 +115,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
 
         // Progress Bar
         SizedBox(
-          width: 600, // Fixed width or constrain it
+          width: 600,
           child: Column(
             children: [
               Row(
@@ -138,7 +132,6 @@ class _Step3InitializationState extends State<Step3Initialization> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Dot
                       Container(
                         width: 6,
                         height: 6,
@@ -196,7 +189,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
 
         // Status Card
         Container(
-          width: 600, // Match width of progress bar
+          width: 600,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           decoration: BoxDecoration(
             color: AppColors.white,
@@ -222,8 +215,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
               ),
               const SizedBox(height: 16),
               _buildStatusItem(
-                title:
-                    'Đang tạo các trường dữ liệu động cho các loại đối tượng...',
+                title: 'Đang tạo các trường dữ liệu động cho các loại đối tượng...',
                 isCompleted: _progress >= 66,
                 isActive: _progress >= 33 && _progress < 66,
               ),
@@ -252,21 +244,14 @@ class _Step3InitializationState extends State<Step3Initialization> {
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Color(0xFFDCFCE7),
-        ), // Green bg
-        child: const Icon(
-          Icons.check,
-          size: 14,
-          color: Color(0xFF16A34A),
-        ), // Green check
+        ),
+        child: const Icon(Icons.check, size: 14, color: Color(0xFF16A34A)),
       );
     } else if (isActive) {
       icon = const SizedBox(
         width: 18,
         height: 18,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Color(0xFF3B82F6),
-        ),
+        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF3B82F6)),
       );
     } else {
       icon = Container(
@@ -289,9 +274,7 @@ class _Step3InitializationState extends State<Step3Initialization> {
             style: AppTypography.style(
               14,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-              color: isCompleted || isActive
-                  ? AppColors.blackOrWhite
-                  : const Color(0xFF9CA3AF),
+              color: isCompleted || isActive ? AppColors.blackOrWhite : const Color(0xFF9CA3AF),
             ),
           ),
         ),

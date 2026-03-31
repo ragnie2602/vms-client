@@ -14,12 +14,20 @@ class ProfileLoadingState extends ProfileState {
 
 class ProfileLoadedState extends ProfileState {
   final OnboardProfileResponse profileResponse;
+  final Profile? selectedProfile;
 
-  const ProfileLoadedState({required this.profileResponse});
+  const ProfileLoadedState({
+    required this.profileResponse,
+    this.selectedProfile,
+  });
 
-  ProfileLoadedState copyWith({OnboardProfileResponse? profileResponse}) {
+  ProfileLoadedState copyWith({
+    OnboardProfileResponse? profileResponse,
+    Profile? selectedProfile,
+  }) {
     return ProfileLoadedState(
       profileResponse: profileResponse ?? this.profileResponse,
+      selectedProfile: selectedProfile ?? this.selectedProfile,
     );
   }
 
@@ -27,7 +35,7 @@ class ProfileLoadedState extends ProfileState {
   StateType get type => StateType.success;
 
   @override
-  List<Object?> get props => [profileResponse];
+  List<Object?> get props => [profileResponse, selectedProfile];
 }
 
 class ProfileErrorState extends ProfileState {

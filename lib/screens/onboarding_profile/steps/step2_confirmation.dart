@@ -1,44 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import '../models/config_template.dart';
+import 'package:vms_flutter_client/domain/entities/onboard_profile/onboard_profile_response.dart';
 
 class Step2Confirmation extends StatelessWidget {
-  final String configId;
+  final Profile? selectedProfile;
 
-  const Step2Confirmation({super.key, required this.configId});
+  const Step2Confirmation({super.key, required this.selectedProfile});
 
   @override
   Widget build(BuildContext context) {
-    final template = ConfigTemplate.defaultTemplates.firstWhere(
-      (t) => t.id == configId,
-      orElse: () => ConfigTemplate.defaultTemplates.first,
-    );
+    final name = selectedProfile?.name ?? '';
+    final description = selectedProfile?.description ?? '';
 
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: template.iconBgColor,
+            color: Color(0xFFEFF6FF),
           ),
-          child: Icon(template.icon, color: template.iconColor, size: 40),
+          child: const Icon(Icons.settings, color: Color(0xFF3B82F6), size: 40),
         ),
         const SizedBox(height: 16),
         Text(
-          template.title,
+          name,
           style: AppTypography.style(24, fontWeight: FontWeight.w700, color: AppColors.blackOrWhite),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
-          template.description,
+          description,
           style: AppTypography.style(14, color: const Color(0xFF6B7280)),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 40),
-        
+
         // System changes card
         Container(
           width: double.infinity,
@@ -59,7 +57,7 @@ class Step2Confirmation extends StatelessWidget {
               _buildChangeItem(
                 icon: Icons.group,
                 title: 'Cấu trúc Hồ sơ & Dữ liệu',
-                description: 'Tự động tạo sẵn các nhóm đối tượng (Học sinh, Giáo viên, Cán bộ, Phụ huynh) và cấu hình sẵn các trường dữ liệu động (Lớp, Khối, Mã HS, Bộ môn...).',
+                description: 'Tự động tạo sẵn các nhóm đối tượng và cấu hình sẵn các trường dữ liệu động.',
               ),
               const SizedBox(height: 24),
               _buildChangeItem(
@@ -70,17 +68,17 @@ class Step2Confirmation extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         // Warning alert box
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFFEF9C3), // light yellow
+            color: const Color(0xFFFEF9C3),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFFDE047)), // yellow border
+            border: Border.all(color: const Color(0xFFFDE047)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +98,7 @@ class Step2Confirmation extends StatelessWidget {
                         style: AppTypography.style(14, color: const Color(0xFF854D0E)),
                       ),
                       TextSpan(
-                        text: template.title,
+                        text: name,
                         style: AppTypography.style(14, fontWeight: FontWeight.w700, color: const Color(0xFF854D0E), decoration: TextDecoration.underline),
                       ),
                       TextSpan(
@@ -125,7 +123,7 @@ class Step2Confirmation extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF), // blue-50
+            color: const Color(0xFFEFF6FF),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: const Color(0xFF3B82F6), size: 20),

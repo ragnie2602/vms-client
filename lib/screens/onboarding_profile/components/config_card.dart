@@ -3,16 +3,16 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
-import '../models/config_template.dart';
+import 'package:vms_flutter_client/domain/entities/onboard_profile/onboard_profile_response.dart';
 
 class ConfigCard extends StatelessWidget {
-  final ConfigTemplate template;
+  final Profile profile;
   final bool isSelected;
   final VoidCallback onTap;
 
   const ConfigCard({
     super.key,
-    required this.template,
+    required this.profile,
     required this.isSelected,
     required this.onTap,
   });
@@ -46,14 +46,14 @@ class ConfigCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: template.iconBgColor,
+                color: const Color(0xFFEFF6FF),
                 shape: BoxShape.circle,
               ),
-              child: Icon(template.icon, color: template.iconColor, size: 28),
+              child: const Icon(Icons.settings, color: Color(0xFF3B82F6), size: 28),
             ),
             const SizedBox(height: 20),
             Text(
-              template.title,
+              profile.name ?? '',
               style: AppTypography.style(
                 16,
                 fontWeight: FontWeight.w700,
@@ -63,7 +63,7 @@ class ConfigCard extends StatelessWidget {
             const SizedBox(height: 12),
             Expanded(
               child: Text(
-                template.description,
+                profile.description ?? '',
                 style: AppTypography.style(
                   15,
                   fontWeight: FontWeight.w400,
@@ -102,9 +102,7 @@ class ConfigCard extends StatelessWidget {
                   child: isSelected
                       ? Icon(
                           Icons.check,
-                          color: isSelected
-                              ? AppColors.white
-                              : const Color(0xFF9CA3AF),
+                          color: AppColors.white,
                           size: 14,
                         )
                       : SvgPicture.asset(

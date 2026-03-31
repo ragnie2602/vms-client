@@ -12,6 +12,7 @@ class ProfileBloc extends BaseBloc<ProfileEvent, ProfileState> {
   ProfileBloc({required this.profileRepository})
       : super(const ProfileState()) {
     on<GetProfilesEvent>(_onGetProfiles);
+    on<SelectProfileEvent>(_onSelectProfile);
   }
 
   FutureOr<void> _onGetProfiles(
@@ -25,8 +26,24 @@ class ProfileBloc extends BaseBloc<ProfileEvent, ProfileState> {
         emit(ProfileErrorState(errorMessage: failure.toString()));
       },
       (profileResponse) {
-        emit(ProfileLoadedState(profileResponse: profileResponse));
+        // Mặc định chọn profile đầu tiên
+        final firstProfile = (profileResponse.profiles?.isNotEmpty == true)
+            ? profileResponse.profiles!.first
+            : null;
+        emit(ProfileLoadedState(
+          profileResponse: profileResponse,
+          selectedProfile: firstProfile,
+        ));
       },
     );
+  }
+
+  void _onSelectProfile(
+    SelectProfileEvent event,
+    Emitter<ProfileState> emit,
+  ) {
+    if (state is ProfileLoadedState) {
+      emit((state as ProfileLoadedState).copyWith(selectedProfile: event.profile));
+    }
   }
 }

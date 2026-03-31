@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/domain/entities/onboard_profile/onboard_profile_response.dart';
 import '../components/config_card.dart';
-import '../models/config_template.dart';
 
 class Step1ConfigSelection extends StatelessWidget {
-  final String? selectedConfigId;
-  final ValueChanged<String> onSelected;
+  final List<Profile> profiles;
+  final Profile? selectedProfile;
+  final ValueChanged<Profile> onSelected;
 
   const Step1ConfigSelection({
     super.key,
-    required this.selectedConfigId,
+    required this.profiles,
+    required this.selectedProfile,
     required this.onSelected,
   });
 
@@ -47,13 +49,13 @@ class Step1ConfigSelection extends StatelessWidget {
             crossAxisSpacing: 24,
             mainAxisSpacing: 24,
           ),
-          itemCount: ConfigTemplate.defaultTemplates.length,
+          itemCount: profiles.length,
           itemBuilder: (context, index) {
-            final template = ConfigTemplate.defaultTemplates[index];
+            final profile = profiles[index];
             return ConfigCard(
-              template: template,
-              isSelected: selectedConfigId == template.id,
-              onTap: () => onSelected(template.id),
+              profile: profile,
+              isSelected: selectedProfile?.id == profile.id,
+              onTap: () => onSelected(profile),
             );
           },
         ),

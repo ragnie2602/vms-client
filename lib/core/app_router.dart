@@ -60,6 +60,8 @@ import '../screens/home/bloc/home_bloc.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/login/bloc/login_bloc.dart';
 import '../screens/login/login_screen.dart';
+import '../screens/onboarding_profile/bloc/profile_bloc.dart';
+import '../screens/onboarding_profile/bloc/profile_event.dart';
 import '../screens/onboarding_profile/onboarding_screen.dart';
 import '../screens/register/bloc/register_bloc.dart';
 import '../screens/register/mobile_register_screen.dart';
@@ -293,6 +295,11 @@ class AppRouter {
             BlocProvider.value(
               value: context.read<AlarmSoundBloc>()
                 ..add(GetAlarmSounds(force: state.extra == 'isFreshLogin')),
+            ),
+            BlocProvider(
+              create: (context) => ProfileBloc(profileRepository: context.read())
+                ..add(const GetProfilesEvent()),
+              lazy: false,
             ),
           ],
           child: HomeScreen(body: child, currentPath: state.uri.path),
