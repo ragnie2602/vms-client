@@ -114,4 +114,8 @@ class AppColors {
   static const greyF8F9FE = Color(0xFFF8F9FE); // Paused status background
 
   static const yellowFFFBEB = Color(0xFFFFFBEB);
+  static const yellow92400E = Color(0xFFFF9240);
+  static const yellowF59E0B = Color(0xFFF59E0B);
+  static const yellow78350F = Color(0xFFFF7835);
+  static const yellowFDE68A = Color(0xFFFFF2E2);
 }

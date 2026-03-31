@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:vms_flutter_client/core/constants/endpoints.dart';
 
 OnboardProfileResponse onboardProfileResponseFromJson(String str) => OnboardProfileResponse.fromJson(json.decode(str));
 
@@ -120,7 +121,7 @@ class Detail {
 
     factory Detail.fromJson(Map<String, dynamic> json) => Detail(
         title: json["title"],
-        icon: json["icon"],
+        icon: json["icon"] == null ? null : '${EndPoints.baseUrl}/${json["icon"]}',
         description: json["description"],
         detail: json["detail"] == null ? [] : List<Detail>.from(json["detail"]!.map((x) => Detail.fromJson(x))),
     );

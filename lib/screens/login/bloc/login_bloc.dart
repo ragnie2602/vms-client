@@ -33,7 +33,7 @@ class LoginBloc extends BaseBloc<LoginEvent, LoginState> {
         final profileResult = await profileRepository.getProfiles();
         final needsOnboarding = profileResult.fold(
           (_) => false, // Nếu lỗi -> vẫn vào home như bình thường
-          (response) => response.hasUsingProfile, 
+          (response) => response.hasUsingProfile == false, // Nếu có profile đang dùng -> không cần onboarding, ngược lại cần onboarding
         );
 
         emit(state.copyWith(

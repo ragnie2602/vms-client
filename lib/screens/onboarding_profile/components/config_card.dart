@@ -43,14 +43,36 @@ class ConfigCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.settings, color: Color(0xFF3B82F6), size: 28),
-            ),
+            (profile.details?.icon ?? '').isNotEmpty
+                ? SvgPicture.network(
+                    profile.details!.icon!,
+                    width: 28,
+                    height: 28,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.settings,
+                        color: AppColors.blue3B82F6,
+                        size: 28,
+                      ),
+                    ),
+                  )
+                : Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.blueEFF6FF,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.settings,
+                      color: AppColors.blue3B82F6,
+                      size: 28,
+                    ),
+                  ),
             const SizedBox(height: 20),
             Text(
               profile.name ?? '',
@@ -100,11 +122,7 @@ class ConfigCard extends StatelessWidget {
                     ),
                   ),
                   child: isSelected
-                      ? Icon(
-                          Icons.check,
-                          color: AppColors.white,
-                          size: 14,
-                        )
+                      ? Icon(Icons.check, color: AppColors.white, size: 14)
                       : SvgPicture.asset(
                           AppAssets.icArrowRight,
                           width: 14,
