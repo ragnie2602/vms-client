@@ -7,10 +7,10 @@ import 'package:vms_flutter_client/screens/home/components/app_button.dart';
 import 'package:vms_flutter_client/screens/home/components/app_field.dart';
 
 class Step1InputCode extends StatelessWidget {
-  final VoidCallback? onActivate;
+  final VoidCallback? onCallPreview;
   final VoidCallback? onCancel;
 
-  const Step1InputCode({super.key, this.onActivate, this.onCancel});
+  const Step1InputCode({super.key, this.onCallPreview, this.onCancel});
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ class Step1InputCode extends StatelessWidget {
                       label: 'Kích hoạt',
                       backgroundColor: AppColors.blue005EB8,
                       padding: const EdgeInsets.symmetric(horizontal: 32),
-                      onPressed: onActivate,
+                      onPressed: onCallPreview,
                     ),
                   ),
                 ],

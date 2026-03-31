@@ -23,6 +23,8 @@ import 'package:vms_flutter_client/data/repositories/object_group_repository.dar
 import 'package:vms_flutter_client/data/repositories/object_type_repository.dart';
 import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
 import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/data/datasources/license_service.dart';
+import 'package:vms_flutter_client/data/repositories/license_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
@@ -33,6 +35,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/sources.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_license_repository.dart';
 import 'package:vms_flutter_client/domain/usecases/alarm_sound/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/ai_box/filter_ai_box_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/app/create_new_window_use_case.dart';
@@ -105,6 +108,7 @@ class DependencyInjection {
       create: (context) => NotificationService(context.read(), context.read()),
     ),
     Provider<ProfileService>(create: (context) => ProfileService(context.read())),
+    Provider<LicenseService>(create: (context) => LicenseService(context.read())),
 
     // Repositories
     Provider<IAuthRepository>(
@@ -143,6 +147,9 @@ class DependencyInjection {
     ),
     Provider<IProfileRepository>(
       create: (context) => ProfileRepository(service: context.read()),
+    ),
+    Provider<ILicenseRepository>(
+      create: (context) => LicenseRepository(service: context.read()),
     ),
 
     // Use Cases

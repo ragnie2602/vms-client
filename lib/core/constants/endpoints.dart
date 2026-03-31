@@ -60,6 +60,10 @@ class EndPoints {
   // Subject types
   static const String baseSubjectType = '/api/object-types';
 
+  // License
+  static const String baseLicense = '/api/licenses';
+  static const String checkCurrentLicense = '/api/licenses/current';
+
   // Profiles
   static const String baseProfiles = '/api/profiles';
   static  String setupProfile(int id) => '$baseProfiles/setup/$id';

@@ -28,6 +28,8 @@ import 'package:vms_flutter_client/screens/event/event_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/home/bloc/change_my_info_bloc.dart';
+import 'package:vms_flutter_client/screens/license/bloc/license_bloc.dart';
+import 'package:vms_flutter_client/screens/license/bloc/license_event.dart';
 import 'package:vms_flutter_client/screens/license/license_screen.dart';
 import 'package:vms_flutter_client/screens/login/mobile_login_screen.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
@@ -470,7 +472,15 @@ class AppRouter {
             path: Routes.license.path,
             name: Routes.license.name,
             pageBuilder: (context, state) {
-              return fadeTransition(context: context, state: state, child: LicenseScreen());
+              return fadeTransition(
+                context: context,
+                state: state,
+                child: BlocProvider(
+                  create: (context) => LicenseBloc(repository: context.read())
+                    ..add(const CheckCurrentLicenseEvent()),
+                  child: const LicenseScreen(),
+                ),
+              );
             },
           ),
           GoRoute(
