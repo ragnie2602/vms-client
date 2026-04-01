@@ -44,6 +44,11 @@ class LoginUseCase extends FutureUseCase<LoginInput, LoginOutput> {
         await AppData.instance.save<String>(AppKeys.SP_PASSWORD_KEY, input.password);
         await AppData.instance.save<String>(AppKeys.SP_SERVER_KEY, input.server);
 
+        await AppData.instance.save<List<String>>(
+          AppKeys.SP_PERMISSIONS_KEY,
+          authentication.permissions,
+        );
+
         AppData.instance.profile = MyProfile(
           id: authentication.id,
           avatar: '',

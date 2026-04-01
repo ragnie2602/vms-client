@@ -1,51 +1,74 @@
-import 'package:vms_flutter_client/domain/entities/user/user_status.dart';
+import 'package:vms_flutter_client/core/constants/user_status.dart';
 
 class UserEntity {
-  final int id;
-  final String username;
-  final UserStatus status;
-  final String userType;
-  final int tenantId;
-  final String tenantName;
-  final String fullname;
-  final String? email;
-  final String? phone;
-  final String? description;
-  final int? type;
-  final List<String> permissions;
-  final String? roleName;
+  int? id;
+  String? username;
+  String? password;
+  UserStatus? status;
+  String? userType;
+  int? tenantId;
+  String? tenantName;
+  String? fullname;
+  String? email;
+  String? phone;
+  String? description;
+  int? type;
+  int? roleId;
+  String? roleName;
+  int? dataType;
 
-  const UserEntity({
-    required this.id,
-    required this.username,
-    required this.status,
-    required this.userType,
-    required this.tenantId,
-    required this.tenantName,
-    required this.fullname,
-    required this.email,
-    required this.phone,
+  UserEntity({
+    this.id,
+    this.username,
+    this.password,
+    this.status,
+    this.userType,
+    this.tenantId,
+    this.tenantName,
+    this.fullname,
+    this.email,
+    this.phone,
     this.description,
     this.type,
-    required this.permissions,
+    this.roleId,
     this.roleName,
+    this.dataType,
   });
 
-  factory UserEntity.fromJson(Map<String, dynamic> json) {
-    return UserEntity(
-      id: json['id'],
-      username: json['username'],
-      status: UserStatus.fromValue(json['status']),
-      userType: json['userType'],
-      tenantId: json['tenantId'],
-      tenantName: json['tenantName'],
-      fullname: json['fullname'] ?? '',
-      email: json['email'],
-      phone: json['phone'],
-      description: json['description'],
-      type: json['type'],
-      permissions: json['permissions'] != null ? List<String>.from(json['permissions']) : [],
-      roleName: json['roleName'],
-    );
+  UserEntity.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    username = json['username'];
+    password = json['password'];
+    status = UserStatus.fromValue(json['status']);
+    userType = json['userType'];
+    tenantId = json['tenantId'];
+    tenantName = json['tenantName'];
+    fullname = json['fullname'];
+    email = json['email'];
+    phone = json['phone'];
+    description = json['description'];
+    type = json['type'];
+    roleId = json['roleId'];
+    roleName = json['roleName'];
+    dataType = json['dataType'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {};
+    data['id'] = id;
+    data['username'] = username;
+    data['password'] = password;
+    data['status'] = status;
+    data['userType'] = userType;
+    data['tenantId'] = tenantId;
+    data['tenantName'] = tenantName;
+    data['fullname'] = fullname;
+    data['email'] = email;
+    data['phone'] = phone;
+    data['description'] = description;
+    data['type'] = type;
+    data['roleId'] = roleId;
+    data['dataType'] = dataType;
+    return data;
   }
 }

@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 
-enum ItemGroupAction { add, addCamera, edit, share, remove }
+enum ItemGroupAction { add, addCamera, edit, remove }
 
 extension ItemGroupActionExt on ItemGroupAction {
   String getName() {
@@ -12,8 +12,6 @@ extension ItemGroupActionExt on ItemGroupAction {
         return 'Thêm';
       case ItemGroupAction.edit:
         return 'Sửa';
-      case ItemGroupAction.share:
-        return 'Chia sẻ';
       case ItemGroupAction.remove:
         return 'Xóa';
       case ItemGroupAction.addCamera:
@@ -27,8 +25,6 @@ extension ItemGroupActionExt on ItemGroupAction {
         return AppAssets.iconAdd;
       case ItemGroupAction.edit:
         return AppAssets.iconEdit;
-      case ItemGroupAction.share:
-        return AppAssets.iconShare;
       case ItemGroupAction.remove:
         return AppAssets.iconRemove;
       case ItemGroupAction.addCamera:
@@ -52,11 +48,7 @@ class ItemActionWidget extends StatelessWidget {
         ),
         Text(
           item.getName(),
-          style: AppTypography.style(
-            13,
-            fontWeight: FontWeight.w500,
-            color: Colors.black,
-          ),
+          style: AppTypography.style(13, fontWeight: FontWeight.w500, color: Colors.black),
         ),
       ],
     );

@@ -5,6 +5,7 @@ import 'package:vms_flutter_client/data/datasources/ai_box_service.dart';
 import 'package:vms_flutter_client/data/datasources/ai_config_service.dart';
 import 'package:vms_flutter_client/data/datasources/detect_service.dart';
 import 'package:vms_flutter_client/data/datasources/emap_service.dart';
+import 'package:vms_flutter_client/data/datasources/role_service.dart';
 import 'package:vms_flutter_client/data/datasources/event_service.dart';
 import 'package:vms_flutter_client/data/datasources/notification_service.dart';
 import 'package:vms_flutter_client/data/datasources/profile_service.dart';
@@ -13,6 +14,10 @@ import 'package:vms_flutter_client/data/datasources/schedule_record_service.dart
 import 'package:vms_flutter_client/data/datasources/sources.dart';
 import 'package:vms_flutter_client/data/datasources/subject_group_service.dart';
 import 'package:vms_flutter_client/data/datasources/upload_api_client.dart';
+import 'package:vms_flutter_client/data/repositories/role_repository.dart';
+import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
+import 'package:vms_flutter_client/data/repositories/sources.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_role_repository.dart';
 import 'package:vms_flutter_client/data/repositories/ai_box_repository.dart';
 import 'package:vms_flutter_client/data/repositories/ai_config_repository.dart';
 import 'package:vms_flutter_client/data/repositories/detect_repository.dart';
@@ -21,8 +26,6 @@ import 'package:vms_flutter_client/data/repositories/notification_repository.dar
 import 'package:vms_flutter_client/data/repositories/profile_repository.dart';
 import 'package:vms_flutter_client/data/repositories/object_group_repository.dart';
 import 'package:vms_flutter_client/data/repositories/object_type_repository.dart';
-import 'package:vms_flutter_client/data/repositories/schedule_repository.dart';
-import 'package:vms_flutter_client/data/repositories/sources.dart';
 import 'package:vms_flutter_client/data/datasources/license_service.dart';
 import 'package:vms_flutter_client/data/repositories/license_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_group_repository.dart';
@@ -67,10 +70,12 @@ import 'package:vms_flutter_client/domain/usecases/object_group/get_object_types
 import 'package:vms_flutter_client/domain/usecases/object_group/get_objects_by_type_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/object_group/search_subject_group_usecase.dart';
 import 'package:vms_flutter_client/domain/usecases/register/register_usecase.dart';
+import 'package:vms_flutter_client/domain/usecases/roles/search_roles_use_case.dart';
 import 'package:vms_flutter_client/domain/usecases/sources.dart';
 import 'package:vms_flutter_client/domain/usecases/user/search_user_use_case.dart';
 import 'package:vms_flutter_client/screens/camera_configuration/bloc/alarm_sound/alarm_sound_bloc.dart';
 import 'package:vms_flutter_client/screens/monitor/components/filter_drawer.dart';
+import 'package:vms_flutter_client/screens/roles/bloc/role_bloc.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/osd/osd_bloc.dart';
 
 class DependencyInjection {
@@ -100,6 +105,8 @@ class DependencyInjection {
     Provider<AiBoxService>(create: (context) => AiBoxService(context.read())),
     Provider<SubjectGroupService>(create: (context) => SubjectGroupService(context.read())),
     Provider<PlaybackService>(create: (context) => PlaybackService(context.read())),
+    Provider<RoleService>(create: (context) => RoleService(context.read())),
+    Provider<SearchRolesUseCase>(create: (context) => SearchRolesUseCase()),
     Provider<EventService>(create: (context) => EventService(context.read())),
     Provider<DetectService>(create: (context) => DetectService(context.read(), context.read())),
     Provider<CustomLiveViewService>(create: (context) => CustomLiveViewService(context.read())),
@@ -141,16 +148,14 @@ class DependencyInjection {
     Provider<ICustomLiveViewRepository>(
       create: (context) => CustomLiveViewRepository(context.read()),
     ),
+    Provider<IRoleRepository>(create: (context) => RoleRepository(context.read())),
     Provider<INotificationRepository>(
-      create: (context) =>
-          NotificationRepository(notificationService: context.read()),
+      create: (context) => NotificationRepository(notificationService: context.read()),
     ),
-    Provider<IProfileRepository>(
-      create: (context) => ProfileRepository(service: context.read()),
-    ),
-    Provider<ILicenseRepository>(
-      create: (context) => LicenseRepository(service: context.read()),
-    ),
+    Provider<IProfileRepository>(create: (context) => ProfileRepository(service: context.read())),
+    Provider<ILicenseRepository>(create: (context) => LicenseRepository(service: context.read())),
+    Provider<IProfileRepository>(create: (context) => ProfileRepository(service: context.read())),
+    Provider<ILicenseRepository>(create: (context) => LicenseRepository(service: context.read())),
 
     // Use Cases
     Provider<CreateNewWindowUseCase>(create: (context) => CreateNewWindowUseCase()),
@@ -203,12 +208,8 @@ class DependencyInjection {
     ),
     Provider<SearchEmapUseCase>(create: (context) => SearchEmapUseCase()),
     Provider<FilterAiBoxUseCase>(create: (context) => FilterAiBoxUseCase()),
-    Provider<GetObjectTypesUsecase>(
-      create: (context) => GetObjectTypesUsecase(context.read()),
-    ),
-    Provider<GetObjectsByTypeUsecase>(
-      create: (context) => GetObjectsByTypeUsecase(context.read()),
-    ),
+    Provider<GetObjectTypesUsecase>(create: (context) => GetObjectTypesUsecase(context.read())),
+    Provider<GetObjectsByTypeUsecase>(create: (context) => GetObjectsByTypeUsecase(context.read())),
     Provider<CheckSubjectGroupUsecase>(
       create: (context) => CheckSubjectGroupUsecase(context.read()),
     ),
@@ -247,19 +248,15 @@ class DependencyInjection {
     // ),
 
     // Bloc
-    Provider<OsdBloc>(
-      create: (context) => OsdBloc(context.read(), context.read()),
-    ),
+    Provider<OsdBloc>(create: (context) => OsdBloc(context.read(), context.read())),
     Provider<AppBloc>(
-      create: (context) => AppBloc(
-        context.read(),
-        context.read(),
-        context.read(),
-        context.read(),
-      ),
+      create: (context) => AppBloc(context.read(), context.read(), context.read(), context.read()),
     ),
     Provider<AlarmSoundBloc>(
       create: (context) => AlarmSoundBloc(context.read(), context.read(), context.read()),
+    ),
+    Provider<RoleBloc>(
+      create: (context) => RoleBloc(context.read(), context.read<SearchRolesUseCase>()),
     ),
 
     // Controller

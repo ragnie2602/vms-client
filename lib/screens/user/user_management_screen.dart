@@ -42,64 +42,6 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     context.read<UserManagementBloc>().add(DeleteUserEvent(userId: userId, uidStr: ''));
   }
 
-  void _addUser({
-    required String account,
-    required String password,
-    String? email,
-    String? tel,
-    String? address,
-    String? fullName,
-    required bool isAdmin,
-    String? desc,
-    required bool addCamDenied,
-    required bool changePassDenied,
-    required int dataType,
-  }) {
-    context.read<UserManagementBloc>().add(
-      AddUserEvent(
-        account: account,
-        email: email,
-        tel: tel,
-        address: address,
-        isAdmin: isAdmin,
-        desc: desc,
-        password: password,
-        changePassDenied: changePassDenied,
-        addCamDenied: addCamDenied,
-        fullName: fullName,
-        dataType: dataType,
-      ),
-    );
-  }
-
-  void _editUser({
-    required int userId,
-    required String account,
-    String? email,
-    String? tel,
-    String? address,
-    String? fullName,
-    required bool isAdmin,
-    String? desc,
-    required bool addCamDenied,
-    required bool changePassDenied,
-  }) {
-    context.read<UserManagementBloc>().add(
-      EditUserEvent(
-        userId: userId,
-        account: account,
-        email: email,
-        tel: tel,
-        address: address,
-        isAdmin: isAdmin,
-        desc: desc,
-        changePassDenied: changePassDenied,
-        addCamDenied: addCamDenied,
-        fullName: fullName,
-      ),
-    );
-  }
-
   void _onResetPassword({required int userId, required String newPassword}) {
     context.read<UserManagementBloc>().add(
       ResetPassWordEvent(userId: userId, newPassword: newPassword),
@@ -164,25 +106,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       ),
                       const SizedBox(width: 16),
                       InkWell(
-                        onTap: () async {
-                          await showAddUserDialog(
-                            context,
-                            onSubmit: (payload) async {
-                              _addUser(
-                                fullName: payload.fullName,
-                                tel: payload.phoneNumber,
-                                desc: payload.description,
-                                email: payload.email,
-                                account: payload.username,
-                                password: payload.password,
-                                isAdmin: payload.isAdmin,
-                                addCamDenied: !payload.canAddCamera,
-                                changePassDenied: !payload.canChangePassword,
-                                dataType: payload.dataType,
-                              );
-                            },
-                          );
-                        },
+                        onTap: () => showAddEditUserDialog(context),
                         splashColor: Colors.transparent,
 
                         child: Container(
@@ -271,42 +195,27 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                         showDialogRemoveCameraFromGroup(
                                           context,
                                           onConfirm: () {
-                                            _onDeleteUser(userId: state.users![index].id);
+                                            _onDeleteUser(userId: state.users![index].id!);
                                           },
                                           title:
                                               "Các camera được thêm bởi tài khoản này cũng sẽ bị xóa. \n Bạn có chắc chắn muốn xóa tài khoản?",
                                         );
                                       },
                                       onEdit: () async {
-                                        await showEditUserDialog(
+                                        await showAddEditUserDialog(
                                           context,
                                           userEntity: state.users![index],
-                                          onSubmit: (payload) async {
-                                            _editUser(
-                                              isAdmin: payload.accountType == 'admin'
-                                                  ? true
-                                                  : false,
-                                              changePassDenied: !payload.canChangePassword,
-                                              addCamDenied: !payload.canAddCamera,
-                                              email: payload.email,
-                                              tel: payload.phoneNumber,
-                                              desc: payload.description,
-                                              fullName: payload.fullName,
-                                              userId: state.users![index].id,
-                                              account: payload.username,
-                                            );
-                                          },
                                         );
                                       },
                                       onResetPassword: () {
                                         showResetPasswordDialog(
                                           context,
-                                          username: state.users![index].username,
+                                          username: state.users![index].username ?? '',
                                           user: state.users![index],
                                           onSubmit: (newPassword) async {
                                             _onResetPassword(
                                               newPassword: newPassword,
-                                              userId: state.users![index].id,
+                                              userId: state.users![index].id!,
                                             );
                                           },
                                         );

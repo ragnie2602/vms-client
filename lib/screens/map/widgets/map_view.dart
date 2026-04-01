@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/core_types_extension.dart';
+import 'package:vms_flutter_client/core/constants/permission_code.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/common_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
@@ -190,86 +192,90 @@ class _MapViewState extends State<MapView> {
             cameraEmapInfoId: [cammap.id],
           );
 
-          return Positioned(
-            left: position.dx,
-            top: position.dy,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onPanStart: (details) {
-                final cursorPos = imageBox.globalToLocal(details.globalPosition);
-                _dragOffset = cursorPos - position;
-              },
-              onPanUpdate: (details) {
-                final cursorPos = imageBox.globalToLocal(details.globalPosition);
-                final newPosition = cursorPos - _dragOffset;
-
-                final imageSize = imageBox.size;
-
-                final itemKey = _itemKeys[itemId];
-                Size itemSize = const Size(100, 100);
-                if (itemKey?.currentContext != null) {
-                  final RenderBox? itemBox =
-                      itemKey!.currentContext!.findRenderObject() as RenderBox?;
-                  if (itemBox != null) itemSize = itemBox.size;
-                }
-
-                final iconKey = _iconKeys[itemId];
-                Size iconSize = const Size(40, 40);
-                if (iconKey?.currentContext != null) {
-                  final RenderBox? iconBox =
-                      iconKey!.currentContext!.findRenderObject() as RenderBox?;
-                  if (iconBox != null) iconSize = iconBox.size;
-                }
-
-                final iconOffsetX = (itemSize.width - iconSize.width) / 2;
-                final clampedX = newPosition.dx.clamp(
-                  -iconOffsetX,
-                  imageSize.width - iconSize.width - iconOffsetX,
-                );
-                final clampedY = newPosition.dy.clamp(0.0, imageSize.height - iconSize.height);
-
-                setState(() => _dragPositions[itemId] = Offset(clampedX, clampedY));
-              },
-              onPanEnd: (details) {
-                final finalPosition = _dragPositions[itemId];
-                if (finalPosition != null && widget.selectedEmap.value != null) {
-                  bloc.add(
-                    UpdateCameraEmapEvent(
-                      emapId: widget.selectedEmap.value!.id,
-                      cammapId: cammap.id,
-                      xRatio: finalPosition.dx / w,
-                      yRatio: finalPosition.dy / h,
-                    ),
-                  );
-                }
-              },
-              child: IntrinsicWidth(
-                key: _itemKeys[itemId],
-                child: IntrinsicHeight(
-                  child: EmapCameraPortal(
-                    item: item,
-                    onDelete: () => context.read<EmapBloc>().add(
-                      RemoveCameraEmapEvent(
-                        emapId: widget.selectedEmap.value!.id,
-                        cammapId: cammap.id,
-                      ),
-                    ),
-                    highlightChild: Hero(
-                      tag: '${itemId}_portal',
-                      child: _buildCameraIcon(
-                        item,
-                        AppColors.blue005AA9,
-                        iconKey: _highlightedIconKeys[itemId],
-                      ),
-                    ),
-                    child: Hero(
-                      tag: itemId,
-                      child: _buildCameraIcon(item, AppColors.black, iconKey: _iconKeys[itemId]),
-                    ),
+          Widget core = IntrinsicWidth(
+            key: _itemKeys[itemId],
+            child: IntrinsicHeight(
+              child: EmapCameraPortal(
+                item: item,
+                onDelete: () => context.read<EmapBloc>().add(
+                  RemoveCameraEmapEvent(emapId: widget.selectedEmap.value!.id, cammapId: cammap.id),
+                ),
+                highlightChild: Hero(
+                  tag: '${itemId}_portal',
+                  child: _buildCameraIcon(
+                    item,
+                    AppColors.blue005AA9,
+                    iconKey: _highlightedIconKeys[itemId],
                   ),
+                ),
+                child: Hero(
+                  tag: itemId,
+                  child: _buildCameraIcon(item, AppColors.black, iconKey: _iconKeys[itemId]),
                 ),
               ),
             ),
+          );
+
+          return Positioned(
+            left: position.dx,
+            top: position.dy,
+            child: AppData.instance.can(PermissionCode.emapMoveCamera)
+                ? GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onPanStart: (details) {
+                      final cursorPos = imageBox.globalToLocal(details.globalPosition);
+                      _dragOffset = cursorPos - position;
+                    },
+                    onPanUpdate: (details) {
+                      final cursorPos = imageBox.globalToLocal(details.globalPosition);
+                      final newPosition = cursorPos - _dragOffset;
+
+                      final imageSize = imageBox.size;
+
+                      final itemKey = _itemKeys[itemId];
+                      Size itemSize = const Size(100, 100);
+                      if (itemKey?.currentContext != null) {
+                        final RenderBox? itemBox =
+                            itemKey!.currentContext!.findRenderObject() as RenderBox?;
+                        if (itemBox != null) itemSize = itemBox.size;
+                      }
+
+                      final iconKey = _iconKeys[itemId];
+                      Size iconSize = const Size(40, 40);
+                      if (iconKey?.currentContext != null) {
+                        final RenderBox? iconBox =
+                            iconKey!.currentContext!.findRenderObject() as RenderBox?;
+                        if (iconBox != null) iconSize = iconBox.size;
+                      }
+
+                      final iconOffsetX = (itemSize.width - iconSize.width) / 2;
+                      final clampedX = newPosition.dx.clamp(
+                        -iconOffsetX,
+                        imageSize.width - iconSize.width - iconOffsetX,
+                      );
+                      final clampedY = newPosition.dy.clamp(
+                        0.0,
+                        imageSize.height - iconSize.height,
+                      );
+
+                      setState(() => _dragPositions[itemId] = Offset(clampedX, clampedY));
+                    },
+                    onPanEnd: (details) {
+                      final finalPosition = _dragPositions[itemId];
+                      if (finalPosition != null && widget.selectedEmap.value != null) {
+                        bloc.add(
+                          UpdateCameraEmapEvent(
+                            emapId: widget.selectedEmap.value!.id,
+                            cammapId: cammap.id,
+                            xRatio: finalPosition.dx / w,
+                            yRatio: finalPosition.dy / h,
+                          ),
+                        );
+                      }
+                    },
+                    child: core,
+                  )
+                : core,
           );
         }
 
@@ -283,46 +289,41 @@ class _MapViewState extends State<MapView> {
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), color: Colors.white),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       margin: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Builder(
-                builder: (buttonContext) => InkWell(
-                  onTap: () => showCameraListPopup(context),
-                  splashColor: Colors.transparent,
-                  child: Container(
-                    key: _addCameraButtonKey,
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      border: Border.all(width: 1, color: AppColors.secondary),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SvgPicture.asset(AppAssets.icAdd),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Thêm camera',
-                            style: AppTypography.style(
-                              14,
-                              color: AppColors.secondary,
-                              fontWeight: FontWeight.w500,
-                            ),
+          if (AppData.instance.can(PermissionCode.emapPlaceCamera))
+            Builder(
+              builder: (buttonContext) => InkWell(
+                onTap: () => showCameraListPopup(context),
+                splashColor: Colors.transparent,
+                child: Container(
+                  key: _addCameraButtonKey,
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(width: 1, color: AppColors.secondary),
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(AppAssets.icAdd),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Thêm camera',
+                          style: AppTypography.style(
+                            14,
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.w500,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
         ],
       ),
     );

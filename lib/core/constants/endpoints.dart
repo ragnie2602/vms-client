@@ -16,15 +16,20 @@ class EndPoints {
   static const String logout = '/logout';
   static const String updateProfile = '/profile';
 
+  // Map
+  static const String baseMap = '/api/map';
+
+  // Role
+  static const String basePermission = '/api/permissions';
+  static const String permissionTree = '$basePermission/tree';
+  static const String baseRole = '/api/roles';
+
   // Event
   static const String baseEvent = '/api/ai-events';
   static const String configEventDisplay = '$baseEvent/config';
   static const String eventType = '$baseEvent/types';
   static const String exportEvent = '$baseEvent/export';
   static const String searchEvent = '$baseEvent/search';
-
-  // Map
-  static const String baseMap = '/api/map';
 
   // Camera
   static const String cameraAiConfig = '/api/cameras/ai-configs';
@@ -45,8 +50,7 @@ class EndPoints {
 
   // Notification
   static const String notificationSetting = '/api/notification-settings';
-  static String eventDisplayConfigByName(String typeName) =>
-      '$baseDetect/$typeName';
+  static String eventDisplayConfigByName(String typeName) => '$baseDetect/$typeName';
 
   // Object Type
   static const String baseObjectType = '/api/object-types';
@@ -54,7 +58,7 @@ class EndPoints {
 
   // Subject Group
   static const String baseSubjectGroup = '/api/subject-groups';
-   static String checkSubjectGroup(int id) => '$baseSubjectGroup/$id/contains';
+  static String checkSubjectGroup(int id) => '$baseSubjectGroup/$id/contains';
   // Subject
 
   // Subject types
