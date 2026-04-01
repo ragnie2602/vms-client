@@ -15,6 +15,7 @@ class AppField extends StatefulWidget {
     this.obscureText = false,
     this.suffix,
     this.keyboardType,
+    this.minLines,
     this.maxLines = 1,
     this.maxLength,
     this.validator,
@@ -31,6 +32,7 @@ class AppField extends StatefulWidget {
     this.textInputAction,
     this.onFieldSubmitted,
     this.textStyle,
+    this.enabled = true,
   });
 
   final TextEditingController? controller;
@@ -41,6 +43,7 @@ class AppField extends StatefulWidget {
   final bool obscureText;
   final Widget? suffix;
   final TextInputType? keyboardType;
+  final int? minLines;
   final int maxLines;
   final int? maxLength;
   final double paddingBottomLabel;
@@ -57,6 +60,7 @@ class AppField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final Function(String)? onFieldSubmitted;
   final TextStyle? textStyle;
+  final bool? enabled;
 
   @override
   State<AppField> createState() => _AppFieldState();
@@ -113,11 +117,7 @@ class _AppFieldState extends State<AppField> {
             child: RichText(
               text: TextSpan(
                 text: widget.label,
-                style: AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.black,
-                ),
+                style: AppTypography.style(14, fontWeight: FontWeight.w500, color: AppColors.black),
                 children: widget.requiredField
                     ? [
                         TextSpan(
@@ -145,14 +145,16 @@ class _AppFieldState extends State<AppField> {
               padding: const EdgeInsets.only(right: 8),
               child: Text(
                 '${value.text.length}/${widget.maxLength}',
-                style: widget.textStyle ?? AppTypography.style(
-                  14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.grey92929D,
-                ),
+                style:
+                    widget.textStyle ??
+                    AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.grey92929D,
+                    ),
               ),
             ),
-          );  
+          );
         }
 
         return Column(
@@ -171,6 +173,7 @@ class _AppFieldState extends State<AppField> {
                     // Chỉ set height cố định khi maxLines = 1, còn lại để tự động
                     // height: widget.maxLines == 1 ? 41 : null,
                     child: TextFormField(
+                      enabled: widget.enabled,
                       onFieldSubmitted: widget.onFieldSubmitted,
                       textInputAction: widget.textInputAction,
                       focusNode: widget.focusNode,
@@ -194,14 +197,14 @@ class _AppFieldState extends State<AppField> {
                         filled: widget.isFilled ?? widget.readOnly ?? false,
                         fillColor:
                             widget.fillColor ??
-                            (widget.readOnly ?? false
-                                ? AppColors.greyF2F4FA
-                                : null),
-                        hintStyle: widget.textStyle ?? AppTypography.style(
-                          14,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.grey92929D,
-                        ),
+                            (widget.readOnly ?? false ? AppColors.greyF2F4FA : null),
+                        hintStyle:
+                            widget.textStyle ??
+                            AppTypography.style(
+                              14,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.grey92929D,
+                            ),
                         // Ẩn counter mặc định (nằm dưới), thay bằng counter ở suffix
                         counterText: '',
                         errorMaxLines: 1,
@@ -209,66 +212,41 @@ class _AppFieldState extends State<AppField> {
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide(
-                            color: _errorText == null
-                                ? AppColors.greyE2E8F0
-                                : Colors.red,
+                            color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
                             width: 1,
                           ),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            widget.borderRadius ?? 8,
-                          ),
+                          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
                           borderSide: BorderSide(
-                            color: _errorText == null
-                                ? AppColors.greyE2E8F0
-                                : Colors.red,
+                            color: _errorText == null ? AppColors.greyE2E8F0 : Colors.red,
                             width: 1,
                           ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 14,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            widget.borderRadius ?? 8,
-                          ),
-                          borderSide: BorderSide(
-                            color: AppColors.greyE2E8F0,
-                            width: 1,
-                          ),
+                          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            widget.borderRadius ?? 8,
-                          ),
-                          borderSide: BorderSide(
-                            color: AppColors.greyE2E8F0,
-                            width: 1,
-                          ),
+                          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+                          borderSide: BorderSide(color: AppColors.greyE2E8F0, width: 1),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            widget.borderRadius ?? 8,
-                          ),
-                          borderSide: BorderSide(
-                            color: theme.colorScheme.primary,
-                            width: 1,
-                          ),
+                          borderRadius: BorderRadius.circular(widget.borderRadius ?? 8),
+                          borderSide: BorderSide(color: theme.colorScheme.primary, width: 1),
                         ),
                         suffixIcon: suffixChildren.isEmpty
                             ? null
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: suffixChildren,
-                              ),
+                            : Row(mainAxisSize: MainAxisSize.min, children: suffixChildren),
                       ),
-                      style: widget.textStyle ?? AppTypography.style(
-                        14,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.black,
-                      ),
+                      style:
+                          widget.textStyle ??
+                          AppTypography.style(
+                            14,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.black,
+                          ),
                     ),
                   ),
                 ),

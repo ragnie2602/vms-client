@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:vms_flutter_client/app_bloc.dart';
 import 'package:vms_flutter_client/core/app_config.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
+import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/permission_code.dart';
 import 'package:vms_flutter_client/core/utils/multi_window_util.dart';
 
 import '../bloc/home_bloc.dart';
@@ -43,6 +46,29 @@ class _SidebarState extends State<Sidebar> {
     if (mounted) windowId = context.read<AppBloc>().windowId;
     if (MultiWindowUtil.isMainWindow(windowId)) {
       tabs.addAll(HomeTab.tabs);
+
+      final can = AppData.instance.can;
+
+      if (!can(PermissionCode.viewUser)) tabs.removeWhere((t) => t.route == Routes.users);
+      if (!can(PermissionCode.viewRole)) tabs.removeWhere((t) => t.route == Routes.roles);
+      if (!can(PermissionCode.viewAIBox)) tabs.removeWhere((t) => t.route == Routes.aiBox);
+      if (!can(PermissionCode.viewSubjectType)) {
+        tabs.removeWhere((t) => t.route == Routes.objectTypes);
+        for (var i = 0; i < tabs.length; i++) {
+          if (tabs[i].nested.any((t) => t.route == Routes.objectTypes)) {
+            tabs[i] = tabs[i].copyWith(
+              nested: tabs[i].nested.where((t) => t.route != Routes.objectTypes).toList(),
+            );
+          }
+        }
+      }
+      if (!can(PermissionCode.viewEmap)) tabs.removeWhere((t) => t.route == Routes.emap);
+      if (!can(PermissionCode.viewCamera)) {
+        tabs.removeWhere((t) => t.route == Routes.addGroupCamera);
+      }
+      if (!can(PermissionCode.viewLiveview)) tabs.removeWhere((t) => t.route == Routes.monitoring);
+      if (!can(PermissionCode.viewPlayback)) tabs.removeWhere((t) => t.route == Routes.playback);
+      if (!can(PermissionCode.viewEvent)) tabs.removeWhere((t) => t.route == Routes.events);
     } else {
       tabs.add(HomeTab.tabs[0]);
       tabs.add(HomeTab.tabs[1]);

@@ -40,8 +40,7 @@ Future<T?> showShareGroupCameraDialog<T>(
   // dành cho share camera
   CameraEntity? currentCamera,
   Future<List<int>?> Function(String?)? onShareCamera,
-  final Future<List<int>?> Function(List<int>?, String? accname)?
-  onDeleteShareCamera,
+  final Future<List<int>?> Function(List<int>?, String? accname)? onDeleteShareCamera,
 }) {
   final controlCameraBloc = context.read<ControlCameraBloc>();
   return showDialog<T>(
@@ -90,12 +89,10 @@ class _ShareGroupCameraWidget extends StatefulWidget {
   // dành cho share camera
   final CameraEntity? currentCamera;
   final Future<List<int>?> Function(String?)? onShareCamera;
-  final Future<List<int>?> Function(List<int>?, String? accname)?
-  onDeleteShareCamera;
+  final Future<List<int>?> Function(List<int>?, String? accname)? onDeleteShareCamera;
 
   @override
-  State<_ShareGroupCameraWidget> createState() =>
-      __ShareGroupCameraWidgetState();
+  State<_ShareGroupCameraWidget> createState() => __ShareGroupCameraWidgetState();
 }
 
 class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
@@ -122,9 +119,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
 
   void _initData({required List<InviteMessageEntity>? listInvite}) {
     listAccShared.addAll(
-      (listInvite ?? [])
-          .map((e) => e.accountShared?.account ?? '')
-          .where((e) => e.isNotEmpty),
+      (listInvite ?? []).map((e) => e.accountShared?.account ?? '').where((e) => e.isNotEmpty),
     );
     _listInviteId.addAll((listInvite ?? []).map((e) => e.inviteMsgId));
   }
@@ -219,10 +214,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
     // 1. delete share cam
     if (widget.shareType == ShareType.camera) {
       // handle remove cam ở đây
-      final res = await widget.onDeleteShareCamera?.call(
-        invitedGroupId,
-        accNameRemove,
-      );
+      final res = await widget.onDeleteShareCamera?.call(invitedGroupId, accNameRemove);
       if (!mounted) return;
       if (res != null && res.isNotEmpty) {
         await _onReload();
@@ -249,11 +241,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
         widget.shareType == ShareType.groupCamera
             ? 'chia sẻ nhóm camera cho tài khoản này?'
             : 'chia sẻ camera cho tài khoản này?',
-        style: AppTypography.style(
-          14,
-          color: AppColors.blackOrWhite,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppTypography.style(14, color: AppColors.blackOrWhite, fontWeight: FontWeight.w500),
       ),
       onClickRemove: () {
         // close confirm dialog
@@ -294,9 +282,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
         width: MediaQuery.of(context).size.width * 0.4,
         height: MediaQuery.of(context).size.height * 0.6,
         decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(width: 1, color: AppColors.greyE2E8F0),
-          ),
+          border: Border(top: BorderSide(width: 1, color: AppColors.greyE2E8F0)),
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24),
@@ -307,11 +293,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                 const SizedBox(height: 12),
                 Text(
                   'Tài khoản muốn chia sẻ',
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                  ),
+                  style: AppTypography.style(14, fontWeight: FontWeight.w500, color: Colors.black),
                 ),
                 const SizedBox(height: 8),
                 // Search Field
@@ -345,16 +327,10 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                           AppAssets.icSearch,
                           width: 20,
                           height: 20,
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFF92929D),
-                            BlendMode.srcIn,
-                          ),
+                          colorFilter: const ColorFilter.mode(Color(0xFF92929D), BlendMode.srcIn),
                         ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 14,
-                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
 
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -401,25 +377,15 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                               IconButton(
                                 onPressed: () async {
                                   // nếu đã share => tắt click
-                                  if (!_selectedAccName.contains(
-                                    _searchController.text.trim(),
-                                  )) {
+                                  if (!_selectedAccName.contains(_searchController.text.trim())) {
                                     _onShare();
                                   }
                                 },
-                                icon:
-                                    !(_selectedAccName.contains(
-                                      _searchController.text.trim(),
-                                    ))
+                                icon: !(_selectedAccName.contains(_searchController.text.trim()))
                                     ? Container(
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            5,
-                                          ),
-                                          border: Border.all(
-                                            width: 1,
-                                            color: AppColors.blue005AA9,
-                                          ),
+                                          borderRadius: BorderRadius.circular(5),
+                                          border: Border.all(width: 1, color: AppColors.blue005AA9),
                                         ),
                                         padding: EdgeInsets.only(
                                           top: 2.5,
@@ -470,8 +436,7 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                           ),
                           child: Center(
                             child: Text(
-                              _errorCheckAccMessage ??
-                                  'Không tìm thấy người dùng hoặc nhóm',
+                              _errorCheckAccMessage ?? 'Không tìm thấy người dùng hoặc nhóm',
                               style: AppTypography.style(
                                 14,
                                 fontWeight: FontWeight.w400,
@@ -523,21 +488,14 @@ class __ShareGroupCameraWidgetState extends State<_ShareGroupCameraWidget> {
                               _accRemoveId = _listInviteId[index];
                             }
                             return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 12,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       username,
-                                      style: AppTypography.style(
-                                        14,
-                                        fontWeight: FontWeight.w400,
-                                      ),
+                                      style: AppTypography.style(14, fontWeight: FontWeight.w400),
                                     ),
                                   ),
                                   InkWell(

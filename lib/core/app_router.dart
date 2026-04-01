@@ -43,6 +43,7 @@ import 'package:vms_flutter_client/screens/object_type/bloc/object_type_bloc.dar
 import 'package:vms_flutter_client/screens/object_type/object_type_screen.dart';
 import 'package:vms_flutter_client/screens/playback/multi_playback_screen.dart';
 import 'package:vms_flutter_client/screens/playback/playback_screen.dart';
+import 'package:vms_flutter_client/screens/roles/roles_screen.dart';
 import 'package:vms_flutter_client/screens/shared/platform_builder.dart';
 import 'package:vms_flutter_client/screens/splash_screen.dart';
 import 'package:vms_flutter_client/screens/system_configuration/bloc/notification/notification_setting_bloc.dart';
@@ -98,6 +99,12 @@ enum Routes {
     path: '/emap',
     title: 'Bản đồ camera',
     description: 'Cho phép người dùng tạo và quản lý sơ đồ vị trí của các camera',
+  ),
+  roles(
+    name: 'roles',
+    path: '/roles',
+    title: 'Quản lý vai trò',
+    description: 'Cho phép quản trị viên tạo và quản lý vai trò',
   ),
   aiBox(name: 'aiBox', path: '/aiBox', title: 'Quản lý AI Box', description: ''),
   users(name: 'users', path: '/users', title: 'Quản lý tài khoản', description: ''),
@@ -425,6 +432,15 @@ class AppRouter {
               return fadeTransition(context: context, state: state, child: EmapScreen());
             },
           ),
+
+          GoRoute(
+            path: Routes.roles.path,
+            name: Routes.roles.name,
+            pageBuilder: (context, state) {
+              return fadeTransition(context: context, state: state, child: RolesScreen());
+            },
+          ),
+
           GoRoute(
             path: Routes.multi_playback.path,
             name: Routes.multi_playback.name,

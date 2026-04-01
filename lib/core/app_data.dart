@@ -7,6 +7,7 @@ class AppData {
   factory AppData() => instance;
 
   MyProfile? profile;
+  bool can(String permission) => profile?.can(permission) ?? true;
 
   late SharedPreferences _prefs;
   late SharedPreferencesAsync _prefsAsync;

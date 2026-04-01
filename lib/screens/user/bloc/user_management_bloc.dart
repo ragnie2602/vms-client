@@ -17,10 +17,10 @@ class UserManagementBloc extends BaseBloc<UserManagementEvent, UserManagementSta
   UserManagementBloc({required this.userManagermentRepository, required this.searchUserUseCase})
     : super(const UserManagementState()) {
     on<GetListUserEvent>(_onGetListUser);
-    on<AddUserEvent>(_onAddUser);
+    on<AddUser>(_onAddUser);
     on<DeleteUserEvent>(_onDeleteUser);
     on<ResetPassWordEvent>(_onResetPassWord);
-    on<EditUserEvent>(_onEditUser);
+    on<EditUser>(_onEditUser);
     on<SearchUserEvent>(_onSearch);
   }
 
@@ -39,20 +39,16 @@ class UserManagementBloc extends BaseBloc<UserManagementEvent, UserManagementSta
     );
   }
 
-  FutureOr<void> _onAddUser(AddUserEvent event, Emitter<UserManagementState> emit) async {
+  FutureOr<void> _onAddUser(AddUser event, Emitter<UserManagementState> emit) async {
     emit(UserManagementLoadingState());
     final groups = await userManagermentRepository.addUser(
       account: event.account,
       password: event.password,
       tel: event.tel,
       email: event.email,
-      address: event.address,
-      desc: event.desc,
-      addCamDenied: event.addCamDenied,
-      isAmin: event.isAdmin,
-      changePassDenied: event.changePassDenied,
+      description: event.desc,
       fullName: event.fullName,
-      dataType: event.dataType,
+      roleId: event.roleId,
     );
     groups.fold((onFailure) => emit(AddUserFail(groups.left.toString())), (onSuccess) {
       emit(AddUserSuccess(user: groups.right));
@@ -81,19 +77,15 @@ class UserManagementBloc extends BaseBloc<UserManagementEvent, UserManagementSta
     });
   }
 
-  FutureOr<void> _onEditUser(EditUserEvent event, Emitter<UserManagementState> emit) async {
+  FutureOr<void> _onEditUser(EditUser event, Emitter<UserManagementState> emit) async {
     emit(UserManagementLoadingState());
     final groups = await userManagermentRepository.editUser(
       userId: event.userId,
-      account: event.account,
       tel: event.tel,
       email: event.email,
-      address: event.address,
       desc: event.desc,
-      addCamDenied: event.addCamDenied,
-      isAmin: event.isAdmin,
-      changePassDenied: event.changePassDenied,
       fullName: event.fullName,
+      roleId: event.roleId,
     );
     groups.fold((onFailure) => emit(EditUserFail(groups.left.toString())), (onSuccess) {
       emit(EditUserSuccess(user: groups.right));

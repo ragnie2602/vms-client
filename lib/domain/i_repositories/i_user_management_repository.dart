@@ -8,27 +8,19 @@ abstract class IUserManagementRepository {
     required String password,
     String? tel,
     String? email,
-    String? address,
-    String? desc,
+    String? description,
     String? fullName,
-    bool? isAmin,
-    bool? changePassDenied,
-    bool? addCamDenied,
-    int? dataType,
+    int? roleId,
   });
   Future<Either<Failure, int>> deleteUser({required int userId});
   Future<Either<Failure, bool>> resetPassword({required int userId, required String newPassword});
   Future<Either<Failure, UserEntity>> editUser({
     required int userId,
-    required String account,
     String? tel,
     String? email,
-    String? address,
     String? desc,
     String? fullName,
-    bool? isAmin,
-    bool? changePassDenied,
-    bool? addCamDenied,
+    required int roleId,
   });
   Future<Either<Failure, bool>> changeMyPassword({
     required String current,
