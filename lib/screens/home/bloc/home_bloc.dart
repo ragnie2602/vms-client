@@ -72,16 +72,8 @@ class HomeTab {
         ),
       ],
     ),
-<<<<<<< HEAD
     HomeTab(Routes.license, title: 'Quản lý gói dịch vụ', svg: AppAssets.tabLicense),
-    HomeTab(
-      Routes.configuration,
-      title: 'Cấu hình hệ thống',
-      svg: AppAssets.tabSystemConfig,
-    ),
-=======
     HomeTab(Routes.configuration, title: 'Cấu hình hệ thống', svg: AppAssets.tabSystemConfig),
->>>>>>> e26e7c4eb8a6df7b7840749ca2a9333b3c8d4725
     HomeTab(Routes.about, title: 'Thông tin ứng dụng', svg: AppAssets.tabInfo),
   ];
 }
