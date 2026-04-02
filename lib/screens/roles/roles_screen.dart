@@ -146,6 +146,15 @@ class _RolesScreenState extends State<RolesScreen> {
                   List<Role> _roles = roles;
                   if (state is SearchRolesSuccess) _roles = state.roles;
 
+                  if (_roles.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Không có dữ liệu',
+                        style: AppTypography.style(14, color: AppColors.grey64748B),
+                      ),
+                    );
+                  }
+
                   return CustomTable(
                     data: CustomTableData(
                       columnFlexes: [66, 400, 600, 150, 112],
