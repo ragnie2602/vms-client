@@ -28,7 +28,7 @@ import 'package:vms_flutter_client/domain/i_repositories/i_object_group_reposito
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_box_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_ai_config_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_detect_repository.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_notication_repostory.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_notification_repostory.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_event_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_object_type_repository.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_schedule_repository.dart';

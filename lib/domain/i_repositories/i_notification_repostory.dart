@@ -7,4 +7,7 @@ abstract class INotificationRepository {
   );
 
   Future<Either<Failure, NotificationSettingEntity>> getNotificationSetting();
+
+  Future<Either<Failure, List<Object>>> getNotifications();
+  Future<Either<Failure, void>> markReadNotification(String notificationId);
 }

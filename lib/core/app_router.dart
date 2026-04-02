@@ -28,6 +28,7 @@ import 'package:vms_flutter_client/screens/event/event_screen.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_bloc.dart';
 import 'package:vms_flutter_client/screens/group/bloc/group_camera_event.dart';
 import 'package:vms_flutter_client/screens/home/bloc/change_my_info_bloc.dart';
+import 'package:vms_flutter_client/screens/home/bloc/header_notification_bloc.dart';
 import 'package:vms_flutter_client/screens/login/mobile_login_screen.dart';
 import 'package:vms_flutter_client/screens/map/bloc/emap_bloc.dart';
 import 'package:vms_flutter_client/screens/map/emap_screen.dart';
@@ -191,6 +192,7 @@ class AppRouter {
         builder: (context, state, child) => MultiBlocProvider(
           providers: [
             BlocProvider(create: (context) => HomeBloc()),
+            BlocProvider(create: (context) => HeaderNotificationBloc(context.read())),
             BlocProvider(
               create: (context) =>
                   StorageFolderBloc(context.read(), context.read())..add(StorageFolderStarted()),
