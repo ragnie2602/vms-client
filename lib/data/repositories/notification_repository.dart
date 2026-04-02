@@ -35,7 +35,7 @@ class NotificationRepository extends BaseRepository implements INotificationRepo
       final Map<String, dynamic> data = await notificationService.getNotifications({
         'offsetId': lastNotificationId,
         'page': 0,
-        'size': 10,
+        'size': 6,
       });
 
       final int unreadCount = data['unreadCount'];

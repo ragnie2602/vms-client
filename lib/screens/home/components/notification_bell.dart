@@ -44,15 +44,13 @@ class _NotificationBellState extends State<NotificationBell> {
           onTap: _toggleNotificationPopup,
           borderRadius: BorderRadius.circular(20),
           child: unreadCount > 0
-              ? Badge.count(
-                  count: unreadCount,
-                  padding: EdgeInsets.all(2),
+              ? Badge(
                   backgroundColor: Color(0xFF21CCC3),
-                  textStyle: AppTypography.style(
-                    9,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                  label: Text(
+                    getUnreadCountStr(),
+                    style: AppTypography.style(9, fontWeight: FontWeight.w600, color: Colors.white),
                   ),
+                  padding: EdgeInsets.all(2),
                   child: icon,
                 )
               : icon,
@@ -80,6 +78,12 @@ class _NotificationBellState extends State<NotificationBell> {
     }
   }
 
+  /// WIDGETS
+  String getUnreadCountStr() {
+    return unreadCount > 99 ? '99+' : unreadCount.toString();
+  }
+
+  /// FUNCTIONS
   void _showNotificationPopup() {
     getNotiTimer?.cancel();
 

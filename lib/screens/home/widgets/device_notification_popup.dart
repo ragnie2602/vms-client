@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -19,6 +21,7 @@ class DeviceNotificationPopup extends StatefulWidget {
 
 class _DeviceNotificationPopupState extends State<DeviceNotificationPopup> {
   final List<HeaderNotification> notifications = [];
+  bool canLoadMore = false;
 
   @override
   void initState() {
@@ -60,39 +63,42 @@ class _DeviceNotificationPopupState extends State<DeviceNotificationPopup> {
             notifications.isNotEmpty
                 ? Expanded(
                     child: ListView.separated(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.zero,
+                      itemBuilder: (context, index) =>
+                          _DeviceNotificationItem(widget.bloc, notifications[index]),
                       itemCount: notifications.length,
                       separatorBuilder: (_, __) =>
                           const Divider(height: 1, color: AppColors.greyE2E8F0),
-                      itemBuilder: (context, index) =>
-                          _DeviceNotificationItem(widget.bloc, notifications[index]),
+                      padding: EdgeInsets.zero,
                     ),
                   )
                 : const Center(child: Text('Không có thông báo')),
             const Divider(height: 1, color: AppColors.greyE2E8F0),
-            InkWell(
-              onTap: () =>
-                  widget.bloc.add(GetNotifications(lastNotificationId: notifications.last.id)),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                alignment: Alignment.center,
-                child: Text(
-                  'Xem thêm',
-                  style: AppTypography.style(
-                    14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.blue3B82F6,
+            if (notifications.length > 5)
+              InkWell(
+                onTap: () =>
+                    widget.bloc.add(GetNotifications(lastNotificationId: notifications.last.id)),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Xem thêm',
+                    style: AppTypography.style(
+                      14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.blue3B82F6,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
         listener: (context, state) {
           if (state is GetNotificationsSuccess) {
-            notifications.addAll(state.notifications);
+            final incoming = state.notifications;
+
+            canLoadMore = incoming.length > 5;
+            notifications.addAll(incoming.sublist(0, min(5, incoming.length)));
           } else if (state is MarkReadNotificationSuccess) {
             notifications
                     .firstWhereOrNull((notification) => notification.id == state.notificationId)
@@ -116,14 +122,7 @@ class _DeviceNotificationItem extends StatelessWidget {
     return InkWell(
       onTap: () => bloc.add(MarkReadNotification(notificationId: notification.id!)),
       child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: AppColors.greyE5E5E5),
-            left: BorderSide(color: AppColors.greyE5E5E5),
-            top: BorderSide(color: AppColors.greyE5E5E5),
-          ),
-          color: notification.read == true ? Colors.white : const Color(0xFFF2F4FA),
-        ),
+        color: notification.read == true ? Colors.white : const Color(0xFFF2F4FA),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +161,7 @@ class _DeviceNotificationItem extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        notification.createdAt ?? '',
+                        getTimeStr(DateTime.parse(notification.createdAt ?? '')),
                         style: AppTypography.style(
                           12,
                           fontWeight: FontWeight.w500,
@@ -178,5 +177,23 @@ class _DeviceNotificationItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// WIDGETS
+  String getTimeStr(DateTime dateTime) {
+    final now = DateTime.now();
+    final diff = now.difference(dateTime);
+
+    if (diff.inSeconds < 60) {
+      return 'Vừa xong';
+    } else if (diff.inMinutes < 60) {
+      return '${diff.inMinutes} phút trước';
+    } else if (diff.inHours < 24) {
+      return '${diff.inHours} giờ trước';
+    } else if (dateTime.year == now.year) {
+      return '${dateTime.day}/${dateTime.month}';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
   }
 }
