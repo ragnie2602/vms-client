@@ -23,6 +23,8 @@ class _NotificationBellState extends State<NotificationBell> {
   OverlayEntry? _notificationOverlay;
   Timer? getNotiTimer;
 
+  int unreadCount = 0;
+
   @override
   void initState() {
     super.initState();
@@ -33,22 +35,32 @@ class _NotificationBellState extends State<NotificationBell> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HeaderNotificationBloc, HeaderNotificationState>(
+    return BlocConsumer<HeaderNotificationBloc, HeaderNotificationState>(
       builder: (context, state) {
-        final unreadCnt = state is GetNotificationsSuccess ? state.unreadCount : 0;
+        final icon = SvgPicture.asset(AppAssets.icBell, width: 20, height: 20);
 
         return InkWell(
           key: _bellKey,
           onTap: _toggleNotificationPopup,
           borderRadius: BorderRadius.circular(20),
-          child: Badge.count(
-            count: unreadCnt,
-            padding: EdgeInsets.all(2),
-            backgroundColor: Color(0xFF21CCC3),
-            textStyle: AppTypography.style(9, fontWeight: FontWeight.w600, color: Colors.white),
-            child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
-          ),
+          child: unreadCount > 0
+              ? Badge.count(
+                  count: unreadCount,
+                  padding: EdgeInsets.all(2),
+                  backgroundColor: Color(0xFF21CCC3),
+                  textStyle: AppTypography.style(
+                    9,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  child: icon,
+                )
+              : icon,
         );
+      },
+      listener: (context, state) {
+        if (state is GetNotificationsSuccess) unreadCount = state.unreadCount;
+        if (state is MarkReadNotificationSuccess) unreadCount--;
       },
     );
   }
@@ -69,7 +81,7 @@ class _NotificationBellState extends State<NotificationBell> {
   }
 
   void _showNotificationPopup() {
-    bloc.add(GetNotifications());
+    getNotiTimer?.cancel();
 
     final renderBox = _bellKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
@@ -93,10 +105,7 @@ class _NotificationBellState extends State<NotificationBell> {
             right: screenWidth - offset.dx - size.width,
             child: Material(
               color: Colors.transparent,
-              child: BlocProvider.value(
-                value: bloc,
-                child: DeviceNotificationPopup(onClose: _hideNotificationPopup),
-              ),
+              child: DeviceNotificationPopup(bloc: bloc, onClose: _hideNotificationPopup),
             ),
           ),
         ],
@@ -109,5 +118,7 @@ class _NotificationBellState extends State<NotificationBell> {
   void _hideNotificationPopup() {
     _notificationOverlay?.remove();
     _notificationOverlay = null;
+
+    getNotiTimer = Timer.periodic(Duration(seconds: 5), (timer) => bloc.add(GetNotifications()));
   }
 }

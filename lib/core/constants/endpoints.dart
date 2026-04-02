@@ -51,7 +51,7 @@ class EndPoints {
   // Notification
   static const String notification = '/api/notifications';
   static const String notificationList = '$notification/list';
-  static const String markReadNotification = '$notification/mark-read';
+  static const String markReadNotification = '$notification/mark-as-read';
 
   // Notification settings
   static const String notificationSetting = '/api/notification-settings';

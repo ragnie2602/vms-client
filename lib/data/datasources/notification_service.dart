@@ -43,7 +43,11 @@ class NotificationService {
   }
 
   Future<void> markReadNotification(int notificationId) async {
-    final raw = await httpClient.post(url: EndPoints.markReadNotification, data: {});
+    final raw = await httpClient.post(
+      url: EndPoints.markReadNotification,
+      data: null,
+      queryParameters: {'notificationId': notificationId},
+    );
     final response = BaseResponse.fromJson(raw);
 
     if (response.code != 200) {
