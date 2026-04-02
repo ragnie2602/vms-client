@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/home/bloc/header_notification_bloc.dart';
 import 'package:vms_flutter_client/screens/home/widgets/device_notification_popup.dart';
 
 class NotificationBell extends StatefulWidget {
@@ -14,6 +16,8 @@ class NotificationBell extends StatefulWidget {
 }
 
 class _NotificationBellState extends State<NotificationBell> {
+  late final HeaderNotificationBloc bloc;
+
   final GlobalKey _bellKey = GlobalKey();
 
   OverlayEntry? _notificationOverlay;
@@ -22,22 +26,30 @@ class _NotificationBellState extends State<NotificationBell> {
   @override
   void initState() {
     super.initState();
-    getNotiTimer = Timer.periodic(Duration(seconds: 1), (timer) {});
+
+    bloc = context.read()..add(GetNotifications());
+    getNotiTimer = Timer.periodic(Duration(seconds: 5), (timer) => bloc.add(GetNotifications()));
   }
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      key: _bellKey,
-      onTap: _toggleNotificationPopup,
-      borderRadius: BorderRadius.circular(20),
-      child: Badge.count(
-        count: 01,
-        padding: EdgeInsets.all(2),
-        backgroundColor: Color(0xFF21CCC3),
-        textStyle: AppTypography.style(9, fontWeight: FontWeight.w600, color: Colors.white),
-        child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
-      ),
+    return BlocBuilder<HeaderNotificationBloc, HeaderNotificationState>(
+      builder: (context, state) {
+        final unreadCnt = state is GetNotificationsSuccess ? state.unreadCount : 0;
+
+        return InkWell(
+          key: _bellKey,
+          onTap: _toggleNotificationPopup,
+          borderRadius: BorderRadius.circular(20),
+          child: Badge.count(
+            count: unreadCnt,
+            padding: EdgeInsets.all(2),
+            backgroundColor: Color(0xFF21CCC3),
+            textStyle: AppTypography.style(9, fontWeight: FontWeight.w600, color: Colors.white),
+            child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
+          ),
+        );
+      },
     );
   }
 
@@ -57,6 +69,8 @@ class _NotificationBellState extends State<NotificationBell> {
   }
 
   void _showNotificationPopup() {
+    bloc.add(GetNotifications());
+
     final renderBox = _bellKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
@@ -79,9 +93,9 @@ class _NotificationBellState extends State<NotificationBell> {
             right: screenWidth - offset.dx - size.width,
             child: Material(
               color: Colors.transparent,
-              child: DeviceNotificationPopup(
-                onClose: _hideNotificationPopup,
-                onViewMore: _hideNotificationPopup,
+              child: BlocProvider.value(
+                value: bloc,
+                child: DeviceNotificationPopup(onClose: _hideNotificationPopup),
               ),
             ),
           ),

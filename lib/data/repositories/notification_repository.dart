@@ -1,6 +1,7 @@
 import 'package:vms_flutter_client/core/base_response.dart';
 import 'package:vms_flutter_client/data/datasources/notification_service.dart';
 import 'package:vms_flutter_client/data/repositories/base_repository.dart';
+import 'package:vms_flutter_client/domain/entities/notification/header_notification.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
 import 'package:vms_flutter_client/domain/i_repositories/i_notification_repostory.dart';
 
@@ -27,18 +28,30 @@ class NotificationRepository extends BaseRepository implements INotificationRepo
   }
 
   @override
-  Future<Either<Failure, List<Object>>> getNotifications() {
-    return await catchError<List<Object>>(() async {
-      final data = await notificationService.getNotifications();
-      return Right(data);
+  Future<Either<Failure, (int, List<HeaderNotification>)>> getNotifications({
+    int? lastNotificationId,
+  }) async {
+    return await catchError<(int, List<HeaderNotification>)>(() async {
+      final Map<String, dynamic> data = await notificationService.getNotifications({
+        'offsetId': lastNotificationId,
+        'page': 0,
+        'size': 10,
+      });
+
+      final int unreadCount = data['unreadCount'];
+      final List<HeaderNotification> notifications = (data['notifications']['content'] as List)
+          .map((e) => HeaderNotification.fromJson(e))
+          .toList();
+
+      return Right((unreadCount, notifications));
     });
   }
 
   @override
-  Future<Either<Failure, void>> markReadNotification(String notificationId) {
-    return await catchError<void>(() async {
+  Future<Either<Failure, int>> markReadNotification(int notificationId) async {
+    return await catchError<int>(() async {
       await notificationService.markReadNotification(notificationId);
-      return Right(null);
+      return Right(notificationId);
     });
   }
 }

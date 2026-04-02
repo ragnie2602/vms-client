@@ -49,6 +49,11 @@ class EndPoints {
   static const String getAvailableFields = '/$baseDetect/available-fields';
 
   // Notification
+  static const String notification = '/api/notifications';
+  static const String notificationList = '$notification/list';
+  static const String markReadNotification = '$notification/mark-read';
+
+  // Notification settings
   static const String notificationSetting = '/api/notification-settings';
   static String eventDisplayConfigByName(String typeName) => '$baseDetect/$typeName';
 
