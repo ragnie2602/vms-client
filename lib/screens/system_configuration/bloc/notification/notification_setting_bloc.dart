@@ -6,15 +6,13 @@ import 'package:vms_flutter_client/core/base_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:vms_flutter_client/core/constants/keys.dart';
 import 'package:vms_flutter_client/domain/entities/notification/notification_setting_entity.dart';
-import 'package:vms_flutter_client/domain/i_repositories/i_notication_repostory.dart';
+import 'package:vms_flutter_client/domain/i_repositories/i_notification_repostory.dart';
 
 part 'notification_setting_event.dart';
 part 'notification_setting_state.dart';
 
-class NotificationBloc
-    extends Bloc<NotificationSettingEvent, NotificationSettingState> {
-  NotificationBloc(this._notificationSettingRepository)
-    : super(const NotificationSettingState()) {
+class NotificationBloc extends Bloc<NotificationSettingEvent, NotificationSettingState> {
+  NotificationBloc(this._notificationSettingRepository) : super(const NotificationSettingState()) {
     on<UpdateNotificationSettingEvent>(_onUpdateNotificationSetting);
   }
   final INotificationRepository _notificationSettingRepository;

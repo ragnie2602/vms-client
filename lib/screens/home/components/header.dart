@@ -9,6 +9,7 @@ import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
 import 'package:vms_flutter_client/core/constants/scope_functions.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
+import 'package:vms_flutter_client/screens/home/components/notification_bell.dart';
 
 import '../bloc/home_bloc.dart';
 import '../widgets/user_profile.dart';
@@ -95,30 +96,7 @@ class _HeaderState extends State<Header> {
                   ),
                 ),
 
-                Row(
-                  children: <Widget>[
-                    SizedBox(width: 20),
-                    // ExpandableSearchBar(),
-                    SizedBox(width: 20),
-                    // InkWell(
-                    //   onTap: () {},
-                    //   borderRadius: BorderRadius.circular(20),
-                    //   child: Badge.count(
-                    //     count: 01,
-                    //     padding: EdgeInsets.all(2),
-                    //     backgroundColor: Color(0xFF21CCC3),
-                    //     textStyle: AppTypography.style(
-                    //       9,
-                    //       fontWeight: FontWeight.w600,
-                    //       color: Colors.white,
-                    //     ),
-                    //     child: SvgPicture.asset(AppAssets.icBell, width: 20, height: 20),
-                    //   ),
-                    // ),
-                    const SizedBox(width: 12),
-                    UserProfile(),
-                  ],
-                ),
+                Row(spacing: 12, children: <Widget>[NotificationBell(), UserProfile()]),
               ],
             ),
           ),

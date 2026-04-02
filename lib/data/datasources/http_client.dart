@@ -69,11 +69,12 @@ class HttpClient {
     }
   }
 
-  post({required String url, required dynamic data}) async {
+  post({required String url, required dynamic data, Map<String, dynamic>? queryParameters}) async {
     final token = AppData.instance.read(AppKeys.SP_ACCESS_TOKEN);
     final response = await _dio.post(
       url,
       data: data,
+      queryParameters: queryParameters,
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

@@ -32,4 +32,26 @@ class NotificationService {
     }
     return NotificationSettingEntity.fromJson(response.data);
   }
+
+  Future getNotifications(Map<String, dynamic> data) async {
+    final raw = await httpClient.post(url: EndPoints.notificationList, data: data);
+
+    final response = BaseResponse.fromJson(raw);
+
+    if (response.code != 200) throw ApiException(response.message);
+    return response.data;
+  }
+
+  Future<void> markReadNotification(int notificationId) async {
+    final raw = await httpClient.post(
+      url: EndPoints.markReadNotification,
+      data: null,
+      queryParameters: {'notificationId': notificationId},
+    );
+    final response = BaseResponse.fromJson(raw);
+
+    if (response.code != 200) {
+      throw ApiException(response.message);
+    }
+  }
 }
