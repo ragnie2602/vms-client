@@ -317,8 +317,8 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
     }
 
     Role role = Role(
-      name: _nameController.text,
-      description: _descriptionController.text,
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
       status: _status,
       systemPermissions: SystemPermissions(actions: _selectedSystemPermissions.value.toList()),
       subjectPermissions: SubjectPermissions(
@@ -342,8 +342,8 @@ class _AddEditRoleDialogState extends State<AddEditRoleDialog> with TickerProvid
 
     Role role = Role(
       id: widget.role?.id,
-      name: _nameController.text,
-      description: _descriptionController.text,
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
       status: _status,
       systemPermissions: SystemPermissions(actions: _selectedSystemPermissions.value.toList()),
       subjectPermissions: SubjectPermissions(

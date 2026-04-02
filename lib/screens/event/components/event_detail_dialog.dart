@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:vms_flutter_client/core/app_data.dart';
 import 'package:vms_flutter_client/core/app_router.dart';
 import 'package:vms_flutter_client/core/constants/assets.dart';
 import 'package:vms_flutter_client/core/constants/colors.dart';
+import 'package:vms_flutter_client/core/constants/permission_code.dart';
 import 'package:vms_flutter_client/core/constants/typography.dart';
 import 'package:vms_flutter_client/core/utils/date_util.dart';
 import 'package:vms_flutter_client/core/utils/toast_util.dart';
@@ -293,23 +295,25 @@ class _EventDetailDialogState extends State<EventDetailDialog>
                                         );
                                       },
                                     ),
-                                    _functionBtn(
-                                      icon: SvgPicture.asset(AppAssets.icVideoOn, height: 20),
-                                      label: 'Xem trực tiếp',
-                                      onTap: _live,
-                                    ),
-                                    ValueListenableBuilder(
-                                      valueListenable: _errorCause,
-                                      builder: (context, errIdx, child) => _functionBtn(
-                                        icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
-                                        label: 'Xem playback',
-                                        onTap: _playback,
-                                        enabled: errIdx == 0,
-                                        tooltip: errIdx == 0
-                                            ? ''
-                                            : 'Không thể xem playback do ${_errorTranslator()}',
+                                    if (AppData.instance.can(PermissionCode.viewLiveview))
+                                      _functionBtn(
+                                        icon: SvgPicture.asset(AppAssets.icVideoOn, height: 20),
+                                        label: 'Xem trực tiếp',
+                                        onTap: _live,
                                       ),
-                                    ),
+                                    if (AppData.instance.can(PermissionCode.viewPlayback))
+                                      ValueListenableBuilder(
+                                        valueListenable: _errorCause,
+                                        builder: (context, errIdx, child) => _functionBtn(
+                                          icon: SvgPicture.asset(AppAssets.icPlayback, height: 20),
+                                          label: 'Xem playback',
+                                          onTap: _playback,
+                                          enabled: errIdx == 0,
+                                          tooltip: errIdx == 0
+                                              ? ''
+                                              : 'Không thể xem playback do ${_errorTranslator()}',
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
